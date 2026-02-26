@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.configs.database import get_db
+from app.dependencies import get_current_user
+from app.models.user import User
 from app.services.auth_service import AuthService
 from app.schemas.auth import UserCreate, UserLogin, Token, UserResponse
 from app.controllers.common.errors import BadRequestError, UnauthorizedError
@@ -52,3 +54,9 @@ def refresh_token(
         return auth_service.refresh_token(refresh_token)
     except ValueError as e:
         raise UnauthorizedError(str(e))
+
+
+@router.get("/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_user)):
+    """Get current user info."""
+    return UserResponse.model_validate(current_user)

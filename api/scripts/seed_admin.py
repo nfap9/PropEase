@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.configs.database import SessionLocal
 from app.models.user import User
 from app.models.organization import Organization, OrganizationMember, MemberRole
-import bcrypt
+from app.utils.security import get_password_hash
 
 # Default admin credentials
 DEFAULT_ADMIN = {
@@ -24,11 +24,6 @@ DEFAULT_ORG = {
     "name": "Default Organization",
     "slug": "default-org",
 }
-
-
-def hash_password(password: str) -> str:
-    """Hash password using bcrypt."""
-    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def seed_admin():
@@ -53,7 +48,7 @@ def seed_admin():
         # Create admin user
         admin = User(
             email=DEFAULT_ADMIN["email"],
-            password_hash=hash_password(DEFAULT_ADMIN["password"]),
+            password_hash=get_password_hash(DEFAULT_ADMIN["password"]),
             full_name=DEFAULT_ADMIN["full_name"],
             is_active=True,
         )
