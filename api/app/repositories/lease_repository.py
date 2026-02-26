@@ -4,9 +4,11 @@ Lease repository for data access operations.
 from typing import Optional, List
 from datetime import date
 from sqlalchemy.orm import Session
+from sqlalchemy import true
+
 from app.repositories.base import BaseRepository
 from app.models.lease import Lease
-from app.models.apartment import Room
+from app.models.apartment import Room, Apartment
 
 
 class LeaseRepository(BaseRepository[Lease]):
@@ -20,7 +22,8 @@ class LeaseRepository(BaseRepository[Lease]):
         return (
             self.db.query(Lease)
             .join(Room)
-            .filter(Room.organization_id == org_id)
+            .join(Apartment)
+            .filter(Apartment.organization_id == org_id)
             .all()
         )
 
@@ -29,7 +32,8 @@ class LeaseRepository(BaseRepository[Lease]):
         return (
             self.db.query(Lease)
             .join(Room)
-            .filter(Room.organization_id == org_id, Lease.is_active == True)
+            .join(Apartment)
+            .filter(Apartment.organization_id == org_id, Lease.is_active == true())
             .all()
         )
 
@@ -41,7 +45,7 @@ class LeaseRepository(BaseRepository[Lease]):
         """Find active lease for a room."""
         return (
             self.db.query(Lease)
-            .filter(Lease.room_id == room_id, Lease.is_active == True)
+            .filter(Lease.room_id == room_id, Lease.is_active == true())
             .first()
         )
 
@@ -55,7 +59,7 @@ class LeaseRepository(BaseRepository[Lease]):
         """Check if there's an overlapping lease for the room."""
         query = self.db.query(Lease).filter(
             Lease.room_id == room_id,
-            Lease.is_active == True,
+            Lease.is_active == true(),
             Lease.start_date <= end_date,
             Lease.end_date >= start_date,
         )
@@ -68,6 +72,7 @@ class LeaseRepository(BaseRepository[Lease]):
         return (
             self.db.query(Lease)
             .join(Room)
-            .filter(Room.organization_id == org_id, Lease.is_active == True)
+            .join(Apartment)
+            .filter(Apartment.organization_id == org_id, Lease.is_active == true())
             .count()
         )

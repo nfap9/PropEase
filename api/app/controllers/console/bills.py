@@ -101,6 +101,7 @@ def update_bill(
     data: BillUpdate,
     org_id: int = Query(...),
     current_user: User = Depends(get_current_user),
+    bill_service: BillService = Depends(get_bill_service),
     db: Session = Depends(get_db),
 ):
     """Update a bill."""
@@ -108,19 +109,10 @@ def update_bill(
     if membership.role == MemberRole.VIEWER:
         raise ForbiddenError("Viewers cannot update bills")
 
-    bill_service = BillService(db)
-    bill = bill_service.get_bill(bill_id, org_id)
-    if not bill:
-        raise NotFoundError("Bill")
-
-    update_data = data.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        if value is not None:
-            setattr(bill, field, value)
-
-    db.commit()
-    db.refresh(bill)
-    return bill
+    try:
+        return bill_service.update_bill(bill_id, org_id, data)
+    except ValueError as e:
+        raise NotFoundError(str(e))
 
 
 @router.delete("/{bill_id}")
@@ -191,12 +183,7 @@ def export_bill_pdf(
     if not bill:
         raise NotFoundError("Bill")
 
-    # Get organization name
-    from app.models.organization import Organization
-
-    org = db.query(Organization).filter(Organization.id == org_id).first()
-    org_name = org.name if org else "Apartment Ultra"
-
+    org_name = bill_service.get_organization_name(org_id)
     bill_data = bill_service.prepare_bill_export_data(bill)
     pdf_bytes = generate_bill_pdf(bill_data, org_name)
 

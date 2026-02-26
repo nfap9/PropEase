@@ -219,7 +219,7 @@ export default function TeamSettingsPage() {
               {member.user?.full_name?.charAt(0).toUpperCase() || 'U'}
             </div>
             <div>
-              <div className="font-medium">{member.user?.full_name || 'Unknown'}</div>
+              <div className="font-medium">{member.user?.full_name || '未知用户'}</div>
               <div className="text-sm text-muted-foreground">{member.user?.email}</div>
             </div>
           </div>

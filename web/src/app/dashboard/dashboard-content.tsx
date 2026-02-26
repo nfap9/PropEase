@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Building2,
   DoorOpen,
@@ -78,11 +78,11 @@ export function DashboardContent() {
   });
 
   // Set default organization
-  useState(() => {
+  useEffect(() => {
     if (organizations && organizations.length > 0 && !selectedOrgId) {
       setSelectedOrgId(organizations[0].id);
     }
-  });
+  }, [organizations, selectedOrgId]);
 
   const { data: overview, isLoading: overviewLoading } = useQuery({
     queryKey: ['dashboard-overview', selectedOrgId],

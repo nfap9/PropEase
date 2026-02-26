@@ -111,7 +111,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                   </AvatarFallback>
                 </Avatar>
                 <span className="hidden font-medium md:inline-block">
-                  {user?.full_name || 'User'}
+                  {user?.full_name || '用户'}
                 </span>
               </Button>
             </DropdownMenuTrigger>

@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.services.base import BaseService
 from app.repositories.bill_repository import BillRepository, PaymentRepository
 from app.repositories.lease_repository import LeaseRepository
-from app.repositories.organization_repository import OrganizationMemberRepository
+from app.repositories.organization_repository import OrganizationRepository, OrganizationMemberRepository
 from app.models.bill import Bill, Payment, BillStatus, PaymentMethod
 from app.models.lease import Lease
 from app.models.utility import UtilityReading
@@ -25,6 +25,7 @@ class BillService(BaseService):
         self.payment_repo = PaymentRepository(db)
         self.lease_repo = LeaseRepository(db)
         self.member_repo = OrganizationMemberRepository(db)
+        self.org_repo = OrganizationRepository(db)
 
     def list_bills(
         self,
@@ -64,6 +65,40 @@ class BillService(BaseService):
             status=BillStatus.PENDING,
         )
         return self.bill_repo.create(bill)
+
+    def update_bill(self, bill_id: int, org_id: int, data: "BillUpdate") -> Bill:
+        """
+        Update a bill.
+
+        Args:
+            bill_id: Bill ID
+            org_id: Organization ID
+            data: Update data
+
+        Returns:
+            Updated bill
+
+        Raises:
+            ValueError: Bill not found
+        """
+        from app.schemas.bill import BillUpdate
+
+        bill = self.get_bill(bill_id, org_id)
+        if not bill:
+            raise ValueError("Bill not found")
+
+        update_data = data.model_dump(exclude_unset=True)
+
+        # Recalculate total if amounts changed
+        rent_amount = update_data.get("rent_amount", bill.rent_amount)
+        water_amount = update_data.get("water_amount", bill.water_amount)
+        electricity_amount = update_data.get("electricity_amount", bill.electricity_amount)
+        other_amount = update_data.get("other_amount", bill.other_amount)
+
+        total_amount = rent_amount + water_amount + electricity_amount + (other_amount or Decimal(0))
+        update_data["total_amount"] = total_amount
+
+        return self.bill_repo.update(bill_id, **update_data)
 
     def generate_bills(
         self, org_id: int, data: GenerateBillsRequest
@@ -242,3 +277,8 @@ class BillService(BaseService):
                 bill.lease.tenant.name if bill.lease and bill.lease.tenant else "-"
             ),
         }
+
+    def get_organization_name(self, org_id: int) -> str:
+        """Get organization name by ID."""
+        org = self.org_repo.get(org_id)
+        return org.name if org else "Apartment Ultra"
