@@ -10,6 +10,7 @@ from app.services.base import BaseService
 from app.repositories.bill_repository import BillRepository, PaymentRepository
 from app.repositories.lease_repository import LeaseRepository
 from app.repositories.organization_repository import OrganizationRepository, OrganizationMemberRepository
+from app.repositories.utility_repository import UtilityRepository
 from app.models.bill import Bill, Payment, BillStatus, PaymentMethod
 from app.models.lease import Lease
 from app.models.utility import UtilityReading
@@ -26,6 +27,7 @@ class BillService(BaseService):
         self.lease_repo = LeaseRepository(db)
         self.member_repo = OrganizationMemberRepository(db)
         self.org_repo = OrganizationRepository(db)
+        self.utility_repo = UtilityRepository(db)
 
     def list_bills(
         self,
@@ -152,25 +154,17 @@ class BillService(BaseService):
                 total_amount=total_amount,
                 status=BillStatus.PENDING,
             )
-            self.db.add(bill)
+            self.bill_repo.db.add(bill)
             created.append(lease.id)
 
-        self.db.commit()
+        self.bill_repo.db.commit()
         return {"created": len(created), "skipped": len(skipped)}
 
     def _get_utility_reading(
         self, room_id: int, year: int, month: int
     ) -> Optional[UtilityReading]:
         """Get utility reading for a room and period."""
-        return (
-            self.db.query(UtilityReading)
-            .filter(
-                UtilityReading.room_id == room_id,
-                UtilityReading.period_year == year,
-                UtilityReading.period_month == month,
-            )
-            .first()
-        )
+        return self.utility_repo.find_by_room_and_period(room_id, year, month)
 
     def _calculate_water_cost(
         self, lease: Lease, reading: Optional[UtilityReading]
@@ -224,7 +218,7 @@ class BillService(BaseService):
             reference=data.reference,
             notes=data.notes,
         )
-        self.db.add(payment)
+        self.payment_repo.db.add(payment)
 
         # Update bill status
         bill.paid_amount = bill.paid_amount + Decimal(str(data.amount))
@@ -233,8 +227,8 @@ class BillService(BaseService):
         elif bill.paid_amount > 0:
             bill.status = BillStatus.PARTIAL
 
-        self.db.commit()
-        self.db.refresh(payment)
+        self.payment_repo.db.commit()
+        self.payment_repo.db.refresh(payment)
         return payment
 
     def get_bill_payments(self, bill_id: int) -> List[Payment]:

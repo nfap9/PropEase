@@ -45,3 +45,17 @@ class UtilityRepository(BaseRepository[UtilityReading]):
             .order_by(UtilityReading.period_year.desc(), UtilityReading.period_month.desc())
             .first()
         )
+
+    def find_by_room_and_period(
+        self, room_id: int, year: int, month: int
+    ) -> Optional[UtilityReading]:
+        """Find utility reading for a specific room and period."""
+        return (
+            self.db.query(UtilityReading)
+            .filter(
+                UtilityReading.room_id == room_id,
+                UtilityReading.period_year == year,
+                UtilityReading.period_month == month,
+            )
+            .first()
+        )

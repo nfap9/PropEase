@@ -1,8 +1,10 @@
 """
 Common response helpers.
 """
-from typing import Any, Optional
+from typing import Generic, TypeVar, Optional, List
 from pydantic import BaseModel
+
+T = TypeVar("T")
 
 
 class SuccessResponse(BaseModel):
@@ -20,10 +22,10 @@ class ErrorResponse(BaseModel):
     detail: Optional[str] = None
 
 
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(BaseModel, Generic[T]):
     """Paginated response wrapper."""
 
-    items: list[Any]
+    items: List[T]
     total: int
     skip: int
     limit: int

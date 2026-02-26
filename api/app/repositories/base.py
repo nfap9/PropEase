@@ -1,10 +1,13 @@
 """
 Base repository implementation with common CRUD operations.
 """
-from typing import Generic, TypeVar, Optional, List, Any
+from typing import Generic, TypeVar, Optional, List, Union
 from sqlalchemy.orm import Session
 
 ModelType = TypeVar("ModelType")
+
+# 过滤值类型
+FilterValue = Union[str, int, float, bool, None]
 
 
 class BaseRepository(Generic[ModelType]):
@@ -37,7 +40,7 @@ class BaseRepository(Generic[ModelType]):
         return self.db.query(self.model).filter(self.model.id.in_(ids)).all()
 
     def get_all(
-        self, skip: int = 0, limit: int = 100, **filters: Any
+        self, skip: int = 0, limit: int = 100, **filters: FilterValue
     ) -> List[ModelType]:
         """
         Get all records with optional pagination and filtering.
@@ -53,7 +56,7 @@ class BaseRepository(Generic[ModelType]):
                 query = query.filter(getattr(self.model, field) == value)
         return query.offset(skip).limit(limit).all()
 
-    def count(self, **filters: Any) -> int:
+    def count(self, **filters: FilterValue) -> int:
         """Count records with optional filtering."""
         query = self.db.query(self.model)
         for field, value in filters.items():
@@ -68,7 +71,7 @@ class BaseRepository(Generic[ModelType]):
         self.db.refresh(obj)
         return obj
 
-    def update(self, id: int, **kwargs: Any) -> Optional[ModelType]:
+    def update(self, id: int, **kwargs: FilterValue) -> Optional[ModelType]:
         """Update a record by ID."""
         obj = self.get(id)
         if obj:
