@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
+import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,12 +20,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -35,7 +30,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { apartmentsApi, roomsApi, leasesApi, utilitiesApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { UtilityReading } from '@/types';
-import { Plus, MoreHorizontal, Pencil, Zap, Droplets, Building2 } from 'lucide-react';
+import { Plus, Pencil, Zap, Droplets, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const utilitySchema = z.object({
@@ -181,21 +176,14 @@ export default function UtilitiesPage() {
       id: 'actions',
       cell: ({ row }) => {
         const utility = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleEdit(utility)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                编辑
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
+        const actions: TableAction[] = [
+          {
+            label: '编辑',
+            icon: Pencil,
+            onClick: () => handleEdit(utility),
+          },
+        ];
+        return <TableActions actions={actions} />;
       },
     },
   ];

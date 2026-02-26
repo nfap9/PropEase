@@ -5,8 +5,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import Link from 'next/link';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
+import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,12 +32,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -46,7 +42,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { roomsApi, apartmentsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { Room, RoomStatus } from '@/types';
-import { Plus, MoreHorizontal, Pencil, Trash2, Building2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const roomSchema = z.object({
@@ -159,7 +155,19 @@ export default function RoomsPage() {
     {
       accessorKey: 'apartment_name',
       header: '所属公寓',
-      cell: ({ row }) => row.original.apartment?.name || '-',
+      cell: ({ row }) => {
+        const apartment = row.original.apartment;
+        return apartment ? (
+          <Link
+            href={`/apartments/${apartment.id}`}
+            className="text-primary hover:underline"
+          >
+            {apartment.name}
+          </Link>
+        ) : (
+          '-'
+        );
+      },
     },
     {
       accessorKey: 'area',
@@ -183,28 +191,20 @@ export default function RoomsPage() {
       id: 'actions',
       cell: ({ row }) => {
         const room = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleEdit(room)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                编辑
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleDelete(room)}
-                className="text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                删除
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
+        const actions: TableAction[] = [
+          {
+            label: '编辑',
+            icon: Pencil,
+            onClick: () => handleEdit(room),
+          },
+          {
+            label: '删除',
+            icon: Trash2,
+            onClick: () => handleDelete(room),
+            variant: 'destructive',
+          },
+        ];
+        return <TableActions actions={actions} />;
       },
     },
   ];

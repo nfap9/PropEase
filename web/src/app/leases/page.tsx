@@ -5,8 +5,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import Link from 'next/link';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
+import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,13 +32,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -47,7 +42,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { leasesApi, apartmentsApi, roomsApi, tenantsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { Lease } from '@/types';
-import { Plus, MoreHorizontal, Pencil, Trash2, Ban, Building2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Ban, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const leaseSchema = z.object({
@@ -190,7 +185,21 @@ export default function LeasesPage() {
       header: '房间',
       cell: ({ row }) => {
         const room = row.original.room;
-        return room ? `${room.apartment?.name || ''} - ${room.room_number}` : '-';
+        if (!room) return '-';
+        const apartment = room.apartment;
+        return (
+          <div className="flex flex-col">
+            {apartment && (
+              <Link
+                href={`/apartments/${apartment.id}`}
+                className="text-xs text-muted-foreground hover:underline"
+              >
+                {apartment.name}
+              </Link>
+            )}
+            <span>{room.room_number}</span>
+          </div>
+        );
       },
     },
     {
@@ -225,35 +234,26 @@ export default function LeasesPage() {
       id: 'actions',
       cell: ({ row }) => {
         const lease = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleEdit(lease)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                编辑
-              </DropdownMenuItem>
-              {lease.is_active && (
-                <DropdownMenuItem onClick={() => handleTerminate(lease)}>
-                  <Ban className="mr-2 h-4 w-4" />
-                  终止租约
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => handleDelete(lease)}
-                className="text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                删除
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
+        const actions: TableAction[] = [
+          {
+            label: '编辑',
+            icon: Pencil,
+            onClick: () => handleEdit(lease),
+          },
+          {
+            label: '终止',
+            icon: Ban,
+            onClick: () => handleTerminate(lease),
+            show: lease.is_active,
+          },
+          {
+            label: '删除',
+            icon: Trash2,
+            onClick: () => handleDelete(lease),
+            variant: 'destructive',
+          },
+        ];
+        return <TableActions actions={actions} maxInline={2} />;
       },
     },
   ];

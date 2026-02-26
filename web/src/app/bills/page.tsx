@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
+import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,12 +22,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -37,7 +32,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { billsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { Bill, BillStatus, PaymentMethod } from '@/types';
-import { MoreHorizontal, Download, DollarSign, AlertCircle, CheckCircle, Clock, Building2 } from 'lucide-react';
+import { Download, DollarSign, AlertCircle, CheckCircle, Clock, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const paymentSchema = z.object({
@@ -196,27 +191,20 @@ export default function BillsPage() {
       id: 'actions',
       cell: ({ row }) => {
         const bill = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {bill.status !== 'paid' && (
-                <DropdownMenuItem onClick={() => handlePayment(bill)}>
-                  <DollarSign className="mr-2 h-4 w-4" />
-                  登记付款
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => exportPdf(bill.id)}>
-                <Download className="mr-2 h-4 w-4" />
-                导出PDF
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
+        const actions: TableAction[] = [
+          {
+            label: '登记付款',
+            icon: DollarSign,
+            onClick: () => handlePayment(bill),
+            show: bill.status !== 'paid',
+          },
+          {
+            label: '导出PDF',
+            icon: Download,
+            onClick: () => exportPdf(bill.id),
+          },
+        ];
+        return <TableActions actions={actions} />;
       },
     },
   ];

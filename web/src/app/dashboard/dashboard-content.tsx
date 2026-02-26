@@ -11,24 +11,35 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building2 } from 'lucide-react';
+import {
+  Building2,
+  Home,
+  Percent,
+  FileText,
+  Users,
+  DollarSign,
+  Clock,
+  AlertCircle,
+} from 'lucide-react';
 
 function StatCard({
   title,
   value,
   description,
   icon: Icon,
+  iconColor,
 }: {
   title: string;
   value: string | number;
   description?: string;
   icon: React.ElementType;
+  iconColor?: string;
 }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <Icon className={`h-4 w-4 ${iconColor || 'text-muted-foreground'}`} />
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
@@ -110,22 +121,26 @@ export function DashboardContent() {
               title="公寓数量"
               value={overview?.total_apartments || 0}
               icon={Building2}
+              iconColor="text-blue-500"
             />
             <StatCard
               title="房间总数"
               value={overview?.total_rooms || 0}
-              icon={Building2}
+              icon={Home}
+              iconColor="text-green-500"
             />
             <StatCard
               title="入住率"
               value={`${overview?.occupancy_rate || 0}%`}
               description={`${overview?.occupied_rooms || 0} / ${overview?.total_rooms || 0} 间`}
-              icon={Building2}
+              icon={Percent}
+              iconColor="text-purple-500"
             />
             <StatCard
               title="活跃租约"
               value={overview?.active_leases || 0}
-              icon={Building2}
+              icon={FileText}
+              iconColor="text-orange-500"
             />
           </div>
 
@@ -133,23 +148,27 @@ export function DashboardContent() {
             <StatCard
               title="租客总数"
               value={overview?.total_tenants || 0}
-              icon={Building2}
+              icon={Users}
+              iconColor="text-cyan-500"
             />
             <StatCard
               title="本月收入"
               value={`¥${(overview?.monthly_revenue || 0).toLocaleString()}`}
-              icon={Building2}
+              icon={DollarSign}
+              iconColor="text-emerald-500"
             />
             <StatCard
               title="待收账单"
               value={overview?.pending_bills || 0}
-              icon={Building2}
+              icon={Clock}
+              iconColor="text-amber-500"
             />
             <StatCard
               title="逾期账单"
               value={overview?.overdue_bills || 0}
               description={overview?.overdue_bills ? '需要及时跟进' : ''}
-              icon={Building2}
+              icon={AlertCircle}
+              iconColor="text-red-500"
             />
           </div>
 

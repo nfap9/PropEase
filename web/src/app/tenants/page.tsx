@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
+import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,17 +29,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
 import { tenantsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { Tenant } from '@/types';
-import { Plus, MoreHorizontal, Pencil, Trash2, Phone, User, Building2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Phone, User, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const tenantSchema = z.object({
@@ -168,28 +163,20 @@ export default function TenantsPage() {
       id: 'actions',
       cell: ({ row }) => {
         const tenant = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleEdit(tenant)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                编辑
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleDelete(tenant)}
-                className="text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                删除
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
+        const actions: TableAction[] = [
+          {
+            label: '编辑',
+            icon: Pencil,
+            onClick: () => handleEdit(tenant),
+          },
+          {
+            label: '删除',
+            icon: Trash2,
+            onClick: () => handleDelete(tenant),
+            variant: 'destructive',
+          },
+        ];
+        return <TableActions actions={actions} />;
       },
     },
   ];

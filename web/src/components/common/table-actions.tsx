@@ -1,0 +1,104 @@
+'use client';
+
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal } from 'lucide-react';
+import { useMediaQuery } from '@/hooks/use-mobile';
+
+export interface TableAction {
+  label: string;
+  icon?: React.ElementType;
+  onClick: () => void;
+  variant?: 'default' | 'destructive';
+  show?: boolean;
+}
+
+interface TableActionsProps {
+  actions: TableAction[];
+  maxInline?: number;
+}
+
+export function TableActions({ actions, maxInline = 2 }: TableActionsProps) {
+  const isDesktop = useMediaQuery('(min-width: 768px)');
+
+  const visibleActions = actions.filter((a) => a.show !== false);
+  const inlineActions = visibleActions.slice(0, maxInline);
+  const menuActions = visibleActions.slice(maxInline);
+
+  if (visibleActions.length === 0) {
+    return null;
+  }
+
+  // 移动端全部放入菜单
+  if (!isDesktop) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {visibleActions.map((action, i) => (
+            <DropdownMenuItem
+              key={i}
+              onClick={action.onClick}
+              className={action.variant === 'destructive' ? 'text-destructive' : ''}
+            >
+              {action.icon && <action.icon className="mr-2 h-4 w-4" />}
+              {action.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  // 桌面端直接显示部分按钮
+  return (
+    <div className="flex items-center justify-end gap-1">
+      {inlineActions.map((action, i) => (
+        <Button
+          key={i}
+          variant="ghost"
+          size="sm"
+          onClick={action.onClick}
+          className={
+            action.variant === 'destructive'
+              ? 'text-destructive hover:text-destructive'
+              : ''
+          }
+        >
+          {action.icon && <action.icon className="h-4 w-4" />}
+          <span className="ml-1 hidden lg:inline">{action.label}</span>
+        </Button>
+      ))}
+      {menuActions.length > 0 && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {menuActions.map((action, i) => (
+              <DropdownMenuItem
+                key={i}
+                onClick={action.onClick}
+                className={action.variant === 'destructive' ? 'text-destructive' : ''}
+              >
+                {action.icon && <action.icon className="mr-2 h-4 w-4" />}
+                {action.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </div>
+  );
+}
