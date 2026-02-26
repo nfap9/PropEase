@@ -44,9 +44,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
-import { leasesApi, apartmentsApi, roomsApi, tenantsApi, organizationsApi } from '@/lib/api';
+import { leasesApi, apartmentsApi, roomsApi, tenantsApi } from '@/lib/api';
+import { useAuth } from '@/lib/auth/context';
 import { Lease } from '@/types';
-import { Plus, MoreHorizontal, Pencil, Trash2, Ban } from 'lucide-react';
+import { Plus, MoreHorizontal, Pencil, Trash2, Ban, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const leaseSchema = z.object({
@@ -65,7 +66,9 @@ type LeaseFormData = z.infer<typeof leaseSchema>;
 
 export default function LeasesPage() {
   const queryClient = useQueryClient();
-  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const { organization, isLoading: authLoading } = useAuth();
+  const orgId = organization?.id;
+
   const [selectedApartmentId, setSelectedApartmentId] = useState<number | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -73,33 +76,28 @@ export default function LeasesPage() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedLease, setSelectedLease] = useState<Lease | null>(null);
 
-  const { data: organizations, isLoading: orgsLoading } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: organizationsApi.list,
-  });
-
   const { data: apartments } = useQuery({
-    queryKey: ['apartments', selectedOrgId],
-    queryFn: () => apartmentsApi.list(selectedOrgId!),
-    enabled: !!selectedOrgId,
+    queryKey: ['apartments', orgId],
+    queryFn: () => apartmentsApi.list(orgId!),
+    enabled: !!orgId,
   });
 
   const { data: rooms } = useQuery({
-    queryKey: ['rooms', selectedOrgId, selectedApartmentId],
-    queryFn: () => roomsApi.list(selectedOrgId!, selectedApartmentId || undefined),
-    enabled: !!selectedOrgId,
+    queryKey: ['rooms', orgId, selectedApartmentId],
+    queryFn: () => roomsApi.list(orgId!, selectedApartmentId || undefined),
+    enabled: !!orgId,
   });
 
   const { data: tenants } = useQuery({
-    queryKey: ['tenants', selectedOrgId],
-    queryFn: () => tenantsApi.list(selectedOrgId!),
-    enabled: !!selectedOrgId,
+    queryKey: ['tenants', orgId],
+    queryFn: () => tenantsApi.list(orgId!),
+    enabled: !!orgId,
   });
 
   const { data: leases, isLoading: leasesLoading } = useQuery({
-    queryKey: ['leases', selectedOrgId],
-    queryFn: () => leasesApi.list(selectedOrgId!),
-    enabled: !!selectedOrgId,
+    queryKey: ['leases', orgId],
+    queryFn: () => leasesApi.list(orgId!),
+    enabled: !!orgId,
   });
 
   const createForm = useForm<LeaseFormData>({
@@ -122,10 +120,10 @@ export default function LeasesPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: LeaseFormData) => leasesApi.create(selectedOrgId!, data),
+    mutationFn: (data: LeaseFormData) => leasesApi.create(orgId!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leases', selectedOrgId] });
-      queryClient.invalidateQueries({ queryKey: ['rooms', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
       setIsCreateOpen(false);
       createForm.reset();
     },
@@ -133,28 +131,28 @@ export default function LeasesPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: LeaseFormData }) =>
-      leasesApi.update(selectedOrgId!, id, data),
+      leasesApi.update(orgId!, id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leases', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       setIsEditOpen(false);
       setSelectedLease(null);
     },
   });
 
   const terminateMutation = useMutation({
-    mutationFn: (id: number) => leasesApi.terminate(selectedOrgId!, id),
+    mutationFn: (id: number) => leasesApi.terminate(orgId!, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leases', selectedOrgId] });
-      queryClient.invalidateQueries({ queryKey: ['rooms', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
       setIsTerminateOpen(false);
       setSelectedLease(null);
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => leasesApi.delete(selectedOrgId!, id),
+    mutationFn: (id: number) => leasesApi.delete(orgId!, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leases', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       setIsDeleteOpen(false);
       setSelectedLease(null);
     },
@@ -260,7 +258,7 @@ export default function LeasesPage() {
     },
   ];
 
-  if (orgsLoading) {
+  if (authLoading) {
     return (
       <MainLayout>
         <div className="space-y-6">
@@ -271,32 +269,28 @@ export default function LeasesPage() {
     );
   }
 
+  // 无组织时的提示
+  if (!orgId) {
+    return (
+      <MainLayout>
+        <div className="flex flex-col items-center justify-center h-full space-y-4">
+          <Building2 className="h-16 w-16 text-muted-foreground" />
+          <h2 className="text-xl font-semibold">请先创建或加入组织</h2>
+          <p className="text-muted-foreground">在顶部导航栏选择或创建一个组织开始使用</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">租约管理</h1>
-          <div className="flex items-center gap-4">
-            <Select
-              value={selectedOrgId?.toString() || ''}
-              onValueChange={(value) => setSelectedOrgId(Number(value))}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="选择组织" />
-              </SelectTrigger>
-              <SelectContent>
-                {organizations?.map((org) => (
-                  <SelectItem key={org.id} value={org.id.toString()}>
-                    {org.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button onClick={() => setIsCreateOpen(true)} disabled={!selectedOrgId}>
-              <Plus className="mr-2 h-4 w-4" />
-              新增租约
-            </Button>
-          </div>
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            新增租约
+          </Button>
         </div>
 
         {leasesLoading ? (

@@ -43,9 +43,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
-import { roomsApi, apartmentsApi, organizationsApi } from '@/lib/api';
+import { roomsApi, apartmentsApi } from '@/lib/api';
+import { useAuth } from '@/lib/auth/context';
 import { Room, RoomStatus } from '@/types';
-import { Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Plus, MoreHorizontal, Pencil, Trash2, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const roomSchema = z.object({
@@ -67,28 +68,25 @@ const STATUS_MAP: Record<RoomStatus, { label: string; variant: 'default' | 'seco
 
 export default function RoomsPage() {
   const queryClient = useQueryClient();
-  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const { organization, isLoading: authLoading } = useAuth();
+  const orgId = organization?.id;
+
   const [selectedApartmentId, setSelectedApartmentId] = useState<number | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
 
-  const { data: organizations, isLoading: orgsLoading } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: organizationsApi.list,
-  });
-
   const { data: apartments } = useQuery({
-    queryKey: ['apartments', selectedOrgId],
-    queryFn: () => apartmentsApi.list(selectedOrgId!),
-    enabled: !!selectedOrgId,
+    queryKey: ['apartments', orgId],
+    queryFn: () => apartmentsApi.list(orgId!),
+    enabled: !!orgId,
   });
 
   const { data: rooms, isLoading: roomsLoading } = useQuery({
-    queryKey: ['rooms', selectedOrgId, selectedApartmentId],
-    queryFn: () => roomsApi.list(selectedOrgId!, selectedApartmentId || undefined),
-    enabled: !!selectedOrgId,
+    queryKey: ['rooms', orgId, selectedApartmentId],
+    queryFn: () => roomsApi.list(orgId!, selectedApartmentId || undefined),
+    enabled: !!orgId,
   });
 
   const createForm = useForm<RoomFormData>({
@@ -108,9 +106,9 @@ export default function RoomsPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: RoomFormData) => roomsApi.create(selectedOrgId!, data),
+    mutationFn: (data: RoomFormData) => roomsApi.create(orgId!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
       setIsCreateOpen(false);
       createForm.reset();
     },
@@ -118,18 +116,18 @@ export default function RoomsPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: RoomFormData }) =>
-      roomsApi.update(selectedOrgId!, id, data),
+      roomsApi.update(orgId!, id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
       setIsEditOpen(false);
       setSelectedRoom(null);
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => roomsApi.delete(selectedOrgId!, id),
+    mutationFn: (id: number) => roomsApi.delete(orgId!, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
       setIsDeleteOpen(false);
       setSelectedRoom(null);
     },
@@ -211,12 +209,25 @@ export default function RoomsPage() {
     },
   ];
 
-  if (orgsLoading) {
+  if (authLoading) {
     return (
       <MainLayout>
         <div className="space-y-6">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-96" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // 无组织时的提示
+  if (!orgId) {
+    return (
+      <MainLayout>
+        <div className="flex flex-col items-center justify-center h-full space-y-4">
+          <Building2 className="h-16 w-16 text-muted-foreground" />
+          <h2 className="text-xl font-semibold">请先创建或加入组织</h2>
+          <p className="text-muted-foreground">在顶部导航栏选择或创建一个组织开始使用</p>
         </div>
       </MainLayout>
     );
@@ -229,29 +240,10 @@ export default function RoomsPage() {
           <h1 className="text-3xl font-bold">房间管理</h1>
           <div className="flex items-center gap-4">
             <Select
-              value={selectedOrgId?.toString() || ''}
-              onValueChange={(value) => {
-                setSelectedOrgId(Number(value));
-                setSelectedApartmentId(null);
-              }}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="选择组织" />
-              </SelectTrigger>
-              <SelectContent>
-                {organizations?.map((org) => (
-                  <SelectItem key={org.id} value={org.id.toString()}>
-                    {org.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
               value={selectedApartmentId?.toString() || 'all'}
               onValueChange={(value) =>
                 setSelectedApartmentId(value === 'all' ? null : Number(value))
               }
-              disabled={!selectedOrgId}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="全部公寓" />
@@ -265,7 +257,7 @@ export default function RoomsPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Button onClick={() => setIsCreateOpen(true)} disabled={!selectedOrgId}>
+            <Button onClick={() => setIsCreateOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               新增房间
             </Button>

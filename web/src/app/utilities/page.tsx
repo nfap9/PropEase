@@ -32,9 +32,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
-import { apartmentsApi, roomsApi, leasesApi, organizationsApi, utilitiesApi } from '@/lib/api';
+import { apartmentsApi, roomsApi, leasesApi, utilitiesApi } from '@/lib/api';
+import { useAuth } from '@/lib/auth/context';
 import { UtilityReading } from '@/types';
-import { Plus, MoreHorizontal, Pencil, Zap, Droplets } from 'lucide-react';
+import { Plus, MoreHorizontal, Pencil, Zap, Droplets, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const utilitySchema = z.object({
@@ -50,7 +51,9 @@ type UtilityFormData = z.infer<typeof utilitySchema>;
 
 export default function UtilitiesPage() {
   const queryClient = useQueryClient();
-  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const { organization, isLoading: authLoading } = useAuth();
+  const orgId = organization?.id;
+
   const [selectedApartmentId, setSelectedApartmentId] = useState<number | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -60,33 +63,28 @@ export default function UtilitiesPage() {
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
 
-  const { data: organizations, isLoading: orgsLoading } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: organizationsApi.list,
-  });
-
   const { data: apartments } = useQuery({
-    queryKey: ['apartments', selectedOrgId],
-    queryFn: () => apartmentsApi.list(selectedOrgId!),
-    enabled: !!selectedOrgId,
+    queryKey: ['apartments', orgId],
+    queryFn: () => apartmentsApi.list(orgId!),
+    enabled: !!orgId,
   });
 
   const { data: rooms } = useQuery({
-    queryKey: ['rooms', selectedOrgId, selectedApartmentId],
-    queryFn: () => roomsApi.list(selectedOrgId!, selectedApartmentId || undefined),
-    enabled: !!selectedOrgId,
+    queryKey: ['rooms', orgId, selectedApartmentId],
+    queryFn: () => roomsApi.list(orgId!, selectedApartmentId || undefined),
+    enabled: !!orgId,
   });
 
   const { data: leases } = useQuery({
-    queryKey: ['leases', selectedOrgId],
-    queryFn: () => leasesApi.list(selectedOrgId!),
-    enabled: !!selectedOrgId,
+    queryKey: ['leases', orgId],
+    queryFn: () => leasesApi.list(orgId!),
+    enabled: !!orgId,
   });
 
   const { data: utilities, isLoading: utilitiesLoading } = useQuery({
-    queryKey: ['utilities', selectedOrgId],
-    queryFn: () => utilitiesApi.list(selectedOrgId!),
-    enabled: !!selectedOrgId,
+    queryKey: ['utilities', orgId],
+    queryFn: () => utilitiesApi.list(orgId!),
+    enabled: !!orgId,
   });
 
   const createForm = useForm<UtilityFormData>({
@@ -106,9 +104,9 @@ export default function UtilitiesPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: UtilityFormData) => utilitiesApi.create(selectedOrgId!, data),
+    mutationFn: (data: UtilityFormData) => utilitiesApi.create(orgId!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['utilities', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       setIsCreateOpen(false);
       createForm.reset();
     },
@@ -116,9 +114,9 @@ export default function UtilitiesPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: UtilityFormData }) =>
-      utilitiesApi.update(selectedOrgId!, id, data),
+      utilitiesApi.update(orgId!, id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['utilities', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       setIsEditOpen(false);
       setSelectedUtility(null);
     },
@@ -202,7 +200,7 @@ export default function UtilitiesPage() {
     },
   ];
 
-  if (orgsLoading) {
+  if (authLoading) {
     return (
       <MainLayout>
         <div className="space-y-6">
@@ -213,32 +211,28 @@ export default function UtilitiesPage() {
     );
   }
 
+  // 无组织时的提示
+  if (!orgId) {
+    return (
+      <MainLayout>
+        <div className="flex flex-col items-center justify-center h-full space-y-4">
+          <Building2 className="h-16 w-16 text-muted-foreground" />
+          <h2 className="text-xl font-semibold">请先创建或加入组织</h2>
+          <p className="text-muted-foreground">在顶部导航栏选择或创建一个组织开始使用</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">水电录入</h1>
-          <div className="flex items-center gap-4">
-            <Select
-              value={selectedOrgId?.toString() || ''}
-              onValueChange={(value) => setSelectedOrgId(Number(value))}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="选择组织" />
-              </SelectTrigger>
-              <SelectContent>
-                {organizations?.map((org) => (
-                  <SelectItem key={org.id} value={org.id.toString()}>
-                    {org.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button onClick={() => setIsCreateOpen(true)} disabled={!selectedOrgId}>
-              <Plus className="mr-2 h-4 w-4" />
-              录入读数
-            </Button>
-          </div>
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            录入读数
+          </Button>
         </div>
 
         {utilitiesLoading ? (

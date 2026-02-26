@@ -8,12 +8,14 @@ import { authApi, organizationsApi } from '@/lib/api';
 interface AuthContextType {
   user: User | null;
   organization: Organization | null;
+  organizations: Organization[];
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, fullName: string) => Promise<void>;
   logout: () => void;
   setOrganization: (org: Organization | null) => void;
+  refreshOrganizations: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,8 +23,24 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  const loadOrganizations = async () => {
+    try {
+      const orgs = await organizationsApi.list();
+      setOrganizations(orgs || []);
+      return orgs || [];
+    } catch {
+      setOrganizations([]);
+      return [];
+    }
+  };
+
+  const refreshOrganizations = async () => {
+    await loadOrganizations();
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -33,8 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(userData);
 
           // 获取用户的组织列表并设置第一个作为当前组织
-          const orgs = await organizationsApi.list();
-          if (orgs && orgs.length > 0) {
+          const orgs = await loadOrganizations();
+          if (orgs.length > 0) {
             const savedOrgId = localStorage.getItem('current_organization_id');
             if (savedOrgId) {
               const savedOrg = orgs.find((org: Organization) => org.id === parseInt(savedOrgId));
@@ -42,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setOrganization(savedOrg);
               } else {
                 setOrganization(orgs[0]);
+                localStorage.setItem('current_organization_id', String(orgs[0].id));
               }
             } else {
               setOrganization(orgs[0]);
@@ -68,8 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userData);
 
     // 获取用户的组织列表
-    const orgs = await organizationsApi.list();
-    if (orgs && orgs.length > 0) {
+    const orgs = await loadOrganizations();
+    if (orgs.length > 0) {
       setOrganization(orgs[0]);
       localStorage.setItem('current_organization_id', String(orgs[0].id));
     }
@@ -88,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('current_organization_id');
     setUser(null);
     setOrganization(null);
+    setOrganizations([]);
     router.push('/login');
   };
 
@@ -105,12 +125,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         organization,
+        organizations,
         isLoading,
         isAuthenticated: !!user,
         login,
         register,
         logout,
         setOrganization: handleSetOrganization,
+        refreshOrganizations,
       }}
     >
       {children}

@@ -35,18 +35,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
-import { apartmentsApi, organizationsApi } from '@/lib/api';
-import { Apartment } from '@/types';
-import { Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { apartmentsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
+import { Apartment } from '@/types';
+import { Plus, MoreHorizontal, Pencil, Trash2, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 const apartmentSchema = z.object({
   name: z.string().min(1, '请输入公寓名称'),
@@ -57,23 +50,19 @@ const apartmentSchema = z.object({
 type ApartmentFormData = z.infer<typeof apartmentSchema>;
 
 export default function ApartmentsPage() {
-  const { } = useAuth();
   const queryClient = useQueryClient();
-  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const { organization, isLoading: authLoading } = useAuth();
+  const orgId = organization?.id;
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null);
 
-  const { data: organizations, isLoading: orgsLoading } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: organizationsApi.list,
-  });
-
   const { data: apartments, isLoading: apartmentsLoading } = useQuery({
-    queryKey: ['apartments', selectedOrgId],
-    queryFn: () => apartmentsApi.list(selectedOrgId!),
-    enabled: !!selectedOrgId,
+    queryKey: ['apartments', orgId],
+    queryFn: () => apartmentsApi.list(orgId!),
+    enabled: !!orgId,
   });
 
   const createForm = useForm<ApartmentFormData>({
@@ -87,9 +76,9 @@ export default function ApartmentsPage() {
 
   const createMutation = useMutation({
     mutationFn: (data: ApartmentFormData) =>
-      apartmentsApi.create(selectedOrgId!, data),
+      apartmentsApi.create(orgId!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['apartments', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsCreateOpen(false);
       createForm.reset();
     },
@@ -97,18 +86,18 @@ export default function ApartmentsPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: ApartmentFormData }) =>
-      apartmentsApi.update(selectedOrgId!, id, data),
+      apartmentsApi.update(orgId!, id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['apartments', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsEditOpen(false);
       setSelectedApartment(null);
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => apartmentsApi.delete(selectedOrgId!, id),
+    mutationFn: (id: number) => apartmentsApi.delete(orgId!, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['apartments', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsDeleteOpen(false);
       setSelectedApartment(null);
     },
@@ -168,7 +157,7 @@ export default function ApartmentsPage() {
     },
   ];
 
-  if (orgsLoading) {
+  if (authLoading) {
     return (
       <MainLayout>
         <div className="space-y-6">
@@ -179,17 +168,14 @@ export default function ApartmentsPage() {
     );
   }
 
-  if (!organizations || organizations.length === 0) {
+  // 无组织时的提示
+  if (!orgId) {
     return (
       <MainLayout>
-        <div className="flex flex-col items-center justify-center py-12">
-          <h2 className="text-xl font-semibold mb-2">请先创建组织</h2>
-          <p className="text-muted-foreground mb-4">
-            您需要先创建一个组织才能管理公寓
-          </p>
-          <Button onClick={() => (window.location.href = '/settings/team')}>
-            前往创建组织
-          </Button>
+        <div className="flex flex-col items-center justify-center h-full space-y-4">
+          <Building2 className="h-16 w-16 text-muted-foreground" />
+          <h2 className="text-xl font-semibold">请先创建或加入组织</h2>
+          <p className="text-muted-foreground">在顶部导航栏选择或创建一个组织开始使用</p>
         </div>
       </MainLayout>
     );
@@ -200,27 +186,10 @@ export default function ApartmentsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">公寓管理</h1>
-          <div className="flex items-center gap-4">
-            <Select
-              value={selectedOrgId?.toString() || ''}
-              onValueChange={(value) => setSelectedOrgId(Number(value))}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="选择组织" />
-              </SelectTrigger>
-              <SelectContent>
-                {organizations.map((org) => (
-                  <SelectItem key={org.id} value={org.id.toString()}>
-                    {org.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button onClick={() => setIsCreateOpen(true)} disabled={!selectedOrgId}>
-              <Plus className="mr-2 h-4 w-4" />
-              新增公寓
-            </Button>
-          </div>
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            新增公寓
+          </Button>
         </div>
 
         {apartmentsLoading ? (

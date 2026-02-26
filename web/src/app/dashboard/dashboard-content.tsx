@@ -1,7 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { reportsApi, organizationsApi } from '@/lib/api';
+import { reportsApi } from '@/lib/api';
+import { useAuth } from '@/lib/auth/context';
 import {
   Card,
   CardContent,
@@ -10,23 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useState, useEffect } from 'react';
-import {
-  Building2,
-  DoorOpen,
-  Users,
-  FileText,
-  TrendingUp,
-  AlertCircle,
-  DollarSign,
-} from 'lucide-react';
+import { Building2 } from 'lucide-react';
 
 function StatCard({
   title,
@@ -69,27 +54,16 @@ function DashboardSkeleton() {
 }
 
 export function DashboardContent() {
-  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
-
-  const { data: organizations, isLoading: orgsLoading } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: organizationsApi.list,
-  });
-
-  // Set default organization
-  useEffect(() => {
-    if (organizations && organizations.length > 0 && !selectedOrgId) {
-      setSelectedOrgId(organizations[0].id);
-    }
-  }, [organizations, selectedOrgId]);
+  const { organization, organizations, isLoading: authLoading } = useAuth();
+  const orgId = organization?.id;
 
   const { data: overview, isLoading: overviewLoading } = useQuery({
-    queryKey: ['dashboard-overview', selectedOrgId],
-    queryFn: () => reportsApi.getOverview(selectedOrgId!),
-    enabled: !!selectedOrgId,
+    queryKey: ['dashboard-overview', orgId],
+    queryFn: () => reportsApi.getOverview(orgId!),
+    enabled: !!orgId,
   });
 
-  if (orgsLoading) {
+  if (authLoading) {
     return <DashboardSkeleton />;
   }
 
@@ -111,26 +85,21 @@ export function DashboardContent() {
     );
   }
 
+  if (!orgId) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Building2 className="h-16 w-16 text-muted-foreground mb-4" />
+        <h2 className="text-xl font-semibold mb-2">请选择组织</h2>
+        <p className="text-muted-foreground mb-4">
+          请在顶部导航栏选择一个组织开始使用
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">仪表盘</h1>
-        <Select
-          value={selectedOrgId?.toString() || ''}
-          onValueChange={(value) => setSelectedOrgId(Number(value))}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="选择组织" />
-          </SelectTrigger>
-          <SelectContent>
-            {organizations.map((org) => (
-              <SelectItem key={org.id} value={org.id.toString()}>
-                {org.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <h1 className="text-3xl font-bold">仪表盘</h1>
 
       {overviewLoading ? (
         <DashboardSkeleton />
@@ -145,18 +114,18 @@ export function DashboardContent() {
             <StatCard
               title="房间总数"
               value={overview?.total_rooms || 0}
-              icon={DoorOpen}
+              icon={Building2}
             />
             <StatCard
               title="入住率"
               value={`${overview?.occupancy_rate || 0}%`}
               description={`${overview?.occupied_rooms || 0} / ${overview?.total_rooms || 0} 间`}
-              icon={TrendingUp}
+              icon={Building2}
             />
             <StatCard
               title="活跃租约"
               value={overview?.active_leases || 0}
-              icon={FileText}
+              icon={Building2}
             />
           </div>
 
@@ -164,23 +133,23 @@ export function DashboardContent() {
             <StatCard
               title="租客总数"
               value={overview?.total_tenants || 0}
-              icon={Users}
+              icon={Building2}
             />
             <StatCard
               title="本月收入"
               value={`¥${(overview?.monthly_revenue || 0).toLocaleString()}`}
-              icon={DollarSign}
+              icon={Building2}
             />
             <StatCard
               title="待收账单"
               value={overview?.pending_bills || 0}
-              icon={AlertCircle}
+              icon={Building2}
             />
             <StatCard
               title="逾期账单"
               value={overview?.overdue_bills || 0}
               description={overview?.overdue_bills ? '需要及时跟进' : ''}
-              icon={AlertCircle}
+              icon={Building2}
             />
           </div>
 

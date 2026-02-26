@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { OrgSelector } from '@/components/common/org-selector';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: '仪表盘', icon: Home },
@@ -101,7 +102,12 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
               </Button>
             </SheetTrigger>
           </Sheet>
-          <div className="flex-1" />
+
+          {/* 全局组织选择器 */}
+          <div className="flex-1 flex justify-center">
+            <OrgSelector />
+          </div>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 flex items-center gap-2">

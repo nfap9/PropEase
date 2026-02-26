@@ -34,9 +34,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
-import { organizationsApi, billsApi } from '@/lib/api';
+import { billsApi } from '@/lib/api';
+import { useAuth } from '@/lib/auth/context';
 import { Bill, BillStatus, PaymentMethod } from '@/types';
-import { MoreHorizontal, Download, DollarSign, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { MoreHorizontal, Download, DollarSign, AlertCircle, CheckCircle, Clock, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const paymentSchema = z.object({
@@ -66,20 +67,17 @@ const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
 
 export default function BillsPage() {
   const queryClient = useQueryClient();
-  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const { organization, isLoading: authLoading } = useAuth();
+  const orgId = organization?.id;
+
   const [statusFilter, setStatusFilter] = useState<BillStatus | 'all'>('all');
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
 
-  const { data: organizations, isLoading: orgsLoading } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: organizationsApi.list,
-  });
-
   const { data: bills, isLoading: billsLoading } = useQuery({
-    queryKey: ['bills', selectedOrgId],
-    queryFn: () => billsApi.list(selectedOrgId!),
-    enabled: !!selectedOrgId,
+    queryKey: ['bills', orgId],
+    queryFn: () => billsApi.list(orgId!),
+    enabled: !!orgId,
   });
 
   const paymentForm = useForm<PaymentFormData>({
@@ -95,9 +93,9 @@ export default function BillsPage() {
 
   const paymentMutation = useMutation({
     mutationFn: (data: PaymentFormData) =>
-      billsApi.createPayment(selectedOrgId!, selectedBill!.id, data),
+      billsApi.createPayment(orgId!, selectedBill!.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bills', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['bills', orgId] });
       setIsPaymentOpen(false);
       paymentForm.reset();
       setSelectedBill(null);
@@ -117,7 +115,7 @@ export default function BillsPage() {
   };
 
   const exportPdf = async (billId: number) => {
-    const blob = await billsApi.exportPdf(selectedOrgId!, billId);
+    const blob = await billsApi.exportPdf(orgId!, billId);
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -223,7 +221,7 @@ export default function BillsPage() {
     },
   ];
 
-  if (orgsLoading) {
+  if (authLoading) {
     return (
       <MainLayout>
         <div className="space-y-6">
@@ -234,28 +232,24 @@ export default function BillsPage() {
     );
   }
 
+  // 无组织时的提示
+  if (!orgId) {
+    return (
+      <MainLayout>
+        <div className="flex flex-col items-center justify-center h-full space-y-4">
+          <Building2 className="h-16 w-16 text-muted-foreground" />
+          <h2 className="text-xl font-semibold">请先创建或加入组织</h2>
+          <p className="text-muted-foreground">在顶部导航栏选择或创建一个组织开始使用</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">账单管理</h1>
-          <div className="flex items-center gap-4">
-            <Select
-              value={selectedOrgId?.toString() || ''}
-              onValueChange={(value) => setSelectedOrgId(Number(value))}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="选择组织" />
-              </SelectTrigger>
-              <SelectContent>
-                {organizations?.map((org) => (
-                  <SelectItem key={org.id} value={org.id.toString()}>
-                    {org.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         {/* Stats Cards */}

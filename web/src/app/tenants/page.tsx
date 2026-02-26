@@ -34,17 +34,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
-import { tenantsApi, organizationsApi } from '@/lib/api';
+import { tenantsApi } from '@/lib/api';
+import { useAuth } from '@/lib/auth/context';
 import { Tenant } from '@/types';
-import { Plus, MoreHorizontal, Pencil, Trash2, Phone, User } from 'lucide-react';
+import { Plus, MoreHorizontal, Pencil, Trash2, Phone, User, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const tenantSchema = z.object({
@@ -61,21 +55,18 @@ type TenantFormData = z.infer<typeof tenantSchema>;
 
 export default function TenantsPage() {
   const queryClient = useQueryClient();
-  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const { organization, isLoading: authLoading } = useAuth();
+  const orgId = organization?.id;
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
 
-  const { data: organizations, isLoading: orgsLoading } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: organizationsApi.list,
-  });
-
   const { data: tenants, isLoading: tenantsLoading } = useQuery({
-    queryKey: ['tenants', selectedOrgId],
-    queryFn: () => tenantsApi.list(selectedOrgId!),
-    enabled: !!selectedOrgId,
+    queryKey: ['tenants', orgId],
+    queryFn: () => tenantsApi.list(orgId!),
+    enabled: !!orgId,
   });
 
   const createForm = useForm<TenantFormData>({
@@ -96,9 +87,9 @@ export default function TenantsPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: TenantFormData) => tenantsApi.create(selectedOrgId!, data),
+    mutationFn: (data: TenantFormData) => tenantsApi.create(orgId!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tenants', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsCreateOpen(false);
       createForm.reset();
     },
@@ -106,18 +97,18 @@ export default function TenantsPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: TenantFormData }) =>
-      tenantsApi.update(selectedOrgId!, id, data),
+      tenantsApi.update(orgId!, id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tenants', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsEditOpen(false);
       setSelectedTenant(null);
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => tenantsApi.delete(selectedOrgId!, id),
+    mutationFn: (id: number) => tenantsApi.delete(orgId!, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tenants', selectedOrgId] });
+      queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsDeleteOpen(false);
       setSelectedTenant(null);
     },
@@ -203,7 +194,7 @@ export default function TenantsPage() {
     },
   ];
 
-  if (orgsLoading) {
+  if (authLoading) {
     return (
       <MainLayout>
         <div className="space-y-6">
@@ -214,32 +205,28 @@ export default function TenantsPage() {
     );
   }
 
+  // 无组织时的提示
+  if (!orgId) {
+    return (
+      <MainLayout>
+        <div className="flex flex-col items-center justify-center h-full space-y-4">
+          <Building2 className="h-16 w-16 text-muted-foreground" />
+          <h2 className="text-xl font-semibold">请先创建或加入组织</h2>
+          <p className="text-muted-foreground">在顶部导航栏选择或创建一个组织开始使用</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">租客管理</h1>
-          <div className="flex items-center gap-4">
-            <Select
-              value={selectedOrgId?.toString() || ''}
-              onValueChange={(value) => setSelectedOrgId(Number(value))}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="选择组织" />
-              </SelectTrigger>
-              <SelectContent>
-                {organizations?.map((org) => (
-                  <SelectItem key={org.id} value={org.id.toString()}>
-                    {org.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button onClick={() => setIsCreateOpen(true)} disabled={!selectedOrgId}>
-              <Plus className="mr-2 h-4 w-4" />
-              新增租客
-            </Button>
-          </div>
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            新增租客
+          </Button>
         </div>
 
         {tenantsLoading ? (
