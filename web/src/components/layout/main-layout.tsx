@@ -28,7 +28,7 @@ import {
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
-const navItems = [
+const NAV_ITEMS = [
   { href: '/dashboard', label: '仪表盘', icon: Home },
   { href: '/apartments', label: '公寓管理', icon: Building2 },
   { href: '/rooms', label: '房间管理', icon: DoorOpen },
@@ -53,7 +53,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
         </Link>
       </div>
       <nav className="flex-1 space-y-1 p-4">
-        {navItems.map((item) => {
+        {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           return (

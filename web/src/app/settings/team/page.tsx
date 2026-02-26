@@ -64,14 +64,14 @@ const inviteSchema = z.object({
 
 type InviteFormData = z.infer<typeof inviteSchema>;
 
-const roleLabels: Record<MemberRole, string> = {
+const ROLE_LABELS: Record<MemberRole, string> = {
   owner: '所有者',
   admin: '管理员',
   member: '成员',
   viewer: '查看者',
 };
 
-const roleColors: Record<MemberRole, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const ROLE_COLORS: Record<MemberRole, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   owner: 'default',
   admin: 'default',
   member: 'secondary',
@@ -232,8 +232,8 @@ export default function TeamSettingsPage() {
       accessorKey: 'role',
       header: '角色',
       cell: ({ row }) => (
-        <Badge variant={roleColors[row.original.role]}>
-          {roleLabels[row.original.role]}
+        <Badge variant={ROLE_COLORS[row.original.role]}>
+          {ROLE_LABELS[row.original.role]}
         </Badge>
       ),
     },

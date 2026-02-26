@@ -49,14 +49,14 @@ const paymentSchema = z.object({
 
 type PaymentFormData = z.infer<typeof paymentSchema>;
 
-const statusConfig: Record<BillStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof CheckCircle }> = {
+const STATUS_CONFIG: Record<BillStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof CheckCircle }> = {
   pending: { label: '待支付', variant: 'secondary', icon: Clock },
   partial: { label: '部分支付', variant: 'outline', icon: DollarSign },
   paid: { label: '已支付', variant: 'default', icon: CheckCircle },
   overdue: { label: '已逾期', variant: 'destructive', icon: AlertCircle },
 };
 
-const paymentMethodLabels: Record<PaymentMethod, string> = {
+const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   cash: '现金',
   wechat: '微信',
   alipay: '支付宝',
@@ -214,7 +214,7 @@ export default function BillsPage() {
       accessorKey: 'status',
       header: '状态',
       cell: ({ row }) => {
-        const config = statusConfig[row.original.status];
+        const config = STATUS_CONFIG[row.original.status];
         const Icon = config.icon;
         return (
           <Badge variant={config.variant} className="gap-1">
@@ -404,7 +404,7 @@ export default function BillsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(paymentMethodLabels).map(([key, label]) => (
+                    {Object.entries(PAYMENT_METHOD_LABELS).map(([key, label]) => (
                       <SelectItem key={key} value={key}>
                         {label}
                       </SelectItem>

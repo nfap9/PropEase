@@ -5,7 +5,7 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Building2, Settings as SettingsIcon } from 'lucide-react';
 
-const settingsItems = [
+const SETTINGS_ITEMS = [
   {
     title: '团队设置',
     description: '管理组织成员和权限',
@@ -33,7 +33,7 @@ export default function SettingsPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {settingsItems.map((item) => (
+          {SETTINGS_ITEMS.map((item) => (
             <Link key={item.href} href={item.href}>
               <Card className="cursor-pointer transition-colors hover:border-primary">
                 <CardHeader>

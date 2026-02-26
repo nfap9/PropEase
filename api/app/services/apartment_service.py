@@ -87,7 +87,6 @@ class ApartmentService(BaseService):
         room = Room(
             apartment_id=apartment_id,
             room_number=data.room_number,
-            floor=data.floor,
             monthly_rent=data.monthly_rent,
             status=RoomStatus.AVAILABLE,
             notes=data.notes,

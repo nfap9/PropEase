@@ -59,7 +59,7 @@ const roomSchema = z.object({
 
 type RoomFormData = z.infer<typeof roomSchema>;
 
-const statusMap: Record<RoomStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+const STATUS_MAP: Record<RoomStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   available: { label: '空置', variant: 'secondary' },
   occupied: { label: '已租', variant: 'default' },
   maintenance: { label: '维修中', variant: 'destructive' },
@@ -177,7 +177,7 @@ export default function RoomsPage() {
       accessorKey: 'status',
       header: '状态',
       cell: ({ row }) => {
-        const status = statusMap[row.original.status];
+        const status = STATUS_MAP[row.original.status];
         return <Badge variant={status.variant}>{status.label}</Badge>;
       },
     },
