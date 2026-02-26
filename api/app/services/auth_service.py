@@ -71,7 +71,7 @@ class AuthService(BaseService):
         ):
             raise ValueError("Invalid email or password")
 
-        token_data = {"sub": user.id, "email": user.email}
+        token_data = {"sub": str(user.id), "email": user.email}
         access_token = create_access_token(token_data)
         refresh_token = create_refresh_token(token_data)
 
@@ -102,7 +102,7 @@ class AuthService(BaseService):
         if not user:
             raise ValueError("User not found")
 
-        token_data = {"sub": user.id, "email": user.email}
+        token_data = {"sub": str(user.id), "email": user.email}
         new_access_token = create_access_token(token_data)
         new_refresh_token = create_refresh_token(token_data)
 
