@@ -7,7 +7,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 import io
 
-from app.database import get_db
+from app.configs.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
 from app.models.bill import BillStatus

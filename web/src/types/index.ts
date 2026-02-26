@@ -42,8 +42,10 @@ export interface OrganizationMember {
   organization_id: number;
   user_id: number;
   role: MemberRole;
+  user?: User;
   user_email: string;
   user_full_name: string;
+  joined_at: string;
   created_at: string;
 }
 

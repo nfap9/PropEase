@@ -5,7 +5,7 @@ from typing import List
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.configs.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
 from app.models.organization import MemberRole

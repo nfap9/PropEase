@@ -5,7 +5,7 @@ from typing import Generator, Optional
 from fastapi import Depends, Query
 from sqlalchemy.orm import Session
 
-from app.database import SessionLocal
+from app.configs.database import SessionLocal
 from app.models.user import User
 from app.models.organization import OrganizationMember, MemberRole
 from app.configs import settings

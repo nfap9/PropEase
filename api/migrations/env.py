@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.configs import settings
-from app.database import Base
+from app.configs.database import Base
 from app.models import *  # noqa: F401, F403 - Import all models
 
 # this is the Alembic Config object

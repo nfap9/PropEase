@@ -11,7 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.database import Base
+from app.configs.database import Base
 from app.models.user import User
 from app.models.organization import Organization, OrganizationMember, MemberRole
 from app.models.apartment import Apartment, Room, RoomStatus

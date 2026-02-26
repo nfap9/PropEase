@@ -46,8 +46,8 @@ import {
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
 import { organizationsApi } from '@/lib/api';
-import { Organization, OrganizationMember, MemberRole, User } from '@/types';
-import { Plus, MoreHorizontal, Pencil, Trash2, UserPlus, Building2, Users, Settings } from 'lucide-react';
+import { Organization, OrganizationMember, MemberRole } from '@/types';
+import { Plus, MoreHorizontal, Pencil, Trash2, UserPlus, Building2, Users } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/lib/auth/context';
 
@@ -518,7 +518,7 @@ export default function TeamSettingsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>确认移除</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要从组织中移除成员 "{selectedMember?.user?.full_name}" 吗？
+              确定要从组织中移除成员 &ldquo;{selectedMember?.user?.full_name}&rdquo; 吗？
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

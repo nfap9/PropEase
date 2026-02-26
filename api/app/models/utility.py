@@ -2,7 +2,7 @@ from sqlalchemy import String, ForeignKey, Integer, Numeric, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
 from datetime import date
-from app.database import Base
+from app.configs.database import Base
 from app.models.base import TimestampMixin
 
 if TYPE_CHECKING:

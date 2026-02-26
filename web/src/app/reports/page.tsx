@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { reportsApi, organizationsApi } from '@/lib/api';
 import { Organization, IncomeReport, OccupancyReport } from '@/types';
 import {
@@ -157,12 +158,10 @@ export default function ReportsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold text-orange-600">
-                      ¥{(incomeReport
-                        ?.reduce((sum: number, r: IncomeReport) => sum + r.total_amount, 0) || 0) -
-                        (incomeReport?.reduce(
-                          (sum: number, r: IncomeReport) => sum + r.collected_amount,
-                          0
-                        ) || 0)).toLocaleString()}
+                      ¥{(
+                        (incomeReport?.reduce((sum: number, r: IncomeReport) => sum + r.total_amount, 0) || 0) -
+                        (incomeReport?.reduce((sum: number, r: IncomeReport) => sum + r.collected_amount, 0) || 0)
+                      ).toLocaleString()}
                     </div>
                   </CardContent>
                 </Card>

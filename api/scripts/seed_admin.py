@@ -8,7 +8,7 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.database import SessionLocal
+from app.configs.database import SessionLocal
 from app.models.user import User
 from app.models.organization import Organization, OrganizationMember, MemberRole
 import bcrypt

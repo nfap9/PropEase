@@ -4,7 +4,7 @@ Authentication controller - handles user registration, login, and token refresh.
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from app.database import get_db
+from app.configs.database import get_db
 from app.services.auth_service import AuthService
 from app.schemas.auth import UserCreate, UserLogin, Token, UserResponse
 from app.controllers.common.errors import BadRequestError, UnauthorizedError
