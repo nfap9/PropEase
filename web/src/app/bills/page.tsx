@@ -34,7 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
-import { organizationsApi } from '@/lib/api';
+import { organizationsApi, billsApi } from '@/lib/api';
 import { Bill, BillStatus, PaymentMethod } from '@/types';
 import { MoreHorizontal, Download, DollarSign, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -78,17 +78,7 @@ export default function BillsPage() {
 
   const { data: bills, isLoading: billsLoading } = useQuery({
     queryKey: ['bills', selectedOrgId],
-    queryFn: async () => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/bills?org_id=${selectedOrgId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        }
-      );
-      return response.json();
-    },
+    queryFn: () => billsApi.list(selectedOrgId!),
     enabled: !!selectedOrgId,
   });
 
@@ -104,21 +94,8 @@ export default function BillsPage() {
   });
 
   const paymentMutation = useMutation({
-    mutationFn: async (data: PaymentFormData) => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/bills/${selectedBill!.id}/payments?org_id=${selectedOrgId}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-          body: JSON.stringify(data),
-        }
-      );
-      if (!response.ok) throw new Error('Failed to record payment');
-      return response.json();
-    },
+    mutationFn: (data: PaymentFormData) =>
+      billsApi.createPayment(selectedOrgId!, selectedBill!.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bills', selectedOrgId] });
       setIsPaymentOpen(false);
@@ -140,20 +117,13 @@ export default function BillsPage() {
   };
 
   const exportPdf = async (billId: number) => {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/bills/${billId}/pdf?org_id=${selectedOrgId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      }
-    );
-    const blob = await response.blob();
+    const blob = await billsApi.exportPdf(selectedOrgId!, billId);
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `bill-${billId}.pdf`;
     a.click();
+    window.URL.revokeObjectURL(url);
   };
 
   const filteredBills = bills?.filter(

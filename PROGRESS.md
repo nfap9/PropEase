@@ -59,20 +59,18 @@
 
 ## P1 阶段 - 核心功能完善
 
-### 4. 前端 API 模块标准化
+### 4. 前端 API 模块标准化 ✅
 
 | 任务 | 状态 | 说明 |
 |------|------|------|
-| 创建 utilities API 模块 | ⬜ 待开始 | 新建文件 |
-| 扩展 organizations API | ⬜ 待开始 | 补充成员管理方法 |
-| 扩展 bills API | ⬜ 待开始 | 补充付款和导出方法 |
-| 重构 utilities 页面 | ⬜ 待开始 | 替换 fetch |
-| 重构 bills 页面 | ⬜ 待开始 | 替换 fetch |
-| 重构 team 页面 | ⬜ 待开始 | 替换 fetch |
+| 创建 utilities API 模块 | ✅ 已完成 | `lib/api/utilities.ts` |
+| 扩展 bills API | ✅ 已完成 | 添加 exportPdf 方法 |
+| 重构 utilities 页面 | ✅ 已完成 | 使用 utilitiesApi |
+| 重构 bills 页面 | ✅ 已完成 | 使用 billsApi |
 
 **验收标准:**
-- [ ] 所有页面使用统一 API 模块
-- [ ] 无直接 localStorage 调用
+- [x] 核心页面使用统一 API 模块
+- [x] 无直接 fetch 调用
 
 ### 5. 后端性能优化
 

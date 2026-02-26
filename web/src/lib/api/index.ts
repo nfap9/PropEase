@@ -6,3 +6,4 @@ export { tenantsApi } from './tenants';
 export { leasesApi } from './leases';
 export { billsApi } from './bills';
 export { reportsApi } from './reports';
+export { utilitiesApi } from './utilities';

@@ -38,6 +38,14 @@ export const billsApi = {
     const response = await api.post<Payment>(`/bills/${billId}/payments`, data, { params: { org_id: orgId } });
     return response.data;
   },
+
+  exportPdf: async (orgId: number, billId: number): Promise<Blob> => {
+    const response = await api.get(`/bills/${billId}/pdf`, {
+      params: { org_id: orgId },
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };
 
 export default billsApi;

@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
-import { apartmentsApi, roomsApi, leasesApi, organizationsApi } from '@/lib/api';
+import { apartmentsApi, roomsApi, leasesApi, organizationsApi, utilitiesApi } from '@/lib/api';
 import { UtilityReading } from '@/types';
 import { Plus, MoreHorizontal, Pencil, Zap, Droplets } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -85,17 +85,7 @@ export default function UtilitiesPage() {
 
   const { data: utilities, isLoading: utilitiesLoading } = useQuery({
     queryKey: ['utilities', selectedOrgId],
-    queryFn: async () => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/utilities?org_id=${selectedOrgId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        }
-      );
-      return response.json();
-    },
+    queryFn: () => utilitiesApi.list(selectedOrgId!),
     enabled: !!selectedOrgId,
   });
 
@@ -116,18 +106,7 @@ export default function UtilitiesPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: UtilityFormData) => {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/utilities?org_id=${selectedOrgId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error('Failed to create');
-      return response.json();
-    },
+    mutationFn: (data: UtilityFormData) => utilitiesApi.create(selectedOrgId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilities', selectedOrgId] });
       setIsCreateOpen(false);
@@ -136,21 +115,8 @@ export default function UtilitiesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: UtilityFormData }) => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/utilities/${id}?org_id=${selectedOrgId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-          body: JSON.stringify(data),
-        }
-      );
-      if (!response.ok) throw new Error('Failed to update');
-      return response.json();
-    },
+    mutationFn: ({ id, data }: { id: number; data: UtilityFormData }) =>
+      utilitiesApi.update(selectedOrgId!, id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilities', selectedOrgId] });
       setIsEditOpen(false);
