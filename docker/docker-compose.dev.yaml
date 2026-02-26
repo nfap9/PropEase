@@ -1,0 +1,71 @@
+# Development docker-compose configuration
+# Usage: cd docker && docker compose -f docker-compose.dev.yaml up
+# ==================================================================
+
+x-shared-env: &shared-api-env
+  DATABASE_URL: postgresql://postgres:postgres@postgres:5432/apartment_ultra
+  SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-production}
+  CORS_ORIGINS: '["http://localhost:3000"]'
+  DEBUG: "true"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: apartment_ultra_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: apartment_ultra
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: apartment_ultra_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    container_name: apartment_ultra_api
+    environment:
+      <<: *shared-api-env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../api:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    container_name: apartment_ultra_web
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../web:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -1,0 +1,153 @@
+"""
+Organization service for organization management.
+"""
+from typing import List, Optional
+from sqlalchemy.orm import Session
+
+from app.services.base import BaseService
+from app.repositories.organization_repository import (
+    OrganizationRepository,
+    OrganizationMemberRepository,
+)
+from app.repositories.user_repository import UserRepository
+from app.models.organization import Organization, OrganizationMember, MemberRole
+from app.schemas.organization import OrganizationCreate, OrganizationUpdate
+
+
+class OrganizationService(BaseService):
+    """Service for organization management."""
+
+    def __init__(self, db: Session):
+        super().__init__(db)
+        self.org_repo = OrganizationRepository(db)
+        self.member_repo = OrganizationMemberRepository(db)
+        self.user_repo = UserRepository(db)
+
+    def list_organizations(self, user_id: int) -> List[Organization]:
+        """List all organizations a user belongs to."""
+        return self.member_repo.find_user_organizations(user_id)
+
+    def get_organization(self, org_id: int, user_id: int) -> Optional[Organization]:
+        """Get an organization if user has access."""
+        if not self.member_repo.is_member(org_id, user_id):
+            return None
+        return self.org_repo.get(org_id)
+
+    def create_organization(
+        self, user_id: int, data: OrganizationCreate
+    ) -> Organization:
+        """Create a new organization and add user as owner."""
+        # Create organization
+        org = Organization(
+            name=data.name,
+            slug=data.slug,
+            settings=data.settings,
+        )
+        org = self.org_repo.create(org)
+
+        # Add creator as owner
+        membership = OrganizationMember(
+            organization_id=org.id,
+            user_id=user_id,
+            role=MemberRole.OWNER,
+        )
+        self.db.add(membership)
+        self.db.commit()
+
+        return org
+
+    def update_organization(
+        self, org_id: int, user_id: int, data: OrganizationUpdate
+    ) -> Optional[Organization]:
+        """Update an organization if user has permission."""
+        if not self.member_repo.has_role(org_id, user_id, [MemberRole.OWNER, MemberRole.ADMIN]):
+            return None
+
+        org = self.org_repo.get(org_id)
+        if not org:
+            return None
+
+        update_data = data.model_dump(exclude_unset=True)
+        for field, value in update_data.items():
+            if value is not None:
+                setattr(org, field, value)
+
+        self.db.commit()
+        self.db.refresh(org)
+        return org
+
+    def delete_organization(self, org_id: int, user_id: int) -> bool:
+        """Delete an organization if user is owner."""
+        if not self.member_repo.has_role(org_id, user_id, [MemberRole.OWNER]):
+            return False
+
+        return self.org_repo.delete(org_id)
+
+    def list_members(self, org_id: int, user_id: int) -> List[OrganizationMember]:
+        """List all members of an organization."""
+        if not self.member_repo.is_member(org_id, user_id):
+            return []
+        return self.member_repo.find_organization_members(org_id)
+
+    def add_member(
+        self, org_id: int, user_id: int, email: str, role: MemberRole
+    ) -> Optional[OrganizationMember]:
+        """Add a new member to organization."""
+        # Check permission
+        if not self.member_repo.has_role(
+            org_id, user_id, [MemberRole.OWNER, MemberRole.ADMIN]
+        ):
+            return None
+
+        # Find user by email
+        new_user = self.user_repo.find_by_email(email)
+        if not new_user:
+            return None
+
+        # Check if already a member
+        if self.member_repo.is_member(org_id, new_user.id):
+            return None
+
+        # Add member
+        membership = OrganizationMember(
+            organization_id=org_id,
+            user_id=new_user.id,
+            role=role,
+        )
+        self.db.add(membership)
+        self.db.commit()
+        self.db.refresh(membership)
+        return membership
+
+    def update_member_role(
+        self, org_id: int, user_id: int, member_user_id: int, role: MemberRole
+    ) -> Optional[OrganizationMember]:
+        """Update a member's role."""
+        # Only owner can change roles
+        if not self.member_repo.has_role(org_id, user_id, [MemberRole.OWNER]):
+            return None
+
+        membership = self.member_repo.find_membership(org_id, member_user_id)
+        if not membership:
+            return None
+
+        membership.role = role
+        self.db.commit()
+        self.db.refresh(membership)
+        return membership
+
+    def remove_member(
+        self, org_id: int, user_id: int, member_user_id: int
+    ) -> bool:
+        """Remove a member from organization."""
+        # Only owner can remove members
+        if not self.member_repo.has_role(org_id, user_id, [MemberRole.OWNER]):
+            return False
+
+        membership = self.member_repo.find_membership(org_id, member_user_id)
+        if not membership:
+            return False
+
+        self.db.delete(membership)
+        self.db.commit()
+        return True

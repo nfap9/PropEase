@@ -1,0 +1,518 @@
+'use client';
+
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { MainLayout } from '@/components/layout/main-layout';
+import { DataTable } from '@/components/common/data-table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ColumnDef } from '@tanstack/react-table';
+import { apartmentsApi, roomsApi, leasesApi, organizationsApi } from '@/lib/api';
+import { Room, Lease, Organization, UtilityReading } from '@/types';
+import { Plus, MoreHorizontal, Pencil, Zap, Droplets } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const utilitySchema = z.object({
+  room_id: z.number().min(1, '请选择房间'),
+  reading_year: z.number().min(2020).max(2100),
+  reading_month: z.number().min(1).max(12),
+  water_reading: z.number().min(0).optional(),
+  electricity_reading: z.number().min(0).optional(),
+  notes: z.string().optional(),
+});
+
+type UtilityFormData = z.infer<typeof utilitySchema>;
+
+export default function UtilitiesPage() {
+  const queryClient = useQueryClient();
+  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const [selectedApartmentId, setSelectedApartmentId] = useState<number | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedUtility, setSelectedUtility] = useState<UtilityReading | null>(null);
+
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth() + 1;
+
+  const { data: organizations, isLoading: orgsLoading } = useQuery({
+    queryKey: ['organizations'],
+    queryFn: organizationsApi.list,
+  });
+
+  const { data: apartments } = useQuery({
+    queryKey: ['apartments', selectedOrgId],
+    queryFn: () => apartmentsApi.list(selectedOrgId!),
+    enabled: !!selectedOrgId,
+  });
+
+  const { data: rooms } = useQuery({
+    queryKey: ['rooms', selectedOrgId, selectedApartmentId],
+    queryFn: () => roomsApi.list(selectedOrgId!, selectedApartmentId || undefined),
+    enabled: !!selectedOrgId,
+  });
+
+  const { data: leases } = useQuery({
+    queryKey: ['leases', selectedOrgId],
+    queryFn: () => leasesApi.list(selectedOrgId!),
+    enabled: !!selectedOrgId,
+  });
+
+  const { data: utilities, isLoading: utilitiesLoading } = useQuery({
+    queryKey: ['utilities', selectedOrgId],
+    queryFn: async () => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/utilities?org_id=${selectedOrgId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          },
+        }
+      );
+      return response.json();
+    },
+    enabled: !!selectedOrgId,
+  });
+
+  const createForm = useForm<UtilityFormData>({
+    resolver: zodResolver(utilitySchema),
+    defaultValues: {
+      room_id: 0,
+      reading_year: currentYear,
+      reading_month: currentMonth,
+      water_reading: 0,
+      electricity_reading: 0,
+      notes: '',
+    },
+  });
+
+  const editForm = useForm<UtilityFormData>({
+    resolver: zodResolver(utilitySchema),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (data: UtilityFormData) => {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/utilities?org_id=${selectedOrgId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to create');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['utilities', selectedOrgId] });
+      setIsCreateOpen(false);
+      createForm.reset();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: UtilityFormData }) => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/utilities/${id}?org_id=${selectedOrgId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          },
+          body: JSON.stringify(data),
+        }
+      );
+      if (!response.ok) throw new Error('Failed to update');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['utilities', selectedOrgId] });
+      setIsEditOpen(false);
+      setSelectedUtility(null);
+    },
+  });
+
+  const occupiedRooms = rooms?.filter((r) => r.status === 'occupied');
+
+  const getRoomInfo = (roomId: number) => {
+    const room = rooms?.find((r) => r.id === roomId);
+    const lease = leases?.find((l) => l.room_id === roomId && l.is_active);
+    return { room, lease };
+  };
+
+  const handleEdit = (utility: UtilityReading) => {
+    setSelectedUtility(utility);
+    editForm.reset({
+      room_id: utility.room_id,
+      reading_year: utility.reading_year,
+      reading_month: utility.reading_month,
+      water_reading: utility.water_reading || 0,
+      electricity_reading: utility.electricity_reading || 0,
+      notes: utility.notes || '',
+    });
+    setIsEditOpen(true);
+  };
+
+  const columns: ColumnDef<UtilityReading>[] = [
+    {
+      accessorKey: 'reading_month',
+      header: '月份',
+      cell: ({ row }) => `${row.original.reading_year}年${row.original.reading_month}月`,
+    },
+    {
+      accessorKey: 'room',
+      header: '房间',
+      cell: ({ row }) => {
+        const { room } = getRoomInfo(row.original.room_id);
+        return room ? `${room.apartment?.name || ''} - ${room.room_number}` : '-';
+      },
+    },
+    {
+      accessorKey: 'water_reading',
+      header: '水表读数',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Droplets className="h-4 w-4 text-blue-500" />
+          {row.original.water_reading || '-'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'electricity_reading',
+      header: '电表读数',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Zap className="h-4 w-4 text-yellow-500" />
+          {row.original.electricity_reading || '-'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'water_usage',
+      header: '用水量',
+      cell: ({ row }) =>
+        row.original.water_usage ? `${row.original.water_usage} m³` : '-',
+    },
+    {
+      accessorKey: 'electricity_usage',
+      header: '用电量',
+      cell: ({ row }) =>
+        row.original.electricity_usage ? `${row.original.electricity_usage} kWh` : '-',
+    },
+    {
+      id: 'actions',
+      cell: ({ row }) => {
+        const utility = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleEdit(utility)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                编辑
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
+
+  if (orgsLoading) {
+    return (
+      <MainLayout>
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-96" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  return (
+    <MainLayout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">水电录入</h1>
+          <div className="flex items-center gap-4">
+            <Select
+              value={selectedOrgId?.toString() || ''}
+              onValueChange={(value) => setSelectedOrgId(Number(value))}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="选择组织" />
+              </SelectTrigger>
+              <SelectContent>
+                {organizations?.map((org) => (
+                  <SelectItem key={org.id} value={org.id.toString()}>
+                    {org.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={() => setIsCreateOpen(true)} disabled={!selectedOrgId}>
+              <Plus className="mr-2 h-4 w-4" />
+              录入读数
+            </Button>
+          </div>
+        </div>
+
+        {utilitiesLoading ? (
+          <Skeleton className="h-96" />
+        ) : (
+          <DataTable columns={columns} data={utilities || []} />
+        )}
+      </div>
+
+      {/* Create Dialog */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>录入水电读数</DialogTitle>
+            <DialogDescription>录入房间的水电表读数</DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={createForm.handleSubmit((data) => createMutation.mutate(data))}
+            className="space-y-4"
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>选择公寓</Label>
+                <Select
+                  value={selectedApartmentId?.toString() || ''}
+                  onValueChange={(value) => setSelectedApartmentId(Number(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择公寓" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {apartments?.map((apt) => (
+                      <SelectItem key={apt.id} value={apt.id.toString()}>
+                        {apt.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="room_id">选择房间 *</Label>
+                <Select
+                  value={createForm.watch('room_id')?.toString() || ''}
+                  onValueChange={(value) =>
+                    createForm.setValue('room_id', Number(value))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择房间" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {occupiedRooms?.map((room) => (
+                      <SelectItem key={room.id} value={room.id.toString()}>
+                        {room.room_number}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="reading_year">年份</Label>
+                <Select
+                  value={createForm.watch('reading_year')?.toString() || currentYear.toString()}
+                  onValueChange={(value) =>
+                    createForm.setValue('reading_year', Number(value))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}年
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="reading_month">月份</Label>
+                <Select
+                  value={createForm.watch('reading_month')?.toString() || currentMonth.toString()}
+                  onValueChange={(value) =>
+                    createForm.setValue('reading_month', Number(value))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                      <SelectItem key={month} value={month.toString()}>
+                        {month}月
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="water_reading">
+                  <span className="flex items-center gap-2">
+                    <Droplets className="h-4 w-4 text-blue-500" />
+                    水表读数 (m³)
+                  </span>
+                </Label>
+                <Input
+                  id="water_reading"
+                  type="number"
+                  step="0.01"
+                  {...createForm.register('water_reading', { valueAsNumber: true })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="electricity_reading">
+                  <span className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-yellow-500" />
+                    电表读数 (kWh)
+                  </span>
+                </Label>
+                <Input
+                  id="electricity_reading"
+                  type="number"
+                  step="0.01"
+                  {...createForm.register('electricity_reading', { valueAsNumber: true })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">备注</Label>
+              <Input id="notes" {...createForm.register('notes')} />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+                取消
+              </Button>
+              <Button type="submit" disabled={createMutation.isPending}>
+                {createMutation.isPending ? '保存中...' : '保存'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>编辑水电读数</DialogTitle>
+            <DialogDescription>修改水电表读数</DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={editForm.handleSubmit((data) =>
+              updateMutation.mutate({ id: selectedUtility!.id, data })
+            )}
+            className="space-y-4"
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>年份</Label>
+                <Input value={selectedUtility?.reading_year} disabled />
+              </div>
+              <div className="space-y-2">
+                <Label>月份</Label>
+                <Input value={`${selectedUtility?.reading_month}月`} disabled />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>房间</Label>
+              <Input
+                value={
+                  selectedUtility
+                    ? getRoomInfo(selectedUtility.room_id).room?.room_number || ''
+                    : ''
+                }
+                disabled
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-water_reading">
+                  <span className="flex items-center gap-2">
+                    <Droplets className="h-4 w-4 text-blue-500" />
+                    水表读数 (m³)
+                  </span>
+                </Label>
+                <Input
+                  id="edit-water_reading"
+                  type="number"
+                  step="0.01"
+                  {...editForm.register('water_reading', { valueAsNumber: true })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-electricity_reading">
+                  <span className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-yellow-500" />
+                    电表读数 (kWh)
+                  </span>
+                </Label>
+                <Input
+                  id="edit-electricity_reading"
+                  type="number"
+                  step="0.01"
+                  {...editForm.register('electricity_reading', { valueAsNumber: true })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-notes">备注</Label>
+              <Input id="edit-notes" {...editForm.register('notes')} />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                取消
+              </Button>
+              <Button type="submit" disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? '保存中...' : '保存'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </MainLayout>
+  );
+}

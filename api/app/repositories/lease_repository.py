@@ -1,0 +1,73 @@
+"""
+Lease repository for data access operations.
+"""
+from typing import Optional, List
+from datetime import date
+from sqlalchemy.orm import Session
+from app.repositories.base import BaseRepository
+from app.models.lease import Lease
+from app.models.apartment import Room
+
+
+class LeaseRepository(BaseRepository[Lease]):
+    """Repository for Lease model."""
+
+    def __init__(self, db: Session):
+        super().__init__(db, Lease)
+
+    def find_by_organization(self, org_id: int) -> List[Lease]:
+        """Find all leases in an organization."""
+        return (
+            self.db.query(Lease)
+            .join(Room)
+            .filter(Room.organization_id == org_id)
+            .all()
+        )
+
+    def find_active_by_organization(self, org_id: int) -> List[Lease]:
+        """Find all active leases in an organization."""
+        return (
+            self.db.query(Lease)
+            .join(Room)
+            .filter(Room.organization_id == org_id, Lease.is_active == True)
+            .all()
+        )
+
+    def find_by_room(self, room_id: int) -> List[Lease]:
+        """Find all leases for a room."""
+        return self.db.query(Lease).filter(Lease.room_id == room_id).all()
+
+    def find_active_by_room(self, room_id: int) -> Optional[Lease]:
+        """Find active lease for a room."""
+        return (
+            self.db.query(Lease)
+            .filter(Lease.room_id == room_id, Lease.is_active == True)
+            .first()
+        )
+
+    def find_by_tenant(self, tenant_id: int) -> List[Lease]:
+        """Find all leases for a tenant."""
+        return self.db.query(Lease).filter(Lease.tenant_id == tenant_id).all()
+
+    def has_overlapping_lease(
+        self, room_id: int, start_date: date, end_date: date, exclude_id: int = None
+    ) -> bool:
+        """Check if there's an overlapping lease for the room."""
+        query = self.db.query(Lease).filter(
+            Lease.room_id == room_id,
+            Lease.is_active == True,
+            Lease.start_date <= end_date,
+            Lease.end_date >= start_date,
+        )
+        if exclude_id:
+            query = query.filter(Lease.id != exclude_id)
+        return query.first() is not None
+
+    def count_active(self, org_id: int) -> int:
+        """Count active leases in an organization."""
+        return (
+            self.db.query(Lease)
+            .join(Room)
+            .filter(Room.organization_id == org_id, Lease.is_active == True)
+            .count()
+        )
