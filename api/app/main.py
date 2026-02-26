@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.configs import settings
+from app.configs.logging import get_logger, setup_logging
 from app.controllers.console import (
     apartments_router,
     auth_router,
@@ -22,16 +23,21 @@ from app.controllers.console import (
     utilities_router,
 )
 from app.middlewares.rate_limit import RateLimitMiddleware
+from app.middlewares.request_logging import RequestLoggingMiddleware
+
+# 初始化日志系统
+setup_logging(debug=settings.DEBUG, json_format=False)
+logger = get_logger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:
     """Application lifespan manager for startup/shutdown events."""
     # Startup
-    print(f"🚀 Starting {settings.APP_NAME}...")
+    logger.info(f"Starting {settings.APP_NAME}...")
     yield
     # Shutdown
-    print(f"👋 Shutting down {settings.APP_NAME}...")
+    logger.info(f"Shutting down {settings.APP_NAME}...")
 
 
 def create_app() -> FastAPI:
@@ -46,7 +52,10 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Rate limiting middleware (应在 CORS 之后添加)
+    # Request logging middleware
+    app.add_middleware(RequestLoggingMiddleware)
+
+    # Rate limiting middleware
     app.add_middleware(RateLimitMiddleware)
 
     # CORS middleware

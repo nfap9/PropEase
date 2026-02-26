@@ -1,17 +1,17 @@
 """
 Report service for analytics and statistics.
 """
-from typing import Optional
 from datetime import date
 from decimal import Decimal
-from sqlalchemy.orm import Session
-from sqlalchemy import func
 
-from app.services.base import BaseService
+from sqlalchemy import Integer, func
+from sqlalchemy.orm import Session
+
 from app.models.apartment import Apartment, Room, RoomStatus
-from app.models.lease import Lease
 from app.models.bill import Bill, BillStatus
+from app.models.lease import Lease
 from app.models.tenant import Tenant
+from app.services.base import BaseService
 
 
 class ReportService(BaseService):
@@ -61,7 +61,7 @@ class ReportService(BaseService):
             .join(Apartment)
             .filter(
                 Apartment.organization_id == org_id,
-                Lease.is_active == True,
+                Lease.is_active.is_(True),
             )
             .count()
         )
@@ -132,8 +132,8 @@ class ReportService(BaseService):
         self,
         org_id: int,
         year: int,
-        start_month: Optional[int] = None,
-        end_month: Optional[int] = None,
+        start_month: int | None = None,
+        end_month: int | None = None,
     ) -> dict:
         """Get income report by month."""
         query = (
@@ -180,21 +180,31 @@ class ReportService(BaseService):
         }
 
     def get_occupancy_report(self, org_id: int) -> dict:
-        """Get occupancy report by apartment."""
-        apartments = (
-            self.db.query(Apartment)
+        """Get occupancy report by apartment.
+
+        优化：使用单次查询获取所有房间数据，避免 N+1 查询问题。
+        """
+        # 单次查询获取所有公寓及其房间状态统计
+        room_stats = (
+            self.db.query(
+                Apartment.id,
+                Apartment.name,
+                func.count(Room.id).label("total_rooms"),
+                func.sum(func.cast(Room.status == RoomStatus.OCCUPIED, type_=Integer)).label("occupied_rooms"),
+            )
+            .outerjoin(Room, Room.apartment_id == Apartment.id)
             .filter(Apartment.organization_id == org_id)
+            .group_by(Apartment.id, Apartment.name)
             .all()
         )
 
         apartment_data = []
-        for apt in apartments:
-            rooms = self.db.query(Room).filter(Room.apartment_id == apt.id).all()
-            total = len(rooms)
-            occupied = sum(1 for r in rooms if r.status == RoomStatus.OCCUPIED)
+        for row in room_stats:
+            total = row.total_rooms or 0
+            occupied = row.occupied_rooms or 0
             apartment_data.append({
-                "id": apt.id,
-                "name": apt.name,
+                "id": row.id,
+                "name": row.name,
                 "total_rooms": total,
                 "occupied_rooms": occupied,
                 "available_rooms": total - occupied,
