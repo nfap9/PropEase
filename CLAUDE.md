@@ -1,188 +1,53 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## 项目概述
 
-## Project Overview
+Apartment Ultra 是一个多租户 SaaS 公寓/房产管理系统，为管理多个租赁房产的房东设计。支持公寓、房间、租客、租约、水电追踪、账单和业务分析，并支持多用户协作。
 
-Apartment Ultra is a multi-tenant SaaS apartment/property management system for landlords who manage multiple rental properties. It supports apartments, rooms, tenants, leases, utility tracking, billing, and business analytics with multi-user collaboration.
+代码库分为：
 
-## Tech Stack
+- **后端 API** (`/api`): Python FastAPI 应用，采用分层架构设计
+- **前端 Web** (`/web`): Next.js 应用，使用 TypeScript 和 React
+- **Docker 部署** (`/docker`): 容器化部署配置
 
-| Layer | Technology |
-|-------|------------|
-| Web | Next.js 14 (App Router), shadcn/ui, Tailwind CSS, TypeScript |
-| API | FastAPI (Python) |
-| Database | PostgreSQL |
-| ORM | SQLAlchemy 2.0 + Alembic migrations |
-| Auth | JWT (python-jose), Passlib |
-| Forms | React Hook Form, Zod validation |
-| Data Fetching | TanStack Query, Axios |
-| Charts | Recharts |
-| Exports | ReportLab (PDF), openpyxl (Excel) |
-| Package Managers | uv (Python), pnpm (Node.js) |
+## 后端工作流
 
-## Development Commands
+- 阅读 `api/AGENTS.md` 了解详情
+- 通过 `uv run --project api <command>` 运行后端 CLI 命令
+- 集成测试仅在 CI 中运行，本地环境不要求运行
 
-```bash
-# Start development environment
-make dev-setup       # One-time setup
-make dev-api         # Start API server
-make dev-web         # Start Web server
-make dev-docker      # Docker for all services
+## 前端工作流
 
-# Code quality
-make format          # Format code
-make check           # Check code
-make lint            # Fix lint issues
-make test            # Run tests
+- 阅读 `web/AGENTS.md` 了解详情
 
-# Database
-make migrate         # Run migrations
-make migrate-create  # Create new migration
-make db-reset        # Reset database
+## 测试与质量实践
 
-# Access points:
-# - Web: http://localhost:3000
-# - API docs: http://localhost:8000/docs
-```
+- 遵循 TDD: 红 → 绿 → 重构
+- 后端使用 `pytest`，采用 Arrange-Act-Assert 结构
+- 强制使用强类型；避免 `Any`，优先使用显式类型注解
+- 编写自文档化代码；仅在需要解释意图时添加注释
 
-## Architecture
+## 语言风格
 
-Project uses layered architecture (inspired by dify):
+- **Python**: 在函数和属性上保持类型提示，实现相关的特殊方法（如 `__repr__`, `__str__`）
+- **TypeScript**: 使用严格配置，依赖 ESLint（优先使用 `pnpm lint:fix`）加上 `pnpm type-check`，避免 `any` 类型
 
-```
-Controller → Service → Repository → Model
-```
+## 通用实践
 
-- **Controller**: HTTP request/response handling, input validation
-- **Service**: Business logic, transaction management
-- **Repository**: Data access, CRUD operations
-- **Model**: ORM model definitions
+- 优先编辑现有文件；仅在请求时添加新文档
+- 通过构造函数注入依赖，保持清晰的架构边界
+- 在正确的层级使用领域特定异常处理错误
 
-### API Structure
-```
-api/
-├── app/
-│   ├── main.py              # Application entry point
-│   ├── configs/             # Configuration management
-│   │   ├── settings.py      # Main settings
-│   │   └── database.py      # Database config
-│   ├── controllers/         # API controllers
-│   │   ├── console/         # Business APIs
-│   │   │   ├── auth.py
-│   │   │   ├── organizations.py
-│   │   │   ├── apartments.py
-│   │   │   ├── tenants.py
-│   │   │   ├── leases.py
-│   │   │   ├── utilities.py
-│   │   │   ├── bills.py
-│   │   │   └── reports.py
-│   │   └── common/          # Shared components
-│   ├── services/            # Business logic layer
-│   ├── repositories/        # Data access layer
-│   ├── models/              # SQLAlchemy ORM models
-│   ├── schemas/             # Pydantic models
-│   └── utils/               # Utility functions
-├── migrations/              # Alembic migrations
-├── tests/                   # Test files
-├── pyproject.toml           # Project configuration
-└── Dockerfile
-```
+## 项目约定
 
-### Web Structure
-```
-web/
-├── src/
-│   ├── app/                 # Next.js App Router pages
-│   │   ├── dashboard/       # Dashboard page
-│   │   ├── apartments/      # Apartments management
-│   │   ├── rooms/           # Rooms management
-│   │   ├── tenants/         # Tenants management
-│   │   ├── leases/          # Leases management
-│   │   ├── utilities/       # Utility readings
-│   │   ├── bills/           # Bills management
-│   │   ├── reports/         # Reports & analytics
-│   │   ├── settings/        # Settings pages
-│   │   ├── login/           # Login page
-│   │   └── register/        # Register page
-│   ├── components/          # React components
-│   │   ├── ui/              # shadcn/ui primitives
-│   │   └── ...
-│   ├── lib/                 # Libraries and utilities
-│   │   ├── api/             # API client
-│   │   └── auth/            # Auth context
-│   └── types/               # TypeScript types
-├── package.json
-└── Dockerfile
-```
+- 后端架构遵循分层架构和清洁架构原则
+- 前端用户界面字符串必须使用中文；避免硬编码英文文本
 
-### Multi-Tenancy
+## 语言要求
 
-All business entities have `organization_id` for data isolation. Users belong to organizations via `organization_members` with roles:
-- `owner` - Full access + billing management
-- `admin` - Full access
-- `member` - CRUD operations
-- `viewer` - Read-only access
+**重要**: 本项目所有文档和交流使用中文。
 
-### Database Core Tables
-
-| Table | Purpose |
-|-------|---------|
-| `organizations` | Tenant teams |
-| `users` | User accounts |
-| `organization_members` | User-org membership with roles |
-| `apartments` | Property buildings |
-| `rooms` | Individual rental units |
-| `tenants` | Tenant information |
-| `leases` | Rental agreements (links room + tenant) |
-| `utility_readings` | Water/electricity meter readings |
-| `bills` | Monthly bills |
-| `payments` | Payment records |
-
-### API Endpoints
-
-Base path: `/api/v1/`
-
-| Category | Endpoints |
-|----------|-----------|
-| Auth | `/auth/register`, `/auth/login`, `/auth/refresh`, `/auth/me` |
-| Organizations | `/organizations`, `/organizations/{id}/members` |
-| Core | `/apartments`, `/apartments/{id}/rooms`, `/tenants`, `/leases` |
-| Financial | `/utilities`, `/bills`, `/bills/{id}/payments` |
-| Reports | `/reports/overview`, `/reports/income`, `/reports/occupancy` |
-
-See `docs/API.md` for detailed API documentation.
-
-### Key Business Logic
-
-**Lease Management** (`api/app/services/lease_service.py`):
-- Validates room availability before creating lease
-- Checks for date overlap with existing leases
-- Updates room status on lease creation/termination
-
-**Bill Generation** (`api/app/services/bill_service.py`):
-- Calculates utility costs from meter readings
-- Supports batch generation for all active leases
-- Generates PDF/Excel exports
-
-## Development Guidelines
-
-### Code Style
-- Python: Follow PEP 8, use type hints
-- TypeScript: Use strict mode, prefer explicit types
-- Components: Use functional components with hooks
-
-### Commit Convention
-- Use conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`
-- Keep commits atomic and descriptive
-
-### Testing
-- Write unit tests for services
-- Write integration tests for API endpoints
-- Maintain good test coverage
-
-## Documentation
-
-- `README.md` - Project overview and quick start
-- `API.md` - Detailed API documentation
-- `CLAUDE.md` - This file, for Claude Code guidance
+- AI 助手必须使用中文回答问题和编写文档
+- 代码注释使用中文
+- 提交信息可使用中英文
+- 用户界面文本使用中文
