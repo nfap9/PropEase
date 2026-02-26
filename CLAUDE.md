@@ -10,95 +10,125 @@ Apartment Ultra is a multi-tenant SaaS apartment/property management system for 
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Next.js 14 (App Router), shadcn/ui, Tailwind CSS, TypeScript |
-| Backend | FastAPI (Python) |
+| Web | Next.js 14 (App Router), shadcn/ui, Tailwind CSS, TypeScript |
+| API | FastAPI (Python) |
 | Database | PostgreSQL |
-| ORM | SQLAlchemy 2.0 with Alembic migrations |
+| ORM | SQLAlchemy 2.0 + Alembic migrations |
 | Auth | JWT (python-jose), Passlib |
 | Forms | React Hook Form, Zod validation |
 | Data Fetching | TanStack Query, Axios |
 | Charts | Recharts |
 | Exports | ReportLab (PDF), openpyxl (Excel) |
+| Package Managers | uv (Python), pnpm (Node.js) |
 
 ## Development Commands
 
 ```bash
-# Start development environment (all services)
-docker-compose up
+# Start development environment
+make dev-setup       # One-time setup
+make dev-api         # Start API server
+make dev-web         # Start Web server
+make dev-docker      # Docker for all services
 
-# Access points after startup:
-# - Frontend: http://localhost:3000
-# - Backend API docs: http://localhost:8000/docs
-```
+# Code quality
+make format          # Format code
+make check           # Check code
+make lint            # Fix lint issues
+make test            # Run tests
 
-### Frontend (from frontend/ directory)
-```bash
-npm run dev        # Development server
-npm run build      # Production build
-npm run lint       # ESLint
-npm run type-check # TypeScript check
-```
+# Database
+make migrate         # Run migrations
+make migrate-create  # Create new migration
+make db-reset        # Reset database
 
-### Backend (from backend/ directory)
-```bash
-# Run migrations
-alembic upgrade head
-alembic revision --autogenerate -m "description"
-
-# Development server
-uvicorn app.main:app --reload
-
-# Run tests
-pytest
+# Access points:
+# - Web: http://localhost:3000
+# - API docs: http://localhost:8000/docs
 ```
 
 ## Architecture
 
-### Backend Structure
+Project uses layered architecture (inspired by dify):
+
 ```
-backend/app/
-├── main.py          # FastAPI entry point
-├── config.py        # Environment configuration
-├── database.py      # PostgreSQL connection
-├── dependencies.py  # DI for auth/permissions
-├── models/          # SQLAlchemy ORM models
-├── schemas/         # Pydantic request/response models
-├── routers/         # API route handlers
-├── services/        # Business logic layer
-└── utils/           # PDF/Excel generation, security
+Controller → Service → Repository → Model
 ```
 
-**Pattern:** Routers → Services → Models (layered architecture)
+- **Controller**: HTTP request/response handling, input validation
+- **Service**: Business logic, transaction management
+- **Repository**: Data access, CRUD operations
+- **Model**: ORM model definitions
 
-### Frontend Structure
+### API Structure
 ```
-frontend/src/
-├── app/             # Next.js App Router pages
-├── components/
-│   ├── ui/          # shadcn/ui primitives
-│   ├── layout/      # Layout components
-│   ├── forms/       # Form components
-│   └── charts/      # Chart components
-├── lib/api/         # API client with Axios
-├── lib/auth/        # Auth context and hooks
-├── hooks/           # Custom React hooks
-├── types/           # TypeScript type definitions
-└── store/           # Zustand state (optional)
+api/
+├── app/
+│   ├── main.py              # Application entry point
+│   ├── configs/             # Configuration management
+│   │   ├── settings.py      # Main settings
+│   │   └── database.py      # Database config
+│   ├── controllers/         # API controllers
+│   │   ├── console/         # Business APIs
+│   │   │   ├── auth.py
+│   │   │   ├── organizations.py
+│   │   │   ├── apartments.py
+│   │   │   ├── tenants.py
+│   │   │   ├── leases.py
+│   │   │   ├── utilities.py
+│   │   │   ├── bills.py
+│   │   │   └── reports.py
+│   │   └── common/          # Shared components
+│   ├── services/            # Business logic layer
+│   ├── repositories/        # Data access layer
+│   ├── models/              # SQLAlchemy ORM models
+│   ├── schemas/             # Pydantic models
+│   └── utils/               # Utility functions
+├── migrations/              # Alembic migrations
+├── tests/                   # Test files
+├── pyproject.toml           # Project configuration
+└── Dockerfile
+```
+
+### Web Structure
+```
+web/
+├── src/
+│   ├── app/                 # Next.js App Router pages
+│   │   ├── dashboard/       # Dashboard page
+│   │   ├── apartments/      # Apartments management
+│   │   ├── rooms/           # Rooms management
+│   │   ├── tenants/         # Tenants management
+│   │   ├── leases/          # Leases management
+│   │   ├── utilities/       # Utility readings
+│   │   ├── bills/           # Bills management
+│   │   ├── reports/         # Reports & analytics
+│   │   ├── settings/        # Settings pages
+│   │   ├── login/           # Login page
+│   │   └── register/        # Register page
+│   ├── components/          # React components
+│   │   ├── ui/              # shadcn/ui primitives
+│   │   └── ...
+│   ├── lib/                 # Libraries and utilities
+│   │   ├── api/             # API client
+│   │   └── auth/            # Auth context
+│   └── types/               # TypeScript types
+├── package.json
+└── Dockerfile
 ```
 
 ### Multi-Tenancy
 
 All business entities have `organization_id` for data isolation. Users belong to organizations via `organization_members` with roles:
-- `owner` - Full access, billing
-- `admin` - Full access, no billing
+- `owner` - Full access + billing management
+- `admin` - Full access
 - `member` - CRUD operations
-- `viewer` - Read-only
+- `viewer` - Read-only access
 
 ### Database Core Tables
 
 | Table | Purpose |
 |-------|---------|
-| `organizations` | Teams/tenants |
+| `organizations` | Tenant teams |
 | `users` | User accounts |
 | `organization_members` | User-org membership with roles |
 | `apartments` | Property buildings |
@@ -109,35 +139,50 @@ All business entities have `organization_id` for data isolation. Users belong to
 | `bills` | Monthly bills |
 | `payments` | Payment records |
 
-### API Structure
+### API Endpoints
 
 Base path: `/api/v1/`
 
-- `/auth/*` - Authentication (register, login, refresh, me)
-- `/organizations/*` - Organization management
-- `/apartments/*`, `/rooms/*`, `/tenants/*`, `/leases/*` - CRUD resources
-- `/utilities/*` - Utility meter readings
-- `/bills/*` - Bills and PDF/Excel exports
-- `/reports/*` - Analytics and statistics
+| Category | Endpoints |
+|----------|-----------|
+| Auth | `/auth/register`, `/auth/login`, `/auth/refresh`, `/auth/me` |
+| Organizations | `/organizations`, `/organizations/{id}/members` |
+| Core | `/apartments`, `/apartments/{id}/rooms`, `/tenants`, `/leases` |
+| Financial | `/utilities`, `/bills`, `/bills/{id}/payments` |
+| Reports | `/reports/overview`, `/reports/income`, `/reports/occupancy` |
+
+See `docs/API.md` for detailed API documentation.
 
 ### Key Business Logic
 
-**Lease Management** (`backend/app/services/lease_service.py`):
+**Lease Management** (`api/app/services/lease_service.py`):
 - Validates room availability before creating lease
 - Checks for date overlap with existing leases
 - Updates room status on lease creation/termination
 
-**Bill Generation** (`backend/app/services/bill_service.py`):
+**Bill Generation** (`api/app/services/bill_service.py`):
 - Calculates utility costs from meter readings
 - Supports batch generation for all active leases
 - Generates PDF/Excel exports
 
-## Implementation Phases
+## Development Guidelines
 
-1. **Phase 1:** Infrastructure (Next.js, FastAPI, PostgreSQL, JWT auth)
-2. **Phase 2:** Core business (apartments, rooms, tenants, leases)
-3. **Phase 3:** Financial (utilities, bills, payments, exports)
-4. **Phase 4:** Analytics (dashboard, charts, reports)
-5. **Phase 5:** Multi-user collaboration (organizations, RBAC)
+### Code Style
+- Python: Follow PEP 8, use type hints
+- TypeScript: Use strict mode, prefer explicit types
+- Components: Use functional components with hooks
 
-See `实现计划.md` for detailed implementation checklist.
+### Commit Convention
+- Use conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`
+- Keep commits atomic and descriptive
+
+### Testing
+- Write unit tests for services
+- Write integration tests for API endpoints
+- Maintain good test coverage
+
+## Documentation
+
+- `README.md` - Project overview and quick start
+- `API.md` - Detailed API documentation
+- `CLAUDE.md` - This file, for Claude Code guidance
