@@ -4,22 +4,24 @@ Apartment Ultra API - Main Application Entry Point
 This is the main entry point for the Apartment Ultra backend API.
 It configures the FastAPI application, middleware, and routes.
 """
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from app.configs import settings
 from app.controllers.console import (
-    auth_router,
-    organizations_router,
     apartments_router,
-    tenants_router,
-    leases_router,
-    utilities_router,
+    auth_router,
     bills_router,
+    leases_router,
+    organizations_router,
     reports_router,
+    tenants_router,
+    utilities_router,
 )
+from app.middlewares.rate_limit import RateLimitMiddleware
 
 
 @asynccontextmanager
@@ -43,6 +45,9 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
         lifespan=lifespan,
     )
+
+    # Rate limiting middleware (应在 CORS 之后添加)
+    app.add_middleware(RateLimitMiddleware)
 
     # CORS middleware
     app.add_middleware(
