@@ -2,7 +2,6 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { reportsApi, organizationsApi } from '@/lib/api';
-import { DashboardOverview, Organization } from '@/types';
 import {
   Card,
   CardContent,

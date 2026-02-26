@@ -10,7 +10,6 @@ import { DataTable } from '@/components/common/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -34,14 +33,14 @@ import {
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
 import { apartmentsApi, roomsApi, leasesApi, organizationsApi } from '@/lib/api';
-import { Room, Lease, Organization, UtilityReading } from '@/types';
+import { UtilityReading } from '@/types';
 import { Plus, MoreHorizontal, Pencil, Zap, Droplets } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const utilitySchema = z.object({
   room_id: z.number().min(1, '请选择房间'),
-  reading_year: z.number().min(2020).max(2100),
-  reading_month: z.number().min(1).max(12),
+  period_year: z.number().min(2020).max(2100),
+  period_month: z.number().min(1).max(12),
   water_reading: z.number().min(0).optional(),
   electricity_reading: z.number().min(0).optional(),
   notes: z.string().optional(),
@@ -104,8 +103,8 @@ export default function UtilitiesPage() {
     resolver: zodResolver(utilitySchema),
     defaultValues: {
       room_id: 0,
-      reading_year: currentYear,
-      reading_month: currentMonth,
+      period_year: currentYear,
+      period_month: currentMonth,
       water_reading: 0,
       electricity_reading: 0,
       notes: '',
@@ -171,8 +170,8 @@ export default function UtilitiesPage() {
     setSelectedUtility(utility);
     editForm.reset({
       room_id: utility.room_id,
-      reading_year: utility.reading_year,
-      reading_month: utility.reading_month,
+      period_year: utility.period_year,
+      period_month: utility.period_month,
       water_reading: utility.water_reading || 0,
       electricity_reading: utility.electricity_reading || 0,
       notes: utility.notes || '',
@@ -182,9 +181,9 @@ export default function UtilitiesPage() {
 
   const columns: ColumnDef<UtilityReading>[] = [
     {
-      accessorKey: 'reading_month',
+      accessorKey: 'period_month',
       header: '月份',
-      cell: ({ row }) => `${row.original.reading_year}年${row.original.reading_month}月`,
+      cell: ({ row }) => `${row.original.period_year}年${row.original.period_month}月`,
     },
     {
       accessorKey: 'room',
@@ -213,18 +212,6 @@ export default function UtilitiesPage() {
           {row.original.electricity_reading || '-'}
         </div>
       ),
-    },
-    {
-      accessorKey: 'water_usage',
-      header: '用水量',
-      cell: ({ row }) =>
-        row.original.water_usage ? `${row.original.water_usage} m³` : '-',
-    },
-    {
-      accessorKey: 'electricity_usage',
-      header: '用电量',
-      cell: ({ row }) =>
-        row.original.electricity_usage ? `${row.original.electricity_usage} kWh` : '-',
     },
     {
       id: 'actions',
@@ -348,11 +335,11 @@ export default function UtilitiesPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="reading_year">年份</Label>
+                <Label htmlFor="period_year">年份</Label>
                 <Select
-                  value={createForm.watch('reading_year')?.toString() || currentYear.toString()}
+                  value={createForm.watch('period_year')?.toString() || currentYear.toString()}
                   onValueChange={(value) =>
-                    createForm.setValue('reading_year', Number(value))
+                    createForm.setValue('period_year', Number(value))
                   }
                 >
                   <SelectTrigger>
@@ -368,11 +355,11 @@ export default function UtilitiesPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="reading_month">月份</Label>
+                <Label htmlFor="period_month">月份</Label>
                 <Select
-                  value={createForm.watch('reading_month')?.toString() || currentMonth.toString()}
+                  value={createForm.watch('period_month')?.toString() || currentMonth.toString()}
                   onValueChange={(value) =>
-                    createForm.setValue('reading_month', Number(value))
+                    createForm.setValue('period_month', Number(value))
                   }
                 >
                   <SelectTrigger>
@@ -450,11 +437,11 @@ export default function UtilitiesPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>年份</Label>
-                <Input value={selectedUtility?.reading_year} disabled />
+                <Input value={selectedUtility?.period_year} disabled />
               </div>
               <div className="space-y-2">
                 <Label>月份</Label>
-                <Input value={`${selectedUtility?.reading_month}月`} disabled />
+                <Input value={`${selectedUtility?.period_month}月`} disabled />
               </div>
             </div>
             <div className="space-y-2">

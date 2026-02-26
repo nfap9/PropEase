@@ -45,8 +45,8 @@ import {
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
 import { leasesApi, apartmentsApi, roomsApi, tenantsApi, organizationsApi } from '@/lib/api';
-import { Lease, Apartment, Room, Tenant, Organization } from '@/types';
-import { Plus, MoreHorizontal, Pencil, Trash2, FileText, Ban } from 'lucide-react';
+import { Lease } from '@/types';
+import { Plus, MoreHorizontal, Pencil, Trash2, Ban } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const leaseSchema = z.object({
@@ -56,7 +56,8 @@ const leaseSchema = z.object({
   end_date: z.string().optional(),
   monthly_rent: z.number().min(0, '月租不能为负'),
   deposit: z.number().min(0, '押金不能为负').optional(),
-  payment_day: z.number().min(1).max(28),
+  water_rate: z.number().min(0).optional(),
+  electricity_rate: z.number().min(0).optional(),
   notes: z.string().optional(),
 });
 
@@ -110,7 +111,8 @@ export default function LeasesPage() {
       end_date: '',
       monthly_rent: 0,
       deposit: 0,
-      payment_day: 1,
+      water_rate: 0,
+      electricity_rate: 0,
       notes: '',
     },
   });
@@ -167,7 +169,8 @@ export default function LeasesPage() {
       end_date: lease.end_date || '',
       monthly_rent: lease.monthly_rent,
       deposit: lease.deposit || 0,
-      payment_day: lease.payment_day,
+      water_rate: lease.water_rate || 0,
+      electricity_rate: lease.electricity_rate || 0,
       notes: lease.notes || '',
     });
     setIsEditOpen(true);
@@ -182,10 +185,6 @@ export default function LeasesPage() {
     setSelectedLease(lease);
     setIsDeleteOpen(true);
   };
-
-  const availableRooms = rooms?.filter(
-    (r) => r.status === 'available' || r.id === selectedLease?.room_id
-  );
 
   const columns: ColumnDef<Lease>[] = [
     {
@@ -427,16 +426,6 @@ export default function LeasesPage() {
                   {...createForm.register('deposit', { valueAsNumber: true })}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="payment_day">每月缴费日</Label>
-                <Input
-                  id="payment_day"
-                  type="number"
-                  min={1}
-                  max={28}
-                  {...createForm.register('payment_day', { valueAsNumber: true })}
-                />
-              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="notes">备注</Label>
@@ -519,16 +508,6 @@ export default function LeasesPage() {
                   type="number"
                   step="0.01"
                   {...editForm.register('deposit', { valueAsNumber: true })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-payment_day">每月缴费日</Label>
-                <Input
-                  id="edit-payment_day"
-                  type="number"
-                  min={1}
-                  max={28}
-                  {...editForm.register('payment_day', { valueAsNumber: true })}
                 />
               </div>
             </div>

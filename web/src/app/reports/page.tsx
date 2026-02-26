@@ -15,7 +15,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { reportsApi, organizationsApi } from '@/lib/api';
-import { Organization, IncomeReport, OccupancyReport } from '@/types';
+import { IncomeReport } from '@/types';
 import {
   LineChart,
   Line,
@@ -43,7 +43,7 @@ export default function ReportsPage() {
     queryFn: organizationsApi.list,
   });
 
-  const { data: overview, isLoading: overviewLoading } = useQuery({
+  const { data: overview } = useQuery({
     queryKey: ['dashboard-overview', selectedOrgId],
     queryFn: () => reportsApi.getOverview(selectedOrgId!),
     enabled: !!selectedOrgId,
@@ -201,7 +201,7 @@ export default function ReportsPage() {
                         <XAxis dataKey="period" />
                         <YAxis />
                         <Tooltip
-                          formatter={(value: number) => `¥${value.toLocaleString()}`}
+                          formatter={(value: number | undefined) => `¥${(value ?? 0).toLocaleString()}`}
                         />
                         <Legend />
                         <Bar dataKey="total_amount" name="应收金额" fill="#8884d8" />
@@ -259,8 +259,9 @@ export default function ReportsPage() {
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            label={({ name, percent }) =>
-                              `${name} ${(percent * 100).toFixed(0)}%`
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            label={({ name, percent }: any) =>
+                              `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
                             }
                             outerRadius={100}
                             fill="#8884d8"
@@ -271,7 +272,7 @@ export default function ReportsPage() {
                             ))}
                           </Pie>
                           <Tooltip
-                            formatter={(value: number) => `¥${value.toLocaleString()}`}
+                            formatter={(value: number | undefined) => `¥${(value ?? 0).toLocaleString()}`}
                           />
                         </PieChart>
                       </ResponsiveContainer>
@@ -380,7 +381,7 @@ export default function ReportsPage() {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="period" />
                         <YAxis domain={[0, 100]} />
-                        <Tooltip formatter={(value: number) => `${value}%`} />
+                        <Tooltip formatter={(value: number | undefined) => `${value ?? 0}%`} />
                         <Legend />
                         <Line
                           type="monotone"

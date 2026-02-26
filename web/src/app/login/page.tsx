@@ -53,7 +53,7 @@ export default function LoginPage() {
     try {
       await login(data.email, data.password);
       router.push('/dashboard');
-    } catch (err) {
+    } catch {
       setError('邮箱或密码错误');
     } finally {
       setIsLoading(false);

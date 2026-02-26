@@ -44,17 +44,15 @@ import {
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
 import { roomsApi, apartmentsApi, organizationsApi } from '@/lib/api';
-import { Room, Apartment, Organization, RoomStatus } from '@/types';
+import { Room, RoomStatus } from '@/types';
 import { Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const roomSchema = z.object({
   room_number: z.string().min(1, '请输入房间号'),
-  floor: z.number().min(1, '楼层必须大于0'),
   area: z.number().min(0, '面积不能为负').optional(),
   monthly_rent: z.number().min(0, '租金不能为负'),
-  deposit: z.number().min(0, '押金不能为负').optional(),
-  status: z.enum(['available', 'occupied', 'maintenance', 'reserved']),
+  status: z.enum(['available', 'occupied', 'maintenance']),
   apartment_id: z.number().min(1, '请选择公寓'),
   notes: z.string().optional(),
 });
@@ -65,7 +63,6 @@ const statusMap: Record<RoomStatus, { label: string; variant: 'default' | 'secon
   available: { label: '空置', variant: 'secondary' },
   occupied: { label: '已租', variant: 'default' },
   maintenance: { label: '维修中', variant: 'destructive' },
-  reserved: { label: '已预订', variant: 'outline' },
 };
 
 export default function RoomsPage() {
@@ -98,10 +95,8 @@ export default function RoomsPage() {
     resolver: zodResolver(roomSchema),
     defaultValues: {
       room_number: '',
-      floor: 1,
       area: 0,
       monthly_rent: 0,
-      deposit: 0,
       status: 'available',
       apartment_id: 0,
       notes: '',
@@ -144,10 +139,8 @@ export default function RoomsPage() {
     setSelectedRoom(room);
     editForm.reset({
       room_number: room.room_number,
-      floor: room.floor,
       area: room.area || 0,
       monthly_rent: room.monthly_rent,
-      deposit: room.deposit || 0,
       status: room.status,
       apartment_id: room.apartment_id,
       notes: room.notes || '',
@@ -169,10 +162,6 @@ export default function RoomsPage() {
       accessorKey: 'apartment_name',
       header: '所属公寓',
       cell: ({ row }) => row.original.apartment?.name || '-',
-    },
-    {
-      accessorKey: 'floor',
-      header: '楼层',
     },
     {
       accessorKey: 'area',
@@ -331,14 +320,6 @@ export default function RoomsPage() {
                 <Label htmlFor="room_number">房间号</Label>
                 <Input id="room_number" {...createForm.register('room_number')} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="floor">楼层</Label>
-                <Input
-                  id="floor"
-                  type="number"
-                  {...createForm.register('floor', { valueAsNumber: true })}
-                />
-              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -365,7 +346,6 @@ export default function RoomsPage() {
                     <SelectItem value="available">空置</SelectItem>
                     <SelectItem value="occupied">已租</SelectItem>
                     <SelectItem value="maintenance">维修中</SelectItem>
-                    <SelectItem value="reserved">已预订</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -378,15 +358,6 @@ export default function RoomsPage() {
                   type="number"
                   step="0.01"
                   {...createForm.register('monthly_rent', { valueAsNumber: true })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="deposit">押金 (元)</Label>
-                <Input
-                  id="deposit"
-                  type="number"
-                  step="0.01"
-                  {...createForm.register('deposit', { valueAsNumber: true })}
                 />
               </div>
             </div>
@@ -428,14 +399,6 @@ export default function RoomsPage() {
                 <Label htmlFor="edit-room_number">房间号</Label>
                 <Input id="edit-room_number" {...editForm.register('room_number')} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-floor">楼层</Label>
-                <Input
-                  id="edit-floor"
-                  type="number"
-                  {...editForm.register('floor', { valueAsNumber: true })}
-                />
-              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -462,30 +425,18 @@ export default function RoomsPage() {
                     <SelectItem value="available">空置</SelectItem>
                     <SelectItem value="occupied">已租</SelectItem>
                     <SelectItem value="maintenance">维修中</SelectItem>
-                    <SelectItem value="reserved">已预订</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-monthly_rent">月租 (元)</Label>
-                <Input
-                  id="edit-monthly_rent"
-                  type="number"
-                  step="0.01"
-                  {...editForm.register('monthly_rent', { valueAsNumber: true })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-deposit">押金 (元)</Label>
-                <Input
-                  id="edit-deposit"
-                  type="number"
-                  step="0.01"
-                  {...editForm.register('deposit', { valueAsNumber: true })}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-monthly_rent">月租 (元)</Label>
+              <Input
+                id="edit-monthly_rent"
+                type="number"
+                step="0.01"
+                {...editForm.register('monthly_rent', { valueAsNumber: true })}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-notes">备注</Label>
@@ -509,7 +460,7 @@ export default function RoomsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>确认删除</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要删除房间 "{selectedRoom?.room_number}" 吗？此操作不可撤销。
+              确定要删除房间 &ldquo;{selectedRoom?.room_number}&rdquo; 吗？此操作不可撤销。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

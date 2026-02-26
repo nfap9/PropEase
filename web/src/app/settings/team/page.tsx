@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
@@ -53,7 +53,6 @@ import { useAuth } from '@/lib/auth/context';
 
 const organizationSchema = z.object({
   name: z.string().min(1, '请输入组织名称'),
-  description: z.string().optional(),
 });
 
 type OrganizationFormData = z.infer<typeof organizationSchema>;
@@ -112,7 +111,7 @@ export default function TeamSettingsPage() {
 
   const createOrgForm = useForm<OrganizationFormData>({
     resolver: zodResolver(organizationSchema),
-    defaultValues: { name: '', description: '' },
+    defaultValues: { name: '' },
   });
 
   const editOrgForm = useForm<OrganizationFormData>({
@@ -125,7 +124,11 @@ export default function TeamSettingsPage() {
   });
 
   const createOrgMutation = useMutation({
-    mutationFn: (data: OrganizationFormData) => organizationsApi.create(data),
+    mutationFn: (data: OrganizationFormData) =>
+      organizationsApi.create({
+        name: data.name,
+        slug: data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organizations'] });
       setIsCreateOrgOpen(false);
@@ -194,7 +197,6 @@ export default function TeamSettingsPage() {
     setSelectedOrg(org);
     editOrgForm.reset({
       name: org.name,
-      description: org.description || '',
     });
     setIsEditOrgOpen(true);
   };
@@ -329,12 +331,11 @@ export default function TeamSettingsPage() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    <CardDescription>{org.description || '暂无描述'}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">
-                        {org.member_count || 0} 位成员
+                        查看
                       </span>
                       <Button
                         variant="outline"
@@ -415,10 +416,6 @@ export default function TeamSettingsPage() {
                 </p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">描述</Label>
-              <Input id="description" {...createOrgForm.register('description')} />
-            </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsCreateOrgOpen(false)}>
                 取消
@@ -447,10 +444,6 @@ export default function TeamSettingsPage() {
             <div className="space-y-2">
               <Label htmlFor="edit-name">组织名称 *</Label>
               <Input id="edit-name" {...editOrgForm.register('name')} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-description">描述</Label>
-              <Input id="edit-description" {...editOrgForm.register('description')} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsEditOrgOpen(false)}>

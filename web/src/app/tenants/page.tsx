@@ -10,7 +10,6 @@ import { DataTable } from '@/components/common/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -44,18 +43,17 @@ import {
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
 import { tenantsApi, organizationsApi } from '@/lib/api';
-import { Tenant, Organization } from '@/types';
+import { Tenant } from '@/types';
 import { Plus, MoreHorizontal, Pencil, Trash2, Phone, User } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const tenantSchema = z.object({
   name: z.string().min(1, '请输入租客姓名'),
   phone: z.string().min(1, '请输入联系电话'),
-  id_number: z.string().optional(),
+  id_card: z.string().optional(),
   emergency_contact: z.string().optional(),
   emergency_phone: z.string().optional(),
   email: z.string().email('请输入有效的邮箱').optional().or(z.literal('')),
-  address: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -85,11 +83,10 @@ export default function TenantsPage() {
     defaultValues: {
       name: '',
       phone: '',
-      id_number: '',
+      id_card: '',
       emergency_contact: '',
       emergency_phone: '',
       email: '',
-      address: '',
       notes: '',
     },
   });
@@ -130,13 +127,12 @@ export default function TenantsPage() {
     setSelectedTenant(tenant);
     editForm.reset({
       name: tenant.name,
-      phone: tenant.phone,
-      id_number: tenant.id_number || '',
-      emergency_contact: tenant.emergency_contact || '',
-      emergency_phone: tenant.emergency_phone || '',
-      email: tenant.email || '',
-      address: tenant.address || '',
-      notes: tenant.notes || '',
+      phone: tenant.phone ?? '',
+      id_card: tenant.id_card ?? '',
+      emergency_contact: tenant.emergency_contact ?? '',
+      emergency_phone: tenant.emergency_phone ?? '',
+      email: tenant.email ?? '',
+      notes: tenant.notes ?? '',
     });
     setIsEditOpen(true);
   };
@@ -168,18 +164,9 @@ export default function TenantsPage() {
       ),
     },
     {
-      accessorKey: 'id_number',
+      accessorKey: 'id_card',
       header: '身份证号',
-      cell: ({ row }) => row.original.id_number || '-',
-    },
-    {
-      accessorKey: 'active_leases',
-      header: '活跃租约',
-      cell: ({ row }) => (
-        <Badge variant={row.original.active_leases_count > 0 ? 'default' : 'secondary'}>
-          {row.original.active_leases_count || 0} 个
-        </Badge>
-      ),
+      cell: ({ row }) => row.original.id_card || '-',
     },
     {
       accessorKey: 'emergency_contact',
@@ -295,8 +282,8 @@ export default function TenantsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="id_number">身份证号</Label>
-                <Input id="id_number" {...createForm.register('id_number')} />
+                <Label htmlFor="id_card">身份证号</Label>
+                <Input id="id_card" {...createForm.register('id_card')} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">邮箱</Label>
@@ -323,10 +310,6 @@ export default function TenantsPage() {
                   {...createForm.register('emergency_phone')}
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">户籍地址</Label>
-              <Input id="address" {...createForm.register('address')} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="notes">备注</Label>
@@ -369,8 +352,8 @@ export default function TenantsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-id_number">身份证号</Label>
-                <Input id="edit-id_number" {...editForm.register('id_number')} />
+                <Label htmlFor="edit-id_card">身份证号</Label>
+                <Input id="edit-id_card" {...editForm.register('id_card')} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-email">邮箱</Label>
@@ -394,10 +377,6 @@ export default function TenantsPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-address">户籍地址</Label>
-              <Input id="edit-address" {...editForm.register('address')} />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="edit-notes">备注</Label>
               <Input id="edit-notes" {...editForm.register('notes')} />
             </div>
@@ -419,7 +398,7 @@ export default function TenantsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>确认删除</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要删除租客 "{selectedTenant?.name}" 吗？此操作不可撤销。
+              确定要删除租客 &ldquo;{selectedTenant?.name}&rdquo; 吗？此操作不可撤销。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

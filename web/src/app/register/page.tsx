@@ -60,7 +60,7 @@ export default function RegisterPage() {
     try {
       await registerUser(data.email, data.password, data.full_name);
       router.push('/dashboard');
-    } catch (err) {
+    } catch {
       setError('注册失败，邮箱可能已被使用');
     } finally {
       setIsLoading(false);

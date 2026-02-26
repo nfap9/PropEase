@@ -35,8 +35,8 @@ import {
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
 import { organizationsApi } from '@/lib/api';
-import { Bill, Payment, Organization, BillStatus, PaymentMethod } from '@/types';
-import { MoreHorizontal, Plus, Download, DollarSign, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Bill, BillStatus, PaymentMethod } from '@/types';
+import { MoreHorizontal, Download, DollarSign, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const paymentSchema = z.object({
@@ -124,25 +124,6 @@ export default function BillsPage() {
       setIsPaymentOpen(false);
       paymentForm.reset();
       setSelectedBill(null);
-    },
-  });
-
-  const generateBillsMutation = useMutation({
-    mutationFn: async ({ year, month }: { year: number; month: number }) => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/bills/generate?org_id=${selectedOrgId}&year=${year}&month=${month}`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        }
-      );
-      if (!response.ok) throw new Error('Failed to generate bills');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bills', selectedOrgId] });
     },
   });
 

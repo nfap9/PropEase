@@ -10,7 +10,6 @@ import { DataTable } from '@/components/common/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -37,8 +36,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
 import { apartmentsApi, organizationsApi } from '@/lib/api';
-import { Apartment, Organization } from '@/types';
-import { Plus, MoreHorizontal, Pencil, Trash2, Eye } from 'lucide-react';
+import { Apartment } from '@/types';
+import { Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/context';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -52,14 +51,13 @@ import {
 const apartmentSchema = z.object({
   name: z.string().min(1, '请输入公寓名称'),
   address: z.string().min(1, '请输入公寓地址'),
-  total_floors: z.number().min(1, '楼层数必须大于0').optional(),
   description: z.string().optional(),
 });
 
 type ApartmentFormData = z.infer<typeof apartmentSchema>;
 
 export default function ApartmentsPage() {
-  const { user } = useAuth();
+  const { } = useAuth();
   const queryClient = useQueryClient();
   const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -80,7 +78,7 @@ export default function ApartmentsPage() {
 
   const createForm = useForm<ApartmentFormData>({
     resolver: zodResolver(apartmentSchema),
-    defaultValues: { name: '', address: '', total_floors: 1, description: '' },
+    defaultValues: { name: '', address: '', description: '' },
   });
 
   const editForm = useForm<ApartmentFormData>({
@@ -120,9 +118,8 @@ export default function ApartmentsPage() {
     setSelectedApartment(apartment);
     editForm.reset({
       name: apartment.name,
-      address: apartment.address,
-      total_floors: apartment.total_floors || 1,
-      description: apartment.description || '',
+      address: apartment.address ?? '',
+      description: apartment.description ?? '',
     });
     setIsEditOpen(true);
   };
@@ -140,26 +137,6 @@ export default function ApartmentsPage() {
     {
       accessorKey: 'address',
       header: '地址',
-    },
-    {
-      accessorKey: 'total_floors',
-      header: '楼层数',
-    },
-    {
-      accessorKey: 'total_rooms',
-      header: '房间数',
-      cell: ({ row }) => (
-        <Badge variant="secondary">{row.original.total_rooms || 0} 间</Badge>
-      ),
-    },
-    {
-      accessorKey: 'is_active',
-      header: '状态',
-      cell: ({ row }) => (
-        <Badge variant={row.original.is_active ? 'default' : 'secondary'}>
-          {row.original.is_active ? '运营中' : '已停用'}
-        </Badge>
-      ),
     },
     {
       id: 'actions',
@@ -291,14 +268,6 @@ export default function ApartmentsPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="total_floors">楼层数</Label>
-              <Input
-                id="total_floors"
-                type="number"
-                {...createForm.register('total_floors', { valueAsNumber: true })}
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="description">描述</Label>
               <Input id="description" {...createForm.register('description')} />
             </div>
@@ -346,14 +315,6 @@ export default function ApartmentsPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-total_floors">楼层数</Label>
-              <Input
-                id="edit-total_floors"
-                type="number"
-                {...editForm.register('total_floors', { valueAsNumber: true })}
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="edit-description">描述</Label>
               <Input id="edit-description" {...editForm.register('description')} />
             </div>
@@ -375,7 +336,7 @@ export default function ApartmentsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>确认删除</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要删除公寓 "{selectedApartment?.name}" 吗？此操作不可撤销，关联的房间数据也将被删除。
+              确定要删除公寓 &ldquo;{selectedApartment?.name}&rdquo; 吗？此操作不可撤销，关联的房间数据也将被删除。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
