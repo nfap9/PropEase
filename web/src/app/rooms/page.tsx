@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
 import { roomsApi, apartmentsApi, leasesApi } from '@/lib/api';
+import { filterEmptyStrings } from '@/lib/utils/form';
 import { useAuth } from '@/lib/auth/context';
 import { Room, RoomStatus } from '@/types';
 import {
@@ -211,7 +212,7 @@ export default function RoomsPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: RoomFormData }) =>
-      roomsApi.update(orgId!, id, data),
+      roomsApi.update(orgId!, id, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });

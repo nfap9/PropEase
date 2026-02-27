@@ -45,6 +45,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { apartmentsApi, roomsApi } from '@/lib/api';
+import { filterEmptyStrings } from '@/lib/utils/form';
 import { useAuth } from '@/lib/auth/context';
 import { Room, RoomStatus } from '@/types';
 import {
@@ -327,7 +328,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   // 更新公寓
   const updateApartmentMutation = useMutation({
     mutationFn: (data: { name: string; address: string; description?: string }) =>
-      apartmentsApi.update(orgId!, apartmentId, data),
+      apartmentsApi.update(orgId!, apartmentId, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartment', orgId, apartmentId] });
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
@@ -342,7 +343,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   // 创建房间
   const createRoomMutation = useMutation({
     mutationFn: (data: RoomFormData) =>
-      roomsApi.create(orgId!, apartmentId, data),
+      roomsApi.create(orgId!, apartmentId, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
       setIsCreateRoomOpen(false);
@@ -383,7 +384,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   // 更新房间
   const updateRoomMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: RoomFormData }) =>
-      roomsApi.update(orgId!, id, { ...data, apartment_id: apartmentId }),
+      roomsApi.update(orgId!, id, filterEmptyStrings({ ...data, apartment_id: apartmentId })),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
       setIsEditRoomOpen(false);

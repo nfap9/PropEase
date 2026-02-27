@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { TenantSelect } from '@/components/common/tenant-select';
 import { leasesApi, apartmentsApi, roomsApi } from '@/lib/api';
+import { filterEmptyStrings } from '@/lib/utils/form';
 import { Room, Apartment } from '@/types';
 
 const leaseSchema = z.object({
@@ -125,7 +126,7 @@ export function LeaseFormDialog({
   }, [room, open, isRoomSpecified, form]);
 
   const createMutation = useMutation({
-    mutationFn: (data: LeaseFormData) => leasesApi.create(orgId, data),
+    mutationFn: (data: LeaseFormData) => leasesApi.create(orgId, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });

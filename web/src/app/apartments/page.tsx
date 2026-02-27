@@ -58,6 +58,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { filterEmptyStrings } from '@/lib/utils/form';
 
 const apartmentSchema = z.object({
   name: z.string().min(1, '请输入公寓名称'),
@@ -94,7 +95,7 @@ export default function ApartmentsPage() {
 
   const createMutation = useMutation({
     mutationFn: (data: ApartmentFormData) =>
-      apartmentsApi.create(orgId!, data),
+      apartmentsApi.create(orgId!, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsCreateOpen(false);
@@ -108,7 +109,7 @@ export default function ApartmentsPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: ApartmentFormData }) =>
-      apartmentsApi.update(orgId!, id, data),
+      apartmentsApi.update(orgId!, id, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsEditOpen(false);

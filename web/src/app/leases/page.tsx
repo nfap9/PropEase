@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { ColumnDef } from '@tanstack/react-table';
 import { leasesApi } from '@/lib/api';
+import { filterEmptyStrings } from '@/lib/utils/form';
 import { useAuth } from '@/lib/auth/context';
 import { Lease } from '@/types';
 import { Plus, Pencil, Trash2, Ban, Building2 } from 'lucide-react';
@@ -75,7 +76,7 @@ export default function LeasesPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: LeaseFormData }) =>
-      leasesApi.update(orgId!, id, data),
+      leasesApi.update(orgId!, id, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       setIsEditOpen(false);

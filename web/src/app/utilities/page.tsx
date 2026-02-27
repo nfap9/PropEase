@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
 import { apartmentsApi, roomsApi, leasesApi, utilitiesApi } from '@/lib/api';
+import { filterEmptyStrings } from '@/lib/utils/form';
 import { useAuth } from '@/lib/auth/context';
 import { UtilityReading } from '@/types';
 import { Plus, Pencil, Zap, Droplets, Building2 } from 'lucide-react';
@@ -100,7 +101,7 @@ export default function UtilitiesPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: UtilityFormData) => utilitiesApi.create(orgId!, data),
+    mutationFn: (data: UtilityFormData) => utilitiesApi.create(orgId!, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       setIsCreateOpen(false);
@@ -114,7 +115,7 @@ export default function UtilitiesPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: UtilityFormData }) =>
-      utilitiesApi.update(orgId!, id, data),
+      utilitiesApi.update(orgId!, id, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       setIsEditOpen(false);

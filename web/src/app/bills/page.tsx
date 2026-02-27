@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
 import { billsApi } from '@/lib/api';
+import { filterEmptyStrings } from '@/lib/utils/form';
 import { useAuth } from '@/lib/auth/context';
 import { Bill, BillStatus, PaymentMethod } from '@/types';
 import { Download, DollarSign, AlertCircle, CheckCircle, Clock, Building2 } from 'lucide-react';
@@ -89,7 +90,7 @@ export default function BillsPage() {
 
   const paymentMutation = useMutation({
     mutationFn: (data: PaymentFormData) =>
-      billsApi.createPayment(orgId!, selectedBill!.id, data),
+      billsApi.createPayment(orgId!, selectedBill!.id, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bills', orgId] });
       setIsPaymentOpen(false);
