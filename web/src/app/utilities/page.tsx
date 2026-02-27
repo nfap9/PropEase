@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
-import { apartmentsApi, roomsApi, leasesApi, utilitiesApi } from '@/lib/api';
+import { apartmentsApi, roomsApi, utilitiesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { useAuth } from '@/lib/auth/context';
 import { UtilityReading } from '@/types';
@@ -39,6 +39,7 @@ const utilitySchema = z.object({
   room_id: z.number().min(1, '请选择房间'),
   period_year: z.number().min(2020).max(2100),
   period_month: z.number().min(1).max(12),
+  reading_date: z.string().min(1, '请选择读数日期'),
   water_reading: z.number().min(0).optional(),
   electricity_reading: z.number().min(0).optional(),
   notes: z.string().optional(),
@@ -72,12 +73,6 @@ export default function UtilitiesPage() {
     enabled: !!orgId && selectedApartmentId !== null,
   });
 
-  const { data: leases } = useQuery({
-    queryKey: ['leases', orgId],
-    queryFn: () => leasesApi.list(orgId!),
-    enabled: !!orgId,
-  });
-
   const { data: utilities, isLoading: utilitiesLoading } = useQuery({
     queryKey: ['utilities', orgId],
     queryFn: () => utilitiesApi.list(orgId!),
@@ -90,6 +85,7 @@ export default function UtilitiesPage() {
       room_id: 0,
       period_year: currentYear,
       period_month: currentMonth,
+      reading_date: today.toISOString().split('T')[0],
       water_reading: 0,
       electricity_reading: 0,
       notes: '',
@@ -129,18 +125,13 @@ export default function UtilitiesPage() {
 
   const occupiedRooms = rooms?.filter((r) => r.status === 'occupied');
 
-  const getRoomInfo = (roomId: number) => {
-    const room = rooms?.find((r) => r.id === roomId);
-    const lease = leases?.find((l) => l.room_id === roomId && l.is_active);
-    return { room, lease };
-  };
-
   const handleEdit = (utility: UtilityReading) => {
     setSelectedUtility(utility);
     editForm.reset({
       room_id: utility.room_id,
       period_year: utility.period_year,
       period_month: utility.period_month,
+      reading_date: utility.reading_date,
       water_reading: utility.water_reading || 0,
       electricity_reading: utility.electricity_reading || 0,
       notes: utility.notes || '',
@@ -158,9 +149,14 @@ export default function UtilitiesPage() {
       accessorKey: 'room',
       header: '房间',
       cell: ({ row }) => {
-        const { room } = getRoomInfo(row.original.room_id);
+        const room = row.original.room;
         return room ? `${room.apartment?.name || ''} - ${room.room_number}` : '-';
       },
+    },
+    {
+      accessorKey: 'reading_date',
+      header: '记录日期',
+      cell: ({ row }) => row.original.reading_date,
     },
     {
       accessorKey: 'water_reading',
@@ -168,7 +164,9 @@ export default function UtilitiesPage() {
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Droplets className="h-4 w-4 text-blue-500" />
-          {row.original.water_reading || '-'}
+          {row.original.water_reading !== null && row.original.water_reading !== undefined
+            ? row.original.water_reading
+            : '-'}
         </div>
       ),
     },
@@ -178,7 +176,10 @@ export default function UtilitiesPage() {
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Zap className="h-4 w-4 text-yellow-500" />
-          {row.original.electricity_reading || '-'}
+          {row.original.electricity_reading !== null &&
+          row.original.electricity_reading !== undefined
+            ? row.original.electricity_reading
+            : '-'}
         </div>
       ),
     },
@@ -291,7 +292,7 @@ export default function UtilitiesPage() {
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="period_year">年份</Label>
                 <Select
@@ -331,6 +332,14 @@ export default function UtilitiesPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="reading_date">读数日期 *</Label>
+                <Input
+                  id="reading_date"
+                  type="date"
+                  {...createForm.register('reading_date')}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -392,7 +401,7 @@ export default function UtilitiesPage() {
             )}
             className="space-y-4"
           >
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>年份</Label>
                 <Input value={selectedUtility?.period_year} disabled />
@@ -401,13 +410,23 @@ export default function UtilitiesPage() {
                 <Label>月份</Label>
                 <Input value={`${selectedUtility?.period_month}月`} disabled />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-reading_date">读数日期</Label>
+                <Input
+                  id="edit-reading_date"
+                  type="date"
+                  {...editForm.register('reading_date')}
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label>房间</Label>
               <Input
                 value={
                   selectedUtility
-                    ? getRoomInfo(selectedUtility.room_id).room?.room_number || ''
+                    ? selectedUtility.room
+                      ? `${selectedUtility.room.apartment?.name || ''} - ${selectedUtility.room.room_number}`
+                      : ''
                     : ''
                 }
                 disabled

@@ -138,6 +138,7 @@ export interface UtilityReading {
   water_previous: number | null;
   electricity_previous: number | null;
   notes: string | null;
+  room?: Room;
   created_at: string;
 }
 

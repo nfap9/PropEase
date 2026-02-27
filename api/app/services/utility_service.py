@@ -41,6 +41,7 @@ class UtilityService(BaseService):
             room_id=data.room_id,
             period_year=data.period_year,
             period_month=data.period_month,
+            reading_date=data.reading_date,
             water_reading=data.water_reading,
             water_previous=previous.water_reading if previous else None,
             electricity_reading=data.electricity_reading,

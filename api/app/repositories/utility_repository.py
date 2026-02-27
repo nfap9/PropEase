@@ -2,7 +2,7 @@
 Utility reading repository for data access operations.
 """
 from typing import List, Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.repositories.base import BaseRepository
 from app.models.utility import UtilityReading
 from app.models.apartment import Room, Apartment
@@ -20,6 +20,7 @@ class UtilityRepository(BaseRepository[UtilityReading]):
         """Find all readings in an organization."""
         query = (
             self.db.query(UtilityReading)
+            .options(joinedload(UtilityReading.room).joinedload(Room.apartment))
             .join(Room)
             .join(Apartment)
             .filter(Apartment.organization_id == org_id)

@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import date, datetime
 
+from app.schemas.apartment import RoomWithApartment
+
 
 class UtilityReadingBase(BaseModel):
     room_id: int
@@ -30,6 +32,7 @@ class UtilityReadingUpdate(BaseModel):
 
 class UtilityReadingResponse(UtilityReadingBase):
     id: int
+    room: Optional[RoomWithApartment] = None
     created_at: datetime
 
     class Config:
