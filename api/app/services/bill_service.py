@@ -51,7 +51,7 @@ class BillService(BaseService):
             data.rent_amount
             + data.water_amount
             + data.electricity_amount
-            + (data.other_amount or Decimal(0))
+            + (data.other_amount or 0)
         )
         bill = Bill(
             lease_id=data.lease_id,
@@ -97,7 +97,8 @@ class BillService(BaseService):
         electricity_amount = update_data.get("electricity_amount", bill.electricity_amount)
         other_amount = update_data.get("other_amount", bill.other_amount)
 
-        total_amount = rent_amount + water_amount + electricity_amount + (other_amount or Decimal(0))
+        # Convert to float to ensure consistent types
+        total_amount = float(rent_amount) + float(water_amount) + float(electricity_amount) + float(other_amount or 0)
         update_data["total_amount"] = total_amount
 
         return self.bill_repo.update(bill_id, **update_data)

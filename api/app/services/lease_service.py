@@ -98,8 +98,8 @@ class LeaseService(BaseService):
             return None
 
         # Check for overlapping leases if dates changed
-        if data.start_date or data.end_date:
-            start = data.start_date or lease.start_date
+        if data.end_date is not None:
+            start = lease.start_date
             end = data.end_date or lease.end_date
             if self.lease_repo.has_overlapping_lease(
                 lease.room_id, start, end, exclude_id=lease_id

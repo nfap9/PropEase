@@ -68,9 +68,17 @@ class LeaseRepository(BaseRepository[Lease]):
         query = self.db.query(Lease).filter(
             Lease.room_id == room_id,
             Lease.is_active == true(),
-            Lease.start_date <= end_date,
-            Lease.end_date >= start_date,
         )
+        # Handle None end_date (open-ended lease)
+        if end_date is None:
+            # New lease is open-ended, overlaps if existing lease starts before new lease ends
+            # Since new lease has no end, it overlaps with any active lease
+            query = query.filter(Lease.end_date >= start_date)
+        else:
+            query = query.filter(
+                Lease.start_date <= end_date,
+                Lease.end_date >= start_date,
+            )
         if exclude_id:
             query = query.filter(Lease.id != exclude_id)
         return query.first() is not None
