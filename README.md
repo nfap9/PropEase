@@ -126,8 +126,8 @@ make migrate-create  # 创建迁移
 make db-reset        # 重置数据库
 
 # 测试数据
-cd api && uv run python scripts/seed_demo.py    # 生成演示数据
-cd api && uv run python scripts/seed_admin.py   # 仅创建管理员
+make db-reset-demo   # 重置数据库并生成演示数据
+make db-seed-demo    # 生成演示数据（不重置）
 
 # Docker
 make docker-up       # 启动容器
@@ -141,13 +141,14 @@ make docker-down     # 停止容器
 ### 快速生成演示数据
 
 ```bash
-cd api
+# 方式一：重置数据库并生成完整演示数据（推荐）
+make db-reset-demo
 
-# 方式一：重置数据库并生成演示数据
-uv run python scripts/reset_db.py -y && uv run python scripts/seed_demo.py
+# 方式二：在现有数据库上生成演示数据
+make db-seed-demo
 
-# 方式二：仅创建管理员（如果数据库已有数据）
-uv run python scripts/seed_admin.py
+# 方式三：仅创建管理员用户
+make db-reset-seed
 ```
 
 ### 演示数据内容
