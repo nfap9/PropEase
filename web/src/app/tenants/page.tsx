@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { toast } from 'sonner';
+import Link from 'next/link';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
@@ -87,6 +89,10 @@ export default function TenantsPage() {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsCreateOpen(false);
       createForm.reset();
+      toast.success('租客创建成功');
+    },
+    onError: () => {
+      toast.error('创建失败，请重试');
     },
   });
 
@@ -97,6 +103,10 @@ export default function TenantsPage() {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsEditOpen(false);
       setSelectedTenant(null);
+      toast.success('租客信息更新成功');
+    },
+    onError: () => {
+      toast.error('更新失败，请重试');
     },
   });
 
@@ -106,6 +116,10 @@ export default function TenantsPage() {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsDeleteOpen(false);
       setSelectedTenant(null);
+      toast.success('租客删除成功');
+    },
+    onError: () => {
+      toast.error('删除失败，请重试');
     },
   });
 
@@ -133,10 +147,13 @@ export default function TenantsPage() {
       accessorKey: 'name',
       header: '姓名',
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
+        <Link
+          href={`/tenants/${row.original.id}`}
+          className="flex items-center gap-2 font-medium text-primary hover:underline"
+        >
           <User className="h-4 w-4 text-muted-foreground" />
           {row.original.name}
-        </div>
+        </Link>
       ),
     },
     {

@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
@@ -121,6 +122,10 @@ export default function LeasesPage() {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
       setIsCreateOpen(false);
       createForm.reset();
+      toast.success('租约创建成功');
+    },
+    onError: () => {
+      toast.error('创建失败，请重试');
     },
   });
 
@@ -131,6 +136,10 @@ export default function LeasesPage() {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       setIsEditOpen(false);
       setSelectedLease(null);
+      toast.success('租约更新成功');
+    },
+    onError: () => {
+      toast.error('更新失败，请重试');
     },
   });
 
@@ -141,6 +150,10 @@ export default function LeasesPage() {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
       setIsTerminateOpen(false);
       setSelectedLease(null);
+      toast.success('租约已终止');
+    },
+    onError: () => {
+      toast.error('终止失败，请重试');
     },
   });
 
@@ -150,6 +163,10 @@ export default function LeasesPage() {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       setIsDeleteOpen(false);
       setSelectedLease(null);
+      toast.success('租约删除成功');
+    },
+    onError: () => {
+      toast.error('删除失败，请重试');
     },
   });
 

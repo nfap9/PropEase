@@ -1,9 +1,9 @@
 import api from './client';
-import { Apartment, Room } from '@/types';
+import { Apartment, ApartmentWithStats, Room, RoomBatchCreate } from '@/types';
 
 export const apartmentsApi = {
-  list: async (orgId: number): Promise<Apartment[]> => {
-    const response = await api.get<Apartment[]>('/apartments', { params: { org_id: orgId } });
+  list: async (orgId: number): Promise<ApartmentWithStats[]> => {
+    const response = await api.get<ApartmentWithStats[]>('/apartments', { params: { org_id: orgId } });
     return response.data;
   },
 
@@ -42,6 +42,13 @@ export const roomsApi = {
 
   create: async (orgId: number, data: Partial<Room>): Promise<Room> => {
     const response = await api.post<Room>('/rooms', data, { params: { org_id: orgId } });
+    return response.data;
+  },
+
+  batchCreate: async (orgId: number, apartmentId: number, data: RoomBatchCreate): Promise<Room[]> => {
+    const response = await api.post<Room[]>(`/apartments/${apartmentId}/rooms/batch`, data, {
+      params: { org_id: orgId },
+    });
     return response.data;
   },
 

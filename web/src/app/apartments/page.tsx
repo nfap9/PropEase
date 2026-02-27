@@ -6,9 +6,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
-import { DataTable } from '@/components/common/data-table';
-import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,12 +29,35 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ColumnDef } from '@tanstack/react-table';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { apartmentsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
-import { Apartment } from '@/types';
-import { Plus, Pencil, Trash2, Building2 } from 'lucide-react';
+import { ApartmentWithStats } from '@/types';
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Building2,
+  Home,
+  Users,
+  Wrench,
+  MoreVertical,
+  MapPin,
+} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const apartmentSchema = z.object({
   name: z.string().min(1, '请输入公寓名称'),
@@ -53,7 +75,7 @@ export default function ApartmentsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null);
+  const [selectedApartment, setSelectedApartment] = useState<ApartmentWithStats | null>(null);
 
   const { data: apartments, isLoading: apartmentsLoading } = useQuery({
     queryKey: ['apartments', orgId],
@@ -77,6 +99,10 @@ export default function ApartmentsPage() {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsCreateOpen(false);
       createForm.reset();
+      toast.success('公寓创建成功');
+    },
+    onError: () => {
+      toast.error('创建失败，请重试');
     },
   });
 
@@ -87,6 +113,10 @@ export default function ApartmentsPage() {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsEditOpen(false);
       setSelectedApartment(null);
+      toast.success('公寓更新成功');
+    },
+    onError: () => {
+      toast.error('更新失败，请重试');
     },
   });
 
@@ -96,10 +126,14 @@ export default function ApartmentsPage() {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsDeleteOpen(false);
       setSelectedApartment(null);
+      toast.success('公寓删除成功');
+    },
+    onError: () => {
+      toast.error('删除失败，请重试');
     },
   });
 
-  const handleEdit = (apartment: Apartment) => {
+  const handleEdit = (apartment: ApartmentWithStats) => {
     setSelectedApartment(apartment);
     editForm.reset({
       name: apartment.name,
@@ -109,56 +143,21 @@ export default function ApartmentsPage() {
     setIsEditOpen(true);
   };
 
-  const handleDelete = (apartment: Apartment) => {
+  const handleDelete = (apartment: ApartmentWithStats) => {
     setSelectedApartment(apartment);
     setIsDeleteOpen(true);
   };
-
-  const columns: ColumnDef<Apartment>[] = [
-    {
-      accessorKey: 'name',
-      header: '公寓名称',
-      cell: ({ row }) => (
-        <Link
-          href={`/apartments/${row.original.id}`}
-          className="font-medium text-primary hover:underline"
-        >
-          {row.original.name}
-        </Link>
-      ),
-    },
-    {
-      accessorKey: 'address',
-      header: '地址',
-    },
-    {
-      id: 'actions',
-      cell: ({ row }) => {
-        const apartment = row.original;
-        const actions: TableAction[] = [
-          {
-            label: '编辑',
-            icon: Pencil,
-            onClick: () => handleEdit(apartment),
-          },
-          {
-            label: '删除',
-            icon: Trash2,
-            onClick: () => handleDelete(apartment),
-            variant: 'destructive',
-          },
-        ];
-        return <TableActions actions={actions} />;
-      },
-    },
-  ];
 
   if (authLoading) {
     return (
       <MainLayout>
         <div className="space-y-6">
           <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-96" />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Skeleton className="h-48" />
+            <Skeleton className="h-48" />
+            <Skeleton className="h-48" />
+          </div>
         </div>
       </MainLayout>
     );
@@ -181,7 +180,10 @@ export default function ApartmentsPage() {
     <MainLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">公寓管理</h1>
+          <div>
+            <h1 className="text-3xl font-bold">公寓管理</h1>
+            <p className="text-muted-foreground mt-1">管理您的所有公寓和房间</p>
+          </div>
           <Button onClick={() => setIsCreateOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             新增公寓
@@ -189,9 +191,111 @@ export default function ApartmentsPage() {
         </div>
 
         {apartmentsLoading ? (
-          <Skeleton className="h-96" />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Skeleton className="h-48" />
+            <Skeleton className="h-48" />
+            <Skeleton className="h-48" />
+          </div>
+        ) : apartments && apartments.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {apartments.map((apartment) => (
+              <Link key={apartment.id} href={`/apartments/${apartment.id}`}>
+                <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <CardTitle className="flex items-center gap-2">
+                          <Building2 className="h-5 w-5 text-primary flex-shrink-0" />
+                          <span className="truncate">{apartment.name}</span>
+                        </CardTitle>
+                        <CardDescription className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">{apartment.address || '暂无地址'}</span>
+                        </CardDescription>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.preventDefault()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" onClick={(e) => e.preventDefault()}>
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleEdit(apartment);
+                            }}
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            编辑
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleDelete(apartment);
+                            }}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            删除
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="flex flex-col items-center p-2 bg-muted/50 rounded-lg">
+                        <Home className="h-4 w-4 text-muted-foreground mb-1" />
+                        <span className="text-lg font-semibold">{apartment.room_stats.total}</span>
+                        <span className="text-xs text-muted-foreground">总房间</span>
+                      </div>
+                      <div className="flex flex-col items-center p-2 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                        <Home className="h-4 w-4 text-green-600 mb-1" />
+                        <span className="text-lg font-semibold text-green-600">{apartment.room_stats.available}</span>
+                        <span className="text-xs text-muted-foreground">空房</span>
+                      </div>
+                      <div className="flex flex-col items-center p-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                        <Users className="h-4 w-4 text-blue-600 mb-1" />
+                        <span className="text-lg font-semibold text-blue-600">{apartment.room_stats.occupied}</span>
+                        <span className="text-xs text-muted-foreground">已租</span>
+                      </div>
+                    </div>
+                    {apartment.room_stats.maintenance > 0 && (
+                      <div className="mt-3 flex items-center gap-2 text-sm text-orange-600">
+                        <Wrench className="h-4 w-4" />
+                        <span>{apartment.room_stats.maintenance} 间房间维修中</span>
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter className="pt-0">
+                    <div className="w-full flex items-center justify-between text-sm text-muted-foreground">
+                      <span>入住率</span>
+                      <span className="font-medium">
+                        {apartment.room_stats.total > 0
+                          ? Math.round((apartment.room_stats.occupied / apartment.room_stats.total) * 100)
+                          : 0}%
+                      </span>
+                    </div>
+                  </CardFooter>
+                </Card>
+              </Link>
+            ))}
+          </div>
         ) : (
-          <DataTable columns={columns} data={apartments || []} />
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">暂无公寓</h3>
+              <p className="text-muted-foreground text-sm mb-4">点击下方按钮添加您的第一个公寓</p>
+              <Button onClick={() => setIsCreateOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                新增公寓
+              </Button>
+            </CardContent>
+          </Card>
         )}
       </div>
 

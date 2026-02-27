@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
 import { Button } from '@/components/ui/button';
@@ -133,6 +134,10 @@ export default function TeamSettingsPage() {
       queryClient.invalidateQueries({ queryKey: ['organizations'] });
       setIsCreateOrgOpen(false);
       createOrgForm.reset();
+      toast.success('组织创建成功');
+    },
+    onError: () => {
+      toast.error('创建失败，请重试');
     },
   });
 
@@ -143,6 +148,10 @@ export default function TeamSettingsPage() {
       queryClient.invalidateQueries({ queryKey: ['organizations'] });
       setIsEditOrgOpen(false);
       setSelectedOrg(null);
+      toast.success('组织更新成功');
+    },
+    onError: () => {
+      toast.error('更新失败，请重试');
     },
   });
 
@@ -168,6 +177,10 @@ export default function TeamSettingsPage() {
       });
       setIsInviteOpen(false);
       inviteForm.reset();
+      toast.success('邀请已发送');
+    },
+    onError: () => {
+      toast.error('邀请失败，请重试');
     },
   });
 
@@ -190,6 +203,10 @@ export default function TeamSettingsPage() {
       });
       setIsRemoveMemberOpen(false);
       setSelectedMember(null);
+      toast.success('成员已移除');
+    },
+    onError: () => {
+      toast.error('移除失败，请重试');
     },
   });
 

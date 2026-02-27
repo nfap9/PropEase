@@ -20,6 +20,14 @@ class ApartmentUpdate(BaseModel):
     description: Optional[str] = None
 
 
+class RoomStats(BaseModel):
+    """房间统计信息"""
+    total: int
+    available: int
+    occupied: int
+    maintenance: int
+
+
 class ApartmentResponse(ApartmentBase):
     id: int
     organization_id: int
@@ -27,6 +35,11 @@ class ApartmentResponse(ApartmentBase):
 
     class Config:
         from_attributes = True
+
+
+class ApartmentWithStatsResponse(ApartmentResponse):
+    """带房间统计信息的公寓响应"""
+    room_stats: RoomStats
 
 
 class RoomBase(BaseModel):
@@ -39,6 +52,16 @@ class RoomBase(BaseModel):
 class RoomCreate(RoomBase):
     apartment_id: int
     status: RoomStatus = RoomStatus.AVAILABLE
+
+
+class RoomBatchCreate(BaseModel):
+    """批量创建房间"""
+    floor: int  # 楼层号
+    start_number: int  # 起始房间号（1-99）
+    end_number: int  # 结束房间号（1-99）
+    monthly_rent: float  # 月租
+    area: Optional[float] = None  # 面积
+    notes: Optional[str] = None  # 备注
 
 
 class RoomUpdate(BaseModel):

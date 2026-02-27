@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
@@ -49,7 +50,7 @@ import {
 import { ColumnDef } from '@tanstack/react-table';
 import { apartmentsApi, roomsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
-import { Room, RoomStatus } from '@/types';
+import { Room, RoomStatus, RoomBatchCreate } from '@/types';
 import {
   ArrowLeft,
   Building2,
@@ -63,6 +64,7 @@ import {
   Receipt,
   Zap,
   Loader2,
+  Layers,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -75,6 +77,20 @@ const roomSchema = z.object({
 });
 
 type RoomFormData = z.infer<typeof roomSchema>;
+
+const roomBatchSchema = z.object({
+  floor: z.number().min(1, '楼层号最小为1').max(99, '楼层号最大为99'),
+  start_number: z.number().min(1, '起始号最小为1').max(99, '起始号最大为99'),
+  end_number: z.number().min(1, '结束号最小为1').max(99, '结束号最大为99'),
+  monthly_rent: z.number().min(0, '租金不能为负'),
+  area: z.number().min(0, '面积不能为负').optional(),
+  notes: z.string().optional(),
+}).refine((data) => data.end_number >= data.start_number, {
+  message: '结束号必须大于等于起始号',
+  path: ['end_number'],
+});
+
+type RoomBatchFormData = z.infer<typeof roomBatchSchema>;
 
 const STATUS_MAP: Record<RoomStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   available: { label: '空置', variant: 'secondary' },
@@ -91,6 +107,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
 
   const [isEditApartmentOpen, setIsEditApartmentOpen] = useState(false);
   const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
+  const [isBatchCreateRoomOpen, setIsBatchCreateRoomOpen] = useState(false);
   const [isEditRoomOpen, setIsEditRoomOpen] = useState(false);
   const [isDeleteRoomOpen, setIsDeleteRoomOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
@@ -146,6 +163,19 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     },
   });
 
+  // 批量创建房间表单
+  const batchCreateRoomForm = useForm<RoomBatchFormData>({
+    resolver: zodResolver(roomBatchSchema),
+    defaultValues: {
+      floor: 1,
+      start_number: 1,
+      end_number: 10,
+      monthly_rent: 0,
+      area: 0,
+      notes: '',
+    },
+  });
+
   // 房间编辑表单
   const editRoomForm = useForm<RoomFormData>({
     resolver: zodResolver(roomSchema),
@@ -159,6 +189,10 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       queryClient.invalidateQueries({ queryKey: ['apartment', orgId, apartmentId] });
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsEditApartmentOpen(false);
+      toast.success('公寓信息更新成功');
+    },
+    onError: () => {
+      toast.error('更新失败，请重试');
     },
   });
 
@@ -170,6 +204,26 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
       setIsCreateRoomOpen(false);
       createRoomForm.reset();
+      toast.success('房间创建成功');
+    },
+    onError: () => {
+      toast.error('创建失败，请重试');
+    },
+  });
+
+  // 批量创建房间
+  const batchCreateRoomMutation = useMutation({
+    mutationFn: (data: RoomBatchFormData) =>
+      roomsApi.batchCreate(orgId!, apartmentId, data),
+    onSuccess: (rooms) => {
+      queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
+      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
+      setIsBatchCreateRoomOpen(false);
+      batchCreateRoomForm.reset();
+      toast.success(`成功创建 ${rooms.length} 个房间`);
+    },
+    onError: () => {
+      toast.error('批量创建失败，请重试');
     },
   });
 
@@ -181,6 +235,10 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
       setIsEditRoomOpen(false);
       setSelectedRoom(null);
+      toast.success('房间信息更新成功');
+    },
+    onError: () => {
+      toast.error('更新失败，请重试');
     },
   });
 
@@ -191,6 +249,10 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
       setIsDeleteRoomOpen(false);
       setSelectedRoom(null);
+      toast.success('房间删除成功');
+    },
+    onError: () => {
+      toast.error('删除失败，请重试');
     },
   });
 
@@ -388,10 +450,16 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
               <CardTitle>房间列表</CardTitle>
               <CardDescription>管理该公寓的所有房间</CardDescription>
             </div>
-            <Button onClick={() => setIsCreateRoomOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              新增房间
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setIsBatchCreateRoomOpen(true)}>
+                <Layers className="mr-2 h-4 w-4" />
+                批量添加
+              </Button>
+              <Button onClick={() => setIsCreateRoomOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                新增房间
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {roomsLoading ? (
@@ -551,6 +619,123 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
               </Button>
               <Button type="submit" disabled={createRoomMutation.isPending}>
                 {createRoomMutation.isPending ? '创建中...' : '创建'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* 批量创建房间对话框 */}
+      <Dialog open={isBatchCreateRoomOpen} onOpenChange={setIsBatchCreateRoomOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>批量添加房间</DialogTitle>
+            <DialogDescription>
+              按楼层批量创建房间，房间号格式为"楼层号+房间号"（如1楼01号→101）
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={batchCreateRoomForm.handleSubmit((data) => batchCreateRoomMutation.mutate(data))}
+            className="space-y-4"
+          >
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="floor">楼层号</Label>
+                <Input
+                  id="floor"
+                  type="number"
+                  min="1"
+                  max="99"
+                  {...batchCreateRoomForm.register('floor', { valueAsNumber: true })}
+                />
+                {batchCreateRoomForm.formState.errors.floor && (
+                  <p className="text-sm text-destructive">
+                    {batchCreateRoomForm.formState.errors.floor.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="start_number">起始号</Label>
+                <Input
+                  id="start_number"
+                  type="number"
+                  min="1"
+                  max="99"
+                  {...batchCreateRoomForm.register('start_number', { valueAsNumber: true })}
+                />
+                {batchCreateRoomForm.formState.errors.start_number && (
+                  <p className="text-sm text-destructive">
+                    {batchCreateRoomForm.formState.errors.start_number.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="end_number">结束号</Label>
+                <Input
+                  id="end_number"
+                  type="number"
+                  min="1"
+                  max="99"
+                  {...batchCreateRoomForm.register('end_number', { valueAsNumber: true })}
+                />
+                {batchCreateRoomForm.formState.errors.end_number && (
+                  <p className="text-sm text-destructive">
+                    {batchCreateRoomForm.formState.errors.end_number.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* 预览生成的房间号 */}
+            {batchCreateRoomForm.watch('start_number') <= batchCreateRoomForm.watch('end_number') && (
+              <div className="rounded-md bg-muted p-3">
+                <p className="text-sm text-muted-foreground mb-2">
+                  将创建 {batchCreateRoomForm.watch('end_number') - batchCreateRoomForm.watch('start_number') + 1} 个房间：
+                </p>
+                <p className="text-sm font-mono">
+                  {batchCreateRoomForm.watch('floor')}
+                  {String(batchCreateRoomForm.watch('start_number')).padStart(2, '0')} -
+                  {batchCreateRoomForm.watch('floor')}
+                  {String(batchCreateRoomForm.watch('end_number')).padStart(2, '0')}
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="batch-monthly_rent">月租 (元) *</Label>
+                <Input
+                  id="batch-monthly_rent"
+                  type="number"
+                  step="0.01"
+                  {...batchCreateRoomForm.register('monthly_rent', { valueAsNumber: true })}
+                />
+                {batchCreateRoomForm.formState.errors.monthly_rent && (
+                  <p className="text-sm text-destructive">
+                    {batchCreateRoomForm.formState.errors.monthly_rent.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="batch-area">面积 (m²)</Label>
+                <Input
+                  id="batch-area"
+                  type="number"
+                  step="0.01"
+                  {...batchCreateRoomForm.register('area', { valueAsNumber: true })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="batch-notes">备注</Label>
+              <Input id="batch-notes" {...batchCreateRoomForm.register('notes')} />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsBatchCreateRoomOpen(false)}>
+                取消
+              </Button>
+              <Button type="submit" disabled={batchCreateRoomMutation.isPending}>
+                {batchCreateRoomMutation.isPending ? '创建中...' : '批量创建'}
               </Button>
             </DialogFooter>
           </form>

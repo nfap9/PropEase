@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
@@ -104,6 +105,10 @@ export default function UtilitiesPage() {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       setIsCreateOpen(false);
       createForm.reset();
+      toast.success('水电读数录入成功');
+    },
+    onError: () => {
+      toast.error('录入失败，请重试');
     },
   });
 
@@ -114,6 +119,10 @@ export default function UtilitiesPage() {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       setIsEditOpen(false);
       setSelectedUtility(null);
+      toast.success('水电读数更新成功');
+    },
+    onError: () => {
+      toast.error('更新失败，请重试');
     },
   });
 

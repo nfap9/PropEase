@@ -1,14 +1,14 @@
 """
 Apartment service for apartment and room management.
 """
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 
 from app.services.base import BaseService
 from app.repositories.apartment_repository import ApartmentRepository, RoomRepository
 from app.repositories.organization_repository import OrganizationMemberRepository
 from app.models.apartment import Apartment, Room, RoomStatus
-from app.schemas.apartment import ApartmentCreate, ApartmentUpdate, RoomCreate, RoomUpdate
+from app.schemas.apartment import ApartmentCreate, ApartmentUpdate, RoomCreate, RoomUpdate, RoomBatchCreate
 
 
 class ApartmentService(BaseService):
@@ -23,6 +23,32 @@ class ApartmentService(BaseService):
     def list_apartments(self, org_id: int) -> List[Apartment]:
         """List all apartments in an organization."""
         return self.apartment_repo.find_by_organization(org_id)
+
+    def list_apartments_with_stats(self, org_id: int) -> List[Dict[str, Any]]:
+        """List all apartments with room statistics."""
+        apartments = self.apartment_repo.find_by_organization(org_id)
+        result = []
+        for apartment in apartments:
+            rooms = self.room_repo.find_by_apartment(apartment.id)
+            total = len(rooms)
+            available = sum(1 for r in rooms if r.status == RoomStatus.AVAILABLE)
+            occupied = sum(1 for r in rooms if r.status == RoomStatus.OCCUPIED)
+            maintenance = sum(1 for r in rooms if r.status == RoomStatus.MAINTENANCE)
+            result.append({
+                "id": apartment.id,
+                "organization_id": apartment.organization_id,
+                "name": apartment.name,
+                "address": apartment.address,
+                "description": apartment.description,
+                "created_at": apartment.created_at,
+                "room_stats": {
+                    "total": total,
+                    "available": available,
+                    "occupied": occupied,
+                    "maintenance": maintenance,
+                }
+            })
+        return result
 
     def get_apartment(self, apartment_id: int, org_id: int) -> Optional[Apartment]:
         """Get an apartment by ID within an organization."""
@@ -92,6 +118,30 @@ class ApartmentService(BaseService):
             notes=data.notes,
         )
         return self.room_repo.create(room)
+
+    def batch_create_rooms(
+        self, apartment_id: int, org_id: int, data: RoomBatchCreate
+    ) -> List[Room]:
+        """Batch create rooms in an apartment by floor."""
+        apartment = self.get_apartment(apartment_id, org_id)
+        if not apartment:
+            return []
+
+        rooms = []
+        for num in range(data.start_number, data.end_number + 1):
+            # 生成房间号：楼层*100 + 房间号
+            room_number = f"{data.floor}{num:02d}"
+            room = Room(
+                apartment_id=apartment_id,
+                room_number=room_number,
+                monthly_rent=data.monthly_rent,
+                area=data.area,
+                status=RoomStatus.AVAILABLE,
+                notes=data.notes,
+            )
+            created_room = self.room_repo.create(room)
+            rooms.append(created_room)
+        return rooms
 
     def update_room(
         self, room_id: int, org_id: int, data: RoomUpdate

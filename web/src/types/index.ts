@@ -61,6 +61,17 @@ export interface Apartment {
   created_at: string;
 }
 
+export interface RoomStats {
+  total: number;
+  available: number;
+  occupied: number;
+  maintenance: number;
+}
+
+export interface ApartmentWithStats extends Apartment {
+  room_stats: RoomStats;
+}
+
 export interface Room {
   id: number;
   apartment_id: number;
@@ -71,6 +82,16 @@ export interface Room {
   notes: string | null;
   apartment?: Apartment;
   created_at: string;
+}
+
+// 批量创建房间
+export interface RoomBatchCreate {
+  floor: number;
+  start_number: number;
+  end_number: number;
+  monthly_rent: number;
+  area?: number;
+  notes?: string;
 }
 
 // Tenant types

@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
@@ -107,6 +108,10 @@ export default function RoomsPage() {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
       setIsCreateOpen(false);
       createForm.reset();
+      toast.success('房间创建成功');
+    },
+    onError: () => {
+      toast.error('创建失败，请重试');
     },
   });
 
@@ -117,6 +122,10 @@ export default function RoomsPage() {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
       setIsEditOpen(false);
       setSelectedRoom(null);
+      toast.success('房间更新成功');
+    },
+    onError: () => {
+      toast.error('更新失败，请重试');
     },
   });
 
@@ -126,6 +135,10 @@ export default function RoomsPage() {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
       setIsDeleteOpen(false);
       setSelectedRoom(null);
+      toast.success('房间删除成功');
+    },
+    onError: () => {
+      toast.error('删除失败，请重试');
     },
   });
 

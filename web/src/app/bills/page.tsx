@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
@@ -94,6 +95,10 @@ export default function BillsPage() {
       setIsPaymentOpen(false);
       paymentForm.reset();
       setSelectedBill(null);
+      toast.success('付款登记成功');
+    },
+    onError: () => {
+      toast.error('登记失败，请重试');
     },
   });
 

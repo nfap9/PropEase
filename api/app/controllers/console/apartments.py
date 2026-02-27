@@ -15,9 +15,11 @@ from app.schemas.apartment import (
     ApartmentCreate,
     ApartmentUpdate,
     ApartmentResponse,
+    ApartmentWithStatsResponse,
     RoomCreate,
     RoomUpdate,
     RoomResponse,
+    RoomBatchCreate,
 )
 from app.controllers.common.errors import NotFoundError, ForbiddenError
 from app.controllers.common.deps import get_org_membership, require_role
@@ -32,16 +34,16 @@ def get_apartment_service(db: Session = Depends(get_db)) -> ApartmentService:
 
 # ==================== Apartments ====================
 
-@router.get("", response_model=List[ApartmentResponse])
+@router.get("", response_model=List[ApartmentWithStatsResponse])
 def list_apartments(
     org_id: int = Query(...),
     current_user: User = Depends(get_current_user),
     apartment_service: ApartmentService = Depends(get_apartment_service),
     db: Session = Depends(get_db),
 ):
-    """List all apartments in organization."""
+    """List all apartments in organization with room statistics."""
     get_org_membership(org_id, current_user, db)
-    return apartment_service.list_apartments(org_id)
+    return apartment_service.list_apartments_with_stats(org_id)
 
 
 @router.post("", response_model=ApartmentResponse, status_code=status.HTTP_201_CREATED)
@@ -143,6 +145,25 @@ def create_room(
     if not room:
         raise NotFoundError("Apartment")
     return room
+
+
+@router.post("/{apartment_id}/rooms/batch", response_model=List[RoomResponse], status_code=status.HTTP_201_CREATED)
+def batch_create_rooms(
+    apartment_id: int,
+    data: RoomBatchCreate,
+    org_id: int = Query(...),
+    current_user: User = Depends(get_current_user),
+    apartment_service: ApartmentService = Depends(get_apartment_service),
+    db: Session = Depends(get_db),
+):
+    """Batch create rooms in apartment by floor."""
+    require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(
+        get_org_membership(org_id, current_user, db)
+    )
+    rooms = apartment_service.batch_create_rooms(apartment_id, org_id, data)
+    if not rooms:
+        raise NotFoundError("Apartment")
+    return rooms
 
 
 @router.get("/rooms/{room_id}", response_model=RoomResponse)
