@@ -11,7 +11,7 @@ import { apartmentsApi, roomsApi, utilitiesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { useAuth } from '@/lib/auth/context';
 import { UtilityReading } from '@/types';
-import { Plus, Upload, Building2 } from 'lucide-react';
+import { Plus, Upload, Building2, Filter } from 'lucide-react';
 import {
   useColumns,
   CreateUtilityDialog,
@@ -30,9 +30,12 @@ export default function UtilitiesPage() {
   const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
   const [selectedUtility, setSelectedUtility] = useState<UtilityReading | null>(null);
 
+  // 筛选状态
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
+  const [filterYear, setFilterYear] = useState<number | undefined>(currentYear);
+  const [filterMonth, setFilterMonth] = useState<number | undefined>(currentMonth);
 
   const { data: apartments } = useQuery({
     queryKey: ['apartments', orgId],
@@ -53,8 +56,8 @@ export default function UtilitiesPage() {
   });
 
   const { data: utilities, isLoading: utilitiesLoading } = useQuery({
-    queryKey: ['utilities', orgId],
-    queryFn: () => utilitiesApi.list(orgId!),
+    queryKey: ['utilities', orgId, filterYear, filterMonth],
+    queryFn: () => utilitiesApi.list(orgId!, filterYear, filterMonth),
     enabled: !!orgId,
   });
 
@@ -153,6 +156,52 @@ export default function UtilitiesPage() {
               <Plus className="mr-2 h-4 w-4" />
               录入读数
             </Button>
+          </div>
+        </div>
+
+        {/* 筛选区域 */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">筛选：</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <select
+              className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
+              value={filterYear ?? ''}
+              onChange={(e) => setFilterYear(e.target.value ? Number(e.target.value) : undefined)}
+            >
+              <option value="">全部年份</option>
+              {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
+                <option key={year} value={year}>
+                  {year}年
+                </option>
+              ))}
+            </select>
+            <select
+              className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
+              value={filterMonth ?? ''}
+              onChange={(e) => setFilterMonth(e.target.value ? Number(e.target.value) : undefined)}
+            >
+              <option value="">全部月份</option>
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                <option key={month} value={month}>
+                  {month}月
+                </option>
+              ))}
+            </select>
+            {(filterYear || filterMonth) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setFilterYear(currentYear);
+                  setFilterMonth(currentMonth);
+                }}
+              >
+                重置
+              </Button>
+            )}
           </div>
         </div>
 

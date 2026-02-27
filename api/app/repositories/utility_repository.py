@@ -19,7 +19,11 @@ class UtilityRepository(BaseRepository[UtilityReading]):
         super().__init__(db, UtilityReading)
 
     def find_by_organization(
-        self, org_id: int, room_id: Optional[int] = None
+        self,
+        org_id: int,
+        room_id: Optional[int] = None,
+        period_year: Optional[int] = None,
+        period_month: Optional[int] = None,
     ) -> List[UtilityReading]:
         """Find all readings in an organization."""
         query = (
@@ -31,7 +35,15 @@ class UtilityRepository(BaseRepository[UtilityReading]):
         )
         if room_id:
             query = query.filter(UtilityReading.room_id == room_id)
-        return query.all()
+        if period_year:
+            query = query.filter(UtilityReading.period_year == period_year)
+        if period_month:
+            query = query.filter(UtilityReading.period_month == period_month)
+        return query.order_by(
+            UtilityReading.period_year.desc(),
+            UtilityReading.period_month.desc(),
+            UtilityReading.reading_date.desc(),
+        ).all()
 
     def find_latest_by_room(
         self, room_id: int, before_year: int, before_month: int

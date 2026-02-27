@@ -32,13 +32,15 @@ def get_utility_service(db: Session = Depends(get_db)) -> UtilityService:
 def list_readings(
     org_id: int = Query(...),
     room_id: int = Query(None),
+    period_year: int = Query(None, description="筛选年份"),
+    period_month: int = Query(None, description="筛选月份"),
     current_user: User = Depends(get_current_user),
     utility_service: UtilityService = Depends(get_utility_service),
     db: Session = Depends(get_db),
 ):
     """List utility readings."""
     get_org_membership(org_id, current_user, db)
-    return utility_service.list_readings(org_id, room_id)
+    return utility_service.list_readings(org_id, room_id, period_year, period_month)
 
 
 @router.post("", response_model=UtilityReadingResponse, status_code=status.HTTP_201_CREATED)

@@ -26,9 +26,17 @@ export interface UtilityExportRoom {
 }
 
 export const utilitiesApi = {
-  list: async (orgId: number): Promise<UtilityReading[]> => {
+  list: async (
+    orgId: number,
+    periodYear?: number,
+    periodMonth?: number
+  ): Promise<UtilityReading[]> => {
     const response = await api.get<UtilityReading[]>('/utilities', {
-      params: { org_id: orgId },
+      params: {
+        org_id: orgId,
+        period_year: periodYear,
+        period_month: periodMonth,
+      },
     });
     return response.data;
   },

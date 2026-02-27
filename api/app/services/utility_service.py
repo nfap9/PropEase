@@ -25,10 +25,14 @@ class UtilityService(BaseService):
         self.room_repo = RoomRepository(db)
 
     def list_readings(
-        self, org_id: int, room_id: Optional[int] = None
+        self,
+        org_id: int,
+        room_id: Optional[int] = None,
+        period_year: Optional[int] = None,
+        period_month: Optional[int] = None,
     ) -> List[UtilityReading]:
         """List utility readings in organization."""
-        return self.utility_repo.find_by_organization(org_id, room_id)
+        return self.utility_repo.find_by_organization(org_id, room_id, period_year, period_month)
 
     def get_reading(self, reading_id: int, org_id: int) -> Optional[UtilityReading]:
         """Get a reading by ID within organization."""
