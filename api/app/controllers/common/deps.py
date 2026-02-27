@@ -32,7 +32,7 @@ def get_current_user(
 
 
 def get_org_membership(
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> OrganizationMember:

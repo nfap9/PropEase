@@ -2,14 +2,13 @@ from datetime import datetime
 from sqlalchemy import String, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from app.configs.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import TimestampMixin, ULIDMixin
 
 
-class SmsVerificationCode(Base, TimestampMixin):
+class SmsVerificationCode(Base, TimestampMixin, ULIDMixin):
     """短信验证码模型"""
     __tablename__ = "sms_verification_codes"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
     phone: Mapped[str] = mapped_column(String(20), index=True, nullable=False)
     code: Mapped[str] = mapped_column(String(6), nullable=False)
     purpose: Mapped[str] = mapped_column(String(20), nullable=False)  # 'login', 'register'

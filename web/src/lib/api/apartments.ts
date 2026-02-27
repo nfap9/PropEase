@@ -2,33 +2,33 @@ import api from './client';
 import { Apartment, ApartmentWithStats, Room, RoomBatchCreate } from '@/types';
 
 export const apartmentsApi = {
-  list: async (orgId: number): Promise<ApartmentWithStats[]> => {
+  list: async (orgId: string): Promise<ApartmentWithStats[]> => {
     const response = await api.get<ApartmentWithStats[]>('/apartments', { params: { org_id: orgId } });
     return response.data;
   },
 
-  get: async (orgId: number, id: number): Promise<Apartment> => {
+  get: async (orgId: string, id: string): Promise<Apartment> => {
     const response = await api.get<Apartment>(`/apartments/${id}`, { params: { org_id: orgId } });
     return response.data;
   },
 
-  create: async (orgId: number, data: Partial<Apartment>): Promise<Apartment> => {
+  create: async (orgId: string, data: Partial<Apartment>): Promise<Apartment> => {
     const response = await api.post<Apartment>('/apartments', data, { params: { org_id: orgId } });
     return response.data;
   },
 
-  update: async (orgId: number, id: number, data: Partial<Apartment>): Promise<Apartment> => {
+  update: async (orgId: string, id: string, data: Partial<Apartment>): Promise<Apartment> => {
     const response = await api.put<Apartment>(`/apartments/${id}`, data, { params: { org_id: orgId } });
     return response.data;
   },
 
-  delete: async (orgId: number, id: number): Promise<void> => {
+  delete: async (orgId: string, id: string): Promise<void> => {
     await api.delete(`/apartments/${id}`, { params: { org_id: orgId } });
   },
 };
 
 export const roomsApi = {
-  list: async (orgId: number, apartmentId: number): Promise<Room[]> => {
+  list: async (orgId: string, apartmentId: string): Promise<Room[]> => {
     const response = await api.get<Room[]>(`/apartments/${apartmentId}/rooms`, {
       params: { org_id: orgId },
     });
@@ -36,7 +36,7 @@ export const roomsApi = {
   },
 
   // 获取组织内所有房间（跨公寓）
-  listAll: async (orgId: number, apartmentIds: number[]): Promise<Room[]> => {
+  listAll: async (orgId: string, apartmentIds: string[]): Promise<Room[]> => {
     const roomPromises = apartmentIds.map((aptId) =>
       api.get<Room[]>(`/apartments/${aptId}/rooms`, { params: { org_id: orgId } })
     );
@@ -44,29 +44,29 @@ export const roomsApi = {
     return responses.flatMap((res) => res.data);
   },
 
-  get: async (orgId: number, id: number): Promise<Room> => {
+  get: async (orgId: string, id: string): Promise<Room> => {
     const response = await api.get<Room>(`/apartments/rooms/${id}`, { params: { org_id: orgId } });
     return response.data;
   },
 
-  create: async (orgId: number, apartmentId: number, data: Partial<Room>): Promise<Room> => {
+  create: async (orgId: string, apartmentId: string, data: Partial<Room>): Promise<Room> => {
     const response = await api.post<Room>(`/apartments/${apartmentId}/rooms`, data, { params: { org_id: orgId } });
     return response.data;
   },
 
-  batchCreate: async (orgId: number, apartmentId: number, data: RoomBatchCreate): Promise<Room[]> => {
+  batchCreate: async (orgId: string, apartmentId: string, data: RoomBatchCreate): Promise<Room[]> => {
     const response = await api.post<Room[]>(`/apartments/${apartmentId}/rooms/batch`, data, {
       params: { org_id: orgId },
     });
     return response.data;
   },
 
-  update: async (orgId: number, id: number, data: Partial<Room>): Promise<Room> => {
+  update: async (orgId: string, id: string, data: Partial<Room>): Promise<Room> => {
     const response = await api.put<Room>(`/apartments/rooms/${id}`, data, { params: { org_id: orgId } });
     return response.data;
   },
 
-  delete: async (orgId: number, id: number): Promise<void> => {
+  delete: async (orgId: string, id: string): Promise<void> => {
     await api.delete(`/apartments/rooms/${id}`, { params: { org_id: orgId } });
   },
 };

@@ -17,18 +17,18 @@ class TenantService(BaseService):
         super().__init__(db)
         self.tenant_repo = TenantRepository(db)
 
-    def list_tenants(self, org_id: int) -> List[Tenant]:
+    def list_tenants(self, org_id: str) -> List[Tenant]:
         """List all tenants in an organization."""
         return self.tenant_repo.find_by_organization(org_id)
 
-    def get_tenant(self, tenant_id: int, org_id: int) -> Optional[Tenant]:
+    def get_tenant(self, tenant_id: str, org_id: str) -> Optional[Tenant]:
         """Get a tenant by ID within an organization."""
         tenant = self.tenant_repo.get(tenant_id)
         if tenant and tenant.organization_id == org_id:
             return tenant
         return None
 
-    def create_tenant(self, org_id: int, data: TenantCreate) -> Tenant:
+    def create_tenant(self, org_id: str, data: TenantCreate) -> Tenant:
         """Create a new tenant."""
         tenant = Tenant(
             organization_id=org_id,
@@ -43,7 +43,7 @@ class TenantService(BaseService):
         return self.tenant_repo.create(tenant)
 
     def update_tenant(
-        self, tenant_id: int, org_id: int, data: TenantUpdate
+        self, tenant_id: str, org_id: str, data: TenantUpdate
     ) -> Optional[Tenant]:
         """Update a tenant."""
         tenant = self.get_tenant(tenant_id, org_id)
@@ -52,7 +52,7 @@ class TenantService(BaseService):
         update_data = data.model_dump(exclude_unset=True)
         return self.tenant_repo.update(tenant_id, **update_data)
 
-    def delete_tenant(self, tenant_id: int, org_id: int) -> bool:
+    def delete_tenant(self, tenant_id: str, org_id: str) -> bool:
         """Delete a tenant."""
         tenant = self.get_tenant(tenant_id, org_id)
         if not tenant:

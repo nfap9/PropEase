@@ -130,8 +130,7 @@ migrate-down:
 
 db-reset:
 	@echo "⚠️  Resetting database..."
-	@cd api && uv run alembic downgrade base
-	@cd api && uv run alembic upgrade head
+	@cd api && uv run python scripts/reset_db.py -y
 	@echo "✅ Database reset complete"
 
 db-reset-seed:

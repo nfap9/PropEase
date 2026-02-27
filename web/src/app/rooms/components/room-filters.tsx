@@ -14,7 +14,7 @@ import { ApartmentWithStats, RoomStatus } from '@/types';
 import { X, Filter } from 'lucide-react';
 
 export interface RoomFiltersState {
-  apartmentId: number | null;
+  apartmentId: string | null;
   status: RoomStatus | null;
   rentMin: number | null;
   rentMax: number | null;
@@ -48,9 +48,9 @@ export function RoomFilters({
       <div className="space-y-1">
         <Label className="text-xs">公寓</Label>
         <Select
-          value={filters.apartmentId?.toString() || 'all'}
+          value={filters.apartmentId || 'all'}
           onValueChange={(value) =>
-            onFilterChange('apartmentId', value === 'all' ? null : Number(value))
+            onFilterChange('apartmentId', value === 'all' ? null : value)
           }
         >
           <SelectTrigger className="w-[160px]">
@@ -59,7 +59,7 @@ export function RoomFilters({
           <SelectContent>
             <SelectItem value="all">全部公寓</SelectItem>
             {apartments.map((apt) => (
-              <SelectItem key={apt.id} value={apt.id.toString()}>
+              <SelectItem key={apt.id} value={apt.id}>
                 {apt.name}
               </SelectItem>
             ))}

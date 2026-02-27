@@ -8,7 +8,7 @@ from datetime import datetime
 import enum
 
 from app.configs.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import TimestampMixin, ULIDMixin
 
 if TYPE_CHECKING:
     from app.models.organization import Organization, MemberRole
@@ -47,11 +47,10 @@ class SystemRole(str, enum.Enum):
     READONLY = "readonly"           # 只读
 
 
-class Permission(Base, TimestampMixin):
+class Permission(Base, TimestampMixin, ULIDMixin):
     """权限定义表 - 定义所有可用的权限"""
     __tablename__ = "permissions"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
     resource: Mapped[Resource] = mapped_column(SQLEnum(Resource), nullable=False)
     action: Mapped[Action] = mapped_column(SQLEnum(Action), nullable=False)
     code: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
@@ -67,14 +66,13 @@ class Permission(Base, TimestampMixin):
     )
 
 
-class OrganizationRolePermission(Base, TimestampMixin):
+class OrganizationRolePermission(Base, TimestampMixin, ULIDMixin):
     """组织角色权限配置 - 每个组织可以自定义角色权限"""
     __tablename__ = "organization_role_permissions"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id"), nullable=False)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), nullable=False)
     role: Mapped[str] = mapped_column(String(20), nullable=False)  # MemberRole value
-    permission_id: Mapped[int] = mapped_column(ForeignKey("permissions.id"), nullable=False)
+    permission_id: Mapped[str] = mapped_column(ForeignKey("permissions.id"), nullable=False)
     is_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     # Relationships
@@ -82,38 +80,35 @@ class OrganizationRolePermission(Base, TimestampMixin):
     permission: Mapped["Permission"] = relationship("Permission", back_populates="organization_role_permissions")
 
 
-class SystemRoleConfig(Base, TimestampMixin):
+class SystemRoleConfig(Base, TimestampMixin, ULIDMixin):
     """系统角色配置 - 系统级角色定义"""
     __tablename__ = "system_role_configs"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
     role: Mapped[SystemRole] = mapped_column(SQLEnum(SystemRole), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
 
-class SystemRolePermission(Base, TimestampMixin):
+class SystemRolePermission(Base, TimestampMixin, ULIDMixin):
     """系统角色权限 - 系统角色拥有的权限"""
     __tablename__ = "system_role_permissions"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
     role: Mapped[SystemRole] = mapped_column(SQLEnum(SystemRole), nullable=False)
-    permission_id: Mapped[int] = mapped_column(ForeignKey("permissions.id"), nullable=False)
+    permission_id: Mapped[str] = mapped_column(ForeignKey("permissions.id"), nullable=False)
     is_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     # Relationships
     permission: Mapped["Permission"] = relationship("Permission", back_populates="system_role_permissions")
 
 
-class UserSystemRole(Base, TimestampMixin):
+class UserSystemRole(Base, TimestampMixin, ULIDMixin):
     """用户系统角色关联 - 用户可以拥有多个系统角色"""
     __tablename__ = "user_system_roles"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
     role: Mapped[SystemRole] = mapped_column(SQLEnum(SystemRole), nullable=False)
-    granted_by: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    granted_by: Mapped[Optional[str]] = mapped_column(ForeignKey("users.id"), nullable=True)
     granted_at: Mapped[datetime] = mapped_column(nullable=False)
 
     # Relationships

@@ -12,8 +12,8 @@ from typing import Any
 
 # Context variables for request tracking
 request_id_ctx: ContextVar[str | None] = ContextVar("request_id", default=None)
-tenant_id_ctx: ContextVar[int | None] = ContextVar("tenant_id", default=None)
-user_id_ctx: ContextVar[int | None] = ContextVar("user_id", default=None)
+tenant_id_ctx: ContextVar[str | None] = ContextVar("tenant_id", default=None)
+user_id_ctx: ContextVar[str | None] = ContextVar("user_id", default=None)
 
 
 class JSONFormatter(logging.Formatter):
@@ -146,12 +146,12 @@ def set_request_id(request_id: str) -> None:
     request_id_ctx.set(request_id)
 
 
-def set_tenant_id(tenant_id: int) -> None:
+def set_tenant_id(tenant_id: str) -> None:
     """设置当前租户 ID。"""
     tenant_id_ctx.set(tenant_id)
 
 
-def set_user_id(user_id: int) -> None:
+def set_user_id(user_id: str) -> None:
     """设置当前用户 ID。"""
     user_id_ctx.set(user_id)
 

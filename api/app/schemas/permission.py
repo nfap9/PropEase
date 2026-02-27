@@ -17,7 +17,7 @@ class PermissionBase(BaseModel):
 
 
 class PermissionResponse(PermissionBase):
-    id: int
+    id: str
     created_at: datetime
 
     class Config:
@@ -66,10 +66,10 @@ class UserPermissionsResponse(BaseModel):
 
 
 class GrantSystemRoleRequest(BaseModel):
-    user_id: int
+    user_id: str
     role: SystemRole
 
 
 class RevokeSystemRoleRequest(BaseModel):
-    user_id: int
+    user_id: str
     role: SystemRole

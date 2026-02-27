@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING, List
 import enum
 from app.configs.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import TimestampMixin, ULIDMixin
 
 if TYPE_CHECKING:
     from app.models.organization import Organization
@@ -16,11 +16,10 @@ class RoomStatus(str, enum.Enum):
     MAINTENANCE = "maintenance"
 
 
-class Apartment(Base, TimestampMixin):
+class Apartment(Base, TimestampMixin, ULIDMixin):
     __tablename__ = "apartments"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id"), nullable=False)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     address: Mapped[str] = mapped_column(String(500), nullable=True)
     description: Mapped[str] = mapped_column(String(1000), nullable=True)
@@ -32,11 +31,10 @@ class Apartment(Base, TimestampMixin):
     )
 
 
-class Room(Base, TimestampMixin):
+class Room(Base, TimestampMixin, ULIDMixin):
     __tablename__ = "rooms"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    apartment_id: Mapped[int] = mapped_column(ForeignKey("apartments.id"), nullable=False)
+    apartment_id: Mapped[str] = mapped_column(ForeignKey("apartments.id"), nullable=False)
     room_number: Mapped[str] = mapped_column(String(50), nullable=False)
     layout: Mapped[str] = mapped_column(String(50), nullable=True)  # 户型，如 "一室一厅"、"两室一厅"
     status: Mapped[RoomStatus] = mapped_column(

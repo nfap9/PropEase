@@ -3,13 +3,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { permissionsApi } from '@/lib/api/permissions';
 import { useAuth } from '@/lib/auth/context';
+import type { SystemRole } from '@/types';
 
 /**
  * 权限 Hook
  *
  * 用于获取和检查当前用户在当前组织中的权限
  */
-export function usePermissions(orgId?: number) {
+export function usePermissions(orgId?: string) {
   const { organization } = useAuth();
   const targetOrgId = orgId || organization?.id;
 
@@ -53,7 +54,7 @@ export function usePermissions(orgId?: number) {
    * 检查是否拥有系统角色
    */
   const hasSystemRole = (role: string): boolean => {
-    return systemRoles.includes(role);
+    return systemRoles.includes(role as SystemRole);
   };
 
   return {

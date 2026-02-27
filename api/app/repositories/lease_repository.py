@@ -17,7 +17,7 @@ class LeaseRepository(BaseRepository[Lease]):
     def __init__(self, db: Session):
         super().__init__(db, Lease)
 
-    def find_by_organization(self, org_id: int) -> List[Lease]:
+    def find_by_organization(self, org_id: str) -> List[Lease]:
         """Find all leases in an organization."""
         return (
             self.db.query(Lease)
@@ -31,7 +31,7 @@ class LeaseRepository(BaseRepository[Lease]):
             .all()
         )
 
-    def find_active_by_organization(self, org_id: int) -> List[Lease]:
+    def find_active_by_organization(self, org_id: str) -> List[Lease]:
         """Find all active leases in an organization."""
         return (
             self.db.query(Lease)
@@ -45,11 +45,11 @@ class LeaseRepository(BaseRepository[Lease]):
             .all()
         )
 
-    def find_by_room(self, room_id: int) -> List[Lease]:
+    def find_by_room(self, room_id: str) -> List[Lease]:
         """Find all leases for a room."""
         return self.db.query(Lease).filter(Lease.room_id == room_id).all()
 
-    def find_active_by_room(self, room_id: int) -> Optional[Lease]:
+    def find_active_by_room(self, room_id: str) -> Optional[Lease]:
         """Find active lease for a room."""
         return (
             self.db.query(Lease)
@@ -57,12 +57,12 @@ class LeaseRepository(BaseRepository[Lease]):
             .first()
         )
 
-    def find_by_tenant(self, tenant_id: int) -> List[Lease]:
+    def find_by_tenant(self, tenant_id: str) -> List[Lease]:
         """Find all leases for a tenant."""
         return self.db.query(Lease).filter(Lease.tenant_id == tenant_id).all()
 
     def has_overlapping_lease(
-        self, room_id: int, start_date: date, end_date: date, exclude_id: int = None
+        self, room_id: str, start_date: date, end_date: date, exclude_id: str = None
     ) -> bool:
         """Check if there's an overlapping lease for the room."""
         query = self.db.query(Lease).filter(
@@ -83,7 +83,7 @@ class LeaseRepository(BaseRepository[Lease]):
             query = query.filter(Lease.id != exclude_id)
         return query.first() is not None
 
-    def count_active(self, org_id: int) -> int:
+    def count_active(self, org_id: str) -> int:
         """Count active leases in an organization."""
         return (
             self.db.query(Lease)

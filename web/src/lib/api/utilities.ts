@@ -2,7 +2,7 @@ import api from './client';
 import { UtilityReading } from '@/types';
 
 export interface BatchUtilityReadingItem {
-  room_id: number;
+  room_id: string;  // ULID
   water_reading?: number | null;
   electricity_reading?: number | null;
   notes?: string | null;
@@ -16,7 +16,7 @@ export interface BatchUtilityReadingData {
 }
 
 export interface UtilityExportRoom {
-  room_id: number;
+  room_id: string;  // ULID
   apartment_name: string;
   room_number: string;
   tenant_name: string;
@@ -27,7 +27,7 @@ export interface UtilityExportRoom {
 
 export const utilitiesApi = {
   list: async (
-    orgId: number,
+    orgId: string,
     periodYear?: number,
     periodMonth?: number
   ): Promise<UtilityReading[]> => {
@@ -41,33 +41,33 @@ export const utilitiesApi = {
     return response.data;
   },
 
-  get: async (orgId: number, id: number): Promise<UtilityReading> => {
+  get: async (orgId: string, id: string): Promise<UtilityReading> => {
     const response = await api.get<UtilityReading>(`/utilities/${id}`, {
       params: { org_id: orgId },
     });
     return response.data;
   },
 
-  create: async (orgId: number, data: Partial<UtilityReading>): Promise<UtilityReading> => {
+  create: async (orgId: string, data: Partial<UtilityReading>): Promise<UtilityReading> => {
     const response = await api.post<UtilityReading>('/utilities', data, {
       params: { org_id: orgId },
     });
     return response.data;
   },
 
-  update: async (orgId: number, id: number, data: Partial<UtilityReading>): Promise<UtilityReading> => {
+  update: async (orgId: string, id: string, data: Partial<UtilityReading>): Promise<UtilityReading> => {
     const response = await api.put<UtilityReading>(`/utilities/${id}`, data, {
       params: { org_id: orgId },
     });
     return response.data;
   },
 
-  delete: async (orgId: number, id: number): Promise<void> => {
+  delete: async (orgId: string, id: string): Promise<void> => {
     await api.delete(`/utilities/${id}`, { params: { org_id: orgId } });
   },
 
   batchCreate: async (
-    orgId: number,
+    orgId: string,
     data: BatchUtilityReadingData
   ): Promise<UtilityReading[]> => {
     const response = await api.post<UtilityReading[]>('/utilities/batch', data, {
@@ -77,7 +77,7 @@ export const utilitiesApi = {
   },
 
   exportRooms: async (
-    orgId: number,
+    orgId: string,
     periodYear: number,
     periodMonth: number,
     daysRange?: number

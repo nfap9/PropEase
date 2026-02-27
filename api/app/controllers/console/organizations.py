@@ -48,7 +48,7 @@ def create_organization(
 
 @router.get("/{org_id}", response_model=OrganizationResponse)
 def get_organization(
-    org_id: int,
+    org_id: str,
     current_user: User = Depends(get_current_user),
     org_service: OrganizationService = Depends(get_org_service),
 ):
@@ -61,7 +61,7 @@ def get_organization(
 
 @router.put("/{org_id}", response_model=OrganizationResponse)
 def update_organization(
-    org_id: int,
+    org_id: str,
     data: OrganizationUpdate,
     current_user: User = Depends(get_current_user),
     org_service: OrganizationService = Depends(get_org_service),
@@ -75,7 +75,7 @@ def update_organization(
 
 @router.delete("/{org_id}")
 def delete_organization(
-    org_id: int,
+    org_id: str,
     current_user: User = Depends(get_current_user),
     org_service: OrganizationService = Depends(get_org_service),
 ):
@@ -87,7 +87,7 @@ def delete_organization(
 
 @router.get("/{org_id}/members", response_model=List[MemberResponse])
 def list_members(
-    org_id: int,
+    org_id: str,
     current_user: User = Depends(get_current_user),
     org_service: OrganizationService = Depends(get_org_service),
     db: Session = Depends(get_db),
@@ -125,7 +125,7 @@ def _member_to_response(m):
 
 @router.post("/{org_id}/members", response_model=MemberResponse)
 def add_member(
-    org_id: int,
+    org_id: str,
     email: str = Query(...),
     role: MemberRole = Query(MemberRole.MEMBER),
     current_user: User = Depends(get_current_user),
@@ -142,8 +142,8 @@ def add_member(
 
 @router.put("/{org_id}/members/{user_id}", response_model=MemberResponse)
 def update_member_role(
-    org_id: int,
-    user_id: int,
+    org_id: str,
+    user_id: str,
     role: MemberRole = Query(...),
     current_user: User = Depends(get_current_user),
     org_service: OrganizationService = Depends(get_org_service),
@@ -159,8 +159,8 @@ def update_member_role(
 
 @router.delete("/{org_id}/members/{user_id}")
 def remove_member(
-    org_id: int,
-    user_id: int,
+    org_id: str,
+    user_id: str,
     current_user: User = Depends(get_current_user),
     org_service: OrganizationService = Depends(get_org_service),
     db: Session = Depends(get_db),

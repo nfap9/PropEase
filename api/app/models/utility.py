@@ -3,17 +3,16 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING
 from datetime import date
 from app.configs.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import TimestampMixin, ULIDMixin
 
 if TYPE_CHECKING:
     from app.models.apartment import Room
 
 
-class UtilityReading(Base, TimestampMixin):
+class UtilityReading(Base, TimestampMixin, ULIDMixin):
     __tablename__ = "utility_readings"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    room_id: Mapped[int] = mapped_column(ForeignKey("rooms.id"), nullable=False)
+    room_id: Mapped[str] = mapped_column(ForeignKey("rooms.id"), nullable=False)
     period_year: Mapped[int] = mapped_column(Integer, nullable=False)
     period_month: Mapped[int] = mapped_column(Integer, nullable=False)
     reading_date: Mapped[date] = mapped_column(Date, nullable=False)

@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 
 ModelType = TypeVar("ModelType")
 
+# ID类型现在是字符串 (ULID)
+IdType = str
 # 过滤值类型
 FilterValue = Union[str, int, float, bool, None]
 
@@ -31,12 +33,12 @@ class BaseRepository(Generic[ModelType]):
         self.db = db
         self.model = model
 
-    def get(self, id: int) -> Optional[ModelType]:
-        """Get a single record by ID."""
+    def get(self, id: IdType) -> Optional[ModelType]:
+        """Get a single record by ID (ULID string)."""
         return self.db.query(self.model).filter(self.model.id == id).first()
 
-    def get_by_ids(self, ids: List[int]) -> List[ModelType]:
-        """Get multiple records by IDs."""
+    def get_by_ids(self, ids: List[IdType]) -> List[ModelType]:
+        """Get multiple records by IDs (ULID strings)."""
         return self.db.query(self.model).filter(self.model.id.in_(ids)).all()
 
     def get_all(
@@ -71,8 +73,8 @@ class BaseRepository(Generic[ModelType]):
         self.db.refresh(obj)
         return obj
 
-    def update(self, id: int, **kwargs: FilterValue) -> Optional[ModelType]:
-        """Update a record by ID."""
+    def update(self, id: IdType, **kwargs: FilterValue) -> Optional[ModelType]:
+        """Update a record by ID (ULID string)."""
         obj = self.get(id)
         if obj:
             for field, value in kwargs.items():
@@ -82,8 +84,8 @@ class BaseRepository(Generic[ModelType]):
             self.db.refresh(obj)
         return obj
 
-    def delete(self, id: int) -> bool:
-        """Delete a record by ID."""
+    def delete(self, id: IdType) -> bool:
+        """Delete a record by ID (ULID string)."""
         obj = self.get(id)
         if obj:
             self.db.delete(obj)
@@ -91,6 +93,6 @@ class BaseRepository(Generic[ModelType]):
             return True
         return False
 
-    def exists(self, id: int) -> bool:
-        """Check if a record exists."""
+    def exists(self, id: IdType) -> bool:
+        """Check if a record exists by ID (ULID string)."""
         return self.db.query(self.model).filter(self.model.id == id).first() is not None

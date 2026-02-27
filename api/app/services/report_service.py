@@ -20,7 +20,7 @@ class ReportService(BaseService):
     def __init__(self, db: Session):
         super().__init__(db)
 
-    def get_overview(self, org_id: int) -> dict:
+    def get_overview(self, org_id: str) -> dict:
         """Get dashboard overview statistics."""
         # Count apartments
         total_apartments = (
@@ -130,7 +130,7 @@ class ReportService(BaseService):
 
     def get_income_report(
         self,
-        org_id: int,
+        org_id: str,
         year: int,
         start_month: int | None = None,
         end_month: int | None = None,
@@ -182,7 +182,7 @@ class ReportService(BaseService):
 
         return monthly_data
 
-    def get_occupancy_report(self, org_id: int, year: int) -> list:
+    def get_occupancy_report(self, org_id: str, year: int) -> list:
         """Get occupancy report by month.
 
         Calculate monthly occupancy rate based on active leases.

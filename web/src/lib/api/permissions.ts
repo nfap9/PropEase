@@ -28,7 +28,7 @@ export const permissionsApi = {
    * 获取组织角色的权限配置
    */
   getRolePermissions: async (
-    orgId: number,
+    orgId: string,
     role: MemberRole
   ): Promise<RolePermissions> => {
     const response = await api.get<RolePermissions>(
@@ -41,7 +41,7 @@ export const permissionsApi = {
    * 更新组织角色权限配置
    */
   updateRolePermissions: async (
-    orgId: number,
+    orgId: string,
     role: MemberRole,
     data: UpdateRolePermissionsRequest
   ): Promise<void> => {
@@ -51,7 +51,7 @@ export const permissionsApi = {
   /**
    * 获取当前用户在组织中的权限
    */
-  getMyPermissions: async (orgId: number): Promise<UserPermissionsResponse> => {
+  getMyPermissions: async (orgId: string): Promise<UserPermissionsResponse> => {
     const response = await api.get<UserPermissionsResponse>(
       `/permissions/me?org_id=${orgId}`
     );

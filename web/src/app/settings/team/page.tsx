@@ -139,7 +139,7 @@ export default function TeamSettingsPage() {
   });
 
   const updateOrgMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: OrganizationFormData }) =>
+    mutationFn: ({ id, data }: { id: string; data: OrganizationFormData }) =>
       organizationsApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['organizations'] });
@@ -172,7 +172,7 @@ export default function TeamSettingsPage() {
   });
 
   const removeMemberMutation = useMutation({
-    mutationFn: (memberId: number) =>
+    mutationFn: (memberId: string) =>
       organizationsApi.removeMember(selectedOrg!.id, memberId),
     onSuccess: () => {
       queryClient.invalidateQueries({

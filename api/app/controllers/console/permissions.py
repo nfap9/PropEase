@@ -51,7 +51,7 @@ def get_permissions_grouped(
 
 @router.get("/organization/{org_id}/roles/{role}", response_model=RolePermissionsResponse)
 def get_role_permissions(
-    org_id: int,
+    org_id: str,
     role: MemberRole,
     membership: OrganizationMember = Depends(get_current_organization),
     perm_service: PermissionService = Depends(get_permission_service),
@@ -63,7 +63,7 @@ def get_role_permissions(
 
 @router.put("/organization/{org_id}/roles/{role}")
 def update_role_permissions(
-    org_id: int,
+    org_id: str,
     role: MemberRole,
     data: UpdateRolePermissionsRequest,
     current_user: User = Depends(get_current_user),
@@ -80,7 +80,7 @@ def update_role_permissions(
 
 @router.get("/me", response_model=UserPermissionsResponse)
 def get_my_permissions(
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     perm_service: PermissionService = Depends(get_permission_service),
 ):

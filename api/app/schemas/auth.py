@@ -82,7 +82,7 @@ class SendSmsCode(BaseModel):
 
 
 class UserResponse(BaseModel):
-    id: int
+    id: str
     phone: str
     email: Optional[str] = None
     full_name: str

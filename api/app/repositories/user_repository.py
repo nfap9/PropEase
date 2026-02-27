@@ -21,7 +21,7 @@ class UserRepository(BaseRepository[User]):
         """Find user by email address."""
         return self.db.query(User).filter(User.email == email).first()
 
-    def find_by_organization(self, org_id: int) -> list[User]:
+    def find_by_organization(self, org_id: str) -> list[User]:
         """Find all users in an organization."""
         from app.models.organization import OrganizationMember
 

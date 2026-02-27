@@ -23,18 +23,18 @@ class OrganizationService(BaseService):
         self.member_repo = OrganizationMemberRepository(db)
         self.user_repo = UserRepository(db)
 
-    def list_organizations(self, user_id: int) -> List[Organization]:
+    def list_organizations(self, user_id: str) -> List[Organization]:
         """List all organizations a user belongs to."""
         return self.member_repo.find_user_organizations(user_id)
 
-    def get_organization(self, org_id: int, user_id: int) -> Optional[Organization]:
+    def get_organization(self, org_id: str, user_id: str) -> Optional[Organization]:
         """Get an organization if user has access."""
         if not self.member_repo.is_member(org_id, user_id):
             return None
         return self.org_repo.get(org_id)
 
     def create_organization(
-        self, user_id: int, data: OrganizationCreate
+        self, user_id: str, data: OrganizationCreate
     ) -> Organization:
         """Create a new organization and add user as owner."""
         import re
@@ -67,7 +67,7 @@ class OrganizationService(BaseService):
         return org
 
     def update_organization(
-        self, org_id: int, user_id: int, data: OrganizationUpdate
+        self, org_id: str, user_id: str, data: OrganizationUpdate
     ) -> Optional[Organization]:
         """Update an organization if user has permission."""
         if not self.member_repo.has_role(org_id, user_id, [MemberRole.OWNER, MemberRole.ADMIN]):
@@ -86,21 +86,21 @@ class OrganizationService(BaseService):
         self.db.refresh(org)
         return org
 
-    def delete_organization(self, org_id: int, user_id: int) -> bool:
+    def delete_organization(self, org_id: str, user_id: str) -> bool:
         """Delete an organization if user is owner."""
         if not self.member_repo.has_role(org_id, user_id, [MemberRole.OWNER]):
             return False
 
         return self.org_repo.delete(org_id)
 
-    def list_members(self, org_id: int, user_id: int) -> List[OrganizationMember]:
+    def list_members(self, org_id: str, user_id: str) -> List[OrganizationMember]:
         """List all members of an organization."""
         if not self.member_repo.is_member(org_id, user_id):
             return []
         return self.member_repo.find_organization_members(org_id)
 
     def add_member(
-        self, org_id: int, user_id: int, email: str, role: MemberRole
+        self, org_id: str, user_id: str, email: str, role: MemberRole
     ) -> Optional[OrganizationMember]:
         """Add a new member to organization."""
         # Check permission
@@ -130,7 +130,7 @@ class OrganizationService(BaseService):
         return membership
 
     def update_member_role(
-        self, org_id: int, user_id: int, member_user_id: int, role: MemberRole
+        self, org_id: str, user_id: str, member_user_id: str, role: MemberRole
     ) -> Optional[OrganizationMember]:
         """Update a member's role."""
         # Only owner can change roles
@@ -147,7 +147,7 @@ class OrganizationService(BaseService):
         return membership
 
     def remove_member(
-        self, org_id: int, user_id: int, member_user_id: int
+        self, org_id: str, user_id: str, member_user_id: str
     ) -> bool:
         """Remove a member from organization."""
         # Only owner can remove members

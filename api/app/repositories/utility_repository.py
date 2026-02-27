@@ -20,8 +20,8 @@ class UtilityRepository(BaseRepository[UtilityReading]):
 
     def find_by_organization(
         self,
-        org_id: int,
-        room_id: Optional[int] = None,
+        org_id: str,
+        room_id: Optional[str] = None,
         period_year: Optional[int] = None,
         period_month: Optional[int] = None,
     ) -> List[UtilityReading]:
@@ -46,7 +46,7 @@ class UtilityRepository(BaseRepository[UtilityReading]):
         ).all()
 
     def find_latest_by_room(
-        self, room_id: int, before_year: int, before_month: int
+        self, room_id: str, before_year: int, before_month: int
     ) -> Optional[UtilityReading]:
         """Find latest reading for a room before a given period."""
         return (
@@ -64,7 +64,7 @@ class UtilityRepository(BaseRepository[UtilityReading]):
         )
 
     def find_by_room_and_period(
-        self, room_id: int, year: int, month: int
+        self, room_id: str, year: int, month: int
     ) -> Optional[UtilityReading]:
         """Find utility reading for a specific room and period."""
         return (
@@ -79,7 +79,7 @@ class UtilityRepository(BaseRepository[UtilityReading]):
 
     def find_rooms_for_export(
         self,
-        org_id: int,
+        org_id: str,
         period_year: int,
         period_month: int,
         days_range: Optional[int] = None,

@@ -159,12 +159,12 @@ class AuthService(BaseService):
             token_type="bearer",
         )
 
-    def get_current_user(self, user_id: int) -> Optional[User]:
+    def get_current_user(self, user_id: str) -> Optional[User]:
         """Get current user by ID."""
         return self.user_repo.get(user_id)
 
     def check_permission(
-        self, user_id: int, org_id: int, allowed_roles: list[MemberRole]
+        self, user_id: str, org_id: str, allowed_roles: list[MemberRole]
     ) -> bool:
         """Check if user has required role in organization."""
         return self.member_repo.has_role(org_id, user_id, allowed_roles)

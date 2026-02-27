@@ -18,8 +18,8 @@ class BillRepository(BaseRepository[Bill]):
 
     def find_by_organization(
         self,
-        org_id: int,
-        lease_id: int = None,
+        org_id: str,
+        lease_id: str = None,
         year: int = None,
         month: int = None,
         status: BillStatus = None,
@@ -42,12 +42,12 @@ class BillRepository(BaseRepository[Bill]):
             query = query.filter(Bill.status == status)
         return query.all()
 
-    def find_by_lease(self, lease_id: int) -> List[Bill]:
+    def find_by_lease(self, lease_id: str) -> List[Bill]:
         """Find all bills for a lease."""
         return self.db.query(Bill).filter(Bill.lease_id == lease_id).all()
 
     def exists_for_period(
-        self, lease_id: int, year: int, month: int
+        self, lease_id: str, year: int, month: int
     ) -> bool:
         """Check if a bill already exists for a lease period."""
         return (
@@ -61,7 +61,7 @@ class BillRepository(BaseRepository[Bill]):
             is not None
         )
 
-    def count_by_status(self, org_id: int, status: BillStatus) -> int:
+    def count_by_status(self, org_id: str, status: BillStatus) -> int:
         """Count bills by status in an organization."""
         return (
             self.db.query(Bill)
@@ -72,7 +72,7 @@ class BillRepository(BaseRepository[Bill]):
             .count()
         )
 
-    def count_overdue(self, org_id: int) -> int:
+    def count_overdue(self, org_id: str) -> int:
         """Count overdue bills in an organization."""
         today = date.today()
         return (
@@ -95,6 +95,6 @@ class PaymentRepository(BaseRepository[Payment]):
     def __init__(self, db: Session):
         super().__init__(db, Payment)
 
-    def find_by_bill(self, bill_id: int) -> List[Payment]:
+    def find_by_bill(self, bill_id: str) -> List[Payment]:
         """Find all payments for a bill."""
         return self.db.query(Payment).filter(Payment.bill_id == bill_id).all()

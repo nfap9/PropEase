@@ -31,8 +31,8 @@ class BillService(BaseService):
 
     def list_bills(
         self,
-        org_id: int,
-        lease_id: Optional[int] = None,
+        org_id: str,
+        lease_id: Optional[str] = None,
         year: Optional[int] = None,
         month: Optional[int] = None,
         status: Optional[BillStatus] = None,
@@ -40,12 +40,12 @@ class BillService(BaseService):
         """List bills with filters."""
         return self.bill_repo.find_by_organization(org_id, lease_id, year, month, status)
 
-    def get_bill(self, bill_id: int, org_id: int) -> Optional[Bill]:
+    def get_bill(self, bill_id: str, org_id: str) -> Optional[Bill]:
         """Get a bill by ID within an organization."""
         bills = self.bill_repo.find_by_organization(org_id)
         return next((b for b in bills if b.id == bill_id), None)
 
-    def create_bill(self, org_id: int, data: BillCreate) -> Bill:
+    def create_bill(self, org_id: str, data: BillCreate) -> Bill:
         """Create a new bill manually."""
         total_amount = (
             data.rent_amount
@@ -68,7 +68,7 @@ class BillService(BaseService):
         )
         return self.bill_repo.create(bill)
 
-    def update_bill(self, bill_id: int, org_id: int, data: "BillUpdate") -> Bill:
+    def update_bill(self, bill_id: str, org_id: str, data: "BillUpdate") -> Bill:
         """
         Update a bill.
 
@@ -104,7 +104,7 @@ class BillService(BaseService):
         return self.bill_repo.update(bill_id, **update_data)
 
     def generate_bills(
-        self, org_id: int, data: GenerateBillsRequest
+        self, org_id: str, data: GenerateBillsRequest
     ) -> dict:
         """
         Generate bills for active leases.
@@ -162,7 +162,7 @@ class BillService(BaseService):
         return {"created": len(created), "skipped": len(skipped)}
 
     def _get_utility_reading(
-        self, room_id: int, year: int, month: int
+        self, room_id: str, year: int, month: int
     ) -> Optional[UtilityReading]:
         """Get utility reading for a room and period."""
         return self.utility_repo.find_by_room_and_period(room_id, year, month)
@@ -195,7 +195,7 @@ class BillService(BaseService):
         usage = reading.electricity_reading - reading.electricity_previous
         return Decimal(str(usage)) * Decimal(str(lease.electricity_rate))
 
-    def record_payment(self, bill_id: int, data: PaymentCreate) -> Payment:
+    def record_payment(self, bill_id: str, data: PaymentCreate) -> Payment:
         """
         Record a payment for a bill.
 
@@ -232,11 +232,11 @@ class BillService(BaseService):
         self.payment_repo.db.refresh(payment)
         return payment
 
-    def get_bill_payments(self, bill_id: int) -> List[Payment]:
+    def get_bill_payments(self, bill_id: str) -> List[Payment]:
         """Get all payments for a bill."""
         return self.payment_repo.find_by_bill(bill_id)
 
-    def delete_bill(self, bill_id: int, org_id: int) -> bool:
+    def delete_bill(self, bill_id: str, org_id: str) -> bool:
         """Delete a bill if it has no payments."""
         bill = self.get_bill(bill_id, org_id)
         if not bill:
@@ -273,7 +273,7 @@ class BillService(BaseService):
             ),
         }
 
-    def get_organization_name(self, org_id: int) -> str:
+    def get_organization_name(self, org_id: str) -> str:
         """Get organization name by ID."""
         org = self.org_repo.get(org_id)
         return org.name if org else "Apartment Ultra"

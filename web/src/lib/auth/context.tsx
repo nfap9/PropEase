@@ -56,16 +56,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (orgs.length > 0) {
             const savedOrgId = localStorage.getItem('current_organization_id');
             if (savedOrgId) {
-              const savedOrg = orgs.find((org: Organization) => org.id === parseInt(savedOrgId));
+              const savedOrg = orgs.find((org: Organization) => org.id === savedOrgId);
               if (savedOrg) {
                 setOrganization(savedOrg);
               } else {
                 setOrganization(orgs[0]);
-                localStorage.setItem('current_organization_id', String(orgs[0].id));
+                localStorage.setItem('current_organization_id', orgs[0].id);
               }
             } else {
               setOrganization(orgs[0]);
-              localStorage.setItem('current_organization_id', String(orgs[0].id));
+              localStorage.setItem('current_organization_id', orgs[0].id);
             }
           }
         } catch {
@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const orgs = await loadOrganizations();
     if (orgs.length > 0) {
       setOrganization(orgs[0]);
-      localStorage.setItem('current_organization_id', String(orgs[0].id));
+      localStorage.setItem('current_organization_id', orgs[0].id);
     }
 
     router.push('/dashboard');
@@ -120,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleSetOrganization = (org: Organization | null) => {
     setOrganization(org);
     if (org) {
-      localStorage.setItem('current_organization_id', String(org.id));
+      localStorage.setItem('current_organization_id', org.id);
     } else {
       localStorage.removeItem('current_organization_id');
     }

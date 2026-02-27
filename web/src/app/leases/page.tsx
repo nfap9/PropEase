@@ -42,8 +42,8 @@ import { Plus, Pencil, Trash2, Ban, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const leaseSchema = z.object({
-  room_id: z.number().min(1, '请选择房间'),
-  tenant_id: z.number().min(1, '请选择租客'),
+  room_id: z.string().min(1, '请选择房间'),
+  tenant_id: z.string().min(1, '请选择租客'),
   start_date: z.string().min(1, '请选择开始日期'),
   end_date: z.string().optional(),
   monthly_rent: z.number().min(0, '月租不能为负'),
@@ -75,7 +75,7 @@ export default function LeasesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: LeaseFormData }) =>
+    mutationFn: ({ id, data }: { id: string; data: LeaseFormData }) =>
       leasesApi.update(orgId!, id, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
@@ -89,7 +89,7 @@ export default function LeasesPage() {
   });
 
   const terminateMutation = useMutation({
-    mutationFn: (id: number) => leasesApi.terminate(orgId!, id),
+    mutationFn: (id: string) => leasesApi.terminate(orgId!, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
@@ -103,7 +103,7 @@ export default function LeasesPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => leasesApi.delete(orgId!, id),
+    mutationFn: (id: string) => leasesApi.delete(orgId!, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       setIsDeleteOpen(false);

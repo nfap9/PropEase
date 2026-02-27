@@ -35,8 +35,8 @@ def get_bill_service(db: Session = Depends(get_db)) -> BillService:
 
 @router.get("", response_model=List[BillResponse])
 def list_bills(
-    org_id: int = Query(...),
-    lease_id: Optional[int] = Query(None),
+    org_id: str = Query(...),
+    lease_id: Optional[str] = Query(None),
     year: Optional[int] = Query(None),
     month: Optional[int] = Query(None),
     status: Optional[BillStatus] = Query(None),
@@ -52,7 +52,7 @@ def list_bills(
 @router.post("/generate")
 def generate_bills(
     data: GenerateBillsRequest,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     bill_service: BillService = Depends(get_bill_service),
     db: Session = Depends(get_db),
@@ -67,7 +67,7 @@ def generate_bills(
 @router.post("", response_model=BillResponse, status_code=status.HTTP_201_CREATED)
 def create_bill(
     data: BillCreate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     bill_service: BillService = Depends(get_bill_service),
     db: Session = Depends(get_db),
@@ -81,7 +81,7 @@ def create_bill(
 
 @router.get("/export/excel")
 def export_bills_excel(
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     status: Optional[BillStatus] = Query(None),
     year: Optional[int] = Query(None),
     month: Optional[int] = Query(None),
@@ -124,8 +124,8 @@ def export_bills_excel(
 
 @router.get("/{bill_id}", response_model=BillResponse)
 def get_bill(
-    bill_id: int,
-    org_id: int = Query(...),
+    bill_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     bill_service: BillService = Depends(get_bill_service),
     db: Session = Depends(get_db),
@@ -140,9 +140,9 @@ def get_bill(
 
 @router.put("/{bill_id}", response_model=BillResponse)
 def update_bill(
-    bill_id: int,
+    bill_id: str,
     data: BillUpdate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     bill_service: BillService = Depends(get_bill_service),
     db: Session = Depends(get_db),
@@ -160,8 +160,8 @@ def update_bill(
 
 @router.delete("/{bill_id}")
 def delete_bill(
-    bill_id: int,
-    org_id: int = Query(...),
+    bill_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     bill_service: BillService = Depends(get_bill_service),
     db: Session = Depends(get_db),
@@ -180,9 +180,9 @@ def delete_bill(
 
 @router.post("/{bill_id}/payments", response_model=PaymentResponse)
 def create_payment(
-    bill_id: int,
+    bill_id: str,
     data: PaymentCreate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     bill_service: BillService = Depends(get_bill_service),
     db: Session = Depends(get_db),
@@ -200,8 +200,8 @@ def create_payment(
 
 @router.get("/{bill_id}/payments", response_model=List[PaymentResponse])
 def list_payments(
-    bill_id: int,
-    org_id: int = Query(...),
+    bill_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     bill_service: BillService = Depends(get_bill_service),
     db: Session = Depends(get_db),
@@ -213,8 +213,8 @@ def list_payments(
 
 @router.get("/{bill_id}/pdf")
 def export_bill_pdf(
-    bill_id: int,
-    org_id: int = Query(...),
+    bill_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     bill_service: BillService = Depends(get_bill_service),
     db: Session = Depends(get_db),

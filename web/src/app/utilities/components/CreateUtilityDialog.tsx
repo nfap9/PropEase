@@ -25,7 +25,7 @@ import { Apartment, Room } from '@/types';
 import { Droplets, Zap } from 'lucide-react';
 
 const utilitySchema = z.object({
-  room_id: z.number().min(1, '请选择房间'),
+  room_id: z.string().min(1, '请选择房间'),
   period_year: z.number().min(2020).max(2100),
   period_month: z.number().min(1).max(12),
   reading_date: z.string().min(1, '请选择读数日期'),
@@ -43,8 +43,8 @@ interface CreateUtilityDialogProps {
   isPending: boolean;
   apartments: Apartment[] | undefined;
   rooms: Room[] | undefined;
-  selectedApartmentId: number | null;
-  onApartmentChange: (apartmentId: number) => void;
+  selectedApartmentId: string | null;
+  onApartmentChange: (apartmentId: string) => void;
 }
 
 export function CreateUtilityDialog({
@@ -64,7 +64,7 @@ export function CreateUtilityDialog({
   const form = useForm<UtilityFormData>({
     resolver: zodResolver(utilitySchema),
     defaultValues: {
-      room_id: 0,
+      room_id: '',
       period_year: currentYear,
       period_month: currentMonth,
       reading_date: today.toISOString().split('T')[0],
@@ -93,8 +93,8 @@ export function CreateUtilityDialog({
             <div className="space-y-2">
               <Label>选择公寓</Label>
               <Select
-                value={selectedApartmentId?.toString() || ''}
-                onValueChange={(value) => onApartmentChange(Number(value))}
+                value={selectedApartmentId || ''}
+                onValueChange={(value) => onApartmentChange(value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="选择公寓" />
@@ -111,8 +111,8 @@ export function CreateUtilityDialog({
             <div className="space-y-2">
               <Label htmlFor="room_id">选择房间 *</Label>
               <Select
-                value={form.watch('room_id')?.toString() || ''}
-                onValueChange={(value) => form.setValue('room_id', Number(value))}
+                value={form.watch('room_id') || ''}
+                onValueChange={(value) => form.setValue('room_id', value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="选择房间" />

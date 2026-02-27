@@ -98,7 +98,7 @@ export default function TenantsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: TenantFormData }) =>
+    mutationFn: ({ id, data }: { id: string; data: TenantFormData }) =>
       tenantsApi.update(orgId!, id, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
@@ -112,7 +112,7 @@ export default function TenantsPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => tenantsApi.delete(orgId!, id),
+    mutationFn: (id: string) => tenantsApi.delete(orgId!, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsDeleteOpen(false);

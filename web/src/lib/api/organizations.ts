@@ -7,7 +7,7 @@ export const organizationsApi = {
     return response.data;
   },
 
-  get: async (id: number): Promise<Organization> => {
+  get: async (id: string): Promise<Organization> => {
     const response = await api.get<Organization>(`/organizations/${id}`);
     return response.data;
   },
@@ -17,29 +17,29 @@ export const organizationsApi = {
     return response.data;
   },
 
-  update: async (id: number, data: Partial<Organization>): Promise<Organization> => {
+  update: async (id: string, data: Partial<Organization>): Promise<Organization> => {
     const response = await api.put<Organization>(`/organizations/${id}`, data);
     return response.data;
   },
 
-  getMembers: async (orgId: number): Promise<OrganizationMember[]> => {
+  getMembers: async (orgId: string): Promise<OrganizationMember[]> => {
     const response = await api.get<OrganizationMember[]>(`/organizations/${orgId}/members`);
     return response.data;
   },
 
-  addMember: async (orgId: number, data: { user_email: string; role: MemberRole }): Promise<OrganizationMember> => {
+  addMember: async (orgId: string, data: { user_email: string; role: MemberRole }): Promise<OrganizationMember> => {
     const params = new URLSearchParams({ email: data.user_email, role: data.role });
     const response = await api.post<OrganizationMember>(`/organizations/${orgId}/members?${params}`);
     return response.data;
   },
 
-  updateMember: async (orgId: number, memberId: number, data: { role: MemberRole }): Promise<OrganizationMember> => {
+  updateMember: async (orgId: string, memberId: string, data: { role: MemberRole }): Promise<OrganizationMember> => {
     const params = new URLSearchParams({ role: data.role });
     const response = await api.put<OrganizationMember>(`/organizations/${orgId}/members/${memberId}?${params}`);
     return response.data;
   },
 
-  removeMember: async (orgId: number, memberId: number): Promise<void> => {
+  removeMember: async (orgId: string, memberId: string): Promise<void> => {
     await api.delete(`/organizations/${orgId}/members/${memberId}`);
   },
 };

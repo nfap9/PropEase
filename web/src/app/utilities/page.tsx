@@ -24,7 +24,7 @@ export default function UtilitiesPage() {
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
 
-  const [selectedApartmentId, setSelectedApartmentId] = useState<number | null>(null);
+  const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
@@ -75,7 +75,7 @@ export default function UtilitiesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Parameters<typeof utilitiesApi.update>[2] }) =>
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof utilitiesApi.update>[2] }) =>
       utilitiesApi.update(orgId!, id, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
@@ -107,7 +107,7 @@ export default function UtilitiesPage() {
   };
 
   const handleBatchImport = (
-    readings: { room_id: number; water_reading: number | null; electricity_reading: number | null; notes: string | null }[]
+    readings: { room_id: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[]
   ) => {
     batchImportMutation.mutate({
       period_year: currentYear,

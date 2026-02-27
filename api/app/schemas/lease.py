@@ -7,8 +7,8 @@ from app.schemas.tenant import TenantResponse
 
 
 class LeaseBase(BaseModel):
-    room_id: int
-    tenant_id: int
+    room_id: str
+    tenant_id: str
     start_date: date
     end_date: Optional[date] = None
     billing_day: int = 1  # 账单日 (1-28)，默认为1号
@@ -49,7 +49,7 @@ class LeaseUpdate(BaseModel):
 
 
 class LeaseResponse(LeaseBase):
-    id: int
+    id: str
     is_active: bool
     created_at: datetime
     room: Optional[RoomWithApartment] = None

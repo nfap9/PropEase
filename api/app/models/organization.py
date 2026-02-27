@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING, List
 import enum
 from app.configs.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import TimestampMixin, ULIDMixin
 
 if TYPE_CHECKING:
     from app.models.user import User
@@ -16,10 +16,9 @@ class MemberRole(str, enum.Enum):
     VIEWER = "viewer"
 
 
-class Organization(Base, TimestampMixin):
+class Organization(Base, TimestampMixin, ULIDMixin):
     __tablename__ = "organizations"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     plan: Mapped[str] = mapped_column(String(50), default="free", nullable=False)
@@ -37,12 +36,11 @@ class Organization(Base, TimestampMixin):
     )
 
 
-class OrganizationMember(Base, TimestampMixin):
+class OrganizationMember(Base, TimestampMixin, ULIDMixin):
     __tablename__ = "organization_members"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id"), nullable=False)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), nullable=False)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False)
     role: Mapped[MemberRole] = mapped_column(
         SQLEnum(MemberRole),
         default=MemberRole.MEMBER,

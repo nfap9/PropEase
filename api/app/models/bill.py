@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, List
 from datetime import date
 import enum
 from app.configs.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import TimestampMixin, ULIDMixin
 
 if TYPE_CHECKING:
     from app.models.lease import Lease
@@ -17,11 +17,10 @@ class BillStatus(str, enum.Enum):
     OVERDUE = "overdue"
 
 
-class Bill(Base, TimestampMixin):
+class Bill(Base, TimestampMixin, ULIDMixin):
     __tablename__ = "bills"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    lease_id: Mapped[int] = mapped_column(ForeignKey("leases.id"), nullable=False)
+    lease_id: Mapped[str] = mapped_column(ForeignKey("leases.id"), nullable=False)
     bill_year: Mapped[int] = mapped_column(Integer, nullable=False)
     bill_month: Mapped[int] = mapped_column(Integer, nullable=False)
     due_date: Mapped[date] = mapped_column(Date, nullable=False)
@@ -53,11 +52,10 @@ class PaymentMethod(str, enum.Enum):
     OTHER = "other"
 
 
-class Payment(Base, TimestampMixin):
+class Payment(Base, TimestampMixin, ULIDMixin):
     __tablename__ = "payments"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    bill_id: Mapped[int] = mapped_column(ForeignKey("bills.id"), nullable=False)
+    bill_id: Mapped[str] = mapped_column(ForeignKey("bills.id"), nullable=False)
     amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     payment_date: Mapped[date] = mapped_column(Date, nullable=False)
     payment_method: Mapped[PaymentMethod] = mapped_column(

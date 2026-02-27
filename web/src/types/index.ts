@@ -1,6 +1,6 @@
 // User types
 export interface User {
-  id: number;
+  id: string;  // ULID
   phone: string;
   email?: string;
   full_name: string;
@@ -37,7 +37,7 @@ export interface TokenResponse {
 export type MemberRole = 'owner' | 'admin' | 'member' | 'viewer';
 
 export interface Organization {
-  id: number;
+  id: string;  // ULID
   name: string;
   slug: string;
   plan: string;
@@ -46,9 +46,9 @@ export interface Organization {
 }
 
 export interface OrganizationMember {
-  id: number;
-  organization_id: number;
-  user_id: number;
+  id: string;  // ULID
+  organization_id: string;  // ULID
+  user_id: string;  // ULID
   role: MemberRole;
   user?: User;
   user_email: string;
@@ -61,8 +61,8 @@ export interface OrganizationMember {
 export type RoomStatus = 'available' | 'occupied' | 'maintenance';
 
 export interface Apartment {
-  id: number;
-  organization_id: number;
+  id: string;  // ULID
+  organization_id: string;  // ULID
   name: string;
   address: string | null;
   description: string | null;
@@ -81,8 +81,8 @@ export interface ApartmentWithStats extends Apartment {
 }
 
 export interface Room {
-  id: number;
-  apartment_id: number;
+  id: string;  // ULID
+  apartment_id: string;  // ULID
   room_number: string;
   layout: string | null;  // 户型
   status: RoomStatus;
@@ -104,8 +104,8 @@ export interface RoomBatchCreate {
 
 // Tenant types
 export interface Tenant {
-  id: number;
-  organization_id: number;
+  id: string;  // ULID
+  organization_id: string;  // ULID
   name: string;
   phone: string | null;
   id_card: string | null;
@@ -118,9 +118,9 @@ export interface Tenant {
 
 // Lease types
 export interface Lease {
-  id: number;
-  room_id: number;
-  tenant_id: number;
+  id: string;  // ULID
+  room_id: string;  // ULID
+  tenant_id: string;  // ULID
   start_date: string;
   end_date: string | null;
   monthly_rent: number;
@@ -136,8 +136,8 @@ export interface Lease {
 
 // Utility types
 export interface UtilityReading {
-  id: number;
-  room_id: number;
+  id: string;  // ULID
+  room_id: string;  // ULID
   period_year: number;
   period_month: number;
   reading_date: string;
@@ -155,8 +155,8 @@ export type BillStatus = 'pending' | 'partial' | 'paid' | 'overdue';
 export type PaymentMethod = 'cash' | 'wechat' | 'alipay' | 'bank_transfer' | 'other';
 
 export interface Bill {
-  id: number;
-  lease_id: number;
+  id: string;  // ULID
+  lease_id: string;  // ULID
   bill_year: number;
   bill_month: number;
   due_date: string;
@@ -173,8 +173,8 @@ export interface Bill {
 }
 
 export interface Payment {
-  id: number;
-  bill_id: number;
+  id: string;  // ULID
+  bill_id: string;  // ULID
   amount: number;
   payment_date: string;
   payment_method: PaymentMethod;
@@ -243,7 +243,7 @@ export type Resource =
 export type Action = 'view' | 'create' | 'edit' | 'delete' | 'export' | 'manage';
 
 export interface Permission {
-  id: number;
+  id: string;  // ULID
   resource: Resource;
   action: Action;
   code: string;

@@ -93,7 +93,7 @@ class PermissionService(BaseService):
                         self.db.add(role_perm)
         self.db.commit()
 
-    def initialize_org_permissions(self, org_id: int) -> None:
+    def initialize_org_permissions(self, org_id: str) -> None:
         """初始化组织默认权限配置"""
         for role, perms in DEFAULT_ORG_PERMISSIONS.items():
             for resource, action in perms:
@@ -122,7 +122,7 @@ class PermissionService(BaseService):
         self.db.commit()
 
     def check_permission(
-        self, user_id: int, org_id: int, permission_code: str
+        self, user_id: str, org_id: str, permission_code: str
     ) -> bool:
         """
         检查用户在组织中是否拥有指定权限
@@ -151,7 +151,7 @@ class PermissionService(BaseService):
         )
 
     def check_system_permission(
-        self, user_id: int, permission_code: str
+        self, user_id: str, permission_code: str
     ) -> bool:
         """
         检查用户是否拥有系统级权限
@@ -173,7 +173,7 @@ class PermissionService(BaseService):
         return False
 
     def get_role_permissions(
-        self, org_id: int, role: MemberRole
+        self, org_id: str, role: MemberRole
     ) -> List[Permission]:
         """获取组织角色的所有启用的权限"""
         if role == MemberRole.OWNER:
@@ -184,10 +184,10 @@ class PermissionService(BaseService):
 
     def update_role_permissions(
         self,
-        org_id: int,
+        org_id: str,
         role: MemberRole,
         permission_codes: List[str],
-        user_id: int,
+        user_id: str,
     ) -> bool:
         """
         更新组织角色权限
@@ -223,7 +223,7 @@ class PermissionService(BaseService):
             grouped[perm.resource.value].append(perm)
         return grouped
 
-    def get_user_permissions(self, user_id: int, org_id: int) -> List[str]:
+    def get_user_permissions(self, user_id: str, org_id: str) -> List[str]:
         """获取用户在组织中的所有权限代码"""
         # 系统超级管理员返回所有权限
         if self.user_system_role_repo.is_super_admin(user_id):
@@ -241,11 +241,11 @@ class PermissionService(BaseService):
         permissions = self.get_role_permissions(org_id, membership.role)
         return [p.code for p in permissions]
 
-    def get_user_system_roles(self, user_id: int) -> List[SystemRole]:
+    def get_user_system_roles(self, user_id: str) -> List[SystemRole]:
         """获取用户的所有系统角色"""
         return self.user_system_role_repo.get_user_system_roles(user_id)
 
-    def is_super_admin(self, user_id: int) -> bool:
+    def is_super_admin(self, user_id: str) -> bool:
         """检查用户是否是超级管理员"""
         return self.user_system_role_repo.is_super_admin(user_id)
 
@@ -254,7 +254,7 @@ class PermissionService(BaseService):
         return self.system_role_config_repo.get_all_active()
 
     def grant_system_role(
-        self, user_id: int, role: SystemRole, granted_by: int
+        self, user_id: str, role: SystemRole, granted_by: str
     ) -> bool:
         """授予用户系统角色"""
         # 只有超级管理员可以授予系统角色
@@ -265,7 +265,7 @@ class PermissionService(BaseService):
         return True
 
     def revoke_system_role(
-        self, user_id: int, role: SystemRole, revoked_by: int
+        self, user_id: str, role: SystemRole, revoked_by: str
     ) -> bool:
         """撤销用户的系统角色"""
         # 只有超级管理员可以撤销系统角色

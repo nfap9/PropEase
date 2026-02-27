@@ -24,7 +24,7 @@ def get_lease_service(db: Session = Depends(get_db)) -> LeaseService:
 
 @router.get("", response_model=List[LeaseResponse])
 def list_leases(
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     active_only: bool = Query(False),
     current_user: User = Depends(get_current_user),
     lease_service: LeaseService = Depends(get_lease_service),
@@ -38,7 +38,7 @@ def list_leases(
 @router.post("", response_model=LeaseResponse, status_code=status.HTTP_201_CREATED)
 def create_lease(
     data: LeaseCreate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     lease_service: LeaseService = Depends(get_lease_service),
     db: Session = Depends(get_db),
@@ -55,8 +55,8 @@ def create_lease(
 
 @router.get("/{lease_id}", response_model=LeaseResponse)
 def get_lease(
-    lease_id: int,
-    org_id: int = Query(...),
+    lease_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     lease_service: LeaseService = Depends(get_lease_service),
     db: Session = Depends(get_db),
@@ -71,9 +71,9 @@ def get_lease(
 
 @router.put("/{lease_id}", response_model=LeaseResponse)
 def update_lease(
-    lease_id: int,
+    lease_id: str,
     data: LeaseUpdate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     lease_service: LeaseService = Depends(get_lease_service),
     db: Session = Depends(get_db),
@@ -93,8 +93,8 @@ def update_lease(
 
 @router.post("/{lease_id}/terminate")
 def terminate_lease(
-    lease_id: int,
-    org_id: int = Query(...),
+    lease_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     lease_service: LeaseService = Depends(get_lease_service),
     db: Session = Depends(get_db),
@@ -111,8 +111,8 @@ def terminate_lease(
 
 @router.delete("/{lease_id}")
 def delete_lease(
-    lease_id: int,
-    org_id: int = Query(...),
+    lease_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     lease_service: LeaseService = Depends(get_lease_service),
     db: Session = Depends(get_db),

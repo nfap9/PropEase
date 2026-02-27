@@ -108,7 +108,7 @@ export default function ApartmentsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ApartmentFormData }) =>
+    mutationFn: ({ id, data }: { id: string; data: ApartmentFormData }) =>
       apartmentsApi.update(orgId!, id, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
@@ -122,7 +122,7 @@ export default function ApartmentsPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => apartmentsApi.delete(orgId!, id),
+    mutationFn: (id: string) => apartmentsApi.delete(orgId!, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsDeleteOpen(false);

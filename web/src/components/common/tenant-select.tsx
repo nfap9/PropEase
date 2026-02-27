@@ -42,9 +42,9 @@ const tenantSchema = z.object({
 type TenantFormData = z.infer<typeof tenantSchema>;
 
 interface TenantSelectProps {
-  orgId: number;
-  value?: number;
-  onValueChange: (value: number) => void;
+  orgId: string;
+  value?: string;
+  onValueChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
   error?: string;
@@ -103,8 +103,8 @@ export function TenantSelect({
     <div className="space-y-2">
       <div className="flex gap-2">
         <Select
-          value={value?.toString() || ''}
-          onValueChange={(v) => onValueChange(Number(v))}
+          value={value || ''}
+          onValueChange={(v) => onValueChange(v)}
           disabled={disabled}
         >
           <SelectTrigger className="flex-1">
@@ -112,7 +112,7 @@ export function TenantSelect({
           </SelectTrigger>
           <SelectContent>
             {tenants?.map((tenant) => (
-              <SelectItem key={tenant.id} value={tenant.id.toString()}>
+              <SelectItem key={tenant.id} value={tenant.id}>
                 {tenant.name} - {tenant.phone}
               </SelectItem>
             ))}

@@ -26,22 +26,22 @@ class UtilityService(BaseService):
 
     def list_readings(
         self,
-        org_id: int,
-        room_id: Optional[int] = None,
+        org_id: str,
+        room_id: Optional[str] = None,
         period_year: Optional[int] = None,
         period_month: Optional[int] = None,
     ) -> List[UtilityReading]:
         """List utility readings in organization."""
         return self.utility_repo.find_by_organization(org_id, room_id, period_year, period_month)
 
-    def get_reading(self, reading_id: int, org_id: int) -> Optional[UtilityReading]:
+    def get_reading(self, reading_id: str, org_id: str) -> Optional[UtilityReading]:
         """Get a reading by ID within organization."""
         reading = self.utility_repo.get(reading_id)
         if reading and reading.room.apartment.organization_id == org_id:
             return reading
         return None
 
-    def create_reading(self, org_id: int, data: UtilityReadingCreate) -> UtilityReading:
+    def create_reading(self, org_id: str, data: UtilityReadingCreate) -> UtilityReading:
         """Create a new utility reading."""
         # Get previous reading for the room
         previous = self.utility_repo.find_latest_by_room(data.room_id, data.period_year, data.period_month)
@@ -61,7 +61,7 @@ class UtilityService(BaseService):
 
     def batch_create_readings(
         self,
-        org_id: int,
+        org_id: str,
         period_year: int,
         period_month: int,
         reading_date: date,
@@ -88,7 +88,7 @@ class UtilityService(BaseService):
         return created
 
     def update_reading(
-        self, reading_id: int, org_id: int, data: UtilityReadingUpdate
+        self, reading_id: str, org_id: str, data: UtilityReadingUpdate
     ) -> Optional[UtilityReading]:
         """Update a utility reading."""
         reading = self.get_reading(reading_id, org_id)
@@ -97,7 +97,7 @@ class UtilityService(BaseService):
         update_data = data.model_dump(exclude_unset=True)
         return self.utility_repo.update(reading_id, **update_data)
 
-    def delete_reading(self, reading_id: int, org_id: int) -> bool:
+    def delete_reading(self, reading_id: str, org_id: str) -> bool:
         """Delete a utility reading."""
         reading = self.get_reading(reading_id, org_id)
         if not reading:
@@ -106,7 +106,7 @@ class UtilityService(BaseService):
 
     def export_rooms_for_reading(
         self,
-        org_id: int,
+        org_id: str,
         period_year: int,
         period_month: int,
         days_range: Optional[int] = None,

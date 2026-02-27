@@ -25,7 +25,7 @@ class OrganizationMemberRepository(BaseRepository[OrganizationMember]):
         super().__init__(db, OrganizationMember)
 
     def find_membership(
-        self, org_id: int, user_id: int
+        self, org_id: str, user_id: str
     ) -> Optional[OrganizationMember]:
         """Find membership by organization and user."""
         return (
@@ -37,7 +37,7 @@ class OrganizationMemberRepository(BaseRepository[OrganizationMember]):
             .first()
         )
 
-    def find_user_organizations(self, user_id: int) -> List[Organization]:
+    def find_user_organizations(self, user_id: str) -> List[Organization]:
         """Find all organizations a user belongs to."""
         return (
             self.db.query(Organization)
@@ -47,7 +47,7 @@ class OrganizationMemberRepository(BaseRepository[OrganizationMember]):
         )
 
     def find_organization_members(
-        self, org_id: int
+        self, org_id: str
     ) -> List[OrganizationMember]:
         """Find all members of an organization."""
         return (
@@ -56,11 +56,11 @@ class OrganizationMemberRepository(BaseRepository[OrganizationMember]):
             .all()
         )
 
-    def is_member(self, org_id: int, user_id: int) -> bool:
+    def is_member(self, org_id: str, user_id: str) -> bool:
         """Check if user is a member of organization."""
         return self.find_membership(org_id, user_id) is not None
 
-    def has_role(self, org_id: int, user_id: int, roles: List[MemberRole]) -> bool:
+    def has_role(self, org_id: str, user_id: str, roles: List[MemberRole]) -> bool:
         """Check if user has one of the specified roles."""
         membership = self.find_membership(org_id, user_id)
         return membership is not None and membership.role in roles

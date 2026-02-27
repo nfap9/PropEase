@@ -24,7 +24,7 @@ def get_tenant_service(db: Session = Depends(get_db)) -> TenantService:
 
 @router.get("", response_model=List[TenantResponse])
 def list_tenants(
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     tenant_service: TenantService = Depends(get_tenant_service),
     db: Session = Depends(get_db),
@@ -37,7 +37,7 @@ def list_tenants(
 @router.post("", response_model=TenantResponse, status_code=status.HTTP_201_CREATED)
 def create_tenant(
     data: TenantCreate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     tenant_service: TenantService = Depends(get_tenant_service),
     db: Session = Depends(get_db),
@@ -51,8 +51,8 @@ def create_tenant(
 
 @router.get("/{tenant_id}", response_model=TenantResponse)
 def get_tenant(
-    tenant_id: int,
-    org_id: int = Query(...),
+    tenant_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     tenant_service: TenantService = Depends(get_tenant_service),
     db: Session = Depends(get_db),
@@ -67,9 +67,9 @@ def get_tenant(
 
 @router.put("/{tenant_id}", response_model=TenantResponse)
 def update_tenant(
-    tenant_id: int,
+    tenant_id: str,
     data: TenantUpdate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     tenant_service: TenantService = Depends(get_tenant_service),
     db: Session = Depends(get_db),
@@ -86,8 +86,8 @@ def update_tenant(
 
 @router.delete("/{tenant_id}")
 def delete_tenant(
-    tenant_id: int,
-    org_id: int = Query(...),
+    tenant_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     tenant_service: TenantService = Depends(get_tenant_service),
     db: Session = Depends(get_db),

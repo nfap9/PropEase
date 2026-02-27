@@ -137,7 +137,7 @@ export default function RoomsPage() {
   };
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: RoomFormData }) =>
+    mutationFn: ({ id, data }: { id: string; data: RoomFormData }) =>
       roomsApi.update(orgId!, id, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
@@ -152,7 +152,7 @@ export default function RoomsPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => roomsApi.delete(orgId!, id),
+    mutationFn: (id: string) => roomsApi.delete(orgId!, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
@@ -166,7 +166,7 @@ export default function RoomsPage() {
   });
 
   const terminateLeaseMutation = useMutation({
-    mutationFn: (leaseId: number) => leasesApi.terminate(orgId!, leaseId),
+    mutationFn: (leaseId: string) => leasesApi.terminate(orgId!, leaseId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
@@ -181,7 +181,7 @@ export default function RoomsPage() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: number; status: RoomStatus }) =>
+    mutationFn: ({ id, status }: { id: string; status: RoomStatus }) =>
       roomsApi.update(orgId!, id, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
@@ -217,7 +217,7 @@ export default function RoomsPage() {
     updateStatusMutation.mutate({ id: room.id, status });
   };
 
-  const getActiveLease = (roomId: number) => {
+  const getActiveLease = (roomId: string) => {
     return leases?.find((lease) => lease.room_id === roomId && lease.is_active);
   };
 

@@ -21,7 +21,7 @@ def get_report_service(db: Session = Depends(get_db)) -> ReportService:
 
 @router.get("/overview")
 def get_overview(
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     report_service: ReportService = Depends(get_report_service),
     db: Session = Depends(get_db),
@@ -33,7 +33,7 @@ def get_overview(
 
 @router.get("/income")
 def get_income_report(
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     year: int = Query(...),
     start_month: Optional[int] = Query(None),
     end_month: Optional[int] = Query(None),
@@ -48,7 +48,7 @@ def get_income_report(
 
 @router.get("/occupancy")
 def get_occupancy_report(
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     year: int = Query(...),
     current_user: User = Depends(get_current_user),
     report_service: ReportService = Depends(get_report_service),

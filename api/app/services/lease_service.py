@@ -21,20 +21,20 @@ class LeaseService(BaseService):
         self.lease_repo = LeaseRepository(db)
         self.room_repo = RoomRepository(db)
 
-    def list_leases(self, org_id: int, active_only: bool = False) -> List[Lease]:
+    def list_leases(self, org_id: str, active_only: bool = False) -> List[Lease]:
         """List all leases in an organization."""
         if active_only:
             return self.lease_repo.find_active_by_organization(org_id)
         return self.lease_repo.find_by_organization(org_id)
 
-    def get_lease(self, lease_id: int, org_id: int) -> Optional[Lease]:
+    def get_lease(self, lease_id: str, org_id: str) -> Optional[Lease]:
         """Get a lease by ID within an organization."""
         lease = self.lease_repo.get(lease_id)
         if lease and lease.room.apartment.organization_id == org_id:
             return lease
         return None
 
-    def create_lease(self, org_id: int, data: LeaseCreate) -> Lease:
+    def create_lease(self, org_id: str, data: LeaseCreate) -> Lease:
         """
         Create a new lease.
 
@@ -90,7 +90,7 @@ class LeaseService(BaseService):
         return lease
 
     def update_lease(
-        self, lease_id: int, org_id: int, data: LeaseUpdate
+        self, lease_id: str, org_id: str, data: LeaseUpdate
     ) -> Optional[Lease]:
         """Update a lease."""
         lease = self.get_lease(lease_id, org_id)
@@ -109,7 +109,7 @@ class LeaseService(BaseService):
         update_data = data.model_dump(exclude_unset=True)
         return self.lease_repo.update(lease_id, **update_data)
 
-    def terminate_lease(self, lease_id: int, org_id: int) -> Optional[Lease]:
+    def terminate_lease(self, lease_id: str, org_id: str) -> Optional[Lease]:
         """Terminate a lease and release the room."""
         lease = self.get_lease(lease_id, org_id)
         if not lease:
@@ -123,7 +123,7 @@ class LeaseService(BaseService):
 
         return lease
 
-    def delete_lease(self, lease_id: int, org_id: int) -> bool:
+    def delete_lease(self, lease_id: str, org_id: str) -> bool:
         """Delete a lease (only if terminated)."""
         lease = self.get_lease(lease_id, org_id)
         if not lease:
@@ -132,7 +132,7 @@ class LeaseService(BaseService):
             raise ValueError("Cannot delete active lease. Terminate it first.")
         return self.lease_repo.delete(lease_id)
 
-    def get_lease_stats(self, org_id: int) -> dict:
+    def get_lease_stats(self, org_id: str) -> dict:
         """Get lease statistics for an organization."""
         active = self.lease_repo.count_active(org_id)
         all_leases = len(self.lease_repo.find_by_organization(org_id))

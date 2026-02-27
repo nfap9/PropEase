@@ -30,8 +30,8 @@ def get_utility_service(db: Session = Depends(get_db)) -> UtilityService:
 
 @router.get("", response_model=List[UtilityReadingResponse])
 def list_readings(
-    org_id: int = Query(...),
-    room_id: int = Query(None),
+    org_id: str = Query(...),
+    room_id: str = Query(None),
     period_year: int = Query(None, description="筛选年份"),
     period_month: int = Query(None, description="筛选月份"),
     current_user: User = Depends(get_current_user),
@@ -46,7 +46,7 @@ def list_readings(
 @router.post("", response_model=UtilityReadingResponse, status_code=status.HTTP_201_CREATED)
 def create_reading(
     data: UtilityReadingCreate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     utility_service: UtilityService = Depends(get_utility_service),
     db: Session = Depends(get_db),
@@ -61,7 +61,7 @@ def create_reading(
 @router.post("/batch", response_model=List[UtilityReadingResponse])
 def batch_create_readings(
     data: BatchUtilityReadingCreate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     utility_service: UtilityService = Depends(get_utility_service),
     db: Session = Depends(get_db),
@@ -81,7 +81,7 @@ def batch_create_readings(
 
 @router.get("/export", response_model=List[UtilityExportRoom])
 def export_rooms(
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     period_year: int = Query(...),
     period_month: int = Query(...),
     days_range: Optional[int] = Query(None, description="时间范围（天数），不填则返回全部"),
@@ -109,8 +109,8 @@ def export_rooms(
 
 @router.get("/{reading_id}", response_model=UtilityReadingResponse)
 def get_reading(
-    reading_id: int,
-    org_id: int = Query(...),
+    reading_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     utility_service: UtilityService = Depends(get_utility_service),
     db: Session = Depends(get_db),
@@ -125,9 +125,9 @@ def get_reading(
 
 @router.put("/{reading_id}", response_model=UtilityReadingResponse)
 def update_reading(
-    reading_id: int,
+    reading_id: str,
     data: UtilityReadingUpdate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     utility_service: UtilityService = Depends(get_utility_service),
     db: Session = Depends(get_db),
@@ -144,8 +144,8 @@ def update_reading(
 
 @router.delete("/{reading_id}")
 def delete_reading(
-    reading_id: int,
-    org_id: int = Query(...),
+    reading_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     utility_service: UtilityService = Depends(get_utility_service),
     db: Session = Depends(get_db),

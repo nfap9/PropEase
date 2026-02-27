@@ -19,7 +19,7 @@ import { UtilityReading } from '@/types';
 import { Droplets, Zap } from 'lucide-react';
 
 const utilitySchema = z.object({
-  room_id: z.number().min(1, '请选择房间'),
+  room_id: z.string().min(1, '请选择房间'),
   period_year: z.number().min(2020).max(2100),
   period_month: z.number().min(1).max(12),
   reading_date: z.string().min(1, '请选择读数日期'),

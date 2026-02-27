@@ -28,8 +28,8 @@ class TenantUpdate(BaseModel):
 
 
 class TenantResponse(TenantBase):
-    id: int
-    organization_id: int
+    id: str
+    organization_id: str
     created_at: datetime
 
     class Config:

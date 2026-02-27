@@ -20,11 +20,11 @@ class ApartmentService(BaseService):
         self.room_repo = RoomRepository(db)
         self.member_repo = OrganizationMemberRepository(db)
 
-    def list_apartments(self, org_id: int) -> List[Apartment]:
+    def list_apartments(self, org_id: str) -> List[Apartment]:
         """List all apartments in an organization."""
         return self.apartment_repo.find_by_organization(org_id)
 
-    def list_apartments_with_stats(self, org_id: int) -> List[Dict[str, Any]]:
+    def list_apartments_with_stats(self, org_id: str) -> List[Dict[str, Any]]:
         """List all apartments with room statistics."""
         apartments = self.apartment_repo.find_by_organization(org_id)
         result = []
@@ -50,14 +50,14 @@ class ApartmentService(BaseService):
             })
         return result
 
-    def get_apartment(self, apartment_id: int, org_id: int) -> Optional[Apartment]:
+    def get_apartment(self, apartment_id: str, org_id: str) -> Optional[Apartment]:
         """Get an apartment by ID within an organization."""
         apartment = self.apartment_repo.get(apartment_id)
         if apartment and apartment.organization_id == org_id:
             return apartment
         return None
 
-    def create_apartment(self, org_id: int, data: ApartmentCreate) -> Apartment:
+    def create_apartment(self, org_id: str, data: ApartmentCreate) -> Apartment:
         """Create a new apartment."""
         apartment = Apartment(
             organization_id=org_id,
@@ -68,7 +68,7 @@ class ApartmentService(BaseService):
         return self.apartment_repo.create(apartment)
 
     def update_apartment(
-        self, apartment_id: int, org_id: int, data: ApartmentUpdate
+        self, apartment_id: str, org_id: str, data: ApartmentUpdate
     ) -> Optional[Apartment]:
         """Update an apartment."""
         apartment = self.get_apartment(apartment_id, org_id)
@@ -81,7 +81,7 @@ class ApartmentService(BaseService):
             description=data.description,
         )
 
-    def delete_apartment(self, apartment_id: int, org_id: int) -> bool:
+    def delete_apartment(self, apartment_id: str, org_id: str) -> bool:
         """Delete an apartment."""
         apartment = self.get_apartment(apartment_id, org_id)
         if not apartment:
@@ -89,7 +89,7 @@ class ApartmentService(BaseService):
         return self.apartment_repo.delete(apartment_id)
 
     # Room operations
-    def list_rooms(self, org_id: int, apartment_id: Optional[int] = None) -> List[Room]:
+    def list_rooms(self, org_id: str, apartment_id: Optional[str] = None) -> List[Room]:
         """List all rooms in an organization, optionally filtered by apartment."""
         if apartment_id:
             apartment = self.get_apartment(apartment_id, org_id)
@@ -98,14 +98,14 @@ class ApartmentService(BaseService):
             return self.room_repo.find_by_apartment(apartment_id)
         return self.room_repo.find_by_organization(org_id)
 
-    def get_room(self, room_id: int, org_id: int) -> Optional[Room]:
+    def get_room(self, room_id: str, org_id: str) -> Optional[Room]:
         """Get a room by ID within an organization."""
         room = self.room_repo.get(room_id)
         if room and room.apartment.organization_id == org_id:
             return room
         return None
 
-    def create_room(self, apartment_id: int, org_id: int, data: RoomCreate) -> Optional[Room]:
+    def create_room(self, apartment_id: str, org_id: str, data: RoomCreate) -> Optional[Room]:
         """Create a new room in an apartment."""
         apartment = self.get_apartment(apartment_id, org_id)
         if not apartment:
@@ -120,7 +120,7 @@ class ApartmentService(BaseService):
         return self.room_repo.create(room)
 
     def batch_create_rooms(
-        self, apartment_id: int, org_id: int, data: RoomBatchCreate
+        self, apartment_id: str, org_id: str, data: RoomBatchCreate
     ) -> List[Room]:
         """Batch create rooms in an apartment by room number list."""
         apartment = self.get_apartment(apartment_id, org_id)
@@ -142,7 +142,7 @@ class ApartmentService(BaseService):
         return rooms
 
     def update_room(
-        self, room_id: int, org_id: int, data: RoomUpdate
+        self, room_id: str, org_id: str, data: RoomUpdate
     ) -> Optional[Room]:
         """Update a room."""
         room = self.get_room(room_id, org_id)
@@ -151,21 +151,21 @@ class ApartmentService(BaseService):
         update_data = data.model_dump(exclude_unset=True)
         return self.room_repo.update(room_id, **update_data)
 
-    def delete_room(self, room_id: int, org_id: int) -> bool:
+    def delete_room(self, room_id: str, org_id: str) -> bool:
         """Delete a room."""
         room = self.get_room(room_id, org_id)
         if not room:
             return False
         return self.room_repo.delete(room_id)
 
-    def update_room_status(self, room_id: int, org_id: int, status: RoomStatus) -> Optional[Room]:
+    def update_room_status(self, room_id: str, org_id: str, status: RoomStatus) -> Optional[Room]:
         """Update room status."""
         room = self.get_room(room_id, org_id)
         if not room:
             return None
         return self.room_repo.update_status(room_id, status)
 
-    def get_room_stats(self, org_id: int) -> dict:
+    def get_room_stats(self, org_id: str) -> dict:
         """Get room statistics for an organization."""
         total = len(self.room_repo.find_by_organization(org_id))
         available = self.room_repo.count_by_status(org_id, RoomStatus.AVAILABLE)

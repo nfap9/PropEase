@@ -22,7 +22,7 @@ import { useAuth } from '@/lib/auth/context';
 interface BatchImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onImport: (readings: { room_id: number; water_reading: number | null; electricity_reading: number | null; notes: string | null }[]) => void;
+  onImport: (readings: { room_id: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[]) => void;
   isPending: boolean;
   allRooms: Room[] | undefined;
 }
@@ -205,7 +205,7 @@ export function BatchImportDialog({
         roomMap.set(room.room_number, room);
       });
 
-      const matchedRecords: { room_id: number; water_reading: number | null; electricity_reading: number | null; notes: string | null }[] = [];
+      const matchedRecords: { room_id: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[] = [];
       const unmatchedRooms: string[] = [];
 
       for (const record of records) {

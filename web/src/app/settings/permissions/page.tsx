@@ -98,7 +98,7 @@ export default function PermissionsPage() {
   }, [rolePermissions]);
 
   const currentMember = members?.find(
-    (m: { user_id: number }) => m.user_id === user?.id
+    (m: { user_id: string }) => m.user_id === user?.id
   );
   const isOwner = currentMember?.role === 'owner';
 

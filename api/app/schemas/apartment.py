@@ -29,8 +29,8 @@ class RoomStats(BaseModel):
 
 
 class ApartmentResponse(ApartmentBase):
-    id: int
-    organization_id: int
+    id: str
+    organization_id: str
     created_at: datetime
 
     class Config:
@@ -51,7 +51,7 @@ class RoomBase(BaseModel):
 
 
 class RoomCreate(RoomBase):
-    apartment_id: int
+    apartment_id: str
     status: RoomStatus = RoomStatus.AVAILABLE
 
 
@@ -74,8 +74,8 @@ class RoomUpdate(BaseModel):
 
 
 class RoomResponse(RoomBase):
-    id: int
-    apartment_id: int
+    id: str
+    apartment_id: str
     status: RoomStatus
     created_at: datetime
 

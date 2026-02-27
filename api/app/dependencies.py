@@ -32,7 +32,7 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
-    user = db.query(User).filter(User.id == int(user_id)).first()
+    user = db.query(User).filter(User.id == user_id).first()
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -58,7 +58,7 @@ def get_current_active_user(
 
 
 def get_current_organization(
-    org_id: int,
+    org_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> OrganizationMember:
@@ -98,7 +98,7 @@ def require_permission(permission_code: str):
     用法：
         @router.post("/apartments")
         def create_apartment(
-            org_id: int,
+            org_id: str,
             data: ApartmentCreate,
             _: None = Depends(require_permission("apartment:create")),
             current_user: User = Depends(get_current_user),
@@ -109,7 +109,7 @@ def require_permission(permission_code: str):
     from app.services.permission_service import PermissionService
 
     async def permission_checker(
-        org_id: int,
+        org_id: str,
         current_user: User = Depends(get_current_user),
         db: Session = Depends(get_db),
     ) -> None:
@@ -126,7 +126,7 @@ def require_permission(permission_code: str):
 
 
 def get_user_permissions(
-    org_id: int,
+    org_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> List[str]:

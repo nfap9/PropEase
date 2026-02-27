@@ -121,7 +121,7 @@ export default function BillsPage() {
     setIsPaymentOpen(true);
   };
 
-  const exportPdf = async (billId: number) => {
+  const exportPdf = async (billId: string) => {
     const blob = await billsApi.exportPdf(orgId!, billId);
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');

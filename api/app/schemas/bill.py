@@ -5,7 +5,7 @@ from app.models.bill import BillStatus, PaymentMethod
 
 
 class BillBase(BaseModel):
-    lease_id: int
+    lease_id: str
     bill_year: int
     bill_month: int
     due_date: date
@@ -30,7 +30,7 @@ class BillUpdate(BaseModel):
 
 
 class BillResponse(BillBase):
-    id: int
+    id: str
     total_amount: float
     paid_amount: float
     status: BillStatus
@@ -53,8 +53,8 @@ class PaymentCreate(PaymentBase):
 
 
 class PaymentResponse(PaymentBase):
-    id: int
-    bill_id: int
+    id: str
+    bill_id: str
     created_at: datetime
 
     class Config:
@@ -65,4 +65,4 @@ class GenerateBillsRequest(BaseModel):
     bill_year: int
     bill_month: int
     due_date: date
-    lease_ids: Optional[list[int]] = None
+    lease_ids: Optional[list[str]] = None

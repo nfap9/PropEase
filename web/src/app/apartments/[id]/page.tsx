@@ -139,7 +139,7 @@ const LAYOUT_OPTIONS = [
 ];
 
 export default function ApartmentDetailPage({ params }: { params: { id: string } }) {
-  const apartmentId = Number(params.id);
+  const apartmentId = params.id;
   const router = useRouter();
   const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
@@ -155,7 +155,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   // 批量操作状态
   const [isBatchEditMode, setIsBatchEditMode] = useState(false);
-  const [selectedRoomIds, setSelectedRoomIds] = useState<Set<number>>(new Set());
+  const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(new Set());
   const [isBatchEditOpen, setIsBatchEditOpen] = useState(false);
 
   // 获取公寓信息
@@ -383,7 +383,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
 
   // 更新房间
   const updateRoomMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: RoomFormData }) =>
+    mutationFn: ({ id, data }: { id: string; data: RoomFormData }) =>
       roomsApi.update(orgId!, id, filterEmptyStrings({ ...data, apartment_id: apartmentId })),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
@@ -398,7 +398,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
 
   // 删除房间
   const deleteRoomMutation = useMutation({
-    mutationFn: (id: number) => roomsApi.delete(orgId!, id),
+    mutationFn: (id: string) => roomsApi.delete(orgId!, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
       setIsDeleteRoomOpen(false);
@@ -459,7 +459,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   });
 
   // 切换房间选中状态（批量模式）
-  const toggleRoomSelection = (roomId: number) => {
+  const toggleRoomSelection = (roomId: string) => {
     setSelectedRoomIds(prev => {
       const newSet = new Set(prev);
       if (newSet.has(roomId)) {

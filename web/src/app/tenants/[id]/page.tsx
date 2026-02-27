@@ -32,7 +32,7 @@ import { DataTable } from '@/components/common/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 
 export default function TenantDetailPage({ params }: { params: { id: string } }) {
-  const tenantId = Number(params.id);
+  const tenantId = params.id;
   const router = useRouter();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;

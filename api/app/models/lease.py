@@ -3,19 +3,18 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING, List
 from datetime import date
 from app.configs.database import Base
-from app.models.base import TimestampMixin
+from app.models.base import TimestampMixin, ULIDMixin
 
 if TYPE_CHECKING:
     from app.models.apartment import Room
     from app.models.tenant import Tenant
 
 
-class Lease(Base, TimestampMixin):
+class Lease(Base, TimestampMixin, ULIDMixin):
     __tablename__ = "leases"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    room_id: Mapped[int] = mapped_column(ForeignKey("rooms.id"), nullable=False)
-    tenant_id: Mapped[int] = mapped_column(ForeignKey("tenants.id"), nullable=False)
+    room_id: Mapped[str] = mapped_column(ForeignKey("rooms.id"), nullable=False)
+    tenant_id: Mapped[str] = mapped_column(ForeignKey("tenants.id"), nullable=False)
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=True)
     billing_day: Mapped[int] = mapped_column(Integer, nullable=False, default=1)  # 账单日 (1-28)

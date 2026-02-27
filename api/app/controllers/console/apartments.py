@@ -36,7 +36,7 @@ def get_apartment_service(db: Session = Depends(get_db)) -> ApartmentService:
 
 @router.get("", response_model=List[ApartmentWithStatsResponse])
 def list_apartments(
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     apartment_service: ApartmentService = Depends(get_apartment_service),
     db: Session = Depends(get_db),
@@ -49,7 +49,7 @@ def list_apartments(
 @router.post("", response_model=ApartmentResponse, status_code=status.HTTP_201_CREATED)
 def create_apartment(
     data: ApartmentCreate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     apartment_service: ApartmentService = Depends(get_apartment_service),
     db: Session = Depends(get_db),
@@ -63,8 +63,8 @@ def create_apartment(
 
 @router.get("/{apartment_id}", response_model=ApartmentResponse)
 def get_apartment(
-    apartment_id: int,
-    org_id: int = Query(...),
+    apartment_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     apartment_service: ApartmentService = Depends(get_apartment_service),
     db: Session = Depends(get_db),
@@ -79,9 +79,9 @@ def get_apartment(
 
 @router.put("/{apartment_id}", response_model=ApartmentResponse)
 def update_apartment(
-    apartment_id: int,
+    apartment_id: str,
     data: ApartmentUpdate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     apartment_service: ApartmentService = Depends(get_apartment_service),
     db: Session = Depends(get_db),
@@ -98,8 +98,8 @@ def update_apartment(
 
 @router.delete("/{apartment_id}")
 def delete_apartment(
-    apartment_id: int,
-    org_id: int = Query(...),
+    apartment_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     apartment_service: ApartmentService = Depends(get_apartment_service),
     db: Session = Depends(get_db),
@@ -117,8 +117,8 @@ def delete_apartment(
 
 @router.get("/{apartment_id}/rooms", response_model=List[RoomResponse])
 def list_rooms(
-    apartment_id: int,
-    org_id: int = Query(...),
+    apartment_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     apartment_service: ApartmentService = Depends(get_apartment_service),
     db: Session = Depends(get_db),
@@ -130,9 +130,9 @@ def list_rooms(
 
 @router.post("/{apartment_id}/rooms", response_model=RoomResponse, status_code=status.HTTP_201_CREATED)
 def create_room(
-    apartment_id: int,
+    apartment_id: str,
     data: RoomCreate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     apartment_service: ApartmentService = Depends(get_apartment_service),
     db: Session = Depends(get_db),
@@ -149,9 +149,9 @@ def create_room(
 
 @router.post("/{apartment_id}/rooms/batch", response_model=List[RoomResponse], status_code=status.HTTP_201_CREATED)
 def batch_create_rooms(
-    apartment_id: int,
+    apartment_id: str,
     data: RoomBatchCreate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     apartment_service: ApartmentService = Depends(get_apartment_service),
     db: Session = Depends(get_db),
@@ -168,8 +168,8 @@ def batch_create_rooms(
 
 @router.get("/rooms/{room_id}", response_model=RoomResponse)
 def get_room(
-    room_id: int,
-    org_id: int = Query(...),
+    room_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     apartment_service: ApartmentService = Depends(get_apartment_service),
     db: Session = Depends(get_db),
@@ -184,9 +184,9 @@ def get_room(
 
 @router.put("/rooms/{room_id}", response_model=RoomResponse)
 def update_room(
-    room_id: int,
+    room_id: str,
     data: RoomUpdate,
-    org_id: int = Query(...),
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     apartment_service: ApartmentService = Depends(get_apartment_service),
     db: Session = Depends(get_db),
@@ -203,8 +203,8 @@ def update_room(
 
 @router.delete("/rooms/{room_id}")
 def delete_room(
-    room_id: int,
-    org_id: int = Query(...),
+    room_id: str,
+    org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
     apartment_service: ApartmentService = Depends(get_apartment_service),
     db: Session = Depends(get_db),

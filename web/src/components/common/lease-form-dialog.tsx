@@ -30,8 +30,8 @@ import { filterEmptyStrings } from '@/lib/utils/form';
 import { Room, Apartment } from '@/types';
 
 const leaseSchema = z.object({
-  room_id: z.number().min(1, '请选择房间'),
-  tenant_id: z.number().min(1, '请选择租客'),
+  room_id: z.string().min(1, '请选择房间'),
+  tenant_id: z.string().min(1, '请选择租客'),
   start_date: z.string().min(1, '请选择开始日期'),
   end_date: z.string().optional(),
   monthly_rent: z.number().min(0, '月租不能为负'),
@@ -44,7 +44,7 @@ const leaseSchema = z.object({
 export type LeaseFormData = z.infer<typeof leaseSchema>;
 
 export interface LeaseFormDialogProps {
-  orgId: number;
+  orgId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** 指定房间时使用（房间列表页），房间信息只读 */
@@ -61,15 +61,15 @@ export function LeaseFormDialog({
   onSuccess,
 }: LeaseFormDialogProps) {
   const queryClient = useQueryClient();
-  const [selectedApartmentId, setSelectedApartmentId] = useState<number | null>(null);
+  const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
 
   const isRoomSpecified = !!room;
 
   const form = useForm<LeaseFormData>({
     resolver: zodResolver(leaseSchema),
     defaultValues: {
-      room_id: 0,
-      tenant_id: 0,
+      room_id: '',
+      tenant_id: '',
       start_date: new Date().toISOString().split('T')[0],
       end_date: '',
       monthly_rent: 0,
@@ -99,7 +99,7 @@ export function LeaseFormDialog({
     if (room && open) {
       form.reset({
         room_id: room.id,
-        tenant_id: 0,
+        tenant_id: '',
         start_date: new Date().toISOString().split('T')[0],
         end_date: '',
         monthly_rent: room.monthly_rent,
@@ -111,8 +111,8 @@ export function LeaseFormDialog({
     } else if (!isRoomSpecified && open) {
       // 需要选择房间的场景，重置表单
       form.reset({
-        room_id: 0,
-        tenant_id: 0,
+        room_id: '',
+        tenant_id: '',
         start_date: new Date().toISOString().split('T')[0],
         end_date: '',
         monthly_rent: 0,
@@ -186,15 +186,15 @@ export function LeaseFormDialog({
               <div className="space-y-2">
                 <Label>选择公寓</Label>
                 <Select
-                  value={selectedApartmentId?.toString() || ''}
-                  onValueChange={(value) => setSelectedApartmentId(Number(value))}
+                  value={selectedApartmentId || ''}
+                  onValueChange={(value) => setSelectedApartmentId(value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="选择公寓" />
                   </SelectTrigger>
                   <SelectContent>
                     {apartments?.map((apt: Apartment) => (
-                      <SelectItem key={apt.id} value={apt.id.toString()}>
+                      <SelectItem key={apt.id} value={apt.id}>
                         {apt.name}
                       </SelectItem>
                     ))}
@@ -204,8 +204,8 @@ export function LeaseFormDialog({
               <div className="space-y-2">
                 <Label htmlFor="room_id">选择房间 *</Label>
                 <Select
-                  value={form.watch('room_id')?.toString() || ''}
-                  onValueChange={(value) => form.setValue('room_id', Number(value))}
+                  value={form.watch('room_id') || ''}
+                  onValueChange={(value) => form.setValue('room_id', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="选择房间" />
@@ -214,7 +214,7 @@ export function LeaseFormDialog({
                     {rooms
                       ?.filter((r) => r.status === 'available')
                       .map((r: Room) => (
-                        <SelectItem key={r.id} value={r.id.toString()}>
+                        <SelectItem key={r.id} value={r.id}>
                           {r.room_number} - ¥{r.monthly_rent}/月
                         </SelectItem>
                       ))}

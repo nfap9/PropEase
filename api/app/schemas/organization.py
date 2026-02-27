@@ -18,7 +18,7 @@ class OrganizationUpdate(BaseModel):
 
 
 class OrganizationResponse(OrganizationBase):
-    id: int
+    id: str
     plan: str
     settings: Optional[dict]
     created_at: datetime
@@ -41,9 +41,9 @@ class OrganizationMemberUpdate(BaseModel):
 
 
 class OrganizationMemberResponse(BaseModel):
-    id: int
-    organization_id: int
-    user_id: int
+    id: str
+    organization_id: str
+    user_id: str
     role: MemberRole
     created_at: datetime
 

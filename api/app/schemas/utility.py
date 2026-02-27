@@ -6,7 +6,7 @@ from app.schemas.apartment import RoomWithApartment
 
 
 class UtilityReadingBase(BaseModel):
-    room_id: int
+    room_id: str
     period_year: int
     period_month: int
     reading_date: date
@@ -31,7 +31,7 @@ class UtilityReadingUpdate(BaseModel):
 
 
 class UtilityReadingResponse(UtilityReadingBase):
-    id: int
+    id: str
     room: Optional[RoomWithApartment] = None
     created_at: datetime
 
@@ -48,7 +48,7 @@ class BatchUtilityReading(BaseModel):
 
 class UtilityExportRoom(BaseModel):
     """待录入水电的房间信息（用于导出）"""
-    room_id: int
+    room_id: str
     apartment_name: str
     room_number: str
     tenant_name: str
