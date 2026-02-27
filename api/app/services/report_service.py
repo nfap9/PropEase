@@ -134,13 +134,20 @@ class ReportService(BaseService):
         year: int,
         start_month: int | None = None,
         end_month: int | None = None,
-    ) -> dict:
-        """Get income report by month."""
+    ) -> list:
+        """Get income report by month.
+
+        Returns a list of monthly income reports with breakdown by category.
+        """
         query = (
             self.db.query(
                 Bill.bill_month,
-                func.sum(Bill.total_amount).label("total"),
-                func.sum(Bill.paid_amount).label("paid"),
+                func.sum(Bill.total_amount).label("total_amount"),
+                func.sum(Bill.paid_amount).label("collected_amount"),
+                func.sum(Bill.rent_amount).label("total_rent"),
+                func.sum(Bill.water_amount).label("total_water"),
+                func.sum(Bill.electricity_amount).label("total_electricity"),
+                func.sum(Bill.other_amount).label("total_other"),
             )
             .join(Lease)
             .join(Room)
@@ -160,57 +167,68 @@ class ReportService(BaseService):
 
         monthly_data = []
         for row in results:
+            total_amount = float(row.total_amount or 0)
+            collected_amount = float(row.collected_amount or 0)
             monthly_data.append({
-                "month": row.bill_month,
-                "total": float(row.total or 0),
-                "paid": float(row.paid or 0),
-                "pending": float((row.total or 0) - (row.paid or 0)),
+                "period": f"{row.bill_month}月",
+                "total_amount": total_amount,
+                "collected_amount": collected_amount,
+                "total_rent": float(row.total_rent or 0),
+                "total_water": float(row.total_water or 0),
+                "total_electricity": float(row.total_electricity or 0),
+                "total_other": float(row.total_other or 0),
+                "collection_rate": round((collected_amount / total_amount) * 100, 1) if total_amount > 0 else 0,
             })
 
-        total_amount = sum(d["total"] for d in monthly_data)
-        paid_amount = sum(d["paid"] for d in monthly_data)
+        return monthly_data
 
-        return {
-            "year": year,
-            "monthly_data": monthly_data,
-            "total_amount": total_amount,
-            "paid_amount": paid_amount,
-            "pending_amount": total_amount - paid_amount,
-            "collection_rate": round((paid_amount / total_amount) * 100, 1) if total_amount > 0 else 0,
-        }
+    def get_occupancy_report(self, org_id: int, year: int) -> list:
+        """Get occupancy report by month.
 
-    def get_occupancy_report(self, org_id: int) -> dict:
-        """Get occupancy report by apartment.
-
-        优化：使用单次查询获取所有房间数据，避免 N+1 查询问题。
+        Calculate monthly occupancy rate based on active leases.
         """
-        # 单次查询获取所有公寓及其房间状态统计
-        room_stats = (
-            self.db.query(
-                Apartment.id,
-                Apartment.name,
-                func.count(Room.id).label("total_rooms"),
-                func.sum(func.cast(Room.status == RoomStatus.OCCUPIED, type_=Integer)).label("occupied_rooms"),
-            )
-            .outerjoin(Room, Room.apartment_id == Apartment.id)
+        # Get total rooms count
+        total_rooms = (
+            self.db.query(Room)
+            .join(Apartment)
             .filter(Apartment.organization_id == org_id)
-            .group_by(Apartment.id, Apartment.name)
-            .all()
+            .count()
         )
 
-        apartment_data = []
-        for row in room_stats:
-            total = row.total_rooms or 0
-            occupied = row.occupied_rooms or 0
-            apartment_data.append({
-                "id": row.id,
-                "name": row.name,
-                "total_rooms": total,
-                "occupied_rooms": occupied,
-                "available_rooms": total - occupied,
-                "occupancy_rate": round((occupied / total) * 100, 1) if total > 0 else 0,
+        if total_rooms == 0:
+            return []
+
+        monthly_data = []
+        for month in range(1, 13):
+            # A room is occupied in a month if there's an active lease
+            # that covers that month
+            month_start = date(year, month, 1)
+            if month == 12:
+                month_end = date(year + 1, 1, 1)
+            else:
+                month_end = date(year, month + 1, 1)
+
+            # Active lease: start_date <= month_end AND (end_date IS NULL OR end_date >= month_start)
+            occupied_rooms = (
+                self.db.query(func.count(func.distinct(Room.id)))
+                .join(Lease)
+                .join(Apartment)
+                .filter(
+                    Apartment.organization_id == org_id,
+                    Lease.start_date < month_end,
+                    func.coalesce(Lease.end_date, date(2999, 12, 31)) >= month_start,
+                )
+                .scalar() or 0
+            )
+
+            occupancy_rate = round((occupied_rooms / total_rooms) * 100, 1) if total_rooms > 0 else 0
+
+            monthly_data.append({
+                "period": f"{month}月",
+                "total_rooms": total_rooms,
+                "occupied_rooms": occupied_rooms,
+                "vacant_rooms": total_rooms - occupied_rooms,
+                "occupancy_rate": occupancy_rate,
             })
 
-        return {
-            "apartments": apartment_data,
-        }
+        return monthly_data

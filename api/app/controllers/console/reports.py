@@ -49,10 +49,11 @@ def get_income_report(
 @router.get("/occupancy")
 def get_occupancy_report(
     org_id: int = Query(...),
+    year: int = Query(...),
     current_user: User = Depends(get_current_user),
     report_service: ReportService = Depends(get_report_service),
     db: Session = Depends(get_db),
 ):
     """Get occupancy report."""
     get_org_membership(org_id, current_user, db)
-    return report_service.get_occupancy_report(org_id)
+    return report_service.get_occupancy_report(org_id, year)
