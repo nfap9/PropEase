@@ -111,7 +111,7 @@ test-cov:
 # Database
 # ==================================================================
 
-.PHONY: migrate migrate-create migrate-down db-reset
+.PHONY: migrate migrate-create migrate-down db-reset db-reset-seed db-seed-demo db-reset-demo
 
 migrate:
 	@echo "📦 Running migrations..."
@@ -133,6 +133,22 @@ db-reset:
 	@cd api && uv run alembic downgrade base
 	@cd api && uv run alembic upgrade head
 	@echo "✅ Database reset complete"
+
+db-reset-seed:
+	@echo "⚠️  Resetting database with seed data..."
+	@cd api && uv run python scripts/reset_db.py --seed -y
+	@echo "✅ Database reset with admin user"
+
+db-seed-demo:
+	@echo "🌱 Seeding demo data..."
+	@cd api && uv run python scripts/seed_demo.py
+	@echo "✅ Demo data seeded"
+
+db-reset-demo:
+	@echo "🔄 Resetting and seeding demo data..."
+	@cd api && uv run python scripts/reset_db.py -y
+	@cd api && uv run python scripts/seed_demo.py
+	@echo "✅ Database reset with demo data"
 
 # ==================================================================
 # Docker
@@ -193,7 +209,10 @@ help:
 	@echo "  make migrate       Run database migrations"
 	@echo "  make migrate-create Create new migration"
 	@echo "  make migrate-down  Rollback last migration"
-	@echo "  make db-reset      Reset database"
+	@echo "  make db-reset      Reset database (empty)"
+	@echo "  make db-reset-seed Reset database with admin user"
+	@echo "  make db-seed-demo  Seed demo/test data"
+	@echo "  make db-reset-demo Reset and seed full demo data"
 	@echo ""
 	@echo "Docker:"
 	@echo "  make docker-build  Build Docker images"
