@@ -125,10 +125,51 @@ make migrate         # 运行迁移
 make migrate-create  # 创建迁移
 make db-reset        # 重置数据库
 
+# 测试数据
+cd api && uv run python scripts/seed_demo.py    # 生成演示数据
+cd api && uv run python scripts/seed_admin.py   # 仅创建管理员
+
 # Docker
 make docker-up       # 启动容器
 make docker-down     # 停止容器
 ```
+
+## 测试数据
+
+项目提供测试数据种子脚本，方便开发和演示。
+
+### 快速生成演示数据
+
+```bash
+cd api
+
+# 方式一：重置数据库并生成演示数据
+uv run python scripts/reset_db.py -y && uv run python scripts/seed_demo.py
+
+# 方式二：仅创建管理员（如果数据库已有数据）
+uv run python scripts/seed_admin.py
+```
+
+### 演示数据内容
+
+运行 `seed_demo.py` 后将生成：
+
+| 数据 | 数量 | 说明 |
+|------|------|------|
+| 组织 | 1 | 阳光公寓管理公司 |
+| 公寓 | 3 | 含不同户型 |
+| 房间 | 25 | 约 60% 入住率 |
+| 租客 | 20 | 随机中文姓名和联系方式 |
+| 租约 | 15 | 有效租约 |
+| 水电读数 | 45 | 近 3 个月数据 |
+| 账单 | 45 | 含支付记录 |
+
+### 测试账号
+
+| 字段 | 值 |
+|------|------|
+| Email | admin@example.com |
+| Password | admin123456 |
 
 ## API 概览
 

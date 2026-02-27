@@ -46,6 +46,11 @@ Authorization: Bearer <access_token>
 }
 ```
 
+**密码要求**:
+- 长度至少8个字符
+- 必须包含至少一个字母
+- 必须包含至少一个数字
+
 **响应** `201`:
 ```json
 {
@@ -135,7 +140,6 @@ Authorization: Bearer <access_token>
   {
     "id": 1,
     "name": "我的公寓",
-    "slug": "my-apartment",
     "plan": "free",
     "settings": {},
     "created_at": "2024-01-01T00:00:00Z"
@@ -152,16 +156,18 @@ Authorization: Bearer <access_token>
 **请求体**:
 ```json
 {
-  "name": "我的公寓"
+  "name": "我的公寓",
+  "slug": "my-apartment"
 }
 ```
+
+**注意**: `slug` 为可选参数，不传则自动生成。
 
 **响应** `201`:
 ```json
 {
   "id": 1,
   "name": "我的公寓",
-  "slug": "my-apartment",
   "plan": "free",
   "settings": {},
   "created_at": "2024-01-01T00:00:00Z"
@@ -179,7 +185,6 @@ Authorization: Bearer <access_token>
 {
   "id": 1,
   "name": "我的公寓",
-  "slug": "my-apartment",
   "plan": "free",
   "settings": {},
   "created_at": "2024-01-01T00:00:00Z"
@@ -195,7 +200,8 @@ Authorization: Bearer <access_token>
 **请求体**:
 ```json
 {
-  "name": "新名称"
+  "name": "新名称",
+  "settings": {}
 }
 ```
 
@@ -204,13 +210,30 @@ Authorization: Bearer <access_token>
 {
   "id": 1,
   "name": "新名称",
-  ...
+  "plan": "free",
+  "settings": {},
+  "created_at": "2024-01-01T00:00:00Z"
 }
 ```
 
 ---
 
-### 2.5 获取组织成员列表
+### 2.5 删除组织
+
+**DELETE** `/organizations/{org_id}`
+
+**响应** `200`:
+```json
+{
+  "message": "Organization deleted successfully"
+}
+```
+
+**注意**: 只有组织所有者才能删除组织。
+
+---
+
+### 2.6 获取组织成员列表
 
 **GET** `/organizations/{org_id}/members`
 
@@ -219,14 +242,12 @@ Authorization: Bearer <access_token>
 [
   {
     "id": 1,
-    "user_id": 1,
     "organization_id": 1,
+    "user_id": 1,
     "role": "owner",
-    "user": {
-      "id": 1,
-      "email": "user@example.com",
-      "full_name": "张三"
-    }
+    "user_email": "user@example.com",
+    "user_full_name": "张三",
+    "created_at": "2024-01-01T00:00:00Z"
   }
 ]
 ```
@@ -239,51 +260,59 @@ Authorization: Bearer <access_token>
 
 ---
 
-### 2.6 添加组织成员
+### 2.7 添加组织成员
 
 **POST** `/organizations/{org_id}/members`
 
-**请求体**:
-```json
-{
-  "user_id": 2,
-  "role": "member"
-}
-```
-
-**响应** `201`:
-```json
-{
-  "id": 2,
-  "user_id": 2,
-  "organization_id": 1,
-  "role": "member"
-}
-```
-
----
-
-### 2.7 更新成员角色
-
-**PUT** `/organizations/{org_id}/members/{member_id}`
-
-**请求体**:
-```json
-{
-  "role": "admin"
-}
-```
-
----
-
-### 2.8 移除成员
-
-**DELETE** `/organizations/{org_id}/members/{member_id}`
+**查询参数**:
+- `email` (必填): 用户邮箱
+- `role` (可选): 成员角色，默认为 `member`
 
 **响应** `200`:
 ```json
 {
-  "message": "Member removed"
+  "id": 2,
+  "organization_id": 1,
+  "user_id": 2,
+  "role": "member",
+  "user_email": "newuser@example.com",
+  "user_full_name": "李四",
+  "created_at": "2024-01-01T00:00:00Z"
+}
+```
+
+---
+
+### 2.8 更新成员角色
+
+**PUT** `/organizations/{org_id}/members/{user_id}`
+
+**查询参数**:
+- `role` (必填): 新角色
+
+**响应** `200`:
+```json
+{
+  "id": 2,
+  "organization_id": 1,
+  "user_id": 2,
+  "role": "admin",
+  "user_email": "newuser@example.com",
+  "user_full_name": "李四",
+  "created_at": "2024-01-01T00:00:00Z"
+}
+```
+
+---
+
+### 2.9 移除成员
+
+**DELETE** `/organizations/{org_id}/members/{user_id}`
+
+**响应** `200`:
+```json
+{
+  "message": "Member removed successfully"
 }
 ```
 
@@ -306,7 +335,13 @@ Authorization: Bearer <access_token>
     "name": "阳光花园",
     "address": "北京市朝阳区xxx",
     "description": "高档公寓",
-    "created_at": "2024-01-01T00:00:00Z"
+    "created_at": "2024-01-01T00:00:00Z",
+    "room_stats": {
+      "total": 50,
+      "available": 10,
+      "occupied": 35,
+      "maintenance": 5
+    }
   }
 ]
 ```
@@ -326,11 +361,35 @@ Authorization: Bearer <access_token>
 }
 ```
 
+**响应** `201`:
+```json
+{
+  "id": 1,
+  "organization_id": 1,
+  "name": "阳光花园",
+  "address": "北京市朝阳区xxx",
+  "description": "高档公寓",
+  "created_at": "2024-01-01T00:00:00Z"
+}
+```
+
 ---
 
 ### 3.3 获取公寓详情
 
 **GET** `/apartments/{apartment_id}?org_id=1`
+
+**响应** `200`:
+```json
+{
+  "id": 1,
+  "organization_id": 1,
+  "name": "阳光花园",
+  "address": "北京市朝阳区xxx",
+  "description": "高档公寓",
+  "created_at": "2024-01-01T00:00:00Z"
+}
+```
 
 ---
 
@@ -342,7 +401,8 @@ Authorization: Bearer <access_token>
 ```json
 {
   "name": "新名称",
-  "address": "新地址"
+  "address": "新地址",
+  "description": "新描述"
 }
 ```
 
@@ -352,18 +412,22 @@ Authorization: Bearer <access_token>
 
 **DELETE** `/apartments/{apartment_id}?org_id=1`
 
+**响应** `200`:
+```json
+{
+  "message": "Apartment deleted successfully"
+}
+```
+
 ---
 
 ## 4. 房间管理
 
+> 房间接口嵌套在公寓下，需要 `org_id` 查询参数
+
 ### 4.1 获取房间列表
 
-**GET** `/rooms?org_id=1&apartment_id=1&status=available`
-
-**查询参数**:
-- `org_id` (必填): 组织ID
-- `apartment_id` (可选): 按公寓筛选
-- `status` (可选): 按状态筛选 (available/occupied/maintenance)
+**GET** `/apartments/{apartment_id}/rooms?org_id=1`
 
 **响应** `200`:
 ```json
@@ -372,6 +436,7 @@ Authorization: Bearer <access_token>
     "id": 1,
     "apartment_id": 1,
     "room_number": "101",
+    "layout": "两室一厅",
     "status": "available",
     "monthly_rent": 3000.00,
     "area": 50.00,
@@ -390,36 +455,106 @@ Authorization: Bearer <access_token>
 
 ### 4.2 创建房间
 
-**POST** `/rooms?org_id=1`
+**POST** `/apartments/{apartment_id}/rooms?org_id=1`
 
 **请求体**:
 ```json
 {
-  "apartment_id": 1,
   "room_number": "101",
+  "layout": "两室一厅",
+  "monthly_rent": 3000.00,
+  "area": 50.00,
+  "notes": "朝南",
+  "status": "available"
+}
+```
+
+---
+
+### 4.3 批量创建房间
+
+**POST** `/apartments/{apartment_id}/rooms/batch?org_id=1`
+
+**请求体**:
+```json
+{
+  "room_numbers": ["101", "102", "103"],
+  "layout": "两室一厅",
   "monthly_rent": 3000.00,
   "area": 50.00,
   "notes": "朝南"
 }
 ```
 
+**响应** `201`:
+```json
+[
+  {
+    "id": 1,
+    "apartment_id": 1,
+    "room_number": "101",
+    "layout": "两室一厅",
+    "status": "available",
+    "monthly_rent": 3000.00,
+    "area": 50.00,
+    "notes": "朝南",
+    "created_at": "2024-01-01T00:00:00Z"
+  },
+  ...
+]
+```
+
 ---
 
-### 4.3 获取房间详情
+### 4.4 获取房间详情
 
-**GET** `/rooms/{room_id}?org_id=1`
+**GET** `/apartments/rooms/{room_id}?org_id=1`
+
+**响应** `200`:
+```json
+{
+  "id": 1,
+  "apartment_id": 1,
+  "room_number": "101",
+  "layout": "两室一厅",
+  "status": "available",
+  "monthly_rent": 3000.00,
+  "area": 50.00,
+  "notes": "朝南",
+  "created_at": "2024-01-01T00:00:00Z"
+}
+```
 
 ---
 
-### 4.4 更新房间
+### 4.5 更新房间
 
-**PUT** `/rooms/{room_id}?org_id=1`
+**PUT** `/apartments/rooms/{room_id}?org_id=1`
+
+**请求体**:
+```json
+{
+  "room_number": "101",
+  "layout": "三室一厅",
+  "status": "maintenance",
+  "monthly_rent": 3500.00,
+  "area": 60.00,
+  "notes": "装修中"
+}
+```
 
 ---
 
-### 4.5 删除房间
+### 4.6 删除房间
 
-**DELETE** `/rooms/{room_id}?org_id=1`
+**DELETE** `/apartments/rooms/{room_id}?org_id=1`
+
+**响应** `200`:
+```json
+{
+  "message": "Room deleted successfully"
+}
+```
 
 ---
 
@@ -427,11 +562,7 @@ Authorization: Bearer <access_token>
 
 ### 5.1 获取租客列表
 
-**GET** `/tenants?org_id=1&search=张`
-
-**查询参数**:
-- `org_id` (必填): 组织ID
-- `search` (可选): 按姓名或电话搜索
+**GET** `/tenants?org_id=1`
 
 **响应** `200`:
 ```json
@@ -488,17 +619,24 @@ Authorization: Bearer <access_token>
 
 **DELETE** `/tenants/{tenant_id}?org_id=1`
 
+**响应** `200`:
+```json
+{
+  "message": "Tenant deleted successfully"
+}
+```
+
 ---
 
 ## 6. 租约管理
 
 ### 6.1 获取租约列表
 
-**GET** `/leases?org_id=1&is_active=true`
+**GET** `/leases?org_id=1&active_only=true`
 
 **查询参数**:
 - `org_id` (必填): 组织ID
-- `is_active` (可选): 按状态筛选
+- `active_only` (可选): 是否只返回活跃租约，默认 `false`
 
 **响应** `200`:
 ```json
@@ -509,13 +647,45 @@ Authorization: Bearer <access_token>
     "tenant_id": 1,
     "start_date": "2024-01-01",
     "end_date": "2024-12-31",
+    "billing_day": 1,
     "monthly_rent": 3000.00,
     "deposit": 6000.00,
     "water_rate": 5.00,
     "electricity_rate": 0.60,
     "is_active": true,
     "notes": "",
-    "created_at": "2024-01-01T00:00:00Z"
+    "created_at": "2024-01-01T00:00:00Z",
+    "room": {
+      "id": 1,
+      "apartment_id": 1,
+      "room_number": "101",
+      "layout": "两室一厅",
+      "status": "occupied",
+      "monthly_rent": 3000.00,
+      "area": 50.00,
+      "notes": "朝南",
+      "created_at": "2024-01-01T00:00:00Z",
+      "apartment": {
+        "id": 1,
+        "organization_id": 1,
+        "name": "阳光花园",
+        "address": "北京市朝阳区xxx",
+        "description": "高档公寓",
+        "created_at": "2024-01-01T00:00:00Z"
+      }
+    },
+    "tenant": {
+      "id": 1,
+      "organization_id": 1,
+      "name": "张三",
+      "phone": "13800138000",
+      "id_card": "110101199001011234",
+      "email": "zhangsan@example.com",
+      "emergency_contact": "李四",
+      "emergency_phone": "13900139000",
+      "notes": "",
+      "created_at": "2024-01-01T00:00:00Z"
+    }
   }
 ]
 ```
@@ -533,6 +703,7 @@ Authorization: Bearer <access_token>
   "tenant_id": 1,
   "start_date": "2024-01-01",
   "end_date": "2024-12-31",
+  "billing_day": 1,
   "monthly_rent": 3000.00,
   "deposit": 6000.00,
   "water_rate": 5.00,
@@ -540,6 +711,10 @@ Authorization: Bearer <access_token>
   "notes": ""
 }
 ```
+
+**字段说明**:
+- `billing_day`: 账单日 (1-28)，默认为1号
+- `end_date`: 可选，不填则为不定期租约
 
 **注意**: 创建租约时会自动将房间状态更新为"已出租"，并检查房间在指定时间段是否可用。
 
@@ -559,7 +734,13 @@ Authorization: Bearer <access_token>
 ```json
 {
   "end_date": "2025-12-31",
-  "monthly_rent": 3200.00
+  "billing_day": 5,
+  "monthly_rent": 3200.00,
+  "deposit": 6400.00,
+  "water_rate": 5.50,
+  "electricity_rate": 0.65,
+  "is_active": true,
+  "notes": "续租"
 }
 ```
 
@@ -572,7 +753,8 @@ Authorization: Bearer <access_token>
 **响应** `200`:
 ```json
 {
-  "message": "Lease terminated"
+  "message": "Lease terminated successfully",
+  "lease": { ... }
 }
 ```
 
@@ -584,13 +766,14 @@ Authorization: Bearer <access_token>
 
 **DELETE** `/leases/{lease_id}?org_id=1`
 
----
+**响应** `200`:
+```json
+{
+  "message": "Lease deleted successfully"
+}
+```
 
-### 6.7 导出租约PDF
-
-**GET** `/leases/{lease_id}/pdf?org_id=1`
-
-**响应**: PDF文件下载
+**注意**: 只有已终止的租约才能删除，且只有所有者和管理员有权限。
 
 ---
 
@@ -598,13 +781,13 @@ Authorization: Bearer <access_token>
 
 ### 7.1 获取读数列表
 
-**GET** `/utilities?org_id=1&room_id=1&year=2024&month=1`
+**GET** `/utilities?org_id=1&room_id=1&period_year=2024&period_month=1`
 
 **查询参数**:
 - `org_id` (必填): 组织ID
 - `room_id` (可选): 按房间筛选
-- `year` (可选): 按年份筛选
-- `month` (可选): 按月份筛选
+- `period_year` (可选): 按年份筛选
+- `period_month` (可选): 按月份筛选
 
 **响应** `200`:
 ```json
@@ -620,7 +803,19 @@ Authorization: Bearer <access_token>
     "water_previous": 90.00,
     "electricity_previous": 450.00,
     "notes": "",
-    "created_at": "2024-02-01T00:00:00Z"
+    "created_at": "2024-02-01T00:00:00Z",
+    "room": {
+      "id": 1,
+      "apartment_id": 1,
+      "room_number": "101",
+      "layout": "两室一厅",
+      "status": "occupied",
+      "monthly_rent": 3000.00,
+      "area": 50.00,
+      "notes": "朝南",
+      "created_at": "2024-01-01T00:00:00Z",
+      "apartment": { ... }
+    }
   }
 ]
 ```
@@ -679,37 +874,83 @@ Authorization: Bearer <access_token>
 
 **响应** `200`:
 ```json
-{
-  "created": 2,
-  "errors": []
-}
+[
+  {
+    "id": 1,
+    "room_id": 1,
+    ...
+  },
+  {
+    "id": 2,
+    "room_id": 2,
+    ...
+  }
+]
 ```
 
 ---
 
-### 7.4 获取读数详情
+### 7.4 导出待录入水电的房间
+
+**GET** `/utilities/export?org_id=1&period_year=2024&period_month=1&days_range=5`
+
+**查询参数**:
+- `org_id` (必填): 组织ID
+- `period_year` (必填): 账单年份
+- `period_month` (必填): 账单月份
+- `days_range` (可选): 时间范围（天数），不填则返回全部待录入房间
+
+**响应** `200`:
+```json
+[
+  {
+    "room_id": 1,
+    "apartment_name": "阳光花园",
+    "room_number": "101",
+    "tenant_name": "张三",
+    "billing_day": 1,
+    "water_previous": 90.00,
+    "electricity_previous": 450.00
+  }
+]
+```
+
+---
+
+### 7.5 获取读数详情
 
 **GET** `/utilities/{reading_id}?org_id=1`
 
 ---
 
-### 7.5 更新读数
+### 7.6 更新读数
 
 **PUT** `/utilities/{reading_id}?org_id=1`
 
+**请求体**:
+```json
+{
+  "reading_date": "2024-02-02",
+  "water_reading": 105.00,
+  "electricity_reading": 510.00,
+  "water_previous": 90.00,
+  "electricity_previous": 450.00,
+  "notes": "重新录入"
+}
+```
+
 ---
 
-### 7.6 删除读数
+### 7.7 删除读数
 
 **DELETE** `/utilities/{reading_id}?org_id=1`
 
----
-
-### 7.7 导出水电读数Excel
-
-**GET** `/utilities/export/excel?org_id=1&year=2024`
-
-**响应**: Excel文件下载
+**响应** `200`:
+```json
+{
+  "message": "Utility reading deleted successfully"
+}
+```
 
 ---
 
@@ -815,11 +1056,30 @@ Authorization: Bearer <access_token>
 
 **PUT** `/bills/{bill_id}?org_id=1`
 
+**请求体**:
+```json
+{
+  "due_date": "2024-02-10",
+  "rent_amount": 3000.00,
+  "water_amount": 55.00,
+  "electricity_amount": 35.00,
+  "other_amount": 0.00,
+  "notes": "调整后"
+}
+```
+
 ---
 
 ### 8.6 删除账单
 
 **DELETE** `/bills/{bill_id}?org_id=1`
+
+**响应** `200`:
+```json
+{
+  "message": "Bill deleted successfully"
+}
+```
 
 **注意**: 已有付款记录的账单无法删除。
 
@@ -847,7 +1107,7 @@ Authorization: Bearer <access_token>
 - `bank_transfer`: 银行转账
 - `other`: 其他
 
-**响应** `201`:
+**响应** `200`:
 ```json
 {
   "id": 1,
@@ -867,6 +1127,22 @@ Authorization: Bearer <access_token>
 
 **GET** `/bills/{bill_id}/payments?org_id=1`
 
+**响应** `200`:
+```json
+[
+  {
+    "id": 1,
+    "bill_id": 1,
+    "amount": 1000.00,
+    "payment_date": "2024-02-03",
+    "payment_method": "wechat",
+    "reference": "转账备注",
+    "notes": "",
+    "created_at": "2024-02-03T00:00:00Z"
+  }
+]
+```
+
 ---
 
 ### 8.9 导出账单PDF
@@ -874,14 +1150,6 @@ Authorization: Bearer <access_token>
 **GET** `/bills/{bill_id}/pdf?org_id=1`
 
 **响应**: PDF文件下载
-
----
-
-### 8.10 导出账单Excel
-
-**GET** `/bills/export/excel?org_id=1&year=2024&status=pending`
-
-**响应**: Excel文件下载
 
 ---
 
@@ -911,7 +1179,13 @@ Authorization: Bearer <access_token>
 
 ### 9.2 年度收入报告
 
-**GET** `/reports/income?org_id=1&year=2024`
+**GET** `/reports/income?org_id=1&year=2024&start_month=1&end_month=12`
+
+**查询参数**:
+- `org_id` (必填): 组织ID
+- `year` (必填): 年份
+- `start_month` (可选): 起始月份
+- `end_month` (可选): 结束月份
 
 **响应** `200`:
 ```json
@@ -925,8 +1199,7 @@ Authorization: Bearer <access_token>
       "electricity_income": 1050.00,
       "other_income": 0.00,
       "total_income": 107800.00
-    },
-    ...
+    }
   ],
   "total_rent": 1260000.00,
   "total_water": 21000.00,
@@ -952,8 +1225,7 @@ Authorization: Bearer <access_token>
       "total_rooms": 50,
       "occupied_rooms": 35,
       "occupancy_rate": 70.0
-    },
-    ...
+    }
   ],
   "average_occupancy": 72.5
 }
