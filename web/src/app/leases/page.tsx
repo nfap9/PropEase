@@ -80,8 +80,8 @@ export default function LeasesPage() {
 
   const { data: rooms } = useQuery({
     queryKey: ['rooms', orgId, selectedApartmentId],
-    queryFn: () => roomsApi.list(orgId!, selectedApartmentId || undefined),
-    enabled: !!orgId,
+    queryFn: () => roomsApi.list(orgId!, selectedApartmentId!),
+    enabled: !!orgId && selectedApartmentId !== null,
   });
 
   const { data: tenants } = useQuery({

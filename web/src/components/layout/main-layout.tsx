@@ -26,7 +26,7 @@ import {
   Menu,
 } from 'lucide-react';
 import { useState } from 'react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { OrgSelector } from '@/components/common/org-selector';
 
 const NAV_ITEMS = [
@@ -84,23 +84,21 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
         <NavContent />
       </aside>
 
-      {/* Mobile Sheet */}
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="w-64 p-0">
-          <NavContent />
-        </SheetContent>
-      </Sheet>
-
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header */}
         <header className="flex h-16 items-center justify-between border-b px-4">
-          <Sheet>
+          {/* Mobile Sheet */}
+          <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-0">
+              <SheetTitle className="sr-only">导航菜单</SheetTitle>
+              <NavContent />
+            </SheetContent>
           </Sheet>
 
           {/* 全局组织选择器 */}

@@ -82,8 +82,8 @@ export default function RoomsPage() {
 
   const { data: rooms, isLoading: roomsLoading } = useQuery({
     queryKey: ['rooms', orgId, selectedApartmentId],
-    queryFn: () => roomsApi.list(orgId!, selectedApartmentId || undefined),
-    enabled: !!orgId,
+    queryFn: () => roomsApi.list(orgId!, selectedApartmentId!),
+    enabled: !!orgId && selectedApartmentId !== null,
   });
 
   const createForm = useForm<RoomFormData>({

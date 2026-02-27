@@ -28,9 +28,9 @@ export const apartmentsApi = {
 };
 
 export const roomsApi = {
-  list: async (orgId: number, apartmentId?: number): Promise<Room[]> => {
-    const response = await api.get<Room[]>('/rooms', {
-      params: { org_id: orgId, apartment_id: apartmentId },
+  list: async (orgId: number, apartmentId: number): Promise<Room[]> => {
+    const response = await api.get<Room[]>(`/apartments/${apartmentId}/rooms`, {
+      params: { org_id: orgId },
     });
     return response.data;
   },
