@@ -32,7 +32,7 @@ import { OrgSelector } from '@/components/common/org-selector';
 const NAV_ITEMS = [
   { href: '/dashboard', label: '仪表盘', icon: Home },
   { href: '/apartments', label: '公寓管理', icon: Building2 },
-  { href: '/rooms', label: '房间管理', icon: DoorOpen },
+  { href: '/rooms', label: '全部房间', icon: DoorOpen },
   { href: '/tenants', label: '租客管理', icon: Users },
   { href: '/leases', label: '租约管理', icon: FileText },
   { href: '/utilities', label: '水电录入', icon: Zap },

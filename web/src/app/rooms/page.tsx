@@ -111,7 +111,13 @@ export default function RoomsPage() {
     queryFn: async () => {
       if (!apartments || apartments.length === 0) return [];
       const apartmentIds = apartments.map((apt) => apt.id);
-      return roomsApi.listAll(orgId!, apartmentIds);
+      const rooms = await roomsApi.listAll(orgId!, apartmentIds);
+      // 映射公寓信息到房间
+      const apartmentMap = new Map(apartments.map((apt) => [apt.id, apt]));
+      return rooms.map((room) => ({
+        ...room,
+        apartment: apartmentMap.get(room.apartment_id),
+      }));
     },
     enabled: !!orgId && !!apartments && apartments.length > 0,
   });
