@@ -50,7 +50,7 @@ import {
 import { ColumnDef } from '@tanstack/react-table';
 import { apartmentsApi, roomsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
-import { Room, RoomStatus, RoomBatchCreate } from '@/types';
+import { Room, RoomStatus } from '@/types';
 import {
   ArrowLeft,
   Building2,
@@ -66,7 +66,6 @@ import {
   Loader2,
   Layers,
   Check,
-  X,
   ArrowRight,
   ArrowLeft as ArrowLeftIcon,
 } from 'lucide-react';
@@ -468,14 +467,20 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     <MainLayout>
       <div className="space-y-6">
         {/* 返回按钮和标题 */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push('/apartments')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">{apartment.name}</h1>
-            <p className="text-muted-foreground">{apartment.address}</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => router.push('/apartments')}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">{apartment.name}</h1>
+              <p className="text-muted-foreground">{apartment.address}</p>
+            </div>
           </div>
+          <Button variant="outline" size="sm" onClick={handleEditApartment}>
+            <Pencil className="mr-2 h-4 w-4" />
+            编辑
+          </Button>
         </div>
 
         {/* 统计卡片 */}
@@ -518,29 +523,32 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
           </Card>
         </div>
 
-        {/* 公寓信息卡片 */}
+        {/* 快捷操作 */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>公寓信息</CardTitle>
-            <Button variant="outline" size="sm" onClick={handleEditApartment}>
-              <Pencil className="mr-2 h-4 w-4" />
-              编辑
-            </Button>
+          <CardHeader>
+            <CardTitle>快捷操作</CardTitle>
+            <CardDescription>快速跳转到相关功能</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              <div>
-                <Label className="text-muted-foreground">公寓名称</Label>
-                <p className="font-medium">{apartment.name}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">地址</Label>
-                <p className="font-medium">{apartment.address || '-'}</p>
-              </div>
-              <div className="col-span-2">
-                <Label className="text-muted-foreground">描述</Label>
-                <p className="font-medium">{apartment.description || '-'}</p>
-              </div>
+            <div className="flex flex-wrap gap-3">
+              <Button variant="outline" asChild>
+                <Link href={`/leases?apartment=${apartmentId}`}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  查看租约
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href={`/bills?apartment=${apartmentId}`}>
+                  <Receipt className="mr-2 h-4 w-4" />
+                  查看账单
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href={`/utilities?apartment=${apartmentId}`}>
+                  <Zap className="mr-2 h-4 w-4" />
+                  水电录入
+                </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -569,36 +577,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
             ) : (
               <DataTable columns={roomColumns} data={rooms || []} />
             )}
-          </CardContent>
-        </Card>
-
-        {/* 快捷操作 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>快捷操作</CardTitle>
-            <CardDescription>快速跳转到相关功能</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-3">
-              <Button variant="outline" asChild>
-                <Link href={`/leases?apartment=${apartmentId}`}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  查看租约
-                </Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href={`/bills?apartment=${apartmentId}`}>
-                  <Receipt className="mr-2 h-4 w-4" />
-                  查看账单
-                </Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href={`/utilities?apartment=${apartmentId}`}>
-                  <Zap className="mr-2 h-4 w-4" />
-                  水电录入
-                </Link>
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
