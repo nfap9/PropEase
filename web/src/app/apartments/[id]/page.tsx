@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -65,6 +65,10 @@ import {
   Zap,
   Loader2,
   Layers,
+  Check,
+  X,
+  ArrowRight,
+  ArrowLeft as ArrowLeftIcon,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -78,8 +82,9 @@ const roomSchema = z.object({
 
 type RoomFormData = z.infer<typeof roomSchema>;
 
-const roomBatchSchema = z.object({
-  floor: z.number().min(1, '楼层号最小为1').max(99, '楼层号最大为99'),
+// 批量创建的配置schema
+const roomBatchConfigSchema = z.object({
+  floors: z.string().min(1, '请输入楼层'),  // 支持多楼层，如 "1,2,3" 或 "1-5"
   start_number: z.number().min(1, '起始号最小为1').max(99, '起始号最大为99'),
   end_number: z.number().min(1, '结束号最小为1').max(99, '结束号最大为99'),
   monthly_rent: z.number().min(0, '租金不能为负'),
@@ -90,7 +95,7 @@ const roomBatchSchema = z.object({
   path: ['end_number'],
 });
 
-type RoomBatchFormData = z.infer<typeof roomBatchSchema>;
+type RoomBatchConfigData = z.infer<typeof roomBatchConfigSchema>;
 
 const STATUS_MAP: Record<RoomStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   available: { label: '空置', variant: 'secondary' },
@@ -108,6 +113,8 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   const [isEditApartmentOpen, setIsEditApartmentOpen] = useState(false);
   const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
   const [isBatchCreateRoomOpen, setIsBatchCreateRoomOpen] = useState(false);
+  const [batchStep, setBatchStep] = useState<'config' | 'confirm'>('config');
+  const [selectedRooms, setSelectedRooms] = useState<Set<string>>(new Set());
   const [isEditRoomOpen, setIsEditRoomOpen] = useState(false);
   const [isDeleteRoomOpen, setIsDeleteRoomOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
@@ -164,10 +171,10 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   });
 
   // 批量创建房间表单
-  const batchCreateRoomForm = useForm<RoomBatchFormData>({
-    resolver: zodResolver(roomBatchSchema),
+  const batchCreateRoomForm = useForm<RoomBatchConfigData>({
+    resolver: zodResolver(roomBatchConfigSchema),
     defaultValues: {
-      floor: 1,
+      floors: '1',
       start_number: 1,
       end_number: 10,
       monthly_rent: 0,
@@ -175,6 +182,92 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       notes: '',
     },
   });
+
+  // 解析楼层字符串，支持 "1,2,3" 或 "1-5" 格式
+  const parseFloors = (floorsStr: string): number[] => {
+    const floors: Set<number> = new Set();
+    const parts = floorsStr.split(',').map(s => s.trim());
+    for (const part of parts) {
+      if (part.includes('-')) {
+        const [start, end] = part.split('-').map(s => parseInt(s.trim(), 10));
+        if (!isNaN(start) && !isNaN(end)) {
+          for (let i = start; i <= end; i++) {
+            floors.add(i);
+          }
+        }
+      } else {
+        const floor = parseInt(part, 10);
+        if (!isNaN(floor)) {
+          floors.add(floor);
+        }
+      }
+    }
+    return Array.from(floors).sort((a, b) => a - b);
+  };
+
+  // 根据配置生成房间列表
+  const generatedRooms = useMemo(() => {
+    const config = batchCreateRoomForm.getValues();
+    const floors = parseFloors(config.floors || '1');
+    const startNum = config.start_number || 1;
+    const endNum = config.end_number || 10;
+
+    const rooms: { floor: number; rooms: string[] }[] = [];
+    for (const floor of floors) {
+      const floorRooms: string[] = [];
+      for (let num = startNum; num <= endNum; num++) {
+        floorRooms.push(`${floor}${String(num).padStart(2, '0')}`);
+      }
+      rooms.push({ floor, rooms: floorRooms });
+    }
+    return rooms;
+  }, [
+    batchCreateRoomForm.watch('floors'),
+    batchCreateRoomForm.watch('start_number'),
+    batchCreateRoomForm.watch('end_number'),
+  ]);
+
+  // 初始化选中房间（全部选中）
+  const initializeSelectedRooms = useCallback(() => {
+    const allRooms = generatedRooms.flatMap(f => f.rooms);
+    setSelectedRooms(new Set(allRooms));
+  }, [generatedRooms]);
+
+  // 切换房间选中状态
+  const toggleRoom = (roomNumber: string) => {
+    setSelectedRooms(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(roomNumber)) {
+        newSet.delete(roomNumber);
+      } else {
+        newSet.add(roomNumber);
+      }
+      return newSet;
+    });
+  };
+
+  // 切换整层楼
+  const toggleFloor = (floorRooms: string[], select: boolean) => {
+    setSelectedRooms(prev => {
+      const newSet = new Set(prev);
+      if (select) {
+        floorRooms.forEach(r => newSet.add(r));
+      } else {
+        floorRooms.forEach(r => newSet.delete(r));
+      }
+      return newSet;
+    });
+  };
+
+  // 全选/取消全选
+  const toggleAll = (select: boolean) => {
+    if (select) {
+      const allRooms = generatedRooms.flatMap(f => f.rooms);
+      setSelectedRooms(new Set(allRooms));
+    } else {
+      setSelectedRooms(new Set());
+    }
+  };
 
   // 房间编辑表单
   const editRoomForm = useForm<RoomFormData>({
@@ -213,13 +306,22 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
 
   // 批量创建房间
   const batchCreateRoomMutation = useMutation({
-    mutationFn: (data: RoomBatchFormData) =>
-      roomsApi.batchCreate(orgId!, apartmentId, data),
+    mutationFn: (roomNumbers: string[]) => {
+      const config = batchCreateRoomForm.getValues();
+      return roomsApi.batchCreate(orgId!, apartmentId, {
+        room_numbers: roomNumbers,
+        monthly_rent: config.monthly_rent,
+        area: config.area || undefined,
+        notes: config.notes || undefined,
+      });
+    },
     onSuccess: (rooms) => {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsBatchCreateRoomOpen(false);
+      setBatchStep('config');
       batchCreateRoomForm.reset();
+      setSelectedRooms(new Set());
       toast.success(`成功创建 ${rooms.length} 个房间`);
     },
     onError: () => {
@@ -626,119 +728,241 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       </Dialog>
 
       {/* 批量创建房间对话框 */}
-      <Dialog open={isBatchCreateRoomOpen} onOpenChange={setIsBatchCreateRoomOpen}>
-        <DialogContent>
+      <Dialog open={isBatchCreateRoomOpen} onOpenChange={(open) => {
+        setIsBatchCreateRoomOpen(open);
+        if (!open) {
+          setBatchStep('config');
+          setSelectedRooms(new Set());
+        }
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>批量添加房间</DialogTitle>
+            <DialogTitle>
+              {batchStep === 'config' ? '批量添加房间 - 配置' : '批量添加房间 - 确认选择'}
+            </DialogTitle>
             <DialogDescription>
-              按楼层批量创建房间，房间号格式为"楼层号+房间号"（如1楼01号→101）
+              {batchStep === 'config'
+                ? '设置楼层和房间号范围，支持多楼层（如 1,2,3 或 1-5）'
+                : '点击房间号切换选中状态，只添加激活的房间'}
             </DialogDescription>
           </DialogHeader>
-          <form
-            onSubmit={batchCreateRoomForm.handleSubmit((data) => batchCreateRoomMutation.mutate(data))}
-            className="space-y-4"
-          >
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="floor">楼层号</Label>
-                <Input
-                  id="floor"
-                  type="number"
-                  min="1"
-                  max="99"
-                  {...batchCreateRoomForm.register('floor', { valueAsNumber: true })}
-                />
-                {batchCreateRoomForm.formState.errors.floor && (
-                  <p className="text-sm text-destructive">
-                    {batchCreateRoomForm.formState.errors.floor.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="start_number">起始号</Label>
-                <Input
-                  id="start_number"
-                  type="number"
-                  min="1"
-                  max="99"
-                  {...batchCreateRoomForm.register('start_number', { valueAsNumber: true })}
-                />
-                {batchCreateRoomForm.formState.errors.start_number && (
-                  <p className="text-sm text-destructive">
-                    {batchCreateRoomForm.formState.errors.start_number.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="end_number">结束号</Label>
-                <Input
-                  id="end_number"
-                  type="number"
-                  min="1"
-                  max="99"
-                  {...batchCreateRoomForm.register('end_number', { valueAsNumber: true })}
-                />
-                {batchCreateRoomForm.formState.errors.end_number && (
-                  <p className="text-sm text-destructive">
-                    {batchCreateRoomForm.formState.errors.end_number.message}
-                  </p>
-                )}
-              </div>
-            </div>
 
-            {/* 预览生成的房间号 */}
-            {batchCreateRoomForm.watch('start_number') <= batchCreateRoomForm.watch('end_number') && (
+          {batchStep === 'config' ? (
+            <form
+              onSubmit={batchCreateRoomForm.handleSubmit(() => {
+                initializeSelectedRooms();
+                setBatchStep('confirm');
+              })}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="floors">楼层</Label>
+                  <Input
+                    id="floors"
+                    placeholder="如: 1,2,3 或 1-5"
+                    {...batchCreateRoomForm.register('floors')}
+                  />
+                  {batchCreateRoomForm.formState.errors.floors && (
+                    <p className="text-sm text-destructive">
+                      {batchCreateRoomForm.formState.errors.floors.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="start_number">起始号</Label>
+                  <Input
+                    id="start_number"
+                    type="number"
+                    min="1"
+                    max="99"
+                    {...batchCreateRoomForm.register('start_number', { valueAsNumber: true })}
+                  />
+                  {batchCreateRoomForm.formState.errors.start_number && (
+                    <p className="text-sm text-destructive">
+                      {batchCreateRoomForm.formState.errors.start_number.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="end_number">结束号</Label>
+                  <Input
+                    id="end_number"
+                    type="number"
+                    min="1"
+                    max="99"
+                    {...batchCreateRoomForm.register('end_number', { valueAsNumber: true })}
+                  />
+                  {batchCreateRoomForm.formState.errors.end_number && (
+                    <p className="text-sm text-destructive">
+                      {batchCreateRoomForm.formState.errors.end_number.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* 预览 */}
               <div className="rounded-md bg-muted p-3">
                 <p className="text-sm text-muted-foreground mb-2">
-                  将创建 {batchCreateRoomForm.watch('end_number') - batchCreateRoomForm.watch('start_number') + 1} 个房间：
+                  将生成 {generatedRooms.reduce((sum, f) => sum + f.rooms.length, 0)} 个房间
+                  （{generatedRooms.length} 层 × {generatedRooms[0]?.rooms.length || 0} 间/层）
                 </p>
-                <p className="text-sm font-mono">
-                  {batchCreateRoomForm.watch('floor')}
-                  {String(batchCreateRoomForm.watch('start_number')).padStart(2, '0')} -
-                  {batchCreateRoomForm.watch('floor')}
-                  {String(batchCreateRoomForm.watch('end_number')).padStart(2, '0')}
-                </p>
+                <div className="text-sm font-mono space-y-1 max-h-24 overflow-y-auto">
+                  {generatedRooms.map(({ floor, rooms }) => (
+                    <div key={floor}>
+                      {floor}楼: {rooms[0]} - {rooms[rooms.length - 1]}
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="batch-monthly_rent">月租 (元) *</Label>
-                <Input
-                  id="batch-monthly_rent"
-                  type="number"
-                  step="0.01"
-                  {...batchCreateRoomForm.register('monthly_rent', { valueAsNumber: true })}
-                />
-                {batchCreateRoomForm.formState.errors.monthly_rent && (
-                  <p className="text-sm text-destructive">
-                    {batchCreateRoomForm.formState.errors.monthly_rent.message}
-                  </p>
-                )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="batch-monthly_rent">月租 (元) *</Label>
+                  <Input
+                    id="batch-monthly_rent"
+                    type="number"
+                    step="0.01"
+                    {...batchCreateRoomForm.register('monthly_rent', { valueAsNumber: true })}
+                  />
+                  {batchCreateRoomForm.formState.errors.monthly_rent && (
+                    <p className="text-sm text-destructive">
+                      {batchCreateRoomForm.formState.errors.monthly_rent.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="batch-area">面积 (m²)</Label>
+                  <Input
+                    id="batch-area"
+                    type="number"
+                    step="0.01"
+                    {...batchCreateRoomForm.register('area', { valueAsNumber: true })}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="batch-area">面积 (m²)</Label>
-                <Input
-                  id="batch-area"
-                  type="number"
-                  step="0.01"
-                  {...batchCreateRoomForm.register('area', { valueAsNumber: true })}
-                />
+                <Label htmlFor="batch-notes">备注</Label>
+                <Input id="batch-notes" {...batchCreateRoomForm.register('notes')} />
               </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsBatchCreateRoomOpen(false)}>
+                  取消
+                </Button>
+                <Button type="submit">
+                  下一步
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </DialogFooter>
+            </form>
+          ) : (
+            <div className="space-y-4">
+              {/* 操作栏 */}
+              <div className="flex items-center justify-between">
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => toggleAll(true)}>
+                    全选
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => toggleAll(false)}>
+                    取消全选
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  已选择 <span className="font-medium text-foreground">{selectedRooms.size}</span> 个房间
+                </p>
+              </div>
+
+              {/* 每层楼的房间展示 */}
+              <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                {generatedRooms.map(({ floor, rooms }) => {
+                  const selectedCount = rooms.filter(r => selectedRooms.has(r)).length;
+                  const allSelected = selectedCount === rooms.length;
+                  const someSelected = selectedCount > 0 && !allSelected;
+
+                  return (
+                    <div key={floor} className="border rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant={allSelected ? "default" : "outline"}
+                            size="sm"
+                            className="h-7"
+                            onClick={() => toggleFloor(rooms, !allSelected)}
+                          >
+                            {allSelected ? (
+                              <Check className="h-4 w-4 mr-1" />
+                            ) : someSelected ? (
+                              <span className="w-4 h-4 mr-1 flex items-center justify-center text-xs">-</span>
+                            ) : (
+                              <span className="w-4 h-4 mr-1" />
+                            )}
+                            {floor}楼
+                          </Button>
+                          <span className="text-sm text-muted-foreground">
+                            ({selectedCount}/{rooms.length})
+                          </span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => toggleFloor(rooms, !allSelected)}
+                        >
+                          {allSelected ? '取消整层' : '选择整层'}
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {rooms.map((room) => {
+                          const isSelected = selectedRooms.has(room);
+                          return (
+                            <button
+                              key={room}
+                              type="button"
+                              onClick={() => toggleRoom(room)}
+                              className={`px-3 py-1.5 rounded-md text-sm font-mono transition-colors ${
+                                isSelected
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                              }`}
+                            >
+                              {room}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setBatchStep('config')}
+                >
+                  <ArrowLeftIcon className="mr-2 h-4 w-4" />
+                  上一步
+                </Button>
+                <Button
+                  type="button"
+                  disabled={selectedRooms.size === 0 || batchCreateRoomMutation.isPending}
+                  onClick={() => {
+                    batchCreateRoomMutation.mutate(Array.from(selectedRooms));
+                  }}
+                >
+                  {batchCreateRoomMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      创建中...
+                    </>
+                  ) : (
+                    <>确认添加 ({selectedRooms.size} 个房间)</>
+                  )}
+                </Button>
+              </DialogFooter>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="batch-notes">备注</Label>
-              <Input id="batch-notes" {...batchCreateRoomForm.register('notes')} />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsBatchCreateRoomOpen(false)}>
-                取消
-              </Button>
-              <Button type="submit" disabled={batchCreateRoomMutation.isPending}>
-                {batchCreateRoomMutation.isPending ? '创建中...' : '批量创建'}
-              </Button>
-            </DialogFooter>
-          </form>
+          )}
         </DialogContent>
       </Dialog>
 

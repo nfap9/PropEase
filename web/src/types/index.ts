@@ -86,9 +86,7 @@ export interface Room {
 
 // 批量创建房间
 export interface RoomBatchCreate {
-  floor: number;
-  start_number: number;
-  end_number: number;
+  room_numbers: string[];
   monthly_rent: number;
   area?: number;
   notes?: string;

@@ -122,15 +122,13 @@ class ApartmentService(BaseService):
     def batch_create_rooms(
         self, apartment_id: int, org_id: int, data: RoomBatchCreate
     ) -> List[Room]:
-        """Batch create rooms in an apartment by floor."""
+        """Batch create rooms in an apartment by room number list."""
         apartment = self.get_apartment(apartment_id, org_id)
         if not apartment:
             return []
 
         rooms = []
-        for num in range(data.start_number, data.end_number + 1):
-            # 生成房间号：楼层*100 + 房间号
-            room_number = f"{data.floor}{num:02d}"
+        for room_number in data.room_numbers:
             room = Room(
                 apartment_id=apartment_id,
                 room_number=room_number,

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from app.models.apartment import RoomStatus
 
@@ -56,9 +56,7 @@ class RoomCreate(RoomBase):
 
 class RoomBatchCreate(BaseModel):
     """批量创建房间"""
-    floor: int  # 楼层号
-    start_number: int  # 起始房间号（1-99）
-    end_number: int  # 结束房间号（1-99）
+    room_numbers: List[str]  # 房间号列表
     monthly_rent: float  # 月租
     area: Optional[float] = None  # 面积
     notes: Optional[str] = None  # 备注
