@@ -1,7 +1,8 @@
 // User types
 export interface User {
   id: number;
-  email: string;
+  phone: string;
+  email?: string;
   full_name: string;
   is_active: boolean;
   created_at: string;
@@ -9,14 +10,21 @@ export interface User {
 
 // Auth types
 export interface LoginCredentials {
-  email: string;
-  password: string;
+  phone: string;
+  password?: string;
+  verification_code?: string;
 }
 
 export interface RegisterData {
-  email: string;
+  phone: string;
   password: string;
   full_name: string;
+  verification_code: string;
+}
+
+export interface SendSmsCodeData {
+  phone: string;
+  purpose: 'login' | 'register';
 }
 
 export interface TokenResponse {

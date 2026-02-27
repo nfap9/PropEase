@@ -15,9 +15,9 @@ from app.utils.security import get_password_hash
 
 # Default admin credentials
 DEFAULT_ADMIN = {
-    "email": "admin@example.com",
-    "password": "admin123456",
-    "full_name": "Admin User",
+    "phone": "13800000001",
+    "password": "Admin123456",
+    "full_name": "管理员",
 }
 
 DEFAULT_ORG = {
@@ -31,10 +31,10 @@ def seed_admin():
     db = SessionLocal()
     try:
         # Check if admin already exists
-        existing_user = db.query(User).filter(User.email == DEFAULT_ADMIN["email"]).first()
+        existing_user = db.query(User).filter(User.phone == DEFAULT_ADMIN["phone"]).first()
         if existing_user:
-            print(f"✅ Admin user already exists: {DEFAULT_ADMIN['email']}")
-            print(f"   Password: {DEFAULT_ADMIN['password']}")
+            print(f"✅ 管理员用户已存在: {DEFAULT_ADMIN['phone']}")
+            print(f"   密码: {DEFAULT_ADMIN['password']}")
             return
 
         # Create organization
@@ -47,7 +47,7 @@ def seed_admin():
 
         # Create admin user
         admin = User(
-            email=DEFAULT_ADMIN["email"],
+            phone=DEFAULT_ADMIN["phone"],
             password_hash=get_password_hash(DEFAULT_ADMIN["password"]),
             full_name=DEFAULT_ADMIN["full_name"],
             is_active=True,
@@ -64,10 +64,10 @@ def seed_admin():
         db.add(membership)
 
         db.commit()
-        print("✅ Initial admin user created successfully!")
-        print(f"   Email: {DEFAULT_ADMIN['email']}")
-        print(f"   Password: {DEFAULT_ADMIN['password']}")
-        print(f"   Organization: {DEFAULT_ORG['name']}")
+        print("✅ 初始管理员用户创建成功!")
+        print(f"   手机号: {DEFAULT_ADMIN['phone']}")
+        print(f"   密码: {DEFAULT_ADMIN['password']}")
+        print(f"   组织: {DEFAULT_ORG['name']}")
 
     except Exception as e:
         db.rollback()

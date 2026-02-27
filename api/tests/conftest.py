@@ -48,7 +48,7 @@ def db_session():
 def test_user(db_session):
     """创建测试用户"""
     user = User(
-        email="test@example.com",
+        phone="13800138000",
         password_hash="$2b$12$test_hash",
         full_name="测试用户",
     )

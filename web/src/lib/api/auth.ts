@@ -1,5 +1,5 @@
 import api from './client';
-import { User, LoginCredentials, RegisterData, TokenResponse } from '@/types';
+import { User, LoginCredentials, RegisterData, TokenResponse, SendSmsCodeData } from '@/types';
 
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<TokenResponse> => {
@@ -10,6 +10,10 @@ export const authApi = {
   register: async (data: RegisterData): Promise<User> => {
     const response = await api.post<User>('/auth/register', data);
     return response.data;
+  },
+
+  sendSmsCode: async (data: SendSmsCodeData): Promise<void> => {
+    await api.post('/auth/sms/send', data);
   },
 
   getMe: async (): Promise<User> => {

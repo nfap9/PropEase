@@ -1,6 +1,6 @@
-from sqlalchemy import String, Boolean, Text
+from sqlalchemy import String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 from app.configs.database import Base
 from app.models.base import TimestampMixin
 
@@ -12,7 +12,8 @@ class User(Base, TimestampMixin):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    phone: Mapped[str] = mapped_column(String(20), unique=True, index=True, nullable=False)
+    email: Mapped[Optional[str]] = mapped_column(String(255), unique=True, nullable=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)

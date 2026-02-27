@@ -31,8 +31,8 @@ from app.utils.security import get_password_hash
 
 # Configuration
 DEMO_CONFIG = {
-    "admin_email": "admin@example.com",
-    "admin_password": "admin123456",
+    "admin_phone": "13800000001",
+    "admin_password": "Admin123456",
     "admin_name": "管理员",
     "org_name": "阳光公寓管理公司",
     "org_slug": "sunshine-apartments",
@@ -103,7 +103,7 @@ def seed_demo():
         # 2. Create Admin User
         # ========================================
         admin = User(
-            email=DEMO_CONFIG["admin_email"],
+            phone=DEMO_CONFIG["admin_phone"],
             password_hash=get_password_hash(DEMO_CONFIG["admin_password"]),
             full_name=DEMO_CONFIG["admin_name"],
             is_active=True,
@@ -117,7 +117,7 @@ def seed_demo():
             role=MemberRole.OWNER,
         )
         db.add(membership)
-        print(f"   ✅ Created admin: {admin.email}")
+        print(f"   ✅ Created admin: {admin.phone}")
 
         # ========================================
         # 3. Create Apartments and Rooms
@@ -340,8 +340,8 @@ def seed_demo():
         print("✅ Demo data seeded successfully!")
         print("=" * 50)
         print(f"\n📋 登录信息:")
-        print(f"   Email: {DEMO_CONFIG['admin_email']}")
-        print(f"   Password: {DEMO_CONFIG['admin_password']}")
+        print(f"   手机号: {DEMO_CONFIG['admin_phone']}")
+        print(f"   密码: {DEMO_CONFIG['admin_password']}")
         print(f"\n📊 数据统计:")
         print(f"   公寓: {len(apartments)}")
         print(f"   房间: {len(rooms)} (已出租: {len(leases)})")

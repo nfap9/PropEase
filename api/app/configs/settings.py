@@ -35,6 +35,16 @@ class Settings(BaseSettings):
     RATE_LIMIT_REQUESTS: int = 60  # 请求数
     RATE_LIMIT_PERIOD: int = 60  # 秒
 
+    # SMS Service
+    SMS_PROVIDER: str = "mock"  # mock, aliyun, tencent
+    SMS_ACCESS_KEY: str = ""
+    SMS_SECRET: str = ""
+    SMS_SIGN_NAME: str = ""
+    SMS_TEMPLATE_CODE: str = ""
+    SMS_CODE_EXPIRE_MINUTES: int = 5
+    SMS_CODE_RESEND_SECONDS: int = 60
+    SMS_CODE_MAX_DAILY: int = 10  # 同一手机号每日最大发送次数
+
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
     CORS_ALLOW_CREDENTIALS: bool = True

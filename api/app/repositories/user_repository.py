@@ -13,6 +13,10 @@ class UserRepository(BaseRepository[User]):
     def __init__(self, db: Session):
         super().__init__(db, User)
 
+    def find_by_phone(self, phone: str) -> Optional[User]:
+        """Find user by phone number."""
+        return self.db.query(User).filter(User.phone == phone).first()
+
     def find_by_email(self, email: str) -> Optional[User]:
         """Find user by email address."""
         return self.db.query(User).filter(User.email == email).first()
@@ -27,6 +31,10 @@ class UserRepository(BaseRepository[User]):
             .filter(OrganizationMember.organization_id == org_id)
             .all()
         )
+
+    def exists_by_phone(self, phone: str) -> bool:
+        """Check if user exists by phone."""
+        return self.find_by_phone(phone) is not None
 
     def exists_by_email(self, email: str) -> bool:
         """Check if user exists by email."""

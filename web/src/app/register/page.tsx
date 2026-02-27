@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -26,9 +26,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 
+// 手机号验证正则
+const phoneRegex = /^1[3-9]\d{9}$/;
+
 const registerSchema = z.object({
-  email: z.string().email('请输入有效的邮箱地址'),
-  password: z.string().min(6, '密码至少6个字符'),
+  phone: z.string().regex(phoneRegex, '请输入有效的手机号'),
+  verification_code: z.string().length(6, '验证码必须是6位数字'),
+  password: z.string().min(8, '密码至少8个字符').regex(/[a-zA-Z]/, '密码必须包含字母').regex(/\d/, '密码必须包含数字'),
   full_name: z.string().min(2, '姓名至少2个字符'),
   confirm_password: z.string(),
 }).refine((data) => data.password === data.confirm_password, {
@@ -39,29 +43,55 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-  const { register: registerUser } = useAuth();
+  const { register: registerUser, sendSmsCode } = useAuth();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      email: '',
+      phone: '',
+      verification_code: '',
       password: '',
       full_name: '',
       confirm_password: '',
     },
   });
 
+  // 倒计时效果
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  // 发送验证码
+  const handleSendCode = useCallback(async () => {
+    const phone = form.getValues('phone');
+    if (!phoneRegex.test(phone)) {
+      form.setError('phone', { message: '请输入有效的手机号' });
+      return;
+    }
+
+    try {
+      await sendSmsCode({ phone, purpose: 'register' });
+      setCountdown(60);
+    } catch (err) {
+      setError('发送验证码失败，请稍后重试');
+    }
+  }, [form, sendSmsCode]);
+
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     setError(null);
     try {
-      await registerUser(data.email, data.password, data.full_name);
+      await registerUser(data.phone, data.password, data.full_name, data.verification_code);
       router.push('/dashboard');
     } catch {
-      setError('注册失败，邮箱可能已被使用');
+      setError('注册失败，手机号可能已被使用或验证码无效');
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +119,7 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>姓名</FormLabel>
                     <FormControl>
-                      <Input placeholder="您的姓名" {...field} />
+                      <Input placeholder="请输入姓名" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -97,13 +127,42 @@ export default function RegisterPage() {
               />
               <FormField
                 control={form.control}
-                name="email"
+                name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>邮箱</FormLabel>
+                    <FormLabel>手机号</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="your@email.com" {...field} />
+                      <Input type="tel" placeholder="请输入手机号" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="verification_code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>验证码</FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input
+                          type="text"
+                          maxLength={6}
+                          placeholder="请输入验证码"
+                          {...field}
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={countdown > 0}
+                        onClick={handleSendCode}
+                        className="shrink-0"
+                      >
+                        {countdown > 0 ? `${countdown}秒` : '获取验证码'}
+                      </Button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -115,7 +174,7 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>密码</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="请输入密码（至少8位，包含字母和数字）" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -128,7 +187,7 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>确认密码</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
+                      <Input type="password" placeholder="请再次输入密码" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

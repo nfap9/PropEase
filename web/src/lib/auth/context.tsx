@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Organization } from '@/types';
+import { User, Organization, SendSmsCodeData } from '@/types';
 import { authApi, organizationsApi } from '@/lib/api';
 
 interface AuthContextType {
@@ -11,8 +11,9 @@ interface AuthContextType {
   organizations: Organization[];
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, fullName: string) => Promise<void>;
+  login: (phone: string, password?: string, verificationCode?: string) => Promise<void>;
+  register: (phone: string, password: string, fullName: string, verificationCode: string) => Promise<void>;
+  sendSmsCode: (data: SendSmsCodeData) => Promise<void>;
   logout: () => void;
   setOrganization: (org: Organization | null) => void;
   refreshOrganizations: () => Promise<void>;
@@ -79,8 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const response = await authApi.login({ email, password });
+  const login = async (phone: string, password?: string, verificationCode?: string) => {
+    const response = await authApi.login({ phone, password, verification_code: verificationCode });
     localStorage.setItem('access_token', response.access_token);
     localStorage.setItem('refresh_token', response.refresh_token);
     const userData = await authApi.getMe();
@@ -96,9 +97,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/dashboard');
   };
 
-  const register = async (email: string, password: string, fullName: string) => {
-    await authApi.register({ email, password, full_name: fullName });
-    await login(email, password);
+  const register = async (phone: string, password: string, fullName: string, verificationCode: string) => {
+    await authApi.register({ phone, password, full_name: fullName, verification_code: verificationCode });
+    // 注册成功后自动登录
+    await login(phone, password);
+  };
+
+  const sendSmsCode = async (data: SendSmsCodeData) => {
+    await authApi.sendSmsCode(data);
   };
 
   const logout = () => {
@@ -130,6 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         login,
         register,
+        sendSmsCode,
         logout,
         setOrganization: handleSetOrganization,
         refreshOrganizations,
