@@ -2,16 +2,16 @@
 
 > 创建日期: 2026-02-26
 > 最后更新: 2026-02-27
-> 状态: ⬜ 未开始
+> 状态: 🔄 进行中
 
 ## 📊 进度概览
 
-**总进度: 0/9 页面完成 (0%)**
+**总进度: 2/9 页面完成 (22%)**
 
 | 阶段 | 状态 | 页面数 |
 |-----|------|-------|
 | P0 极高优先级 | ⬜ 0/3 | `apartments/[id]`, `leases`, `settings/team` |
-| P1 高优先级 | ⬜ 0/3 | `reports`, `rooms`, `utilities` |
+| P1 高优先级 | ✅ 2/3 | `reports`, ~~`rooms`~~, ~~`utilities`~~ |
 | P2 中等优先级 | ⬜ 0/3 | `tenants`, `bills`, `apartments` |
 
 ---
@@ -24,23 +24,23 @@
 
 ### 当前问题
 
-部分页面文件过大（300-570行），包含多个内联 Dialog、Form 组件，难以维护和测试。
+部分页面文件过大（300-1470行），包含多个内联 Dialog、Form 组件，难以维护和测试。
 
-### 复杂度分析
+### 复杂度分析 (2026-02-27 更新)
 
-| 页面 | 行数 | 内联组件 | 复杂度 |
-|-----|------|---------|-------|
-| `apartments/[id]/page.tsx` | 1469 | 5+ Dialog | **极高** |
-| `leases/page.tsx` | 567 | 4 Dialog | 极高 |
-| `settings/team/page.tsx` | 531 | 4 Dialog | 极高 |
-| `rooms/page.tsx` | 808 | 3 Dialog + 筛选组件 | 高 |
-| `reports/page.tsx` | 511 | 多 Tabs | 中高 |
-| `utilities/page.tsx` | 466 | 2 Dialog | 高 |
-| `tenants/page.tsx` | 405 | 3 Dialog | 高 |
-| `bills/page.tsx` | 402 | 1 Dialog | 高 |
-| `apartments/page.tsx` | 424 | 3 Dialog | 中 |
+| 页面 | 行数 | 内联组件 | 复杂度 | 状态 |
+|-----|------|---------|-------|------|
+| `apartments/[id]/page.tsx` | 1470 | 5+ Dialog | **极高** | ⬜ |
+| ~~`utilities/page.tsx`~~ | ~~676~~ | ~~3 Dialog~~ | 极高 | ✅ 完成 |
+| ~~`rooms/page.tsx`~~ | ~~642~~ | ~~3 Dialog + 筛选~~ | 高 | ✅ 完成 |
+| `settings/team/page.tsx` | 547 | 4 Dialog | 极高 | ⬜ |
+| `reports/page.tsx` | 510 | 多 Tabs | 中高 | ⬜ |
+| `apartments/page.tsx` | 425 | 3 Dialog | 中 | ⬜ |
+| `tenants/page.tsx` | 409 | 3 Dialog | 高 | ⬜ |
+| `leases/page.tsx` | 398 | 4 Dialog | 高 | ⬜ |
+| `bills/page.tsx` | 395 | 1 Dialog | 高 | ⬜ |
 
-> 注：公寓详情页因包含批量添加房间、房间管理等复杂功能，行数最多，优先级最高。
+> 注：公寓详情页因包含批量添加房间、房间管理等复杂功能，行数最多。
 
 ---
 
@@ -163,26 +163,57 @@
 
 ---
 
-#### 5. ⬜ `rooms/page.tsx` 拆分
+#### 5. ✅ `rooms/page.tsx` 拆分
+
+**目标：** 将 642 行的房间管理页面拆分为多个组件
+
+**拆分方案：**
+```
+/app/rooms/
+├── page.tsx                    # 主页面布局 (345行)
+├── components/
+│   ├── room-stats-cards.tsx    # 统计卡片 (64行)
+│   ├── room-filters.tsx        # 筛选组件 (152行)
+│   ├── columns.tsx             # 表格列定义 (140行)
+│   ├── EditRoomDialog.tsx      # 编辑房间 (169行)
+│   ├── TerminateDialog.tsx     # 退租确认 (48行)
+│   ├── DeleteRoomDialog.tsx    # 删除确认 (51行)
+│   └── index.ts                # 导出
+```
 
 **步骤：**
-- [ ] 提取 `columns.tsx`
-- [ ] 提取 `CreateRoomDialog.tsx`
-- [ ] 提取 `EditRoomDialog.tsx`
-- [ ] 提取 `DeleteRoomDialog.tsx`
-- [ ] 重构主页面
-- [ ] 功能验证
+- [x] 提取 `columns.tsx`
+- [x] 提取 `EditRoomDialog.tsx`
+- [x] 提取 `TerminateDialog.tsx`
+- [x] 提取 `DeleteRoomDialog.tsx`
+- [x] 重构主页面
+- [x] 功能验证 (类型检查通过)
 
 ---
 
-#### 6. ⬜ `utilities/page.tsx` 拆分
+#### 6. ✅ `utilities/page.tsx` 拆分
+
+**目标：** 将 676 行的水电录入页面拆分为多个组件
+
+**拆分方案：**
+```
+/app/utilities/
+├── page.tsx                    # 主页面布局 + DataTable (198行)
+├── components/
+│   ├── CreateUtilityDialog.tsx # 录入水电读数 (222行)
+│   ├── EditUtilityDialog.tsx   # 编辑水电读数 (150行)
+│   ├── BatchImportDialog.tsx   # 批量导入 (188行)
+│   ├── columns.tsx             # 表格列定义 (72行)
+│   └── index.ts                # 导出
+```
 
 **步骤：**
-- [ ] 提取 `columns.tsx`
-- [ ] 提取 `CreateUtilityDialog.tsx`
-- [ ] 提取 `EditUtilityDialog.tsx`
-- [ ] 重构主页面
-- [ ] 功能验证
+- [x] 提取 `columns.tsx`
+- [x] 提取 `CreateUtilityDialog.tsx`
+- [x] 提取 `EditUtilityDialog.tsx`
+- [x] 提取 `BatchImportDialog.tsx`
+- [x] 重构主页面
+- [x] 功能验证 (类型检查通过)
 
 ---
 
@@ -262,5 +293,7 @@
 
 | 日期 | 变更内容 |
 |-----|---------|
+| 2026-02-27 | 完成 `rooms/page.tsx` 拆分：642行 → 345行，提取6个组件 |
+| 2026-02-27 | 完成 `utilities/page.tsx` 拆分：676行 → 198行，提取4个组件 |
 | 2026-02-27 | 新增公寓详情页拆分任务（P0 最高优先级），更新各页面行数统计 |
 | 2026-02-26 | 初始创建 |
