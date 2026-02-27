@@ -40,10 +40,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
-import { roomsApi, apartmentsApi } from '@/lib/api';
+import { roomsApi, apartmentsApi, tenantsApi, leasesApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { Room, RoomStatus } from '@/types';
-import { Pencil, Trash2, Building2, Search } from 'lucide-react';
+import {
+  Pencil,
+  Trash2,
+  Building2,
+  Search,
+  FileText,
+  Ban,
+  Wrench,
+  CheckCircle,
+} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RoomStatsCards } from './components/room-stats-cards';
 import { RoomFilters, RoomFiltersState } from './components/room-filters';
@@ -58,6 +67,20 @@ const roomSchema = z.object({
 });
 
 type RoomFormData = z.infer<typeof roomSchema>;
+
+const leaseSchema = z.object({
+  room_id: z.number().min(1, '请选择房间'),
+  tenant_id: z.number().min(1, '请选择租客'),
+  start_date: z.string().min(1, '请选择开始日期'),
+  end_date: z.string().optional(),
+  monthly_rent: z.number().min(0, '月租不能为负'),
+  deposit: z.number().min(0, '押金不能为负').optional(),
+  water_rate: z.number().min(0).optional(),
+  electricity_rate: z.number().min(0).optional(),
+  notes: z.string().optional(),
+});
+
+type LeaseFormData = z.infer<typeof leaseSchema>;
 
 const STATUS_MAP: Record<RoomStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   available: { label: '空置', variant: 'secondary' },
@@ -96,12 +119,28 @@ export default function RoomsPage() {
   // 对话框状态
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isLeaseOpen, setIsLeaseOpen] = useState(false);
+  const [isTerminateOpen, setIsTerminateOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
 
   // 获取公寓列表
   const { data: apartments, isLoading: apartmentsLoading } = useQuery({
     queryKey: ['apartments', orgId],
     queryFn: () => apartmentsApi.list(orgId!),
+    enabled: !!orgId,
+  });
+
+  // 获取租客列表
+  const { data: tenants } = useQuery({
+    queryKey: ['tenants', orgId],
+    queryFn: () => tenantsApi.list(orgId!),
+    enabled: !!orgId,
+  });
+
+  // 获取租约列表（用于判断房间是否有活跃租约）
+  const { data: leases } = useQuery({
+    queryKey: ['leases', orgId],
+    queryFn: () => leasesApi.list(orgId!, true),
     enabled: !!orgId,
   });
 
@@ -184,6 +223,21 @@ export default function RoomsPage() {
     resolver: zodResolver(roomSchema),
   });
 
+  const leaseForm = useForm<LeaseFormData>({
+    resolver: zodResolver(leaseSchema),
+    defaultValues: {
+      room_id: 0,
+      tenant_id: 0,
+      start_date: new Date().toISOString().split('T')[0],
+      end_date: '',
+      monthly_rent: 0,
+      deposit: 0,
+      water_rate: 0,
+      electricity_rate: 0,
+      notes: '',
+    },
+  });
+
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: RoomFormData }) =>
       roomsApi.update(orgId!, id, data),
@@ -213,6 +267,50 @@ export default function RoomsPage() {
     },
   });
 
+  const createLeaseMutation = useMutation({
+    mutationFn: (data: LeaseFormData) => leasesApi.create(orgId!, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
+      setIsLeaseOpen(false);
+      setSelectedRoom(null);
+      leaseForm.reset();
+      toast.success('签约成功');
+    },
+    onError: () => {
+      toast.error('签约失败，请重试');
+    },
+  });
+
+  const terminateLeaseMutation = useMutation({
+    mutationFn: (leaseId: number) => leasesApi.terminate(orgId!, leaseId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
+      setIsTerminateOpen(false);
+      setSelectedRoom(null);
+      toast.success('退租成功');
+    },
+    onError: () => {
+      toast.error('退租失败，请重试');
+    },
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: RoomStatus }) =>
+      roomsApi.update(orgId!, id, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
+      toast.success('状态更新成功');
+    },
+    onError: () => {
+      toast.error('状态更新失败，请重试');
+    },
+  });
+
   const handleEdit = (room: Room) => {
     setSelectedRoom(room);
     editForm.reset({
@@ -229,6 +327,36 @@ export default function RoomsPage() {
   const handleDelete = (room: Room) => {
     setSelectedRoom(room);
     setIsDeleteOpen(true);
+  };
+
+  const handleLease = (room: Room) => {
+    setSelectedRoom(room);
+    leaseForm.reset({
+      room_id: room.id,
+      tenant_id: 0,
+      start_date: new Date().toISOString().split('T')[0],
+      end_date: '',
+      monthly_rent: room.monthly_rent,
+      deposit: 0,
+      water_rate: 0,
+      electricity_rate: 0,
+      notes: '',
+    });
+    setIsLeaseOpen(true);
+  };
+
+  const handleTerminate = (room: Room) => {
+    setSelectedRoom(room);
+    setIsTerminateOpen(true);
+  };
+
+  const handleStatusChange = (room: Room, status: RoomStatus) => {
+    updateStatusMutation.mutate({ id: room.id, status });
+  };
+
+  // 获取房间的当前活跃租约
+  const getActiveLease = (roomId: number) => {
+    return leases?.find((lease) => lease.room_id === roomId && lease.is_active);
   };
 
   const columns: ColumnDef<Room>[] = [
@@ -295,11 +423,39 @@ export default function RoomsPage() {
       id: 'actions',
       cell: ({ row }) => {
         const room = row.original;
+        const isAvailable = room.status === 'available';
+        const isOccupied = room.status === 'occupied';
+        const isMaintenance = room.status === 'maintenance';
+
         const actions: TableAction[] = [
           {
             label: '编辑',
             icon: Pencil,
             onClick: () => handleEdit(room),
+          },
+          {
+            label: '签约',
+            icon: FileText,
+            onClick: () => handleLease(room),
+            show: isAvailable,
+          },
+          {
+            label: '退租',
+            icon: Ban,
+            onClick: () => handleTerminate(room),
+            show: isOccupied,
+          },
+          {
+            label: '开始维修',
+            icon: Wrench,
+            onClick: () => handleStatusChange(room, 'maintenance'),
+            show: isAvailable,
+          },
+          {
+            label: '完成维修',
+            icon: CheckCircle,
+            onClick: () => handleStatusChange(room, 'available'),
+            show: isMaintenance,
           },
           {
             label: '删除',
@@ -308,7 +464,7 @@ export default function RoomsPage() {
             variant: 'destructive',
           },
         ];
-        return <TableActions actions={actions} />;
+        return <TableActions actions={actions} maxInline={2} />;
       },
     },
   ];
@@ -479,6 +635,152 @@ export default function RoomsPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Lease Dialog */}
+      <Dialog open={isLeaseOpen} onOpenChange={setIsLeaseOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>签约</DialogTitle>
+            <DialogDescription>
+              为房间 {selectedRoom?.room_number} 创建租约
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={leaseForm.handleSubmit((data) => {
+              createLeaseMutation.mutate(data);
+            })}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <Label>房间</Label>
+              <Input
+                value={selectedRoom ? `${selectedRoom.apartment?.name || ''} - ${selectedRoom.room_number}` : ''}
+                disabled
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lease-tenant_id">选择租客 *</Label>
+              <Select
+                value={leaseForm.watch('tenant_id')?.toString() || ''}
+                onValueChange={(value) => leaseForm.setValue('tenant_id', Number(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="选择租客" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tenants?.map((tenant) => (
+                    <SelectItem key={tenant.id} value={tenant.id.toString()}>
+                      {tenant.name} {tenant.phone ? `- ${tenant.phone}` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {leaseForm.formState.errors.tenant_id && (
+                <p className="text-sm text-destructive">
+                  {leaseForm.formState.errors.tenant_id.message}
+                </p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="lease-start_date">开始日期 *</Label>
+                <Input
+                  id="lease-start_date"
+                  type="date"
+                  {...leaseForm.register('start_date')}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lease-end_date">结束日期</Label>
+                <Input
+                  id="lease-end_date"
+                  type="date"
+                  {...leaseForm.register('end_date')}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="lease-monthly_rent">月租 (元) *</Label>
+                <Input
+                  id="lease-monthly_rent"
+                  type="number"
+                  step="0.01"
+                  {...leaseForm.register('monthly_rent', { valueAsNumber: true })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lease-deposit">押金 (元)</Label>
+                <Input
+                  id="lease-deposit"
+                  type="number"
+                  step="0.01"
+                  {...leaseForm.register('deposit', { valueAsNumber: true })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="lease-water_rate">水费单价</Label>
+                <Input
+                  id="lease-water_rate"
+                  type="number"
+                  step="0.01"
+                  {...leaseForm.register('water_rate', { valueAsNumber: true })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lease-electricity_rate">电费单价</Label>
+                <Input
+                  id="lease-electricity_rate"
+                  type="number"
+                  step="0.01"
+                  {...leaseForm.register('electricity_rate', { valueAsNumber: true })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lease-notes">备注</Label>
+              <Input id="lease-notes" {...leaseForm.register('notes')} />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsLeaseOpen(false)}>
+                取消
+              </Button>
+              <Button type="submit" disabled={createLeaseMutation.isPending}>
+                {createLeaseMutation.isPending ? '创建中...' : '确认签约'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Terminate Dialog */}
+      <AlertDialog open={isTerminateOpen} onOpenChange={setIsTerminateOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认退租</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要为房间 &ldquo;{selectedRoom?.room_number}&rdquo; 办理退租吗？退租后房间将变为空置状态。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (selectedRoom) {
+                  const activeLease = getActiveLease(selectedRoom.id);
+                  if (activeLease) {
+                    terminateLeaseMutation.mutate(activeLease.id);
+                  }
+                }
+              }}
+            >
+              {terminateLeaseMutation.isPending ? '处理中...' : '确认退租'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Alert Dialog */}
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
