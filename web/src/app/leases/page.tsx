@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
+import { TenantSelect } from '@/components/common/tenant-select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,7 +41,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
-import { leasesApi, apartmentsApi, roomsApi, tenantsApi } from '@/lib/api';
+import { leasesApi, apartmentsApi, roomsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { Lease } from '@/types';
 import { Plus, Pencil, Trash2, Ban, Building2 } from 'lucide-react';
@@ -82,12 +83,6 @@ export default function LeasesPage() {
     queryKey: ['rooms', orgId, selectedApartmentId],
     queryFn: () => roomsApi.list(orgId!, selectedApartmentId!),
     enabled: !!orgId && selectedApartmentId !== null,
-  });
-
-  const { data: tenants } = useQuery({
-    queryKey: ['tenants', orgId],
-    queryFn: () => tenantsApi.list(orgId!),
-    enabled: !!orgId,
   });
 
   const { data: leases, isLoading: leasesLoading } = useQuery({
@@ -377,28 +372,12 @@ export default function LeasesPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="tenant_id">选择租客 *</Label>
-              <Select
-                value={createForm.watch('tenant_id')?.toString() || ''}
-                onValueChange={(value) =>
-                  createForm.setValue('tenant_id', Number(value))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="选择租客" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tenants?.map((tenant) => (
-                    <SelectItem key={tenant.id} value={tenant.id.toString()}>
-                      {tenant.name} - {tenant.phone}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {createForm.formState.errors.tenant_id && (
-                <p className="text-sm text-destructive">
-                  {createForm.formState.errors.tenant_id.message}
-                </p>
-              )}
+              <TenantSelect
+                orgId={orgId!}
+                value={createForm.watch('tenant_id')}
+                onValueChange={(value) => createForm.setValue('tenant_id', value)}
+                error={createForm.formState.errors.tenant_id?.message}
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
