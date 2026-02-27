@@ -103,17 +103,7 @@ export default function TeamSettingsPage() {
 
   const { data: members, isLoading: membersLoading } = useQuery({
     queryKey: ['organization-members', selectedOrg?.id],
-    queryFn: async () => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/organizations/${selectedOrg?.id}/members`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        }
-      );
-      return response.json();
-    },
+    queryFn: () => organizationsApi.getMembers(selectedOrg!.id),
     enabled: !!selectedOrg,
   });
 
@@ -163,23 +153,11 @@ export default function TeamSettingsPage() {
   });
 
   const inviteMutation = useMutation({
-    mutationFn: async (data: InviteFormData) => {
-      const params = new URLSearchParams({
-        email: data.email,
-        role: data.role,
-      });
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/organizations/${selectedOrg?.id}/members?${params}`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        }
-      );
-      if (!response.ok) throw new Error('Failed to invite');
-      return response.json();
-    },
+    mutationFn: (data: InviteFormData) =>
+      organizationsApi.addMember(selectedOrg!.id, {
+        user_email: data.email,
+        role: data.role as MemberRole,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['organization-members', selectedOrg?.id],
@@ -194,18 +172,8 @@ export default function TeamSettingsPage() {
   });
 
   const removeMemberMutation = useMutation({
-    mutationFn: async (memberId: number) => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/organizations/${selectedOrg?.id}/members/${memberId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        }
-      );
-      if (!response.ok) throw new Error('Failed to remove');
-    },
+    mutationFn: (memberId: number) =>
+      organizationsApi.removeMember(selectedOrg!.id, memberId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['organization-members', selectedOrg?.id],
@@ -244,11 +212,11 @@ export default function TeamSettingsPage() {
         return (
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-              {member.user?.full_name?.charAt(0).toUpperCase() || 'U'}
+              {member.user_full_name?.charAt(0).toUpperCase() || 'U'}
             </div>
             <div>
-              <div className="font-medium">{member.user?.full_name || '未知用户'}</div>
-              <div className="text-sm text-muted-foreground">{member.user?.email}</div>
+              <div className="font-medium">{member.user_full_name || '未知用户'}</div>
+              <div className="text-sm text-muted-foreground">{member.user_email || '-'}</div>
             </div>
           </div>
         );
@@ -537,7 +505,7 @@ export default function TeamSettingsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>确认移除</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要从组织中移除成员 &ldquo;{selectedMember?.user?.full_name}&rdquo; 吗？
+              确定要从组织中移除成员 &ldquo;{selectedMember?.user_full_name}&rdquo; 吗？
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

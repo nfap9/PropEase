@@ -19,6 +19,7 @@ from app.controllers.console import (
     bills_router,
     leases_router,
     organizations_router,
+    permissions_router,
     reports_router,
     tenants_router,
     utilities_router,
@@ -44,6 +45,24 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     """Application lifespan manager for startup/shutdown events."""
     # Startup
     logger.info(f"Starting {settings.APP_NAME}...")
+
+    # 初始化权限系统
+    from app.configs.database import SessionLocal
+    from app.services.permission_service import PermissionService
+
+    db = SessionLocal()
+    try:
+        perm_service = PermissionService(db)
+        logger.info("Initializing permissions...")
+        perm_service.initialize_permissions()
+        logger.info("Initializing system roles...")
+        perm_service.initialize_system_roles()
+        logger.info("Permission system initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize permission system: {e}")
+    finally:
+        db.close()
+
     yield
     # Shutdown
     logger.info(f"Shutting down {settings.APP_NAME}...")
@@ -123,6 +142,11 @@ def create_app() -> FastAPI:
         reports_router,
         prefix=f"{settings.API_V1_PREFIX}/reports",
         tags=["Reports & Analytics"],
+    )
+    app.include_router(
+        permissions_router,
+        prefix=f"{settings.API_V1_PREFIX}/permissions",
+        tags=["Permissions"],
     )
 
     # Health check endpoint

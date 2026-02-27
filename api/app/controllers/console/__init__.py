@@ -7,6 +7,7 @@ from .leases import router as leases_router
 from .utilities import router as utilities_router
 from .bills import router as bills_router
 from .reports import router as reports_router
+from .permissions import router as permissions_router
 
 __all__ = [
     "auth_router",
@@ -17,4 +18,5 @@ __all__ = [
     "utilities_router",
     "bills_router",
     "reports_router",
+    "permissions_router",
 ]

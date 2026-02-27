@@ -10,6 +10,16 @@ from app.models.tenant import Tenant
 from app.models.lease import Lease
 from app.models.utility import UtilityReading
 from app.models.bill import Bill, BillStatus, Payment, PaymentMethod
+from app.models.permission import (
+    Permission,
+    Resource,
+    Action,
+    SystemRole,
+    OrganizationRolePermission,
+    SystemRoleConfig,
+    SystemRolePermission,
+    UserSystemRole,
+)
 
 __all__ = [
     "Base",
@@ -29,4 +39,12 @@ __all__ = [
     "BillStatus",
     "Payment",
     "PaymentMethod",
+    "Permission",
+    "Resource",
+    "Action",
+    "SystemRole",
+    "OrganizationRolePermission",
+    "SystemRoleConfig",
+    "SystemRolePermission",
+    "UserSystemRole",
 ]

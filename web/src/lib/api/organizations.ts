@@ -28,12 +28,14 @@ export const organizationsApi = {
   },
 
   addMember: async (orgId: number, data: { user_email: string; role: MemberRole }): Promise<OrganizationMember> => {
-    const response = await api.post<OrganizationMember>(`/organizations/${orgId}/members`, data);
+    const params = new URLSearchParams({ email: data.user_email, role: data.role });
+    const response = await api.post<OrganizationMember>(`/organizations/${orgId}/members?${params}`);
     return response.data;
   },
 
   updateMember: async (orgId: number, memberId: number, data: { role: MemberRole }): Promise<OrganizationMember> => {
-    const response = await api.put<OrganizationMember>(`/organizations/${orgId}/members/${memberId}`, data);
+    const params = new URLSearchParams({ role: data.role });
+    const response = await api.put<OrganizationMember>(`/organizations/${orgId}/members/${memberId}?${params}`);
     return response.data;
   },
 

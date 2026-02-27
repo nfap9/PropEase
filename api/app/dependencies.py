@@ -1,4 +1,4 @@
-from typing import Generator, Optional
+from typing import Generator, Optional, List
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -88,4 +88,96 @@ def require_role(roles: list[MemberRole]):
                 detail="Insufficient permissions",
             )
         return membership
+    return role_checker
+
+
+def require_permission(permission_code: str):
+    """
+    权限检查依赖工厂
+
+    用法：
+        @router.post("/apartments")
+        def create_apartment(
+            org_id: int,
+            data: ApartmentCreate,
+            _: None = Depends(require_permission("apartment:create")),
+            current_user: User = Depends(get_current_user),
+            db: Session = Depends(get_db),
+        ):
+            ...
+    """
+    from app.services.permission_service import PermissionService
+
+    async def permission_checker(
+        org_id: int,
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> None:
+        perm_service = PermissionService(db)
+        if perm_service.check_permission(current_user.id, org_id, permission_code):
+            return
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"没有权限执行此操作",
+        )
+
+    return permission_checker
+
+
+def get_user_permissions(
+    org_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> List[str]:
+    """获取用户在当前组织中的所有权限代码"""
+    from app.services.permission_service import PermissionService
+
+    perm_service = PermissionService(db)
+    return perm_service.get_user_permissions(current_user.id, org_id)
+
+
+def get_current_user_system_roles(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> List[str]:
+    """获取当前用户的系统角色"""
+    from app.services.permission_service import PermissionService
+
+    perm_service = PermissionService(db)
+    roles = perm_service.get_user_system_roles(current_user.id)
+    return [r.value for r in roles]
+
+
+def require_system_role(roles: list):
+    """
+    系统角色检查依赖工厂
+
+    用法：
+        @router.get("/admin/users")
+        def list_all_users(
+            _: None = Depends(require_system_role(["super_admin"])),
+            current_user: User = Depends(get_current_user),
+        ):
+            ...
+    """
+    from app.services.permission_service import PermissionService
+
+    async def role_checker(
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> None:
+        perm_service = PermissionService(db)
+        user_roles = perm_service.get_user_system_roles(current_user.id)
+
+        # 检查用户是否拥有任一指定角色
+        for role in roles:
+            if role in [r.value for r in user_roles]:
+                return
+
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="需要系统管理员权限",
+        )
+
     return role_checker

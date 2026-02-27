@@ -37,11 +37,21 @@ class OrganizationService(BaseService):
         self, user_id: int, data: OrganizationCreate
     ) -> Organization:
         """Create a new organization and add user as owner."""
+        import re
+
+        # Generate slug if not provided
+        if data.slug:
+            slug = data.slug
+        else:
+            slug = data.name.lower()
+            slug = re.sub(r'\s+', '-', slug)
+            slug = re.sub(r'[^a-z0-9-]', '', slug)
+
         # Create organization
         org = Organization(
             name=data.name,
-            slug=data.slug,
-            settings=data.settings,
+            slug=slug,
+            settings={},
         )
         org = self.org_repo.create(org)
 

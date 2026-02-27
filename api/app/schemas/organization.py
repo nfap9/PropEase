@@ -52,7 +52,7 @@ class OrganizationMemberResponse(BaseModel):
 
 
 class OrganizationMemberWithUser(OrganizationMemberResponse):
-    user_email: str
+    user_email: Optional[str] = None
     user_full_name: str
 
 

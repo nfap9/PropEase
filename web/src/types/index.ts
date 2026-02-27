@@ -227,3 +227,57 @@ export interface PaginatedResponse<T> {
   page: number;
   page_size: number;
 }
+
+// Permission types
+export type Resource =
+  | 'apartment'
+  | 'room'
+  | 'tenant'
+  | 'lease'
+  | 'bill'
+  | 'utility'
+  | 'member'
+  | 'settings'
+  | 'report';
+
+export type Action = 'view' | 'create' | 'edit' | 'delete' | 'export' | 'manage';
+
+export interface Permission {
+  id: number;
+  resource: Resource;
+  action: Action;
+  code: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+}
+
+export interface RolePermissions {
+  role: MemberRole;
+  permissions: Permission[];
+}
+
+export interface UpdateRolePermissionsRequest {
+  permission_codes: string[];
+}
+
+export interface UserPermissionsResponse {
+  permissions: string[];
+  system_roles: SystemRole[];
+  is_super_admin: boolean;
+}
+
+export type SystemRole =
+  | 'super_admin'
+  | 'support'
+  | 'operations'
+  | 'finance'
+  | 'readonly';
+
+export interface SystemRoleConfig {
+  role: SystemRole;
+  name: string;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
+}

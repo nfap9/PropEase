@@ -94,7 +94,33 @@ def list_members(
 ):
     """List organization members."""
     get_org_membership(org_id, current_user, db)
-    return org_service.list_members(org_id, current_user.id)
+    members = org_service.list_members(org_id, current_user.id)
+    # 转换为响应格式，提取用户信息
+    return [
+        MemberResponse(
+            id=m.id,
+            organization_id=m.organization_id,
+            user_id=m.user_id,
+            role=m.role,
+            created_at=m.created_at,
+            user_email=m.user.email if m.user else None,
+            user_full_name=m.user.full_name if m.user else "未知用户",
+        )
+        for m in members
+    ]
+
+
+def _member_to_response(m):
+    """Helper to convert OrganizationMember to MemberResponse."""
+    return MemberResponse(
+        id=m.id,
+        organization_id=m.organization_id,
+        user_id=m.user_id,
+        role=m.role,
+        created_at=m.created_at,
+        user_email=m.user.email if m.user else None,
+        user_full_name=m.user.full_name if m.user else "未知用户",
+    )
 
 
 @router.post("/{org_id}/members", response_model=MemberResponse)
@@ -111,7 +137,7 @@ def add_member(
     membership = org_service.add_member(org_id, current_user.id, email, role)
     if not membership:
         raise BadRequestError("Could not add member")
-    return membership
+    return _member_to_response(membership)
 
 
 @router.put("/{org_id}/members/{user_id}", response_model=MemberResponse)
@@ -128,7 +154,7 @@ def update_member_role(
     membership = org_service.update_member_role(org_id, current_user.id, user_id, role)
     if not membership:
         raise ForbiddenError("Only owner can update roles")
-    return membership
+    return _member_to_response(membership)
 
 
 @router.delete("/{org_id}/members/{user_id}")
