@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import date, datetime
 
 from app.schemas.apartment import RoomWithApartment
@@ -44,6 +44,24 @@ class BatchUtilityReading(BaseModel):
     period_month: int
     reading_date: date
     readings: list[dict]
+
+
+class UtilityExportRoom(BaseModel):
+    """待录入水电的房间信息（用于导出）"""
+    room_id: int
+    apartment_name: str
+    room_number: str
+    tenant_name: str
+    billing_day: int
+    water_previous: Optional[float] = None
+    electricity_previous: Optional[float] = None
+
+
+class UtilityExportRequest(BaseModel):
+    """导出请求参数"""
+    period_year: int
+    period_month: int
+    days_range: Optional[int] = None  # None 表示全部，否则为天数（5, 10, 15, 30）
 
 
 # Alias for controller import

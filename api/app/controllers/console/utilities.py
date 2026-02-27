@@ -1,7 +1,7 @@
 """
 Utility controller - handles utility reading management.
 """
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
@@ -15,6 +15,7 @@ from app.schemas.utility import (
     UtilityReadingUpdate,
     UtilityReadingResponse,
     BatchUtilityReadingCreate,
+    UtilityExportRoom,
 )
 from app.controllers.common.errors import NotFoundError
 from app.controllers.common.deps import get_org_membership, require_role
@@ -67,7 +68,41 @@ def batch_create_readings(
     require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(
         get_org_membership(org_id, current_user, db)
     )
-    return utility_service.batch_create_readings(org_id, data.readings)
+    return utility_service.batch_create_readings(
+        org_id=org_id,
+        period_year=data.period_year,
+        period_month=data.period_month,
+        reading_date=data.reading_date,
+        readings=data.readings,
+    )
+
+
+@router.get("/export", response_model=List[UtilityExportRoom])
+def export_rooms(
+    org_id: int = Query(...),
+    period_year: int = Query(...),
+    period_month: int = Query(...),
+    days_range: Optional[int] = Query(None, description="时间范围（天数），不填则返回全部"),
+    current_user: User = Depends(get_current_user),
+    utility_service: UtilityService = Depends(get_utility_service),
+    db: Session = Depends(get_db),
+):
+    """
+    导出待录入水电的房间列表。
+
+    Args:
+        org_id: 组织ID
+        period_year: 账单年份
+        period_month: 账单月份
+        days_range: 时间范围（天数），不填则返回全部待录入房间
+    """
+    get_org_membership(org_id, current_user, db)
+    return utility_service.export_rooms_for_reading(
+        org_id=org_id,
+        period_year=period_year,
+        period_month=period_month,
+        days_range=days_range,
+    )
 
 
 @router.get("/{reading_id}", response_model=UtilityReadingResponse)

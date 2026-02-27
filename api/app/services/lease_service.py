@@ -74,6 +74,7 @@ class LeaseService(BaseService):
             tenant_id=data.tenant_id,
             start_date=data.start_date,
             end_date=data.end_date,
+            billing_day=data.billing_day,
             monthly_rent=data.monthly_rent,
             deposit=data.deposit,
             water_rate=data.water_rate,

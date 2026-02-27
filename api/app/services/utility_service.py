@@ -2,13 +2,18 @@
 Utility service for utility reading management.
 """
 from typing import List, Optional
+from datetime import date
 from sqlalchemy.orm import Session
 
 from app.services.base import BaseService
 from app.repositories.utility_repository import UtilityRepository
 from app.repositories.apartment_repository import RoomRepository
 from app.models.utility import UtilityReading
-from app.schemas.utility import UtilityReadingCreate, UtilityReadingUpdate
+from app.schemas.utility import (
+    UtilityReadingCreate,
+    UtilityReadingUpdate,
+    UtilityExportRoom,
+)
 
 
 class UtilityService(BaseService):
@@ -51,16 +56,31 @@ class UtilityService(BaseService):
         return self.utility_repo.create(reading)
 
     def batch_create_readings(
-        self, org_id: int, readings: List[UtilityReadingCreate]
+        self,
+        org_id: int,
+        period_year: int,
+        period_month: int,
+        reading_date: date,
+        readings: list[dict],
     ) -> List[UtilityReading]:
         """Batch create utility readings."""
         created = []
-        for data in readings:
+        for reading_data in readings:
             try:
+                data = UtilityReadingCreate(
+                    room_id=reading_data["room_id"],
+                    period_year=period_year,
+                    period_month=period_month,
+                    reading_date=reading_date,
+                    water_reading=reading_data.get("water_reading"),
+                    electricity_reading=reading_data.get("electricity_reading"),
+                    notes=reading_data.get("notes"),
+                )
                 reading = self.create_reading(org_id, data)
                 created.append(reading)
             except Exception:
                 continue
+
         return created
 
     def update_reading(
@@ -79,3 +99,31 @@ class UtilityService(BaseService):
         if not reading:
             return False
         return self.utility_repo.delete(reading_id)
+
+    def export_rooms_for_reading(
+        self,
+        org_id: int,
+        period_year: int,
+        period_month: int,
+        days_range: Optional[int] = None,
+    ) -> List[UtilityExportRoom]:
+        """
+        导出待录入水电的房间列表。
+
+        Args:
+            org_id: 组织ID
+            period_year: 账单年份
+            period_month: 账单月份
+            days_range: 时间范围（天数），None 表示全部
+
+        Returns:
+            待录入水电的房间列表
+        """
+        rooms_data = self.utility_repo.find_rooms_for_export(
+            org_id=org_id,
+            period_year=period_year,
+            period_month=period_month,
+            days_range=days_range,
+            current_date=date.today(),
+        )
+        return [UtilityExportRoom(**data) for data in rooms_data]

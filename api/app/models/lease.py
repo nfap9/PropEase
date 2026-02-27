@@ -1,4 +1,4 @@
-from sqlalchemy import String, ForeignKey, Date, Numeric
+from sqlalchemy import String, ForeignKey, Date, Numeric, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING, List
 from datetime import date
@@ -18,6 +18,7 @@ class Lease(Base, TimestampMixin):
     tenant_id: Mapped[int] = mapped_column(ForeignKey("tenants.id"), nullable=False)
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=True)
+    billing_day: Mapped[int] = mapped_column(Integer, nullable=False, default=1)  # 账单日 (1-28)
     monthly_rent: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     deposit: Mapped[float] = mapped_column(Numeric(10, 2), default=0, nullable=False)
     water_rate: Mapped[float] = mapped_column(Numeric(10, 4), default=0, nullable=False)

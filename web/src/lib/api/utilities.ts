@@ -15,6 +15,16 @@ export interface BatchUtilityReadingData {
   readings: BatchUtilityReadingItem[];
 }
 
+export interface UtilityExportRoom {
+  room_id: number;
+  apartment_name: string;
+  room_number: string;
+  tenant_name: string;
+  billing_day: number;
+  water_previous: number | null;
+  electricity_previous: number | null;
+}
+
 export const utilitiesApi = {
   list: async (orgId: number): Promise<UtilityReading[]> => {
     const response = await api.get<UtilityReading[]>('/utilities', {
@@ -54,6 +64,23 @@ export const utilitiesApi = {
   ): Promise<UtilityReading[]> => {
     const response = await api.post<UtilityReading[]>('/utilities/batch', data, {
       params: { org_id: orgId },
+    });
+    return response.data;
+  },
+
+  exportRooms: async (
+    orgId: number,
+    periodYear: number,
+    periodMonth: number,
+    daysRange?: number
+  ): Promise<UtilityExportRoom[]> => {
+    const response = await api.get<UtilityExportRoom[]>('/utilities/export', {
+      params: {
+        org_id: orgId,
+        period_year: periodYear,
+        period_month: periodMonth,
+        days_range: daysRange,
+      },
     });
     return response.data;
   },
