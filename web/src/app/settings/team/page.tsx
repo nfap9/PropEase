@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -94,6 +94,13 @@ export default function TeamSettingsPage() {
     queryFn: organizationsApi.list,
   });
 
+  // 自动选择第一个组织
+  useEffect(() => {
+    if (organizations && organizations.length > 0 && !selectedOrg) {
+      setSelectedOrg(organizations[0]);
+    }
+  }, [organizations, selectedOrg]);
+
   const { data: members, isLoading: membersLoading } = useQuery({
     queryKey: ['organization-members', selectedOrg?.id],
     queryFn: async () => {
@@ -157,15 +164,17 @@ export default function TeamSettingsPage() {
 
   const inviteMutation = useMutation({
     mutationFn: async (data: InviteFormData) => {
+      const params = new URLSearchParams({
+        email: data.email,
+        role: data.role,
+      });
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/organizations/${selectedOrg?.id}/invite`,
+        `${process.env.NEXT_PUBLIC_API_URL}/organizations/${selectedOrg?.id}/members?${params}`,
         {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('access_token')}`,
           },
-          body: JSON.stringify(data),
         }
       );
       if (!response.ok) throw new Error('Failed to invite');
