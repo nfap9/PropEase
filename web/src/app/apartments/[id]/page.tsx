@@ -9,12 +9,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
-import { DataTable } from '@/components/common/data-table';
-import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -47,7 +44,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ColumnDef } from '@tanstack/react-table';
 import { apartmentsApi, roomsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { Room, RoomStatus } from '@/types';
@@ -68,6 +64,8 @@ import {
   Check,
   ArrowRight,
   ArrowLeft as ArrowLeftIcon,
+  CheckCircle,
+  X,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -98,10 +96,33 @@ const roomBatchConfigSchema = z.object({
 
 type RoomBatchConfigData = z.infer<typeof roomBatchConfigSchema>;
 
-const STATUS_MAP: Record<RoomStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  available: { label: '空置', variant: 'secondary' },
-  occupied: { label: '已租', variant: 'default' },
-  maintenance: { label: '维修中', variant: 'destructive' },
+// 批量编辑房间的 schema
+const batchEditSchema = z.object({
+  layout: z.string().optional(),
+  area: z.number().min(0, '面积不能为负').optional(),
+  status: z.enum(['available', 'occupied', 'maintenance']).optional(),
+});
+
+type BatchEditFormData = z.infer<typeof batchEditSchema>;
+
+// 状态边框颜色映射
+const STATUS_BORDER_COLORS: Record<RoomStatus, string> = {
+  available: 'border-green-500',
+  occupied: 'border-blue-500',
+  maintenance: 'border-orange-500',
+};
+
+// 状态标签映射
+const STATUS_LABELS: Record<RoomStatus, string> = {
+  available: '空置',
+  occupied: '已租',
+  maintenance: '维修中',
+};
+
+// 从房间号提取楼层（假设格式为 {楼层}{房间序号:02d}，如 101、305）
+const extractFloor = (roomNumber: string): number => {
+  if (roomNumber.length <= 2) return 1;
+  return parseInt(roomNumber.slice(0, -2), 10) || 1;
 };
 
 // 常用户型选项
@@ -131,6 +152,10 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   const [isEditRoomOpen, setIsEditRoomOpen] = useState(false);
   const [isDeleteRoomOpen, setIsDeleteRoomOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  // 批量操作状态
+  const [isBatchEditMode, setIsBatchEditMode] = useState(false);
+  const [selectedRoomIds, setSelectedRoomIds] = useState<Set<number>>(new Set());
+  const [isBatchEditOpen, setIsBatchEditOpen] = useState(false);
 
   // 获取公寓信息
   const { data: apartment, isLoading: apartmentLoading } = useQuery({
@@ -289,6 +314,16 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     resolver: zodResolver(roomSchema),
   });
 
+  // 批量编辑表单
+  const batchEditForm = useForm<BatchEditFormData>({
+    resolver: zodResolver(batchEditSchema),
+    defaultValues: {
+      layout: '',
+      area: undefined,
+      status: undefined,
+    },
+  });
+
   // 更新公寓
   const updateApartmentMutation = useMutation({
     mutationFn: (data: { name: string; address: string; description?: string }) =>
@@ -307,7 +342,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   // 创建房间
   const createRoomMutation = useMutation({
     mutationFn: (data: RoomFormData) =>
-      roomsApi.create(orgId!, { ...data, apartment_id: apartmentId }),
+      roomsApi.create(orgId!, apartmentId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
       setIsCreateRoomOpen(false);
@@ -374,6 +409,95 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     },
   });
 
+  // 批量更新房间
+  const batchUpdateMutation = useMutation({
+    mutationFn: async (data: BatchEditFormData) => {
+      const updates = Array.from(selectedRoomIds).map(id => {
+        const updateData: Partial<Room> = {};
+        if (data.layout !== undefined && data.layout !== '') {
+          updateData.layout = data.layout;
+        }
+        if (data.area !== undefined) {
+          updateData.area = data.area;
+        }
+        if (data.status !== undefined) {
+          updateData.status = data.status;
+        }
+        return roomsApi.update(orgId!, id, updateData);
+      });
+      return Promise.all(updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
+      setIsBatchEditOpen(false);
+      setIsBatchEditMode(false);
+      setSelectedRoomIds(new Set());
+      batchEditForm.reset();
+      toast.success('批量更新成功');
+    },
+    onError: () => {
+      toast.error('批量更新失败，请重试');
+    },
+  });
+
+  // 批量删除房间
+  const batchDeleteMutation = useMutation({
+    mutationFn: async () => {
+      const deletes = Array.from(selectedRoomIds).map(id => roomsApi.delete(orgId!, id));
+      return Promise.all(deletes);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
+      setIsBatchEditMode(false);
+      setSelectedRoomIds(new Set());
+      toast.success('批量删除成功');
+    },
+    onError: () => {
+      toast.error('批量删除失败，请重试');
+    },
+  });
+
+  // 切换房间选中状态（批量模式）
+  const toggleRoomSelection = (roomId: number) => {
+    setSelectedRoomIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(roomId)) {
+        newSet.delete(roomId);
+      } else {
+        newSet.add(roomId);
+      }
+      return newSet;
+    });
+  };
+
+  // 全选/取消全选当前楼层
+  const toggleFloorSelection = (floorRooms: Room[], select: boolean) => {
+    setSelectedRoomIds(prev => {
+      const newSet = new Set(prev);
+      if (select) {
+        floorRooms.forEach(r => newSet.add(r.id));
+      } else {
+        floorRooms.forEach(r => newSet.delete(r.id));
+      }
+      return newSet;
+    });
+  };
+
+  // 全选/取消全选所有房间
+  const toggleAllRoomSelection = (select: boolean) => {
+    if (select && rooms) {
+      setSelectedRoomIds(new Set(rooms.map(r => r.id)));
+    } else {
+      setSelectedRoomIds(new Set());
+    }
+  };
+
+  // 退出批量模式
+  const exitBatchMode = () => {
+    setIsBatchEditMode(false);
+    setSelectedRoomIds(new Set());
+  };
+
   const handleEditApartment = () => {
     if (apartment) {
       apartmentForm.reset({
@@ -383,19 +507,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       });
       setIsEditApartmentOpen(true);
     }
-  };
-
-  const handleEditRoom = (room: Room) => {
-    setSelectedRoom(room);
-    editRoomForm.reset({
-      room_number: room.room_number,
-      layout: room.layout || '',
-      area: room.area || 0,
-      monthly_rent: room.monthly_rent,
-      status: room.status,
-      notes: room.notes || '',
-    });
-    setIsEditRoomOpen(true);
   };
 
   const handleDeleteRoom = (room: Room) => {
@@ -411,56 +522,44 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     maintenance: rooms?.filter((r) => r.status === 'maintenance').length || 0,
   };
 
-  // 房间表格列定义
-  const roomColumns: ColumnDef<Room>[] = [
-    {
-      accessorKey: 'room_number',
-      header: '房间号',
-    },
-    {
-      accessorKey: 'layout',
-      header: '户型',
-      cell: ({ row }) => row.original.layout || '-',
-    },
-    {
-      accessorKey: 'area',
-      header: '面积',
-      cell: ({ row }) => (row.original.area ? `${row.original.area} m²` : '-'),
-    },
-    {
-      accessorKey: 'monthly_rent',
-      header: '月租',
-      cell: ({ row }) => `¥${row.original.monthly_rent.toLocaleString()}`,
-    },
-    {
-      accessorKey: 'status',
-      header: '状态',
-      cell: ({ row }) => {
-        const status = STATUS_MAP[row.original.status];
-        return <Badge variant={status.variant}>{status.label}</Badge>;
-      },
-    },
-    {
-      id: 'actions',
-      cell: ({ row }) => {
-        const room = row.original;
-        const actions: TableAction[] = [
-          {
-            label: '编辑',
-            icon: Pencil,
-            onClick: () => handleEditRoom(room),
-          },
-          {
-            label: '删除',
-            icon: Trash2,
-            onClick: () => handleDeleteRoom(room),
-            variant: 'destructive',
-          },
-        ];
-        return <TableActions actions={actions} />;
-      },
-    },
-  ];
+  // 按楼层分组房间
+  const roomsByFloor = useMemo(() => {
+    if (!rooms) return {};
+    const grouped: Record<number, Room[]> = {};
+    for (const room of rooms) {
+      const floor = extractFloor(room.room_number);
+      if (!grouped[floor]) {
+        grouped[floor] = [];
+      }
+      grouped[floor].push(room);
+    }
+    // 对每层楼内的房间按房间号排序
+    for (const floor of Object.keys(grouped)) {
+      grouped[Number(floor)].sort((a, b) => a.room_number.localeCompare(b.room_number));
+    }
+    return grouped;
+  }, [rooms]);
+
+  // 获取排序后的楼层列表
+  const sortedFloors = useMemo(() => {
+    return Object.keys(roomsByFloor)
+      .map(Number)
+      .sort((a, b) => a - b);
+  }, [roomsByFloor]);
+
+  // 房间卡片点击处理
+  const handleRoomClick = (room: Room) => {
+    setSelectedRoom(room);
+    editRoomForm.reset({
+      room_number: room.room_number,
+      layout: room.layout || '',
+      area: room.area || 0,
+      monthly_rent: room.monthly_rent,
+      status: room.status,
+      notes: room.notes || '',
+    });
+    setIsEditRoomOpen(true);
+  };
 
   if (authLoading || apartmentLoading) {
     return (
@@ -584,21 +683,176 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
               <CardDescription>管理该公寓的所有房间</CardDescription>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setIsBatchCreateRoomOpen(true)}>
-                <Layers className="mr-2 h-4 w-4" />
-                批量添加
-              </Button>
-              <Button onClick={() => setIsCreateRoomOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                新增房间
-              </Button>
+              {isBatchEditMode ? (
+                <>
+                  <Button variant="outline" size="sm" onClick={() => toggleAllRoomSelection(true)}>
+                    全选
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => toggleAllRoomSelection(false)}>
+                    取消全选
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={selectedRoomIds.size === 0}
+                    onClick={() => setIsBatchEditOpen(true)}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" />
+                    批量编辑 ({selectedRoomIds.size})
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={selectedRoomIds.size === 0}
+                    onClick={() => {
+                      if (confirm(`确定要删除选中的 ${selectedRoomIds.size} 个房间吗？`)) {
+                        batchDeleteMutation.mutate();
+                      }
+                    }}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    删除 ({selectedRoomIds.size})
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={exitBatchMode}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" onClick={() => setIsBatchEditMode(true)}>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    批量操作
+                  </Button>
+                  <Button variant="outline" onClick={() => setIsBatchCreateRoomOpen(true)}>
+                    <Layers className="mr-2 h-4 w-4" />
+                    批量添加
+                  </Button>
+                  <Button onClick={() => setIsCreateRoomOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    新增房间
+                  </Button>
+                </>
+              )}
             </div>
           </CardHeader>
           <CardContent>
             {roomsLoading ? (
               <Skeleton className="h-64" />
+            ) : rooms && rooms.length > 0 ? (
+              <>
+                {/* 状态图例 */}
+                <div className="flex items-center gap-4 mb-4 text-sm">
+                  {(Object.keys(STATUS_LABELS) as RoomStatus[]).map((status) => (
+                    <div key={status} className="flex items-center gap-1.5">
+                      <div className={`w-3 h-3 rounded border-2 ${STATUS_BORDER_COLORS[status]}`} />
+                      <span className="text-muted-foreground">{STATUS_LABELS[status]}</span>
+                    </div>
+                  ))}
+                </div>
+                {/* 楼层分组 */}
+                <div className="space-y-6">
+                  {sortedFloors.map((floor) => {
+                    const floorRooms = roomsByFloor[floor];
+                    const selectedCount = floorRooms.filter(r => selectedRoomIds.has(r.id)).length;
+                    return (
+                      <div key={floor} className="space-y-2">
+                        <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          {isBatchEditMode && (
+                            <button
+                              onClick={() => toggleFloorSelection(floorRooms, selectedCount !== floorRooms.length)}
+                              className="p-0.5 rounded hover:bg-accent"
+                            >
+                              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                                selectedCount === floorRooms.length
+                                  ? 'bg-primary border-primary text-primary-foreground'
+                                  : selectedCount > 0
+                                    ? 'border-primary bg-primary/20'
+                                    : 'border-muted-foreground'
+                              }`}>
+                                {selectedCount === floorRooms.length && <Check className="h-3 w-3" />}
+                              </div>
+                            </button>
+                          )}
+                          <Layers className="h-4 w-4" />
+                          {floor} 楼
+                          <span className="text-xs">
+                            ({floorRooms.length} 间{isBatchEditMode && selectedCount > 0 && `，已选 ${selectedCount}`})
+                          </span>
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {floorRooms.map((room) => {
+                            const borderClass = STATUS_BORDER_COLORS[room.status];
+                            const isSelected = selectedRoomIds.has(room.id);
+                            return (
+                              <div
+                                key={room.id}
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => {
+                                  if (isBatchEditMode) {
+                                    toggleRoomSelection(room.id);
+                                  } else {
+                                    handleRoomClick(room);
+                                  }
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    if (isBatchEditMode) {
+                                      toggleRoomSelection(room.id);
+                                    } else {
+                                      handleRoomClick(room);
+                                    }
+                                  }
+                                }}
+                                className={`group relative flex flex-col items-center p-2 rounded-lg border-2 bg-card hover:bg-accent transition-all min-w-[72px] cursor-pointer ${borderClass} ${isSelected ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+                              >
+                                {isBatchEditMode && (
+                                  <div className="absolute -top-1 -left-1">
+                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                      isSelected
+                                        ? 'bg-primary border-primary text-primary-foreground'
+                                        : 'border-muted-foreground bg-background'
+                                    }`}>
+                                      {isSelected && <Check className="h-3 w-3" />}
+                                    </div>
+                                  </div>
+                                )}
+                                <span className="font-mono text-sm font-medium">{room.room_number}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  ¥{room.monthly_rent.toLocaleString()}
+                                </span>
+                                <span className="text-xs text-muted-foreground/70">
+                                  {room.layout || '-'}
+                                </span>
+                                {/* 悬停时显示删除按钮（非批量模式） */}
+                                {!isBatchEditMode && (
+                                  <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteRoom(room);
+                                      }}
+                                      className="p-1 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/80"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             ) : (
-              <DataTable columns={roomColumns} data={rooms || []} />
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                <Home className="h-12 w-12 mb-4" />
+                <p>暂无房间，点击上方按钮添加</p>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -1123,6 +1377,93 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 批量编辑对话框 */}
+      <Dialog open={isBatchEditOpen} onOpenChange={setIsBatchEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>批量编辑</DialogTitle>
+            <DialogDescription>
+              为选中的 {selectedRoomIds.size} 个房间设置属性（留空则不修改）
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={batchEditForm.handleSubmit((data) => batchUpdateMutation.mutate(data))}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="batch-edit-layout">户型</Label>
+              <Select
+                value={batchEditForm.watch('layout') || '__none__'}
+                onValueChange={(value) => batchEditForm.setValue('layout', value === '__none__' ? undefined : value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="不修改" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">不修改</SelectItem>
+                  {LAYOUT_OPTIONS.map((layout) => (
+                    <SelectItem key={layout} value={layout}>
+                      {layout}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="batch-edit-area">面积 (m²)</Label>
+              <Input
+                id="batch-edit-area"
+                type="number"
+                step="0.01"
+                placeholder="不修改"
+                value={batchEditForm.watch('area') ?? ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '') {
+                    batchEditForm.setValue('area', undefined);
+                  } else {
+                    const num = parseFloat(value);
+                    batchEditForm.setValue('area', isNaN(num) ? undefined : num);
+                  }
+                }}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="batch-edit-status">状态</Label>
+              <Select
+                value={batchEditForm.watch('status') || '__none__'}
+                onValueChange={(value) => batchEditForm.setValue('status', value === '__none__' ? undefined : value as RoomStatus)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="不修改" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">不修改</SelectItem>
+                  <SelectItem value="available">空置</SelectItem>
+                  <SelectItem value="occupied">已租</SelectItem>
+                  <SelectItem value="maintenance">维修中</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsBatchEditOpen(false)}>
+                取消
+              </Button>
+              <Button type="submit" disabled={batchUpdateMutation.isPending}>
+                {batchUpdateMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    保存中...
+                  </>
+                ) : (
+                  '保存'
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 }

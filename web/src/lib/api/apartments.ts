@@ -45,12 +45,12 @@ export const roomsApi = {
   },
 
   get: async (orgId: number, id: number): Promise<Room> => {
-    const response = await api.get<Room>(`/rooms/${id}`, { params: { org_id: orgId } });
+    const response = await api.get<Room>(`/apartments/rooms/${id}`, { params: { org_id: orgId } });
     return response.data;
   },
 
-  create: async (orgId: number, data: Partial<Room>): Promise<Room> => {
-    const response = await api.post<Room>('/rooms', data, { params: { org_id: orgId } });
+  create: async (orgId: number, apartmentId: number, data: Partial<Room>): Promise<Room> => {
+    const response = await api.post<Room>(`/apartments/${apartmentId}/rooms`, data, { params: { org_id: orgId } });
     return response.data;
   },
 
@@ -62,12 +62,12 @@ export const roomsApi = {
   },
 
   update: async (orgId: number, id: number, data: Partial<Room>): Promise<Room> => {
-    const response = await api.put<Room>(`/rooms/${id}`, data, { params: { org_id: orgId } });
+    const response = await api.put<Room>(`/apartments/rooms/${id}`, data, { params: { org_id: orgId } });
     return response.data;
   },
 
   delete: async (orgId: number, id: number): Promise<void> => {
-    await api.delete(`/rooms/${id}`, { params: { org_id: orgId } });
+    await api.delete(`/apartments/rooms/${id}`, { params: { org_id: orgId } });
   },
 };
 
