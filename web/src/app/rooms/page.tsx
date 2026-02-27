@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,15 +43,17 @@ import { ColumnDef } from '@tanstack/react-table';
 import { roomsApi, apartmentsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { Room, RoomStatus } from '@/types';
-import { Plus, Pencil, Trash2, Building2 } from 'lucide-react';
+import { Pencil, Trash2, Building2, Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RoomStatsCards } from './components/room-stats-cards';
+import { RoomFilters, RoomFiltersState } from './components/room-filters';
 
 const roomSchema = z.object({
   room_number: z.string().min(1, '请输入房间号'),
+  layout: z.string().optional(),
   area: z.number().min(0, '面积不能为负').optional(),
   monthly_rent: z.number().min(0, '租金不能为负'),
   status: z.enum(['available', 'occupied', 'maintenance']),
-  apartment_id: z.number().min(1, '请选择公寓'),
   notes: z.string().optional(),
 });
 
@@ -63,63 +65,125 @@ const STATUS_MAP: Record<RoomStatus, { label: string; variant: 'default' | 'seco
   maintenance: { label: '维修中', variant: 'destructive' },
 };
 
+// 常用户型选项
+const LAYOUT_OPTIONS = [
+  '单间',
+  '一室一厅',
+  '两室一厅',
+  '三室一厅',
+  '三室两厅',
+  '四室两厅',
+  '复式',
+  'Loft',
+];
+
 export default function RoomsPage() {
   const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
 
-  const [selectedApartmentId, setSelectedApartmentId] = useState<number | null>(null);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  // 筛选状态
+  const [filters, setFilters] = useState<RoomFiltersState>({
+    apartmentId: null,
+    status: null,
+    rentMin: null,
+    rentMax: null,
+    areaMin: null,
+    areaMax: null,
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // 对话框状态
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
 
-  const { data: apartments } = useQuery({
+  // 获取公寓列表
+  const { data: apartments, isLoading: apartmentsLoading } = useQuery({
     queryKey: ['apartments', orgId],
     queryFn: () => apartmentsApi.list(orgId!),
     enabled: !!orgId,
   });
 
-  const { data: rooms, isLoading: roomsLoading } = useQuery({
-    queryKey: ['rooms', orgId, selectedApartmentId],
-    queryFn: () => roomsApi.list(orgId!, selectedApartmentId!),
-    enabled: !!orgId && selectedApartmentId !== null,
+  // 获取所有房间（跨公寓）
+  const { data: allRooms, isLoading: roomsLoading } = useQuery({
+    queryKey: ['all-rooms', orgId, apartments],
+    queryFn: async () => {
+      if (!apartments || apartments.length === 0) return [];
+      const apartmentIds = apartments.map((apt) => apt.id);
+      return roomsApi.listAll(orgId!, apartmentIds);
+    },
+    enabled: !!orgId && !!apartments && apartments.length > 0,
   });
 
-  const createForm = useForm<RoomFormData>({
-    resolver: zodResolver(roomSchema),
-    defaultValues: {
-      room_number: '',
-      area: 0,
-      monthly_rent: 0,
-      status: 'available',
-      apartment_id: 0,
-      notes: '',
-    },
-  });
+  // 客户端过滤
+  const filteredRooms = useMemo(() => {
+    if (!allRooms) return [];
+
+    return allRooms.filter((room) => {
+      // 公寓筛选
+      if (filters.apartmentId && room.apartment_id !== filters.apartmentId) {
+        return false;
+      }
+      // 状态筛选
+      if (filters.status && room.status !== filters.status) {
+        return false;
+      }
+      // 月租范围
+      if (filters.rentMin !== null && room.monthly_rent < filters.rentMin) {
+        return false;
+      }
+      if (filters.rentMax !== null && room.monthly_rent > filters.rentMax) {
+        return false;
+      }
+      // 面积范围
+      if (filters.areaMin !== null && (room.area === null || room.area < filters.areaMin)) {
+        return false;
+      }
+      if (filters.areaMax !== null && (room.area === null || room.area > filters.areaMax)) {
+        return false;
+      }
+      // 搜索
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchRoomNumber = room.room_number.toLowerCase().includes(query);
+        const matchNotes = room.notes?.toLowerCase().includes(query) || false;
+        if (!matchRoomNumber && !matchNotes) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [allRooms, filters, searchQuery]);
+
+  // 处理筛选变化
+  const handleFilterChange = (key: keyof RoomFiltersState, value: unknown) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // 清除筛选
+  const handleClearFilters = () => {
+    setFilters({
+      apartmentId: null,
+      status: null,
+      rentMin: null,
+      rentMax: null,
+      areaMin: null,
+      areaMax: null,
+    });
+    setSearchQuery('');
+  };
 
   const editForm = useForm<RoomFormData>({
     resolver: zodResolver(roomSchema),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data: RoomFormData) => roomsApi.create(orgId!, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
-      setIsCreateOpen(false);
-      createForm.reset();
-      toast.success('房间创建成功');
-    },
-    onError: () => {
-      toast.error('创建失败，请重试');
-    },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: RoomFormData }) =>
       roomsApi.update(orgId!, id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsEditOpen(false);
       setSelectedRoom(null);
       toast.success('房间更新成功');
@@ -132,7 +196,8 @@ export default function RoomsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: number) => roomsApi.delete(orgId!, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsDeleteOpen(false);
       setSelectedRoom(null);
       toast.success('房间删除成功');
@@ -146,10 +211,10 @@ export default function RoomsPage() {
     setSelectedRoom(room);
     editForm.reset({
       room_number: room.room_number,
+      layout: room.layout || '',
       area: room.area || 0,
       monthly_rent: room.monthly_rent,
       status: room.status,
-      apartment_id: room.apartment_id,
       notes: room.notes || '',
     });
     setIsEditOpen(true);
@@ -164,10 +229,12 @@ export default function RoomsPage() {
     {
       accessorKey: 'room_number',
       header: '房间号',
+      enableSorting: true,
     },
     {
       accessorKey: 'apartment_name',
       header: '所属公寓',
+      enableSorting: true,
       cell: ({ row }) => {
         const apartment = row.original.apartment;
         return apartment ? (
@@ -183,22 +250,40 @@ export default function RoomsPage() {
       },
     },
     {
+      accessorKey: 'layout',
+      header: '户型',
+      enableSorting: true,
+      cell: ({ row }) => row.original.layout || '-',
+    },
+    {
       accessorKey: 'area',
       header: '面积',
+      enableSorting: true,
       cell: ({ row }) => (row.original.area ? `${row.original.area} m²` : '-'),
     },
     {
       accessorKey: 'monthly_rent',
       header: '月租',
+      enableSorting: true,
       cell: ({ row }) => `¥${row.original.monthly_rent.toLocaleString()}`,
     },
     {
       accessorKey: 'status',
       header: '状态',
+      enableSorting: true,
       cell: ({ row }) => {
         const status = STATUS_MAP[row.original.status];
         return <Badge variant={status.variant}>{status.label}</Badge>;
       },
+    },
+    {
+      accessorKey: 'notes',
+      header: '备注',
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">
+          {row.original.notes || '-'}
+        </span>
+      ),
     },
     {
       id: 'actions',
@@ -249,138 +334,50 @@ export default function RoomsPage() {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">房间管理</h1>
-          <div className="flex items-center gap-4">
-            <Select
-              value={selectedApartmentId?.toString() || 'all'}
-              onValueChange={(value) =>
-                setSelectedApartmentId(value === 'all' ? null : Number(value))
-              }
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="全部公寓" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部公寓</SelectItem>
-                {apartments?.map((apt) => (
-                  <SelectItem key={apt.id} value={apt.id.toString()}>
-                    {apt.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button onClick={() => setIsCreateOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              新增房间
-            </Button>
-          </div>
+        {/* 页面标题 */}
+        <div>
+          <h1 className="text-3xl font-bold">全部房间</h1>
+          <p className="text-muted-foreground mt-1">
+            查看和管理所有公寓的房间
+          </p>
         </div>
 
-        {roomsLoading ? (
+        {/* 统计卡片 */}
+        {allRooms && <RoomStatsCards rooms={allRooms} />}
+
+        {/* 搜索栏 */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="搜索房间号或备注..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* 筛选器 */}
+        {apartments && apartments.length > 0 && (
+          <RoomFilters
+            apartments={apartments}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onClearFilters={handleClearFilters}
+          />
+        )}
+
+        {/* 结果统计 */}
+        <div className="text-sm text-muted-foreground">
+          显示 {filteredRooms.length} / {allRooms?.length || 0} 个房间
+        </div>
+
+        {/* 房间表格 */}
+        {roomsLoading || apartmentsLoading ? (
           <Skeleton className="h-96" />
         ) : (
-          <DataTable columns={columns} data={rooms || []} />
+          <DataTable columns={columns} data={filteredRooms} />
         )}
       </div>
-
-      {/* Create Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>新增房间</DialogTitle>
-            <DialogDescription>填写房间信息</DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={createForm.handleSubmit((data) => createMutation.mutate(data))}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="apartment_id">所属公寓</Label>
-              <Select
-                value={createForm.watch('apartment_id')?.toString() || ''}
-                onValueChange={(value) =>
-                  createForm.setValue('apartment_id', Number(value))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="选择公寓" />
-                </SelectTrigger>
-                <SelectContent>
-                  {apartments?.map((apt) => (
-                    <SelectItem key={apt.id} value={apt.id.toString()}>
-                      {apt.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {createForm.formState.errors.apartment_id && (
-                <p className="text-sm text-destructive">
-                  {createForm.formState.errors.apartment_id.message}
-                </p>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="room_number">房间号</Label>
-                <Input id="room_number" {...createForm.register('room_number')} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="area">面积 (m²)</Label>
-                <Input
-                  id="area"
-                  type="number"
-                  step="0.01"
-                  {...createForm.register('area', { valueAsNumber: true })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">状态</Label>
-                <Select
-                  value={createForm.watch('status')}
-                  onValueChange={(value: RoomStatus) =>
-                    createForm.setValue('status', value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="available">空置</SelectItem>
-                    <SelectItem value="occupied">已租</SelectItem>
-                    <SelectItem value="maintenance">维修中</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="monthly_rent">月租 (元)</Label>
-                <Input
-                  id="monthly_rent"
-                  type="number"
-                  step="0.01"
-                  {...createForm.register('monthly_rent', { valueAsNumber: true })}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">备注</Label>
-              <Input id="notes" {...createForm.register('notes')} />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
-                取消
-              </Button>
-              <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? '创建中...' : '创建'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
@@ -403,6 +400,24 @@ export default function RoomsPage() {
               <div className="space-y-2">
                 <Label htmlFor="edit-room_number">房间号</Label>
                 <Input id="edit-room_number" {...editForm.register('room_number')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-layout">户型</Label>
+                <Select
+                  value={editForm.watch('layout') || ''}
+                  onValueChange={(value) => editForm.setValue('layout', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择户型" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LAYOUT_OPTIONS.map((layout) => (
+                      <SelectItem key={layout} value={layout}>
+                        {layout}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">

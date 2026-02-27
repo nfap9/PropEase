@@ -38,6 +38,7 @@ class Room(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     apartment_id: Mapped[int] = mapped_column(ForeignKey("apartments.id"), nullable=False)
     room_number: Mapped[str] = mapped_column(String(50), nullable=False)
+    layout: Mapped[str] = mapped_column(String(50), nullable=True)  # 户型，如 "一室一厅"、"两室一厅"
     status: Mapped[RoomStatus] = mapped_column(
         SQLEnum(RoomStatus),
         default=RoomStatus.AVAILABLE,

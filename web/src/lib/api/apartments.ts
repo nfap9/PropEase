@@ -35,6 +35,15 @@ export const roomsApi = {
     return response.data;
   },
 
+  // 获取组织内所有房间（跨公寓）
+  listAll: async (orgId: number, apartmentIds: number[]): Promise<Room[]> => {
+    const roomPromises = apartmentIds.map((aptId) =>
+      api.get<Room[]>(`/apartments/${aptId}/rooms`, { params: { org_id: orgId } })
+    );
+    const responses = await Promise.all(roomPromises);
+    return responses.flatMap((res) => res.data);
+  },
+
   get: async (orgId: number, id: number): Promise<Room> => {
     const response = await api.get<Room>(`/rooms/${id}`, { params: { org_id: orgId } });
     return response.data;

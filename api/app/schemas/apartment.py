@@ -44,6 +44,7 @@ class ApartmentWithStatsResponse(ApartmentResponse):
 
 class RoomBase(BaseModel):
     room_number: str
+    layout: Optional[str] = None  # 户型
     monthly_rent: float
     area: Optional[float] = None
     notes: Optional[str] = None
@@ -57,6 +58,7 @@ class RoomCreate(RoomBase):
 class RoomBatchCreate(BaseModel):
     """批量创建房间"""
     room_numbers: List[str]  # 房间号列表
+    layout: Optional[str] = None  # 户型
     monthly_rent: float  # 月租
     area: Optional[float] = None  # 面积
     notes: Optional[str] = None  # 备注
@@ -64,6 +66,7 @@ class RoomBatchCreate(BaseModel):
 
 class RoomUpdate(BaseModel):
     room_number: Optional[str] = None
+    layout: Optional[str] = None  # 户型
     status: Optional[RoomStatus] = None
     monthly_rent: Optional[float] = None
     area: Optional[float] = None

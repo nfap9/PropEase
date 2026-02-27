@@ -73,6 +73,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const roomSchema = z.object({
   room_number: z.string().min(1, '请输入房间号'),
+  layout: z.string().optional(),
   area: z.number().min(0, '面积不能为负').optional(),
   monthly_rent: z.number().min(0, '租金不能为负'),
   status: z.enum(['available', 'occupied', 'maintenance']),
@@ -86,6 +87,7 @@ const roomBatchConfigSchema = z.object({
   floors: z.string().min(1, '请输入楼层'),  // 支持多楼层，如 "1,2,3" 或 "1-5"
   start_number: z.number().min(1, '起始号最小为1').max(99, '起始号最大为99'),
   end_number: z.number().min(1, '结束号最小为1').max(99, '结束号最大为99'),
+  layout: z.string().optional(),
   monthly_rent: z.number().min(0, '租金不能为负'),
   area: z.number().min(0, '面积不能为负').optional(),
   notes: z.string().optional(),
@@ -101,6 +103,18 @@ const STATUS_MAP: Record<RoomStatus, { label: string; variant: 'default' | 'seco
   occupied: { label: '已租', variant: 'default' },
   maintenance: { label: '维修中', variant: 'destructive' },
 };
+
+// 常用户型选项
+const LAYOUT_OPTIONS = [
+  '单间',
+  '一室一厅',
+  '两室一厅',
+  '三室一厅',
+  '三室两厅',
+  '四室两厅',
+  '复式',
+  'Loft',
+];
 
 export default function ApartmentDetailPage({ params }: { params: { id: string } }) {
   const apartmentId = Number(params.id);
@@ -162,6 +176,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     resolver: zodResolver(roomSchema),
     defaultValues: {
       room_number: '',
+      layout: '',
       area: 0,
       monthly_rent: 0,
       status: 'available',
@@ -176,6 +191,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       floors: '1',
       start_number: 1,
       end_number: 10,
+      layout: '',
       monthly_rent: 0,
       area: 0,
       notes: '',
@@ -309,6 +325,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       const config = batchCreateRoomForm.getValues();
       return roomsApi.batchCreate(orgId!, apartmentId, {
         room_numbers: roomNumbers,
+        layout: config.layout || undefined,
         monthly_rent: config.monthly_rent,
         area: config.area || undefined,
         notes: config.notes || undefined,
@@ -372,6 +389,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     setSelectedRoom(room);
     editRoomForm.reset({
       room_number: room.room_number,
+      layout: room.layout || '',
       area: room.area || 0,
       monthly_rent: room.monthly_rent,
       status: room.status,
@@ -398,6 +416,11 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     {
       accessorKey: 'room_number',
       header: '房间号',
+    },
+    {
+      accessorKey: 'layout',
+      header: '户型',
+      cell: ({ row }) => row.original.layout || '-',
     },
     {
       accessorKey: 'area',
@@ -648,6 +671,26 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                 )}
               </div>
               <div className="space-y-2">
+                <Label htmlFor="layout">户型</Label>
+                <Select
+                  value={createRoomForm.watch('layout') || ''}
+                  onValueChange={(value) => createRoomForm.setValue('layout', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择户型" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LAYOUT_OPTIONS.map((layout) => (
+                      <SelectItem key={layout} value={layout}>
+                        {layout}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
                 <Label htmlFor="area">面积 (m²)</Label>
                 <Input
                   id="area"
@@ -656,8 +699,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                   {...createRoomForm.register('area', { valueAsNumber: true })}
                 />
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="monthly_rent">月租 (元) *</Label>
                 <Input
@@ -672,6 +713,8 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                   </p>
                 )}
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="status">状态</Label>
                 <Select
@@ -796,6 +839,33 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
+                  <Label htmlFor="batch-layout">户型</Label>
+                  <Select
+                    value={batchCreateRoomForm.watch('layout') || ''}
+                    onValueChange={(value) => batchCreateRoomForm.setValue('layout', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择户型" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LAYOUT_OPTIONS.map((layout) => (
+                        <SelectItem key={layout} value={layout}>
+                          {layout}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="batch-area">面积 (m²)</Label>
+                  <Input
+                    id="batch-area"
+                    type="number"
+                    step="0.01"
+                    {...batchCreateRoomForm.register('area', { valueAsNumber: true })}
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="batch-monthly_rent">月租 (元) *</Label>
                   <Input
                     id="batch-monthly_rent"
@@ -808,15 +878,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                       {batchCreateRoomForm.formState.errors.monthly_rent.message}
                     </p>
                   )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="batch-area">面积 (m²)</Label>
-                  <Input
-                    id="batch-area"
-                    type="number"
-                    step="0.01"
-                    {...batchCreateRoomForm.register('area', { valueAsNumber: true })}
-                  />
                 </div>
               </div>
               <div className="space-y-2">
@@ -963,6 +1024,26 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                 <Input id="edit-room_number" {...editRoomForm.register('room_number')} />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="edit-layout">户型</Label>
+                <Select
+                  value={editRoomForm.watch('layout') || ''}
+                  onValueChange={(value) => editRoomForm.setValue('layout', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择户型" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LAYOUT_OPTIONS.map((layout) => (
+                      <SelectItem key={layout} value={layout}>
+                        {layout}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
                 <Label htmlFor="edit-area">面积 (m²)</Label>
                 <Input
                   id="edit-area"
@@ -971,8 +1052,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                   {...editRoomForm.register('area', { valueAsNumber: true })}
                 />
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-monthly_rent">月租 (元) *</Label>
                 <Input
@@ -982,6 +1061,8 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                   {...editRoomForm.register('monthly_rent', { valueAsNumber: true })}
                 />
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-status">状态</Label>
                 <Select

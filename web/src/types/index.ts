@@ -76,6 +76,7 @@ export interface Room {
   id: number;
   apartment_id: number;
   room_number: string;
+  layout: string | null;  // 户型
   status: RoomStatus;
   monthly_rent: number;
   area: number | null;
@@ -87,6 +88,7 @@ export interface Room {
 // 批量创建房间
 export interface RoomBatchCreate {
   room_numbers: string[];
+  layout?: string;  // 户型
   monthly_rent: number;
   area?: number;
   notes?: string;
