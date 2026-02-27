@@ -3,7 +3,7 @@ Lease repository for data access operations.
 """
 from typing import Optional, List
 from datetime import date
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import true
 
 from app.repositories.base import BaseRepository
@@ -21,6 +21,10 @@ class LeaseRepository(BaseRepository[Lease]):
         """Find all leases in an organization."""
         return (
             self.db.query(Lease)
+            .options(
+                joinedload(Lease.room).joinedload(Room.apartment),
+                joinedload(Lease.tenant),
+            )
             .join(Room)
             .join(Apartment)
             .filter(Apartment.organization_id == org_id)
@@ -31,6 +35,10 @@ class LeaseRepository(BaseRepository[Lease]):
         """Find all active leases in an organization."""
         return (
             self.db.query(Lease)
+            .options(
+                joinedload(Lease.room).joinedload(Room.apartment),
+                joinedload(Lease.tenant),
+            )
             .join(Room)
             .join(Apartment)
             .filter(Apartment.organization_id == org_id, Lease.is_active == true())

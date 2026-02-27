@@ -2,6 +2,9 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import date, datetime
 
+from app.schemas.apartment import RoomWithApartment
+from app.schemas.tenant import TenantResponse
+
 
 class LeaseBase(BaseModel):
     room_id: int
@@ -33,6 +36,8 @@ class LeaseResponse(LeaseBase):
     id: int
     is_active: bool
     created_at: datetime
+    room: Optional[RoomWithApartment] = None
+    tenant: Optional[TenantResponse] = None
 
     class Config:
         from_attributes = True
