@@ -92,5 +92,5 @@ ongoing-api-design-plan.md       # 持续进行：API 设计计划
 
 | 文件 | 状态 | 描述 |
 |-----|------|------|
-| [P0-component-refactor-plan.md](./P0-component-refactor-plan.md) | ⬜ 未开始 | 前端页面组件拆分重构 |
-| [P1-ux-optimization-plan.md](./P1-ux-optimization-plan.md) | 🟡 进行中 | 前端交互体验优化 |
+| [P0-component-refactor-plan.md](./P0-component-refactor-plan.md) | ⬜ 未开始 | 前端页面组件拆分重构（含公寓详情页 1469 行） |
+| [P1-ux-optimization-plan.md](./P1-ux-optimization-plan.md) | 🟡 进行中 | 前端交互体验优化（50% 完成） |

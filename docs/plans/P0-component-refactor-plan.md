@@ -1,16 +1,16 @@
 # 前端页面组件拆分重构计划
 
 > 创建日期: 2026-02-26
-> 最后更新: 2026-02-26
+> 最后更新: 2026-02-27
 > 状态: ⬜ 未开始
 
 ## 📊 进度概览
 
-**总进度: 0/8 页面完成 (0%)**
+**总进度: 0/9 页面完成 (0%)**
 
 | 阶段 | 状态 | 页面数 |
 |-----|------|-------|
-| P0 极高优先级 | ⬜ 0/2 | `leases`, `settings/team` |
+| P0 极高优先级 | ⬜ 0/3 | `apartments/[id]`, `leases`, `settings/team` |
 | P1 高优先级 | ⬜ 0/3 | `reports`, `rooms`, `utilities` |
 | P2 中等优先级 | ⬜ 0/3 | `tenants`, `bills`, `apartments` |
 
@@ -30,14 +30,17 @@
 
 | 页面 | 行数 | 内联组件 | 复杂度 |
 |-----|------|---------|-------|
+| `apartments/[id]/page.tsx` | 1469 | 5+ Dialog | **极高** |
 | `leases/page.tsx` | 567 | 4 Dialog | 极高 |
 | `settings/team/page.tsx` | 531 | 4 Dialog | 极高 |
+| `rooms/page.tsx` | 808 | 3 Dialog + 筛选组件 | 高 |
 | `reports/page.tsx` | 511 | 多 Tabs | 中高 |
-| `rooms/page.tsx` | 472 | 3 Dialog | 高 |
 | `utilities/page.tsx` | 466 | 2 Dialog | 高 |
 | `tenants/page.tsx` | 405 | 3 Dialog | 高 |
 | `bills/page.tsx` | 402 | 1 Dialog | 高 |
-| `apartments/page.tsx` | 325 | 3 Dialog | 中 |
+| `apartments/page.tsx` | 424 | 3 Dialog | 中 |
+
+> 注：公寓详情页因包含批量添加房间、房间管理等复杂功能，行数最多，优先级最高。
 
 ---
 
@@ -45,7 +48,38 @@
 
 ### P0 - 极高优先级
 
-#### 1. ⬜ `leases/page.tsx` 拆分
+#### 1. ⬜ `apartments/[id]/page.tsx` 拆分
+
+**目标：** 将 1469 行的公寓详情页拆分为多个组件
+
+**拆分方案：**
+```
+/app/apartments/[id]/
+├── page.tsx                       # 主页面布局
+├── components/
+│   ├── ApartmentHeader.tsx        # 公寓信息头部
+│   ├── RoomDataTable.tsx          # 房间数据表格
+│   ├── CreateRoomDialog.tsx       # 新增房间表单
+│   ├── BatchAddRoomsDialog.tsx    # 批量添加房间
+│   ├── EditRoomDialog.tsx         # 编辑房间表单
+│   ├── DeleteRoomDialog.tsx       # 删除确认
+│   └── columns.tsx                # 表格列定义
+```
+
+**步骤：**
+- [ ] 提取 `columns.tsx` - 表格列配置
+- [ ] 提取 `ApartmentHeader.tsx` - 公寓信息展示
+- [ ] 提取 `RoomDataTable.tsx` - 房间表格
+- [ ] 提取 `CreateRoomDialog.tsx` - 创建表单
+- [ ] 提取 `BatchAddRoomsDialog.tsx` - 批量添加
+- [ ] 提取 `EditRoomDialog.tsx` - 编辑表单
+- [ ] 提取 `DeleteRoomDialog.tsx` - 删除确认
+- [ ] 重构主页面
+- [ ] 功能验证
+
+---
+
+#### 2. ⬜ `leases/page.tsx` 拆分
 
 **目标：** 将 567 行的租约管理页面拆分为多个组件
 
@@ -72,7 +106,7 @@
 
 ---
 
-#### 2. ⬜ `settings/team/page.tsx` 拆分
+#### 3. ⬜ `settings/team/page.tsx` 拆分
 
 **目标：** 将 531 行的团队设置页面拆分为多个组件
 
@@ -103,7 +137,7 @@
 
 ### P1 - 高优先级
 
-#### 3. ⬜ `reports/page.tsx` 拆分
+#### 4. ⬜ `reports/page.tsx` 拆分
 
 **目标：** 将 511 行的报表页面按 Tab 拆分
 
@@ -129,7 +163,7 @@
 
 ---
 
-#### 4. ⬜ `rooms/page.tsx` 拆分
+#### 5. ⬜ `rooms/page.tsx` 拆分
 
 **步骤：**
 - [ ] 提取 `columns.tsx`
@@ -141,7 +175,7 @@
 
 ---
 
-#### 5. ⬜ `utilities/page.tsx` 拆分
+#### 6. ⬜ `utilities/page.tsx` 拆分
 
 **步骤：**
 - [ ] 提取 `columns.tsx`
@@ -154,7 +188,7 @@
 
 ### P2 - 中等优先级
 
-#### 6. ⬜ `tenants/page.tsx` 拆分
+#### 7. ⬜ `tenants/page.tsx` 拆分
 
 **步骤：**
 - [ ] 提取 `columns.tsx`
@@ -166,7 +200,7 @@
 
 ---
 
-#### 7. ⬜ `bills/page.tsx` 拆分
+#### 8. ⬜ `bills/page.tsx` 拆分
 
 **步骤：**
 - [ ] 提取 `columns.tsx`
@@ -177,7 +211,7 @@
 
 ---
 
-#### 8. ⬜ `apartments/page.tsx` 拆分
+#### 9. ⬜ `apartments/page.tsx` 拆分
 
 **步骤：**
 - [ ] 提取 `columns.tsx`
@@ -228,4 +262,5 @@
 
 | 日期 | 变更内容 |
 |-----|---------|
+| 2026-02-27 | 新增公寓详情页拆分任务（P0 最高优先级），更新各页面行数统计 |
 | 2026-02-26 | 初始创建 |
