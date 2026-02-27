@@ -29,12 +29,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
 import { billsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { useAuth } from '@/lib/auth/context';
 import { Bill, BillStatus, PaymentMethod } from '@/types';
-import { Download, DollarSign, AlertCircle, CheckCircle, Clock, Building2 } from 'lucide-react';
+import { Download, DollarSign, AlertCircle, CheckCircle, Clock, Building2, ChevronDown, FileSpreadsheet } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const paymentSchema = z.object({
@@ -123,6 +129,29 @@ export default function BillsPage() {
     a.download = `bill-${billId}.pdf`;
     a.click();
     window.URL.revokeObjectURL(url);
+  };
+
+  const exportExcel = async (exportType: 'all' | 'unfinished') => {
+    try {
+      const filters: { status?: BillStatus; year?: number; month?: number } = {};
+      if (exportType === 'unfinished') {
+        // 导出未完成账单时，不设置 status 筛选，在后端处理
+        // 或者我们可以在前端传递多个状态
+      } else if (statusFilter !== 'all') {
+        filters.status = statusFilter;
+      }
+      const blob = await billsApi.exportExcel(orgId!, { ...filters, exportType });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const filename = exportType === 'unfinished' ? 'bills_unfinished.xlsx' : 'bills.xlsx';
+      a.download = filename;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast.success('导出成功');
+    } catch {
+      toast.error('导出失败，请重试');
+    }
   };
 
   const filteredBills = bills?.filter(
@@ -287,22 +316,43 @@ export default function BillsPage() {
           </Card>
         </div>
 
-        <div className="flex items-center gap-4">
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => setStatusFilter(value as BillStatus | 'all')}
-          >
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="筛选状态" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部</SelectItem>
-              <SelectItem value="pending">待支付</SelectItem>
-              <SelectItem value="partial">部分支付</SelectItem>
-              <SelectItem value="paid">已支付</SelectItem>
-              <SelectItem value="overdue">已逾期</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value as BillStatus | 'all')}
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="筛选状态" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部</SelectItem>
+                <SelectItem value="pending">待支付</SelectItem>
+                <SelectItem value="partial">部分支付</SelectItem>
+                <SelectItem value="paid">已支付</SelectItem>
+                <SelectItem value="overdue">已逾期</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" disabled={!bills || bills.length === 0}>
+                <Download className="mr-2 h-4 w-4" />
+                批量导出
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => exportExcel('all')}>
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                导出全部账单
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => exportExcel('unfinished')}>
+                <AlertCircle className="mr-2 h-4 w-4" />
+                导出未完成账单
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {billsLoading ? (

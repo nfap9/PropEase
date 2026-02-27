@@ -79,6 +79,49 @@ def create_bill(
     return bill_service.create_bill(org_id, data)
 
 
+@router.get("/export/excel")
+def export_bills_excel(
+    org_id: int = Query(...),
+    status: Optional[BillStatus] = Query(None),
+    year: Optional[int] = Query(None),
+    month: Optional[int] = Query(None),
+    export_type: Optional[str] = Query(None, alias="exportType"),
+    current_user: User = Depends(get_current_user),
+    bill_service: BillService = Depends(get_bill_service),
+    db: Session = Depends(get_db),
+):
+    """Export bills as Excel file."""
+    get_org_membership(org_id, current_user, db)
+
+    # 如果是导出未完成账单，则获取非已支付状态的账单
+    if export_type == "unfinished":
+        # 获取 pending, partial, overdue 状态的账单
+        all_bills = bill_service.list_bills(org_id, year=year, month=month)
+        bills = [b for b in all_bills if b.status != BillStatus.PAID]
+    else:
+        bills = bill_service.list_bills(org_id, year=year, month=month, status=status)
+
+    if not bills:
+        raise BadRequestError("没有可导出的账单")
+
+    org_name = bill_service.get_organization_name(org_id)
+    bills_data = [bill_service.prepare_bill_export_data(bill) for bill in bills]
+    excel_bytes = generate_bills_excel(bills_data, org_name)
+
+    filename = "bills"
+    if export_type == "unfinished":
+        filename += "_unfinished"
+    elif status:
+        filename += f"_{status.value}"
+    filename += ".xlsx"
+
+    return StreamingResponse(
+        io.BytesIO(excel_bytes),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
 @router.get("/{bill_id}", response_model=BillResponse)
 def get_bill(
     bill_id: int,

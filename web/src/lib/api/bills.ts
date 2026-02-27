@@ -46,6 +46,14 @@ export const billsApi = {
     });
     return response.data;
   },
+
+  exportExcel: async (orgId: number, filters?: { status?: BillStatus; year?: number; month?: number; exportType?: 'all' | 'unfinished' }): Promise<Blob> => {
+    const response = await api.get('/bills/export/excel', {
+      params: { org_id: orgId, ...filters },
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };
 
 export default billsApi;
