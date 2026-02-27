@@ -1,36 +1,25 @@
 """
 Common response helpers.
+
+已废弃：请使用 response.py 中的统一响应格式。
+此文件保留仅为向后兼容。
 """
-from typing import Generic, TypeVar, Optional, List
-from pydantic import BaseModel
+from app.controllers.common.response import (
+    ApiResponse,
+    PaginatedData,
+    ErrorDetail,
+    ErrorData,
+    success,
+    success_message,
+    paginated,
+)
 
-T = TypeVar("T")
-
-
-class SuccessResponse(BaseModel):
-    """Standard success response."""
-
-    success: bool = True
-    message: str = "Operation completed successfully"
-
-
-class ErrorResponse(BaseModel):
-    """Standard error response."""
-
-    success: bool = False
-    error: str
-    detail: Optional[str] = None
-
-
-class PaginatedResponse(BaseModel, Generic[T]):
-    """Paginated response wrapper."""
-
-    items: List[T]
-    total: int
-    skip: int
-    limit: int
-
-
-def success(message: str = "Operation completed successfully") -> dict:
-    """Return a success response."""
-    return {"success": True, "message": message}
+__all__ = [
+    "ApiResponse",
+    "PaginatedData",
+    "ErrorDetail",
+    "ErrorData",
+    "success",
+    "success_message",
+    "paginated",
+]

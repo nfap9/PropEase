@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError, HTTPException
 
 from app.configs import settings
 from app.configs.logging import get_logger, setup_logging
@@ -24,6 +25,14 @@ from app.controllers.console import (
 )
 from app.middlewares.rate_limit import RateLimitMiddleware
 from app.middlewares.request_logging import RequestLoggingMiddleware
+from app.middlewares.response_wrapper import ResponseWrapperMiddleware
+from app.controllers.common.errors import AppError
+from app.controllers.common.exception_handlers import (
+    app_error_handler,
+    http_exception_handler,
+    validation_error_handler,
+    generic_exception_handler,
+)
 
 # 初始化日志系统
 setup_logging(debug=settings.DEBUG, json_format=False)
@@ -52,13 +61,20 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    # ==================== 注册异常处理器 ====================
+    app.add_exception_handler(AppError, app_error_handler)
+    app.add_exception_handler(HTTPException, http_exception_handler)
+    app.add_exception_handler(RequestValidationError, validation_error_handler)
+    app.add_exception_handler(Exception, generic_exception_handler)
+
+    # ==================== 注册中间件（顺序重要：后添加的先执行）====================
+    # 响应包装（最内层）
+    app.add_middleware(ResponseWrapperMiddleware)
     # Request logging middleware
     app.add_middleware(RequestLoggingMiddleware)
-
     # Rate limiting middleware
     app.add_middleware(RateLimitMiddleware)
-
-    # CORS middleware
+    # CORS middleware（最外层）
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.CORS_ORIGINS,
