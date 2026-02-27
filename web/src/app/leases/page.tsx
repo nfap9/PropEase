@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
-import { TenantSelect } from '@/components/common/tenant-select';
+import { LeaseFormDialog, LeaseFormData } from '@/components/common/lease-form-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,15 +33,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
-import { leasesApi, apartmentsApi, roomsApi } from '@/lib/api';
+import { leasesApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { Lease } from '@/types';
 import { Plus, Pencil, Trash2, Ban, Building2 } from 'lucide-react';
@@ -59,31 +52,16 @@ const leaseSchema = z.object({
   notes: z.string().optional(),
 });
 
-type LeaseFormData = z.infer<typeof leaseSchema>;
-
 export default function LeasesPage() {
   const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
 
-  const [selectedApartmentId, setSelectedApartmentId] = useState<number | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isTerminateOpen, setIsTerminateOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedLease, setSelectedLease] = useState<Lease | null>(null);
-
-  const { data: apartments } = useQuery({
-    queryKey: ['apartments', orgId],
-    queryFn: () => apartmentsApi.list(orgId!),
-    enabled: !!orgId,
-  });
-
-  const { data: rooms } = useQuery({
-    queryKey: ['rooms', orgId, selectedApartmentId],
-    queryFn: () => roomsApi.list(orgId!, selectedApartmentId!),
-    enabled: !!orgId && selectedApartmentId !== null,
-  });
 
   const { data: leases, isLoading: leasesLoading } = useQuery({
     queryKey: ['leases', orgId],
@@ -91,37 +69,8 @@ export default function LeasesPage() {
     enabled: !!orgId,
   });
 
-  const createForm = useForm<LeaseFormData>({
-    resolver: zodResolver(leaseSchema),
-    defaultValues: {
-      room_id: 0,
-      tenant_id: 0,
-      start_date: new Date().toISOString().split('T')[0],
-      end_date: '',
-      monthly_rent: 0,
-      deposit: 0,
-      water_rate: 0,
-      electricity_rate: 0,
-      notes: '',
-    },
-  });
-
   const editForm = useForm<LeaseFormData>({
     resolver: zodResolver(leaseSchema),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data: LeaseFormData) => leasesApi.create(orgId!, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
-      setIsCreateOpen(false);
-      createForm.reset();
-      toast.success('租约创建成功');
-    },
-    onError: () => {
-      toast.error('创建失败，请重试');
-    },
   });
 
   const updateMutation = useMutation({
@@ -313,125 +262,11 @@ export default function LeasesPage() {
       </div>
 
       {/* Create Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>新增租约</DialogTitle>
-            <DialogDescription>创建新的租约</DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={createForm.handleSubmit((data) => createMutation.mutate(data))}
-            className="space-y-4"
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>选择公寓</Label>
-                <Select
-                  value={selectedApartmentId?.toString() || ''}
-                  onValueChange={(value) => setSelectedApartmentId(Number(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="选择公寓" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {apartments?.map((apt) => (
-                      <SelectItem key={apt.id} value={apt.id.toString()}>
-                        {apt.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="room_id">选择房间 *</Label>
-                <Select
-                  value={createForm.watch('room_id')?.toString() || ''}
-                  onValueChange={(value) =>
-                    createForm.setValue('room_id', Number(value))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="选择房间" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {rooms
-                      ?.filter((r) => r.status === 'available')
-                      .map((room) => (
-                        <SelectItem key={room.id} value={room.id.toString()}>
-                          {room.room_number} - ¥{room.monthly_rent}/月
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-                {createForm.formState.errors.room_id && (
-                  <p className="text-sm text-destructive">
-                    {createForm.formState.errors.room_id.message}
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="tenant_id">选择租客 *</Label>
-              <TenantSelect
-                orgId={orgId!}
-                value={createForm.watch('tenant_id')}
-                onValueChange={(value) => createForm.setValue('tenant_id', value)}
-                error={createForm.formState.errors.tenant_id?.message}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="start_date">开始日期 *</Label>
-                <Input
-                  id="start_date"
-                  type="date"
-                  {...createForm.register('start_date')}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="end_date">结束日期</Label>
-                <Input
-                  id="end_date"
-                  type="date"
-                  {...createForm.register('end_date')}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="monthly_rent">月租 (元) *</Label>
-                <Input
-                  id="monthly_rent"
-                  type="number"
-                  step="0.01"
-                  {...createForm.register('monthly_rent', { valueAsNumber: true })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="deposit">押金 (元)</Label>
-                <Input
-                  id="deposit"
-                  type="number"
-                  step="0.01"
-                  {...createForm.register('deposit', { valueAsNumber: true })}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">备注</Label>
-              <Input id="notes" {...createForm.register('notes')} />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
-                取消
-              </Button>
-              <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? '创建中...' : '创建'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <LeaseFormDialog
+        orgId={orgId!}
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+      />
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>

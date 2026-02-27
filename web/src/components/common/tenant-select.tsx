@@ -80,7 +80,13 @@ export function TenantSelect({
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: TenantFormData) => tenantsApi.create(orgId, data),
+    mutationFn: (data: TenantFormData) => {
+      // 过滤掉空字符串，避免后端验证错误
+      const cleanedData = Object.fromEntries(
+        Object.entries(data).filter(([, v]) => v !== '')
+      ) as Partial<TenantFormData>;
+      return tenantsApi.create(orgId, cleanedData);
+    },
     onSuccess: (newTenant: Tenant) => {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsCreateOpen(false);

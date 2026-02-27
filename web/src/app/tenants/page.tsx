@@ -84,7 +84,13 @@ export default function TenantsPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: TenantFormData) => tenantsApi.create(orgId!, data),
+    mutationFn: (data: TenantFormData) => {
+      // 过滤掉空字符串，避免后端验证错误
+      const cleanedData = Object.fromEntries(
+        Object.entries(data).filter(([, v]) => v !== '')
+      ) as Partial<TenantFormData>;
+      return tenantsApi.create(orgId!, cleanedData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsCreateOpen(false);
@@ -97,8 +103,13 @@ export default function TenantsPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: TenantFormData }) =>
-      tenantsApi.update(orgId!, id, data),
+    mutationFn: ({ id, data }: { id: number; data: TenantFormData }) => {
+      // 过滤掉空字符串，避免后端验证错误
+      const cleanedData = Object.fromEntries(
+        Object.entries(data).filter(([, v]) => v !== '')
+      ) as Partial<TenantFormData>;
+      return tenantsApi.update(orgId!, id, cleanedData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsEditOpen(false);
