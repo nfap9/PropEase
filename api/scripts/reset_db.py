@@ -53,9 +53,18 @@ def reset_database():
     except Exception:
         print("   Could not list existing tables (may be empty)")
 
-    # Drop all tables
-    Base.metadata.drop_all(bind=engine)
-    print("   ✅ All tables dropped")
+    # For PostgreSQL, drop all tables with CASCADE to handle dependencies
+    if engine.dialect.name == "postgresql":
+        with SessionLocal() as session:
+            # Drop all tables in public schema with CASCADE
+            for table in tables:
+                session.execute(text(f"DROP TABLE IF EXISTS {table} CASCADE"))
+            session.commit()
+        print("   ✅ All tables dropped (CASCADE)")
+    else:
+        # For other databases (SQLite), use SQLAlchemy's drop_all
+        Base.metadata.drop_all(bind=engine)
+        print("   ✅ All tables dropped")
 
     # Create all tables
     Base.metadata.create_all(bind=engine)
