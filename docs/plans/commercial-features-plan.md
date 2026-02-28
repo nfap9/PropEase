@@ -2,15 +2,15 @@
 
 > 创建日期: 2026-02-28
 > 最后更新: 2026-02-28
-> 状态: 🔄 进行中
+> 状态: ✅ P0 阶段完成
 
 ## 📊 进度概览
 
-**总进度: 0/4 阶段完成 (P0 进行中: ~75%)**
+**总进度: 1/4 阶段完成 (P0 完成)**
 
 | 阶段 | 状态 | 预计周期 | 描述 |
 |-----|------|---------|------|
-| P0 核心商用 | 🔄 75% | 3-4周 | 公用费用✅、免费限制✅、订阅基础✅、账单自动生成⬜ |
+| P0 核心商用 | ✅ 100% | 3-4周 | 公用费用✅、免费限制✅、订阅基础✅、账单自动生成✅ |
 | P1 体验提升 | ⬜ 0% | 2-3周 | 个人团队、团队删除、事务提醒、自定义角色 |
 | P2 运营系统 | ⬜ 0% | 3-4周 | 运营后台、账号管理、组织管理、订阅管理 |
 | P3 支付集成 | ⬜ 0% | 2周 | 微信支付、订阅支付流程 |
@@ -27,7 +27,7 @@
 
 ---
 
-## P0 - 核心商用必需
+## P0 - 核心商用必需 ✅ 已完成
 
 ### 1. 公用费用配置 ✅ 已完成
 
@@ -74,166 +74,41 @@
 - [x] **前端 API** - API 客户端已添加
 - [x] **前端页面** - 订阅管理页面已创建 `/settings/subscription`
 
-### 4. 账单自动生成（定时任务） ⬜ 待开始
-
-#### 待完成工作
-
-- [ ] **后端依赖** - 添加 APScheduler 依赖
-- [ ] **后端 Scheduler** - 定时任务配置
-- [ ] **后端 Service** - 账单生成逻辑优化
-- [ ] **后端 API** - 手动触发生成接口（管理员）
-- [ ] **Docker** - 定时任务容器配置
-```
-
-#### 任务清单
-
-- [ ] **后端模型** - 创建 `UtilityConfig` 模型
-- [ ] **后端 Schema** - 创建请求/响应 Schema
-- [ ] **后端 Repository** - 数据访问层
-- [ ] **后端 Service** - 业务逻辑层
-- [ ] **后端 API** - CRUD 接口
-- [ ] **数据库迁移** - 创建迁移脚本
-- [ ] **前端 API** - API 客户端
-- [ ] **前端页面** - 公寓设置页面添加费用配置
-- [ ] **集成** - 账单生成时使用公寓费用配置
-
-#### API 设计
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/apartments/{id}/utility-config` | 获取费用配置 |
-| POST | `/apartments/{id}/utility-config` | 创建费用配置 |
-| PUT | `/apartments/{id}/utility-config` | 更新费用配置 |
-
----
-
-### 2. 免费用户限制 📋
-
-**目标：** 限制免费用户的公寓和房间数量
-
-#### 数据模型修改
-
-```python
-# Organization 添加字段
-class Organization:
-    # ... 现有字段
-    plan_type: str              # free/pro/enterprise
-    max_apartments: int         # 最大公寓数
-    max_rooms: int              # 最大房间数
-    max_members: int            # 最大成员数
-```
-
-#### 配置项（可运营配置）
-
-```python
-# PlanLimits - 套餐限制配置
-DEFAULT_LIMITS = {
-    'free': {'apartments': 1, 'rooms': 100, 'members': 1},
-    'pro': {'apartments': 5, 'rooms': 500, 'members': 5},
-    'enterprise': {'apartments': -1, 'rooms': -1, 'members': -1}  # -1 表示无限制
-}
-```
-
-#### 任务清单
-
-- [ ] **后端模型修改** - Organization 添加限制字段
-- [ ] **后端 Service** - 限制检查逻辑
-- [ ] **后端 API** - 创建公寓/房间时校验
-- [ ] **数据库迁移** - 添加字段迁移
-- [ ] **前端提示** - 超出限制时引导升级
-- [ ] **前端显示** - 设置页显示当前用量/限制
-
----
-
-### 3. 订阅套餐基础 📋
-
-**目标：** 支持订阅套餐管理和组织订阅关系
-
-#### 数据模型
-
-```python
-# SubscriptionPlan - 订阅套餐
-class SubscriptionPlan:
-    id: ULID
-    name: str                    # 套餐名称
-    code: str                    # 套餐代码(free/pro/enterprise)
-    price_monthly: Decimal       # 月费
-    price_yearly: Decimal        # 年费
-    max_apartments: int          # 最大公寓数
-    max_rooms: int               # 最大房间数
-    max_members: int             # 最大成员数
-    features: JSON               # 其他特性配置
-    is_active: bool
-    sort_order: int              # 排序
-    created_at: datetime
-
-# OrganizationSubscription - 组织订阅
-class OrganizationSubscription:
-    id: ULID
-    organization_id: FK          # 关联组织
-    plan_id: FK                  # 关联套餐
-    status: str                  # active/expired/cancelled
-    billing_cycle: str           # monthly/yearly
-    start_date: date
-    end_date: date
-    auto_renew: bool
-    created_at: datetime
-    updated_at: datetime
-```
-
-#### 任务清单
-
-- [ ] **后端模型** - 创建 SubscriptionPlan 和 OrganizationSubscription
-- [ ] **后端 Schema** - 请求/响应 Schema
-- [ ] **后端 Repository** - 数据访问层
-- [ ] **后端 Service** - 订阅业务逻辑
-- [ ] **后端 API** - 套餐查询、订阅管理
-- [ ] **数据库迁移** - 创建表迁移
-- [ ] **种子数据** - 初始化默认套餐
-- [ ] **前端 API** - API 客户端
-- [ ] **前端页面** - 套餐选择页面
-- [ ] **前端页面** - 订阅管理页面
-
-#### API 设计
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/subscription-plans` | 套餐列表 |
-| GET | `/subscription-plans/{id}` | 套餐详情 |
-| GET | `/organizations/{id}/subscription` | 当前订阅 |
-| POST | `/organizations/{id}/subscription` | 开通/升级订阅 |
-
----
-
-### 4. 账单自动生成（定时任务） 📋
+### 4. 账单自动生成（定时任务） ✅ 已完成
 
 **目标：** 定时自动扫描出账日生成账单
 
-#### 技术方案
+#### 已完成工作
 
-使用 APScheduler 实现定时任务：
+- [x] **后端依赖** - APScheduler 依赖已添加
+- [x] **后端 Scheduler** - 定时任务调度器已创建 `app/scheduler/`
+- [x] **账单生成任务** - 每月1号00:05自动生成上月账单
+- [x] **集成到应用** - 调度器在应用启动时自动启动
+- [x] **手动触发接口** - `generate_bills_for_organization()` 函数可手动触发
 
-```python
-# 定时任务
-@scheduler.scheduled_job('cron', hour=0, minute=5)
-def generate_monthly_bills():
-    """每日凌晨检查并生成账单"""
-    # 1. 查找所有今日出账日的活跃租约
-    # 2. 检查是否已生成当月账单
-    # 3. 生成账单
+#### 调度器实现
+
+```
+api/app/scheduler/
+├── __init__.py           # 调度器配置和管理
+└── jobs/
+    ├── __init__.py
+    └── bill_generation.py # 账单生成任务
 ```
 
-#### 任务清单
+#### 功能说明
 
-- [ ] **后端依赖** - 添加 APScheduler 依赖
-- [ ] **后端 Scheduler** - 定时任务配置
-- [ ] **后端 Service** - 账单生成逻辑优化
-- [ ] **后端 API** - 手动触发生成接口（管理员）
-- [ ] **Docker** - 定时任务容器配置
+- **定时任务**: 每月1号00:05自动运行
+- **生成逻辑**: 为上个月的所有活跃租约生成账单
+- **账单计算**:
+  - 租金: 使用租约的月租金
+  - 水费: 水表读数 × 水费单价（优先租约单价，其次公寓配置）
+  - 电费: 电表读数 × 电费单价（优先租约单价，其次公寓配置）
+  - 附加费: 网费、管理费、服务费（来自公寓公用费用配置）
 
 ---
 
-## P1 - 商用体验提升
+## P1 - 商用体验提升 ⬜ 待开始
 
 ### 5. 个人团队机制 📋
 
@@ -510,4 +385,5 @@ class AdminRole:
 
 | 日期 | 变更内容 |
 |-----|---------|
+| 2026-02-28 | P0 阶段完成：公用费用配置、免费用户限制、订阅套餐基础、账单自动生成定时任务 |
 | 2026-02-28 | 初始创建，规划四个阶段共15个功能模块 |

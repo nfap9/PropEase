@@ -64,9 +64,27 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     finally:
         db.close()
 
+    # Start scheduler for background jobs
+    from app.scheduler import start_scheduler, schedule_all_jobs
+
+    try:
+        schedule_all_jobs()
+        start_scheduler()
+        logger.info("Scheduler started successfully")
+    except Exception as e:
+        logger.error(f"Failed to start scheduler: {e}")
+
     yield
     # Shutdown
     logger.info(f"Shutting down {settings.APP_NAME}...")
+
+    # Shutdown scheduler
+    from app.scheduler import shutdown_scheduler
+
+    try:
+        shutdown_scheduler()
+    except Exception as e:
+        logger.error(f"Error shutting down scheduler: {e}")
 
 
 def create_app() -> FastAPI:
