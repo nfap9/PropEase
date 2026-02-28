@@ -17,10 +17,6 @@ class UserRepository(BaseRepository[User]):
         """Find user by phone number."""
         return self.db.query(User).filter(User.phone == phone).first()
 
-    def find_by_email(self, email: str) -> Optional[User]:
-        """Find user by email address."""
-        return self.db.query(User).filter(User.email == email).first()
-
     def find_by_organization(self, org_id: str) -> list[User]:
         """Find all users in an organization."""
         from app.models.organization import OrganizationMember
@@ -35,7 +31,3 @@ class UserRepository(BaseRepository[User]):
     def exists_by_phone(self, phone: str) -> bool:
         """Check if user exists by phone."""
         return self.find_by_phone(phone) is not None
-
-    def exists_by_email(self, email: str) -> bool:
-        """Check if user exists by email."""
-        return self.find_by_email(email) is not None

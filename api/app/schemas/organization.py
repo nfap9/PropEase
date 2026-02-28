@@ -32,7 +32,7 @@ class OrganizationMemberBase(BaseModel):
 
 
 class OrganizationMemberCreate(BaseModel):
-    user_email: str
+    user_phone: str
     role: MemberRole = MemberRole.MEMBER
 
 
@@ -52,7 +52,7 @@ class OrganizationMemberResponse(BaseModel):
 
 
 class OrganizationMemberWithUser(OrganizationMemberResponse):
-    user_email: Optional[str] = None
+    user_phone: Optional[str] = None
     user_full_name: str
 
 

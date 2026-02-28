@@ -103,7 +103,7 @@ def list_members(
             user_id=m.user_id,
             role=m.role,
             created_at=m.created_at,
-            user_email=m.user.email if m.user else None,
+            user_phone=m.user.phone if m.user else None,
             user_full_name=m.user.full_name if m.user else "未知用户",
         )
         for m in members
@@ -118,7 +118,7 @@ def _member_to_response(m):
         user_id=m.user_id,
         role=m.role,
         created_at=m.created_at,
-        user_email=m.user.email if m.user else None,
+        user_phone=m.user.phone if m.user else None,
         user_full_name=m.user.full_name if m.user else "未知用户",
     )
 
@@ -126,7 +126,7 @@ def _member_to_response(m):
 @router.post("/{org_id}/members", response_model=MemberResponse)
 def add_member(
     org_id: str,
-    email: str = Query(...),
+    phone: str = Query(...),
     role: MemberRole = Query(MemberRole.MEMBER),
     current_user: User = Depends(get_current_user),
     org_service: OrganizationService = Depends(get_org_service),
@@ -134,7 +134,7 @@ def add_member(
 ):
     """Add a member to organization."""
     get_org_membership(org_id, current_user, db)
-    membership = org_service.add_member(org_id, current_user.id, email, role)
+    membership = org_service.add_member(org_id, current_user.id, phone, role)
     if not membership:
         raise BadRequestError("Could not add member")
     return _member_to_response(membership)

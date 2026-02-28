@@ -45,7 +45,6 @@ const tenantSchema = z.object({
   id_card: z.string().optional(),
   emergency_contact: z.string().optional(),
   emergency_phone: z.string().optional(),
-  email: z.string().email('请输入有效的邮箱').optional().or(z.literal('')),
   notes: z.string().optional(),
 });
 
@@ -75,7 +74,6 @@ export default function TenantsPage() {
       id_card: '',
       emergency_contact: '',
       emergency_phone: '',
-      email: '',
       notes: '',
     },
   });
@@ -132,7 +130,6 @@ export default function TenantsPage() {
       id_card: tenant.id_card ?? '',
       emergency_contact: tenant.emergency_contact ?? '',
       emergency_phone: tenant.emergency_phone ?? '',
-      email: tenant.email ?? '',
       notes: tenant.notes ?? '',
     });
     setIsEditOpen(true);
@@ -277,15 +274,6 @@ export default function TenantsPage() {
                 <Label htmlFor="id_card">身份证号</Label>
                 <Input id="id_card" {...createForm.register('id_card')} />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">邮箱</Label>
-                <Input id="email" type="email" {...createForm.register('email')} />
-                {createForm.formState.errors.email && (
-                  <p className="text-sm text-destructive">
-                    {createForm.formState.errors.email.message}
-                  </p>
-                )}
-              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -346,10 +334,6 @@ export default function TenantsPage() {
               <div className="space-y-2">
                 <Label htmlFor="edit-id_card">身份证号</Label>
                 <Input id="edit-id_card" {...editForm.register('id_card')} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-email">邮箱</Label>
-                <Input id="edit-email" type="email" {...editForm.register('email')} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">

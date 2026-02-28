@@ -16,7 +16,6 @@ class Tenant(Base, TimestampMixin, ULIDMixin):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(50), nullable=True)
     id_card: Mapped[str] = mapped_column(String(50), nullable=True)
-    email: Mapped[str] = mapped_column(String(255), nullable=True)
     emergency_contact: Mapped[str] = mapped_column(String(255), nullable=True)
     emergency_phone: Mapped[str] = mapped_column(String(50), nullable=True)
     notes: Mapped[str] = mapped_column(String(500), nullable=True)

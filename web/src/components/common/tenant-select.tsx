@@ -35,7 +35,6 @@ const tenantSchema = z.object({
   id_card: z.string().optional(),
   emergency_contact: z.string().optional(),
   emergency_phone: z.string().optional(),
-  email: z.string().email('请输入有效的邮箱').optional().or(z.literal('')),
   notes: z.string().optional(),
 });
 
@@ -75,7 +74,6 @@ export function TenantSelect({
       id_card: '',
       emergency_contact: '',
       emergency_phone: '',
-      email: '',
       notes: '',
     },
   });
@@ -166,15 +164,6 @@ export function TenantSelect({
               <div className="space-y-2">
                 <Label htmlFor="tenant-id_card">身份证号</Label>
                 <Input id="tenant-id_card" {...createForm.register('id_card')} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="tenant-email">邮箱</Label>
-                <Input id="tenant-email" type="email" {...createForm.register('email')} />
-                {createForm.formState.errors.email && (
-                  <p className="text-sm text-destructive">
-                    {createForm.formState.errors.email.message}
-                  </p>
-                )}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">

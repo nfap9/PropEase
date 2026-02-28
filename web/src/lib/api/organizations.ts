@@ -27,8 +27,8 @@ export const organizationsApi = {
     return response.data;
   },
 
-  addMember: async (orgId: string, data: { user_email: string; role: MemberRole }): Promise<OrganizationMember> => {
-    const params = new URLSearchParams({ email: data.user_email, role: data.role });
+  addMember: async (orgId: string, data: { user_phone: string; role: MemberRole }): Promise<OrganizationMember> => {
+    const params = new URLSearchParams({ phone: data.user_phone, role: data.role });
     const response = await api.post<OrganizationMember>(`/organizations/${orgId}/members?${params}`);
     return response.data;
   },

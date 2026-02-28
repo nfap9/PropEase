@@ -2,7 +2,6 @@
 export interface User {
   id: string;  // ULID
   phone: string;
-  email?: string;
   full_name: string;
   is_active: boolean;
   created_at: string;
@@ -51,7 +50,7 @@ export interface OrganizationMember {
   user_id: string;  // ULID
   role: MemberRole;
   user?: User;
-  user_email: string;
+  user_phone: string;
   user_full_name: string;
   joined_at: string;
   created_at: string;
@@ -109,7 +108,6 @@ export interface Tenant {
   name: string;
   phone: string | null;
   id_card: string | null;
-  email: string | null;
   emergency_contact: string | null;
   emergency_phone: string | null;
   notes: string | null;

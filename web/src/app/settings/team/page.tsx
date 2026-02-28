@@ -58,8 +58,10 @@ const organizationSchema = z.object({
 
 type OrganizationFormData = z.infer<typeof organizationSchema>;
 
+const phoneRegex = /^1[3-9]\d{9}$/;
+
 const inviteSchema = z.object({
-  email: z.string().email('请输入有效的邮箱'),
+  phone: z.string().regex(phoneRegex, '请输入有效的手机号'),
   role: z.enum(['owner', 'admin', 'member', 'viewer']),
 });
 
@@ -118,7 +120,7 @@ export default function TeamSettingsPage() {
 
   const inviteForm = useForm<InviteFormData>({
     resolver: zodResolver(inviteSchema),
-    defaultValues: { email: '', role: 'member' },
+    defaultValues: { phone: '', role: 'member' },
   });
 
   const createOrgMutation = useMutation({
@@ -155,7 +157,7 @@ export default function TeamSettingsPage() {
   const inviteMutation = useMutation({
     mutationFn: (data: InviteFormData) =>
       organizationsApi.addMember(selectedOrg!.id, {
-        user_email: data.email,
+        user_phone: data.phone,
         role: data.role as MemberRole,
       }),
     onSuccess: () => {
@@ -216,7 +218,7 @@ export default function TeamSettingsPage() {
             </div>
             <div>
               <div className="font-medium">{member.user_full_name || '未知用户'}</div>
-              <div className="text-sm text-muted-foreground">{member.user_email || '-'}</div>
+              <div className="text-sm text-muted-foreground">{member.user_phone || '-'}</div>
             </div>
           </div>
         );
@@ -463,11 +465,11 @@ export default function TeamSettingsPage() {
             className="space-y-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="email">邮箱 *</Label>
-              <Input id="email" type="email" {...inviteForm.register('email')} />
-              {inviteForm.formState.errors.email && (
+              <Label htmlFor="phone">手机号 *</Label>
+              <Input id="phone" type="tel" placeholder="请输入手机号" {...inviteForm.register('phone')} />
+              {inviteForm.formState.errors.phone && (
                 <p className="text-sm text-destructive">
-                  {inviteForm.formState.errors.email.message}
+                  {inviteForm.formState.errors.phone.message}
                 </p>
               )}
             </div>

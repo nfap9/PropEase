@@ -178,7 +178,6 @@ def seed_demo():
                 name=name,
                 phone=random_phone(),
                 id_card=random_id_card(),
-                email=f"tenant{i+1}@example.com" if random.random() > 0.3 else None,
             )
             db.add(tenant)
             tenants.append(tenant)

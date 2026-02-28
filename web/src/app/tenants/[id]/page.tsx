@@ -20,7 +20,6 @@ import {
   ArrowLeft,
   User,
   Phone,
-  Mail,
   CreditCard,
   AlertCircle,
   FileText,
@@ -179,13 +178,6 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-muted-foreground flex items-center gap-1">
-                    <Mail className="h-3 w-3" />
-                    邮箱
-                  </Label>
-                  <p className="font-medium">{tenant.email || '-'}</p>
-                </div>
                 <div>
                   <Label className="text-muted-foreground flex items-center gap-1">
                     <CreditCard className="h-3 w-3" />

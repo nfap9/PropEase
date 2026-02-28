@@ -100,7 +100,7 @@ class OrganizationService(BaseService):
         return self.member_repo.find_organization_members(org_id)
 
     def add_member(
-        self, org_id: str, user_id: str, email: str, role: MemberRole
+        self, org_id: str, user_id: str, phone: str, role: MemberRole
     ) -> Optional[OrganizationMember]:
         """Add a new member to organization."""
         # Check permission
@@ -109,8 +109,8 @@ class OrganizationService(BaseService):
         ):
             return None
 
-        # Find user by email
-        new_user = self.user_repo.find_by_email(email)
+        # Find user by phone
+        new_user = self.user_repo.find_by_phone(phone)
         if not new_user:
             return None
 
