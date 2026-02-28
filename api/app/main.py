@@ -21,6 +21,7 @@ from app.controllers.console import (
     organizations_router,
     permissions_router,
     reports_router,
+    subscriptions_router,
     tenants_router,
     utilities_router,
 )
@@ -147,6 +148,11 @@ def create_app() -> FastAPI:
         permissions_router,
         prefix=f"{settings.API_V1_PREFIX}/permissions",
         tags=["Permissions"],
+    )
+    app.include_router(
+        subscriptions_router,
+        prefix=f"{settings.API_V1_PREFIX}/subscriptions",
+        tags=["Subscriptions"],
     )
 
     # Health check endpoint

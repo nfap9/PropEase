@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Building2, Settings as SettingsIcon } from 'lucide-react';
+import { Users, Building2, Settings as SettingsIcon, CreditCard } from 'lucide-react';
 
 const SETTINGS_ITEMS = [
   {
@@ -11,6 +11,12 @@ const SETTINGS_ITEMS = [
     description: '管理组织成员和权限',
     href: '/settings/team',
     icon: Users,
+  },
+  {
+    title: '订阅管理',
+    description: '管理订阅套餐和账单',
+    href: '/settings/subscription',
+    icon: CreditCard,
   },
   {
     title: '组织管理',

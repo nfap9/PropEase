@@ -71,6 +71,55 @@ export interface OrganizationUsage {
   can_create_team: boolean;
 }
 
+// Subscription types
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  code: string;
+  description: string | null;
+  price_monthly: number;
+  price_yearly: number;
+  max_apartments: number;
+  max_rooms: number;
+  max_members: number;
+  features: Record<string, unknown> | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrganizationSubscription {
+  id: string;
+  organization_id: string;
+  plan_id: string;
+  status: 'active' | 'expired' | 'cancelled' | 'trial';
+  billing_cycle: 'monthly' | 'yearly';
+  start_date: string;
+  end_date: string | null;
+  auto_renew: boolean;
+  trial_ends_at: string | null;
+  created_at: string;
+  updated_at: string;
+  plan?: SubscriptionPlan;
+}
+
+export interface SubscribeRequest {
+  plan_id: string;
+  billing_cycle: 'monthly' | 'yearly';
+  auto_renew?: boolean;
+}
+
+export interface SubscriptionStatus {
+  has_subscription: boolean;
+  plan: SubscriptionPlan | null;
+  status: string;
+  is_active: boolean;
+  end_date: string | null;
+  auto_renew: boolean;
+  days_remaining: number | null;
+}
+
 // Apartment & Room types
 export type RoomStatus = 'available' | 'occupied' | 'maintenance';
 

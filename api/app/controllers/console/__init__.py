@@ -8,6 +8,7 @@ from .utilities import router as utilities_router
 from .bills import router as bills_router
 from .reports import router as reports_router
 from .permissions import router as permissions_router
+from .subscriptions import router as subscriptions_router
 
 __all__ = [
     "auth_router",
@@ -19,4 +20,5 @@ __all__ = [
     "bills_router",
     "reports_router",
     "permissions_router",
+    "subscriptions_router",
 ]
