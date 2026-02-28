@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
+import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { permissionsApi } from '@/lib/api/permissions';
+import { organizationsApi } from '@/lib/api';
 import { MemberRole, Permission } from '@/types';
 import { useAuth } from '@/lib/auth/context';
 import { Shield, Save } from 'lucide-react';
@@ -54,17 +56,7 @@ export default function PermissionsPage() {
   // 获取当前用户的角色
   const { data: members } = useQuery({
     queryKey: ['organization-members', organization?.id],
-    queryFn: async () => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/organizations/${organization?.id}/members`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-        }
-      );
-      return response.json();
-    },
+    queryFn: () => organizationsApi.getMembers(organization!.id),
     enabled: !!organization,
   });
 
@@ -171,11 +163,12 @@ export default function PermissionsPage() {
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Shield className="h-8 w-8" />
+    <PermissionPageGuard>
+      <MainLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Shield className="h-8 w-8" />
             <div>
               <h1 className="text-3xl font-bold">权限管理</h1>
               <p className="text-muted-foreground">
@@ -294,5 +287,6 @@ export default function PermissionsPage() {
         </Tabs>
       </div>
     </MainLayout>
+    </PermissionPageGuard>
   );
 }

@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
+import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Button } from '@/components/ui/button';
@@ -269,11 +270,12 @@ export default function BillsPage() {
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">账单管理</h1>
-        </div>
+    <PermissionPageGuard>
+      <MainLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">账单管理</h1>
+          </div>
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -441,5 +443,6 @@ export default function BillsPage() {
         </DialogContent>
       </Dialog>
     </MainLayout>
+    </PermissionPageGuard>
   );
 }

@@ -1,17 +1,18 @@
 """
 Organization service for organization management.
 """
-from typing import List, Optional
+
 from sqlalchemy.orm import Session
 
-from app.services.base import BaseService
+from app.models.organization import MemberRole, Organization, OrganizationMember
 from app.repositories.organization_repository import (
-    OrganizationRepository,
     OrganizationMemberRepository,
+    OrganizationRepository,
 )
 from app.repositories.user_repository import UserRepository
-from app.models.organization import Organization, OrganizationMember, MemberRole
 from app.schemas.organization import OrganizationCreate, OrganizationUpdate
+from app.services.base import BaseService
+from app.services.permission_service import PermissionService
 
 
 class OrganizationService(BaseService):
@@ -23,11 +24,11 @@ class OrganizationService(BaseService):
         self.member_repo = OrganizationMemberRepository(db)
         self.user_repo = UserRepository(db)
 
-    def list_organizations(self, user_id: str) -> List[Organization]:
+    def list_organizations(self, user_id: str) -> list[Organization]:
         """List all organizations a user belongs to."""
         return self.member_repo.find_user_organizations(user_id)
 
-    def get_organization(self, org_id: str, user_id: str) -> Optional[Organization]:
+    def get_organization(self, org_id: str, user_id: str) -> Organization | None:
         """Get an organization if user has access."""
         if not self.member_repo.is_member(org_id, user_id):
             return None
@@ -64,11 +65,15 @@ class OrganizationService(BaseService):
         self.db.add(membership)
         self.db.commit()
 
+        # Initialize default role permissions for the organization
+        permission_service = PermissionService(self.db)
+        permission_service.initialize_org_permissions(org.id)
+
         return org
 
     def update_organization(
         self, org_id: str, user_id: str, data: OrganizationUpdate
-    ) -> Optional[Organization]:
+    ) -> Organization | None:
         """Update an organization if user has permission."""
         if not self.member_repo.has_role(org_id, user_id, [MemberRole.OWNER, MemberRole.ADMIN]):
             return None
@@ -93,7 +98,7 @@ class OrganizationService(BaseService):
 
         return self.org_repo.delete(org_id)
 
-    def list_members(self, org_id: str, user_id: str) -> List[OrganizationMember]:
+    def list_members(self, org_id: str, user_id: str) -> list[OrganizationMember]:
         """List all members of an organization."""
         if not self.member_repo.is_member(org_id, user_id):
             return []
@@ -101,7 +106,7 @@ class OrganizationService(BaseService):
 
     def add_member(
         self, org_id: str, user_id: str, phone: str, role: MemberRole
-    ) -> Optional[OrganizationMember]:
+    ) -> OrganizationMember | None:
         """Add a new member to organization."""
         # Check permission
         if not self.member_repo.has_role(
@@ -131,7 +136,7 @@ class OrganizationService(BaseService):
 
     def update_member_role(
         self, org_id: str, user_id: str, member_user_id: str, role: MemberRole
-    ) -> Optional[OrganizationMember]:
+    ) -> OrganizationMember | None:
         """Update a member's role."""
         # Only owner can change roles
         if not self.member_repo.has_role(org_id, user_id, [MemberRole.OWNER]):

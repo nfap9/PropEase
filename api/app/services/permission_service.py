@@ -1,33 +1,32 @@
 """
 Permission service for role-based access control.
 """
-from typing import List, Optional
 from sqlalchemy.orm import Session
 
-from app.services.base import BaseService
+from app.models.organization import MemberRole
+from app.models.permission import (
+    Action,
+    OrganizationRolePermission,
+    Permission,
+    Resource,
+    SystemRole,
+    SystemRoleConfig,
+    SystemRolePermission,
+)
+from app.repositories.organization_repository import OrganizationMemberRepository
 from app.repositories.permission_repository import (
-    PermissionRepository,
     OrganizationRolePermissionRepository,
+    PermissionRepository,
     SystemRoleConfigRepository,
     SystemRolePermissionRepository,
     UserSystemRoleRepository,
 )
-from app.repositories.organization_repository import OrganizationMemberRepository
-from app.models.permission import (
-    Permission,
-    Resource,
-    Action,
-    SystemRole,
-    OrganizationRolePermission,
-    SystemRoleConfig,
-    SystemRolePermission,
-)
-from app.models.organization import MemberRole
+from app.services.base import BaseService
 from app.utils.permission_defaults import (
-    get_permission_name,
     DEFAULT_ORG_PERMISSIONS,
     DEFAULT_SYSTEM_ROLE_PERMISSIONS,
     SYSTEM_ROLE_CONFIGS,
+    get_permission_name,
 )
 
 
@@ -174,19 +173,26 @@ class PermissionService(BaseService):
 
     def get_role_permissions(
         self, org_id: str, role: MemberRole
-    ) -> List[Permission]:
+    ) -> list[Permission]:
         """获取组织角色的所有启用的权限"""
         if role == MemberRole.OWNER:
             # owner 返回所有权限
             return self.permission_repo.get_all_permissions()
 
-        return self.org_role_perm_repo.get_enabled_permissions(org_id, role.value)
+        permissions = self.org_role_perm_repo.get_enabled_permissions(org_id, role.value)
+
+        # 如果没有权限记录，初始化默认权限后重试
+        if not permissions:
+            self.initialize_org_permissions(org_id)
+            permissions = self.org_role_perm_repo.get_enabled_permissions(org_id, role.value)
+
+        return permissions
 
     def update_role_permissions(
         self,
         org_id: str,
         role: MemberRole,
-        permission_codes: List[str],
+        permission_codes: list[str],
         user_id: str,
     ) -> bool:
         """
@@ -209,21 +215,21 @@ class PermissionService(BaseService):
         self.org_role_perm_repo.set_role_permissions(org_id, role.value, permission_ids)
         return True
 
-    def get_all_permissions(self) -> List[Permission]:
+    def get_all_permissions(self) -> list[Permission]:
         """获取所有可用权限（用于UI展示）"""
         return self.permission_repo.get_all_permissions()
 
-    def get_permissions_grouped(self) -> dict[str, List[Permission]]:
+    def get_permissions_grouped(self) -> dict[str, list[Permission]]:
         """获取按资源分组的权限"""
         permissions = self.get_all_permissions()
-        grouped: dict[str, List[Permission]] = {}
+        grouped: dict[str, list[Permission]] = {}
         for perm in permissions:
             if perm.resource.value not in grouped:
                 grouped[perm.resource.value] = []
             grouped[perm.resource.value].append(perm)
         return grouped
 
-    def get_user_permissions(self, user_id: str, org_id: str) -> List[str]:
+    def get_user_permissions(self, user_id: str, org_id: str) -> list[str]:
         """获取用户在组织中的所有权限代码"""
         # 系统超级管理员返回所有权限
         if self.user_system_role_repo.is_super_admin(user_id):
@@ -241,7 +247,7 @@ class PermissionService(BaseService):
         permissions = self.get_role_permissions(org_id, membership.role)
         return [p.code for p in permissions]
 
-    def get_user_system_roles(self, user_id: str) -> List[SystemRole]:
+    def get_user_system_roles(self, user_id: str) -> list[SystemRole]:
         """获取用户的所有系统角色"""
         return self.user_system_role_repo.get_user_system_roles(user_id)
 
@@ -249,7 +255,7 @@ class PermissionService(BaseService):
         """检查用户是否是超级管理员"""
         return self.user_system_role_repo.is_super_admin(user_id)
 
-    def get_system_role_configs(self) -> List[SystemRoleConfig]:
+    def get_system_role_configs(self) -> list[SystemRoleConfig]:
         """获取所有系统角色配置"""
         return self.system_role_config_repo.get_all_active()
 

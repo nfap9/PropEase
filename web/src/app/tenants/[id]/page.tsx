@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/layout/main-layout';
+import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -141,18 +142,19 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* 返回按钮和标题 */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push('/tenants')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">{tenant.name}</h1>
-            <p className="text-muted-foreground">租客详情</p>
+    <PermissionPageGuard>
+      <MainLayout>
+        <div className="space-y-6">
+          {/* 返回按钮和标题 */}
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => router.push('/tenants')}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">{tenant.name}</h1>
+              <p className="text-muted-foreground">租客详情</p>
+            </div>
           </div>
-        </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* 基本信息 */}
@@ -320,5 +322,6 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
         </Card>
       </div>
     </MainLayout>
+    </PermissionPageGuard>
   );
 }

@@ -4,9 +4,9 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
+import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { DataTable } from '@/components/common/data-table';
 import { LeaseFormDialog } from '@/components/common/lease-form-dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { roomsApi, apartmentsApi, leasesApi } from '@/lib/api';
@@ -253,7 +253,8 @@ export default function RoomsPage() {
   }
 
   return (
-    <MainLayout>
+    <PermissionPageGuard>
+      <MainLayout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">全部房间</h1>
@@ -341,5 +342,6 @@ export default function RoomsPage() {
         room={selectedRoom}
       />
     </MainLayout>
+    </PermissionPageGuard>
   );
 }

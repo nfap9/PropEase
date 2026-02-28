@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
+import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { DataTable } from '@/components/common/data-table';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -143,21 +144,22 @@ export default function UtilitiesPage() {
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">水电录入</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setIsBatchImportOpen(true)}>
-              <Upload className="mr-2 h-4 w-4" />
-              批量导入
-            </Button>
-            <Button onClick={() => setIsCreateOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              录入读数
-            </Button>
+    <PermissionPageGuard>
+      <MainLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">水电录入</h1>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setIsBatchImportOpen(true)}>
+                <Upload className="mr-2 h-4 w-4" />
+                批量导入
+              </Button>
+              <Button onClick={() => setIsCreateOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                录入读数
+              </Button>
+            </div>
           </div>
-        </div>
 
         {/* 筛选区域 */}
         <div className="flex items-center gap-4">
@@ -243,5 +245,6 @@ export default function UtilitiesPage() {
         allRooms={allRooms}
       />
     </MainLayout>
+    </PermissionPageGuard>
   );
 }

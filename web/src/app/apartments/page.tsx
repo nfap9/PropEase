@@ -8,6 +8,9 @@ import { z } from 'zod';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
+import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
+import { PermissionGuard } from '@/components/common/permission-guard';
+import { PERMISSIONS } from '@/hooks/use-permissions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -178,18 +181,21 @@ export default function ApartmentsPage() {
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">公寓管理</h1>
-            <p className="text-muted-foreground mt-1">管理您的所有公寓和房间</p>
+    <PermissionPageGuard>
+      <MainLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">公寓管理</h1>
+              <p className="text-muted-foreground mt-1">管理您的所有公寓和房间</p>
+            </div>
+            <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
+              <Button onClick={() => setIsCreateOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                新增公寓
+              </Button>
+            </PermissionGuard>
           </div>
-          <Button onClick={() => setIsCreateOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            新增公寓
-          </Button>
-        </div>
 
         {apartmentsLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -221,27 +227,31 @@ export default function ApartmentsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" onClick={(e) => e.preventDefault()}>
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleEdit(apartment);
-                            }}
-                          >
-                            <Pencil className="mr-2 h-4 w-4" />
-                            编辑
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleDelete(apartment);
-                            }}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            删除
-                          </DropdownMenuItem>
+                          <PermissionGuard permission={PERMISSIONS.APARTMENT_EDIT}>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleEdit(apartment);
+                              }}
+                            >
+                              <Pencil className="mr-2 h-4 w-4" />
+                              编辑
+                            </DropdownMenuItem>
+                          </PermissionGuard>
+                          <PermissionGuard permission={PERMISSIONS.APARTMENT_DELETE}>
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleDelete(apartment);
+                              }}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              删除
+                            </DropdownMenuItem>
+                          </PermissionGuard>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -291,10 +301,12 @@ export default function ApartmentsPage() {
               <Building2 className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium mb-2">暂无公寓</h3>
               <p className="text-muted-foreground text-sm mb-4">点击下方按钮添加您的第一个公寓</p>
-              <Button onClick={() => setIsCreateOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                新增公寓
-              </Button>
+              <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
+                <Button onClick={() => setIsCreateOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  新增公寓
+                </Button>
+              </PermissionGuard>
             </CardContent>
           </Card>
         )}
@@ -421,5 +433,6 @@ export default function ApartmentsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </MainLayout>
+    </PermissionPageGuard>
   );
 }

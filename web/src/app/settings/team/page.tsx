@@ -7,6 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
+import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
+import { PermissionGuard } from '@/components/common/permission-guard';
+import { PERMISSIONS } from '@/hooks/use-permissions';
 import { DataTable } from '@/components/common/data-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -277,9 +280,10 @@ export default function TeamSettingsPage() {
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold">团队设置</h1>
+    <PermissionPageGuard>
+      <MainLayout>
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold">团队设置</h1>
 
         <Tabs defaultValue="organizations" className="space-y-4">
           <TabsList>
@@ -320,10 +324,12 @@ export default function TeamSettingsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEditOrg(org)}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            编辑
-                          </DropdownMenuItem>
+                          <PermissionGuard permission={PERMISSIONS.SETTINGS_EDIT}>
+                            <DropdownMenuItem onClick={() => handleEditOrg(org)}>
+                              <Pencil className="mr-2 h-4 w-4" />
+                              编辑
+                            </DropdownMenuItem>
+                          </PermissionGuard>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -522,5 +528,6 @@ export default function TeamSettingsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </MainLayout>
+    </PermissionPageGuard>
   );
 }

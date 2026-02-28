@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/main-layout';
+import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -85,10 +86,11 @@ export default function ReportsPage() {
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">经营分析</h1>
+    <PermissionPageGuard>
+      <MainLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">经营分析</h1>
           <Select
             value={selectedYear.toString()}
             onValueChange={(value) => setSelectedYear(Number(value))}
@@ -506,5 +508,6 @@ export default function ReportsPage() {
         </Tabs>
       </div>
     </MainLayout>
+    </PermissionPageGuard>
   );
 }

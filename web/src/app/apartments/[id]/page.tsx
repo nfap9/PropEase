@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
+import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -587,24 +588,25 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* 返回按钮和标题 */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.push('/apartments')}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold">{apartment.name}</h1>
-              <p className="text-muted-foreground">{apartment.address}</p>
+    <PermissionPageGuard>
+      <MainLayout>
+        <div className="space-y-6">
+          {/* 返回按钮和标题 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => router.push('/apartments')}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold">{apartment.name}</h1>
+                <p className="text-muted-foreground">{apartment.address}</p>
+              </div>
             </div>
+            <Button variant="outline" size="sm" onClick={handleEditApartment}>
+              <Pencil className="mr-2 h-4 w-4" />
+              编辑
+            </Button>
           </div>
-          <Button variant="outline" size="sm" onClick={handleEditApartment}>
-            <Pencil className="mr-2 h-4 w-4" />
-            编辑
-          </Button>
-        </div>
 
         {/* 统计卡片 */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -1466,5 +1468,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
         </DialogContent>
       </Dialog>
     </MainLayout>
+    </PermissionPageGuard>
   );
 }

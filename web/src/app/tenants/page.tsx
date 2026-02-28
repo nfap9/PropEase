@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/main-layout';
+import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Button } from '@/components/ui/button';
@@ -221,15 +222,16 @@ export default function TenantsPage() {
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">租客管理</h1>
-          <Button onClick={() => setIsCreateOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            新增租客
-          </Button>
-        </div>
+    <PermissionPageGuard>
+      <MainLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">租客管理</h1>
+            <Button onClick={() => setIsCreateOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              新增租客
+            </Button>
+          </div>
 
         {tenantsLoading ? (
           <Skeleton className="h-96" />
@@ -389,5 +391,6 @@ export default function TenantsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </MainLayout>
+    </PermissionPageGuard>
   );
 }

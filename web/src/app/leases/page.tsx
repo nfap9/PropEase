@@ -8,6 +8,7 @@ import { z } from 'zod';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
+import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
 import { LeaseFormDialog, LeaseFormData } from '@/components/common/lease-form-dialog';
@@ -245,15 +246,16 @@ export default function LeasesPage() {
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">租约管理</h1>
-          <Button onClick={() => setIsCreateOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            新增租约
-          </Button>
-        </div>
+    <PermissionPageGuard>
+      <MainLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">租约管理</h1>
+            <Button onClick={() => setIsCreateOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              新增租约
+            </Button>
+          </div>
 
         {leasesLoading ? (
           <Skeleton className="h-96" />
@@ -394,5 +396,6 @@ export default function LeasesPage() {
         </AlertDialogContent>
       </AlertDialog>
     </MainLayout>
+    </PermissionPageGuard>
   );
 }

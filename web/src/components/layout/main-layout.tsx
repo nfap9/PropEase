@@ -24,26 +24,44 @@ import {
   BarChart3,
   Settings,
   Menu,
+  Shield,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { OrgSelector } from '@/components/common/org-selector';
+import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
+import { PermissionGuard } from '@/components/common/permission-guard';
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: '仪表盘', icon: Home },
-  { href: '/apartments', label: '公寓管理', icon: Building2 },
-  { href: '/rooms', label: '全部房间', icon: DoorOpen },
-  { href: '/tenants', label: '租客管理', icon: Users },
-  { href: '/leases', label: '租约管理', icon: FileText },
-  { href: '/utilities', label: '水电录入', icon: Zap },
-  { href: '/bills', label: '账单管理', icon: Receipt },
-  { href: '/reports', label: '经营分析', icon: BarChart3 },
+  { href: '/dashboard', label: '仪表盘', icon: Home, permission: null },
+  { href: '/apartments', label: '公寓管理', icon: Building2, permission: PERMISSIONS.APARTMENT_VIEW },
+  { href: '/rooms', label: '全部房间', icon: DoorOpen, permission: PERMISSIONS.ROOM_VIEW },
+  { href: '/tenants', label: '租客管理', icon: Users, permission: PERMISSIONS.TENANT_VIEW },
+  { href: '/leases', label: '租约管理', icon: FileText, permission: PERMISSIONS.LEASE_VIEW },
+  { href: '/utilities', label: '水电录入', icon: Zap, permission: PERMISSIONS.UTILITY_VIEW },
+  { href: '/bills', label: '账单管理', icon: Receipt, permission: PERMISSIONS.BILL_VIEW },
+  { href: '/reports', label: '经营分析', icon: BarChart3, permission: PERMISSIONS.REPORT_VIEW },
+];
+
+const SETTINGS_ITEMS = [
+  { href: '/settings/team', label: '团队管理', icon: Users, permission: PERMISSIONS.MEMBER_VIEW },
+  { href: '/settings/permissions', label: '权限管理', icon: Shield, permission: PERMISSIONS.SETTINGS_VIEW },
 ];
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
+  const { hasPermission, isSuperAdmin } = usePermissions();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  // 过滤有权限的导航项
+  const visibleNavItems = NAV_ITEMS.filter(
+    (item) => !item.permission || isSuperAdmin || hasPermission(item.permission)
+  );
+
+  const visibleSettingsItems = SETTINGS_ITEMS.filter(
+    (item) => isSuperAdmin || hasPermission(item.permission)
+  );
 
   const NavContent = () => (
     <>
@@ -54,7 +72,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
         </Link>
       </div>
       <nav className="flex-1 space-y-1 p-4">
-        {NAV_ITEMS.map((item) => {
+        {visibleNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           return (
@@ -73,6 +91,32 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
             </Link>
           );
         })}
+
+        {/* 设置分组 */}
+        {visibleSettingsItems.length > 0 && (
+          <>
+            <div className="my-4 border-t" />
+            {visibleSettingsItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                    isActive
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </>
+        )}
       </nav>
     </>
   );
@@ -127,13 +171,17 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/settings/team">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>团队设置</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <PermissionGuard permission={PERMISSIONS.MEMBER_VIEW}>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/team">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>团队设置</span>
+                  </Link>
+                </DropdownMenuItem>
+              </PermissionGuard>
+              <PermissionGuard permission={PERMISSIONS.MEMBER_VIEW}>
+                <DropdownMenuSeparator />
+              </PermissionGuard>
               <DropdownMenuItem onClick={logout}>
                 <span>退出登录</span>
               </DropdownMenuItem>
