@@ -51,10 +51,16 @@ class OrganizationMember(Base, TimestampMixin, ULIDMixin):
         default=MemberRole.MEMBER,
         nullable=False,
     )
+    # 自定义角色ID（可选，用于自定义权限）
+    custom_role_id: Mapped[Optional[str]] = mapped_column(
+        ForeignKey("custom_roles.id", ondelete="SET NULL"),
+        nullable=True,
+    )
 
     # Relationships
     organization: Mapped["Organization"] = relationship("Organization", back_populates="members")
     user: Mapped["User"] = relationship("User", back_populates="organization_memberships")
+    custom_role: Mapped[Optional["CustomRole"]] = relationship("CustomRole")
 
 
 # Import here to avoid circular imports

@@ -10,6 +10,7 @@ from .reports import router as reports_router
 from .permissions import router as permissions_router
 from .subscriptions import router as subscriptions_router
 from .notifications import router as notifications_router
+from .custom_roles import router as custom_roles_router
 
 __all__ = [
     "auth_router",
@@ -23,4 +24,5 @@ __all__ = [
     "permissions_router",
     "subscriptions_router",
     "notifications_router",
+    "custom_roles_router",
 ]

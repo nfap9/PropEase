@@ -28,6 +28,7 @@ from app.models.permission import (
     SystemRolePermission,
     UserSystemRole,
 )
+from app.models.custom_role import CustomRole
 
 __all__ = [
     "Base",
@@ -62,4 +63,5 @@ __all__ = [
     "SystemRoleConfig",
     "SystemRolePermission",
     "UserSystemRole",
+    "CustomRole",
 ]

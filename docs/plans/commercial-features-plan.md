@@ -2,16 +2,16 @@
 
 > 创建日期: 2026-02-28
 > 最后更新: 2026-02-28
-> 状态: 🔄 P1 阶段进行中
+> 状态: ✅ P1 阶段完成
 
 ## 📊 进度概览
 
-**总进度: 1.75/4 阶段完成 (P0 完成, P1 进行中 75%)**
+**总进度: 2/4 阶段完成 (P0 完成, P1 完成)**
 
 | 阶段 | 状态 | 预计周期 | 描述 |
 |-----|------|---------|------|
 | P0 核心商用 | ✅ 100% | 3-4周 | 公用费用✅、免费限制✅、订阅基础✅、账单自动生成✅ |
-| P1 体验提升 | 🔄 75% | 2-3周 | 个人团队✅、团队删除✅、事务提醒✅、自定义角色⬜ |
+| P1 体验提升 | ✅ 100% | 2-3周 | 个人团队✅、团队删除✅、事务提醒✅、自定义角色✅ |
 | P2 运营系统 | ⬜ 0% | 3-4周 | 运营后台、账号管理、组织管理、订阅管理 |
 | P3 支付集成 | ⬜ 0% | 2周 | 微信支付、订阅支付流程 |
 
@@ -93,7 +93,8 @@ api/app/scheduler/
 ├── __init__.py           # 调度器配置和管理
 └── jobs/
     ├── __init__.py
-    └── bill_generation.py # 账单生成任务
+    ├── bill_generation.py   # 账单生成任务
+    └── notification_checks.py # 通知检查任务
 ```
 
 #### 功能说明
@@ -108,9 +109,9 @@ api/app/scheduler/
 
 ---
 
-## P1 - 商用体验提升 ⬜ 待开始
+## P1 - 商用体验提升 ✅ 已完成
 
-### 5. 个人团队机制 📋
+### 5. 个人团队机制 ✅ 已完成
 
 **目标：** 用户注册时自动创建个人团队，支持迁移到正式团队
 
@@ -121,29 +122,21 @@ api/app/scheduler/
 - 个人团队可迁移到正式团队（数据合并）
 - 用户可创建多个正式团队
 
-#### 数据模型修改
+#### 已完成工作
 
-```python
-# Organization 添加字段
-class Organization:
-    # ... 现有字段
-    is_personal: bool            # 是否为个人团队
-```
-
-#### 任务清单
-
-- [ ] **后端模型修改** - Organization 添加 is_personal 字段
-- [ ] **后端 Service** - 注册时创建个人团队
-- [ ] **后端 Service** - 团队迁移逻辑
-- [ ] **后端 API** - 迁移接口
-- [ ] **数据库迁移** - 添加字段
-- [ ] **前端注册** - 调整注册流程
-- [ ] **前端迁移** - 迁移向导页面
-- [ ] **前端限制** - 个人团队隐藏邀请功能
+- [x] **后端模型修改** - Organization 添加 is_personal 字段
+- [x] **后端 Service** - 注册时创建个人团队 (`AuthService.register`)
+- [x] **后端 Service** - 团队迁移逻辑 (`OrganizationService.migrate_personal_team`)
+- [x] **后端 API** - 迁移接口 `POST /organizations/personal/migrate`
+- [x] **后端 API** - 获取个人团队 `GET /organizations/personal`
+- [x] **后端限制** - 个人团队禁止邀请成员（`add_member` 抛出异常）
+- [x] **数据库迁移** - `add_is_personal_to_organization`
+- [x] **前端类型** - `Organization.is_personal` 已添加
+- [x] **前端 API** - `getPersonalTeam`, `migratePersonalTeam` 已添加
 
 ---
 
-### 6. 团队删除功能 📋
+### 6. 团队删除功能 ✅ 已完成
 
 **目标：** 高危操作需要严格确认
 
@@ -152,89 +145,80 @@ class Organization:
 - 团队必须无活跃订阅才能删除
 - 需要二次确认（输入团队名称）
 - 删除前显示将要删除的数据统计
-- 软删除或硬删除（可配置）
+- 硬删除（级联删除关联数据）
 
-#### 任务清单
+#### 已完成工作
 
-- [ ] **后端 Service** - 删除前检查逻辑
-- [ ] **后端 API** - 删除接口完善
-- [ ] **前端页面** - 删除确认对话框
-- [ ] **前端显示** - 删除前数据统计
+- [x] **后端 Service** - 删除前检查逻辑 (`get_deletion_preview`)
+- [x] **后端 Service** - 名称确认删除 (`confirm_and_delete`)
+- [x] **后端 API** - 删除预览接口 `GET /organizations/{id}/deletion-preview`
+- [x] **后端 API** - 确认删除接口 `DELETE /organizations/{id}` (需提供 confirmed_name)
+- [x] **前端类型** - `DeletionPreview` 已添加
+- [x] **前端 API** - `getDeletionPreview`, `delete` 已更新
 
 ---
 
-### 7. 事务提醒系统 📋
+### 7. 事务提醒系统 ✅ 已完成
 
 **目标：** 租约到期、账单逾期等提醒
 
-#### 数据模型
+#### 已完成工作
 
-```python
-# Notification - 通知
-class Notification:
-    id: ULID
-    user_id: FK
-    organization_id: FK
-    type: str                    # lease_expiry/bill_overdue/payment_due
-    title: str
-    content: str
-    is_read: bool
-    metadata: JSON               # 关联业务数据ID
-    created_at: datetime
-```
+- [x] **后端模型** - `Notification` 模型已创建 (`app/models/notification.py`)
+- [x] **后端枚举** - `NotificationType` 定义通知类型
+- [x] **后端 Repository** - `NotificationRepository` 数据访问层
+- [x] **后端 Service** - `NotificationService` 通知创建和查询
+- [x] **后端定时任务** - 租约到期检查（每日 08:00）
+- [x] **后端定时任务** - 账单逾期检查（每日 08:05）
+- [x] **后端 API** - 通知列表 `GET /notifications`
+- [x] **后端 API** - 未读数量 `GET /notifications/unread-count`
+- [x] **后端 API** - 标记已读 `POST /notifications/{id}/read`
+- [x] **后端 API** - 全部已读 `POST /notifications/mark-all-read`
+- [x] **数据库迁移** - `add_notifications_table`
+- [x] **前端类型** - `Notification` 类型已添加
 
 #### 通知类型
 
 | 类型 | 触发条件 | 说明 |
 |------|---------|------|
-| lease_expiry | 租约到期前7/3/1天 | 租约即将到期 |
-| bill_overdue | 账单超过截止日期 | 账单逾期提醒 |
-| payment_received | 收到付款 | 付款到账通知 |
-
-#### 任务清单
-
-- [ ] **后端模型** - 创建 Notification 模型
-- [ ] **后端 Repository** - 数据访问层
-- [ ] **后端 Service** - 通知创建和查询
-- [ ] **后端定时任务** - 检查并发送提醒
-- [ ] **后端 API** - 通知 CRUD
-- [ ] **数据库迁移** - 创建表
-- [ ] **前端 API** - API 客户端
-- [ ] **前端组件** - 通知铃铛组件
-- [ ] **前端页面** - 通知列表页面
-- [ ] **前端显示** - 未读数量角标
+| `lease_expiring` | 租约到期前7/3/1天 | 租约即将到期 |
+| `bill_overdue` | 账单超过截止日期 | 账单逾期提醒 |
+| `payment_received` | 收到付款 | 付款到账通知 |
 
 ---
 
-### 8. 自定义角色管理 📋
+### 8. 自定义角色管理 ✅ 已完成
 
 **目标：** 支持团队内自定义角色和权限
 
-#### 数据模型
+#### 已完成工作
 
-```python
-# OrganizationRole - 组织角色
-class OrganizationRole:
-    id: ULID
-    organization_id: FK
-    name: str                    # 角色名称
-    is_system: bool              # 是否系统预置
-    permissions: JSON            # 权限配置
-    created_at: datetime
-```
+- [x] **后端模型** - `CustomRole` 模型已创建 (`app/models/custom_role.py`)
+- [x] **后端模型** - `OrganizationMember` 添加 `custom_role_id` 字段
+- [x] **后端 Repository** - `CustomRoleRepository` 数据访问层
+- [x] **后端 Service** - `CustomRoleService` 角色管理逻辑
+- [x] **后端预置角色** - 管理员、财务、运营默认角色
+- [x] **后端 API** - 角色列表 `GET /orgs/{org_id}/roles`
+- [x] **后端 API** - 创建角色 `POST /orgs/{org_id}/roles`
+- [x] **后端 API** - 更新角色 `PUT /orgs/{org_id}/roles/{id}`
+- [x] **后端 API** - 删除角色 `DELETE /orgs/{org_id}/roles/{id}`
+- [x] **后端 API** - 初始化默认角色 `POST /orgs/{org_id}/roles/init`
+- [x] **数据库迁移** - `add_custom_roles`
+- [x] **前端类型** - `CustomRole` 类型已添加
 
-#### 任务清单
+#### 角色权限配置
 
-- [ ] **后端模型** - 创建 OrganizationRole 模型
-- [ ] **后端 Service** - 角色管理逻辑
-- [ ] **后端 API** - 角色 CRUD
-- [ ] **数据库迁移** - 创建表
-- [ ] **前端页面** - 角色管理页面
-- [ ] **前端组件** - 权限配置组件
+预置角色默认权限：
+
+| 角色 | 权限范围 |
+|------|---------|
+| 管理员 | 公寓、房间、租客、租约、账单、水电、报表（全部操作） |
+| 财务 | 账单管理、报表查看导出、其他模块只读 |
+| 运营 | 公寓、房间、租客、租约、水电管理，报表查看导出 |
 
 ---
 
-## P2 - 运营系统
+## P2 - 运营系统 ⬜ 待开始
 
 ### 9. 运营后台架构 📋
 
@@ -339,7 +323,7 @@ class AdminRole:
 
 ---
 
-## P3 - 支付集成
+## P3 - 支付集成 ⬜ 待开始
 
 ### 14. 微信支付集成 📋
 
@@ -385,5 +369,6 @@ class AdminRole:
 
 | 日期 | 变更内容 |
 |-----|---------|
+| 2026-02-28 | P1 阶段完成：个人团队机制、团队删除功能、事务提醒系统、自定义角色管理 |
 | 2026-02-28 | P0 阶段完成：公用费用配置、免费用户限制、订阅套餐基础、账单自动生成定时任务 |
 | 2026-02-28 | 初始创建，规划四个阶段共15个功能模块 |

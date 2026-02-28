@@ -17,6 +17,7 @@ from app.controllers.console import (
     apartments_router,
     auth_router,
     bills_router,
+    custom_roles_router,
     leases_router,
     notifications_router,
     organizations_router,
@@ -177,6 +178,11 @@ def create_app() -> FastAPI:
         notifications_router,
         prefix=f"{settings.API_V1_PREFIX}/notifications",
         tags=["Notifications"],
+    )
+    app.include_router(
+        custom_roles_router,
+        prefix=f"{settings.API_V1_PREFIX}/custom-roles",
+        tags=["Custom Roles"],
     )
 
     # Health check endpoint
