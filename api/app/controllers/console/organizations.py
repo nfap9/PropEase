@@ -10,11 +10,13 @@ from app.dependencies import get_current_user
 from app.models.user import User
 from app.models.organization import MemberRole
 from app.services.organization_service import OrganizationService
+from app.services.plan_limit_service import PlanLimitService
 from app.schemas.organization import (
     OrganizationCreate,
     OrganizationUpdate,
     OrganizationResponse,
     MemberResponse,
+    OrganizationUsageResponse,
 )
 from app.controllers.common.errors import NotFoundError, ForbiddenError, BadRequestError
 from app.controllers.common.deps import get_org_membership
@@ -25,6 +27,11 @@ router = APIRouter()
 def get_org_service(db: Session = Depends(get_db)) -> OrganizationService:
     """Get organization service instance."""
     return OrganizationService(db)
+
+
+def get_plan_limit_service(db: Session = Depends(get_db)) -> PlanLimitService:
+    """Get plan limit service instance."""
+    return PlanLimitService(db)
 
 
 @router.get("", response_model=List[OrganizationResponse])
@@ -170,3 +177,40 @@ def remove_member(
     if not org_service.remove_member(org_id, current_user.id, user_id):
         raise ForbiddenError("Only owner can remove members")
     return {"message": "Member removed successfully"}
+
+
+@router.get("/{org_id}/usage", response_model=OrganizationUsageResponse)
+def get_organization_usage(
+    org_id: str,
+    current_user: User = Depends(get_current_user),
+    org_service: OrganizationService = Depends(get_org_service),
+    plan_limit_service: PlanLimitService = Depends(get_plan_limit_service),
+    db: Session = Depends(get_db),
+):
+    """Get organization usage and limits."""
+    get_org_membership(org_id, current_user, db)
+
+    # Get organization to determine plan
+    org = org_service.get_organization(org_id, current_user.id)
+    if not org:
+        raise NotFoundError("Organization")
+
+    plan = org.plan or "free"
+    limits = plan_limit_service.get_plan_limits(plan)
+    usage = plan_limit_service.get_organization_usage(org_id)
+    remaining = plan_limit_service.get_remaining_limits(org_id, plan)
+
+    return OrganizationUsageResponse(
+        plan=plan,
+        apartments_used=usage["apartments"],
+        rooms_used=usage["rooms"],
+        members_used=usage["members"],
+        max_apartments=limits.max_apartments,
+        max_rooms=limits.max_rooms,
+        max_members=limits.max_members,
+        apartments_remaining=remaining["apartments"],
+        rooms_remaining=remaining["rooms"],
+        members_remaining=remaining["members"],
+        can_invite_members=limits.can_create_team,
+        can_create_team=limits.can_create_team,
+    )

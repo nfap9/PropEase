@@ -1,6 +1,6 @@
 from sqlalchemy import String, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 import enum
 from app.configs.database import Base
 from app.models.base import TimestampMixin, ULIDMixin
@@ -8,6 +8,7 @@ from app.models.base import TimestampMixin, ULIDMixin
 if TYPE_CHECKING:
     from app.models.organization import Organization
     from app.models.lease import Lease
+    from app.models.utility_config import UtilityConfig
 
 
 class RoomStatus(str, enum.Enum):
@@ -28,6 +29,9 @@ class Apartment(Base, TimestampMixin, ULIDMixin):
     organization: Mapped["Organization"] = relationship("Organization", back_populates="apartments")
     rooms: Mapped[List["Room"]] = relationship(
         "Room", back_populates="apartment", cascade="all, delete-orphan"
+    )
+    utility_config: Mapped[Optional["UtilityConfig"]] = relationship(
+        "UtilityConfig", back_populates="apartment", uselist=False, cascade="all, delete-orphan"
     )
 
 

@@ -1,12 +1,13 @@
 from sqlalchemy import String, ForeignKey, Enum as SQLEnum, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 import enum
 from app.configs.database import Base
 from app.models.base import TimestampMixin, ULIDMixin
 
 if TYPE_CHECKING:
     from app.models.user import User
+    from app.models.subscription import OrganizationSubscription
 
 
 class MemberRole(str, enum.Enum):
@@ -33,6 +34,9 @@ class Organization(Base, TimestampMixin, ULIDMixin):
     )
     tenants: Mapped[List["Tenant"]] = relationship(
         "Tenant", back_populates="organization", cascade="all, delete-orphan"
+    )
+    subscription: Mapped[Optional["OrganizationSubscription"]] = relationship(
+        "OrganizationSubscription", back_populates="organization", uselist=False, cascade="all, delete-orphan"
     )
 
 

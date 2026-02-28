@@ -1,5 +1,5 @@
 import api from './client';
-import { Apartment, ApartmentWithStats, Room, RoomBatchCreate } from '@/types';
+import { Apartment, ApartmentWithStats, Room, RoomBatchCreate, UtilityConfig, UtilityConfigCreate, UtilityConfigUpdate } from '@/types';
 
 export const apartmentsApi = {
   list: async (orgId: string): Promise<ApartmentWithStats[]> => {
@@ -68,6 +68,33 @@ export const roomsApi = {
 
   delete: async (orgId: string, id: string): Promise<void> => {
     await api.delete(`/apartments/rooms/${id}`, { params: { org_id: orgId } });
+  },
+};
+
+export const utilityConfigApi = {
+  get: async (orgId: string, apartmentId: string): Promise<UtilityConfig> => {
+    const response = await api.get<UtilityConfig>(`/apartments/${apartmentId}/utility-config`, {
+      params: { org_id: orgId },
+    });
+    return response.data;
+  },
+
+  createOrUpdate: async (orgId: string, apartmentId: string, data: UtilityConfigCreate): Promise<UtilityConfig> => {
+    const response = await api.post<UtilityConfig>(`/apartments/${apartmentId}/utility-config`, data, {
+      params: { org_id: orgId },
+    });
+    return response.data;
+  },
+
+  update: async (orgId: string, apartmentId: string, data: UtilityConfigUpdate): Promise<UtilityConfig> => {
+    const response = await api.put<UtilityConfig>(`/apartments/${apartmentId}/utility-config`, data, {
+      params: { org_id: orgId },
+    });
+    return response.data;
+  },
+
+  delete: async (orgId: string, apartmentId: string): Promise<void> => {
+    await api.delete(`/apartments/${apartmentId}/utility-config`, { params: { org_id: orgId } });
   },
 };
 

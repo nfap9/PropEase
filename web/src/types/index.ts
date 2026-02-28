@@ -56,6 +56,21 @@ export interface OrganizationMember {
   created_at: string;
 }
 
+export interface OrganizationUsage {
+  plan: string;
+  apartments_used: number;
+  rooms_used: number;
+  members_used: number;
+  max_apartments: number;  // -1 表示无限制
+  max_rooms: number;  // -1 表示无限制
+  max_members: number;  // -1 表示无限制
+  apartments_remaining: number;  // -1 表示无限制
+  rooms_remaining: number;  // -1 表示无限制
+  members_remaining: number;  // -1 表示无限制
+  can_invite_members: boolean;
+  can_create_team: boolean;
+}
+
 // Apartment & Room types
 export type RoomStatus = 'available' | 'occupied' | 'maintenance';
 
@@ -98,6 +113,41 @@ export interface RoomBatchCreate {
   layout?: string;  // 户型
   monthly_rent: number;
   area?: number;
+  notes?: string;
+}
+
+// UtilityConfig types
+export interface UtilityConfig {
+  id: string;
+  apartment_id: string;
+  water_price_per_unit: number | null;  // 水费单价（元/吨）
+  electricity_price_per_unit: number | null;  // 电费单价（元/度）
+  internet_fee: number | null;  // 网费（月/元）
+  management_fee: number | null;  // 管理费（月/元）
+  service_fee: number | null;  // 服务费（月/元）
+  effective_from: string;  // 生效日期
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UtilityConfigCreate {
+  water_price_per_unit?: number;
+  electricity_price_per_unit?: number;
+  internet_fee?: number;
+  management_fee?: number;
+  service_fee?: number;
+  effective_from: string;
+  notes?: string;
+}
+
+export interface UtilityConfigUpdate {
+  water_price_per_unit?: number;
+  electricity_price_per_unit?: number;
+  internet_fee?: number;
+  management_fee?: number;
+  service_fee?: number;
+  effective_from?: string;
   notes?: string;
 }
 

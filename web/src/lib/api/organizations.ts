@@ -1,5 +1,5 @@
 import api from './client';
-import { Organization, OrganizationMember, MemberRole } from '@/types';
+import { Organization, OrganizationMember, OrganizationUsage, MemberRole } from '@/types';
 
 export const organizationsApi = {
   list: async (): Promise<Organization[]> => {
@@ -19,6 +19,11 @@ export const organizationsApi = {
 
   update: async (id: string, data: Partial<Organization>): Promise<Organization> => {
     const response = await api.put<Organization>(`/organizations/${id}`, data);
+    return response.data;
+  },
+
+  getUsage: async (orgId: string): Promise<OrganizationUsage> => {
+    const response = await api.get<OrganizationUsage>(`/organizations/${orgId}/usage`);
     return response.data;
   },
 

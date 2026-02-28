@@ -1,7 +1,7 @@
 export { default as api } from './client';
 export { authApi } from './auth';
 export { organizationsApi } from './organizations';
-export { apartmentsApi, roomsApi } from './apartments';
+export { apartmentsApi, roomsApi, utilityConfigApi } from './apartments';
 export { tenantsApi } from './tenants';
 export { leasesApi } from './leases';
 export { billsApi } from './bills';

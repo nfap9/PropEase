@@ -68,8 +68,10 @@ import {
   ArrowLeft as ArrowLeftIcon,
   CheckCircle,
   X,
+  Settings,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { UtilityConfigDialog } from './components/UtilityConfigDialog';
 
 const roomSchema = z.object({
   room_number: z.string().min(1, '请输入房间号'),
@@ -158,6 +160,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   const [isBatchEditMode, setIsBatchEditMode] = useState(false);
   const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(new Set());
   const [isBatchEditOpen, setIsBatchEditOpen] = useState(false);
+  const [isUtilityConfigOpen, setIsUtilityConfigOpen] = useState(false);
 
   // 获取公寓信息
   const { data: apartment, isLoading: apartmentLoading } = useQuery({
@@ -673,6 +676,10 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                   <Zap className="mr-2 h-4 w-4" />
                   水电录入
                 </Link>
+              </Button>
+              <Button variant="outline" onClick={() => setIsUtilityConfigOpen(true)}>
+                <Settings className="mr-2 h-4 w-4" />
+                费用配置
               </Button>
             </div>
           </CardContent>
@@ -1467,6 +1474,15 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* 费用配置对话框 */}
+      <UtilityConfigDialog
+        open={isUtilityConfigOpen}
+        onOpenChange={setIsUtilityConfigOpen}
+        orgId={orgId!}
+        apartmentId={apartmentId}
+        apartmentName={apartment?.name || ''}
+      />
     </MainLayout>
     </PermissionPageGuard>
   );
