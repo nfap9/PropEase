@@ -1,15 +1,15 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime
+
+from pydantic import BaseModel
 
 
 class TenantBase(BaseModel):
     name: str
-    phone: Optional[str] = None
-    id_card: Optional[str] = None
-    emergency_contact: Optional[str] = None
-    emergency_phone: Optional[str] = None
-    notes: Optional[str] = None
+    phone: str | None = None
+    id_card: str | None = None
+    emergency_contact: str | None = None
+    emergency_phone: str | None = None
+    notes: str | None = None
 
 
 class TenantCreate(TenantBase):
@@ -17,12 +17,12 @@ class TenantCreate(TenantBase):
 
 
 class TenantUpdate(BaseModel):
-    name: Optional[str] = None
-    phone: Optional[str] = None
-    id_card: Optional[str] = None
-    emergency_contact: Optional[str] = None
-    emergency_phone: Optional[str] = None
-    notes: Optional[str] = None
+    name: str | None = None
+    phone: str | None = None
+    id_card: str | None = None
+    emergency_contact: str | None = None
+    emergency_phone: str | None = None
+    notes: str | None = None
 
 
 class TenantResponse(TenantBase):

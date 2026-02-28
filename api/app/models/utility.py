@@ -1,7 +1,9 @@
-from sqlalchemy import String, ForeignKey, Integer, Numeric, Date
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING
 from datetime import date
+from typing import TYPE_CHECKING
+
+from sqlalchemy import Date, ForeignKey, Integer, Numeric, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.configs.database import Base
 from app.models.base import TimestampMixin, ULIDMixin
 

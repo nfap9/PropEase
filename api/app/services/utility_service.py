@@ -1,19 +1,20 @@
 """
 Utility service for utility reading management.
 """
-from typing import List, Optional
+
 from datetime import date
+
 from sqlalchemy.orm import Session
 
-from app.services.base import BaseService
-from app.repositories.utility_repository import UtilityRepository
-from app.repositories.apartment_repository import RoomRepository
 from app.models.utility import UtilityReading
+from app.repositories.apartment_repository import RoomRepository
+from app.repositories.utility_repository import UtilityRepository
 from app.schemas.utility import (
+    UtilityExportRoom,
     UtilityReadingCreate,
     UtilityReadingUpdate,
-    UtilityExportRoom,
 )
+from app.services.base import BaseService
 
 
 class UtilityService(BaseService):
@@ -27,14 +28,14 @@ class UtilityService(BaseService):
     def list_readings(
         self,
         org_id: str,
-        room_id: Optional[str] = None,
-        period_year: Optional[int] = None,
-        period_month: Optional[int] = None,
-    ) -> List[UtilityReading]:
+        room_id: str | None = None,
+        period_year: int | None = None,
+        period_month: int | None = None,
+    ) -> list[UtilityReading]:
         """List utility readings in organization."""
         return self.utility_repo.find_by_organization(org_id, room_id, period_year, period_month)
 
-    def get_reading(self, reading_id: str, org_id: str) -> Optional[UtilityReading]:
+    def get_reading(self, reading_id: str, org_id: str) -> UtilityReading | None:
         """Get a reading by ID within organization."""
         reading = self.utility_repo.get(reading_id)
         if reading and reading.room.apartment.organization_id == org_id:
@@ -66,7 +67,7 @@ class UtilityService(BaseService):
         period_month: int,
         reading_date: date,
         readings: list[dict],
-    ) -> List[UtilityReading]:
+    ) -> list[UtilityReading]:
         """Batch create utility readings."""
         created = []
         for reading_data in readings:
@@ -87,9 +88,7 @@ class UtilityService(BaseService):
 
         return created
 
-    def update_reading(
-        self, reading_id: str, org_id: str, data: UtilityReadingUpdate
-    ) -> Optional[UtilityReading]:
+    def update_reading(self, reading_id: str, org_id: str, data: UtilityReadingUpdate) -> UtilityReading | None:
         """Update a utility reading."""
         reading = self.get_reading(reading_id, org_id)
         if not reading:
@@ -109,8 +108,8 @@ class UtilityService(BaseService):
         org_id: str,
         period_year: int,
         period_month: int,
-        days_range: Optional[int] = None,
-    ) -> List[UtilityExportRoom]:
+        days_range: int | None = None,
+    ) -> list[UtilityExportRoom]:
         """
         导出待录入水电的房间列表。
 

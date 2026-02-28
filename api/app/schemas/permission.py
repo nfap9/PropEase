@@ -1,11 +1,12 @@
 """
 Permission schemas for API request/response.
 """
-from pydantic import BaseModel
-from datetime import datetime
-from typing import Optional, List
 
-from app.models.permission import Resource, Action, SystemRole
+from datetime import datetime
+
+from pydantic import BaseModel
+
+from app.models.permission import Action, Resource, SystemRole
 
 
 class PermissionBase(BaseModel):
@@ -13,7 +14,7 @@ class PermissionBase(BaseModel):
     action: Action
     code: str
     name: str
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class PermissionResponse(PermissionBase):
@@ -26,22 +27,22 @@ class PermissionResponse(PermissionBase):
 
 class PermissionGroupedResponse(BaseModel):
     resource: str
-    permissions: List[PermissionResponse]
+    permissions: list[PermissionResponse]
 
 
 class UpdateRolePermissionsRequest(BaseModel):
-    permission_codes: List[str]
+    permission_codes: list[str]
 
 
 class RolePermissionsResponse(BaseModel):
     role: str
-    permissions: List[PermissionResponse]
+    permissions: list[PermissionResponse]
 
 
 class SystemRoleConfigResponse(BaseModel):
     role: SystemRole
     name: str
-    description: Optional[str]
+    description: str | None
     is_active: bool
     created_at: datetime
 
@@ -50,18 +51,18 @@ class SystemRoleConfigResponse(BaseModel):
 
 
 class SystemRoleConfigWithPermissions(SystemRoleConfigResponse):
-    permissions: List[PermissionResponse]
+    permissions: list[PermissionResponse]
 
 
 class UserSystemRoleResponse(BaseModel):
     role: SystemRole
     granted_at: datetime
-    granted_by_name: Optional[str] = None
+    granted_by_name: str | None = None
 
 
 class UserPermissionsResponse(BaseModel):
-    permissions: List[str]
-    system_roles: List[SystemRole]
+    permissions: list[str]
+    system_roles: list[SystemRole]
     is_super_admin: bool
 
 

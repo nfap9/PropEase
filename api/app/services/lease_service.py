@@ -1,16 +1,16 @@
 """
 Lease service for lease management.
 """
-from typing import List, Optional
-from datetime import date
+
+
 from sqlalchemy.orm import Session
 
-from app.services.base import BaseService
-from app.repositories.lease_repository import LeaseRepository
-from app.repositories.apartment_repository import RoomRepository
-from app.models.lease import Lease
 from app.models.apartment import RoomStatus
+from app.models.lease import Lease
+from app.repositories.apartment_repository import RoomRepository
+from app.repositories.lease_repository import LeaseRepository
 from app.schemas.lease import LeaseCreate, LeaseUpdate
+from app.services.base import BaseService
 
 
 class LeaseService(BaseService):
@@ -21,13 +21,13 @@ class LeaseService(BaseService):
         self.lease_repo = LeaseRepository(db)
         self.room_repo = RoomRepository(db)
 
-    def list_leases(self, org_id: str, active_only: bool = False) -> List[Lease]:
+    def list_leases(self, org_id: str, active_only: bool = False) -> list[Lease]:
         """List all leases in an organization."""
         if active_only:
             return self.lease_repo.find_active_by_organization(org_id)
         return self.lease_repo.find_by_organization(org_id)
 
-    def get_lease(self, lease_id: str, org_id: str) -> Optional[Lease]:
+    def get_lease(self, lease_id: str, org_id: str) -> Lease | None:
         """Get a lease by ID within an organization."""
         lease = self.lease_repo.get(lease_id)
         if lease and lease.room.apartment.organization_id == org_id:
@@ -63,9 +63,7 @@ class LeaseService(BaseService):
             raise ValueError("Room is not available")
 
         # Check for overlapping leases
-        if self.lease_repo.has_overlapping_lease(
-            data.room_id, data.start_date, data.end_date
-        ):
+        if self.lease_repo.has_overlapping_lease(data.room_id, data.start_date, data.end_date):
             raise ValueError("Room has an overlapping lease for this period")
 
         # Create lease
@@ -89,9 +87,7 @@ class LeaseService(BaseService):
 
         return lease
 
-    def update_lease(
-        self, lease_id: str, org_id: str, data: LeaseUpdate
-    ) -> Optional[Lease]:
+    def update_lease(self, lease_id: str, org_id: str, data: LeaseUpdate) -> Lease | None:
         """Update a lease."""
         lease = self.get_lease(lease_id, org_id)
         if not lease:
@@ -101,15 +97,13 @@ class LeaseService(BaseService):
         if data.end_date is not None:
             start = lease.start_date
             end = data.end_date or lease.end_date
-            if self.lease_repo.has_overlapping_lease(
-                lease.room_id, start, end, exclude_id=lease_id
-            ):
+            if self.lease_repo.has_overlapping_lease(lease.room_id, start, end, exclude_id=lease_id):
                 raise ValueError("Room has an overlapping lease for this period")
 
         update_data = data.model_dump(exclude_unset=True)
         return self.lease_repo.update(lease_id, **update_data)
 
-    def terminate_lease(self, lease_id: str, org_id: str) -> Optional[Lease]:
+    def terminate_lease(self, lease_id: str, org_id: str) -> Lease | None:
         """Terminate a lease and release the room."""
         lease = self.get_lease(lease_id, org_id)
         if not lease:

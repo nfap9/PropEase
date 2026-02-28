@@ -1,7 +1,9 @@
 """
 自定义SQLAlchemy类型定义。
 """
+
 from typing import Any
+
 from sqlalchemy import String, TypeDecorator
 
 
@@ -17,6 +19,7 @@ class ULIDType(TypeDecorator):
     - 时间排序，支持索引优化
     - URL友好，无特殊字符
     """
+
     impl = String(26)
     cache_ok = True
 

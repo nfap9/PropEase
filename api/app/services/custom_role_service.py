@@ -1,16 +1,17 @@
 """
 Custom role service for organization role management.
 """
+
 import json
-from typing import List, Optional
+
 from sqlalchemy.orm import Session
 
-from app.services.base import BaseService
-from app.repositories.custom_role_repository import CustomRoleRepository
-from app.repositories.organization_repository import OrganizationMemberRepository
 from app.models.custom_role import CustomRole
 from app.models.organization import MemberRole
+from app.repositories.custom_role_repository import CustomRoleRepository
+from app.repositories.organization_repository import OrganizationMemberRepository
 from app.schemas.custom_role import CustomRoleCreate, CustomRoleUpdate
+from app.services.base import BaseService
 
 
 class CustomRoleService(BaseService):
@@ -19,31 +20,58 @@ class CustomRoleService(BaseService):
     # Default permissions for preset roles
     DEFAULT_ROLE_PERMISSIONS = {
         "管理员": [
-            "apartment:view", "apartment:create", "apartment:edit",
-            "room:view", "room:create", "room:edit",
-            "tenant:view", "tenant:create", "tenant:edit",
-            "lease:view", "lease:create", "lease:edit",
-            "bill:view", "bill:create", "bill:edit",
-            "utility:view", "utility:create", "utility:edit",
-            "report:view", "report:export",
+            "apartment:view",
+            "apartment:create",
+            "apartment:edit",
+            "room:view",
+            "room:create",
+            "room:edit",
+            "tenant:view",
+            "tenant:create",
+            "tenant:edit",
+            "lease:view",
+            "lease:create",
+            "lease:edit",
+            "bill:view",
+            "bill:create",
+            "bill:edit",
+            "utility:view",
+            "utility:create",
+            "utility:edit",
+            "report:view",
+            "report:export",
         ],
         "财务": [
             "apartment:view",
             "room:view",
             "tenant:view",
             "lease:view",
-            "bill:view", "bill:create", "bill:edit",
+            "bill:view",
+            "bill:create",
+            "bill:edit",
             "utility:view",
-            "report:view", "report:export",
+            "report:view",
+            "report:export",
         ],
         "运营": [
-            "apartment:view", "apartment:create", "apartment:edit",
-            "room:view", "room:create", "room:edit",
-            "tenant:view", "tenant:create", "tenant:edit",
-            "lease:view", "lease:create", "lease:edit",
+            "apartment:view",
+            "apartment:create",
+            "apartment:edit",
+            "room:view",
+            "room:create",
+            "room:edit",
+            "tenant:view",
+            "tenant:create",
+            "tenant:edit",
+            "lease:view",
+            "lease:create",
+            "lease:edit",
             "bill:view",
-            "utility:view", "utility:create", "utility:edit",
-            "report:view", "report:export",
+            "utility:view",
+            "utility:create",
+            "utility:edit",
+            "report:view",
+            "report:export",
         ],
     }
 
@@ -52,11 +80,11 @@ class CustomRoleService(BaseService):
         self.role_repo = CustomRoleRepository(db)
         self.member_repo = OrganizationMemberRepository(db)
 
-    def list_roles(self, org_id: str, active_only: bool = True) -> List[CustomRole]:
+    def list_roles(self, org_id: str, active_only: bool = True) -> list[CustomRole]:
         """List all custom roles in an organization."""
         return self.role_repo.find_by_organization(org_id, active_only)
 
-    def get_role(self, role_id: str, org_id: str) -> Optional[CustomRole]:
+    def get_role(self, role_id: str, org_id: str) -> CustomRole | None:
         """Get a custom role by ID within an organization."""
         role = self.role_repo.get(role_id)
         if role and role.organization_id == org_id:
@@ -95,9 +123,7 @@ class CustomRoleService(BaseService):
         )
         return self.role_repo.create(role)
 
-    def update_role(
-        self, role_id: str, org_id: str, data: CustomRoleUpdate
-    ) -> Optional[CustomRole]:
+    def update_role(self, role_id: str, org_id: str, data: CustomRoleUpdate) -> CustomRole | None:
         """
         Update a custom role.
 
@@ -162,7 +188,7 @@ class CustomRoleService(BaseService):
 
         return self.role_repo.delete(role_id)
 
-    def initialize_default_roles(self, org_id: str) -> List[CustomRole]:
+    def initialize_default_roles(self, org_id: str) -> list[CustomRole]:
         """
         Initialize default custom roles for a new organization.
 
@@ -197,7 +223,7 @@ class CustomRoleService(BaseService):
 
         return created_roles
 
-    def get_role_permissions(self, role_id: str, org_id: str) -> List[str]:
+    def get_role_permissions(self, role_id: str, org_id: str) -> list[str]:
         """
         Get permissions for a role.
 
@@ -217,9 +243,7 @@ class CustomRoleService(BaseService):
         except (json.JSONDecodeError, TypeError):
             return []
 
-    def get_member_effective_permissions(
-        self, org_id: str, user_id: str
-    ) -> List[str]:
+    def get_member_effective_permissions(self, org_id: str, user_id: str) -> list[str]:
         """
         Get effective permissions for a member.
 
@@ -244,9 +268,7 @@ class CustomRoleService(BaseService):
 
         # Add permissions from custom role
         if membership.custom_role_id:
-            custom_perms = self.get_role_permissions(
-                membership.custom_role_id, org_id
-            )
+            custom_perms = self.get_role_permissions(membership.custom_role_id, org_id)
             permissions.update(custom_perms)
 
         return list(permissions)

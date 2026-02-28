@@ -1,18 +1,20 @@
 """
 Plan limits service for checking organization usage limits.
 """
-from typing import Dict, Optional
-from sqlalchemy.orm import Session
+
 from dataclasses import dataclass
 
-from app.services.base import BaseService
+from sqlalchemy.orm import Session
+
 from app.repositories.apartment_repository import ApartmentRepository, RoomRepository
 from app.repositories.organization_repository import OrganizationMemberRepository
+from app.services.base import BaseService
 
 
 @dataclass
 class PlanLimits:
     """Plan limits configuration."""
+
     max_apartments: int  # -1 means unlimited
     max_rooms: int  # -1 means unlimited
     max_members: int  # -1 means unlimited
@@ -20,7 +22,7 @@ class PlanLimits:
 
 
 # Default plan limits configuration
-PLAN_LIMITS: Dict[str, PlanLimits] = {
+PLAN_LIMITS: dict[str, PlanLimits] = {
     "free": PlanLimits(
         max_apartments=1,
         max_rooms=100,
@@ -63,7 +65,7 @@ class PlanLimitService(BaseService):
         """
         return PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
 
-    def get_organization_usage(self, org_id: str) -> Dict[str, int]:
+    def get_organization_usage(self, org_id: str) -> dict[str, int]:
         """
         Get current usage for an organization.
 
@@ -143,7 +145,7 @@ class PlanLimitService(BaseService):
         usage = self.get_organization_usage(org_id)
         return usage["members"] < limits.max_members
 
-    def get_remaining_limits(self, org_id: str, plan: str) -> Dict[str, int]:
+    def get_remaining_limits(self, org_id: str, plan: str) -> dict[str, int]:
         """
         Get remaining limits for an organization.
 
@@ -158,25 +160,13 @@ class PlanLimitService(BaseService):
         usage = self.get_organization_usage(org_id)
 
         return {
-            "apartments": (
-                limits.max_apartments - usage["apartments"]
-                if limits.max_apartments != -1
-                else -1
-            ),
-            "rooms": (
-                limits.max_rooms - usage["rooms"]
-                if limits.max_rooms != -1
-                else -1
-            ),
-            "members": (
-                limits.max_members - usage["members"]
-                if limits.max_members != -1
-                else -1
-            ),
+            "apartments": (limits.max_apartments - usage["apartments"] if limits.max_apartments != -1 else -1),
+            "rooms": (limits.max_rooms - usage["rooms"] if limits.max_rooms != -1 else -1),
+            "members": (limits.max_members - usage["members"] if limits.max_members != -1 else -1),
             "can_invite": limits.can_create_team,
         }
 
-    def check_apartment_limit(self, org_id: str, plan: str) -> Optional[str]:
+    def check_apartment_limit(self, org_id: str, plan: str) -> str | None:
         """
         Check apartment limit and return error message if exceeded.
 
@@ -196,7 +186,7 @@ class PlanLimitService(BaseService):
             return f"已达到公寓数量上限（{limits.max_apartments} 个），请升级套餐"
         return None
 
-    def check_room_limit(self, org_id: str, plan: str, count: int = 1) -> Optional[str]:
+    def check_room_limit(self, org_id: str, plan: str, count: int = 1) -> str | None:
         """
         Check room limit and return error message if exceeded.
 
@@ -218,7 +208,7 @@ class PlanLimitService(BaseService):
             return f"房间数量不足，当前可创建 {remaining} 个房间，请升级套餐"
         return None
 
-    def check_member_limit(self, org_id: str, plan: str) -> Optional[str]:
+    def check_member_limit(self, org_id: str, plan: str) -> str | None:
         """
         Check member limit and return error message if exceeded.
 

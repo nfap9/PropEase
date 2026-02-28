@@ -1,9 +1,9 @@
 """
 Default permission configurations for roles.
 """
-from app.models.permission import Resource, Action, SystemRole
-from app.models.organization import MemberRole
 
+from app.models.organization import MemberRole
+from app.models.permission import Action, Resource, SystemRole
 
 # 资源中文名称
 RESOURCE_NAMES: dict[Resource, str] = {

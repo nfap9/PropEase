@@ -1,37 +1,40 @@
 """
 Organization controller - handles organization management.
 """
-from typing import List
+
+
 from fastapi import APIRouter, Depends, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.configs.database import get_db
+from app.controllers.common.deps import get_org_membership
+from app.controllers.common.errors import BadRequestError, ForbiddenError, NotFoundError
 from app.dependencies import get_current_user
-from app.models.user import User
 from app.models.organization import MemberRole
-from app.services.organization_service import OrganizationService
-from app.services.plan_limit_service import PlanLimitService
+from app.models.user import User
 from app.schemas.organization import (
-    OrganizationCreate,
-    OrganizationUpdate,
-    OrganizationResponse,
     MemberResponse,
+    OrganizationCreate,
+    OrganizationResponse,
+    OrganizationUpdate,
     OrganizationUsageResponse,
 )
-from app.controllers.common.errors import NotFoundError, ForbiddenError, BadRequestError
-from app.controllers.common.deps import get_org_membership
+from app.services.organization_service import OrganizationService
+from app.services.plan_limit_service import PlanLimitService
 
 router = APIRouter()
 
 
 class MigratePersonalTeamRequest(BaseModel):
     """Request body for personal team migration."""
+
     target_org_id: str
 
 
 class MigrationStatsResponse(BaseModel):
     """Response for migration statistics."""
+
     apartments: int
     rooms: int
     tenants: int
@@ -43,8 +46,9 @@ class MigrationStatsResponse(BaseModel):
 
 class DeletionPreviewResponse(BaseModel):
     """Response for organization deletion preview."""
+
     can_delete: bool
-    blockers: List[str]
+    blockers: list[str]
     stats: dict
     org_name: str
     is_personal: bool
@@ -52,6 +56,7 @@ class DeletionPreviewResponse(BaseModel):
 
 class ConfirmDeletionRequest(BaseModel):
     """Request body for confirming organization deletion."""
+
     confirmed_name: str
 
 
@@ -65,7 +70,7 @@ def get_plan_limit_service(db: Session = Depends(get_db)) -> PlanLimitService:
     return PlanLimitService(db)
 
 
-@router.get("", response_model=List[OrganizationResponse])
+@router.get("", response_model=list[OrganizationResponse])
 def list_organizations(
     current_user: User = Depends(get_current_user),
     org_service: OrganizationService = Depends(get_org_service),
@@ -152,7 +157,7 @@ def delete_organization(
         raise BadRequestError(str(e))
 
 
-@router.get("/{org_id}/members", response_model=List[MemberResponse])
+@router.get("/{org_id}/members", response_model=list[MemberResponse])
 def list_members(
     org_id: str,
     current_user: User = Depends(get_current_user),

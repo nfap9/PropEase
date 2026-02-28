@@ -1,12 +1,12 @@
 """
 Notification repository for data access operations.
 """
-from typing import List, Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
 
-from app.repositories.base import BaseRepository
+
+from sqlalchemy.orm import Session
+
 from app.models.notification import Notification, NotificationType
+from app.repositories.base import BaseRepository
 
 
 class NotificationRepository(BaseRepository[Notification]):
@@ -21,37 +21,41 @@ class NotificationRepository(BaseRepository[Notification]):
         unread_only: bool = False,
         limit: int = 50,
         offset: int = 0,
-    ) -> List[Notification]:
+    ) -> list[Notification]:
         """Find notifications for a user."""
-        query = self.db.query(Notification).filter(
-            Notification.user_id == user_id
-        )
+        query = self.db.query(Notification).filter(Notification.user_id == user_id)
         if unread_only:
             query = query.filter(Notification.is_read == False)
-        return query.order_by(
-            Notification.created_at.desc()
-        ).offset(offset).limit(limit).all()
+        return query.order_by(Notification.created_at.desc()).offset(offset).limit(limit).all()
 
     def count_unread(self, user_id: str) -> int:
         """Count unread notifications for a user."""
-        return self.db.query(Notification).filter(
-            Notification.user_id == user_id,
-            Notification.is_read == False,
-        ).count()
+        return (
+            self.db.query(Notification)
+            .filter(
+                Notification.user_id == user_id,
+                Notification.is_read == False,
+            )
+            .count()
+        )
 
     def mark_as_read(self, notification_id: str, user_id: str) -> bool:
         """Mark a notification as read."""
-        notification = self.db.query(Notification).filter(
-            Notification.id == notification_id,
-            Notification.user_id == user_id,
-        ).first()
+        notification = (
+            self.db.query(Notification)
+            .filter(
+                Notification.id == notification_id,
+                Notification.user_id == user_id,
+            )
+            .first()
+        )
         if notification:
             notification.is_read = True
             self.db.commit()
             return True
         return False
 
-    def mark_all_as_read(self, user_id: str, org_id: Optional[str] = None) -> int:
+    def mark_all_as_read(self, user_id: str, org_id: str | None = None) -> int:
         """Mark all notifications as read for a user."""
         query = self.db.query(Notification).filter(
             Notification.user_id == user_id,
@@ -71,13 +75,17 @@ class NotificationRepository(BaseRepository[Notification]):
         notification_type: NotificationType,
         metadata_key: str,
         metadata_value: str,
-    ) -> Optional[Notification]:
+    ) -> Notification | None:
         """Find a notification by type and metadata value."""
-        return self.db.query(Notification).filter(
-            Notification.user_id == user_id,
-            Notification.type == notification_type,
-            Notification.metadata[metadata_key].as_string() == metadata_value,
-        ).first()
+        return (
+            self.db.query(Notification)
+            .filter(
+                Notification.user_id == user_id,
+                Notification.type == notification_type,
+                Notification.metadata[metadata_key].as_string() == metadata_value,
+            )
+            .first()
+        )
 
     def exists_for_entity(
         self,
@@ -95,8 +103,13 @@ class NotificationRepository(BaseRepository[Notification]):
         from datetime import datetime, timedelta
 
         cutoff = datetime.utcnow() - timedelta(days=days)
-        return self.db.query(Notification).filter(
-            Notification.user_id == user_id,
-            Notification.type == notification_type,
-            Notification.created_at >= cutoff,
-        ).first() is not None
+        return (
+            self.db.query(Notification)
+            .filter(
+                Notification.user_id == user_id,
+                Notification.type == notification_type,
+                Notification.created_at >= cutoff,
+            )
+            .first()
+            is not None
+        )

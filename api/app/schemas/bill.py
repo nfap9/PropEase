@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import date, datetime
+
+from pydantic import BaseModel
+
 from app.models.bill import BillStatus, PaymentMethod
 
 
@@ -13,7 +14,7 @@ class BillBase(BaseModel):
     water_amount: float = 0
     electricity_amount: float = 0
     other_amount: float = 0
-    notes: Optional[str] = None
+    notes: str | None = None
 
 
 class BillCreate(BillBase):
@@ -21,12 +22,12 @@ class BillCreate(BillBase):
 
 
 class BillUpdate(BaseModel):
-    due_date: Optional[date] = None
-    rent_amount: Optional[float] = None
-    water_amount: Optional[float] = None
-    electricity_amount: Optional[float] = None
-    other_amount: Optional[float] = None
-    notes: Optional[str] = None
+    due_date: date | None = None
+    rent_amount: float | None = None
+    water_amount: float | None = None
+    electricity_amount: float | None = None
+    other_amount: float | None = None
+    notes: str | None = None
 
 
 class BillResponse(BillBase):
@@ -44,8 +45,8 @@ class PaymentBase(BaseModel):
     amount: float
     payment_date: date
     payment_method: PaymentMethod = PaymentMethod.CASH
-    reference: Optional[str] = None
-    notes: Optional[str] = None
+    reference: str | None = None
+    notes: str | None = None
 
 
 class PaymentCreate(PaymentBase):
@@ -65,4 +66,4 @@ class GenerateBillsRequest(BaseModel):
     bill_year: int
     bill_month: int
     due_date: date
-    lease_ids: Optional[list[str]] = None
+    lease_ids: list[str] | None = None

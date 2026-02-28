@@ -1,6 +1,7 @@
 """
 Base service class for business logic.
 """
+
 from sqlalchemy.orm import Session
 
 

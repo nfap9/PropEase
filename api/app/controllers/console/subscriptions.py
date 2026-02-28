@@ -1,26 +1,27 @@
 """
 Subscription controller - handles subscription management.
 """
-from typing import List
+
+
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.configs.database import get_db
+from app.controllers.common.deps import get_org_membership, require_role
+from app.controllers.common.errors import BadRequestError, NotFoundError
 from app.dependencies import get_current_user
-from app.models.user import User
 from app.models.organization import MemberRole
-from app.services.subscription_service import SubscriptionService
+from app.models.user import User
 from app.schemas.subscription import (
-    SubscriptionPlanResponse,
-    SubscriptionPlanCreate,
-    SubscriptionPlanUpdate,
+    CancelSubscriptionRequest,
+    ChangePlanRequest,
     OrganizationSubscriptionResponse,
     SubscribeRequest,
-    ChangePlanRequest,
-    CancelSubscriptionRequest,
+    SubscriptionPlanCreate,
+    SubscriptionPlanResponse,
+    SubscriptionPlanUpdate,
 )
-from app.controllers.common.errors import NotFoundError, ForbiddenError, BadRequestError
-from app.controllers.common.deps import get_org_membership, require_role
+from app.services.subscription_service import SubscriptionService
 
 router = APIRouter()
 
@@ -32,7 +33,8 @@ def get_subscription_service(db: Session = Depends(get_db)) -> SubscriptionServi
 
 # ==================== Public Plan Endpoints ====================
 
-@router.get("/plans", response_model=List[SubscriptionPlanResponse])
+
+@router.get("/plans", response_model=list[SubscriptionPlanResponse])
 def list_plans(
     active_only: bool = Query(True, description="只返回激活的套餐"),
     current_user: User = Depends(get_current_user),
@@ -56,6 +58,7 @@ def get_plan(
 
 
 # ==================== Organization Subscription ====================
+
 
 @router.get("/organizations/{org_id}/subscription", response_model=OrganizationSubscriptionResponse)
 def get_organization_subscription(
@@ -87,7 +90,7 @@ def get_subscription_status(
 @router.post(
     "/organizations/{org_id}/subscription",
     response_model=OrganizationSubscriptionResponse,
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
 )
 def subscribe(
     org_id: str,
@@ -97,9 +100,7 @@ def subscribe(
     db: Session = Depends(get_db),
 ):
     """Subscribe an organization to a plan."""
-    require_role([MemberRole.OWNER])(
-        get_org_membership(org_id, current_user, db)
-    )
+    require_role([MemberRole.OWNER])(get_org_membership(org_id, current_user, db))
     try:
         subscription = subscription_service.subscribe(org_id, data)
         return subscription
@@ -107,10 +108,7 @@ def subscribe(
         raise BadRequestError(str(e))
 
 
-@router.put(
-    "/organizations/{org_id}/subscription",
-    response_model=OrganizationSubscriptionResponse
-)
+@router.put("/organizations/{org_id}/subscription", response_model=OrganizationSubscriptionResponse)
 def change_plan(
     org_id: str,
     data: ChangePlanRequest,
@@ -119,9 +117,7 @@ def change_plan(
     db: Session = Depends(get_db),
 ):
     """Change subscription plan."""
-    require_role([MemberRole.OWNER])(
-        get_org_membership(org_id, current_user, db)
-    )
+    require_role([MemberRole.OWNER])(get_org_membership(org_id, current_user, db))
     try:
         subscription = subscription_service.change_plan(org_id, data)
         return subscription
@@ -138,9 +134,7 @@ def cancel_subscription(
     db: Session = Depends(get_db),
 ):
     """Cancel subscription."""
-    require_role([MemberRole.OWNER])(
-        get_org_membership(org_id, current_user, db)
-    )
+    require_role([MemberRole.OWNER])(get_org_membership(org_id, current_user, db))
     try:
         reason = data.reason if data else None
         subscription = subscription_service.cancel_subscription(org_id, reason)
@@ -152,11 +146,8 @@ def cancel_subscription(
 # ==================== Admin Plan Management ====================
 # These endpoints are for system admins to manage plans
 
-@router.post(
-    "/admin/plans",
-    response_model=SubscriptionPlanResponse,
-    status_code=status.HTTP_201_CREATED
-)
+
+@router.post("/admin/plans", response_model=SubscriptionPlanResponse, status_code=status.HTTP_201_CREATED)
 def create_plan(
     data: SubscriptionPlanCreate,
     current_user: User = Depends(get_current_user),

@@ -1,24 +1,24 @@
 """
 Subscription service for plan and subscription management.
 """
-from typing import Optional, List
+
 from datetime import date, timedelta
+
 from sqlalchemy.orm import Session
 
-from app.services.base import BaseService
-from app.repositories.subscription_repository import (
-    SubscriptionPlanRepository,
-    OrganizationSubscriptionRepository,
-)
+from app.models.subscription import BillingCycle, OrganizationSubscription, SubscriptionPlan, SubscriptionStatus
 from app.repositories.organization_repository import OrganizationRepository
-from app.models.subscription import SubscriptionPlan, OrganizationSubscription, SubscriptionStatus, BillingCycle
+from app.repositories.subscription_repository import (
+    OrganizationSubscriptionRepository,
+    SubscriptionPlanRepository,
+)
 from app.schemas.subscription import (
+    ChangePlanRequest,
+    SubscribeRequest,
     SubscriptionPlanCreate,
     SubscriptionPlanUpdate,
-    OrganizationSubscriptionCreate,
-    SubscribeRequest,
-    ChangePlanRequest,
 )
+from app.services.base import BaseService
 
 
 class SubscriptionService(BaseService):
@@ -32,7 +32,7 @@ class SubscriptionService(BaseService):
 
     # ==================== Plan Operations ====================
 
-    def list_plans(self, active_only: bool = True) -> List[SubscriptionPlan]:
+    def list_plans(self, active_only: bool = True) -> list[SubscriptionPlan]:
         """
         List all subscription plans.
 
@@ -46,11 +46,11 @@ class SubscriptionService(BaseService):
             return self.plan_repo.find_active_plans()
         return self.plan_repo.get_all(limit=100)
 
-    def get_plan(self, plan_id: str) -> Optional[SubscriptionPlan]:
+    def get_plan(self, plan_id: str) -> SubscriptionPlan | None:
         """Get plan by ID."""
         return self.plan_repo.get(plan_id)
 
-    def get_plan_by_code(self, code: str) -> Optional[SubscriptionPlan]:
+    def get_plan_by_code(self, code: str) -> SubscriptionPlan | None:
         """Get plan by code."""
         return self.plan_repo.find_by_code(code)
 
@@ -66,7 +66,8 @@ class SubscriptionService(BaseService):
             max_rooms=data.max_rooms,
             max_members=data.max_members,
             features=data.features,
-            sort_order=0)
+            sort_order=0,
+        )
 
     def create_plan(self, data: SubscriptionPlanCreate) -> SubscriptionPlan:
         """Create a new subscription plan."""
@@ -84,7 +85,7 @@ class SubscriptionService(BaseService):
         )
         return self.plan_repo.create(plan)
 
-    def update_plan(self, plan_id: str, data: SubscriptionPlanUpdate) -> Optional[SubscriptionPlan]:
+    def update_plan(self, plan_id: str, data: SubscriptionPlanUpdate) -> SubscriptionPlan | None:
         """Update a subscription plan."""
         update_data = data.model_dump(exclude_unset=True)
         return self.plan_repo.update(plan_id, **update_data)
@@ -95,7 +96,7 @@ class SubscriptionService(BaseService):
 
     # ==================== Subscription Operations ====================
 
-    def get_organization_subscription(self, org_id: str) -> Optional[OrganizationSubscription]:
+    def get_organization_subscription(self, org_id: str) -> OrganizationSubscription | None:
         """
         Get subscription for an organization.
 
@@ -129,8 +130,13 @@ class SubscriptionService(BaseService):
         if not free_plan:
             # Create default free plan if not exists
             free_plan = SubscriptionPlan(
-                name="Free", code="free", price_monthly=0, price_yearly=0,
-                max_apartments=1, max_rooms=100, max_members=1
+                name="Free",
+                code="free",
+                price_monthly=0,
+                price_yearly=0,
+                max_apartments=1,
+                max_rooms=100,
+                max_members=1,
             )
 
         # Check for active subscription
@@ -268,7 +274,7 @@ class SubscriptionService(BaseService):
 
         return updated
 
-    def cancel_subscription(self, org_id: str, reason: Optional[str] = None) -> OrganizationSubscription:
+    def cancel_subscription(self, org_id: str, reason: str | None = None) -> OrganizationSubscription:
         """
         Cancel subscription.
 

@@ -1,15 +1,15 @@
 """
 UtilityConfig service for utility pricing configuration management.
 """
-from typing import Optional
-from datetime import date
+
+
 from sqlalchemy.orm import Session
 
-from app.services.base import BaseService
-from app.repositories.utility_config_repository import UtilityConfigRepository
-from app.repositories.apartment_repository import ApartmentRepository
 from app.models.utility_config import UtilityConfig
+from app.repositories.apartment_repository import ApartmentRepository
+from app.repositories.utility_config_repository import UtilityConfigRepository
 from app.schemas.utility_config import UtilityConfigCreate, UtilityConfigUpdate
+from app.services.base import BaseService
 
 
 class UtilityConfigService(BaseService):
@@ -20,7 +20,7 @@ class UtilityConfigService(BaseService):
         self.config_repo = UtilityConfigRepository(db)
         self.apartment_repo = ApartmentRepository(db)
 
-    def get_config(self, apartment_id: str, org_id: str) -> Optional[UtilityConfig]:
+    def get_config(self, apartment_id: str, org_id: str) -> UtilityConfig | None:
         """
         Get utility config for an apartment.
 
@@ -43,7 +43,7 @@ class UtilityConfigService(BaseService):
         apartment_id: str,
         org_id: str,
         data: UtilityConfigCreate,
-    ) -> Optional[UtilityConfig]:
+    ) -> UtilityConfig | None:
         """
         Create or update utility config for an apartment.
 
@@ -76,7 +76,7 @@ class UtilityConfigService(BaseService):
         apartment_id: str,
         org_id: str,
         data: UtilityConfigUpdate,
-    ) -> Optional[UtilityConfig]:
+    ) -> UtilityConfig | None:
         """
         Update existing utility config.
 
@@ -142,7 +142,9 @@ class UtilityConfigService(BaseService):
 
         return {
             "water_price_per_unit": float(config.water_price_per_unit) if config.water_price_per_unit else None,
-            "electricity_price_per_unit": float(config.electricity_price_per_unit) if config.electricity_price_per_unit else None,
+            "electricity_price_per_unit": float(config.electricity_price_per_unit)
+            if config.electricity_price_per_unit
+            else None,
             "internet_fee": float(config.internet_fee) if config.internet_fee else None,
             "management_fee": float(config.management_fee) if config.management_fee else None,
             "service_fee": float(config.service_fee) if config.service_fee else None,

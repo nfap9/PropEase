@@ -1,18 +1,18 @@
 """
 Notification service for managing user notifications.
 """
-from typing import List, Optional
+
 from datetime import date, timedelta
+
 from sqlalchemy.orm import Session
 
-from app.services.base import BaseService
-from app.repositories.notification_repository import NotificationRepository
-from app.repositories.organization_repository import OrganizationMemberRepository
-from app.repositories.lease_repository import LeaseRepository
-from app.repositories.bill_repository import BillRepository
 from app.models.notification import Notification, NotificationType
 from app.models.organization import MemberRole
-from app.models.bill import BillStatus
+from app.repositories.bill_repository import BillRepository
+from app.repositories.lease_repository import LeaseRepository
+from app.repositories.notification_repository import NotificationRepository
+from app.repositories.organization_repository import OrganizationMemberRepository
+from app.services.base import BaseService
 
 
 class NotificationService(BaseService):
@@ -31,7 +31,7 @@ class NotificationService(BaseService):
         unread_only: bool = False,
         limit: int = 50,
         offset: int = 0,
-    ) -> List[Notification]:
+    ) -> list[Notification]:
         """List notifications for a user."""
         return self.notification_repo.find_by_user(user_id, unread_only, limit, offset)
 
@@ -43,9 +43,7 @@ class NotificationService(BaseService):
         """Mark a notification as read."""
         return self.notification_repo.mark_as_read(notification_id, user_id)
 
-    def mark_all_as_read(
-        self, user_id: str, org_id: Optional[str] = None
-    ) -> int:
+    def mark_all_as_read(self, user_id: str, org_id: str | None = None) -> int:
         """Mark all notifications as read."""
         return self.notification_repo.mark_all_as_read(user_id, org_id)
 
@@ -56,7 +54,7 @@ class NotificationService(BaseService):
         notification_type: NotificationType,
         title: str,
         content: str,
-        extra_data: Optional[dict] = None,
+        extra_data: dict | None = None,
     ) -> Notification:
         """Create a new notification."""
         notification = Notification(
@@ -84,10 +82,7 @@ class NotificationService(BaseService):
         """Send lease expiring notification to organization owners/admins."""
         # Get organization admins and owners
         members = self.member_repo.find_organization_members(org_id)
-        recipients = [
-            m for m in members
-            if m.role in [MemberRole.OWNER, MemberRole.ADMIN]
-        ]
+        recipients = [m for m in members if m.role in [MemberRole.OWNER, MemberRole.ADMIN]]
 
         title = f"租约即将到期 - {tenant_name}"
         content = f"租客 {tenant_name}（房间 {room_number}）的租约将在 {days_remaining} 天后到期（{end_date}）。请及时处理续约或退房事宜。"
@@ -130,10 +125,7 @@ class NotificationService(BaseService):
     ) -> None:
         """Send bill overdue notification."""
         members = self.member_repo.find_organization_members(org_id)
-        recipients = [
-            m for m in members
-            if m.role in [MemberRole.OWNER, MemberRole.ADMIN]
-        ]
+        recipients = [m for m in members if m.role in [MemberRole.OWNER, MemberRole.ADMIN]]
 
         title = f"账单逾期提醒 - {tenant_name}"
         content = f"租客 {tenant_name}（房间 {room_number}）的账单已逾期 {days_overdue} 天。金额: ¥{amount:.2f}，截止日期: {due_date}。"
@@ -173,10 +165,7 @@ class NotificationService(BaseService):
     ) -> None:
         """Send payment received notification."""
         members = self.member_repo.find_organization_members(org_id)
-        recipients = [
-            m for m in members
-            if m.role in [MemberRole.OWNER, MemberRole.ADMIN]
-        ]
+        recipients = [m for m in members if m.role in [MemberRole.OWNER, MemberRole.ADMIN]]
 
         title = f"收款通知 - {tenant_name}"
         content = f"租客 {tenant_name} 已支付 ¥{amount:.2f}。"

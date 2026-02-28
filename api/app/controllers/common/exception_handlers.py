@@ -3,18 +3,19 @@
 
 处理所有未被控制器捕获的异常，转换为统一响应格式。
 """
+
 from typing import Any
 
 from fastapi import Request, status
+from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError, HTTPException
 
+from app.configs.logging import get_logger
 from app.controllers.common.errors import (
     AppError,
     BusinessCode,
     FieldError,
 )
-from app.configs.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -37,11 +38,7 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
     # 构建错误数据
     error_data = None
     if exc.field_errors:
-        error_data = {
-            "errors": [
-                {"field": e.field, "message": e.message} for e in exc.field_errors
-            ]
-        }
+        error_data = {"errors": [{"field": e.field, "message": e.message} for e in exc.field_errors]}
 
     return JSONResponse(
         status_code=exc.status_code,
@@ -66,9 +63,7 @@ def _map_http_status_to_business_code(status_code: int) -> int:
     return mapping.get(status_code, BusinessCode.INTERNAL_ERROR)
 
 
-async def http_exception_handler(
-    request: Request, exc: HTTPException
-) -> JSONResponse:
+async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
     """
     处理 HTTPException 异常。
 
@@ -105,9 +100,7 @@ async def validation_error_handler(
             )
         )
 
-    error_data = {
-        "errors": [{"field": e.field, "message": e.message} for e in field_errors]
-    }
+    error_data = {"errors": [{"field": e.field, "message": e.message} for e in field_errors]}
 
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -119,18 +112,13 @@ async def validation_error_handler(
     )
 
 
-async def generic_exception_handler(
-    request: Request, exc: Exception
-) -> JSONResponse:
+async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """
     处理未捕获的通用异常。
 
     记录错误日志并返回统一的服务器错误响应。
     """
-    logger.exception(
-        f"未处理的异常: {type(exc).__name__}: {str(exc)} "
-        f"path={request.url.path} method={request.method}"
-    )
+    logger.exception(f"未处理的异常: {type(exc).__name__}: {str(exc)} path={request.url.path} method={request.method}")
 
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

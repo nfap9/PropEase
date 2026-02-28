@@ -1,14 +1,15 @@
 """
 Common dependencies for controllers.
 """
-from typing import Generator, Optional
+
+from collections.abc import Generator
+
 from fastapi import Depends, Query
 from sqlalchemy.orm import Session
 
 from app.configs.database import SessionLocal
+from app.models.organization import MemberRole, OrganizationMember
 from app.models.user import User
-from app.models.organization import OrganizationMember, MemberRole
-from app.configs import settings
 
 
 def get_db() -> Generator[Session, None, None]:

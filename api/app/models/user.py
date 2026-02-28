@@ -1,12 +1,14 @@
-from sqlalchemy import String, Boolean
+from typing import TYPE_CHECKING
+
+from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING, List, Optional
+
 from app.configs.database import Base
 from app.models.base import TimestampMixin, ULIDMixin
 
 if TYPE_CHECKING:
-    from app.models.organization import Organization, OrganizationMember
     from app.models.notification import Notification
+    from app.models.organization import OrganizationMember
 
 
 class User(Base, TimestampMixin, ULIDMixin):
@@ -18,9 +20,9 @@ class User(Base, TimestampMixin, ULIDMixin):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     # Relationships
-    organization_memberships: Mapped[List["OrganizationMember"]] = relationship(
+    organization_memberships: Mapped[list["OrganizationMember"]] = relationship(
         "OrganizationMember", back_populates="user", cascade="all, delete-orphan"
     )
-    notifications: Mapped[List["Notification"]] = relationship(
+    notifications: Mapped[list["Notification"]] = relationship(
         "Notification", back_populates="user", cascade="all, delete-orphan"
     )

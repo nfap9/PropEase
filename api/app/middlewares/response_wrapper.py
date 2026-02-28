@@ -6,8 +6,10 @@
 注意：此中间件仅处理路由直接返回的数据，
       异常响应由 exception_handlers 处理。
 """
+
 import json
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
@@ -101,19 +103,11 @@ class ResponseWrapperMiddleware(BaseHTTPMiddleware):
         """检查是否应该包装此响应"""
         # 只处理 2xx 状态码的 JSON 响应
         content_type = response.headers.get("content-type", "")
-        return (
-            200 <= response.status_code < 300
-            and "application/json" in content_type
-        )
+        return 200 <= response.status_code < 300 and "application/json" in content_type
 
     def _is_already_wrapped(self, data: Any) -> bool:
         """检查数据是否已经是统一格式"""
-        return (
-            isinstance(data, dict)
-            and "code" in data
-            and "data" in data
-            and "message" in data
-        )
+        return isinstance(data, dict) and "code" in data and "data" in data and "message" in data
 
     def _wrap_response(self, data: Any) -> dict:
         """包装响应数据"""
@@ -125,8 +119,4 @@ class ResponseWrapperMiddleware(BaseHTTPMiddleware):
 
     def _filter_headers(self, headers: dict) -> dict:
         """过滤掉会导致问题的响应头"""
-        return {
-            k: v
-            for k, v in headers.items()
-            if k.lower() not in HEADERS_TO_EXCLUDE
-        }
+        return {k: v for k, v in headers.items() if k.lower() not in HEADERS_TO_EXCLUDE}

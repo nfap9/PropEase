@@ -1,13 +1,14 @@
 """
 Tenant service for tenant management.
 """
-from typing import List, Optional
+
+
 from sqlalchemy.orm import Session
 
-from app.services.base import BaseService
-from app.repositories.tenant_repository import TenantRepository
 from app.models.tenant import Tenant
+from app.repositories.tenant_repository import TenantRepository
 from app.schemas.tenant import TenantCreate, TenantUpdate
+from app.services.base import BaseService
 
 
 class TenantService(BaseService):
@@ -17,11 +18,11 @@ class TenantService(BaseService):
         super().__init__(db)
         self.tenant_repo = TenantRepository(db)
 
-    def list_tenants(self, org_id: str) -> List[Tenant]:
+    def list_tenants(self, org_id: str) -> list[Tenant]:
         """List all tenants in an organization."""
         return self.tenant_repo.find_by_organization(org_id)
 
-    def get_tenant(self, tenant_id: str, org_id: str) -> Optional[Tenant]:
+    def get_tenant(self, tenant_id: str, org_id: str) -> Tenant | None:
         """Get a tenant by ID within an organization."""
         tenant = self.tenant_repo.get(tenant_id)
         if tenant and tenant.organization_id == org_id:
@@ -42,9 +43,7 @@ class TenantService(BaseService):
         )
         return self.tenant_repo.create(tenant)
 
-    def update_tenant(
-        self, tenant_id: str, org_id: str, data: TenantUpdate
-    ) -> Optional[Tenant]:
+    def update_tenant(self, tenant_id: str, org_id: str, data: TenantUpdate) -> Tenant | None:
         """Update a tenant."""
         tenant = self.get_tenant(tenant_id, org_id)
         if not tenant:

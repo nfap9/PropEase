@@ -1,6 +1,6 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import date
+
+from pydantic import BaseModel
 
 
 class DashboardOverview(BaseModel):
@@ -36,6 +36,6 @@ class OccupancyReport(BaseModel):
 
 
 class ReportQuery(BaseModel):
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
-    apartment_id: Optional[int] = None
+    start_date: date | None = None
+    end_date: date | None = None
+    apartment_id: int | None = None

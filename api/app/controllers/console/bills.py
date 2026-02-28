@@ -1,28 +1,29 @@
 """
 Bill controller - handles bill management operations.
 """
-from typing import List, Optional
+
+import io
+
 from fastapi import APIRouter, Depends, Query, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-import io
 
 from app.configs.database import get_db
+from app.controllers.common.deps import get_org_membership
+from app.controllers.common.errors import BadRequestError, ForbiddenError, NotFoundError
 from app.dependencies import get_current_user
-from app.models.user import User
 from app.models.bill import BillStatus
 from app.models.organization import MemberRole
-from app.services.bill_service import BillService
+from app.models.user import User
 from app.schemas.bill import (
     BillCreate,
-    BillUpdate,
     BillResponse,
+    BillUpdate,
+    GenerateBillsRequest,
     PaymentCreate,
     PaymentResponse,
-    GenerateBillsRequest,
 )
-from app.controllers.common.errors import NotFoundError, ForbiddenError, BadRequestError
-from app.controllers.common.deps import get_org_membership, require_role
+from app.services.bill_service import BillService
 from app.utils.exports import generate_bill_pdf, generate_bills_excel
 
 router = APIRouter()
@@ -33,13 +34,13 @@ def get_bill_service(db: Session = Depends(get_db)) -> BillService:
     return BillService(db)
 
 
-@router.get("", response_model=List[BillResponse])
+@router.get("", response_model=list[BillResponse])
 def list_bills(
     org_id: str = Query(...),
-    lease_id: Optional[str] = Query(None),
-    year: Optional[int] = Query(None),
-    month: Optional[int] = Query(None),
-    status: Optional[BillStatus] = Query(None),
+    lease_id: str | None = Query(None),
+    year: int | None = Query(None),
+    month: int | None = Query(None),
+    status: BillStatus | None = Query(None),
     current_user: User = Depends(get_current_user),
     bill_service: BillService = Depends(get_bill_service),
     db: Session = Depends(get_db),
@@ -82,10 +83,10 @@ def create_bill(
 @router.get("/export/excel")
 def export_bills_excel(
     org_id: str = Query(...),
-    status: Optional[BillStatus] = Query(None),
-    year: Optional[int] = Query(None),
-    month: Optional[int] = Query(None),
-    export_type: Optional[str] = Query(None, alias="exportType"),
+    status: BillStatus | None = Query(None),
+    year: int | None = Query(None),
+    month: int | None = Query(None),
+    export_type: str | None = Query(None, alias="exportType"),
     current_user: User = Depends(get_current_user),
     bill_service: BillService = Depends(get_bill_service),
     db: Session = Depends(get_db),
@@ -198,7 +199,7 @@ def create_payment(
         raise BadRequestError(str(e))
 
 
-@router.get("/{bill_id}/payments", response_model=List[PaymentResponse])
+@router.get("/{bill_id}/payments", response_model=list[PaymentResponse])
 def list_payments(
     bill_id: str,
     org_id: str = Query(...),

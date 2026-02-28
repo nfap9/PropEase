@@ -1,10 +1,12 @@
 """
 User repository for data access operations.
 """
-from typing import Optional
+
+
 from sqlalchemy.orm import Session
-from app.repositories.base import BaseRepository
+
 from app.models.user import User
+from app.repositories.base import BaseRepository
 
 
 class UserRepository(BaseRepository[User]):
@@ -13,7 +15,7 @@ class UserRepository(BaseRepository[User]):
     def __init__(self, db: Session):
         super().__init__(db, User)
 
-    def find_by_phone(self, phone: str) -> Optional[User]:
+    def find_by_phone(self, phone: str) -> User | None:
         """Find user by phone number."""
         return self.db.query(User).filter(User.phone == phone).first()
 

@@ -1,7 +1,9 @@
-from sqlalchemy import String, ForeignKey, Date, Numeric, Integer
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING, List
 from datetime import date
+from typing import TYPE_CHECKING
+
+from sqlalchemy import Date, ForeignKey, Integer, Numeric, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.configs.database import Base
 from app.models.base import TimestampMixin, ULIDMixin
 
@@ -28,9 +30,7 @@ class Lease(Base, TimestampMixin, ULIDMixin):
     # Relationships
     room: Mapped["Room"] = relationship("Room", back_populates="leases")
     tenant: Mapped["Tenant"] = relationship("Tenant", back_populates="leases")
-    bills: Mapped[List["Bill"]] = relationship(
-        "Bill", back_populates="lease", cascade="all, delete-orphan"
-    )
+    bills: Mapped[list["Bill"]] = relationship("Bill", back_populates="lease", cascade="all, delete-orphan")
 
 
 # Import here to avoid circular imports

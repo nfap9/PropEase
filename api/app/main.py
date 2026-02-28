@@ -4,15 +4,24 @@ Apartment Ultra API - Main Application Entry Point
 This is the main entry point for the Apartment Ultra backend API.
 It configures the FastAPI application, middleware, and routes.
 """
+
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.exceptions import RequestValidationError, HTTPException
 
 from app.configs import settings
 from app.configs.logging import get_logger, setup_logging
+from app.controllers.admin import admin_router
+from app.controllers.common.errors import AppError
+from app.controllers.common.exception_handlers import (
+    app_error_handler,
+    generic_exception_handler,
+    http_exception_handler,
+    validation_error_handler,
+)
 from app.controllers.console import (
     apartments_router,
     auth_router,
@@ -30,13 +39,6 @@ from app.controllers.console import (
 from app.middlewares.rate_limit import RateLimitMiddleware
 from app.middlewares.request_logging import RequestLoggingMiddleware
 from app.middlewares.response_wrapper import ResponseWrapperMiddleware
-from app.controllers.common.errors import AppError
-from app.controllers.common.exception_handlers import (
-    app_error_handler,
-    http_exception_handler,
-    validation_error_handler,
-    generic_exception_handler,
-)
 
 # 初始化日志系统
 setup_logging(debug=settings.DEBUG, json_format=False)
@@ -66,8 +68,19 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     finally:
         db.close()
 
+    # 运营后台：初始化超级管理员角色与默认账号
+    from app.services.admin_seed import seed_admin_super
+
+    db_admin = SessionLocal()
+    try:
+        seed_admin_super(db_admin)
+    except Exception as e:
+        logger.error("Failed to seed admin super: %s", e)
+    finally:
+        db_admin.close()
+
     # Start scheduler for background jobs
-    from app.scheduler import start_scheduler, schedule_all_jobs
+    from app.scheduler import schedule_all_jobs, start_scheduler
 
     try:
         schedule_all_jobs()
@@ -183,6 +196,11 @@ def create_app() -> FastAPI:
         custom_roles_router,
         prefix=f"{settings.API_V1_PREFIX}/custom-roles",
         tags=["Custom Roles"],
+    )
+    app.include_router(
+        admin_router,
+        prefix=f"{settings.API_V1_PREFIX}/admin",
+        tags=["Admin"],
     )
 
     # Health check endpoint

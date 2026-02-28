@@ -6,9 +6,9 @@ Common error responses and exceptions.
 - 4xxxx: 客户端错误
 - 5xxxx: 服务端错误
 """
+
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Optional, List
 
 from fastapi import HTTPException, status
 
@@ -57,7 +57,7 @@ class AppError(HTTPException):
         status_code: int,
         business_code: int = BusinessCode.BAD_REQUEST,
         detail: str = "An error occurred",
-        field_errors: Optional[List[FieldError]] = None,
+        field_errors: list[FieldError] | None = None,
     ):
         self.business_code = business_code
         self.field_errors = field_errors or []
@@ -92,7 +92,7 @@ class BadRequestError(AppError):
     def __init__(
         self,
         detail: str,
-        field_errors: Optional[List[FieldError]] = None,
+        field_errors: list[FieldError] | None = None,
     ):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -105,7 +105,7 @@ class BadRequestError(AppError):
 class ValidationError(AppError):
     """参数校验错误"""
 
-    def __init__(self, field_errors: List[FieldError], detail: str = "参数校验失败"):
+    def __init__(self, field_errors: list[FieldError], detail: str = "参数校验失败"):
         super().__init__(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             business_code=BusinessCode.VALIDATION_ERROR,

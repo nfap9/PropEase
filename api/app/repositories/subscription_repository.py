@@ -1,11 +1,12 @@
 """
 Subscription repository for data access operations.
 """
-from typing import Optional, List
+
+
 from sqlalchemy.orm import Session
 
+from app.models.subscription import OrganizationSubscription, SubscriptionPlan, SubscriptionStatus
 from app.repositories.base import BaseRepository
-from app.models.subscription import SubscriptionPlan, OrganizationSubscription, SubscriptionStatus
 
 
 class SubscriptionPlanRepository(BaseRepository[SubscriptionPlan]):
@@ -14,15 +15,11 @@ class SubscriptionPlanRepository(BaseRepository[SubscriptionPlan]):
     def __init__(self, db: Session):
         super().__init__(db, SubscriptionPlan)
 
-    def find_by_code(self, code: str) -> Optional[SubscriptionPlan]:
+    def find_by_code(self, code: str) -> SubscriptionPlan | None:
         """Find plan by code."""
-        return (
-            self.db.query(SubscriptionPlan)
-            .filter(SubscriptionPlan.code == code)
-            .first()
-        )
+        return self.db.query(SubscriptionPlan).filter(SubscriptionPlan.code == code).first()
 
-    def find_active_plans(self) -> List[SubscriptionPlan]:
+    def find_active_plans(self) -> list[SubscriptionPlan]:
         """Find all active plans ordered by sort_order."""
         return (
             self.db.query(SubscriptionPlan)
@@ -31,7 +28,7 @@ class SubscriptionPlanRepository(BaseRepository[SubscriptionPlan]):
             .all()
         )
 
-    def get_default_plan(self) -> Optional[SubscriptionPlan]:
+    def get_default_plan(self) -> SubscriptionPlan | None:
         """Get the default free plan."""
         return self.find_by_code("free")
 
@@ -42,15 +39,13 @@ class OrganizationSubscriptionRepository(BaseRepository[OrganizationSubscription
     def __init__(self, db: Session):
         super().__init__(db, OrganizationSubscription)
 
-    def find_by_organization(self, org_id: str) -> Optional[OrganizationSubscription]:
+    def find_by_organization(self, org_id: str) -> OrganizationSubscription | None:
         """Find subscription by organization ID."""
         return (
-            self.db.query(OrganizationSubscription)
-            .filter(OrganizationSubscription.organization_id == org_id)
-            .first()
+            self.db.query(OrganizationSubscription).filter(OrganizationSubscription.organization_id == org_id).first()
         )
 
-    def find_active_by_organization(self, org_id: str) -> Optional[OrganizationSubscription]:
+    def find_active_by_organization(self, org_id: str) -> OrganizationSubscription | None:
         """Find active subscription by organization ID."""
         return (
             self.db.query(OrganizationSubscription)
@@ -61,7 +56,7 @@ class OrganizationSubscriptionRepository(BaseRepository[OrganizationSubscription
             .first()
         )
 
-    def find_expiring_subscriptions(self, days: int = 7) -> List[OrganizationSubscription]:
+    def find_expiring_subscriptions(self, days: int = 7) -> list[OrganizationSubscription]:
         """
         Find subscriptions expiring within specified days.
 
@@ -127,7 +122,7 @@ class OrganizationSubscriptionRepository(BaseRepository[OrganizationSubscription
             )
             return self.create(new_subscription)
 
-    def activate_subscription(self, org_id: str) -> Optional[OrganizationSubscription]:
+    def activate_subscription(self, org_id: str) -> OrganizationSubscription | None:
         """Activate subscription for an organization."""
         subscription = self.find_by_organization(org_id)
         if subscription:
@@ -136,7 +131,7 @@ class OrganizationSubscriptionRepository(BaseRepository[OrganizationSubscription
             self.db.refresh(subscription)
         return subscription
 
-    def cancel_subscription(self, org_id: str) -> Optional[OrganizationSubscription]:
+    def cancel_subscription(self, org_id: str) -> OrganizationSubscription | None:
         """Cancel subscription for an organization."""
         subscription = self.find_by_organization(org_id)
         if subscription:

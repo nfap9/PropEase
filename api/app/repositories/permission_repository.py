@@ -1,19 +1,23 @@
 """
 Permission repository for data access operations.
 """
-from typing import Optional, List
+
+
+from datetime import UTC
+
 from sqlalchemy.orm import Session
-from app.repositories.base import BaseRepository
+
 from app.models.permission import (
+    Action,
+    OrganizationRolePermission,
     Permission,
     Resource,
-    Action,
     SystemRole,
-    OrganizationRolePermission,
     SystemRoleConfig,
     SystemRolePermission,
     UserSystemRole,
 )
+from app.repositories.base import BaseRepository
 
 
 class PermissionRepository(BaseRepository[Permission]):
@@ -22,34 +26,23 @@ class PermissionRepository(BaseRepository[Permission]):
     def __init__(self, db: Session):
         super().__init__(db, Permission)
 
-    def find_by_code(self, code: str) -> Optional[Permission]:
+    def find_by_code(self, code: str) -> Permission | None:
         """根据权限代码查找"""
         return self.db.query(Permission).filter(Permission.code == code).first()
 
-    def find_by_resource_action(
-        self, resource: Resource, action: Action
-    ) -> Optional[Permission]:
+    def find_by_resource_action(self, resource: Resource, action: Action) -> Permission | None:
         """根据资源和操作查找"""
-        return (
-            self.db.query(Permission)
-            .filter(Permission.resource == resource, Permission.action == action)
-            .first()
-        )
+        return self.db.query(Permission).filter(Permission.resource == resource, Permission.action == action).first()
 
-    def get_all_permissions(self) -> List[Permission]:
+    def get_all_permissions(self) -> list[Permission]:
         """获取所有权限"""
         return self.db.query(Permission).order_by(Permission.resource, Permission.action).all()
 
-    def get_permissions_by_resource(self, resource: Resource) -> List[Permission]:
+    def get_permissions_by_resource(self, resource: Resource) -> list[Permission]:
         """获取指定资源的所有权限"""
-        return (
-            self.db.query(Permission)
-            .filter(Permission.resource == resource)
-            .order_by(Permission.action)
-            .all()
-        )
+        return self.db.query(Permission).filter(Permission.resource == resource).order_by(Permission.action).all()
 
-    def get_permissions_by_codes(self, codes: List[str]) -> List[Permission]:
+    def get_permissions_by_codes(self, codes: list[str]) -> list[Permission]:
         """根据权限代码列表获取权限"""
         return self.db.query(Permission).filter(Permission.code.in_(codes)).all()
 
@@ -60,9 +53,7 @@ class OrganizationRolePermissionRepository(BaseRepository[OrganizationRolePermis
     def __init__(self, db: Session):
         super().__init__(db, OrganizationRolePermission)
 
-    def get_role_permissions(
-        self, org_id: str, role: str
-    ) -> List[OrganizationRolePermission]:
+    def get_role_permissions(self, org_id: str, role: str) -> list[OrganizationRolePermission]:
         """获取组织角色的所有权限配置"""
         return (
             self.db.query(OrganizationRolePermission)
@@ -73,7 +64,7 @@ class OrganizationRolePermissionRepository(BaseRepository[OrganizationRolePermis
             .all()
         )
 
-    def get_enabled_permission_ids(self, org_id: str, role: str) -> List[str]:
+    def get_enabled_permission_ids(self, org_id: str, role: str) -> list[str]:
         """获取组织角色启用的权限ID列表"""
         return [
             r.permission_id
@@ -86,9 +77,7 @@ class OrganizationRolePermissionRepository(BaseRepository[OrganizationRolePermis
             .all()
         ]
 
-    def has_permission(
-        self, org_id: str, role: str, permission_code: str
-    ) -> bool:
+    def has_permission(self, org_id: str, role: str, permission_code: str) -> bool:
         """检查角色是否拥有指定权限"""
         return (
             self.db.query(OrganizationRolePermission)
@@ -103,9 +92,7 @@ class OrganizationRolePermissionRepository(BaseRepository[OrganizationRolePermis
             is not None
         )
 
-    def set_role_permissions(
-        self, org_id: str, role: str, permission_ids: List[str]
-    ) -> None:
+    def set_role_permissions(self, org_id: str, role: str, permission_ids: list[str]) -> None:
         """设置角色权限（完全替换）"""
         # 删除现有关联
         self.db.query(OrganizationRolePermission).filter(
@@ -125,7 +112,7 @@ class OrganizationRolePermissionRepository(BaseRepository[OrganizationRolePermis
 
         self.db.commit()
 
-    def get_enabled_permissions(self, org_id: str, role: str) -> List[Permission]:
+    def get_enabled_permissions(self, org_id: str, role: str) -> list[Permission]:
         """获取组织角色启用的权限列表"""
         return (
             self.db.query(Permission)
@@ -145,21 +132,13 @@ class SystemRoleConfigRepository(BaseRepository[SystemRoleConfig]):
     def __init__(self, db: Session):
         super().__init__(db, SystemRoleConfig)
 
-    def find_by_role(self, role: SystemRole) -> Optional[SystemRoleConfig]:
+    def find_by_role(self, role: SystemRole) -> SystemRoleConfig | None:
         """根据角色查找配置"""
-        return (
-            self.db.query(SystemRoleConfig)
-            .filter(SystemRoleConfig.role == role)
-            .first()
-        )
+        return self.db.query(SystemRoleConfig).filter(SystemRoleConfig.role == role).first()
 
-    def get_all_active(self) -> List[SystemRoleConfig]:
+    def get_all_active(self) -> list[SystemRoleConfig]:
         """获取所有活跃的系统角色配置"""
-        return (
-            self.db.query(SystemRoleConfig)
-            .filter(SystemRoleConfig.is_active == True)
-            .all()
-        )
+        return self.db.query(SystemRoleConfig).filter(SystemRoleConfig.is_active == True).all()
 
 
 class SystemRolePermissionRepository(BaseRepository[SystemRolePermission]):
@@ -168,15 +147,11 @@ class SystemRolePermissionRepository(BaseRepository[SystemRolePermission]):
     def __init__(self, db: Session):
         super().__init__(db, SystemRolePermission)
 
-    def get_role_permissions(self, role: SystemRole) -> List[SystemRolePermission]:
+    def get_role_permissions(self, role: SystemRole) -> list[SystemRolePermission]:
         """获取系统角色的所有权限配置"""
-        return (
-            self.db.query(SystemRolePermission)
-            .filter(SystemRolePermission.role == role)
-            .all()
-        )
+        return self.db.query(SystemRolePermission).filter(SystemRolePermission.role == role).all()
 
-    def get_enabled_permission_ids(self, role: SystemRole) -> List[str]:
+    def get_enabled_permission_ids(self, role: SystemRole) -> list[str]:
         """获取系统角色启用的权限ID列表"""
         return [
             r.permission_id
@@ -202,7 +177,7 @@ class SystemRolePermissionRepository(BaseRepository[SystemRolePermission]):
             is not None
         )
 
-    def get_enabled_permissions(self, role: SystemRole) -> List[Permission]:
+    def get_enabled_permissions(self, role: SystemRole) -> list[Permission]:
         """获取系统角色启用的权限列表"""
         return (
             self.db.query(Permission)
@@ -221,14 +196,9 @@ class UserSystemRoleRepository(BaseRepository[UserSystemRole]):
     def __init__(self, db: Session):
         super().__init__(db, UserSystemRole)
 
-    def get_user_system_roles(self, user_id: str) -> List[SystemRole]:
+    def get_user_system_roles(self, user_id: str) -> list[SystemRole]:
         """获取用户的所有系统角色"""
-        return [
-            r.role
-            for r in self.db.query(UserSystemRole)
-            .filter(UserSystemRole.user_id == user_id)
-            .all()
-        ]
+        return [r.role for r in self.db.query(UserSystemRole).filter(UserSystemRole.user_id == user_id).all()]
 
     def has_system_role(self, user_id: str, role: SystemRole) -> bool:
         """检查用户是否拥有指定系统角色"""
@@ -246,17 +216,15 @@ class UserSystemRoleRepository(BaseRepository[UserSystemRole]):
         """检查用户是否是超级管理员"""
         return self.has_system_role(user_id, SystemRole.SUPER_ADMIN)
 
-    def grant_role(
-        self, user_id: str, role: SystemRole, granted_by: Optional[str] = None
-    ) -> UserSystemRole:
+    def grant_role(self, user_id: str, role: SystemRole, granted_by: str | None = None) -> UserSystemRole:
         """授予用户系统角色"""
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         user_role = UserSystemRole(
             user_id=user_id,
             role=role,
             granted_by=granted_by,
-            granted_at=datetime.now(timezone.utc),
+            granted_at=datetime.now(UTC),
         )
         return self.create(user_role)
 

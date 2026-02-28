@@ -4,6 +4,7 @@ Notification check jobs.
 These jobs run daily to check for expiring leases, overdue bills,
 and other notification-worthy events.
 """
+
 from app.configs.database import SessionLocal
 from app.configs.logging import get_logger
 from app.services.notification_service import NotificationService

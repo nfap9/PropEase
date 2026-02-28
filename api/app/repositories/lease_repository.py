@@ -1,14 +1,15 @@
 """
 Lease repository for data access operations.
 """
-from typing import Optional, List
-from datetime import date
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import true
 
-from app.repositories.base import BaseRepository
+from datetime import date
+
+from sqlalchemy import true
+from sqlalchemy.orm import Session, joinedload
+
+from app.models.apartment import Apartment, Room
 from app.models.lease import Lease
-from app.models.apartment import Room, Apartment
+from app.repositories.base import BaseRepository
 
 
 class LeaseRepository(BaseRepository[Lease]):
@@ -17,7 +18,7 @@ class LeaseRepository(BaseRepository[Lease]):
     def __init__(self, db: Session):
         super().__init__(db, Lease)
 
-    def find_by_organization(self, org_id: str) -> List[Lease]:
+    def find_by_organization(self, org_id: str) -> list[Lease]:
         """Find all leases in an organization."""
         return (
             self.db.query(Lease)
@@ -31,7 +32,7 @@ class LeaseRepository(BaseRepository[Lease]):
             .all()
         )
 
-    def find_active_by_organization(self, org_id: str) -> List[Lease]:
+    def find_active_by_organization(self, org_id: str) -> list[Lease]:
         """Find all active leases in an organization."""
         return (
             self.db.query(Lease)
@@ -45,25 +46,19 @@ class LeaseRepository(BaseRepository[Lease]):
             .all()
         )
 
-    def find_by_room(self, room_id: str) -> List[Lease]:
+    def find_by_room(self, room_id: str) -> list[Lease]:
         """Find all leases for a room."""
         return self.db.query(Lease).filter(Lease.room_id == room_id).all()
 
-    def find_active_by_room(self, room_id: str) -> Optional[Lease]:
+    def find_active_by_room(self, room_id: str) -> Lease | None:
         """Find active lease for a room."""
-        return (
-            self.db.query(Lease)
-            .filter(Lease.room_id == room_id, Lease.is_active == true())
-            .first()
-        )
+        return self.db.query(Lease).filter(Lease.room_id == room_id, Lease.is_active == true()).first()
 
-    def find_by_tenant(self, tenant_id: str) -> List[Lease]:
+    def find_by_tenant(self, tenant_id: str) -> list[Lease]:
         """Find all leases for a tenant."""
         return self.db.query(Lease).filter(Lease.tenant_id == tenant_id).all()
 
-    def has_overlapping_lease(
-        self, room_id: str, start_date: date, end_date: date, exclude_id: str = None
-    ) -> bool:
+    def has_overlapping_lease(self, room_id: str, start_date: date, end_date: date, exclude_id: str = None) -> bool:
         """Check if there's an overlapping lease for the room."""
         query = self.db.query(Lease).filter(
             Lease.room_id == room_id,
@@ -93,7 +88,7 @@ class LeaseRepository(BaseRepository[Lease]):
             .count()
         )
 
-    def find_expiring_on(self, target_date: date) -> List[Lease]:
+    def find_expiring_on(self, target_date: date) -> list[Lease]:
         """
         Find all active leases expiring on a specific date.
 

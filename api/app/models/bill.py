@@ -1,8 +1,11 @@
-from sqlalchemy import String, ForeignKey, Integer, Numeric, Date, Enum as SQLEnum
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING, List
-from datetime import date
 import enum
+from datetime import date
+from typing import TYPE_CHECKING
+
+from sqlalchemy import Date, ForeignKey, Integer, Numeric, String
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.configs.database import Base
 from app.models.base import TimestampMixin, ULIDMixin
 
@@ -39,9 +42,7 @@ class Bill(Base, TimestampMixin, ULIDMixin):
 
     # Relationships
     lease: Mapped["Lease"] = relationship("Lease", back_populates="bills")
-    payments: Mapped[List["Payment"]] = relationship(
-        "Payment", back_populates="bill", cascade="all, delete-orphan"
-    )
+    payments: Mapped[list["Payment"]] = relationship("Payment", back_populates="bill", cascade="all, delete-orphan")
 
 
 class PaymentMethod(str, enum.Enum):

@@ -3,6 +3,7 @@ Logging configuration for the application.
 
 Provides structured JSON logging with context support.
 """
+
 import json
 import logging
 import sys
@@ -54,11 +55,11 @@ class ConsoleFormatter(logging.Formatter):
     """控制台格式化器，输出可读的彩色日志。"""
 
     COLORS = {
-        "DEBUG": "\033[36m",    # 青色
-        "INFO": "\033[32m",     # 绿色
+        "DEBUG": "\033[36m",  # 青色
+        "INFO": "\033[32m",  # 绿色
         "WARNING": "\033[33m",  # 黄色
-        "ERROR": "\033[31m",    # 红色
-        "CRITICAL": "\033[35m", # 紫色
+        "ERROR": "\033[31m",  # 红色
+        "CRITICAL": "\033[35m",  # 紫色
     }
     RESET = "\033[0m"
 

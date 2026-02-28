@@ -1,9 +1,9 @@
 from datetime import datetime
+
 from sqlalchemy import DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column
 from ulid import ulid
 
-from app.configs.database import Base
 from app.models.types import ULIDType
 
 
@@ -22,6 +22,7 @@ class ULIDMixin:
             # id 字段自动提供
             name: Mapped[str] = ...
     """
+
     id: Mapped[str] = mapped_column(
         ULIDType(),
         primary_key=True,

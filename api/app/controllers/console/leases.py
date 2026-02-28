@@ -1,18 +1,19 @@
 """
 Lease controller - handles lease management.
 """
-from typing import List
+
+
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.configs.database import get_db
-from app.dependencies import get_current_user
-from app.models.user import User
-from app.models.organization import MemberRole
-from app.services.lease_service import LeaseService
-from app.schemas.lease import LeaseCreate, LeaseUpdate, LeaseResponse
-from app.controllers.common.errors import NotFoundError, BadRequestError
 from app.controllers.common.deps import get_org_membership, require_role
+from app.controllers.common.errors import BadRequestError, NotFoundError
+from app.dependencies import get_current_user
+from app.models.organization import MemberRole
+from app.models.user import User
+from app.schemas.lease import LeaseCreate, LeaseResponse, LeaseUpdate
+from app.services.lease_service import LeaseService
 
 router = APIRouter()
 
@@ -22,7 +23,7 @@ def get_lease_service(db: Session = Depends(get_db)) -> LeaseService:
     return LeaseService(db)
 
 
-@router.get("", response_model=List[LeaseResponse])
+@router.get("", response_model=list[LeaseResponse])
 def list_leases(
     org_id: str = Query(...),
     active_only: bool = Query(False),
@@ -44,9 +45,7 @@ def create_lease(
     db: Session = Depends(get_db),
 ):
     """Create a new lease."""
-    require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(
-        get_org_membership(org_id, current_user, db)
-    )
+    require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(get_org_membership(org_id, current_user, db))
     try:
         return lease_service.create_lease(org_id, data)
     except ValueError as e:
@@ -79,9 +78,7 @@ def update_lease(
     db: Session = Depends(get_db),
 ):
     """Update lease."""
-    require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(
-        get_org_membership(org_id, current_user, db)
-    )
+    require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(get_org_membership(org_id, current_user, db))
     try:
         lease = lease_service.update_lease(lease_id, org_id, data)
         if not lease:
@@ -100,9 +97,7 @@ def terminate_lease(
     db: Session = Depends(get_db),
 ):
     """Terminate a lease."""
-    require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(
-        get_org_membership(org_id, current_user, db)
-    )
+    require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(get_org_membership(org_id, current_user, db))
     lease = lease_service.terminate_lease(lease_id, org_id)
     if not lease:
         raise NotFoundError("Lease")
@@ -118,9 +113,7 @@ def delete_lease(
     db: Session = Depends(get_db),
 ):
     """Delete lease (only terminated leases can be deleted)."""
-    require_role([MemberRole.OWNER, MemberRole.ADMIN])(
-        get_org_membership(org_id, current_user, db)
-    )
+    require_role([MemberRole.OWNER, MemberRole.ADMIN])(get_org_membership(org_id, current_user, db))
     try:
         if not lease_service.delete_lease(lease_id, org_id):
             raise NotFoundError("Lease")

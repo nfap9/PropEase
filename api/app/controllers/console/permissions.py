@@ -1,27 +1,26 @@
 """
 Permission controller - handles permission management.
 """
-from typing import List, Dict
+
+
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.configs.database import get_db
-from app.dependencies import get_current_user, get_current_organization
+from app.controllers.common.errors import ForbiddenError
+from app.dependencies import get_current_organization, get_current_user
+from app.models.organization import MemberRole, OrganizationMember
 from app.models.user import User
-from app.models.organization import OrganizationMember, MemberRole
-from app.models.permission import SystemRole
-from app.services.permission_service import PermissionService
 from app.schemas.permission import (
+    GrantSystemRoleRequest,
     PermissionResponse,
-    UpdateRolePermissionsRequest,
+    RevokeSystemRoleRequest,
     RolePermissionsResponse,
     SystemRoleConfigResponse,
-    UserSystemRoleResponse,
+    UpdateRolePermissionsRequest,
     UserPermissionsResponse,
-    GrantSystemRoleRequest,
-    RevokeSystemRoleRequest,
 )
-from app.controllers.common.errors import ForbiddenError, BadRequestError
+from app.services.permission_service import PermissionService
 
 router = APIRouter()
 
@@ -31,7 +30,7 @@ def get_permission_service(db: Session = Depends(get_db)) -> PermissionService:
     return PermissionService(db)
 
 
-@router.get("", response_model=List[PermissionResponse])
+@router.get("", response_model=list[PermissionResponse])
 def get_all_permissions(
     current_user: User = Depends(get_current_user),
     perm_service: PermissionService = Depends(get_permission_service),
@@ -40,7 +39,7 @@ def get_all_permissions(
     return perm_service.get_all_permissions()
 
 
-@router.get("/grouped", response_model=Dict[str, List[PermissionResponse]])
+@router.get("/grouped", response_model=dict[str, list[PermissionResponse]])
 def get_permissions_grouped(
     current_user: User = Depends(get_current_user),
     perm_service: PermissionService = Depends(get_permission_service),
@@ -70,9 +69,7 @@ def update_role_permissions(
     perm_service: PermissionService = Depends(get_permission_service),
 ):
     """更新组织角色权限配置"""
-    if not perm_service.update_role_permissions(
-        org_id, role, data.permission_codes, current_user.id
-    ):
+    if not perm_service.update_role_permissions(org_id, role, data.permission_codes, current_user.id):
         raise ForbiddenError("只有所有者可以修改权限，且所有者权限不可修改")
 
     return {"message": "权限更新成功"}
@@ -98,7 +95,8 @@ def get_my_permissions(
 
 # 系统角色管理 API（仅超级管理员可用）
 
-@router.get("/system-roles", response_model=List[SystemRoleConfigResponse])
+
+@router.get("/system-roles", response_model=list[SystemRoleConfigResponse])
 def get_system_roles(
     current_user: User = Depends(get_current_user),
     perm_service: PermissionService = Depends(get_permission_service),
@@ -133,7 +131,7 @@ def revoke_system_role(
     return {"message": "角色撤销成功"}
 
 
-@router.get("/system-roles/me", response_model=List[str])
+@router.get("/system-roles/me", response_model=list[str])
 def get_my_system_roles(
     current_user: User = Depends(get_current_user),
     perm_service: PermissionService = Depends(get_permission_service),

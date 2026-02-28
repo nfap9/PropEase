@@ -3,6 +3,7 @@ Request logging middleware.
 
 Logs incoming requests and outgoing responses with timing information.
 """
+
 import logging
 import time
 import uuid
@@ -69,9 +70,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             # 记录异常
             process_time = time.time() - start_time
             process_time_ms = round(process_time * 1000, 2)
-            logger.exception(
-                f"请求异常: {method} {path} - 耗时 {process_time_ms}ms - 错误: {str(e)}"
-            )
+            logger.exception(f"请求异常: {method} {path} - 耗时 {process_time_ms}ms - 错误: {str(e)}")
             raise
 
         finally:

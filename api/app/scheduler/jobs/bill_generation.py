@@ -4,9 +4,9 @@ Automatic bill generation job.
 This job runs monthly to generate bills for all active leases.
 It uses utility configurations and readings to calculate bill amounts.
 """
-from datetime import date, timedelta
+
+from datetime import date
 from decimal import Decimal
-from typing import List
 
 from sqlalchemy.orm import Session
 
@@ -14,12 +14,11 @@ from app.configs.database import SessionLocal
 from app.configs.logging import get_logger
 from app.models.bill import Bill, BillStatus
 from app.models.lease import Lease
-from app.models.organization import Organization
 from app.repositories.bill_repository import BillRepository
 from app.repositories.lease_repository import LeaseRepository
 from app.repositories.organization_repository import OrganizationRepository
-from app.repositories.utility_repository import UtilityRepository
 from app.repositories.utility_config_repository import UtilityConfigRepository
+from app.repositories.utility_repository import UtilityRepository
 
 logger = get_logger(__name__)
 
@@ -98,18 +97,13 @@ def generate_monthly_bills() -> dict:
 
                         if bill:
                             stats["bills_created"] += 1
-                            logger.info(
-                                f"Created bill for lease {lease.id}, "
-                                f"period {bill_year}-{bill_month:02d}"
-                            )
+                            logger.info(f"Created bill for lease {lease.id}, period {bill_year}-{bill_month:02d}")
                         else:
                             stats["bills_skipped"] += 1
 
                     except Exception as e:
                         stats["errors"] += 1
-                        logger.error(
-                            f"Error creating bill for lease {lease.id}: {e}"
-                        )
+                        logger.error(f"Error creating bill for lease {lease.id}: {e}")
                         continue
 
             except Exception as e:
@@ -156,9 +150,7 @@ def _create_bill_for_lease(
         Created bill or None if creation was skipped
     """
     # Get utility reading for this period
-    reading = utility_repo.find_by_room_and_period(
-        lease.room_id, bill_year, bill_month
-    )
+    reading = utility_repo.find_by_room_and_period(lease.room_id, bill_year, bill_month)
 
     # Get utility config for the apartment
     config = config_repo.find_by_apartment(lease.room.apartment_id)

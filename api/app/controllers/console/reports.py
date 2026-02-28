@@ -1,15 +1,16 @@
 """
 Report controller - handles analytics and reports.
 """
-from typing import Optional
+
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.configs.database import get_db
+from app.controllers.common.deps import get_org_membership
 from app.dependencies import get_current_user
 from app.models.user import User
 from app.services.report_service import ReportService
-from app.controllers.common.deps import get_org_membership
 
 router = APIRouter()
 
@@ -35,8 +36,8 @@ def get_overview(
 def get_income_report(
     org_id: str = Query(...),
     year: int = Query(...),
-    start_month: Optional[int] = Query(None),
-    end_month: Optional[int] = Query(None),
+    start_month: int | None = Query(None),
+    end_month: int | None = Query(None),
     current_user: User = Depends(get_current_user),
     report_service: ReportService = Depends(get_report_service),
     db: Session = Depends(get_db),

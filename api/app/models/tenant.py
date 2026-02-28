@@ -1,12 +1,14 @@
-from sqlalchemy import String, ForeignKey
+from typing import TYPE_CHECKING
+
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING, List
+
 from app.configs.database import Base
 from app.models.base import TimestampMixin, ULIDMixin
 
 if TYPE_CHECKING:
-    from app.models.organization import Organization
     from app.models.lease import Lease
+    from app.models.organization import Organization
 
 
 class Tenant(Base, TimestampMixin, ULIDMixin):
@@ -22,6 +24,4 @@ class Tenant(Base, TimestampMixin, ULIDMixin):
 
     # Relationships
     organization: Mapped["Organization"] = relationship("Organization", back_populates="tenants")
-    leases: Mapped[List["Lease"]] = relationship(
-        "Lease", back_populates="tenant", cascade="all, delete-orphan"
-    )
+    leases: Mapped[list["Lease"]] = relationship("Lease", back_populates="tenant", cascade="all, delete-orphan")

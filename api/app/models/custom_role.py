@@ -1,9 +1,11 @@
 """
 Custom role model for organization-specific roles.
 """
-from sqlalchemy import String, ForeignKey, Boolean, Index
+
+from typing import TYPE_CHECKING
+
+from sqlalchemy import Boolean, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING, List, Optional
 
 from app.configs.database import Base
 from app.models.base import TimestampMixin, ULIDMixin
@@ -18,6 +20,7 @@ class CustomRole(Base, TimestampMixin, ULIDMixin):
 
     允许组织创建自定义角色并配置权限。
     """
+
     __tablename__ = "custom_roles"
 
     organization_id: Mapped[str] = mapped_column(
@@ -26,14 +29,11 @@ class CustomRole(Base, TimestampMixin, ULIDMixin):
         index=True,
     )
     name: Mapped[str] = mapped_column(String(50), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    is_system: Mapped[bool] = mapped_column(
-        Boolean, default=False, nullable=False,
-        doc="系统预置角色不可删除"
-    )
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    is_system: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, doc="系统预置角色不可删除")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     # 权限配置，存储权限代码列表
-    permissions: Mapped[Optional[list]] = mapped_column(
+    permissions: Mapped[list | None] = mapped_column(
         # JSON list of permission codes
         String(2000),
         nullable=True,
@@ -42,6 +42,4 @@ class CustomRole(Base, TimestampMixin, ULIDMixin):
     # Relationships
     organization: Mapped["Organization"] = relationship("Organization")
 
-    __table_args__ = (
-        Index('ix_custom_roles_org_name', 'organization_id', 'name', unique=True),
-    )
+    __table_args__ = (Index("ix_custom_roles_org_name", "organization_id", "name", unique=True),)

@@ -1,34 +1,36 @@
 """
 Pydantic schemas for UtilityConfig API.
 """
+
+from datetime import date, datetime
+
 from pydantic import BaseModel, Field
-from typing import Optional
-from datetime import datetime, date
 
 
 class UtilityConfigBase(BaseModel):
     """Base schema for utility config."""
-    water_price_per_unit: Optional[float] = Field(
+
+    water_price_per_unit: float | None = Field(
         default=None,
         ge=0,
         description="水费单价（元/吨）",
     )
-    electricity_price_per_unit: Optional[float] = Field(
+    electricity_price_per_unit: float | None = Field(
         default=None,
         ge=0,
         description="电费单价（元/度）",
     )
-    internet_fee: Optional[float] = Field(
+    internet_fee: float | None = Field(
         default=None,
         ge=0,
         description="网费（月/元）",
     )
-    management_fee: Optional[float] = Field(
+    management_fee: float | None = Field(
         default=None,
         ge=0,
         description="管理费（月/元）",
     )
-    service_fee: Optional[float] = Field(
+    service_fee: float | None = Field(
         default=None,
         ge=0,
         description="服务费（月/元）",
@@ -37,7 +39,7 @@ class UtilityConfigBase(BaseModel):
         ...,
         description="生效日期",
     )
-    notes: Optional[str] = Field(
+    notes: str | None = Field(
         default=None,
         max_length=500,
         description="备注",
@@ -46,41 +48,43 @@ class UtilityConfigBase(BaseModel):
 
 class UtilityConfigCreate(UtilityConfigBase):
     """Schema for creating utility config."""
+
     pass
 
 
 class UtilityConfigUpdate(BaseModel):
     """Schema for updating utility config."""
-    water_price_per_unit: Optional[float] = Field(
+
+    water_price_per_unit: float | None = Field(
         default=None,
         ge=0,
         description="水费单价（元/吨）",
     )
-    electricity_price_per_unit: Optional[float] = Field(
+    electricity_price_per_unit: float | None = Field(
         default=None,
         ge=0,
         description="电费单价（元/度）",
     )
-    internet_fee: Optional[float] = Field(
+    internet_fee: float | None = Field(
         default=None,
         ge=0,
         description="网费（月/元）",
     )
-    management_fee: Optional[float] = Field(
+    management_fee: float | None = Field(
         default=None,
         ge=0,
         description="管理费（月/元）",
     )
-    service_fee: Optional[float] = Field(
+    service_fee: float | None = Field(
         default=None,
         ge=0,
         description="服务费（月/元）",
     )
-    effective_from: Optional[date] = Field(
+    effective_from: date | None = Field(
         default=None,
         description="生效日期",
     )
-    notes: Optional[str] = Field(
+    notes: str | None = Field(
         default=None,
         max_length=500,
         description="备注",
@@ -89,6 +93,7 @@ class UtilityConfigUpdate(BaseModel):
 
 class UtilityConfigResponse(UtilityConfigBase):
     """Schema for utility config response."""
+
     id: str
     apartment_id: str
     created_at: datetime

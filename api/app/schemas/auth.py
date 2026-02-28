@@ -1,18 +1,16 @@
 import re
 from datetime import datetime
-from typing import Optional
 
-from pydantic import BaseModel, EmailStr, field_validator, model_validator
-
+from pydantic import BaseModel, field_validator, model_validator
 
 # 手机号验证正则（中国大陆11位手机号）
-PHONE_PATTERN = re.compile(r'^1[3-9]\d{9}$')
+PHONE_PATTERN = re.compile(r"^1[3-9]\d{9}$")
 
 
 def validate_phone(v: str) -> str:
     """验证手机号格式。"""
     if not PHONE_PATTERN.match(v):
-        raise ValueError('请输入有效的中国大陆手机号')
+        raise ValueError("请输入有效的中国大陆手机号")
     return v
 
 
@@ -45,26 +43,28 @@ class UserCreate(UserBase):
 
 class UserLogin(BaseModel):
     """统一登录请求，支持密码或验证码登录"""
+
     phone: str
-    password: Optional[str] = None
-    verification_code: Optional[str] = None
+    password: str | None = None
+    verification_code: str | None = None
 
     @field_validator("phone")
     @classmethod
     def validate_phone_field(cls, v: str) -> str:
         return validate_phone(v)
 
-    @model_validator(mode='after')
-    def validate_login_method(self) -> 'UserLogin':
+    @model_validator(mode="after")
+    def validate_login_method(self) -> "UserLogin":
         if not self.password and not self.verification_code:
-            raise ValueError('密码和验证码至少提供一个')
+            raise ValueError("密码和验证码至少提供一个")
         if self.password and self.verification_code:
-            raise ValueError('密码和验证码只能提供一个')
+            raise ValueError("密码和验证码只能提供一个")
         return self
 
 
 class SendSmsCode(BaseModel):
     """发送短信验证码请求"""
+
     phone: str
     purpose: str  # 'login' or 'register'
 
@@ -76,8 +76,8 @@ class SendSmsCode(BaseModel):
     @field_validator("purpose")
     @classmethod
     def validate_purpose(cls, v: str) -> str:
-        if v not in ('login', 'register'):
-            raise ValueError('purpose 必须是 login 或 register')
+        if v not in ("login", "register"):
+            raise ValueError("purpose 必须是 login 或 register")
         return v
 
 

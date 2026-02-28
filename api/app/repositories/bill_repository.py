@@ -1,13 +1,15 @@
 """
 Bill repository for data access operations.
 """
-from typing import Optional, List
+
 from datetime import date
+
 from sqlalchemy.orm import Session
-from app.repositories.base import BaseRepository
-from app.models.bill import Bill, Payment, BillStatus
+
+from app.models.apartment import Apartment, Room
+from app.models.bill import Bill, BillStatus, Payment
 from app.models.lease import Lease
-from app.models.apartment import Room, Apartment
+from app.repositories.base import BaseRepository
 
 
 class BillRepository(BaseRepository[Bill]):
@@ -23,15 +25,9 @@ class BillRepository(BaseRepository[Bill]):
         year: int = None,
         month: int = None,
         status: BillStatus = None,
-    ) -> List[Bill]:
+    ) -> list[Bill]:
         """Find all bills in an organization with filters."""
-        query = (
-            self.db.query(Bill)
-            .join(Lease)
-            .join(Room)
-            .join(Apartment)
-            .filter(Apartment.organization_id == org_id)
-        )
+        query = self.db.query(Bill).join(Lease).join(Room).join(Apartment).filter(Apartment.organization_id == org_id)
         if lease_id:
             query = query.filter(Bill.lease_id == lease_id)
         if year:
@@ -42,13 +38,11 @@ class BillRepository(BaseRepository[Bill]):
             query = query.filter(Bill.status == status)
         return query.all()
 
-    def find_by_lease(self, lease_id: str) -> List[Bill]:
+    def find_by_lease(self, lease_id: str) -> list[Bill]:
         """Find all bills for a lease."""
         return self.db.query(Bill).filter(Bill.lease_id == lease_id).all()
 
-    def exists_for_period(
-        self, lease_id: str, year: int, month: int
-    ) -> bool:
+    def exists_for_period(self, lease_id: str, year: int, month: int) -> bool:
         """Check if a bill already exists for a lease period."""
         return (
             self.db.query(Bill)
@@ -88,7 +82,7 @@ class BillRepository(BaseRepository[Bill]):
             .count()
         )
 
-    def find_overdue(self, as_of_date: date) -> List[Bill]:
+    def find_overdue(self, as_of_date: date) -> list[Bill]:
         """
         Find all overdue bills across all organizations.
 
@@ -120,6 +114,6 @@ class PaymentRepository(BaseRepository[Payment]):
     def __init__(self, db: Session):
         super().__init__(db, Payment)
 
-    def find_by_bill(self, bill_id: str) -> List[Payment]:
+    def find_by_bill(self, bill_id: str) -> list[Payment]:
         """Find all payments for a bill."""
         return self.db.query(Payment).filter(Payment.bill_id == bill_id).all()

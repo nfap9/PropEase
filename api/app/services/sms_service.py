@@ -1,9 +1,10 @@
 """
 SMS service for sending and verifying verification codes.
 """
+
 import logging
 import random
-from datetime import datetime, timezone, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Protocol
 
 from sqlalchemy.orm import Session
@@ -135,12 +136,8 @@ class SmsService:
             ValueError: 如果发送过于频繁或超过每日限制
         """
         # 1. 检查发送频率限制
-        if self.code_repo.has_recent_code(
-            phone, purpose, seconds=settings.SMS_CODE_RESEND_SECONDS
-        ):
-            raise ValueError(
-                f"验证码发送过于频繁，请{settings.SMS_CODE_RESEND_SECONDS}秒后重试"
-            )
+        if self.code_repo.has_recent_code(phone, purpose, seconds=settings.SMS_CODE_RESEND_SECONDS):
+            raise ValueError(f"验证码发送过于频繁，请{settings.SMS_CODE_RESEND_SECONDS}秒后重试")
 
         # 2. 检查每日发送次数限制
         daily_count = self.code_repo.count_today_codes(phone)
@@ -151,9 +148,7 @@ class SmsService:
         code = self._generate_code()
 
         # 4. 计算过期时间
-        expires_at = datetime.now(timezone.utc) + timedelta(
-            minutes=settings.SMS_CODE_EXPIRE_MINUTES
-        )
+        expires_at = datetime.now(UTC) + timedelta(minutes=settings.SMS_CODE_EXPIRE_MINUTES)
 
         # 5. 保存验证码记录
         self.code_repo.create_code(phone, code, purpose, expires_at)

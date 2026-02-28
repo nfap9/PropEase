@@ -2,6 +2,7 @@
 Application settings module.
 Configuration loaded from environment variables.
 """
+
 import os
 
 from pydantic_settings import BaseSettings
@@ -45,6 +46,10 @@ class Settings(BaseSettings):
     SMS_CODE_RESEND_SECONDS: int = 60
     SMS_CODE_MAX_DAILY: int = 10  # 同一手机号每日最大发送次数
 
+    # 运营后台种子账号（仅首次初始化时使用，可选）
+    ADMIN_INIT_USERNAME: str = "admin"
+    ADMIN_INIT_PASSWORD: str = "Admin@123456"
+
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
     CORS_ALLOW_CREDENTIALS: bool = True
@@ -60,10 +65,7 @@ class Settings(BaseSettings):
     def validate_production(self) -> None:
         """验证生产环境配置。如果配置不安全则抛出异常。"""
         if self.SECRET_KEY == _DEFAULT_SECRET_KEY:
-            raise ValueError(
-                "生产环境必须设置 SECRET_KEY 环境变量！"
-                "请生成一个安全的密钥，例如: openssl rand -hex 32"
-            )
+            raise ValueError("生产环境必须设置 SECRET_KEY 环境变量！请生成一个安全的密钥，例如: openssl rand -hex 32")
 
 
 def _is_production() -> bool:

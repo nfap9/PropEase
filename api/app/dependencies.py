@@ -1,10 +1,10 @@
-from typing import Generator, Optional, List
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
+
 from app.configs.database import get_db
+from app.models.organization import MemberRole, OrganizationMember
 from app.models.user import User
-from app.models.organization import OrganizationMember, MemberRole
 from app.utils.security import decode_token
 
 security = HTTPBearer()
@@ -88,6 +88,7 @@ def require_role(roles: list[MemberRole]):
                 detail="Insufficient permissions",
             )
         return membership
+
     return role_checker
 
 
@@ -119,7 +120,7 @@ def require_permission(permission_code: str):
 
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"没有权限执行此操作",
+            detail="没有权限执行此操作",
         )
 
     return permission_checker
@@ -129,7 +130,7 @@ def get_user_permissions(
     org_id: str,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> List[str]:
+) -> list[str]:
     """获取用户在当前组织中的所有权限代码"""
     from app.services.permission_service import PermissionService
 
@@ -140,7 +141,7 @@ def get_user_permissions(
 def get_current_user_system_roles(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> List[str]:
+) -> list[str]:
     """获取当前用户的系统角色"""
     from app.services.permission_service import PermissionService
 
@@ -181,3 +182,49 @@ def require_system_role(roles: list):
         )
 
     return role_checker
+
+
+# ------------------------- 运营后台依赖 -------------------------
+
+
+def get_current_admin_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+):
+    """
+    获取当前运营后台登录用户。要求 JWT 中 type=admin，sub=admin_user_id。
+    用于 /api/v1/admin/* 路由。
+    """
+    from app.models.admin_user import AdminUser
+    from app.utils.security import decode_token
+
+    token = credentials.credentials
+    payload = decode_token(token)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="无效的凭证",
+        )
+    if payload.get("type") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="需要运营后台登录",
+        )
+    admin_id = payload.get("sub")
+    if not admin_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="无效的凭证",
+        )
+    admin = db.query(AdminUser).filter(AdminUser.id == admin_id).first()
+    if not admin:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="运营账号不存在",
+        )
+    if not admin.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="账号已停用",
+        )
+    return admin

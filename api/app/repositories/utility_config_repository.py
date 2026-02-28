@@ -1,11 +1,12 @@
 """
 UtilityConfig repository for data access operations.
 """
-from typing import Optional
+
+
 from sqlalchemy.orm import Session
 
-from app.repositories.base import BaseRepository
 from app.models.utility_config import UtilityConfig
+from app.repositories.base import BaseRepository
 
 
 class UtilityConfigRepository(BaseRepository[UtilityConfig]):
@@ -14,24 +15,20 @@ class UtilityConfigRepository(BaseRepository[UtilityConfig]):
     def __init__(self, db: Session):
         super().__init__(db, UtilityConfig)
 
-    def find_by_apartment(self, apartment_id: str) -> Optional[UtilityConfig]:
+    def find_by_apartment(self, apartment_id: str) -> UtilityConfig | None:
         """Find utility config by apartment ID."""
-        return (
-            self.db.query(UtilityConfig)
-            .filter(UtilityConfig.apartment_id == apartment_id)
-            .first()
-        )
+        return self.db.query(UtilityConfig).filter(UtilityConfig.apartment_id == apartment_id).first()
 
     def upsert(
         self,
         apartment_id: str,
-        water_price_per_unit: Optional[float] = None,
-        electricity_price_per_unit: Optional[float] = None,
-        internet_fee: Optional[float] = None,
-        management_fee: Optional[float] = None,
-        service_fee: Optional[float] = None,
+        water_price_per_unit: float | None = None,
+        electricity_price_per_unit: float | None = None,
+        internet_fee: float | None = None,
+        management_fee: float | None = None,
+        service_fee: float | None = None,
         effective_from=None,
-        notes: Optional[str] = None,
+        notes: str | None = None,
     ) -> UtilityConfig:
         """
         Create or update utility config for an apartment.

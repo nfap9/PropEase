@@ -1,18 +1,19 @@
 """
 Tenant controller - handles tenant management.
 """
-from typing import List
+
+
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.configs.database import get_db
-from app.dependencies import get_current_user
-from app.models.user import User
-from app.models.organization import MemberRole
-from app.services.tenant_service import TenantService
-from app.schemas.tenant import TenantCreate, TenantUpdate, TenantResponse
-from app.controllers.common.errors import NotFoundError
 from app.controllers.common.deps import get_org_membership, require_role
+from app.controllers.common.errors import NotFoundError
+from app.dependencies import get_current_user
+from app.models.organization import MemberRole
+from app.models.user import User
+from app.schemas.tenant import TenantCreate, TenantResponse, TenantUpdate
+from app.services.tenant_service import TenantService
 
 router = APIRouter()
 
@@ -22,7 +23,7 @@ def get_tenant_service(db: Session = Depends(get_db)) -> TenantService:
     return TenantService(db)
 
 
-@router.get("", response_model=List[TenantResponse])
+@router.get("", response_model=list[TenantResponse])
 def list_tenants(
     org_id: str = Query(...),
     current_user: User = Depends(get_current_user),
@@ -43,9 +44,7 @@ def create_tenant(
     db: Session = Depends(get_db),
 ):
     """Create a new tenant."""
-    require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(
-        get_org_membership(org_id, current_user, db)
-    )
+    require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(get_org_membership(org_id, current_user, db))
     return tenant_service.create_tenant(org_id, data)
 
 
@@ -75,9 +74,7 @@ def update_tenant(
     db: Session = Depends(get_db),
 ):
     """Update tenant."""
-    require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(
-        get_org_membership(org_id, current_user, db)
-    )
+    require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(get_org_membership(org_id, current_user, db))
     tenant = tenant_service.update_tenant(tenant_id, org_id, data)
     if not tenant:
         raise NotFoundError("Tenant")
@@ -93,9 +90,7 @@ def delete_tenant(
     db: Session = Depends(get_db),
 ):
     """Delete tenant."""
-    require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(
-        get_org_membership(org_id, current_user, db)
-    )
+    require_role([MemberRole.OWNER, MemberRole.ADMIN, MemberRole.MEMBER])(get_org_membership(org_id, current_user, db))
     if not tenant_service.delete_tenant(tenant_id, org_id):
         raise NotFoundError("Tenant")
     return {"message": "Tenant deleted successfully"}

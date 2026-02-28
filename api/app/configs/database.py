@@ -1,11 +1,11 @@
 """
 Database configuration module.
 """
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from .settings import settings
-
 
 # Convert postgresql:// to postgresql+psycopg:// for psycopg3 driver
 database_url = settings.DATABASE_URL

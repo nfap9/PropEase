@@ -1,22 +1,23 @@
 """
 Authentication service for user management and JWT operations.
 """
-from typing import Optional
+
+
 from sqlalchemy.orm import Session
 
+from app.models.organization import MemberRole
+from app.models.user import User
+from app.repositories.organization_repository import OrganizationMemberRepository
+from app.repositories.user_repository import UserRepository
+from app.schemas.auth import Token, UserCreate, UserLogin
 from app.services.base import BaseService
 from app.services.sms_service import SmsService, get_sms_provider
-from app.repositories.user_repository import UserRepository
-from app.repositories.organization_repository import OrganizationMemberRepository
-from app.models.user import User
-from app.models.organization import MemberRole
-from app.schemas.auth import UserCreate, UserLogin, Token
 from app.utils.security import (
-    get_password_hash,
-    verify_password,
     create_access_token,
     create_refresh_token,
     decode_token,
+    get_password_hash,
+    verify_password,
 )
 
 
@@ -43,9 +44,7 @@ class AuthService(BaseService):
             ValueError: If phone already exists or verification code is invalid
         """
         # 1. 验证验证码
-        if not self.sms_service.verify_code(
-            user_data.phone, user_data.verification_code, "register"
-        ):
+        if not self.sms_service.verify_code(user_data.phone, user_data.verification_code, "register"):
             raise ValueError("验证码无效或已过期")
 
         # 2. 检查手机号是否已注册
@@ -62,6 +61,7 @@ class AuthService(BaseService):
 
         # 4. 创建个人团队
         from app.services.organization_service import OrganizationService
+
         org_service = OrganizationService(self.db)
         org_service.create_personal_team(
             user_id=user.id,
@@ -94,9 +94,7 @@ class AuthService(BaseService):
                 raise ValueError("手机号或密码错误")
         else:
             # 验证码登录
-            if not self.sms_service.verify_code(
-                credentials.phone, credentials.verification_code, "login"
-            ):
+            if not self.sms_service.verify_code(credentials.phone, credentials.verification_code, "login"):
                 raise ValueError("验证码无效或已过期")
 
         token_data = {"sub": str(user.id), "phone": user.phone}
@@ -169,12 +167,10 @@ class AuthService(BaseService):
             token_type="bearer",
         )
 
-    def get_current_user(self, user_id: str) -> Optional[User]:
+    def get_current_user(self, user_id: str) -> User | None:
         """Get current user by ID."""
         return self.user_repo.get(user_id)
 
-    def check_permission(
-        self, user_id: str, org_id: str, allowed_roles: list[MemberRole]
-    ) -> bool:
+    def check_permission(self, user_id: str, org_id: str, allowed_roles: list[MemberRole]) -> bool:
         """Check if user has required role in organization."""
         return self.member_repo.has_role(org_id, user_id, allowed_roles)

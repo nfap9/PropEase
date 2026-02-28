@@ -3,6 +3,7 @@ Organization service for organization management.
 """
 
 import re
+
 import ulid
 from sqlalchemy.orm import Session
 
@@ -36,9 +37,7 @@ class OrganizationService(BaseService):
             return None
         return self.org_repo.get(org_id)
 
-    def create_organization(
-        self, user_id: str, data: OrganizationCreate, is_personal: bool = False
-    ) -> Organization:
+    def create_organization(self, user_id: str, data: OrganizationCreate, is_personal: bool = False) -> Organization:
         """
         Create a new organization and add user as owner.
 
@@ -55,8 +54,8 @@ class OrganizationService(BaseService):
             slug = data.slug
         else:
             slug = data.name.lower()
-            slug = re.sub(r'\s+', '-', slug)
-            slug = re.sub(r'[^a-z0-9-]', '', slug)
+            slug = re.sub(r"\s+", "-", slug)
+            slug = re.sub(r"[^a-z0-9-]", "", slug)
 
         # Ensure slug uniqueness
         base_slug = slug
@@ -139,9 +138,7 @@ class OrganizationService(BaseService):
                 return org
         return None
 
-    def migrate_personal_team(
-        self, personal_org_id: str, target_org_id: str, user_id: str
-    ) -> dict:
+    def migrate_personal_team(self, personal_org_id: str, target_org_id: str, user_id: str) -> dict:
         """
         Migrate data from personal team to a formal team.
 
@@ -189,40 +186,47 @@ class OrganizationService(BaseService):
 
         # Migrate apartments (rooms will cascade)
         from app.models.apartment import Apartment
-        apartments = self.db.query(Apartment).filter(
-            Apartment.organization_id == personal_org_id
-        ).all()
+
+        apartments = self.db.query(Apartment).filter(Apartment.organization_id == personal_org_id).all()
         for apt in apartments:
             apt.organization_id = target_org_id
             stats["apartments"] += 1
-            stats["rooms"] += len(apt.rooms) if hasattr(apt, 'rooms') else 0
+            stats["rooms"] += len(apt.rooms) if hasattr(apt, "rooms") else 0
 
         # Migrate tenants
         from app.models.tenant import Tenant
-        tenants = self.db.query(Tenant).filter(
-            Tenant.organization_id == personal_org_id
-        ).all()
+
+        tenants = self.db.query(Tenant).filter(Tenant.organization_id == personal_org_id).all()
         for tenant in tenants:
             tenant.organization_id = target_org_id
             stats["tenants"] += 1
 
         # Migrate bills (through leases)
         from app.models.lease import Lease
-        from app.models.bill import Bill
-        leases = self.db.query(Lease).join(
-            Apartment, Lease.room_id == Apartment.rooms  # type: ignore
-        ).filter(
-            Apartment.organization_id == personal_org_id
-        ).all()
+
+        leases = (
+            self.db.query(Lease)
+            .join(
+                Apartment,
+                Lease.room_id == Apartment.rooms,  # type: ignore
+            )
+            .filter(Apartment.organization_id == personal_org_id)
+            .all()
+        )
         stats["leases"] = len(leases)
 
         # Migrate utility readings
         from app.models.utility import UtilityReading
-        readings = self.db.query(UtilityReading).join(
-            Apartment, UtilityReading.room_id == Apartment.rooms  # type: ignore
-        ).filter(
-            Apartment.organization_id == personal_org_id
-        ).all()
+
+        readings = (
+            self.db.query(UtilityReading)
+            .join(
+                Apartment,
+                UtilityReading.room_id == Apartment.rooms,  # type: ignore
+            )
+            .filter(Apartment.organization_id == personal_org_id)
+            .all()
+        )
         stats["utility_readings"] = len(readings)
 
         # Delete personal team membership
@@ -235,9 +239,7 @@ class OrganizationService(BaseService):
 
         return stats
 
-    def update_organization(
-        self, org_id: str, user_id: str, data: OrganizationUpdate
-    ) -> Organization | None:
+    def update_organization(self, org_id: str, user_id: str, data: OrganizationUpdate) -> Organization | None:
         """Update an organization if user has permission."""
         if not self.member_repo.has_role(org_id, user_id, [MemberRole.OWNER, MemberRole.ADMIN]):
             return None
@@ -307,38 +309,43 @@ class OrganizationService(BaseService):
 
         # Count apartments and rooms
         from app.models.apartment import Apartment
-        apartments = self.db.query(Apartment).filter(
-            Apartment.organization_id == org_id
-        ).all()
+
+        apartments = self.db.query(Apartment).filter(Apartment.organization_id == org_id).all()
         stats["apartments"] = len(apartments)
         for apt in apartments:
-            stats["rooms"] += len(apt.rooms) if hasattr(apt, 'rooms') else 0
+            stats["rooms"] += len(apt.rooms) if hasattr(apt, "rooms") else 0
 
         # Count tenants
         from app.models.tenant import Tenant
-        stats["tenants"] = self.db.query(Tenant).filter(
-            Tenant.organization_id == org_id
-        ).count()
+
+        stats["tenants"] = self.db.query(Tenant).filter(Tenant.organization_id == org_id).count()
 
         # Count active leases
         from app.models.lease import Lease
-        stats["active_leases"] = self.db.query(Lease).join(
-            Apartment, Lease.room_id == Apartment.id
-        ).filter(
-            Apartment.organization_id == org_id,
-            Lease.is_active == True,
-        ).count()
+
+        stats["active_leases"] = (
+            self.db.query(Lease)
+            .join(Apartment, Lease.room_id == Apartment.id)
+            .filter(
+                Apartment.organization_id == org_id,
+                Lease.is_active == True,
+            )
+            .count()
+        )
 
         # Count pending bills
         from app.models.bill import Bill, BillStatus
-        stats["pending_bills"] = self.db.query(Bill).join(
-            Lease, Bill.lease_id == Lease.id
-        ).join(
-            Apartment, Lease.room_id == Apartment.id
-        ).filter(
-            Apartment.organization_id == org_id,
-            Bill.status == BillStatus.PENDING,
-        ).count()
+
+        stats["pending_bills"] = (
+            self.db.query(Bill)
+            .join(Lease, Bill.lease_id == Lease.id)
+            .join(Apartment, Lease.room_id == Apartment.id)
+            .filter(
+                Apartment.organization_id == org_id,
+                Bill.status == BillStatus.PENDING,
+            )
+            .count()
+        )
 
         # Count members
         stats["members"] = len(self.member_repo.find_organization_members(org_id))
@@ -351,9 +358,7 @@ class OrganizationService(BaseService):
             "is_personal": org.is_personal,
         }
 
-    def confirm_and_delete(
-        self, org_id: str, user_id: str, confirmed_name: str
-    ) -> bool:
+    def confirm_and_delete(self, org_id: str, user_id: str, confirmed_name: str) -> bool:
         """
         Delete organization after confirming the name matches.
 
@@ -386,9 +391,7 @@ class OrganizationService(BaseService):
             return []
         return self.member_repo.find_organization_members(org_id)
 
-    def add_member(
-        self, org_id: str, user_id: str, phone: str, role: MemberRole
-    ) -> OrganizationMember:
+    def add_member(self, org_id: str, user_id: str, phone: str, role: MemberRole) -> OrganizationMember:
         """
         Add a new member to organization.
 
@@ -401,9 +404,7 @@ class OrganizationService(BaseService):
             raise ValueError("个人团队无法邀请成员，请先升级为正式团队")
 
         # Check permission
-        if not self.member_repo.has_role(
-            org_id, user_id, [MemberRole.OWNER, MemberRole.ADMIN]
-        ):
+        if not self.member_repo.has_role(org_id, user_id, [MemberRole.OWNER, MemberRole.ADMIN]):
             raise ValueError("您没有权限邀请成员")
 
         # Find user by phone
@@ -443,9 +444,7 @@ class OrganizationService(BaseService):
         self.db.refresh(membership)
         return membership
 
-    def remove_member(
-        self, org_id: str, user_id: str, member_user_id: str
-    ) -> bool:
+    def remove_member(self, org_id: str, user_id: str, member_user_id: str) -> bool:
         """Remove a member from organization."""
         # Only owner can remove members
         if not self.member_repo.has_role(org_id, user_id, [MemberRole.OWNER]):

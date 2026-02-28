@@ -1,6 +1,6 @@
-from pydantic import BaseModel
-from typing import Optional, List
 from datetime import date, datetime
+
+from pydantic import BaseModel
 
 from app.schemas.apartment import RoomWithApartment
 
@@ -10,11 +10,11 @@ class UtilityReadingBase(BaseModel):
     period_year: int
     period_month: int
     reading_date: date
-    water_reading: Optional[float] = None
-    electricity_reading: Optional[float] = None
-    water_previous: Optional[float] = None
-    electricity_previous: Optional[float] = None
-    notes: Optional[str] = None
+    water_reading: float | None = None
+    electricity_reading: float | None = None
+    water_previous: float | None = None
+    electricity_previous: float | None = None
+    notes: str | None = None
 
 
 class UtilityReadingCreate(UtilityReadingBase):
@@ -22,17 +22,17 @@ class UtilityReadingCreate(UtilityReadingBase):
 
 
 class UtilityReadingUpdate(BaseModel):
-    reading_date: Optional[date] = None
-    water_reading: Optional[float] = None
-    electricity_reading: Optional[float] = None
-    water_previous: Optional[float] = None
-    electricity_previous: Optional[float] = None
-    notes: Optional[str] = None
+    reading_date: date | None = None
+    water_reading: float | None = None
+    electricity_reading: float | None = None
+    water_previous: float | None = None
+    electricity_previous: float | None = None
+    notes: str | None = None
 
 
 class UtilityReadingResponse(UtilityReadingBase):
     id: str
-    room: Optional[RoomWithApartment] = None
+    room: RoomWithApartment | None = None
     created_at: datetime
 
     class Config:
@@ -48,20 +48,22 @@ class BatchUtilityReading(BaseModel):
 
 class UtilityExportRoom(BaseModel):
     """待录入水电的房间信息（用于导出）"""
+
     room_id: str
     apartment_name: str
     room_number: str
     tenant_name: str
     billing_day: int
-    water_previous: Optional[float] = None
-    electricity_previous: Optional[float] = None
+    water_previous: float | None = None
+    electricity_previous: float | None = None
 
 
 class UtilityExportRequest(BaseModel):
     """导出请求参数"""
+
     period_year: int
     period_month: int
-    days_range: Optional[int] = None  # None 表示全部，否则为天数（5, 10, 15, 30）
+    days_range: int | None = None  # None 表示全部，否则为天数（5, 10, 15, 30）
 
 
 # Alias for controller import

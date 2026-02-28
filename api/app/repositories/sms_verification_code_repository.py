@@ -1,12 +1,13 @@
 """
 SMS verification code repository for data access operations.
 """
-from datetime import datetime, timezone, timedelta
-from typing import Optional
+
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
-from app.repositories.base import BaseRepository
+
 from app.models.sms_verification_code import SmsVerificationCode
+from app.repositories.base import BaseRepository
 
 
 class SmsVerificationCodeRepository(BaseRepository[SmsVerificationCode]):
@@ -15,9 +16,7 @@ class SmsVerificationCodeRepository(BaseRepository[SmsVerificationCode]):
     def __init__(self, db: Session):
         super().__init__(db, SmsVerificationCode)
 
-    def find_valid_code(
-        self, phone: str, code: str, purpose: str
-    ) -> Optional[SmsVerificationCode]:
+    def find_valid_code(self, phone: str, code: str, purpose: str) -> SmsVerificationCode | None:
         """Find a valid (unused and not expired) verification code."""
         return (
             self.db.query(SmsVerificationCode)
@@ -26,14 +25,14 @@ class SmsVerificationCodeRepository(BaseRepository[SmsVerificationCode]):
                 SmsVerificationCode.code == code,
                 SmsVerificationCode.purpose == purpose,
                 SmsVerificationCode.is_used == False,
-                SmsVerificationCode.expires_at > datetime.now(timezone.utc),
+                SmsVerificationCode.expires_at > datetime.now(UTC),
             )
             .first()
         )
 
     def has_recent_code(self, phone: str, purpose: str, seconds: int = 60) -> bool:
         """Check if a code was sent recently within the specified seconds."""
-        threshold = datetime.now(timezone.utc) - timedelta(seconds=seconds)
+        threshold = datetime.now(UTC) - timedelta(seconds=seconds)
         return (
             self.db.query(SmsVerificationCode)
             .filter(
@@ -47,9 +46,7 @@ class SmsVerificationCodeRepository(BaseRepository[SmsVerificationCode]):
 
     def count_today_codes(self, phone: str) -> int:
         """Count codes sent today for a phone number."""
-        today_start = datetime.now(timezone.utc).replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
+        today_start = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
         return (
             self.db.query(SmsVerificationCode)
             .filter(
@@ -64,11 +61,7 @@ class SmsVerificationCodeRepository(BaseRepository[SmsVerificationCode]):
         record.is_used = True
         self.db.commit()
 
-    def create_code(
-        self, phone: str, code: str, purpose: str, expires_at: datetime
-    ) -> SmsVerificationCode:
+    def create_code(self, phone: str, code: str, purpose: str, expires_at: datetime) -> SmsVerificationCode:
         """Create a new verification code record."""
-        record = SmsVerificationCode(
-            phone=phone, code=code, purpose=purpose, expires_at=expires_at
-        )
+        record = SmsVerificationCode(phone=phone, code=code, purpose=purpose, expires_at=expires_at)
         return self.create(record)

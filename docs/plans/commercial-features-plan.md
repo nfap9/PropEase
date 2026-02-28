@@ -2,17 +2,17 @@
 
 > 创建日期: 2026-02-28
 > 最后更新: 2026-02-28
-> 状态: ✅ P1 阶段完成
+> 状态: ✅ P2 阶段完成
 
 ## 📊 进度概览
 
-**总进度: 2/4 阶段完成 (P0 完成, P1 完成)**
+**总进度: 3/4 阶段完成 (P0 完成, P1 完成, P2 完成)**
 
 | 阶段 | 状态 | 预计周期 | 描述 |
 |-----|------|---------|------|
 | P0 核心商用 | ✅ 100% | 3-4周 | 公用费用✅、免费限制✅、订阅基础✅、账单自动生成✅ |
 | P1 体验提升 | ✅ 100% | 2-3周 | 个人团队✅、团队删除✅、事务提醒✅、自定义角色✅ |
-| P2 运营系统 | ⬜ 0% | 3-4周 | 运营后台、账号管理、组织管理、订阅管理 |
+| P2 运营系统 | ✅ 100% | 3-4周 | 运营后台✅、账号管理✅、组织管理✅、订阅管理✅、运营分析✅ |
 | P3 支付集成 | ⬜ 0% | 2周 | 微信支付、订阅支付流程 |
 
 ---
@@ -218,108 +218,78 @@ api/app/scheduler/
 
 ---
 
-## P2 - 运营系统 ⬜ 待开始
+## P2 - 运营系统 ✅ 已完成
 
-### 9. 运营后台架构 📋
+### 9. 运营后台架构 ✅ 已完成
 
 **目标：** 建立独立的运营管理系统
 
 #### 架构方案
 
 ```
-/api/admin/                    # 运营后台 API 路由前缀
-/web/admin/                    # 运营后台前端（可选独立项目）
+/api/v1/admin/                 # 运营后台 API 路由前缀
+/web/admin/                    # 运营后台前端（同项目下 /admin 路由）
 ```
 
-#### 数据模型
+#### 已完成工作
 
-```python
-# AdminUser - 运营账号
-class AdminUser:
-    id: ULID
-    username: str
-    password_hash: str
-    name: str
-    email: str
-    role_id: FK                  # 关联运营角色
-    is_active: bool
-    last_login_at: datetime
-    created_at: datetime
-
-# AdminRole - 运营角色
-class AdminRole:
-    id: ULID
-    name: str
-    permissions: JSON            # 权限列表
-    is_system: bool              # 系统预置不可删除
-    created_at: datetime
-```
-
-#### 任务清单
-
-- [ ] **后端模型** - AdminUser, AdminRole
-- [ ] **后端认证** - 运营账号认证系统
-- [ ] **后端中间件** - 运营权限校验
-- [ ] **后端 API** - 运营后台接口
-- [ ] **数据库迁移** - 创建表
-- [ ] **种子数据** - 初始化超级管理员
-- [ ] **前端项目** - 运营后台前端（或独立路由）
-- [ ] **前端登录** - 运营登录页面
-- [ ] **前端布局** - 运营后台布局
+- [x] **后端模型** - AdminUser, AdminRole（`app/models/admin_user.py`, `admin_role.py`）
+- [x] **后端认证** - 运营账号 JWT（type=admin），`get_current_admin_user` 依赖
+- [x] **后端 API** - 运营后台路由挂载于 `/api/v1/admin`
+- [x] **数据库迁移** - `add_admin_system`（admin_roles, admin_users 表）
+- [x] **种子数据** - 启动时 `seed_admin_super()` 创建超级管理员角色与 admin 账号
+- [x] **前端** - `/admin` 布局、`/admin/login` 登录页、`/admin` 仪表盘
 
 ---
 
-### 10. 运营人员管理 📋
+### 10. 运营人员管理 ✅ 已完成
 
 **目标：** 管理运营账号和角色
 
-#### 任务清单
+#### 已完成工作
 
-- [ ] **后端 API** - 运营账号 CRUD
-- [ ] **后端 API** - 运营角色 CRUD
-- [ ] **后端 API** - 密码重置
-- [ ] **前端页面** - 运营账号管理
-- [ ] **前端页面** - 运营角色管理
+- [x] **后端 API** - 运营账号 CRUD（`GET/POST/PUT/DELETE /admin/users`）、`GET /admin/users/me`、`POST /admin/users/{id}/reset-password`
+- [x] **后端 API** - 运营角色 CRUD（`GET/POST/PUT/DELETE /admin/roles`）
+- [x] **前端页面** - 运营账号管理（`/admin/users`）、运营角色管理（`/admin/roles`）
 
 ---
 
-### 11. 组织管理（运营侧） 📋
+### 11. 组织管理（运营侧） ✅ 已完成
 
 **目标：** 运营人员可查看和管理组织
 
-#### 任务清单
+#### 已完成工作
 
-- [ ] **后端 API** - 组织列表（平台级）
-- [ ] **后端 API** - 组织详情
-- [ ] **后端 API** - 组织启用/停用
-- [ ] **前端页面** - 组织列表
-- [ ] **前端页面** - 组织详情
+- [x] **后端** - Organization 增加 `is_active` 字段，迁移 `add_organization_is_active`
+- [x] **后端 API** - 组织列表 `GET /admin/organizations`（支持 is_active 筛选）
+- [x] **后端 API** - 组织详情 `GET /admin/organizations/{id}`
+- [x] **后端 API** - 组织启用/停用 `PATCH /admin/organizations/{id}/active`
+- [x] **前端页面** - 组织列表（`/admin/organizations`）、组织详情（`/admin/organizations/[id]`）
 
 ---
 
-### 12. 订阅管理（运营侧） 📋
+### 12. 订阅管理（运营侧） ✅ 已完成
 
 **目标：** 运营人员可配置套餐和管理订阅
 
-#### 任务清单
+#### 已完成工作
 
-- [ ] **后端 API** - 套餐管理 CRUD
-- [ ] **后端 API** - 订阅管理
-- [ ] **后端 API** - 手动续费/取消
-- [ ] **前端页面** - 套餐配置
-- [ ] **前端页面** - 订阅管理
+- [x] **后端 API** - 套餐 CRUD（`GET/POST/PUT/DELETE /admin/plans`）
+- [x] **后端 API** - 订阅列表 `GET /admin/subscriptions`、详情 `GET /admin/subscriptions/{id}`
+- [x] **后端 API** - 手动续期 `POST /admin/subscriptions/{id}/renew`、取消 `POST /admin/subscriptions/{id}/cancel`
+- [x] **前端页面** - 套餐配置（`/admin/plans`）、订阅管理（`/admin/subscriptions`）
 
 ---
 
-### 13. 运营分析 📋
+### 13. 运营分析 ✅ 已完成
 
 **目标：** 平台级数据统计和分析
 
-#### 任务清单
+#### 已完成工作
 
-- [ ] **后端 Service** - 平台级统计
-- [ ] **后端 API** - 统计接口
-- [ ] **前端页面** - 运营仪表盘
+- [x] **后端 Service** - `AdminStatsService.get_platform_stats()`（组织/用户/公寓/房间/活跃订阅数）
+- [x] **后端 API** - `GET /admin/stats`
+- [x] **前端页面** - 运营仪表盘 `/admin`（平台概览统计卡片）
 
 ---
 
@@ -369,6 +339,8 @@ class AdminRole:
 
 | 日期 | 变更内容 |
 |-----|---------|
+| 2026-02-28 | P2 前端收尾：运营账号/角色/组织/套餐/订阅管理页面及运营后台侧栏导航 |
+| 2026-02-28 | P2 阶段完成：运营后台架构、运营人员管理、组织管理、订阅管理、运营分析；前端 /admin 登录与仪表盘 |
 | 2026-02-28 | P1 阶段完成：个人团队机制、团队删除功能、事务提醒系统、自定义角色管理 |
 | 2026-02-28 | P0 阶段完成：公用费用配置、免费用户限制、订阅套餐基础、账单自动生成定时任务 |
 | 2026-02-28 | 初始创建，规划四个阶段共15个功能模块 |

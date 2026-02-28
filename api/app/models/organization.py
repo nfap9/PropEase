@@ -1,13 +1,16 @@
-from sqlalchemy import String, ForeignKey, Enum as SQLEnum, JSON
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import TYPE_CHECKING, List, Optional
 import enum
+from typing import TYPE_CHECKING, Optional
+
+from sqlalchemy import JSON, ForeignKey, String
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.configs.database import Base
 from app.models.base import TimestampMixin, ULIDMixin
 
 if TYPE_CHECKING:
-    from app.models.user import User
     from app.models.subscription import OrganizationSubscription
+    from app.models.user import User
 
 
 class MemberRole(str, enum.Enum):
@@ -25,15 +28,16 @@ class Organization(Base, TimestampMixin, ULIDMixin):
     plan: Mapped[str] = mapped_column(String(50), default="free", nullable=False)
     settings: Mapped[dict] = mapped_column(JSON, default=dict, nullable=True)
     is_personal: Mapped[bool] = mapped_column(default=False, nullable=False, index=True)
+    is_active: Mapped[bool] = mapped_column(default=True, nullable=False, index=True)
 
     # Relationships
-    members: Mapped[List["OrganizationMember"]] = relationship(
+    members: Mapped[list["OrganizationMember"]] = relationship(
         "OrganizationMember", back_populates="organization", cascade="all, delete-orphan"
     )
-    apartments: Mapped[List["Apartment"]] = relationship(
+    apartments: Mapped[list["Apartment"]] = relationship(
         "Apartment", back_populates="organization", cascade="all, delete-orphan"
     )
-    tenants: Mapped[List["Tenant"]] = relationship(
+    tenants: Mapped[list["Tenant"]] = relationship(
         "Tenant", back_populates="organization", cascade="all, delete-orphan"
     )
     subscription: Mapped[Optional["OrganizationSubscription"]] = relationship(
@@ -52,7 +56,7 @@ class OrganizationMember(Base, TimestampMixin, ULIDMixin):
         nullable=False,
     )
     # 自定义角色ID（可选，用于自定义权限）
-    custom_role_id: Mapped[Optional[str]] = mapped_column(
+    custom_role_id: Mapped[str | None] = mapped_column(
         ForeignKey("custom_roles.id", ondelete="SET NULL"),
         nullable=True,
     )

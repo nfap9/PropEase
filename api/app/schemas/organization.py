@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime
+
+from pydantic import BaseModel
+
 from app.models.organization import MemberRole
 
 
@@ -9,20 +10,21 @@ class OrganizationBase(BaseModel):
 
 
 class OrganizationCreate(OrganizationBase):
-    slug: Optional[str] = None  # 可选，自动生成
+    slug: str | None = None  # 可选，自动生成
 
 
 class OrganizationUpdate(BaseModel):
-    name: Optional[str] = None
-    settings: Optional[dict] = None
+    name: str | None = None
+    settings: dict | None = None
 
 
 class OrganizationResponse(OrganizationBase):
     id: str
     slug: str
     plan: str
-    settings: Optional[dict]
+    settings: dict | None
     is_personal: bool = False
+    is_active: bool = True
     created_at: datetime
 
     class Config:
@@ -54,12 +56,13 @@ class OrganizationMemberResponse(BaseModel):
 
 
 class OrganizationMemberWithUser(OrganizationMemberResponse):
-    user_phone: Optional[str] = None
+    user_phone: str | None = None
     user_full_name: str
 
 
 class OrganizationUsageResponse(BaseModel):
     """组织使用情况响应"""
+
     plan: str
     # 当前用量
     apartments_used: int

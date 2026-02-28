@@ -1,20 +1,20 @@
 """
 Bill service for bill generation and payment management.
 """
-from typing import List, Optional
-from datetime import date
+
 from decimal import Decimal
+
 from sqlalchemy.orm import Session
 
-from app.services.base import BaseService
-from app.repositories.bill_repository import BillRepository, PaymentRepository
-from app.repositories.lease_repository import LeaseRepository
-from app.repositories.organization_repository import OrganizationRepository, OrganizationMemberRepository
-from app.repositories.utility_repository import UtilityRepository
-from app.models.bill import Bill, Payment, BillStatus, PaymentMethod
+from app.models.bill import Bill, BillStatus, Payment
 from app.models.lease import Lease
 from app.models.utility import UtilityReading
-from app.schemas.bill import BillCreate, PaymentCreate, GenerateBillsRequest
+from app.repositories.bill_repository import BillRepository, PaymentRepository
+from app.repositories.lease_repository import LeaseRepository
+from app.repositories.organization_repository import OrganizationMemberRepository, OrganizationRepository
+from app.repositories.utility_repository import UtilityRepository
+from app.schemas.bill import BillCreate, GenerateBillsRequest, PaymentCreate
+from app.services.base import BaseService
 
 
 class BillService(BaseService):
@@ -32,27 +32,22 @@ class BillService(BaseService):
     def list_bills(
         self,
         org_id: str,
-        lease_id: Optional[str] = None,
-        year: Optional[int] = None,
-        month: Optional[int] = None,
-        status: Optional[BillStatus] = None,
-    ) -> List[Bill]:
+        lease_id: str | None = None,
+        year: int | None = None,
+        month: int | None = None,
+        status: BillStatus | None = None,
+    ) -> list[Bill]:
         """List bills with filters."""
         return self.bill_repo.find_by_organization(org_id, lease_id, year, month, status)
 
-    def get_bill(self, bill_id: str, org_id: str) -> Optional[Bill]:
+    def get_bill(self, bill_id: str, org_id: str) -> Bill | None:
         """Get a bill by ID within an organization."""
         bills = self.bill_repo.find_by_organization(org_id)
         return next((b for b in bills if b.id == bill_id), None)
 
     def create_bill(self, org_id: str, data: BillCreate) -> Bill:
         """Create a new bill manually."""
-        total_amount = (
-            data.rent_amount
-            + data.water_amount
-            + data.electricity_amount
-            + (data.other_amount or 0)
-        )
+        total_amount = data.rent_amount + data.water_amount + data.electricity_amount + (data.other_amount or 0)
         bill = Bill(
             lease_id=data.lease_id,
             bill_year=data.bill_year,
@@ -83,7 +78,6 @@ class BillService(BaseService):
         Raises:
             ValueError: Bill not found
         """
-        from app.schemas.bill import BillUpdate
 
         bill = self.get_bill(bill_id, org_id)
         if not bill:
@@ -103,9 +97,7 @@ class BillService(BaseService):
 
         return self.bill_repo.update(bill_id, **update_data)
 
-    def generate_bills(
-        self, org_id: str, data: GenerateBillsRequest
-    ) -> dict:
+    def generate_bills(self, org_id: str, data: GenerateBillsRequest) -> dict:
         """
         Generate bills for active leases.
 
@@ -126,16 +118,12 @@ class BillService(BaseService):
 
         for lease in leases:
             # Check if bill already exists
-            if self.bill_repo.exists_for_period(
-                lease.id, data.bill_year, data.bill_month
-            ):
+            if self.bill_repo.exists_for_period(lease.id, data.bill_year, data.bill_month):
                 skipped.append(lease.id)
                 continue
 
             # Get utility reading for this period
-            reading = self._get_utility_reading(
-                lease.room_id, data.bill_year, data.bill_month
-            )
+            reading = self._get_utility_reading(lease.room_id, data.bill_year, data.bill_month)
 
             # Calculate amounts
             rent_amount = lease.monthly_rent
@@ -161,29 +149,18 @@ class BillService(BaseService):
         self.bill_repo.db.commit()
         return {"created": len(created), "skipped": len(skipped)}
 
-    def _get_utility_reading(
-        self, room_id: str, year: int, month: int
-    ) -> Optional[UtilityReading]:
+    def _get_utility_reading(self, room_id: str, year: int, month: int) -> UtilityReading | None:
         """Get utility reading for a room and period."""
         return self.utility_repo.find_by_room_and_period(room_id, year, month)
 
-    def _calculate_water_cost(
-        self, lease: Lease, reading: Optional[UtilityReading]
-    ) -> Decimal:
+    def _calculate_water_cost(self, lease: Lease, reading: UtilityReading | None) -> Decimal:
         """Calculate water cost from reading."""
-        if (
-            not reading
-            or not lease.water_rate
-            or not reading.water_reading
-            or not reading.water_previous
-        ):
+        if not reading or not lease.water_rate or not reading.water_reading or not reading.water_previous:
             return Decimal(0)
         usage = reading.water_reading - reading.water_previous
         return Decimal(str(usage)) * Decimal(str(lease.water_rate))
 
-    def _calculate_electricity_cost(
-        self, lease: Lease, reading: Optional[UtilityReading]
-    ) -> Decimal:
+    def _calculate_electricity_cost(self, lease: Lease, reading: UtilityReading | None) -> Decimal:
         """Calculate electricity cost from reading."""
         if (
             not reading
@@ -232,7 +209,7 @@ class BillService(BaseService):
         self.payment_repo.db.refresh(payment)
         return payment
 
-    def get_bill_payments(self, bill_id: str) -> List[Payment]:
+    def get_bill_payments(self, bill_id: str) -> list[Payment]:
         """Get all payments for a bill."""
         return self.payment_repo.find_by_bill(bill_id)
 
@@ -260,17 +237,9 @@ class BillService(BaseService):
             "paid_amount": bill.paid_amount,
             "status": bill.status.value if bill.status else "PENDING",
             "notes": bill.notes,
-            "apartment_name": (
-                bill.lease.room.apartment.name
-                if bill.lease and bill.lease.room
-                else "-"
-            ),
-            "room_number": (
-                bill.lease.room.room_number if bill.lease and bill.lease.room else "-"
-            ),
-            "tenant_name": (
-                bill.lease.tenant.name if bill.lease and bill.lease.tenant else "-"
-            ),
+            "apartment_name": (bill.lease.room.apartment.name if bill.lease and bill.lease.room else "-"),
+            "room_number": (bill.lease.room.room_number if bill.lease and bill.lease.room else "-"),
+            "tenant_name": (bill.lease.tenant.name if bill.lease and bill.lease.tenant else "-"),
         }
 
     def get_organization_name(self, org_id: str) -> str:

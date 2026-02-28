@@ -1,15 +1,15 @@
 """
 Utility reading repository for data access operations.
 """
-from typing import List, Optional
+
 from datetime import date
+
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_
-from app.repositories.base import BaseRepository
-from app.models.utility import UtilityReading
-from app.models.apartment import Room, Apartment
+
+from app.models.apartment import Apartment, Room
 from app.models.lease import Lease
-from app.models.tenant import Tenant
+from app.models.utility import UtilityReading
+from app.repositories.base import BaseRepository
 
 
 class UtilityRepository(BaseRepository[UtilityReading]):
@@ -21,10 +21,10 @@ class UtilityRepository(BaseRepository[UtilityReading]):
     def find_by_organization(
         self,
         org_id: str,
-        room_id: Optional[str] = None,
-        period_year: Optional[int] = None,
-        period_month: Optional[int] = None,
-    ) -> List[UtilityReading]:
+        room_id: str | None = None,
+        period_year: int | None = None,
+        period_month: int | None = None,
+    ) -> list[UtilityReading]:
         """Find all readings in an organization."""
         query = (
             self.db.query(UtilityReading)
@@ -45,27 +45,20 @@ class UtilityRepository(BaseRepository[UtilityReading]):
             UtilityReading.reading_date.desc(),
         ).all()
 
-    def find_latest_by_room(
-        self, room_id: str, before_year: int, before_month: int
-    ) -> Optional[UtilityReading]:
+    def find_latest_by_room(self, room_id: str, before_year: int, before_month: int) -> UtilityReading | None:
         """Find latest reading for a room before a given period."""
         return (
             self.db.query(UtilityReading)
             .filter(
                 UtilityReading.room_id == room_id,
                 (UtilityReading.period_year < before_year)
-                | (
-                    (UtilityReading.period_year == before_year)
-                    & (UtilityReading.period_month < before_month)
-                ),
+                | ((UtilityReading.period_year == before_year) & (UtilityReading.period_month < before_month)),
             )
             .order_by(UtilityReading.period_year.desc(), UtilityReading.period_month.desc())
             .first()
         )
 
-    def find_by_room_and_period(
-        self, room_id: str, year: int, month: int
-    ) -> Optional[UtilityReading]:
+    def find_by_room_and_period(self, room_id: str, year: int, month: int) -> UtilityReading | None:
         """Find utility reading for a specific room and period."""
         return (
             self.db.query(UtilityReading)
@@ -82,9 +75,9 @@ class UtilityRepository(BaseRepository[UtilityReading]):
         org_id: str,
         period_year: int,
         period_month: int,
-        days_range: Optional[int] = None,
-        current_date: Optional[date] = None,
-    ) -> List[dict]:
+        days_range: int | None = None,
+        current_date: date | None = None,
+    ) -> list[dict]:
         """
         查询应出账单的房间列表（用于导出水电模板）。
 
@@ -120,8 +113,10 @@ class UtilityRepository(BaseRepository[UtilityReading]):
         if days_range is not None:
             current_day = current_date.day
             days_in_current_month = (
-                date(period_year, period_month + 1, 1) - date(period_year, period_month, 1)
-            ).days if period_month < 12 else 31
+                (date(period_year, period_month + 1, 1) - date(period_year, period_month, 1)).days
+                if period_month < 12
+                else 31
+            )
 
             # 计算时间范围内的账单日列表
             billing_days = []
@@ -140,26 +135,24 @@ class UtilityRepository(BaseRepository[UtilityReading]):
         result = []
         for lease in leases:
             # 检查是否已录入本月水电
-            existing_reading = self.find_by_room_and_period(
-                lease.room_id, period_year, period_month
-            )
+            existing_reading = self.find_by_room_and_period(lease.room_id, period_year, period_month)
             if existing_reading:
                 continue  # 跳过已录入的
 
             # 获取上期读数
-            latest_reading = self.find_latest_by_room(
-                lease.room_id, period_year, period_month
-            )
+            latest_reading = self.find_latest_by_room(lease.room_id, period_year, period_month)
 
-            result.append({
-                "room_id": lease.room_id,
-                "apartment_name": lease.room.apartment.name if lease.room.apartment else "",
-                "room_number": lease.room.room_number,
-                "tenant_name": lease.tenant.name if lease.tenant else "",
-                "billing_day": lease.billing_day,
-                "water_previous": latest_reading.water_reading if latest_reading else None,
-                "electricity_previous": latest_reading.electricity_reading if latest_reading else None,
-            })
+            result.append(
+                {
+                    "room_id": lease.room_id,
+                    "apartment_name": lease.room.apartment.name if lease.room.apartment else "",
+                    "room_number": lease.room.room_number,
+                    "tenant_name": lease.tenant.name if lease.tenant else "",
+                    "billing_day": lease.billing_day,
+                    "water_previous": latest_reading.water_reading if latest_reading else None,
+                    "electricity_previous": latest_reading.electricity_reading if latest_reading else None,
+                }
+            )
 
         # 按账单日排序
         result.sort(key=lambda x: x["billing_day"])

@@ -1,7 +1,9 @@
 """
 Base repository implementation with common CRUD operations.
 """
-from typing import Generic, TypeVar, Optional, List, Union
+
+from typing import Generic, TypeVar, Union
+
 from sqlalchemy.orm import Session
 
 ModelType = TypeVar("ModelType")
@@ -33,17 +35,15 @@ class BaseRepository(Generic[ModelType]):
         self.db = db
         self.model = model
 
-    def get(self, id: IdType) -> Optional[ModelType]:
+    def get(self, id: IdType) -> ModelType | None:
         """Get a single record by ID (ULID string)."""
         return self.db.query(self.model).filter(self.model.id == id).first()
 
-    def get_by_ids(self, ids: List[IdType]) -> List[ModelType]:
+    def get_by_ids(self, ids: list[IdType]) -> list[ModelType]:
         """Get multiple records by IDs (ULID strings)."""
         return self.db.query(self.model).filter(self.model.id.in_(ids)).all()
 
-    def get_all(
-        self, skip: int = 0, limit: int = 100, **filters: FilterValue
-    ) -> List[ModelType]:
+    def get_all(self, skip: int = 0, limit: int = 100, **filters: FilterValue) -> list[ModelType]:
         """
         Get all records with optional pagination and filtering.
 
@@ -73,7 +73,7 @@ class BaseRepository(Generic[ModelType]):
         self.db.refresh(obj)
         return obj
 
-    def update(self, id: IdType, **kwargs: FilterValue) -> Optional[ModelType]:
+    def update(self, id: IdType, **kwargs: FilterValue) -> ModelType | None:
         """Update a record by ID (ULID string)."""
         obj = self.get(id)
         if obj:

@@ -1,10 +1,12 @@
 """
 Organization repository for data access operations.
 """
-from typing import Optional, List
+
+
 from sqlalchemy.orm import Session
+
+from app.models.organization import MemberRole, Organization, OrganizationMember
 from app.repositories.base import BaseRepository
-from app.models.organization import Organization, OrganizationMember, MemberRole
 
 
 class OrganizationRepository(BaseRepository[Organization]):
@@ -13,7 +15,7 @@ class OrganizationRepository(BaseRepository[Organization]):
     def __init__(self, db: Session):
         super().__init__(db, Organization)
 
-    def find_by_slug(self, slug: str) -> Optional[Organization]:
+    def find_by_slug(self, slug: str) -> Organization | None:
         """Find organization by slug."""
         return self.db.query(Organization).filter(Organization.slug == slug).first()
 
@@ -24,9 +26,7 @@ class OrganizationMemberRepository(BaseRepository[OrganizationMember]):
     def __init__(self, db: Session):
         super().__init__(db, OrganizationMember)
 
-    def find_membership(
-        self, org_id: str, user_id: str
-    ) -> Optional[OrganizationMember]:
+    def find_membership(self, org_id: str, user_id: str) -> OrganizationMember | None:
         """Find membership by organization and user."""
         return (
             self.db.query(OrganizationMember)
@@ -37,7 +37,7 @@ class OrganizationMemberRepository(BaseRepository[OrganizationMember]):
             .first()
         )
 
-    def find_user_organizations(self, user_id: str) -> List[Organization]:
+    def find_user_organizations(self, user_id: str) -> list[Organization]:
         """Find all organizations a user belongs to."""
         return (
             self.db.query(Organization)
@@ -46,21 +46,15 @@ class OrganizationMemberRepository(BaseRepository[OrganizationMember]):
             .all()
         )
 
-    def find_organization_members(
-        self, org_id: str
-    ) -> List[OrganizationMember]:
+    def find_organization_members(self, org_id: str) -> list[OrganizationMember]:
         """Find all members of an organization."""
-        return (
-            self.db.query(OrganizationMember)
-            .filter(OrganizationMember.organization_id == org_id)
-            .all()
-        )
+        return self.db.query(OrganizationMember).filter(OrganizationMember.organization_id == org_id).all()
 
     def is_member(self, org_id: str, user_id: str) -> bool:
         """Check if user is a member of organization."""
         return self.find_membership(org_id, user_id) is not None
 
-    def has_role(self, org_id: str, user_id: str, roles: List[MemberRole]) -> bool:
+    def has_role(self, org_id: str, user_id: str, roles: list[MemberRole]) -> bool:
         """Check if user has one of the specified roles."""
         membership = self.find_membership(org_id, user_id)
         return membership is not None and membership.role in roles

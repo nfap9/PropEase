@@ -1,22 +1,23 @@
 """
 Custom role controller - handles organization custom roles.
 """
-from typing import List
+
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.configs.database import get_db
+from app.controllers.common.deps import get_org_membership
+from app.controllers.common.errors import BadRequestError, ForbiddenError, NotFoundError
 from app.dependencies import get_current_user
-from app.models.user import User
 from app.models.organization import MemberRole
-from app.services.custom_role_service import CustomRoleService
+from app.models.user import User
 from app.schemas.custom_role import (
     CustomRoleCreate,
-    CustomRoleUpdate,
     CustomRoleResponse,
+    CustomRoleUpdate,
 )
-from app.controllers.common.errors import NotFoundError, ForbiddenError, BadRequestError
-from app.controllers.common.deps import get_org_membership
+from app.services.custom_role_service import CustomRoleService
 
 router = APIRouter()
 
@@ -29,12 +30,13 @@ def get_custom_role_service(db: Session = Depends(get_db)) -> CustomRoleService:
 def require_admin(org_id: str, user: User, db: Session) -> None:
     """Require admin or owner role."""
     from app.repositories.organization_repository import OrganizationMemberRepository
+
     member_repo = OrganizationMemberRepository(db)
     if not member_repo.has_role(org_id, user.id, [MemberRole.OWNER, MemberRole.ADMIN]):
         raise ForbiddenError("需要管理员权限")
 
 
-@router.get("/orgs/{org_id}/roles", response_model=List[CustomRoleResponse])
+@router.get("/orgs/{org_id}/roles", response_model=list[CustomRoleResponse])
 def list_roles(
     org_id: str,
     active_only: bool = True,

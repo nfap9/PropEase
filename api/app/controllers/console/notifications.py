@@ -1,23 +1,25 @@
 """
 Notification controller - handles user notifications.
 """
-from typing import List
+
+
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.configs.database import get_db
-from app.dependencies import get_current_user
-from app.models.user import User
-from app.models.notification import NotificationType
-from app.services.notification_service import NotificationService
 from app.controllers.common.errors import NotFoundError
+from app.dependencies import get_current_user
+from app.models.notification import NotificationType
+from app.models.user import User
+from app.services.notification_service import NotificationService
 
 router = APIRouter()
 
 
 class NotificationResponse(BaseModel):
     """Response model for notification."""
+
     id: str
     type: NotificationType
     title: str
@@ -32,6 +34,7 @@ class NotificationResponse(BaseModel):
 
 class UnreadCountResponse(BaseModel):
     """Response model for unread count."""
+
     unread_count: int
 
 
@@ -40,7 +43,7 @@ def get_notification_service(db: Session = Depends(get_db)) -> NotificationServi
     return NotificationService(db)
 
 
-@router.get("", response_model=List[NotificationResponse])
+@router.get("", response_model=list[NotificationResponse])
 def list_notifications(
     unread_only: bool = Query(False, description="Only return unread notifications"),
     limit: int = Query(50, ge=1, le=100),

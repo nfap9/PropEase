@@ -1,10 +1,11 @@
 """
 Report service for analytics and statistics.
 """
+
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import Integer, func
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models.apartment import Apartment, Room, RoomStatus
@@ -23,19 +24,10 @@ class ReportService(BaseService):
     def get_overview(self, org_id: str) -> dict:
         """Get dashboard overview statistics."""
         # Count apartments
-        total_apartments = (
-            self.db.query(Apartment)
-            .filter(Apartment.organization_id == org_id)
-            .count()
-        )
+        total_apartments = self.db.query(Apartment).filter(Apartment.organization_id == org_id).count()
 
         # Count rooms
-        total_rooms = (
-            self.db.query(Room)
-            .join(Apartment)
-            .filter(Apartment.organization_id == org_id)
-            .count()
-        )
+        total_rooms = self.db.query(Room).join(Apartment).filter(Apartment.organization_id == org_id).count()
 
         # Count occupied rooms
         occupied_rooms = (
@@ -67,26 +59,15 @@ class ReportService(BaseService):
         )
 
         # Total tenants
-        total_tenants = (
-            self.db.query(Tenant)
-            .filter(Tenant.organization_id == org_id)
-            .count()
-        )
+        total_tenants = self.db.query(Tenant).filter(Tenant.organization_id == org_id).count()
 
         # Monthly revenue (current month)
         today = date.today()
-        monthly_revenue = (
-            self.db.query(func.sum(Bill.total_amount))
-            .join(Lease)
-            .join(Room)
-            .join(Apartment)
-            .filter(
-                Apartment.organization_id == org_id,
-                Bill.bill_year == today.year,
-                Bill.bill_month == today.month,
-            )
-            .scalar() or Decimal(0)
-        )
+        monthly_revenue = self.db.query(func.sum(Bill.total_amount)).join(Lease).join(Room).join(Apartment).filter(
+            Apartment.organization_id == org_id,
+            Bill.bill_year == today.year,
+            Bill.bill_month == today.month,
+        ).scalar() or Decimal(0)
 
         # Pending bills
         pending_bills = (
@@ -169,16 +150,18 @@ class ReportService(BaseService):
         for row in results:
             total_amount = float(row.total_amount or 0)
             collected_amount = float(row.collected_amount or 0)
-            monthly_data.append({
-                "period": f"{row.bill_month}月",
-                "total_amount": total_amount,
-                "collected_amount": collected_amount,
-                "total_rent": float(row.total_rent or 0),
-                "total_water": float(row.total_water or 0),
-                "total_electricity": float(row.total_electricity or 0),
-                "total_other": float(row.total_other or 0),
-                "collection_rate": round((collected_amount / total_amount) * 100, 1) if total_amount > 0 else 0,
-            })
+            monthly_data.append(
+                {
+                    "period": f"{row.bill_month}月",
+                    "total_amount": total_amount,
+                    "collected_amount": collected_amount,
+                    "total_rent": float(row.total_rent or 0),
+                    "total_water": float(row.total_water or 0),
+                    "total_electricity": float(row.total_electricity or 0),
+                    "total_other": float(row.total_other or 0),
+                    "collection_rate": round((collected_amount / total_amount) * 100, 1) if total_amount > 0 else 0,
+                }
+            )
 
         return monthly_data
 
@@ -188,12 +171,7 @@ class ReportService(BaseService):
         Calculate monthly occupancy rate based on active leases.
         """
         # Get total rooms count
-        total_rooms = (
-            self.db.query(Room)
-            .join(Apartment)
-            .filter(Apartment.organization_id == org_id)
-            .count()
-        )
+        total_rooms = self.db.query(Room).join(Apartment).filter(Apartment.organization_id == org_id).count()
 
         if total_rooms == 0:
             return []
@@ -218,17 +196,20 @@ class ReportService(BaseService):
                     Lease.start_date < month_end,
                     func.coalesce(Lease.end_date, date(2999, 12, 31)) >= month_start,
                 )
-                .scalar() or 0
+                .scalar()
+                or 0
             )
 
             occupancy_rate = round((occupied_rooms / total_rooms) * 100, 1) if total_rooms > 0 else 0
 
-            monthly_data.append({
-                "period": f"{month}月",
-                "total_rooms": total_rooms,
-                "occupied_rooms": occupied_rooms,
-                "vacant_rooms": total_rooms - occupied_rooms,
-                "occupancy_rate": occupancy_rate,
-            })
+            monthly_data.append(
+                {
+                    "period": f"{month}月",
+                    "total_rooms": total_rooms,
+                    "occupied_rooms": occupied_rooms,
+                    "vacant_rooms": total_rooms - occupied_rooms,
+                    "occupancy_rate": occupancy_rate,
+                }
+            )
 
         return monthly_data

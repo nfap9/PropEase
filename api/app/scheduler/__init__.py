@@ -4,17 +4,19 @@ APScheduler configuration for scheduled tasks.
 This module provides a centralized scheduler for background tasks
 such as automatic bill generation.
 """
+
 from typing import Optional
+
+from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from apscheduler.jobstores.memory import MemoryJobStore
 
 from app.configs.logging import get_logger
 
 logger = get_logger(__name__)
 
 # Global scheduler instance
-_scheduler: Optional[BackgroundScheduler] = None
+_scheduler: BackgroundScheduler | None = None
 
 
 def get_scheduler() -> BackgroundScheduler:
