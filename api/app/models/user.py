@@ -6,6 +6,7 @@ from app.models.base import TimestampMixin, ULIDMixin
 
 if TYPE_CHECKING:
     from app.models.organization import Organization, OrganizationMember
+    from app.models.notification import Notification
 
 
 class User(Base, TimestampMixin, ULIDMixin):
@@ -19,4 +20,7 @@ class User(Base, TimestampMixin, ULIDMixin):
     # Relationships
     organization_memberships: Mapped[List["OrganizationMember"]] = relationship(
         "OrganizationMember", back_populates="user", cascade="all, delete-orphan"
+    )
+    notifications: Mapped[List["Notification"]] = relationship(
+        "Notification", back_populates="user", cascade="all, delete-orphan"
     )

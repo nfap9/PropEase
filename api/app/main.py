@@ -18,6 +18,7 @@ from app.controllers.console import (
     auth_router,
     bills_router,
     leases_router,
+    notifications_router,
     organizations_router,
     permissions_router,
     reports_router,
@@ -171,6 +172,11 @@ def create_app() -> FastAPI:
         subscriptions_router,
         prefix=f"{settings.API_V1_PREFIX}/subscriptions",
         tags=["Subscriptions"],
+    )
+    app.include_router(
+        notifications_router,
+        prefix=f"{settings.API_V1_PREFIX}/notifications",
+        tags=["Notifications"],
     )
 
     # Health check endpoint

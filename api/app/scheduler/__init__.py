@@ -72,5 +72,44 @@ def schedule_bill_generation() -> None:
 def schedule_all_jobs() -> None:
     """Schedule all background jobs."""
     schedule_bill_generation()
+    schedule_notification_checks()
     # Add more job scheduling here as needed
     logger.info("All scheduled jobs configured")
+
+
+def schedule_notification_checks() -> None:
+    """
+    Schedule notification check jobs.
+
+    - Check for expiring leases daily at 08:00
+    - Check for overdue bills daily at 08:05
+    """
+    scheduler = get_scheduler()
+
+    # Import here to avoid circular imports
+    from app.scheduler.jobs.notification_checks import (
+        check_expiring_leases,
+        check_overdue_bills,
+    )
+
+    # Check for expiring leases daily at 08:00
+    scheduler.add_job(
+        check_expiring_leases,
+        trigger=CronTrigger(hour=8, minute=0),
+        id="check_expiring_leases",
+        name="Check Expiring Leases",
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
+    logger.info("Scheduled expiring leases check job (runs daily at 08:00)")
+
+    # Check for overdue bills daily at 08:05
+    scheduler.add_job(
+        check_overdue_bills,
+        trigger=CronTrigger(hour=8, minute=5),
+        id="check_overdue_bills",
+        name="Check Overdue Bills",
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
+    logger.info("Scheduled overdue bills check job (runs daily at 08:05)")

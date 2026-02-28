@@ -24,6 +24,7 @@ class Organization(Base, TimestampMixin, ULIDMixin):
     slug: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     plan: Mapped[str] = mapped_column(String(50), default="free", nullable=False)
     settings: Mapped[dict] = mapped_column(JSON, default=dict, nullable=True)
+    is_personal: Mapped[bool] = mapped_column(default=False, nullable=False, index=True)
 
     # Relationships
     members: Mapped[List["OrganizationMember"]] = relationship(

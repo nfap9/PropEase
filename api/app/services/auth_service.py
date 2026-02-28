@@ -31,7 +31,7 @@ class AuthService(BaseService):
 
     def register(self, user_data: UserCreate) -> User:
         """
-        Register a new user.
+        Register a new user and create a personal team.
 
         Args:
             user_data: User registration data
@@ -58,7 +58,17 @@ class AuthService(BaseService):
             password_hash=get_password_hash(user_data.password),
             full_name=user_data.full_name,
         )
-        return self.user_repo.create(user)
+        user = self.user_repo.create(user)
+
+        # 4. 创建个人团队
+        from app.services.organization_service import OrganizationService
+        org_service = OrganizationService(self.db)
+        org_service.create_personal_team(
+            user_id=user.id,
+            user_name=user.full_name or "用户",
+        )
+
+        return user
 
     def login(self, credentials: UserLogin) -> Token:
         """

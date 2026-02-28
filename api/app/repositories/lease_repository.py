@@ -92,3 +92,26 @@ class LeaseRepository(BaseRepository[Lease]):
             .filter(Apartment.organization_id == org_id, Lease.is_active == true())
             .count()
         )
+
+    def find_expiring_on(self, target_date: date) -> List[Lease]:
+        """
+        Find all active leases expiring on a specific date.
+
+        Args:
+            target_date: The date to check for expiring leases
+
+        Returns:
+            List of leases expiring on that date
+        """
+        return (
+            self.db.query(Lease)
+            .options(
+                joinedload(Lease.room).joinedload(Room.apartment),
+                joinedload(Lease.tenant),
+            )
+            .filter(
+                Lease.is_active == true(),
+                Lease.end_date == target_date,
+            )
+            .all()
+        )

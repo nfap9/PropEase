@@ -17,6 +17,7 @@ from app.models.tenant import Tenant
 from app.models.lease import Lease
 from app.models.utility import UtilityReading
 from app.models.bill import Bill, BillStatus, Payment, PaymentMethod
+from app.models.notification import Notification, NotificationType
 from app.models.permission import (
     Permission,
     Resource,
@@ -51,6 +52,8 @@ __all__ = [
     "BillStatus",
     "Payment",
     "PaymentMethod",
+    "Notification",
+    "NotificationType",
     "Permission",
     "Resource",
     "Action",

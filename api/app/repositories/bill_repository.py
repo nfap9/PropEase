@@ -88,6 +88,31 @@ class BillRepository(BaseRepository[Bill]):
             .count()
         )
 
+    def find_overdue(self, as_of_date: date) -> List[Bill]:
+        """
+        Find all overdue bills across all organizations.
+
+        Args:
+            as_of_date: The date to check overdue status against
+
+        Returns:
+            List of overdue bills
+        """
+        from sqlalchemy.orm import joinedload
+
+        return (
+            self.db.query(Bill)
+            .options(
+                joinedload(Bill.lease).joinedload(Lease.tenant),
+                joinedload(Bill.lease).joinedload(Lease.room).joinedload(Room.apartment),
+            )
+            .filter(
+                Bill.status != BillStatus.PAID,
+                Bill.due_date < as_of_date,
+            )
+            .all()
+        )
+
 
 class PaymentRepository(BaseRepository[Payment]):
     """Repository for Payment model."""

@@ -19,8 +19,10 @@ class OrganizationUpdate(BaseModel):
 
 class OrganizationResponse(OrganizationBase):
     id: str
+    slug: str
     plan: str
     settings: Optional[dict]
+    is_personal: bool = False
     created_at: datetime
 
     class Config:

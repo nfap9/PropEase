@@ -1,5 +1,5 @@
 import api from './client';
-import { Organization, OrganizationMember, OrganizationUsage, MemberRole } from '@/types';
+import { Organization, OrganizationMember, OrganizationUsage, MemberRole, MigrationStats, DeletionPreview } from '@/types';
 
 export const organizationsApi = {
   list: async (): Promise<Organization[]> => {
@@ -12,13 +12,25 @@ export const organizationsApi = {
     return response.data;
   },
 
-  create: async (data: { name: string; slug: string }): Promise<Organization> => {
+  create: async (data: { name: string; slug?: string }): Promise<Organization> => {
     const response = await api.post<Organization>('/organizations', data);
     return response.data;
   },
 
   update: async (id: string, data: Partial<Organization>): Promise<Organization> => {
     const response = await api.put<Organization>(`/organizations/${id}`, data);
+    return response.data;
+  },
+
+  getDeletionPreview: async (id: string): Promise<DeletionPreview> => {
+    const response = await api.get<DeletionPreview>(`/organizations/${id}/deletion-preview`);
+    return response.data;
+  },
+
+  delete: async (id: string, confirmedName: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/organizations/${id}`, {
+      data: { confirmed_name: confirmedName },
+    });
     return response.data;
   },
 
@@ -46,6 +58,19 @@ export const organizationsApi = {
 
   removeMember: async (orgId: string, memberId: string): Promise<void> => {
     await api.delete(`/organizations/${orgId}/members/${memberId}`);
+  },
+
+  // Personal team
+  getPersonalTeam: async (): Promise<Organization> => {
+    const response = await api.get<Organization>('/organizations/personal');
+    return response.data;
+  },
+
+  migratePersonalTeam: async (targetOrgId: string): Promise<MigrationStats> => {
+    const response = await api.post<MigrationStats>('/organizations/personal/migrate', {
+      target_org_id: targetOrgId,
+    });
+    return response.data;
   },
 };
 

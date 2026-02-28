@@ -41,7 +41,33 @@ export interface Organization {
   slug: string;
   plan: string;
   settings: Record<string, unknown>;
+  is_personal: boolean;
   created_at: string;
+}
+
+export interface MigrationStats {
+  apartments: number;
+  rooms: number;
+  tenants: number;
+  leases: number;
+  bills: number;
+  utility_readings: number;
+  message: string;
+}
+
+export interface DeletionPreview {
+  can_delete: boolean;
+  blockers: string[];
+  stats: {
+    apartments: number;
+    rooms: number;
+    tenants: number;
+    active_leases: number;
+    pending_bills: number;
+    members: number;
+  };
+  org_name: string;
+  is_personal: boolean;
 }
 
 export interface OrganizationMember {
