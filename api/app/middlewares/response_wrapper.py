@@ -19,12 +19,13 @@ from app.configs.logging import get_logger
 
 logger = get_logger(__name__)
 
-# 不需要包装的路径前缀
+# 不需要包装的路径前缀（如微信支付回调需返回约定 JSON）
 SKIP_PATHS = {
     "/docs",
     "/redoc",
     "/openapi.json",
     "/health",
+    "/api/v1/webhooks",
 }
 
 # 需要过滤掉的响应头（由 JSONResponse 自动计算）

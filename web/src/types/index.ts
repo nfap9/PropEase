@@ -146,6 +146,29 @@ export interface SubscriptionStatus {
   days_remaining: number | null;
 }
 
+/** 订阅支付订单状态 */
+export type SubscriptionOrderStatus = 'pending' | 'paid' | 'failed' | 'cancelled' | 'refunded';
+
+export interface SubscriptionOrder {
+  id: string;
+  order_no: string;
+  organization_id: string;
+  plan_id: string;
+  billing_cycle: 'monthly' | 'yearly';
+  amount: number;
+  currency: string;
+  status: SubscriptionOrderStatus;
+  code_url: string | null;
+  expires_at: string;
+  paid_at: string | null;
+  created_at: string;
+}
+
+export interface SubscriptionOrderCreate {
+  plan_id: string;
+  billing_cycle?: 'monthly' | 'yearly';
+}
+
 // Apartment & Room types
 export type RoomStatus = 'available' | 'occupied' | 'maintenance';
 

@@ -2,7 +2,6 @@
 Tenant service for tenant management.
 """
 
-
 from sqlalchemy.orm import Session
 
 from app.models.tenant import Tenant

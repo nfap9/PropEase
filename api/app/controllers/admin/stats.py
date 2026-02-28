@@ -1,13 +1,14 @@
 """
 运营分析：平台级统计接口。
 """
+
 from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 from app.configs.database import get_db
 from app.dependencies import get_current_admin_user
 from app.schemas.admin import AdminPlatformStatsResponse
 from app.services.admin_stats_service import AdminStatsService
-from sqlalchemy.orm import Session
 
 router = APIRouter(dependencies=[Depends(get_current_admin_user)])
 

@@ -24,6 +24,7 @@ dependencies = [
     "python-slugify>=8.0.1",
     "ulid>=1.1",
     "apscheduler>=3.10.0",
+    "wechatpayv3>=1.2.0",
 ]
 
 [dependency-groups]

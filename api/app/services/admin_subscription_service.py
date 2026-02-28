@@ -1,8 +1,8 @@
 """
 运营侧订阅管理：套餐 CRUD、订阅列表、手动续期/取消。
 """
+
 from datetime import date, timedelta
-from typing import Optional
 
 from sqlalchemy.orm import Session, joinedload
 
@@ -54,9 +54,7 @@ class AdminSubscriptionService:
         )
         return self.plan_repo.create(plan)
 
-    def update_plan(
-        self, plan_id: str, data: SubscriptionPlanUpdate
-    ) -> SubscriptionPlan | None:
+    def update_plan(self, plan_id: str, data: SubscriptionPlanUpdate) -> SubscriptionPlan | None:
         kwargs = data.model_dump(exclude_unset=True)
         return self.plan_repo.update(plan_id, **kwargs)
 
@@ -69,23 +67,17 @@ class AdminSubscriptionService:
         self,
         skip: int = 0,
         limit: int = 100,
-        organization_id: Optional[str] = None,
-        status: Optional[str] = None,
+        organization_id: str | None = None,
+        status: str | None = None,
     ) -> list[OrganizationSubscription]:
-        query = self.db.query(OrganizationSubscription).options(
-            joinedload(OrganizationSubscription.plan)
-        )
+        query = self.db.query(OrganizationSubscription).options(joinedload(OrganizationSubscription.plan))
         if organization_id:
-            query = query.filter(
-                OrganizationSubscription.organization_id == organization_id
-            )
+            query = query.filter(OrganizationSubscription.organization_id == organization_id)
         if status:
             query = query.filter(OrganizationSubscription.status == status)
         return query.offset(skip).limit(limit).all()
 
-    def get_subscription(
-        self, subscription_id: str
-    ) -> OrganizationSubscription | None:
+    def get_subscription(self, subscription_id: str) -> OrganizationSubscription | None:
         return (
             self.db.query(OrganizationSubscription)
             .options(joinedload(OrganizationSubscription.plan))
@@ -93,9 +85,7 @@ class AdminSubscriptionService:
             .first()
         )
 
-    def renew_subscription(
-        self, subscription_id: str, extend_days: int
-    ) -> OrganizationSubscription | None:
+    def renew_subscription(self, subscription_id: str, extend_days: int) -> OrganizationSubscription | None:
         sub = self.sub_repo.get(subscription_id)
         if not sub:
             return None
@@ -108,9 +98,7 @@ class AdminSubscriptionService:
         self.db.refresh(sub)
         return sub
 
-    def cancel_subscription(
-        self, subscription_id: str
-    ) -> OrganizationSubscription | None:
+    def cancel_subscription(self, subscription_id: str) -> OrganizationSubscription | None:
         sub = self.sub_repo.get(subscription_id)
         if not sub:
             return None

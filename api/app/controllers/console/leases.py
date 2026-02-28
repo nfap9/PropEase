@@ -2,7 +2,6 @@
 Lease controller - handles lease management.
 """
 
-
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 

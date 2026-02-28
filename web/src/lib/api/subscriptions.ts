@@ -1,7 +1,9 @@
 import api from './client';
 import {
-  SubscriptionPlan,
   OrganizationSubscription,
+  SubscriptionOrder,
+  SubscriptionOrderCreate,
+  SubscriptionPlan,
   SubscribeRequest,
   SubscriptionStatus,
 } from '@/types';
@@ -61,6 +63,28 @@ export const subscriptionsApi = {
     const response = await api.post<{ message: string }>(
       `/subscriptions/organizations/${orgId}/subscription/cancel`,
       { reason }
+    );
+    return response.data;
+  },
+
+  // 订阅支付订单（付费套餐）
+  createOrder: async (
+    orgId: string,
+    data: SubscriptionOrderCreate
+  ): Promise<SubscriptionOrder> => {
+    const response = await api.post<SubscriptionOrder>(
+      `/subscriptions/organizations/${orgId}/orders`,
+      { plan_id: data.plan_id, billing_cycle: data.billing_cycle ?? 'monthly' }
+    );
+    return response.data;
+  },
+
+  getOrder: async (
+    orgId: string,
+    orderId: string
+  ): Promise<SubscriptionOrder> => {
+    const response = await api.get<SubscriptionOrder>(
+      `/subscriptions/organizations/${orgId}/orders/${orderId}`
     );
     return response.data;
   },

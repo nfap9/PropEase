@@ -2,7 +2,6 @@
 Apartment and Room repository for data access operations.
 """
 
-
 from sqlalchemy.orm import Session
 
 from app.models.apartment import Apartment, Room, RoomStatus

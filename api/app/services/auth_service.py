@@ -2,7 +2,6 @@
 Authentication service for user management and JWT operations.
 """
 
-
 from sqlalchemy.orm import Session
 
 from app.models.organization import MemberRole

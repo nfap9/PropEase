@@ -2,7 +2,6 @@
 Notification controller - handles user notifications.
 """
 
-
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session

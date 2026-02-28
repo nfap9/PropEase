@@ -2,7 +2,6 @@
 Tenant repository for data access operations.
 """
 
-
 from sqlalchemy.orm import Session
 
 from app.models.tenant import Tenant

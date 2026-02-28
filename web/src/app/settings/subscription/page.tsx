@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { subscriptionsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
-import { SubscriptionPlan, SubscriptionStatus } from '@/types';
 
 const PLAN_ICONS: Record<string, typeof Crown> = {
   free: Building2,
@@ -57,7 +56,7 @@ export default function SubscriptionPage() {
     enabled: !!orgId,
   });
 
-  // 订阅套餐
+  // 免费套餐直接订阅
   const subscribeMutation = useMutation({
     mutationFn: (planId: string) =>
       subscriptionsApi.subscribe(orgId!, {
@@ -76,19 +75,39 @@ export default function SubscriptionPage() {
     },
   });
 
+  // 付费套餐：创建订单后跳转支付页
+  const createOrderMutation = useMutation({
+    mutationFn: (planId: string) =>
+      subscriptionsApi.createOrder(orgId!, {
+        plan_id: planId,
+        billing_cycle: billingCycle,
+      }),
+    onSuccess: (order) => {
+      setSelectedPlan(null);
+      router.push(`/settings/subscription/pay?order_id=${order.id}`);
+    },
+    onError: (error: Error) => {
+      toast.error(`创建订单失败: ${error.message}`);
+    },
+  });
+
   const handleSubscribe = (planId: string) => {
-    if (planId === 'free') {
-      // 免费套餐不需要支付
+    const plan = plans?.find((p) => p.id === planId);
+    if (plan?.code === 'free') {
       subscribeMutation.mutate(planId);
     } else {
-      // 付费套餐需要确认
       setSelectedPlan(planId);
     }
   };
 
   const handleConfirmSubscribe = () => {
-    if (selectedPlan) {
+    if (!selectedPlan) return;
+    const plan = plans?.find((p) => p.id === selectedPlan);
+    const price = plan ? (billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly) : 0;
+    if (price <= 0) {
       subscribeMutation.mutate(selectedPlan);
+    } else {
+      createOrderMutation.mutate(selectedPlan);
     }
   };
 
@@ -235,10 +254,15 @@ export default function SubscriptionPage() {
                     <Button
                       className="w-full"
                       variant={isCurrentPlan ? 'outline' : 'default'}
-                      disabled={isCurrentPlan || subscribeMutation.isPending}
+                      disabled={
+                        isCurrentPlan ||
+                        subscribeMutation.isPending ||
+                        (price > 0 && createOrderMutation.isPending)
+                      }
                       onClick={() => handleSubscribe(plan.id)}
                     >
-                      {subscribeMutation.isPending && selectedPlan === plan.id ? (
+                      {(subscribeMutation.isPending || createOrderMutation.isPending) &&
+                      selectedPlan === plan.id ? (
                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       ) : null}
                       {isCurrentPlan ? '当前套餐' : plan.code === 'free' ? '切换到免费版' : '立即订阅'}
@@ -250,21 +274,26 @@ export default function SubscriptionPage() {
           </div>
         )}
 
-        {/* Confirm Dialog (simplified) */}
-        {selectedPlan && selectedPlan !== 'free' && (
-          <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950">
+        {/* 付费套餐确认：跳转微信扫码支付 */}
+        {selectedPlan && (
+          <Card className="border-primary/50 bg-muted/30">
             <CardContent className="pt-6">
               <p className="text-center mb-4">
                 确认订阅 {plans?.find((p) => p.id === selectedPlan)?.name}？
-                (实际支付功能待集成)
+                确认后将跳转至微信扫码支付。
               </p>
               <div className="flex justify-center gap-4">
                 <Button variant="outline" onClick={() => setSelectedPlan(null)}>
                   取消
                 </Button>
-                <Button onClick={handleConfirmSubscribe} disabled={subscribeMutation.isPending}>
-                  {subscribeMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                  确认订阅
+                <Button
+                  onClick={handleConfirmSubscribe}
+                  disabled={subscribeMutation.isPending || createOrderMutation.isPending}
+                >
+                  {(subscribeMutation.isPending || createOrderMutation.isPending) && (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  )}
+                  确认并去支付
                 </Button>
               </div>
             </CardContent>

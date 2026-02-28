@@ -2,7 +2,6 @@
 Custom role controller - handles organization custom roles.
 """
 
-
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 

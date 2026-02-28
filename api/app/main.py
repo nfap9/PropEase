@@ -36,6 +36,7 @@ from app.controllers.console import (
     tenants_router,
     utilities_router,
 )
+from app.controllers.webhooks import wechat_pay as wechat_pay_webhook
 from app.middlewares.rate_limit import RateLimitMiddleware
 from app.middlewares.request_logging import RequestLoggingMiddleware
 from app.middlewares.response_wrapper import ResponseWrapperMiddleware
@@ -201,6 +202,11 @@ def create_app() -> FastAPI:
         admin_router,
         prefix=f"{settings.API_V1_PREFIX}/admin",
         tags=["Admin"],
+    )
+    app.include_router(
+        wechat_pay_webhook.router,
+        prefix=f"{settings.API_V1_PREFIX}/webhooks/wechat-pay",
+        tags=["Webhooks"],
     )
 
     # Health check endpoint

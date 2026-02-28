@@ -2,10 +2,10 @@
 SQLAlchemy ORM models.
 """
 
+from app.configs.database import Base
 from app.models.admin_role import AdminRole
 from app.models.admin_user import AdminUser
 from app.models.apartment import Apartment, Room, RoomStatus
-from app.configs.database import Base
 from app.models.base import TimestampMixin
 from app.models.bill import Bill, BillStatus, Payment, PaymentMethod
 from app.models.custom_role import CustomRole
@@ -26,6 +26,9 @@ from app.models.sms_verification_code import SmsVerificationCode
 from app.models.subscription import (
     BillingCycle,
     OrganizationSubscription,
+    SubscriptionOrder,
+    SubscriptionOrderPaymentMethod,
+    SubscriptionOrderStatus,
     SubscriptionPlan,
     SubscriptionStatus,
 )
@@ -48,6 +51,9 @@ __all__ = [
     "UtilityConfig",
     "SubscriptionPlan",
     "OrganizationSubscription",
+    "SubscriptionOrder",
+    "SubscriptionOrderStatus",
+    "SubscriptionOrderPaymentMethod",
     "SubscriptionStatus",
     "BillingCycle",
     "Tenant",

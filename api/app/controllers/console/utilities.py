@@ -2,7 +2,6 @@
 Utility controller - handles utility reading management.
 """
 
-
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 

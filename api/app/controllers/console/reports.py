@@ -2,7 +2,6 @@
 Report controller - handles analytics and reports.
 """
 
-
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 

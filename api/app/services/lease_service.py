@@ -2,7 +2,6 @@
 Lease service for lease management.
 """
 
-
 from sqlalchemy.orm import Session
 
 from app.models.apartment import RoomStatus

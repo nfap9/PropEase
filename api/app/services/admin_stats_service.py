@@ -1,13 +1,14 @@
 """
 运营分析：平台级统计。
 """
+
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.models.organization import Organization
-from app.models.user import User
 from app.models.apartment import Apartment, Room
+from app.models.organization import Organization
 from app.models.subscription import OrganizationSubscription, SubscriptionStatus
+from app.models.user import User
 
 
 class AdminStatsService:

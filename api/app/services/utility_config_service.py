@@ -2,7 +2,6 @@
 UtilityConfig service for utility pricing configuration management.
 """
 
-
 from sqlalchemy.orm import Session
 
 from app.models.utility_config import UtilityConfig

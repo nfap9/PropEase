@@ -2,7 +2,6 @@
 Organization controller - handles organization management.
 """
 
-
 from fastapi import APIRouter, Depends, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session

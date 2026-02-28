@@ -2,7 +2,6 @@
 Subscription repository for data access operations.
 """
 
-
 from sqlalchemy.orm import Session
 
 from app.models.subscription import OrganizationSubscription, SubscriptionPlan, SubscriptionStatus

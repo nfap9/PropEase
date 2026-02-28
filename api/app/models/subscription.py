@@ -3,10 +3,11 @@ Subscription models for plan management.
 """
 
 import enum
-from datetime import date
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, Boolean, Date, ForeignKey, Integer, Numeric, String
+from sqlalchemy import JSON, Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.configs.database import Base
@@ -93,3 +94,70 @@ class OrganizationSubscription(Base, TimestampMixin, ULIDMixin):
     # Relationships
     organization: Mapped["Organization"] = relationship("Organization", back_populates="subscription")
     plan: Mapped[SubscriptionPlan] = relationship("SubscriptionPlan", back_populates="subscriptions")
+
+
+class SubscriptionOrderStatus(str, enum.Enum):
+    """订阅支付订单状态"""
+
+    PENDING = "pending"
+    PAID = "paid"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+    REFUNDED = "refunded"
+
+
+class SubscriptionOrderPaymentMethod(str, enum.Enum):
+    """订阅订单支付方式"""
+
+    WECHAT_NATIVE = "wechat_native"
+
+
+class SubscriptionOrder(Base, TimestampMixin, ULIDMixin):
+    """
+    订阅支付订单。
+
+    用于微信支付等渠道的订阅购买/续费/升级，支付成功后开通或更新组织订阅。
+    """
+
+    __tablename__ = "subscription_orders"
+
+    order_no: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
+    organization_id: Mapped[str] = mapped_column(
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    plan_id: Mapped[str] = mapped_column(
+        ForeignKey("subscription_plans.id"),
+        nullable=False,
+    )
+    billing_cycle: Mapped[BillingCycle] = mapped_column(
+        SQLEnum(BillingCycle, values_callable=lambda x: [e.value for e in x], native_enum=False),
+        default=BillingCycle.MONTHLY,
+        nullable=False,
+    )
+    amount: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    currency: Mapped[str] = mapped_column(String(10), default="CNY", nullable=False)
+    status: Mapped[SubscriptionOrderStatus] = mapped_column(
+        SQLEnum(SubscriptionOrderStatus, values_callable=lambda x: [e.value for e in x], native_enum=False),
+        default=SubscriptionOrderStatus.PENDING,
+        nullable=False,
+        index=True,
+    )
+    payment_method: Mapped[SubscriptionOrderPaymentMethod] = mapped_column(
+        SQLEnum(SubscriptionOrderPaymentMethod, values_callable=lambda x: [e.value for e in x], native_enum=False),
+        default=SubscriptionOrderPaymentMethod.WECHAT_NATIVE,
+        nullable=False,
+    )
+    code_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    wechat_transaction_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    organization_subscription_id: Mapped[str | None] = mapped_column(
+        ForeignKey("organization_subscriptions.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    # Relationships
+    organization: Mapped["Organization"] = relationship("Organization")
+    plan: Mapped["SubscriptionPlan"] = relationship("SubscriptionPlan")

@@ -2,7 +2,6 @@
 Permission repository for data access operations.
 """
 
-
 from datetime import UTC
 
 from sqlalchemy.orm import Session

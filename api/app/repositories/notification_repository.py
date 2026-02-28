@@ -2,7 +2,6 @@
 Notification repository for data access operations.
 """
 
-
 from sqlalchemy.orm import Session
 
 from app.models.notification import Notification, NotificationType

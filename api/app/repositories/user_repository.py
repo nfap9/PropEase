@@ -2,7 +2,6 @@
 User repository for data access operations.
 """
 
-
 from sqlalchemy.orm import Session
 
 from app.models.user import User

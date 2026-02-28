@@ -123,3 +123,53 @@ class CancelSubscriptionRequest(BaseModel):
     """Schema for cancel subscription request."""
 
     reason: str | None = Field(None, max_length=500, description="取消原因")
+
+
+# ==================== Subscription Order (Payment) ====================
+
+
+class SubscriptionOrderCreate(BaseModel):
+    """Schema for creating a subscription payment order."""
+
+    plan_id: str = Field(..., description="套餐ID")
+    billing_cycle: str = Field(default="monthly", description="计费周期: monthly/yearly")
+
+
+class SubscriptionOrderResponse(BaseModel):
+    """Schema for subscription order response."""
+
+    id: str
+    order_no: str
+    organization_id: str
+    plan_id: str
+    billing_cycle: str
+    amount: float
+    currency: str
+    status: str
+    code_url: str | None
+    expires_at: datetime
+    paid_at: datetime | None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+    @classmethod
+    def model_validate(cls, obj, **kwargs):
+        """从 ORM 构建响应，将枚举转为字符串值。"""
+        if not hasattr(obj, "order_no"):
+            return super().model_validate(obj, **kwargs)
+        _val = lambda v: v.value if hasattr(v, "value") else v
+        return cls(
+            id=obj.id,
+            order_no=obj.order_no,
+            organization_id=obj.organization_id,
+            plan_id=obj.plan_id,
+            billing_cycle=_val(obj.billing_cycle),
+            amount=float(obj.amount),
+            currency=obj.currency,
+            status=_val(obj.status),
+            code_url=obj.code_url,
+            expires_at=obj.expires_at,
+            paid_at=obj.paid_at,
+            created_at=obj.created_at,
+        )

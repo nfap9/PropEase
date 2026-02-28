@@ -2,7 +2,6 @@
 Organization repository for data access operations.
 """
 
-
 from sqlalchemy.orm import Session
 
 from app.models.organization import MemberRole, Organization, OrganizationMember

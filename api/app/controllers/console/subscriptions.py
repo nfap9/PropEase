@@ -2,7 +2,6 @@
 Subscription controller - handles subscription management.
 """
 
-
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
@@ -17,10 +16,13 @@ from app.schemas.subscription import (
     ChangePlanRequest,
     OrganizationSubscriptionResponse,
     SubscribeRequest,
+    SubscriptionOrderCreate,
+    SubscriptionOrderResponse,
     SubscriptionPlanCreate,
     SubscriptionPlanResponse,
     SubscriptionPlanUpdate,
 )
+from app.services.subscription_order_service import SubscriptionOrderService
 from app.services.subscription_service import SubscriptionService
 
 router = APIRouter()
@@ -29,6 +31,11 @@ router = APIRouter()
 def get_subscription_service(db: Session = Depends(get_db)) -> SubscriptionService:
     """Get subscription service instance."""
     return SubscriptionService(db)
+
+
+def get_subscription_order_service(db: Session = Depends(get_db)) -> SubscriptionOrderService:
+    """Get subscription order service instance."""
+    return SubscriptionOrderService(db)
 
 
 # ==================== Public Plan Endpoints ====================
@@ -123,6 +130,53 @@ def change_plan(
         return subscription
     except ValueError as e:
         raise BadRequestError(str(e))
+
+
+# ==================== Subscription Payment Orders ====================
+
+
+@router.post(
+    "/organizations/{org_id}/orders",
+    response_model=SubscriptionOrderResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_subscription_order(
+    org_id: str,
+    data: SubscriptionOrderCreate,
+    current_user: User = Depends(get_current_user),
+    order_service: SubscriptionOrderService = Depends(get_subscription_order_service),
+    db: Session = Depends(get_db),
+):
+    """Create a payment order for subscription (paid plans). Use subscribe endpoint for free plan."""
+    require_role([MemberRole.OWNER])(get_org_membership(org_id, current_user, db))
+    try:
+        order = order_service.create_order(
+            organization_id=org_id,
+            plan_id=data.plan_id,
+            billing_cycle=data.billing_cycle,
+        )
+        return order
+    except ValueError as e:
+        raise BadRequestError(str(e))
+
+
+@router.get(
+    "/organizations/{org_id}/orders/{order_id}",
+    response_model=SubscriptionOrderResponse,
+)
+def get_subscription_order(
+    org_id: str,
+    order_id: str,
+    current_user: User = Depends(get_current_user),
+    order_service: SubscriptionOrderService = Depends(get_subscription_order_service),
+    db: Session = Depends(get_db),
+):
+    """Get subscription order by ID (for polling payment status)."""
+    get_org_membership(org_id, current_user, db)
+    order = order_service.get_order_for_org(organization_id=org_id, order_id=order_id)
+    if not order:
+        raise NotFoundError("Order")
+    return order
 
 
 @router.post("/organizations/{org_id}/subscription/cancel")

@@ -1,16 +1,16 @@
 """
 运营侧组织管理：列表、详情、启用/停用。
 """
-from typing import List, Optional
+
 
 from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 from app.configs.database import get_db
+from app.controllers.common.errors import NotFoundError
 from app.dependencies import get_current_admin_user
 from app.schemas.admin import AdminOrganizationResponse, AdminOrganizationSetActive
 from app.services.admin_organization_service import AdminOrganizationService
-from app.controllers.common.errors import NotFoundError
-from sqlalchemy.orm import Session
 
 router = APIRouter(dependencies=[Depends(get_current_admin_user)])
 
@@ -19,11 +19,11 @@ def get_admin_org_service(db: Session = Depends(get_db)) -> AdminOrganizationSer
     return AdminOrganizationService(db)
 
 
-@router.get("", response_model=List[AdminOrganizationResponse])
+@router.get("", response_model=list[AdminOrganizationResponse])
 def list_organizations(
     skip: int = 0,
     limit: int = 100,
-    is_active: Optional[bool] = None,
+    is_active: bool | None = None,
     service: AdminOrganizationService = Depends(get_admin_org_service),
 ):
     """平台级组织列表。"""

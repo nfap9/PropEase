@@ -50,6 +50,16 @@ class Settings(BaseSettings):
     ADMIN_INIT_USERNAME: str = "admin"
     ADMIN_INIT_PASSWORD: str = "Admin@123456"
 
+    # 微信支付（订阅支付）
+    WECHAT_PAY_ENABLED: bool = False
+    WECHAT_MCH_ID: str = ""
+    WECHAT_APIV3_KEY: str = ""
+    WECHAT_APP_ID: str = ""
+    WECHAT_PRIVATE_KEY_PATH: str = ""  # 商户 API 私钥文件路径，与 PRIVATE_KEY 二选一
+    WECHAT_PRIVATE_KEY: str = ""  # 商户 API 私钥内容（环境变量中可填 PEM 多行）
+    WECHAT_CERT_SERIAL_NO: str = ""
+    WECHAT_PAY_NOTIFY_URL_BASE: str = ""  # 回调基础 URL，如 https://api.example.com
+
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
     CORS_ALLOW_CREDENTIALS: bool = True

@@ -2,7 +2,6 @@
 Custom role repository for data access operations.
 """
 
-
 from sqlalchemy.orm import Session
 
 from app.models.custom_role import CustomRole

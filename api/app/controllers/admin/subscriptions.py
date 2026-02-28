@@ -1,22 +1,22 @@
 """
 运营侧订阅管理：套餐 CRUD、订阅列表、续期/取消。
 """
-from typing import List, Optional
+
 
 from fastapi import APIRouter, Depends, status
+from sqlalchemy.orm import Session
 
 from app.configs.database import get_db
+from app.controllers.common.errors import BadRequestError, ConflictError, NotFoundError
 from app.dependencies import get_current_admin_user
 from app.schemas.admin import AdminSubscriptionRenew
 from app.schemas.subscription import (
-    SubscriptionPlanCreate,
-    SubscriptionPlanUpdate,
-    SubscriptionPlanResponse,
     OrganizationSubscriptionResponse,
+    SubscriptionPlanCreate,
+    SubscriptionPlanResponse,
+    SubscriptionPlanUpdate,
 )
 from app.services.admin_subscription_service import AdminSubscriptionService
-from app.controllers.common.errors import NotFoundError, BadRequestError, ConflictError
-from sqlalchemy.orm import Session
 
 router = APIRouter(dependencies=[Depends(get_current_admin_user)])
 
@@ -28,7 +28,7 @@ def get_admin_sub_service(db: Session = Depends(get_db)) -> AdminSubscriptionSer
 # ==================== 套餐 ====================
 
 
-@router.get("/plans", response_model=List[SubscriptionPlanResponse])
+@router.get("/plans", response_model=list[SubscriptionPlanResponse])
 def list_plans(
     active_only: bool = False,
     service: AdminSubscriptionService = Depends(get_admin_sub_service),
@@ -95,12 +95,12 @@ def delete_plan(
 # ==================== 订阅 ====================
 
 
-@router.get("/subscriptions", response_model=List[OrganizationSubscriptionResponse])
+@router.get("/subscriptions", response_model=list[OrganizationSubscriptionResponse])
 def list_subscriptions(
     skip: int = 0,
     limit: int = 100,
-    organization_id: Optional[str] = None,
-    status_filter: Optional[str] = None,
+    organization_id: str | None = None,
+    status_filter: str | None = None,
     service: AdminSubscriptionService = Depends(get_admin_sub_service),
 ):
     """订阅列表（平台级）。"""

@@ -2,7 +2,6 @@
 UtilityConfig repository for data access operations.
 """
 
-
 from sqlalchemy.orm import Session
 
 from app.models.utility_config import UtilityConfig
