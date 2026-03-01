@@ -312,8 +312,8 @@ router.get('/registered-users/:user_id', async (req: Request, res: Response, nex
 
 router.patch('/registered-users/:user_id/active', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const body = req.body as { active?: boolean };
-    const active = body?.active ?? true;
+    const body = req.body as { active?: boolean; is_active?: boolean };
+    const active = body?.active ?? body?.is_active ?? true;
     const user = await prisma.user.findUnique({ where: { id: req.params.user_id } });
     if (!user) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
     await prisma.user.update({ where: { id: req.params.user_id }, data: { is_active: active } });
