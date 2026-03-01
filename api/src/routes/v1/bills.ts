@@ -38,6 +38,11 @@ const PaymentCreateSchema = z.object({ amount: z.number(), payment_date: z.strin
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    const leaseId = typeof req.query.lease_id === 'string' ? req.query.lease_id : undefined;
+    const year = req.query.year != null ? Number(req.query.year) : undefined;
+    const month = req.query.month != null ? Number(req.query.month) : undefined;
+    const status = typeof req.query.status === 'string' ? req.query.status : undefined;
+
     const rooms = await prisma.room.findMany({
       where: { apartment: { organization_id: orgId } },
       select: { id: true },
@@ -48,8 +53,17 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
       select: { id: true },
     });
     const leaseIds = leases.map((l) => l.id);
+
+    const where: { lease_id: { in: string[] }; bill_year?: number; bill_month?: number; status?: string } = {
+      lease_id: { in: leaseIds },
+    };
+    if (leaseId && leaseIds.includes(leaseId)) where.lease_id = { in: [leaseId] };
+    if (year != null) where.bill_year = year;
+    if (month != null) where.bill_month = month;
+    if (status != null) where.status = status;
+
     const list = await prisma.bill.findMany({
-      where: { lease_id: { in: leaseIds } },
+      where,
       include: { lease: { include: { room: true, tenant: true } } },
     });
     res.json(list);

@@ -16,7 +16,15 @@ const TenantUpdateSchema = TenantCreateSchema.partial();
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const list = await prisma.tenant.findMany({ where: { organization_id: orgId } });
+    const search = typeof req.query.search === 'string' ? req.query.search.trim() : undefined;
+    const where: { organization_id: string; OR?: Array<{ name?: { contains: string; mode: 'insensitive' }; phone?: { contains: string; mode: 'insensitive' } }> } = { organization_id: orgId };
+    if (search && search.length > 0) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    const list = await prisma.tenant.findMany({ where });
     res.json(list);
   } catch (e) {
     next(e);

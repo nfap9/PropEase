@@ -27,13 +27,24 @@ const BatchReadingSchema = z.object({ room_id: z.string(), period_year: z.number
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    const roomId = typeof req.query.room_id === 'string' ? req.query.room_id : undefined;
+    const periodYear = req.query.period_year != null ? Number(req.query.period_year) : undefined;
+    const periodMonth = req.query.period_month != null ? Number(req.query.period_month) : undefined;
+
     const rooms = await prisma.room.findMany({
       where: { apartment: { organization_id: orgId } },
       select: { id: true },
     });
     const roomIds = rooms.map((r) => r.id);
+    const where: { room_id: { in: string[] }; period_year?: number; period_month?: number } = {
+      room_id: { in: roomIds },
+    };
+    if (roomId && roomIds.includes(roomId)) where.room_id = { in: [roomId] };
+    if (periodYear != null) where.period_year = periodYear;
+    if (periodMonth != null) where.period_month = periodMonth;
+
     const list = await prisma.utilityReading.findMany({
-      where: { room_id: { in: roomIds } },
+      where,
       include: { room: true },
     });
     res.json(list);
@@ -45,11 +56,63 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 router.get('/export', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    const periodYear = req.query.period_year != null ? Number(req.query.period_year) : undefined;
+    const periodMonth = req.query.period_month != null ? Number(req.query.period_month) : undefined;
+    const daysRange = req.query.days_range != null ? Number(req.query.days_range) : undefined;
+
     const rooms = await prisma.room.findMany({
       where: { apartment: { organization_id: orgId } },
-      include: { apartment: true },
+      include: {
+        apartment: true,
+        leases: { where: { is_active: true }, include: { tenant: true }, take: 1, orderBy: { start_date: 'desc' } },
+      },
     });
-    res.json(rooms.map((r) => ({ id: r.id, room_number: r.room_number, apartment_name: r.apartment.name })));
+
+    let roomsToExport = rooms;
+    if (periodYear != null && periodMonth != null && daysRange != null && daysRange > 0) {
+      const today = new Date();
+      const currentDay = today.getDate();
+      const daysInMonth = new Date(periodYear, periodMonth, 0).getDate();
+      const billingDays = new Set<number>();
+      for (let i = 0; i < daysRange; i++) {
+        let d = currentDay + i;
+        if (d > daysInMonth) d -= daysInMonth;
+        billingDays.add(d);
+      }
+      roomsToExport = rooms.filter((r) => {
+        const lease = r.leases[0];
+        return lease && billingDays.has(lease.billing_day);
+      });
+    }
+
+    const period = periodYear != null && periodMonth != null ? { year: periodYear, month: periodMonth } : null;
+    const exportList = await Promise.all(
+      roomsToExport.map(async (r) => {
+        const lease = r.leases[0];
+        let waterPrevious: number | null = null;
+        let electricityPrevious: number | null = null;
+        if (period) {
+          const prev = await prisma.utilityReading.findFirst({
+            where: { room_id: r.id, period_year: period.year, period_month: period.month },
+            orderBy: { reading_date: 'desc' },
+          });
+          if (prev) {
+            waterPrevious = prev.water_reading != null ? Number(prev.water_reading) : null;
+            electricityPrevious = prev.electricity_reading != null ? Number(prev.electricity_reading) : null;
+          }
+        }
+        return {
+          room_id: r.id,
+          apartment_name: r.apartment.name,
+          room_number: r.room_number,
+          tenant_name: lease?.tenant?.name ?? '',
+          billing_day: lease?.billing_day ?? 1,
+          water_previous: waterPrevious,
+          electricity_previous: electricityPrevious,
+        };
+      })
+    );
+    res.json(exportList);
   } catch (e) {
     next(e);
   }

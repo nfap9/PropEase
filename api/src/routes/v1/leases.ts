@@ -27,13 +27,18 @@ const LeaseUpdateSchema = LeaseCreateSchema.partial();
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    const isActive = req.query.is_active === 'true' ? true : req.query.is_active === 'false' ? false : undefined;
+
     const rooms = await prisma.room.findMany({
       where: { apartment: { organization_id: orgId } },
       select: { id: true },
     });
     const roomIds = rooms.map((r) => r.id);
+    const where: { room_id: { in: string[] }; is_active?: boolean } = { room_id: { in: roomIds } };
+    if (isActive !== undefined) where.is_active = isActive;
+
     const list = await prisma.lease.findMany({
-      where: { room_id: { in: roomIds } },
+      where,
       include: { room: true, tenant: true },
     });
     res.json(list);
