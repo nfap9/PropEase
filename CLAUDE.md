@@ -45,6 +45,7 @@ Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是�
 
 - 后端架构遵循分层架构和清洁架构原则
 - 前端用户界面字符串必须使用中文；避免硬编码英文文本
+- **命名**：API 契约与前后端命名规范见 [docs/naming-conventions.md](docs/naming-conventions.md)（API/DB 用 snake_case，前端类型与 API 一致用 snake_case，前端局部变量用 camelCase）
 
 ## 语言要求
 

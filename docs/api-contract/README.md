@@ -2,6 +2,8 @@
 
 api 需与 api-legacy（Python）保持相同的请求/响应契约，便于前端无感切换。
 
+**命名**：请求/响应字段、路径与查询参数统一使用 **snake_case**，详见 [docs/naming-conventions.md](../naming-conventions.md)。
+
 ## 成功响应
 
 `{ "code": 0, "data": T, "message": "操作成功" }`

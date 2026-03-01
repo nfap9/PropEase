@@ -43,11 +43,14 @@
 
 ### 命名约定
 
+与 API 及后端统一的规范见 [docs/naming-conventions.md](../../docs/naming-conventions.md)，摘要如下：
+
 - 组件文件使用 `kebab-case.tsx`（如 `data-table.tsx`）
 - 组件名使用 `PascalCase`（如 `DataTable`）
-- 函数和变量使用 `camelCase`
-- 常量使用 `UPPER_CASE`
 - 类型/接口使用 `PascalCase`
+- **与 API 一致的字段名使用 snake_case**（如 `full_name`、`organization_id`、`created_at`），类型定义与请求/响应体与此一致
+- 局部变量、函数参数使用 `camelCase`
+- 常量使用 `UPPER_CASE`
 
 ### 组件结构
 

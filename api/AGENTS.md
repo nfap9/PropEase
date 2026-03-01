@@ -31,6 +31,10 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端；旧版
 - 错误：`{ code, message, data?: { errors?: [{ field, message }] } }`
 - 不包装：`/health`、`/docs`、`/openapi.json`、`/api/v1/webhooks` 前缀
 
+## 命名规范
+
+请求/响应字段、路径与查询参数统一使用 **snake_case**，与数据库、api-legacy 一致。详见 [docs/naming-conventions.md](../docs/naming-conventions.md)。
+
 ## 常用命令
 
 - `pnpm install`：安装依赖
