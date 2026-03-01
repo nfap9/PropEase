@@ -16,7 +16,7 @@ SHELL := /bin/bash
 # 开发环境初始化
 # ==================================================================
 
-.PHONY: dev-setup prepare-docker prepare-api prepare-web dev-clean dev-check
+.PHONY: dev-setup prepare-docker prepare-api prepare-web dev-clean dev-check prepare-api-ts
 
 # 一键初始化：Docker 中间件 + API 依赖与迁移 + 前端依赖
 dev-setup: prepare-docker prepare-api prepare-web
@@ -49,6 +49,14 @@ prepare-api:
 	@cd api && uv run alembic upgrade head
 	@echo "✅ API 环境就绪"
 
+# 配置 api-ts（Node/Express 后端，与 api 并存；切换前使用）
+prepare-api-ts:
+	@echo "🔧 配置 api-ts 环境..."
+	@cp -n api-ts/.env.example api-ts/.env 2>/dev/null || true
+	@cd api-ts && pnpm install
+	@cd api-ts && pnpm exec prisma generate
+	@echo "✅ api-ts 环境就绪（数据库迁移仍由 api 的 Alembic 执行）"
+
 # 复制前端 .env、安装 pnpm 依赖
 prepare-web:
 	@echo "🌐 配置前端环境..."
@@ -73,7 +81,7 @@ dev-clean:
 # 开发服务器
 # ==================================================================
 
-.PHONY: dev dev-api dev-web dev-docker dev-local dev-local-stop
+.PHONY: dev dev-api dev-web dev-docker dev-local dev-local-stop dev-api-ts
 
 dev: dev-docker
 	@echo "🚀 正在启动全部服务..."
@@ -87,6 +95,11 @@ dev-api:
 dev-web:
 	@echo "🌐 启动前端服务..."
 	@cd web && pnpm dev
+
+# 本地启动 api-ts（端口 8001，与 Python API 并存）
+dev-api-ts:
+	@echo "🔧 启动 api-ts 服务（端口 8001）..."
+	@cd api-ts && PORT=8001 pnpm dev
 
 # 本地一键启动：先后台 API，再前台前端；Ctrl+C 仅停前端，停 API 用 make dev-local-stop
 dev-local:
@@ -109,7 +122,7 @@ dev-docker:
 # 代码质量（API：ruff / mypy / pytest；前端：ESLint / tsc）
 # ==================================================================
 
-.PHONY: format check lint type-check test test-cov lint-web type-check-web lint-all type-check-all
+.PHONY: format check lint type-check test test-cov lint-web type-check-web lint-all type-check-all lint-api-ts type-check-api-ts test-api-ts
 
 # 仅格式化 API 代码
 format:
@@ -145,6 +158,22 @@ type-check-web:
 	@echo "📝 前端类型检查..."
 	@cd web && pnpm type-check
 	@echo "✅ 前端类型检查完成"
+
+# api-ts ESLint
+lint-api-ts:
+	@echo "🔍 检查 api-ts..."
+	@cd api-ts && pnpm run lint
+	@echo "✅ api-ts 检查完成"
+
+type-check-api-ts:
+	@echo "📝 api-ts 类型检查..."
+	@cd api-ts && pnpm run type-check
+	@echo "✅ api-ts 类型检查完成"
+
+test-api-ts:
+	@echo "🧪 运行 api-ts 测试..."
+	@cd api-ts && pnpm run test 2>/dev/null || echo "（暂无测试）"
+	@echo "✅ api-ts 测试完成"
 
 # 全栈代码检查（API + 前端）
 lint-all: lint lint-web
@@ -243,21 +272,26 @@ help:
 	@echo ""
 	@echo "开发服务:"
 	@echo "  make dev-api       启动 API（热重载，端口 8000）"
+	@echo "  make dev-api-ts    启动 api-ts（端口 8001，与 api 并存）"
 	@echo "  make dev-web       启动前端（端口 3000）"
 	@echo "  make dev-local     一键启动 API + 前端（本地）"
 	@echo "  make dev-local-stop 停止 dev-local 后台 API"
 	@echo "  make dev-docker    使用 Docker 启动全部服务"
+	@echo "  make prepare-api-ts 配置 api-ts 环境"
 	@echo ""
 	@echo "代码质量:"
 	@echo "  make format        格式化 API 代码（ruff）"
 	@echo "  make check         检查 API 代码（ruff）"
 	@echo "  make lint          API 格式化与自动修复"
 	@echo "  make lint-web      前端 ESLint（含修复）"
+	@echo "  make lint-api-ts   api-ts 代码检查"
 	@echo "  make lint-all      API + 前端检查"
 	@echo "  make type-check    API 类型检查（mypy）"
 	@echo "  make type-check-web 前端类型检查（tsc）"
+	@echo "  make type-check-api-ts api-ts 类型检查"
 	@echo "  make type-check-all API + 前端类型检查"
 	@echo "  make test          运行 API 测试"
+	@echo "  make test-api-ts   运行 api-ts 测试"
 	@echo "  make test-cov      运行 API 测试并生成覆盖率"
 	@echo ""
 	@echo "数据库:"

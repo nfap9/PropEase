@@ -1,0 +1,383 @@
+// Apartment Ultra - 与现有 PostgreSQL 表结构一致（与 api Alembic 迁移对齐）
+// 切换完成前由 Alembic 负责迁移；切换后仅使用 Prisma Migrate
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @db.VarChar(26)
+  phone         String   @unique @db.VarChar(20)
+  password_hash String   @db.VarChar(255)
+  full_name     String   @db.VarChar(255)
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  organization_memberships OrganizationMember[]
+  notifications            Notification[]
+
+  @@map("users")
+}
+
+model Organization {
+  id         String   @id @db.VarChar(26)
+  name       String   @db.VarChar(255)
+  slug       String   @unique @db.VarChar(100)
+  plan       String   @default("free") @db.VarChar(50)
+  settings   Json?
+  is_personal Boolean @default(false)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  members             OrganizationMember[]
+  apartments          Apartment[]
+  tenants             Tenant[]
+  subscription        OrganizationSubscription?
+  subscription_orders SubscriptionOrder[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id              String   @id @db.VarChar(26)
+  organization_id String   @db.VarChar(26)
+  user_id         String   @db.VarChar(26)
+  role            String   @default("member") @db.VarChar(20)
+  custom_role_id  String?  @db.VarChar(26)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  user        User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("organization_members")
+}
+
+model Apartment {
+  id              String   @id @db.VarChar(26)
+  organization_id  String   @db.VarChar(26)
+  name            String   @db.VarChar(255)
+  address         String?  @db.VarChar(500)
+  description     String?  @db.VarChar(1000)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  organization Organization  @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  rooms        Room[]
+  utility_config UtilityConfig?
+
+  @@map("apartments")
+}
+
+model Room {
+  id           String   @id @db.VarChar(26)
+  apartment_id String   @db.VarChar(26)
+  room_number  String   @db.VarChar(50)
+  layout       String?  @db.VarChar(50)
+  status       String   @default("available") @db.VarChar(20)
+  monthly_rent Decimal  @db.Decimal(10, 2)
+  area         Decimal? @db.Decimal(10, 2)
+  notes        String?  @db.VarChar(500)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  apartment        Apartment       @relation(fields: [apartment_id], references: [id], onDelete: Cascade)
+  leases           Lease[]
+  utility_readings UtilityReading[]
+
+  @@map("rooms")
+}
+
+model Tenant {
+  id                String   @id @db.VarChar(26)
+  organization_id   String   @db.VarChar(26)
+  name              String   @db.VarChar(255)
+  phone             String?  @db.VarChar(50)
+  id_card           String?  @db.VarChar(50)
+  emergency_contact  String?  @db.VarChar(255)
+  emergency_phone    String?  @db.VarChar(50)
+  notes             String?  @db.VarChar(500)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  leases       Lease[]
+
+  @@map("tenants")
+}
+
+model Lease {
+  id               String   @id @db.VarChar(26)
+  room_id          String   @db.VarChar(26)
+  tenant_id        String   @db.VarChar(26)
+  start_date       DateTime @db.Date
+  end_date         DateTime? @db.Date
+  billing_day      Int      @default(1)
+  monthly_rent     Decimal  @db.Decimal(10, 2)
+  deposit          Decimal  @default(0) @db.Decimal(10, 2)
+  water_rate       Decimal  @default(0) @db.Decimal(10, 4)
+  electricity_rate Decimal  @default(0) @db.Decimal(10, 4)
+  is_active        Boolean  @default(true)
+  notes            String?  @db.VarChar(500)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  room   Room   @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  bills  Bill[]
+
+  @@map("leases")
+}
+
+model UtilityReading {
+  id                  String   @id @db.VarChar(26)
+  room_id             String   @db.VarChar(26)
+  period_year         Int
+  period_month        Int
+  reading_date        DateTime @db.Date
+  water_reading       Decimal? @db.Decimal(10, 2)
+  electricity_reading  Decimal? @db.Decimal(10, 2)
+  water_previous      Decimal? @db.Decimal(10, 2)
+  electricity_previous Decimal? @db.Decimal(10, 2)
+  notes               String?  @db.VarChar(500)
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  room Room @relation(fields: [room_id], references: [id], onDelete: Cascade)
+
+  @@map("utility_readings")
+}
+
+model UtilityConfig {
+  id                      String   @id @db.VarChar(26)
+  apartment_id            String   @unique @db.VarChar(26)
+  water_price_per_unit    Decimal? @db.Decimal(10, 2)
+  electricity_price_per_unit Decimal? @db.Decimal(10, 2)
+  internet_fee            Decimal? @db.Decimal(10, 2)
+  management_fee          Decimal? @db.Decimal(10, 2)
+  service_fee             Decimal? @db.Decimal(10, 2)
+  effective_from          DateTime @db.Date
+  notes                   String?  @db.VarChar(500)
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+
+  apartment Apartment @relation(fields: [apartment_id], references: [id], onDelete: Cascade)
+
+  @@map("utility_configs")
+}
+
+model Bill {
+  id                String   @id @db.VarChar(26)
+  lease_id          String   @db.VarChar(26)
+  bill_year         Int
+  bill_month        Int
+  due_date          DateTime @db.Date
+  rent_amount       Decimal  @default(0) @db.Decimal(10, 2)
+  water_amount      Decimal  @default(0) @db.Decimal(10, 2)
+  electricity_amount Decimal  @default(0) @db.Decimal(10, 2)
+  other_amount      Decimal  @default(0) @db.Decimal(10, 2)
+  total_amount      Decimal  @db.Decimal(10, 2)
+  paid_amount       Decimal  @default(0) @db.Decimal(10, 2)
+  status            String   @default("pending") @db.VarChar(20)
+  notes             String?  @db.VarChar(500)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  lease    Lease    @relation(fields: [lease_id], references: [id], onDelete: Cascade)
+  payments Payment[]
+
+  @@map("bills")
+}
+
+model Payment {
+  id             String   @id @db.VarChar(26)
+  bill_id        String   @db.VarChar(26)
+  amount         Decimal  @db.Decimal(10, 2)
+  payment_date   DateTime @db.Date
+  payment_method String  @default("cash") @db.VarChar(20)
+  reference      String?  @db.VarChar(255)
+  notes          String?  @db.VarChar(500)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  bill Bill @relation(fields: [bill_id], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Permission {
+  id          String   @id @db.VarChar(26)
+  resource    String   @db.VarChar(50)
+  action      String   @db.VarChar(50)
+  code        String   @unique @db.VarChar(100)
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(255)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("permissions")
+}
+
+model SystemRoleConfig {
+  id          String   @id @db.VarChar(26)
+  role        String   @unique @db.VarChar(50)
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(255)
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("system_role_configs")
+}
+
+model CustomRole {
+  id              String   @id @db.VarChar(26)
+  organization_id String   @db.VarChar(26)
+  name            String   @db.VarChar(50)
+  description     String?  @db.VarChar(255)
+  is_system       Boolean  @default(false)
+  is_active       Boolean  @default(true)
+  permissions     String?  @db.VarChar(2000)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@unique([organization_id, name])
+  @@map("custom_roles")
+}
+
+model Notification {
+  id              String   @id @db.VarChar(26)
+  user_id         String   @db.VarChar(26)
+  organization_id String   @db.VarChar(26)
+  type            String   @db.VarChar(50)
+  title           String   @db.VarChar(255)
+  content         String   @db.VarChar(1000)
+  is_read         Boolean  @default(false)
+  extra_data      Json?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model SubscriptionPlan {
+  id             String   @id @db.VarChar(26)
+  name          String   @db.VarChar(100)
+  code          String   @unique @db.VarChar(50)
+  description   String?  @db.VarChar(500)
+  price_monthly Decimal  @default(0) @db.Decimal(10, 2)
+  price_yearly  Decimal  @default(0) @db.Decimal(10, 2)
+  max_apartments Int     @default(1)
+  max_rooms     Int      @default(100)
+  max_members   Int      @default(1)
+  features      Json?
+  is_active     Boolean  @default(true)
+  sort_order    Int      @default(0)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  subscriptions     OrganizationSubscription[]
+  subscription_orders SubscriptionOrder[]
+
+  @@map("subscription_plans")
+}
+
+model OrganizationSubscription {
+  id              String    @id @db.VarChar(26)
+  organization_id String    @unique @db.VarChar(26)
+  plan_id         String    @db.VarChar(26)
+  status          String    @default("active") @db.VarChar(20)
+  billing_cycle   String    @default("monthly") @db.VarChar(20)
+  start_date      DateTime  @db.Date
+  end_date        DateTime? @db.Date
+  auto_renew      Boolean   @default(true)
+  trial_ends_at   DateTime? @db.Date
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  plan         SubscriptionPlan @relation(fields: [plan_id], references: [id])
+  orders       SubscriptionOrder[]
+
+  @@map("organization_subscriptions")
+}
+
+model SubscriptionOrder {
+  id                         String    @id @db.VarChar(26)
+  order_no                   String    @unique @db.VarChar(64)
+  organization_id             String    @db.VarChar(26)
+  plan_id                    String    @db.VarChar(26)
+  billing_cycle              String    @default("monthly") @db.VarChar(20)
+  amount                     Decimal   @db.Decimal(10, 2)
+  currency                   String    @default("CNY") @db.VarChar(10)
+  status                     String    @default("pending") @db.VarChar(32)
+  payment_method             String    @default("wechat_native") @db.VarChar(32)
+  code_url                   String?   @db.VarChar(512)
+  wechat_transaction_id      String?   @db.VarChar(64)
+  paid_at                    DateTime?
+  expires_at                 DateTime
+  organization_subscription_id String?  @db.VarChar(26)
+  created_at                 DateTime  @default(now())
+  updated_at                 DateTime  @updatedAt
+
+  organization  Organization  @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  plan          SubscriptionPlan @relation(fields: [plan_id], references: [id])
+  org_subscription OrganizationSubscription? @relation(fields: [organization_subscription_id], references: [id], onDelete: SetNull)
+
+  @@map("subscription_orders")
+}
+
+model SmsVerificationCode {
+  id         String   @id @db.VarChar(26)
+  phone      String   @db.VarChar(20)
+  code       String   @db.VarChar(6)
+  purpose    String   @db.VarChar(20)
+  is_used    Boolean  @default(false)
+  expires_at DateTime
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("sms_verification_codes")
+}
+
+model AdminRole {
+  id          String   @id @db.VarChar(26)
+  name        String   @db.VarChar(50)
+  permissions Json     @default("[]")
+  is_system   Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  users AdminUser[]
+
+  @@map("admin_roles")
+}
+
+model AdminUser {
+  id                   String    @id @db.VarChar(26)
+  username             String    @unique @db.VarChar(64)
+  password_hash         String    @db.VarChar(255)
+  name                  String    @db.VarChar(100)
+  email                 String?   @db.VarChar(255)
+  role_id               String    @db.VarChar(26)
+  is_active             Boolean   @default(true)
+  is_system             Boolean   @default(false)
+  last_login_at         DateTime?
+  failed_login_attempts Int      @default(0)
+  locked_until          DateTime?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+
+  role AdminRole @relation(fields: [role_id], references: [id], onDelete: Restrict)
+
+  @@map("admin_users")
+}

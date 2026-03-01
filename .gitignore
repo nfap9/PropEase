@@ -2,6 +2,9 @@
 node_modules/
 .pnp
 .pnp.js
+.pnpm-store
+
+# Api-ts (Node/Express)：node_modules/、dist/、.env 已在上/下述规则中覆盖
 
 # Testing
 coverage/
@@ -18,11 +21,12 @@ dist/
 .DS_Store
 *.pem
 
-# Debug
+# Debug / Node
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+.node_repl_history
 
 # Local env files
 .env
@@ -34,6 +38,7 @@ yarn-error.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+# api-ts 构建产物已由 dist/ 覆盖
 
 # Python
 __pycache__/

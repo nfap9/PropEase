@@ -104,3 +104,36 @@ jobs:
         run: pnpm build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+
+  # api-ts（Node/Express 后端，与 api 并存）
+  api-ts:
+    name: api-ts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: api-ts/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: cd api-ts && pnpm install
+
+      - name: Prisma generate
+        run: cd api-ts && pnpm exec prisma generate
+
+      - name: Type check
+        run: cd api-ts && pnpm run type-check
+
+      - name: Test
+        run: cd api-ts && pnpm run test

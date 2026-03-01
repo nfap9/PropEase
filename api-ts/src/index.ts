@@ -1,0 +1,36 @@
+import express, { type Express } from 'express';
+import cors from 'cors';
+import { config } from './config.js';
+import { responseWrapper } from './middlewares/responseWrapper.js';
+import { errorHandler } from './middlewares/errorHandler.js';
+import { healthHandler } from './routes/health.js';
+import { v1Router } from './routes/v1/index.js';
+import { seedAdminSuper } from './startup/seedAdmin.js';
+
+const app: Express = express();
+
+app.use(cors({ origin: config.corsOrigins, credentials: true }));
+app.use(express.json());
+app.use(responseWrapper);
+
+app.get('/health', healthHandler);
+app.use(config.apiV1Prefix, v1Router);
+
+app.use(errorHandler);
+
+const port = Number(process.env.PORT) || 8000;
+
+async function start(): Promise<void> {
+  try {
+    await seedAdminSuper();
+  } catch (e) {
+    console.error('Startup seed failed:', e);
+  }
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`${config.appName} listening on port ${port}`);
+  });
+}
+
+start();
+
+export default app;
