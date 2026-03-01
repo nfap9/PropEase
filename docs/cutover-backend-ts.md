@@ -1,6 +1,6 @@
 # 后端切换为 Node/Express 执行步骤
 
-**已执行完毕**：当前后端为 `api/`（Node/Express）。api-legacy 已删除，数据库迁移由 Prisma 管理。
+**已执行完毕**：当前后端为 `api/`（Node/Express）。api-legacy 已删除，表结构由 Prisma schema 管理，使用 `prisma db push` 同步。
 
 ## 1. 重命名目录（已完成）
 
@@ -15,7 +15,7 @@ mv api-ts api
 
 - 开发与代码质量由根目录 pnpm scripts 承担：`dev-setup`、`dev:api`、`dev:web`、`dev:local`、`lint`、`type-check`、`test` 等。
 - 环境初始化与一键启动由 `scripts/dev-setup.sh`、`scripts/dev-local.sh` 等完成；Docker 相关为 `pnpm run docker:up` 等。
-- 数据库迁移在 `api/` 下由 Prisma 执行，根目录 `pnpm run migrate` 即 `prisma migrate deploy`。
+- 数据库表结构在 `api/` 下由 Prisma schema 定义，执行 `cd api && pnpm exec prisma db push` 同步。
 
 ### 2.2 Docker
 

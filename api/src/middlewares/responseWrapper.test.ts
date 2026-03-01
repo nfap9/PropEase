@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response } from 'express';
 import { responseWrapper } from './responseWrapper.js';
 import { Messages } from '../messages.js';
 
@@ -9,13 +9,13 @@ describe('responseWrapper', () => {
   }
 
   function createMockRes(statusCode = 200): { res: Response; jsonSpy: ReturnType<typeof vi.fn> } {
-    const jsonSpy = vi.fn(function (this: Response, body: unknown) {
+    const jsonSpy = vi.fn(function (this: Response, _body?: unknown) {
       return this as Response;
     });
     const res = {
       statusCode,
       locals: {} as Record<string, unknown>,
-      json: jsonSpy,
+      json: jsonSpy as unknown as Response['json'],
     } as unknown as Response;
     return { res, jsonSpy };
   }

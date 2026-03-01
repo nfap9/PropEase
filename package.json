@@ -15,7 +15,6 @@
     "docker:up": "cd docker && docker compose -f docker-compose.yaml up -d",
     "docker:down": "cd docker && docker compose -f docker-compose.yaml down",
     "docker:logs": "cd docker && docker compose -f docker-compose.yaml logs -f",
-    "migrate": "pnpm --filter apartment-ultra-api exec prisma migrate deploy",
     "build": "pnpm -r run build",
     "lint": "pnpm run lint:api && pnpm run lint:web",
     "lint:api": "pnpm --filter apartment-ultra-api run lint",

@@ -47,4 +47,4 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端。
 
 ## 数据库
 
-- 使用 PostgreSQL；迁移由 Prisma 管理，在仓库根执行 `pnpm run migrate` 或进入 api 目录执行 `pnpm exec prisma migrate deploy`。
+- 使用 PostgreSQL；表结构以 `prisma/schema.prisma` 为准，在 api 目录执行 `pnpm exec prisma db push` 同步。

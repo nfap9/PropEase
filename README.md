@@ -114,7 +114,7 @@ pnpm run type-check  # 类型检查
 pnpm run test        # 运行 api 测试
 
 # 数据库（Prisma）
-pnpm run migrate     # 执行迁移
+cd api && pnpm exec prisma db push   # 以 schema 同步数据库
 
 # Docker
 pnpm run docker:up   # 启动容器
