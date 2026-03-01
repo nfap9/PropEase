@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "check:db-enums": "tsx scripts/check-enum-columns.ts"
   },
   "dependencies": {
     "@apartment-ultra/api-contract": "workspace:*",
