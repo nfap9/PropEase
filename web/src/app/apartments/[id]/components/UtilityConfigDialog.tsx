@@ -19,7 +19,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Settings } from 'lucide-react';
 import { utilityConfigApi } from '@/lib/api';
-import { UtilityConfig } from '@/types';
 
 const utilityConfigSchema = z.object({
   water_price_per_unit: z.number().min(0, '单价不能为负').optional(),

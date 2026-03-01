@@ -1,11 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { BusinessCode } from '../constants.js';
-
-export interface ErrorResponseBody {
-  code: number;
-  message: string;
-  data?: { errors?: Array<{ field: string; message: string }> };
-}
+import { BusinessCode, type ErrorResponseBody } from '@apartment-ultra/api-contract';
 
 export function createErrorResponse(
   code: number,

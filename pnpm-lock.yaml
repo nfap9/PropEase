@@ -10,6 +10,9 @@ importers:
 
   api:
     dependencies:
+      '@apartment-ultra/api-contract':
+        specifier: workspace:*
+        version: link:../packages/api-contract
       '@prisma/client':
         specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
@@ -69,8 +72,17 @@ importers:
         specifier: ^1.6.0
         version: 1.6.1(@types/node@20.19.35)(jsdom@28.1.0)
 
+  packages/api-contract:
+    devDependencies:
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+
   web:
     dependencies:
+      '@apartment-ultra/api-contract':
+        specifier: workspace:*
+        version: link:../packages/api-contract
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.71.2(react@18.3.1))

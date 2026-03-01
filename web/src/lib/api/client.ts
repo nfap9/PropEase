@@ -3,32 +3,20 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
+import {
+  type SuccessBody,
+  type ErrorResponseBody,
+  type FieldError,
+  type ErrorResponseData,
+  BusinessCode,
+} from '@apartment-ultra/api-contract';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
-/**
- * 统一 API 响应格式
- */
-export interface ApiResponse<T = unknown> {
-  code: number;
-  data: T;
-  message: string;
-}
+/** 统一 API 成功响应格式（与共享契约一致） */
+export type ApiResponse<T = unknown> = SuccessBody<T>;
 
-/**
- * 字段级错误
- */
-export interface FieldError {
-  field: string;
-  message: string;
-}
-
-/**
- * 验证错误数据
- */
-export interface ValidationErrorData {
-  errors: FieldError[];
-}
+export type { FieldError };
 
 /**
  * API 错误类
@@ -45,7 +33,7 @@ export class ApiError extends Error {
     this.data = data;
     this.fieldErrors =
       data && typeof data === 'object' && 'errors' in data
-        ? (data as ValidationErrorData).errors
+        ? (data as ErrorResponseData).errors ?? []
         : [];
   }
 
@@ -60,7 +48,7 @@ export class ApiError extends Error {
    * 是否为验证错误
    */
   isValidationError(): boolean {
-    return this.code === 40001;
+    return this.code === BusinessCode.VALIDATION_ERROR;
   }
 }
 
@@ -118,7 +106,7 @@ api.interceptors.response.use(
     // 非统一格式（如健康检查），直接返回
     return response;
   },
-  async (error: AxiosError<ApiResponse>) => {
+  async (error: AxiosError<ErrorResponseBody>) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };

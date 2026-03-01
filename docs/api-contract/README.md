@@ -2,6 +2,8 @@
 
 api 需与 api-legacy（Python）保持相同的请求/响应契约，便于前端无感切换。
 
+**TypeScript 类型与契约**：由 **`packages/api-contract`**（`@apartment-ultra/api-contract`）统一提供，api 与 web 均依赖此包，保证前后端类型一致。
+
 **命名**：请求/响应字段、路径与查询参数统一使用 **snake_case**，详见 [docs/naming-conventions.md](../naming-conventions.md)。
 
 ## 成功响应

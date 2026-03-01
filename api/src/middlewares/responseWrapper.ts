@@ -1,11 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
-import { BusinessCode, shouldSkipResponseWrap } from '../constants.js';
-
-export interface SuccessBody<T = unknown> {
-  code: 0;
-  data: T;
-  message: string;
-}
+import { BusinessCode, type SuccessBody } from '@apartment-ultra/api-contract';
+import { shouldSkipResponseWrap } from '../constants.js';
 
 /**
  * 响应包装中间件：将 res.json(payload) 包装为 { code: 0, data, message }。

@@ -1,0 +1,88 @@
+/** 通用契约 */
+export {
+  SuccessBody,
+  ErrorResponseBody,
+  ErrorResponseData,
+  FieldError,
+  BusinessCode,
+  PaginatedResponse,
+} from './common.js';
+
+/** 认证与用户 */
+export type {
+  User,
+  LoginCredentials,
+  RegisterData,
+  SendSmsCodeData,
+  TokenResponse,
+} from './auth.js';
+
+/** 组织 */
+export type {
+  MemberRole,
+  Organization,
+  MigrationStats,
+  DeletionPreview,
+  OrganizationMember,
+  OrganizationUsage,
+} from './organizations.js';
+
+/** 订阅 */
+export type {
+  SubscriptionPlan,
+  OrganizationSubscription,
+  SubscribeRequest,
+  SubscriptionStatus,
+  SubscriptionOrderStatus,
+  SubscriptionOrder,
+  SubscriptionOrderCreate,
+} from './subscriptions.js';
+
+/** 公寓与房间 */
+export type {
+  Apartment,
+  RoomStats,
+  ApartmentWithStats,
+  RoomStatus,
+  Room,
+  RoomBatchCreate,
+  UtilityConfig,
+  UtilityConfigCreate,
+  UtilityConfigUpdate,
+} from './apartments.js';
+
+/** 租客 */
+export type { Tenant } from './tenants.js';
+
+/** 租约 */
+export type { Lease } from './leases.js';
+
+/** 水电读数 */
+export type { UtilityReading } from './utilities.js';
+
+/** 账单与支付 */
+export type {
+  BillStatus,
+  PaymentMethod,
+  Bill,
+  Payment,
+} from './bills.js';
+
+/** 报表 */
+export type {
+  DashboardOverview,
+  IncomeReport,
+  OccupancyReport,
+} from './reports.js';
+
+/** 权限 */
+export type {
+  Resource,
+  Action,
+  Permission,
+  RolePermissions,
+  UpdateRolePermissionsRequest,
+  UserPermissionsResponse,
+  SystemRole,
+  SystemRoleConfig,
+} from './permissions.js';
