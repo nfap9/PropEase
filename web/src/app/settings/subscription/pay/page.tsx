@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { Suspense, useCallback, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -13,7 +13,7 @@ import { useAuth } from '@/lib/auth/context';
 
 const POLL_INTERVAL_MS = 2500;
 
-export default function SubscriptionPayPage() {
+function SubscriptionPayContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('order_id');
@@ -170,5 +170,28 @@ export default function SubscriptionPayPage() {
         </Card>
       </div>
     </MainLayout>
+  );
+}
+
+export default function SubscriptionPayPage() {
+  return (
+    <Suspense
+      fallback={
+        <MainLayout>
+          <div className="space-y-6">
+            <Skeleton className="h-10 w-48" />
+            <Card>
+              <CardHeader><Skeleton className="h-6 w-32" /></CardHeader>
+              <CardContent className="flex flex-col items-center gap-4">
+                <Skeleton className="h-48 w-48 rounded" />
+                <Skeleton className="h-4 w-64" />
+              </CardContent>
+            </Card>
+          </div>
+        </MainLayout>
+      }
+    >
+      <SubscriptionPayContent />
+    </Suspense>
   );
 }

@@ -79,7 +79,7 @@ export default function RegisterPage() {
     try {
       await sendSmsCode({ phone, purpose: 'register' });
       setCountdown(60);
-    } catch (err) {
+    } catch {
       setError('发送验证码失败，请稍后重试');
     }
   }, [form, sendSmsCode]);

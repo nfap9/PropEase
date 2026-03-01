@@ -250,12 +250,14 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     return Array.from(floors).sort((a, b) => a - b);
   };
 
-  // 根据配置生成房间列表
+  // 根据配置生成房间列表（依赖表单字段以触发重新计算）
+  const batchFloors = batchCreateRoomForm.watch('floors');
+  const batchStartNumber = batchCreateRoomForm.watch('start_number');
+  const batchEndNumber = batchCreateRoomForm.watch('end_number');
   const generatedRooms = useMemo(() => {
-    const config = batchCreateRoomForm.getValues();
-    const floors = parseFloors(config.floors || '1');
-    const startNum = config.start_number || 1;
-    const endNum = config.end_number || 10;
+    const floors = parseFloors(batchFloors || '1');
+    const startNum = batchStartNumber || 1;
+    const endNum = batchEndNumber || 10;
 
     const rooms: { floor: number; rooms: string[] }[] = [];
     for (const floor of floors) {
@@ -266,11 +268,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       rooms.push({ floor, rooms: floorRooms });
     }
     return rooms;
-  }, [
-    batchCreateRoomForm.watch('floors'),
-    batchCreateRoomForm.watch('start_number'),
-    batchCreateRoomForm.watch('end_number'),
-  ]);
+  }, [batchFloors, batchStartNumber, batchEndNumber]);
 
   // 初始化选中房间（全部选中）
   const initializeSelectedRooms = useCallback(() => {

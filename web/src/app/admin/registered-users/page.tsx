@@ -79,7 +79,7 @@ export default function AdminRegisteredUsersPage() {
   const setActiveMutation = useMutation({
     mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
       adminApiEndpoints.setRegisteredUserActive(id, { is_active }),
-    onSuccess: (_data, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'registered-users'] });
       if (detailUserId) {
         queryClient.invalidateQueries({

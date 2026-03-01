@@ -1,12 +1,14 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
 
-export default function SubscriptionResultPage() {
+function SubscriptionResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const status = searchParams.get('status'); // success | fail
@@ -53,5 +55,22 @@ export default function SubscriptionResultPage() {
         </Button>
       </div>
     </MainLayout>
+  );
+}
+
+export default function SubscriptionResultPage() {
+  return (
+    <Suspense
+      fallback={
+        <MainLayout>
+          <div className="space-y-6 max-w-md mx-auto">
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </MainLayout>
+      }
+    >
+      <SubscriptionResultContent />
+    </Suspense>
   );
 }
