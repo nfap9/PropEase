@@ -316,13 +316,17 @@ function Component() {
 
 ## 常用命令
 
+本地开发默认使用 `.env.local`（由 `make dev-setup` 从 `.env.example` 复制）；如需修改 API 地址，可编辑 `NEXT_PUBLIC_API_URL`。
+
 ```bash
 # 开发
 pnpm dev           # 启动开发服务器
 
 # 代码质量
 pnpm lint          # 运行 ESLint
-pnpm build         # 构建检查 TypeScript
+pnpm lint:fix      # ESLint 并自动修复
+pnpm type-check    # TypeScript 类型检查（tsc --noEmit）
+pnpm build         # 构建（含类型检查）
 
 # 添加 UI 组件
 npx shadcn@latest add button

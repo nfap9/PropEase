@@ -1,5 +1,0 @@
-#!/bin/bash
-# Start Web development server
-
-cd web
-pnpm dev

@@ -48,46 +48,23 @@
 ### 方式一：Makefile（推荐）
 
 ```bash
-# 1. 一键设置开发环境
+# 1. 一键设置开发环境（Docker 中间件 + API 依赖与迁移 + 前端依赖）
 make dev-setup
 
-# 2. 启动 API (终端1)
-make dev-api
-
-# 3. 启动 Web (终端2)
-make dev-web
+# 2. 启动开发服务（任选其一）
+make dev-api    # 终端 1：启动 API
+make dev-web    # 终端 2：启动前端
+# 或一键启动：make dev-local  # API 后台 + 前端前台；停 API 用 make dev-local-stop
 ```
 
 ### 方式二：Docker
 
 ```bash
-# 开发环境
+# 开发环境（全部服务在容器内，支持热重载）
 cd docker && docker compose -f docker-compose.dev.yaml up
 
-# 生产环境
+# 生产/联调
 cd docker && docker compose -f docker-compose.yaml up
-```
-
-### 方式三：手动设置
-
-```bash
-# 1. 启动中间件
-cd docker
-cp middleware.env.example middleware.env
-docker compose -f docker-compose.middleware.yaml up -d
-
-# 2. 设置 API
-cd ../api
-cp .env.example .env
-uv sync --dev
-uv run alembic upgrade head
-uv run uvicorn app.main:app --reload
-
-# 3. 设置 Web (新终端)
-cd ../web
-cp .env.example .env.local
-pnpm install
-pnpm dev
 ```
 
 ## 访问地址
@@ -104,7 +81,6 @@ pnpm dev
 ```
 apartment-ultra/
 ├── Makefile                # 开发命令入口
-├── dev/                    # 开发脚本
 ├── docker/                 # Docker 配置
 ├── docs/                   # 文档与计划（含商业化功能计划）
 ├── api/                    # FastAPI 后端
@@ -129,7 +105,8 @@ apartment-ultra/
 ```bash
 # 开发
 make dev-api         # 启动 API
-make dev-web         # 启动 Web
+make dev-web         # 启动前端
+make dev-local       # 一键启动 API + 前端（停 API：make dev-local-stop）
 
 # 代码质量
 make format          # 格式化代码
