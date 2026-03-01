@@ -38,8 +38,8 @@ services:
 
   api:
     build:
-      context: ../api
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: api/Dockerfile
     container_name: apartment_ultra_api
     environment:
       <<: *shared-api-env
@@ -54,8 +54,8 @@ services:
 
   web:
     build:
-      context: ../web
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: web/Dockerfile
     container_name: apartment_ultra_web
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1

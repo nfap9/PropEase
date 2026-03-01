@@ -33,9 +33,9 @@
 | API | Node.js + Express + TypeScript（**api/**，项目运行与调试均使用此后端） |
 | 数据库 | PostgreSQL, Prisma（迁移仍由 **api-legacy/** 内 Alembic 维护，仅作参考/迁移用） |
 | 认证 | JWT |
-| 包管理 | pnpm (Node.js) |
+| 包管理 | pnpm (Node.js)，**标准 monorepo**（根目录单一 lockfile，`pnpm install` 在根执行） |
 
-> **说明**：仓库中 `api-legacy/` 为旧版 Python (FastAPI) 实现，仅保留供查看与迁移脚本使用，不参与运行与 CI。
+> **说明**：仓库为 pnpm workspaces monorepo（`api`、`web` 为子包）；`api-legacy/` 为旧版 Python (FastAPI) 实现，仅保留供查看与迁移脚本使用，不参与运行与 CI。
 
 ## 快速开始
 
@@ -48,7 +48,7 @@
 ### 方式一：Makefile（推荐）
 
 ```bash
-# 1. 一键设置开发环境（Docker 中间件 + api 后端 + 前端依赖）
+# 1. 一键设置开发环境（Docker 中间件 + 根目录 pnpm 安装 + api/前端配置）
 make dev-setup
 
 # 2. 启动开发服务（任选其一）
@@ -81,7 +81,10 @@ cd docker && docker compose -f docker-compose.yaml up
 ```
 apartment-ultra/
 ├── Makefile                # 开发命令入口
-├── docker/                 # Docker 配置（后端为 api）
+├── package.json            # 根 package（scripts：dev:api / dev:web / lint / type-check / test）
+├── pnpm-workspace.yaml     # pnpm workspaces（api、web）
+├── pnpm-lock.yaml          # 单一锁文件（仅在根目录执行 pnpm install）
+├── docker/                 # Docker 配置（构建上下文为仓库根）
 ├── docs/                   # 文档与计划（含商业化功能计划）
 ├── api/                    # 后端（Node/Express/TypeScript，当前唯一运行后端）
 │   ├── src/                # 源码（路由、中间件、服务等）
@@ -99,10 +102,14 @@ apartment-ultra/
 ## 常用命令
 
 ```bash
+# 依赖安装（在仓库根目录执行一次即可）
+pnpm install
+
 # 开发（后端为 api）
 make dev-api         # 启动后端（端口 8000）
 make dev-web         # 启动前端
 make dev-local       # 一键启动后端 + 前端（停后端：make dev-local-stop）
+# 或从根目录：pnpm run dev:api / pnpm run dev:web
 
 # 代码质量（默认针对 api + 前端）
 make format          # 格式化 api

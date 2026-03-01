@@ -1,17 +1,15 @@
-# Development: install deps and run pnpm dev (source mounted in compose)
+# 开发用：构建上下文为 monorepo 根目录，安装依赖；源码通过 compose volume 挂载
 FROM node:20-alpine
 
 WORKDIR /app
 
 RUN corepack enable pnpm
-
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY api/package.json api/package.json
+COPY web/package.json web/package.json
 RUN pnpm install --frozen-lockfile
 
-COPY . .
-RUN pnpm exec prisma generate
-
 EXPOSE 8000
-
 ENV PORT=8000
-CMD ["pnpm", "dev"]
+# 挂载 api 后执行 prisma generate 与 dev（由 compose 覆盖 command 时可省略 generate）
+CMD ["sh", "-c", "pnpm --filter apartment-ultra-api exec prisma generate && pnpm --filter apartment-ultra-api dev"]

@@ -1,18 +1,16 @@
+# 构建上下文为 monorepo 根目录
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# 复制 workspace 根与各包 package.json，使用单一 lockfile 安装
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY api/package.json api/package.json
+COPY web/package.json web/package.json
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
-# Install dependencies
-RUN npm install
+COPY web/ web/
 
-# Copy application code
-COPY . .
-
-# Expose port
+WORKDIR /app
 EXPOSE 3000
-
-# Run the application
-CMD ["npm", "run", "dev"]
+CMD ["pnpm", "--filter", "frontend", "dev"]

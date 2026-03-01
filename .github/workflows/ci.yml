@@ -26,28 +26,24 @@ jobs:
         with:
           node-version: "20"
           cache: "pnpm"
-          cache-dependency-path: api/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: cd api && pnpm install
+        run: pnpm install
 
       - name: Prisma generate
-        run: cd api && pnpm exec prisma generate
+        run: pnpm --filter apartment-ultra-api exec prisma generate
 
       - name: Type check
-        run: cd api && pnpm run type-check
+        run: pnpm --filter apartment-ultra-api run type-check
 
       - name: Test
-        run: cd api && pnpm run test
+        run: pnpm --filter apartment-ultra-api run test
 
   # 前端构建检查
   frontend:
     name: Frontend
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: web
 
     steps:
       - name: Checkout code
@@ -63,18 +59,18 @@ jobs:
         with:
           node-version: "20"
           cache: "pnpm"
-          cache-dependency-path: web/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install
 
       - name: Run ESLint
-        run: pnpm lint
+        run: pnpm --filter frontend run lint
 
       - name: Run tests
-        run: pnpm test:run
+        run: pnpm --filter frontend run test:run
 
       - name: Build
-        run: pnpm build
+        run: pnpm --filter frontend run build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1

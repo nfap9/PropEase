@@ -3,6 +3,7 @@ node_modules/
 .pnp
 .pnp.js
 .pnpm-store
+package-lock.json
 
 # api (Node/Express)：node_modules/、dist/、.env 已在上/下述规则中覆盖
 

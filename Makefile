@@ -18,7 +18,7 @@ SHELL := /bin/bash
 
 .PHONY: dev-setup prepare-docker prepare-api prepare-web dev-clean dev-check prepare-api-legacy
 
-# 一键初始化：Docker 中间件 + api 后端 + 前端依赖（api-legacy 仅作参考，不参与运行）
+# 一键初始化：Docker 中间件 + 根 pnpm 安装 + api 前端配置（api-legacy 仅作参考，不参与运行）
 dev-setup: prepare-docker prepare-api prepare-web
 	@echo "✅ 开发环境已就绪！"
 	@echo ""
@@ -41,12 +41,12 @@ prepare-docker:
 	@(cd $(DOCKER_DIR) && $(DOCKER_COMPOSE) -f docker-compose.middleware.yaml exec -T postgres pg_isready -U postgres) || (echo "❌ PostgreSQL 未就绪，请检查 Docker 容器"; exit 1)
 	@echo "✅ 中间件已启动（PostgreSQL、Redis）"
 
-# 配置 api（Node/Express 后端；数据库迁移仍可用 make migrate 在 api-legacy 中执行）
+# 配置 api（依赖由根 pnpm install 安装；数据库迁移仍可用 make migrate 在 api-legacy 中执行）
 prepare-api:
 	@echo "🔧 配置 api 环境..."
 	@cp -n api/.env.example api/.env 2>/dev/null || true
-	@cd api && pnpm install
-	@cd api && pnpm exec prisma generate
+	@pnpm install
+	@pnpm --filter apartment-ultra-api exec prisma generate
 	@echo "✅ api 环境就绪"
 
 # 仅查看 api-legacy（Python）时可选：复制 .env、安装依赖、执行迁移
@@ -57,11 +57,10 @@ prepare-api-legacy:
 	@cd api-legacy && uv run alembic upgrade head
 	@echo "✅ api-legacy 环境就绪（参考用）"
 
-# 复制前端 .env、安装 pnpm 依赖
+# 复制前端 .env（依赖由根 pnpm install 安装，dev-setup 时由 prepare-api 已执行）
 prepare-web:
 	@echo "🌐 配置前端环境..."
 	@cp -n web/.env.example web/.env.local 2>/dev/null || true
-	@cd web && pnpm install
 	@echo "✅ 前端环境就绪"
 
 # 检查开发环境：PostgreSQL 是否就绪（执行 migrate 或 dev-api 前若报错可先运行此命令）
@@ -89,19 +88,19 @@ dev: dev-docker
 # 本地启动后端（api，端口 8000）
 dev-api:
 	@echo "🔧 启动后端（api）..."
-	@cd api && PORT=8000 pnpm dev
+	@PORT=8000 pnpm --filter apartment-ultra-api dev
 
 # 本地启动前端（Next.js，端口 3000）
 dev-web:
 	@echo "🌐 启动前端服务..."
-	@cd web && pnpm dev
+	@pnpm --filter frontend dev
 
 # 本地一键启动：先后台 api，再前台前端；Ctrl+C 仅停前端，停后端用 make dev-local-stop
 dev-local:
 	@echo "🚀 一键启动后端 + 前端（后端后台，前端前台）..."
 	@echo "  后端: http://localhost:8000  前端: http://localhost:3000"
-	@(cd api && PORT=8000 pnpm dev) & \
-	(cd web && pnpm dev); \
+	@(PORT=8000 pnpm --filter apartment-ultra-api dev) & \
+	(pnpm --filter frontend dev); \
 	true
 
 # 停止 dev-local 启动的后台服务（按端口 8000 结束进程）
@@ -122,13 +121,13 @@ dev-docker:
 # 格式化 api 代码（ESLint --fix）
 format:
 	@echo "🎨 格式化 api 代码..."
-	@cd api && pnpm run lint:fix
+	@pnpm --filter apartment-ultra-api run lint:fix
 	@echo "✅ 格式化完成"
 
 # 检查 api（不自动修复）
 check:
 	@echo "🔍 检查 api..."
-	@cd api && pnpm run lint
+	@pnpm --filter apartment-ultra-api run lint
 	@echo "✅ 检查完成"
 
 # 全栈代码检查（api + 前端）
@@ -137,13 +136,13 @@ lint: lint-api lint-web
 # 前端 ESLint（含自动修复）
 lint-web:
 	@echo "🔍 检查前端代码..."
-	@cd web && pnpm lint:fix
+	@pnpm --filter frontend run lint:fix
 	@echo "✅ 前端检查完成"
 
 # api ESLint
 lint-api:
 	@echo "🔍 检查 api..."
-	@cd api && pnpm run lint
+	@pnpm --filter apartment-ultra-api run lint
 	@echo "✅ api 检查完成"
 
 # 全栈类型检查（api + 前端）
@@ -152,13 +151,13 @@ type-check: type-check-api type-check-web
 # 前端 TypeScript 类型检查
 type-check-web:
 	@echo "📝 前端类型检查..."
-	@cd web && pnpm type-check
+	@pnpm --filter frontend run type-check
 	@echo "✅ 前端类型检查完成"
 
 # api 类型检查
 type-check-api:
 	@echo "📝 api 类型检查..."
-	@cd api && pnpm run type-check
+	@pnpm --filter apartment-ultra-api run type-check
 	@echo "✅ api 类型检查完成"
 
 # 全栈测试（当前为 api 测试）
@@ -166,7 +165,7 @@ test: test-api
 
 test-api:
 	@echo "🧪 运行 api 测试..."
-	@cd api && pnpm run test
+	@pnpm --filter apartment-ultra-api run test
 	@echo "✅ api 测试完成"
 
 # 兼容别名
