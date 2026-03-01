@@ -319,7 +319,7 @@ function Component() {
 
 ## 常用命令
 
-本地开发默认使用 `.env.local`（由 `make dev-setup` 从 `.env.example` 复制）；如需修改 API 地址，可编辑 `NEXT_PUBLIC_API_URL`。
+本地开发默认使用 `.env.local`（由 `pnpm run dev-setup` 从 `.env.example` 复制）；如需修改 API 地址，可编辑 `NEXT_PUBLIC_API_URL`。
 
 ```bash
 # 开发

@@ -1,10 +1,10 @@
 # 前后端命名规范
 
-本文档约定 API 契约与前后端代码中的命名风格，便于与数据库、Python 遗留（api-legacy）保持一致，并避免前后端歧义。
+本文档约定 API 契约与前后端代码中的命名风格，便于与数据库保持一致，并避免前后端歧义。
 
 ## 原则
 
-- **API 契约**（请求/响应 JSON、路径参数、查询参数）：统一 **snake_case**，与数据库列名、api-legacy 一致。
+- **API 契约**（请求/响应 JSON、路径参数、查询参数）：统一 **snake_case**，与数据库列名一致。
 - **前端**：与 API 直接对应的类型和字段使用 snake_case；组件内局部变量、函数参数使用 **camelCase**（符合 TypeScript/React 惯例）。
 - **后端**：与 Prisma/API 对应的字段使用 snake_case；局部变量、函数参数可沿用 camelCase 或 snake_case（与现有 api 代码风格一致）。
 

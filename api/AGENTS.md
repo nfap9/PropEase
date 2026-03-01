@@ -1,6 +1,6 @@
 # api 开发说明
 
-Node/TypeScript 后端（Express），为项目当前唯一运行后端；旧版 Python 实现位于 `api-legacy/` 仅作参考。
+Node/TypeScript 后端（Express），为项目当前唯一运行后端。
 
 ## 技术栈
 
@@ -23,7 +23,7 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端；旧版
   - `startup/`：启动时种子（admin 超级管理员）
   - `utils/`：security、jwt、context、appError、orgContext
 
-- `prisma/schema.prisma`：与现有 PostgreSQL 表结构一致；数据库迁移目前仍由 api-legacy 的 Alembic 执行，后续可切到 Prisma Migrate。
+- `prisma/schema.prisma`：与现有 PostgreSQL 表结构一致；数据库迁移由 Prisma 管理。
 
 ## 响应契约
 
@@ -33,7 +33,7 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端；旧版
 
 ## 命名规范
 
-请求/响应字段、路径与查询参数统一使用 **snake_case**，与数据库、api-legacy 一致。详见 [docs/naming-conventions.md](../docs/naming-conventions.md)。
+请求/响应字段、路径与查询参数统一使用 **snake_case**，与数据库一致。详见 [docs/naming-conventions.md](../docs/naming-conventions.md)。
 
 ## 常用命令
 
@@ -47,4 +47,4 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端；旧版
 
 ## 数据库
 
-- 使用与 api-legacy 相同的 PostgreSQL；迁移仍由 `api-legacy/` 的 Alembic 执行（`make migrate`），api 仅读/写数据。
+- 使用 PostgreSQL；迁移由 Prisma 管理，在仓库根执行 `pnpm run migrate` 或进入 api 目录执行 `pnpm exec prisma migrate deploy`。

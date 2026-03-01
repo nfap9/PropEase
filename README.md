@@ -31,11 +31,11 @@
 |------|------|
 | Web | Next.js 14, shadcn/ui, Tailwind CSS, TypeScript |
 | API | Node.js + Express + TypeScript（**api/**，项目运行与调试均使用此后端） |
-| 数据库 | PostgreSQL, Prisma（迁移仍由 **api-legacy/** 内 Alembic 维护，仅作参考/迁移用） |
+| 数据库 | PostgreSQL, Prisma |
 | 认证 | JWT |
 | 包管理 | pnpm (Node.js)，**标准 monorepo**（根目录单一 lockfile，`pnpm install` 在根执行） |
 
-> **说明**：仓库为 pnpm workspaces monorepo（`api`、`web` 为子包）；`api-legacy/` 为旧版 Python (FastAPI) 实现，仅保留供查看与迁移脚本使用，不参与运行与 CI。
+> **说明**：仓库为 pnpm workspaces monorepo（`api`、`web` 为子包）。
 
 ## 快速开始
 
@@ -45,16 +45,16 @@
 - Node.js 18+（本地开发后端与前端）
 - [pnpm](https://pnpm.io/) - Node.js 包管理器
 
-### 方式一：Makefile（推荐）
+### 方式一：本地（pnpm + Docker 中间件）
 
 ```bash
 # 1. 一键设置开发环境（Docker 中间件 + 根目录 pnpm 安装 + api/前端配置）
-make dev-setup
+pnpm run dev-setup
 
 # 2. 启动开发服务（任选其一）
-make dev-api    # 终端 1：启动后端（api，端口 8000）
-make dev-web    # 终端 2：启动前端
-# 或一键启动：make dev-local  # 后端后台 + 前端前台；停后端用 make dev-local-stop
+pnpm run dev:api    # 终端 1：启动后端（api，端口 8000）
+pnpm run dev:web    # 终端 2：启动前端
+# 或一键启动：pnpm run dev:local  # 后端后台 + 前端前台；停后端用 pnpm run dev-local-stop
 ```
 
 ### 方式二：Docker
@@ -80,18 +80,15 @@ cd docker && docker compose -f docker-compose.yaml up
 
 ```
 apartment-ultra/
-├── Makefile                # 开发命令入口
-├── package.json            # 根 package（scripts：dev:api / dev:web / lint / type-check / test）
+├── package.json            # 根 package（scripts：dev-setup / dev:api / dev:web / docker:* / lint / type-check / test）
 ├── pnpm-workspace.yaml     # pnpm workspaces（api、web）
 ├── pnpm-lock.yaml          # 单一锁文件（仅在根目录执行 pnpm install）
+├── scripts/                # 开发脚本（dev-setup、dev-local 等）
 ├── docker/                 # Docker 配置（构建上下文为仓库根）
 ├── docs/                   # 文档与计划（含商业化功能计划）
-├── api/                    # 后端（Node/Express/TypeScript，当前唯一运行后端）
+├── api/                    # 后端（Node/Express/TypeScript）
 │   ├── src/                # 源码（路由、中间件、服务等）
 │   └── prisma/             # Prisma schema 与迁移
-├── api-legacy/             # 旧版 Python 后端（仅作参考与迁移脚本，不参与运行）
-│   ├── app/                # FastAPI 应用
-│   └── migrations/         # Alembic 迁移（make migrate 在此执行）
 └── web/                    # Next.js 前端
     └── src/
         ├── app/            # App Router（业务端 + /admin 运营后台）
@@ -106,25 +103,22 @@ apartment-ultra/
 pnpm install
 
 # 开发（后端为 api）
-make dev-api         # 启动后端（端口 8000）
-make dev-web         # 启动前端
-make dev-local       # 一键启动后端 + 前端（停后端：make dev-local-stop）
-# 或从根目录：pnpm run dev:api / pnpm run dev:web
+pnpm run dev:api     # 启动后端（端口 8000）
+pnpm run dev:web     # 启动前端
+pnpm run dev:local   # 一键启动后端 + 前端（停后端：pnpm run dev-local-stop）
 
-# 代码质量（默认针对 api + 前端）
-make format          # 格式化 api
-make lint            # api + 前端检查
-make type-check      # 类型检查
-make test            # 运行 api 测试
+# 代码质量（api + 前端）
+pnpm run format      # 格式化 api
+pnpm run lint        # api + 前端检查
+pnpm run type-check  # 类型检查
+pnpm run test        # 运行 api 测试
 
-# 数据库（迁移在 api-legacy 中执行，与 api 共用库）
-make migrate         # 运行迁移
-make migrate-create  # 创建迁移
-make db-reset        # 重置数据库
+# 数据库（Prisma）
+pnpm run migrate     # 执行迁移
 
 # Docker
-make docker-up       # 启动容器
-make docker-down     # 停止容器
+pnpm run docker:up   # 启动容器
+pnpm run docker:down  # 停止容器
 ```
 
 ## 测试账号

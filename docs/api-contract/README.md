@@ -1,6 +1,6 @@
 # API 契约说明
 
-api 需与 api-legacy（Python）保持相同的请求/响应契约，便于前端无感切换。
+api 请求/响应契约由本包与 [docs/naming-conventions.md](../naming-conventions.md) 约定。
 
 **TypeScript 类型与契约**：由 **`packages/api-contract`**（`@apartment-ultra/api-contract`）统一提供，api 与 web 均依赖此包，保证前后端类型一致。
 
@@ -24,7 +24,7 @@ api 需与 api-legacy（Python）保持相同的请求/响应契约，便于前�
 
 从当前 Python 服务导出契约，供对照与契约测试：
 
-1. 启动 API：`make dev-api`（当前为 Node 版 api）
+1. 启动 API：`pnpm run dev:api`（当前为 Node 版 api）
 2. 请求：`GET http://localhost:8000/api/v1/openapi.json` 或 `GET http://localhost:8000/openapi.json`
 3. 将响应保存为 `openapi.json` 于本目录或 `api/openapi-source.json`
 
