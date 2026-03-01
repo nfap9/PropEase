@@ -3,6 +3,7 @@ import { prisma } from '../../lib/prisma.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
+import { NotFoundMessages } from '../../messages.js';
 
 const router: Router = Router();
 
@@ -50,7 +51,7 @@ router.post('/:id/read', async (req: Request, res: Response, next: NextFunction)
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const n = await prisma.notification.findFirst({ where: { id: req.params.id, user_id: user.id } });
-    if (!n) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!n) return next(createAppError(404, NotFoundMessages.NOTIFICATION));
     await prisma.notification.update({ where: { id: req.params.id }, data: { is_read: true } });
     res.json({ message: 'ok' });
   } catch (e) {

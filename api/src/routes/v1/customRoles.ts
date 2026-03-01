@@ -5,6 +5,7 @@ import { prisma } from '../../lib/prisma.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
+import { Messages, NotFoundMessages } from '../../messages.js';
 
 const router: Router = Router();
 
@@ -28,7 +29,8 @@ router.post('/orgs/:org_id/roles/init', async (req: Request, res: Response, next
     const orgId = await requireOrgMembership(req, 'org_id');
     const existing = await prisma.customRole.count({ where: { organization_id: orgId } });
     if (existing > 0) {
-      res.json({ message: 'already initialized' });
+      res.locals.successMessage = Messages.ALREADY_INITIALIZED;
+      res.json({});
       return;
     }
     const defaults = [
@@ -41,7 +43,7 @@ router.post('/orgs/:org_id/roles/init', async (req: Request, res: Response, next
         data: { id: ulid().toLowerCase(), organization_id: orgId, name: d.name, description: d.description ?? undefined, is_system: false },
       });
     }
-    res.status(201).json({ message: 'ok' });
+    res.status(201).json({});
   } catch (e) {
     next(e);
   }
@@ -74,10 +76,7 @@ router.get('/orgs/:org_id/roles/:role_id', async (req: Request, res: Response, n
     const role = await prisma.customRole.findFirst({
       where: { id: req.params.role_id, organization_id: orgId },
     });
-    if (!role) {
-      res.status(404).json({ code: 40002, message: 'Resource not found' });
-      return;
-    }
+    if (!role) return next(createAppError(404, NotFoundMessages.CUSTOM_ROLE));
     res.json(role);
   } catch (e) {
     next(e);
@@ -90,7 +89,7 @@ router.put('/orgs/:org_id/roles/:role_id', async (req: Request, res: Response, n
     const parsed = CustomRoleUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const existing = await prisma.customRole.findFirst({ where: { id: req.params.role_id, organization_id: orgId } });
-    if (!existing) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing) return next(createAppError(404, NotFoundMessages.CUSTOM_ROLE));
     const data: Record<string, unknown> = {};
     if (parsed.data.name != null) data.name = parsed.data.name;
     if (parsed.data.description !== undefined) data.description = parsed.data.description;
@@ -107,7 +106,7 @@ router.delete('/orgs/:org_id/roles/:role_id', async (req: Request, res: Response
   try {
     const orgId = await requireOrgMembership(req, 'org_id');
     const existing = await prisma.customRole.findFirst({ where: { id: req.params.role_id, organization_id: orgId } });
-    if (!existing) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing) return next(createAppError(404, NotFoundMessages.CUSTOM_ROLE));
     if (existing.is_system) return next(createAppError(400, '系统角色不可删除'));
     await prisma.customRole.delete({ where: { id: req.params.role_id } });
     res.status(204).send();

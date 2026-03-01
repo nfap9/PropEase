@@ -7,6 +7,7 @@ import { prisma } from '../../../lib/prisma.js';
 import { getAdminUser } from '../../../utils/context.js';
 import { hashPassword } from '../../../utils/security.js';
 import { createAppError } from '../../../utils/appError.js';
+import { NotFoundMessages } from '../../../messages.js';
 import type { Request, Response, NextFunction } from 'express';
 
 const router: Router = Router();
@@ -19,9 +20,9 @@ router.use(requireAdmin);
 router.get('/users/me', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const admin = getAdminUser(req);
-    if (!admin) return next(createAppError(401, 'Unauthorized'));
+    if (!admin) return next(createAppError(401, '未授权或登录已过期'));
     const user = await prisma.adminUser.findUnique({ where: { id: admin.id }, include: { role: true } });
-    if (!user) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!user) return next(createAppError(404, NotFoundMessages.USER));
     res.json(user);
   } catch (e) {
     next(e);
@@ -49,7 +50,7 @@ router.post('/users', async (req: Request, res: Response, next: NextFunction) =>
     const parsed = AdminUserCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const role = await prisma.adminRole.findUnique({ where: { id: parsed.data.role_id } });
-    if (!role) return next(createAppError(404, 'Resource not found'));
+    if (!role) return next(createAppError(404, NotFoundMessages.ROLE));
     const existing = await prisma.adminUser.findUnique({ where: { username: parsed.data.username } });
     if (existing) return next(createAppError(409, '用户名已存在'));
     const hash = await hashPassword(parsed.data.password);
@@ -72,7 +73,7 @@ router.post('/users', async (req: Request, res: Response, next: NextFunction) =>
 router.get('/users/:user_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = await prisma.adminUser.findUnique({ where: { id: req.params.user_id }, include: { role: true } });
-    if (!user) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!user) return next(createAppError(404, NotFoundMessages.USER));
     res.json(user);
   } catch (e) {
     next(e);
@@ -85,13 +86,13 @@ router.put('/users/:user_id', async (req: Request, res: Response, next: NextFunc
     const parsed = AdminUserUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const existing = await prisma.adminUser.findUnique({ where: { id: req.params.user_id } });
-    if (!existing) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing) return next(createAppError(404, NotFoundMessages.USER));
     const data: Record<string, unknown> = {};
     if (parsed.data.name != null) data.name = parsed.data.name;
     if (parsed.data.email !== undefined) data.email = parsed.data.email;
     if (parsed.data.role_id != null) {
       const role = await prisma.adminRole.findUnique({ where: { id: parsed.data.role_id } });
-      if (!role) return next(createAppError(404, 'Resource not found'));
+      if (!role) return next(createAppError(404, NotFoundMessages.ROLE));
       data.role_id = parsed.data.role_id;
     }
     if (parsed.data.is_active !== undefined) data.is_active = parsed.data.is_active;
@@ -105,7 +106,7 @@ router.put('/users/:user_id', async (req: Request, res: Response, next: NextFunc
 router.delete('/users/:user_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const existing = await prisma.adminUser.findUnique({ where: { id: req.params.user_id } });
-    if (!existing) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing) return next(createAppError(404, NotFoundMessages.USER));
     if (existing.is_system) return next(createAppError(400, '系统管理员不可删除'));
     await prisma.adminUser.delete({ where: { id: req.params.user_id } });
     res.status(204).send();
@@ -125,7 +126,7 @@ router.post('/users/:user_id/reset-password', async (req: Request, res: Response
     const newPassword = parsed.data.new_password ?? parsed.data.password;
     if (!newPassword) return next(createAppError(422, '需要 password 或 new_password'));
     const existing = await prisma.adminUser.findUnique({ where: { id: req.params.user_id } });
-    if (!existing) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing) return next(createAppError(404, NotFoundMessages.USER));
     const hash = await hashPassword(newPassword);
     await prisma.adminUser.update({ where: { id: req.params.user_id }, data: { password_hash: hash } });
     res.json({ message: 'ok' });
@@ -147,7 +148,7 @@ router.get('/roles', async (_req: Request, res: Response, next: NextFunction) =>
 router.get('/roles/:role_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const role = await prisma.adminRole.findUnique({ where: { id: req.params.role_id } });
-    if (!role) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!role) return next(createAppError(404, NotFoundMessages.ROLE));
     res.json(role);
   } catch (e) {
     next(e);
@@ -175,7 +176,7 @@ router.put('/roles/:role_id', async (req: Request, res: Response, next: NextFunc
     const parsed = AdminRoleUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const existing = await prisma.adminRole.findUnique({ where: { id: req.params.role_id } });
-    if (!existing) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing) return next(createAppError(404, NotFoundMessages.ROLE));
     const data: Record<string, unknown> = {};
     if (parsed.data.name != null) data.name = parsed.data.name;
     if (parsed.data.permissions !== undefined) data.permissions = Array.isArray(parsed.data.permissions) ? parsed.data.permissions : parsed.data.permissions;
@@ -189,7 +190,7 @@ router.put('/roles/:role_id', async (req: Request, res: Response, next: NextFunc
 router.delete('/roles/:role_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const existing = await prisma.adminRole.findUnique({ where: { id: req.params.role_id }, include: { users: true } });
-    if (!existing) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing) return next(createAppError(404, NotFoundMessages.ROLE));
     if (existing.is_system) return next(createAppError(400, '系统角色不可删除'));
     if (existing.users.length > 0) return next(createAppError(400, '该角色下仍有用户，无法删除'));
     await prisma.adminRole.delete({ where: { id: req.params.role_id } });
@@ -216,7 +217,7 @@ router.get('/organizations', async (req: Request, res: Response, next: NextFunct
 router.get('/organizations/:org_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const org = await prisma.organization.findUnique({ where: { id: req.params.org_id } });
-    if (!org) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!org) return next(createAppError(404, NotFoundMessages.ORGANIZATION));
     res.json(org);
   } catch (e) {
     next(e);
@@ -228,7 +229,7 @@ router.patch('/organizations/:org_id/active', async (req: Request, res: Response
     const body = req.body as { active?: boolean };
     const active = body?.active ?? true;
     const org = await prisma.organization.findUnique({ where: { id: req.params.org_id } });
-    if (!org) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!org) return next(createAppError(404, NotFoundMessages.ORGANIZATION));
     await prisma.organization.update({ where: { id: req.params.org_id }, data: { is_active: active } });
     res.json({ ...org, is_active: active });
   } catch (e) {
@@ -290,7 +291,7 @@ router.get('/registered-users/:user_id', async (req: Request, res: Response, nex
         organization_memberships: { include: { organization: { select: { id: true, name: true, slug: true } } } },
       },
     });
-    if (!user) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!user) return next(createAppError(404, NotFoundMessages.USER));
     const organizations = user.organization_memberships.map((m) => ({
       id: m.organization.id,
       name: m.organization.name,
@@ -315,7 +316,7 @@ router.patch('/registered-users/:user_id/active', async (req: Request, res: Resp
     const body = req.body as { active?: boolean; is_active?: boolean };
     const active = body?.active ?? body?.is_active ?? true;
     const user = await prisma.user.findUnique({ where: { id: req.params.user_id } });
-    if (!user) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!user) return next(createAppError(404, NotFoundMessages.USER));
     await prisma.user.update({ where: { id: req.params.user_id }, data: { is_active: active } });
     res.json({ ...user, is_active: active });
   } catch (e) {
@@ -326,10 +327,7 @@ router.patch('/registered-users/:user_id/active', async (req: Request, res: Resp
 router.delete('/registered-users/:user_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.params.user_id } });
-    if (!user) {
-      res.status(404).json({ code: 40002, message: 'Resource not found' });
-      return;
-    }
+    if (!user) return next(createAppError(404, NotFoundMessages.USER));
     await prisma.user.delete({ where: { id: req.params.user_id } });
     res.status(204).send();
   } catch (e) {
@@ -356,23 +354,25 @@ router.get('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
     const plan = await prisma.subscriptionPlan.findUnique({
       where: { id: req.params.plan_id },
     });
-    if (!plan) {
-      res.status(404).json({ code: 40002, message: 'Resource not found' });
-      return;
-    }
+    if (!plan) return next(createAppError(404, NotFoundMessages.PLAN));
     res.json(plan);
   } catch (e) {
     next(e);
   }
 });
 
+const CountScopeSchema = z.enum(['organization', 'user']);
 const PlanCreateSchema = z.object({
   name: z.string(),
   code: z.string(),
   price_monthly: z.number(),
   price_yearly: z.number().optional(),
+  max_organizations: z.number().nullable().optional(),
   max_apartments: z.number().optional(),
   max_rooms: z.number().optional(),
+  max_members: z.number().optional(),
+  rooms_count_scope: CountScopeSchema.optional(),
+  members_count_scope: CountScopeSchema.optional(),
   is_active: z.boolean().optional(),
   sort_order: z.number().optional(),
 });
@@ -388,8 +388,12 @@ router.post('/plans', async (req: Request, res: Response, next: NextFunction) =>
         code: parsed.data.code,
         price_monthly: parsed.data.price_monthly,
         price_yearly: parsed.data.price_yearly ?? parsed.data.price_monthly,
+        max_organizations: parsed.data.max_organizations ?? undefined,
         max_apartments: parsed.data.max_apartments ?? 1,
         max_rooms: parsed.data.max_rooms ?? 100,
+        max_members: parsed.data.max_members ?? 1,
+        rooms_count_scope: parsed.data.rooms_count_scope ?? 'organization',
+        members_count_scope: parsed.data.members_count_scope ?? 'organization',
         is_active: parsed.data.is_active ?? true,
         sort_order: parsed.data.sort_order ?? 0,
       },
@@ -405,14 +409,18 @@ router.put('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
     const parsed = PlanUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const existing = await prisma.subscriptionPlan.findUnique({ where: { id: req.params.plan_id } });
-    if (!existing) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing) return next(createAppError(404, NotFoundMessages.PLAN));
     const data: Record<string, unknown> = {};
     if (parsed.data.name != null) data.name = parsed.data.name;
     if (parsed.data.code != null) data.code = parsed.data.code;
     if (parsed.data.price_monthly != null) data.price_monthly = parsed.data.price_monthly;
     if (parsed.data.price_yearly != null) data.price_yearly = parsed.data.price_yearly;
+    if (parsed.data.max_organizations !== undefined) data.max_organizations = parsed.data.max_organizations;
     if (parsed.data.max_apartments != null) data.max_apartments = parsed.data.max_apartments;
     if (parsed.data.max_rooms != null) data.max_rooms = parsed.data.max_rooms;
+    if (parsed.data.max_members != null) data.max_members = parsed.data.max_members;
+    if (parsed.data.rooms_count_scope != null) data.rooms_count_scope = parsed.data.rooms_count_scope;
+    if (parsed.data.members_count_scope != null) data.members_count_scope = parsed.data.members_count_scope;
     if (parsed.data.is_active !== undefined) data.is_active = parsed.data.is_active;
     if (parsed.data.sort_order != null) data.sort_order = parsed.data.sort_order;
     const plan = await prisma.subscriptionPlan.update({ where: { id: req.params.plan_id }, data });
@@ -425,7 +433,7 @@ router.put('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
 router.delete('/plans/:plan_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const existing = await prisma.subscriptionPlan.findUnique({ where: { id: req.params.plan_id } });
-    if (!existing) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing) return next(createAppError(404, NotFoundMessages.PLAN));
     await prisma.subscriptionPlan.delete({ where: { id: req.params.plan_id } });
     res.status(204).send();
   } catch (e) {
@@ -461,7 +469,7 @@ router.get('/subscriptions/:subscription_id', async (req: Request, res: Response
       where: { id: req.params.subscription_id },
       include: { plan: true, organization: true },
     });
-    if (!sub) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!sub) return next(createAppError(404, NotFoundMessages.SUBSCRIPTION));
     res.json(sub);
   } catch (e) {
     next(e);
@@ -471,7 +479,7 @@ router.get('/subscriptions/:subscription_id', async (req: Request, res: Response
 router.post('/subscriptions/:subscription_id/renew', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const sub = await prisma.organizationSubscription.findUnique({ where: { id: req.params.subscription_id } });
-    if (!sub) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!sub) return next(createAppError(404, NotFoundMessages.SUBSCRIPTION));
     const end = sub.end_date ? new Date(sub.end_date) : new Date();
     end.setFullYear(end.getFullYear() + 1);
     const updated = await prisma.organizationSubscription.update({
@@ -487,7 +495,7 @@ router.post('/subscriptions/:subscription_id/renew', async (req: Request, res: R
 router.post('/subscriptions/:subscription_id/cancel', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const sub = await prisma.organizationSubscription.findUnique({ where: { id: req.params.subscription_id } });
-    if (!sub) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!sub) return next(createAppError(404, NotFoundMessages.SUBSCRIPTION));
     await prisma.organizationSubscription.update({
       where: { id: req.params.subscription_id },
       data: { status: 'cancelled' },

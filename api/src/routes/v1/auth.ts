@@ -75,24 +75,6 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
         password_hash: passwordHash,
       },
     });
-    const orgId = ulid().toLowerCase();
-    const slug = `personal-${ulid().toLowerCase()}`;
-    await prisma.organization.create({
-      data: {
-        id: orgId,
-        name: `${full_name}的个人团队`,
-        slug,
-        is_personal: true,
-      },
-    });
-    await prisma.organizationMember.create({
-      data: {
-        id: ulid().toLowerCase(),
-        organization_id: orgId,
-        user_id: user.id,
-        role: 'owner',
-      },
-    });
     res.status(201).json({
       id: user.id,
       phone: user.phone,

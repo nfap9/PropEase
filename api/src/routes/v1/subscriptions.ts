@@ -5,6 +5,7 @@ import { prisma } from '../../lib/prisma.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
+import { NotFoundMessages } from '../../messages.js';
 
 const router: Router = Router();
 
@@ -24,10 +25,7 @@ router.get('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
     const plan = await prisma.subscriptionPlan.findFirst({
       where: { id: req.params.plan_id, is_active: true },
     });
-    if (!plan) {
-      res.status(404).json({ code: 40002, message: 'Resource not found' });
-      return;
-    }
+    if (!plan) return next(createAppError(404, NotFoundMessages.PLAN));
     res.json(plan);
   } catch (e) {
     next(e);
@@ -68,7 +66,7 @@ router.post('/organizations/:org_id/subscription', async (req: Request, res: Res
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const orgId = req.params.org_id;
     const plan = await prisma.subscriptionPlan.findFirst({ where: { id: parsed.data.plan_id } });
-    if (!plan) return next(createAppError(404, 'Resource not found'));
+    if (!plan) return next(createAppError(404, NotFoundMessages.PLAN));
     const existing = await prisma.organizationSubscription.findUnique({ where: { organization_id: orgId } });
     const start = new Date();
     const end = new Date(start);
@@ -95,9 +93,9 @@ router.put('/organizations/:org_id/subscription', async (req: Request, res: Resp
     const body = req.body as { plan_id?: string };
     if (!body?.plan_id) return next(createAppError(400, '缺少 plan_id'));
     const plan = await prisma.subscriptionPlan.findFirst({ where: { id: body.plan_id } });
-    if (!plan) return next(createAppError(404, 'Resource not found'));
+    if (!plan) return next(createAppError(404, NotFoundMessages.PLAN));
     const sub = await prisma.organizationSubscription.findUnique({ where: { organization_id: req.params.org_id } });
-    if (!sub) return next(createAppError(404, 'Resource not found'));
+    if (!sub) return next(createAppError(404, NotFoundMessages.SUBSCRIPTION));
     const updated = await prisma.organizationSubscription.update({
       where: { organization_id: req.params.org_id },
       data: { plan_id: plan.id },
@@ -112,7 +110,7 @@ router.post('/organizations/:org_id/subscription/cancel', async (req: Request, r
   try {
     await requireOrgMembership(req, 'org_id');
     const sub = await prisma.organizationSubscription.findUnique({ where: { organization_id: req.params.org_id } });
-    if (!sub) return next(createAppError(404, 'Resource not found'));
+    if (!sub) return next(createAppError(404, NotFoundMessages.SUBSCRIPTION));
     await prisma.organizationSubscription.update({
       where: { organization_id: req.params.org_id },
       data: { status: 'cancelled' },
@@ -129,7 +127,7 @@ router.post('/organizations/:org_id/orders', async (req: Request, res: Response,
     const body = req.body as { plan_id?: string; billing_cycle?: string };
     if (!body?.plan_id) return next(createAppError(400, '缺少 plan_id'));
     const plan = await prisma.subscriptionPlan.findFirst({ where: { id: body.plan_id } });
-    if (!plan) return next(createAppError(404, 'Resource not found'));
+    if (!plan) return next(createAppError(404, NotFoundMessages.PLAN));
     const orderNo = `SUB${Date.now()}`;
     const expires = new Date();
     expires.setHours(expires.getHours() + 2);
@@ -157,7 +155,7 @@ router.get('/organizations/:org_id/orders/:order_id', async (req: Request, res: 
     const order = await prisma.subscriptionOrder.findFirst({
       where: { id: req.params.order_id, organization_id: req.params.org_id },
     });
-    if (!order) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!order) return next(createAppError(404, NotFoundMessages.ORDER));
     res.json(order);
   } catch (e) {
     next(e);

@@ -5,6 +5,7 @@ import { prisma } from '../../lib/prisma.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
+import { NotFoundMessages } from '../../messages.js';
 
 const router: Router = Router();
 
@@ -124,7 +125,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     const parsed = ReadingCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const room = await prisma.room.findFirst({ where: { id: parsed.data.room_id }, include: { apartment: true } });
-    if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, 'Resource not found'));
+    if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.ROOM));
     const reading = await prisma.utilityReading.create({
       data: {
         id: ulid().toLowerCase(),
@@ -151,7 +152,7 @@ router.post('/batch', async (req: Request, res: Response, next: NextFunction) =>
     const parsed = BatchReadingSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const room = await prisma.room.findFirst({ where: { id: parsed.data.room_id }, include: { apartment: true } });
-    if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, 'Resource not found'));
+    if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.ROOM));
     const created = await Promise.all(
       parsed.data.readings.map((r) =>
         prisma.utilityReading.create({
@@ -183,10 +184,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
       where: { id: req.params.id },
       include: { room: { include: { apartment: true } } },
     });
-    if (!reading || reading.room.apartment.organization_id !== orgId) {
-      res.status(404).json({ code: 40002, message: 'Resource not found' });
-      return;
-    }
+    if (!reading || reading.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.READING));
     res.json(reading);
   } catch (e) {
     next(e);
@@ -199,7 +197,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     const parsed = ReadingUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const existing = await prisma.utilityReading.findFirst({ where: { id: req.params.id }, include: { room: { include: { apartment: true } } } });
-    if (!existing || existing.room.apartment.organization_id !== orgId) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing || existing.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.READING));
     const data: Record<string, unknown> = {};
     if (parsed.data.room_id != null) data.room_id = parsed.data.room_id;
     if (parsed.data.period_year != null) data.period_year = parsed.data.period_year;
@@ -221,7 +219,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
   try {
     const orgId = await requireOrgMembership(req);
     const existing = await prisma.utilityReading.findFirst({ where: { id: req.params.id }, include: { room: { include: { apartment: true } } } });
-    if (!existing || existing.room.apartment.organization_id !== orgId) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing || existing.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.READING));
     await prisma.utilityReading.delete({ where: { id: req.params.id } });
     res.status(204).send();
   } catch (e) {

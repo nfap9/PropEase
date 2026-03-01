@@ -6,6 +6,16 @@ import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
+import { Messages, NotFoundMessages } from '../../messages.js';
+import {
+  getEffectivePlanForOrg,
+  getEffectivePlanLimits,
+  getMaxOrganizationsForUser,
+  getRoomsUsedForLimitCheck,
+  getMembersUsedForLimitCheck,
+  userOrganizationCount,
+  orgHasActiveSubscription,
+} from '../../utils/orgPlanLimits.js';
 
 const router: Router = Router();
 
@@ -44,6 +54,10 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
+    const orgCount = await userOrganizationCount(user.id);
+    const maxOrgs = await getMaxOrganizationsForUser(user.id);
+    if (orgCount >= maxOrgs)
+      return next(createAppError(403, `当前最多可拥有 ${maxOrgs} 个组织，如需更多请升级套餐`));
     const parsed = CreateOrgSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败', { fieldErrors: parsed.error.errors.map((e) => ({ field: e.path.join('.'), message: e.message })) }));
     const { name, slug: rawSlug } = parsed.data;
@@ -73,10 +87,7 @@ router.get('/personal', async (req: Request, res: Response, next: NextFunction) 
     const personal = await prisma.organization.findFirst({
       where: { is_personal: true, members: { some: { user_id: user.id } } },
     });
-    if (!personal) {
-      res.status(404).json({ code: 40002, message: 'Resource not found' });
-      return;
-    }
+    if (!personal) return next(createAppError(404, NotFoundMessages.ORGANIZATION));
     res.json(toOrgResponse(personal));
   } catch (e) {
     next(e);
@@ -115,7 +126,8 @@ router.post('/personal/migrate', async (req: Request, res: Response, next: NextF
       await tx.tenant.updateMany({ where: { organization_id: personal!.id }, data: { organization_id: targetId } });
       await tx.organization.delete({ where: { id: personal!.id } });
     });
-    res.json({ apartments: apts, rooms, tenants, leases, bills, utility_readings: readings, message: '团队迁移成功' });
+    res.locals.successMessage = Messages.TEAM_MIGRATED;
+    res.json({ apartments: apts, rooms, tenants, leases, bills, utility_readings: readings });
   } catch (e) {
     next(e);
   }
@@ -129,10 +141,7 @@ router.get('/:orgId', async (req: Request, res: Response, next: NextFunction) =>
       where: { organization_id: orgId, user_id: user?.id },
       include: { organization: true },
     });
-    if (!member) {
-      res.status(404).json({ code: 40002, message: 'Resource not found' });
-      return;
-    }
+    if (!member) return next(createAppError(404, NotFoundMessages.ORGANIZATION));
     res.json(toOrgResponse(member.organization));
   } catch (e) {
     next(e);
@@ -147,7 +156,7 @@ router.put('/:orgId', async (req: Request, res: Response, next: NextFunction) =>
     const member = await prisma.organizationMember.findFirst({
       where: { organization_id: orgId, user_id: getConsoleUser(req)!.id },
     });
-    if (member?.role !== 'owner' && member?.role !== 'admin') return next(createAppError(403, 'Insufficient permissions'));
+    if (member?.role !== 'owner' && member?.role !== 'admin') return next(createAppError(403, '权限不足'));
     const parsed = UpdateOrgSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const data: { name?: string; settings?: object } = {};
@@ -165,7 +174,10 @@ router.get('/:orgId/deletion-preview', async (req: Request, res: Response, next:
     await requireOrgMembership(req, 'orgId');
     const orgId = req.params.orgId;
     const org = await prisma.organization.findUnique({ where: { id: orgId } });
-    if (!org) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!org) return next(createAppError(404, NotFoundMessages.ORGANIZATION));
+    const hasActiveSub = await orgHasActiveSubscription(orgId);
+    const blockers: string[] = [];
+    if (hasActiveSub) blockers.push('当前有有效订阅，需先取消订阅后再删除组织');
     const [apartments, rooms, tenants, leases, bills] = await Promise.all([
       prisma.apartment.count({ where: { organization_id: orgId } }),
       prisma.room.count({ where: { apartment: { organization_id: orgId } } }),
@@ -174,8 +186,8 @@ router.get('/:orgId/deletion-preview', async (req: Request, res: Response, next:
       prisma.bill.count({ where: { lease: { room: { apartment: { organization_id: orgId } } } } }),
     ]);
     res.json({
-      can_delete: true,
-      blockers: [] as string[],
+      can_delete: !hasActiveSub,
+      blockers,
       stats: { apartments, rooms, tenants, leases, bills },
       org_name: org.name,
       is_personal: org.is_personal,
@@ -192,13 +204,16 @@ router.delete('/:orgId', async (req: Request, res: Response, next: NextFunction)
     const member = await prisma.organizationMember.findFirst({
       where: { organization_id: orgId, user_id: getConsoleUser(req)?.id },
     });
-    if (!member || member.role !== 'owner') return next(createAppError(403, '只有团队所有者可以删除团队'));
+    if (!member || member.role !== 'owner') return next(createAppError(403, '只有组织所有者可以删除组织'));
+    const hasActiveSub = await orgHasActiveSubscription(orgId);
+    if (hasActiveSub) return next(createAppError(403, '当前有有效订阅，需先取消订阅后再删除组织'));
     const parsed = ConfirmDeleteSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(400, '请提供团队名称以确认删除'));
+    if (!parsed.success) return next(createAppError(400, '请提供组织名称以确认删除'));
     const org = await prisma.organization.findUnique({ where: { id: orgId } });
-    if (!org || org.name !== parsed.data.confirmed_name) return next(createAppError(400, '团队名称不匹配'));
+    if (!org || org.name !== parsed.data.confirmed_name) return next(createAppError(400, '组织名称不匹配'));
     await prisma.organization.delete({ where: { id: orgId } });
-    res.json({ message: '团队已删除' });
+    res.locals.successMessage = Messages.TEAM_DELETED;
+    res.json({});
   } catch (e) {
     next(e);
   }
@@ -230,15 +245,21 @@ router.post('/:orgId/members', async (req: Request, res: Response, next: NextFun
   try {
     await requireOrgMembership(req, 'orgId');
     const orgId = req.params.orgId;
+    const user = getConsoleUser(req);
+    if (!user) return next(createAppError(401, '未授权或登录已过期'));
+    const limits = await getEffectivePlanLimits(orgId);
+    const members_used = await getMembersUsedForLimitCheck(orgId, user.id);
+    if (members_used >= limits.max_members)
+      return next(createAppError(403, `当前套餐最多允许 ${limits.max_members} 名成员`));
     const phone = (req.query.phone as string) ?? (req.body?.phone as string);
     const role = ((req.query.role as string) ?? req.body?.role ?? 'member') as string;
     if (!phone) return next(createAppError(400, '缺少 phone'));
-    const user = await prisma.user.findUnique({ where: { phone } });
-    if (!user) return next(createAppError(400, '用户不存在'));
-    const existing = await prisma.organizationMember.findFirst({ where: { organization_id: orgId, user_id: user.id } });
+    const targetUser = await prisma.user.findUnique({ where: { phone } });
+    if (!targetUser) return next(createAppError(400, '用户不存在'));
+    const existing = await prisma.organizationMember.findFirst({ where: { organization_id: orgId, user_id: targetUser.id } });
     if (existing) return next(createAppError(409, '用户已在组织中'));
     const m = await prisma.organizationMember.create({
-      data: { id: ulid().toLowerCase(), organization_id: orgId, user_id: user.id, role },
+      data: { id: ulid().toLowerCase(), organization_id: orgId, user_id: targetUser.id, role },
     });
     const u = await prisma.user.findUnique({ where: { id: m.user_id } });
     res.status(201).json({ id: m.id, organization_id: m.organization_id, user_id: m.user_id, role: m.role, created_at: m.created_at, user_phone: u?.phone ?? null, user_full_name: u?.full_name ?? '未知用户' });
@@ -253,14 +274,14 @@ router.put('/:orgId/members/:userId', async (req: Request, res: Response, next: 
     const userId = req.params.userId;
     await requireOrgMembership(req, 'orgId');
     const me = await prisma.organizationMember.findFirst({ where: { organization_id: orgId, user_id: getConsoleUser(req)!.id } });
-    if (me?.role !== 'owner' && me?.role !== 'admin') return next(createAppError(403, 'Only owner can update roles'));
+    if (me?.role !== 'owner' && me?.role !== 'admin') return next(createAppError(403, '仅所有者可修改角色'));
     const role = (req.query.role as string) ?? req.body?.role;
     if (!role) return next(createAppError(400, '缺少 role'));
     const m = await prisma.organizationMember.updateMany({
       where: { organization_id: orgId, user_id: userId },
       data: { role },
     });
-    if (m.count === 0) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (m.count === 0) return next(createAppError(404, NotFoundMessages.MEMBER));
     const updated = await prisma.organizationMember.findFirst({ where: { organization_id: orgId, user_id: userId }, include: { user: true } });
     res.json({ id: updated!.id, organization_id: updated!.organization_id, user_id: updated!.user_id, role: updated!.role, created_at: updated!.created_at, user_phone: updated!.user?.phone ?? null, user_full_name: updated!.user?.full_name ?? '未知用户' });
   } catch (e) {
@@ -274,9 +295,10 @@ router.delete('/:orgId/members/:userId', async (req: Request, res: Response, nex
     const orgId = req.params.orgId;
     const userId = req.params.userId;
     const me = await prisma.organizationMember.findFirst({ where: { organization_id: orgId, user_id: getConsoleUser(req)!.id } });
-    if (me?.role !== 'owner' && me?.role !== 'admin') return next(createAppError(403, 'Only owner can remove members'));
+    if (me?.role !== 'owner' && me?.role !== 'admin') return next(createAppError(403, '仅所有者可移除成员'));
     await prisma.organizationMember.deleteMany({ where: { organization_id: orgId, user_id: userId } });
-    res.json({ message: 'Member removed successfully' });
+    res.locals.successMessage = Messages.MEMBER_REMOVED;
+    res.json({});
   } catch (e) {
     next(e);
   }
@@ -286,30 +308,41 @@ router.get('/:orgId/usage', async (req: Request, res: Response, next: NextFuncti
   try {
     await requireOrgMembership(req, 'orgId');
     const orgId = req.params.orgId;
+    const user = getConsoleUser(req);
+    if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const org = await prisma.organization.findUnique({ where: { id: orgId } });
-    if (!org) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
-    const [apartments_used, rooms_used, members_used] = await Promise.all([
-      prisma.apartment.count({ where: { organization_id: orgId } }),
-      prisma.room.count({ where: { apartment: { organization_id: orgId } } }),
-      prisma.organizationMember.count({ where: { organization_id: orgId } }),
+    if (!org) return next(createAppError(404, NotFoundMessages.ORGANIZATION));
+    const apartments_used = await prisma.apartment.count({ where: { organization_id: orgId } });
+    const [rooms_used, members_used, limits, planRecord, orgCount, maxOrgs] = await Promise.all([
+      getRoomsUsedForLimitCheck(orgId, user.id),
+      getMembersUsedForLimitCheck(orgId, user.id),
+      getEffectivePlanLimits(orgId),
+      getEffectivePlanForOrg(orgId),
+      userOrganizationCount(user.id),
+      getMaxOrganizationsForUser(user.id),
     ]);
-    const plan = org.plan || 'free';
-    const maxA = 10;
-    const maxR = 100;
-    const maxM = 10;
+    const plan = planRecord?.code ?? org.plan ?? 'free';
+    const maxA = limits.max_apartments;
+    const maxR = limits.max_rooms;
+    const maxM = limits.max_members;
     res.json({
       plan,
       apartments_used,
       rooms_used,
       members_used,
+      max_organizations: maxOrgs,
       max_apartments: maxA,
       max_rooms: maxR,
       max_members: maxM,
+      rooms_count_scope: limits.rooms_count_scope,
+      members_count_scope: limits.members_count_scope,
       apartments_remaining: maxA < 0 ? -1 : Math.max(0, maxA - apartments_used),
       rooms_remaining: maxR < 0 ? -1 : Math.max(0, maxR - rooms_used),
       members_remaining: maxM < 0 ? -1 : Math.max(0, maxM - members_used),
-      can_invite_members: true,
-      can_create_team: true,
+      organizations_used: orgCount,
+      organizations_remaining: maxOrgs < 0 ? -1 : Math.max(0, maxOrgs - orgCount),
+      can_invite_members: members_used < maxM,
+      can_create_team: orgCount < maxOrgs,
     });
   } catch (e) {
     next(e);

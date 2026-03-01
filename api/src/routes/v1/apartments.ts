@@ -4,7 +4,10 @@ import { ulid } from 'ulid';
 import { prisma } from '../../lib/prisma.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
+import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
+import { Messages, NotFoundMessages } from '../../messages.js';
+import { getEffectivePlanLimits, getRoomsUsedForLimitCheck } from '../../utils/orgPlanLimits.js';
 
 const router: Router = Router();
 
@@ -57,6 +60,10 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    const limits = await getEffectivePlanLimits(orgId);
+    const apartments_used = await prisma.apartment.count({ where: { organization_id: orgId } });
+    if (apartments_used >= limits.max_apartments)
+      return next(createAppError(403, `当前套餐最多允许 ${limits.max_apartments} 个公寓`));
     const parsed = ApartmentCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const apt = await prisma.apartment.create({
@@ -77,7 +84,7 @@ router.get('/rooms/:roomId', async (req: Request, res: Response, next: NextFunct
       where: { id: roomId },
       include: { apartment: true },
     });
-    if (!room || room.apartment.organization_id !== orgId) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.ROOM));
     res.json(room);
   } catch (e) {
     next(e);
@@ -89,7 +96,7 @@ router.put('/rooms/:roomId', async (req: Request, res: Response, next: NextFunct
     const orgId = await requireOrgMembership(req);
     const roomId = req.params.roomId;
     const room = await prisma.room.findFirst({ where: { id: roomId }, include: { apartment: true } });
-    if (!room || room.apartment.organization_id !== orgId) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.ROOM));
     const parsed = RoomUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const updated = await prisma.room.update({
@@ -114,9 +121,10 @@ router.delete('/rooms/:roomId', async (req: Request, res: Response, next: NextFu
     const orgId = await requireOrgMembership(req);
     const roomId = req.params.roomId;
     const room = await prisma.room.findFirst({ where: { id: roomId }, include: { apartment: true } });
-    if (!room || room.apartment.organization_id !== orgId) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.ROOM));
     await prisma.room.delete({ where: { id: roomId } });
-    res.json({ message: 'Room deleted successfully' });
+    res.locals.successMessage = Messages.ROOM_DELETED;
+    res.json({});
   } catch (e) {
     next(e);
   }
@@ -127,7 +135,7 @@ router.get('/:apartmentId/rooms', async (req: Request, res: Response, next: Next
     const orgId = await requireOrgMembership(req);
     const apartmentId = req.params.apartmentId;
     const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
     const rooms = await prisma.room.findMany({ where: { apartment_id: apartmentId } });
     res.json(rooms);
   } catch (e) {
@@ -138,9 +146,15 @@ router.get('/:apartmentId/rooms', async (req: Request, res: Response, next: Next
 router.post('/:apartmentId/rooms', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    const user = getConsoleUser(req);
+    if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const apartmentId = req.params.apartmentId;
     const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
+    const limits = await getEffectivePlanLimits(orgId);
+    const rooms_used = await getRoomsUsedForLimitCheck(orgId, user.id);
+    if (rooms_used + 1 > limits.max_rooms)
+      return next(createAppError(403, `当前套餐最多允许 ${limits.max_rooms} 个房间`));
     const parsed = RoomCreateSchema.safeParse({ ...req.body, apartment_id: apartmentId });
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const room = await prisma.room.create({
@@ -164,11 +178,18 @@ router.post('/:apartmentId/rooms', async (req: Request, res: Response, next: Nex
 router.post('/:apartmentId/rooms/batch', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    const user = getConsoleUser(req);
+    if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const apartmentId = req.params.apartmentId;
     const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
+    const limits = await getEffectivePlanLimits(orgId);
+    const rooms_used = await getRoomsUsedForLimitCheck(orgId, user.id);
     const parsed = RoomBatchSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const addCount = parsed.data.room_numbers.length;
+    if (rooms_used + addCount > limits.max_rooms)
+      return next(createAppError(403, `当前套餐最多允许 ${limits.max_rooms} 个房间，当前已用 ${rooms_used}，无法再添加 ${addCount} 个`));
     const created = await Promise.all(
       parsed.data.room_numbers.map((rn) =>
         prisma.room.create({
@@ -196,9 +217,9 @@ router.get('/:apartmentId/utility-config', async (req: Request, res: Response, n
     const orgId = await requireOrgMembership(req);
     const apartmentId = req.params.apartmentId;
     const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
     const config = await prisma.utilityConfig.findUnique({ where: { apartment_id: apartmentId } });
-    if (!config) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!config) return next(createAppError(404, NotFoundMessages.UTILITY_CONFIG));
     res.json(config);
   } catch (e) {
     next(e);
@@ -210,7 +231,7 @@ router.post('/:apartmentId/utility-config', async (req: Request, res: Response, 
     const orgId = await requireOrgMembership(req);
     const apartmentId = req.params.apartmentId;
     const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
     const parsed = UtilityConfigSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const effectiveFrom = new Date(parsed.data.effective_from);
@@ -238,11 +259,11 @@ router.put('/:apartmentId/utility-config', async (req: Request, res: Response, n
     const orgId = await requireOrgMembership(req);
     const apartmentId = req.params.apartmentId;
     const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
     const parsed = UtilityConfigSchema.partial().safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const existing = await prisma.utilityConfig.findUnique({ where: { apartment_id: apartmentId } });
-    if (!existing) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing) return next(createAppError(404, NotFoundMessages.UTILITY_CONFIG));
     const data: Record<string, unknown> = {};
     if (parsed.data.water_price_per_unit != null) data.water_price_per_unit = parsed.data.water_price_per_unit;
     if (parsed.data.electricity_price_per_unit != null) data.electricity_price_per_unit = parsed.data.electricity_price_per_unit;
@@ -263,7 +284,7 @@ router.delete('/:apartmentId/utility-config', async (req: Request, res: Response
     const orgId = await requireOrgMembership(req);
     const apartmentId = req.params.apartmentId;
     const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
     await prisma.utilityConfig.deleteMany({ where: { apartment_id: apartmentId } });
     res.status(204).send();
   } catch (e) {
@@ -278,10 +299,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
       where: { id: req.params.id, organization_id: orgId },
       include: { rooms: true },
     });
-    if (!apt) {
-      res.status(404).json({ code: 40002, message: 'Resource not found' });
-      return;
-    }
+    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
     res.json(apt);
   } catch (e) {
     next(e);
@@ -294,7 +312,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     const parsed = ApartmentUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const apt = await prisma.apartment.findFirst({ where: { id: req.params.id, organization_id: orgId } });
-    if (!apt) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
     const updated = await prisma.apartment.update({
       where: { id: req.params.id },
       data: { name: parsed.data.name ?? apt.name, address: parsed.data.address ?? apt.address ?? undefined, description: parsed.data.description ?? apt.description ?? undefined },
@@ -309,9 +327,10 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
   try {
     const orgId = await requireOrgMembership(req);
     const apt = await prisma.apartment.findFirst({ where: { id: req.params.id, organization_id: orgId } });
-    if (!apt) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
     await prisma.apartment.delete({ where: { id: req.params.id } });
-    res.json({ message: 'Apartment deleted successfully' });
+    res.locals.successMessage = Messages.APARTMENT_DELETED;
+    res.json({});
   } catch (e) {
     next(e);
   }

@@ -5,6 +5,7 @@ import { prisma } from '../../lib/prisma.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
+import { NotFoundMessages } from '../../messages.js';
 
 const router: Router = Router();
 
@@ -51,10 +52,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     const tenant = await prisma.tenant.findFirst({
       where: { id: req.params.id, organization_id: orgId },
     });
-    if (!tenant) {
-      res.status(404).json({ code: 40002, message: 'Resource not found' });
-      return;
-    }
+    if (!tenant) return next(createAppError(404, NotFoundMessages.TENANT));
     res.json(tenant);
   } catch (e) {
     next(e);
@@ -67,7 +65,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     const parsed = TenantUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const existing = await prisma.tenant.findFirst({ where: { id: req.params.id, organization_id: orgId } });
-    if (!existing) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing) return next(createAppError(404, NotFoundMessages.TENANT));
     const tenant = await prisma.tenant.update({
       where: { id: req.params.id },
       data: { name: parsed.data.name ?? existing.name, phone: parsed.data.phone ?? existing.phone ?? undefined, id_card: parsed.data.id_card ?? existing.id_card ?? undefined, emergency_contact: parsed.data.emergency_contact ?? existing.emergency_contact ?? undefined, emergency_phone: parsed.data.emergency_phone ?? existing.emergency_phone ?? undefined, notes: parsed.data.notes ?? existing.notes ?? undefined },
@@ -82,7 +80,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
   try {
     const orgId = await requireOrgMembership(req);
     const existing = await prisma.tenant.findFirst({ where: { id: req.params.id, organization_id: orgId } });
-    if (!existing) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing) return next(createAppError(404, NotFoundMessages.TENANT));
     await prisma.tenant.delete({ where: { id: req.params.id } });
     res.status(204).send();
   } catch (e) {

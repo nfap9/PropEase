@@ -40,5 +40,10 @@ export function errorHandler(
     data = { errors: err.fieldErrors };
   }
 
+  if (statusCode === 500) {
+    console.error('[errorHandler] 500:', err.message);
+    if (err.stack) console.error(err.stack);
+  }
+
   res.status(statusCode).json(createErrorResponse(code, message, data));
 }

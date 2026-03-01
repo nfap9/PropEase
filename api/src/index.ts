@@ -7,6 +7,7 @@ import { healthHandler } from './routes/health.js';
 import { v1Router } from './routes/v1/index.js';
 import { seedAdminSuper } from './startup/seedAdmin.js';
 import { seedPermissions } from './startup/seedPermissions.js';
+import { seedPlans } from './startup/seedPlans.js';
 import { startScheduler } from './scheduler/index.js';
 
 const app: Express = express();
@@ -32,6 +33,11 @@ async function start(): Promise<void> {
     await seedPermissions();
   } catch (e) {
     console.error('Permission seed failed:', e);
+  }
+  try {
+    await seedPlans();
+  } catch (e) {
+    console.error('Plan seed failed:', e);
   }
   startScheduler();
 

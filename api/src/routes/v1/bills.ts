@@ -6,6 +6,7 @@ import { prisma } from '../../lib/prisma.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
+import { NotFoundMessages } from '../../messages.js';
 import { generateBillsExcel, generateBillPdf } from '../../utils/billExports.js';
 import { generateBillsForOrg } from '../../services/billGeneration.js';
 
@@ -93,7 +94,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     const parsed = BillCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const lease = await prisma.lease.findFirst({ where: { id: parsed.data.lease_id }, include: { room: { include: { apartment: true } } } });
-    if (!lease || lease.room.apartment.organization_id !== orgId) return next(createAppError(404, 'Resource not found'));
+    if (!lease || lease.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.LEASE));
     const rent = parsed.data.rent_amount ?? 0;
     const water = parsed.data.water_amount ?? 0;
     const elec = parsed.data.electricity_amount ?? 0;
@@ -191,7 +192,7 @@ router.get('/:id/payments', async (req: Request, res: Response, next: NextFuncti
   try {
     const orgId = await requireOrgMembership(req);
     const bill = await prisma.bill.findFirst({ where: { id: req.params.id }, include: { lease: { include: { room: { include: { apartment: true } } } }, payments: true } });
-    if (!bill || bill.lease.room.apartment.organization_id !== orgId) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!bill || bill.lease.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.BILL));
     res.json(bill.payments);
   } catch (e) {
     next(e);
@@ -205,10 +206,7 @@ router.get('/:id/pdf', async (req: Request, res: Response, next: NextFunction) =
       where: { id: req.params.id },
       include: { lease: { include: { room: { include: { apartment: true } } } } },
     });
-    if (!bill || bill.lease.room.apartment.organization_id !== orgId) {
-      res.status(404).json({ code: 40002, message: 'Resource not found' });
-      return;
-    }
+    if (!bill || bill.lease.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.BILL));
     const tenant = await prisma.tenant.findUnique({ where: { id: bill.lease.tenant_id }, select: { name: true } });
     const org = await prisma.organization.findUnique({ where: { id: orgId } });
     const orgName = org?.name ?? 'Apartment Ultra';
@@ -247,10 +245,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
       where: { id: req.params.id },
       include: { lease: { include: { room: { include: { apartment: true } }, tenant: true } }, payments: true },
     });
-    if (!bill || bill.lease.room.apartment.organization_id !== orgId) {
-      res.status(404).json({ code: 40002, message: 'Resource not found' });
-      return;
-    }
+    if (!bill || bill.lease.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.BILL));
     res.json(bill);
   } catch (e) {
     next(e);
@@ -263,7 +258,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     const parsed = BillUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const existing = await prisma.bill.findFirst({ where: { id: req.params.id }, include: { lease: { include: { room: { include: { apartment: true } } } } } });
-    if (!existing || existing.lease.room.apartment.organization_id !== orgId) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing || existing.lease.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.BILL));
     const data: Record<string, unknown> = {};
     if (parsed.data.rent_amount != null) data.rent_amount = parsed.data.rent_amount;
     if (parsed.data.water_amount != null) data.water_amount = parsed.data.water_amount;
@@ -283,7 +278,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
   try {
     const orgId = await requireOrgMembership(req);
     const existing = await prisma.bill.findFirst({ where: { id: req.params.id }, include: { lease: { include: { room: { include: { apartment: true } } } } } });
-    if (!existing || existing.lease.room.apartment.organization_id !== orgId) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing || existing.lease.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.BILL));
     await prisma.bill.delete({ where: { id: req.params.id } });
     res.status(204).send();
   } catch (e) {
@@ -297,7 +292,7 @@ router.post('/:id/payments', async (req: Request, res: Response, next: NextFunct
     const parsed = PaymentCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const bill = await prisma.bill.findFirst({ where: { id: req.params.id }, include: { lease: { include: { room: { include: { apartment: true } } } } } });
-    if (!bill || bill.lease.room.apartment.organization_id !== orgId) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!bill || bill.lease.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.BILL));
     const payment = await prisma.payment.create({
       data: {
         id: ulid().toLowerCase(),

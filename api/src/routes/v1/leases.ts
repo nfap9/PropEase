@@ -5,6 +5,7 @@ import { prisma } from '../../lib/prisma.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
+import { Messages, NotFoundMessages } from '../../messages.js';
 
 const router: Router = Router();
 
@@ -53,9 +54,9 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     const parsed = LeaseCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const room = await prisma.room.findFirst({ where: { id: parsed.data.room_id }, include: { apartment: true } });
-    if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, 'Resource not found'));
+    if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.ROOM));
     const tenant = await prisma.tenant.findFirst({ where: { id: parsed.data.tenant_id, organization_id: orgId } });
-    if (!tenant) return next(createAppError(404, 'Resource not found'));
+    if (!tenant) return next(createAppError(404, NotFoundMessages.TENANT));
     const lease = await prisma.lease.create({
       data: {
         id: ulid().toLowerCase(),
@@ -84,10 +85,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
       where: { id: req.params.id },
       include: { room: { include: { apartment: true } }, tenant: true },
     });
-    if (!lease || lease.room.apartment.organization_id !== orgId) {
-      res.status(404).json({ code: 40002, message: 'Resource not found' });
-      return;
-    }
+    if (!lease || lease.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.LEASE));
     res.json(lease);
   } catch (e) {
     next(e);
@@ -100,7 +98,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     const parsed = LeaseUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const existing = await prisma.lease.findFirst({ where: { id: req.params.id }, include: { room: { include: { apartment: true } } } });
-    if (!existing || existing.room.apartment.organization_id !== orgId) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing || existing.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.LEASE));
     const data: Record<string, unknown> = {};
     if (parsed.data.room_id != null) data.room_id = parsed.data.room_id;
     if (parsed.data.tenant_id != null) data.tenant_id = parsed.data.tenant_id;
@@ -123,9 +121,10 @@ router.post('/:id/terminate', async (req: Request, res: Response, next: NextFunc
   try {
     const orgId = await requireOrgMembership(req);
     const existing = await prisma.lease.findFirst({ where: { id: req.params.id }, include: { room: { include: { apartment: true } } } });
-    if (!existing || existing.room.apartment.organization_id !== orgId) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing || existing.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.LEASE));
     await prisma.lease.update({ where: { id: req.params.id }, data: { is_active: false } });
-    res.json({ message: 'Lease terminated' });
+    res.locals.successMessage = Messages.LEASE_TERMINATED;
+    res.json({});
   } catch (e) {
     next(e);
   }
@@ -135,7 +134,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
   try {
     const orgId = await requireOrgMembership(req);
     const existing = await prisma.lease.findFirst({ where: { id: req.params.id }, include: { room: { include: { apartment: true } } } });
-    if (!existing || existing.room.apartment.organization_id !== orgId) { res.status(404).json({ code: 40002, message: 'Resource not found' }); return; }
+    if (!existing || existing.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.LEASE));
     await prisma.lease.delete({ where: { id: req.params.id } });
     res.status(204).send();
   } catch (e) {
