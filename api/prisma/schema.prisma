@@ -21,6 +21,8 @@ model User {
 
   organization_memberships OrganizationMember[]
   notifications            Notification[]
+  system_roles_granted     UserSystemRole[]     @relation("UserSystemRolesGranted")
+  system_roles             UserSystemRole[]     @relation("UserSystemRoles")
 
   @@map("users")
 }
@@ -222,6 +224,8 @@ model Permission {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
+  system_role_permissions SystemRolePermission[]
+
   @@map("permissions")
 }
 
@@ -235,6 +239,36 @@ model SystemRoleConfig {
   updated_at  DateTime @updatedAt
 
   @@map("system_role_configs")
+}
+
+model SystemRolePermission {
+  id            String   @id @db.VarChar(26)
+  role          String   @db.VarChar(50)
+  permission_id String   @db.VarChar(26)
+  is_enabled    Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  permission Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+
+  @@unique([role, permission_id])
+  @@map("system_role_permissions")
+}
+
+model UserSystemRole {
+  id         String   @id @db.VarChar(26)
+  user_id    String   @db.VarChar(26)
+  role       String   @db.VarChar(50)
+  granted_by String?  @db.VarChar(26)
+  granted_at DateTime
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user     User  @relation("UserSystemRoles", fields: [user_id], references: [id], onDelete: Cascade)
+  granter  User? @relation("UserSystemRolesGranted", fields: [granted_by], references: [id], onDelete: SetNull)
+
+  @@unique([user_id, role])
+  @@map("user_system_roles")
 }
 
 model CustomRole {

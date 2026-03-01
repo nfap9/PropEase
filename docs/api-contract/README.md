@@ -1,6 +1,6 @@
 # API 契约说明
 
-api-ts 需与现有 Python 后端保持相同的请求/响应契约，便于前端无感切换。
+api 需与 api-legacy（Python）保持相同的请求/响应契约，便于前端无感切换。
 
 ## 成功响应
 
@@ -20,8 +20,8 @@ api-ts 需与现有 Python 后端保持相同的请求/响应契约，便于前�
 
 从当前 Python 服务导出契约，供对照与契约测试：
 
-1. 启动 Python API：`make dev-api`
+1. 启动 API：`make dev-api`（当前为 Node 版 api）
 2. 请求：`GET http://localhost:8000/api/v1/openapi.json` 或 `GET http://localhost:8000/openapi.json`
-3. 将响应保存为 `openapi.json` 于本目录或 `api-ts/openapi-source.json`
+3. 将响应保存为 `openapi.json` 于本目录或 `api/openapi-source.json`
 
 前端按路径调用的端点清单可从 OpenAPI 中整理，用于逐项实现与验收。

@@ -1,10 +1,10 @@
-# api-ts 与 Python 接口对照
+# api 与 api-legacy 接口对照
 
-前缀均为 `/api/v1`。✓ 表示 api-ts 已实现，✗ 表示未实现。
+前缀均为 `/api/v1`。✓ 表示 api 已实现，✗ 表示未实现。
 
 ## 1. 认证 `/auth`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | POST | /register | ✓ | ✓ |
 | POST | /login | ✓ | ✓ |
@@ -14,7 +14,7 @@
 
 ## 2. 组织 `/organizations`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | GET | / | 列表 | ✓ |
 | POST | / | 创建 | ✗ |
@@ -32,7 +32,7 @@
 
 ## 3. 公寓与房间 `/apartments`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | GET | / | 列表(需 org_id) | ✓ |
 | POST | / | 创建 | ✗ |
@@ -52,7 +52,7 @@
 
 ## 4. 租客 `/tenants`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | GET | / | 列表(需 org_id) | ✓ |
 | POST | / | 创建 | ✗ |
@@ -62,7 +62,7 @@
 
 ## 5. 租约 `/leases`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | GET | / | 列表(需 org_id) | ✓ |
 | POST | / | 创建 | ✗ |
@@ -73,7 +73,7 @@
 
 ## 6. 水电读数 `/utilities`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | GET | / | 列表(需 org_id) | ✓ |
 | POST | / | 创建 | ✗ |
@@ -85,7 +85,7 @@
 
 ## 7. 账单 `/bills`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | GET | / | 列表(需 org_id) | ✓ |
 | POST | /generate | 批量生成账单 | ✗ |
@@ -100,7 +100,7 @@
 
 ## 8. 报表 `/reports`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | GET | /overview | 概览 | ✓ |
 | GET | /income | 收入 | ✓ |
@@ -108,7 +108,7 @@
 
 ## 9. 权限 `/permissions`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | GET | / | 全部权限 | ✓ |
 | GET | /grouped | 按组 | ✓ |
@@ -122,7 +122,7 @@
 
 ## 10. 订阅 `/subscriptions`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | GET | /plans | 套餐列表 | ✓ |
 | GET | /plans/:plan_id | 套餐详情 | ✓ |
@@ -136,7 +136,7 @@
 
 ## 11. 通知 `/notifications`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | GET | / | 列表 | ✓ |
 | GET | /unread-count | 未读数 | ✓ |
@@ -145,7 +145,7 @@
 
 ## 12. 自定义角色 `/custom-roles`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | GET | /orgs/:org_id/roles | 角色列表 | ✓ |
 | POST | /orgs/:org_id/roles | 创建角色 | ✓ |
@@ -156,7 +156,7 @@
 
 ## 13. 运营后台 `/admin`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | POST | /auth/login | 登录 | ✓ |
 | GET | /users | 用户列表 | ✓ |
@@ -191,13 +191,13 @@
 
 ## 14. Webhooks `/webhooks/wechat-pay`
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | POST | / | 微信支付回调 | ✓（占位） |
 
 ## 15. 健康检查
 
-| 方法 | 路径 | Python | api-ts |
+| 方法 | 路径 | api-legacy | api |
 |-----|------|--------|--------|
 | GET | /health | ✓ | ✓ |
 

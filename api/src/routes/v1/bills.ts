@@ -6,10 +6,19 @@ import { prisma } from '../../lib/prisma.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
+import { generateBillsExcel, generateBillPdf } from '../../utils/billExports.js';
+import { generateBillsForOrg } from '../../services/billGeneration.js';
 
 const router: Router = Router();
 
 router.use(requireConsoleAuth);
+
+const GenerateBillsSchema = z.object({
+  bill_year: z.number(),
+  bill_month: z.number(),
+  due_date: z.string(),
+  lease_ids: z.array(z.string()).optional(),
+});
 
 const BillCreateSchema = z.object({
   lease_id: z.string(),
@@ -51,8 +60,14 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 
 router.post('/generate', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await requireOrgMembership(req);
-    res.json({ message: 'Bill generation not implemented in api-ts yet', generated: 0 });
+    const orgId = await requireOrgMembership(req);
+    const parsed = GenerateBillsSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+
+    const { bill_year, bill_month, due_date, lease_ids } = parsed.data;
+    const dueDate = new Date(due_date);
+    const result = await generateBillsForOrg(orgId, bill_year, bill_month, dueDate, lease_ids);
+    res.json(result);
   } catch (e) {
     next(e);
   }
@@ -92,9 +107,67 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-router.get('/export/excel', async (_req: Request, res: Response, next: NextFunction) => {
+router.get('/export/excel', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.status(501).json({ code: 50000, message: 'Excel export not implemented' });
+    const orgId = await requireOrgMembership(req);
+    const status = typeof req.query.status === 'string' ? req.query.status : undefined;
+    const year = req.query.year != null ? Number(req.query.year) : undefined;
+    const month = req.query.month != null ? Number(req.query.month) : undefined;
+    const exportType = typeof req.query.exportType === 'string' ? req.query.exportType : undefined;
+
+    const rooms = await prisma.room.findMany({
+      where: { apartment: { organization_id: orgId } },
+      select: { id: true },
+    });
+    const roomIds = rooms.map((r) => r.id);
+    const leases = await prisma.lease.findMany({
+      where: { room_id: { in: roomIds } },
+      select: { id: true },
+    });
+    const leaseIds = leases.map((l) => l.id);
+    const billWhere: { lease_id: { in: string[] }; bill_year?: number; bill_month?: number; status?: string | { not: string } } = { lease_id: { in: leaseIds } };
+    if (year != null) billWhere.bill_year = year;
+    if (month != null) billWhere.bill_month = month;
+    if (exportType === 'unfinished') {
+      billWhere.status = { not: 'paid' };
+    } else if (status) {
+      billWhere.status = status;
+    }
+    const bills = await prisma.bill.findMany({
+      where: billWhere,
+      include: { lease: { include: { room: { include: { apartment: true } } } } },
+    });
+    if (bills.length === 0) return next(createAppError(400, '没有可导出的账单'));
+
+    const tenantIds = [...new Set(bills.map((b) => b.lease.tenant_id))];
+    const tenants = await prisma.tenant.findMany({ where: { id: { in: tenantIds } }, select: { id: true, name: true } });
+    const tenantNameById = Object.fromEntries(tenants.map((t) => [t.id, t.name]));
+
+    const org = await prisma.organization.findUnique({ where: { id: orgId } });
+    const orgName = org?.name ?? 'Apartment Ultra';
+    const billsData = bills.map((b) => ({
+      id: b.id,
+      bill_year: b.bill_year,
+      bill_month: b.bill_month,
+      apartment_name: b.lease.room.apartment.name,
+      room_number: b.lease.room.room_number,
+      tenant_name: tenantNameById[b.lease.tenant_id] ?? '-',
+      rent_amount: Number(b.rent_amount),
+      water_amount: Number(b.water_amount),
+      electricity_amount: Number(b.electricity_amount),
+      other_amount: Number(b.other_amount),
+      total_amount: Number(b.total_amount),
+      paid_amount: Number(b.paid_amount),
+      status: b.status,
+    }));
+    const buffer = await generateBillsExcel(billsData, orgName);
+    let filename = 'bills';
+    if (exportType === 'unfinished') filename += '_unfinished';
+    else if (status) filename += `_${status}`;
+    filename += '.xlsx';
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buffer);
   } catch (e) {
     next(e);
   }
@@ -111,9 +184,43 @@ router.get('/:id/payments', async (req: Request, res: Response, next: NextFuncti
   }
 });
 
-router.get('/:id/pdf', async (_req: Request, res: Response, next: NextFunction) => {
+router.get('/:id/pdf', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.status(501).json({ code: 50000, message: 'PDF export not implemented' });
+    const orgId = await requireOrgMembership(req);
+    const bill = await prisma.bill.findFirst({
+      where: { id: req.params.id },
+      include: { lease: { include: { room: { include: { apartment: true } } } } },
+    });
+    if (!bill || bill.lease.room.apartment.organization_id !== orgId) {
+      res.status(404).json({ code: 40002, message: 'Resource not found' });
+      return;
+    }
+    const tenant = await prisma.tenant.findUnique({ where: { id: bill.lease.tenant_id }, select: { name: true } });
+    const org = await prisma.organization.findUnique({ where: { id: orgId } });
+    const orgName = org?.name ?? 'Apartment Ultra';
+    const buffer = await generateBillPdf(
+      {
+        id: bill.id,
+        bill_year: bill.bill_year,
+        bill_month: bill.bill_month,
+        due_date: bill.due_date,
+        status: bill.status,
+        apartment_name: bill.lease.room.apartment.name,
+        room_number: bill.lease.room.room_number,
+        tenant_name: tenant?.name ?? '-',
+        rent_amount: Number(bill.rent_amount),
+        water_amount: Number(bill.water_amount),
+        electricity_amount: Number(bill.electricity_amount),
+        other_amount: Number(bill.other_amount),
+        total_amount: Number(bill.total_amount),
+        paid_amount: Number(bill.paid_amount),
+        notes: bill.notes,
+      },
+      orgName
+    );
+    res.setHeader('Content-Disposition', `attachment; filename=bill-${bill.id}.pdf`);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.send(buffer);
   } catch (e) {
     next(e);
   }

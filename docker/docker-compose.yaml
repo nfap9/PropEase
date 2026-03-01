@@ -1,4 +1,4 @@
-# Production docker-compose configuration
+# Production docker-compose configuration（后端为 api）
 # ==================================================================
 
 x-shared-env: &shared-api-env
@@ -51,7 +51,6 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
-    command: gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000
 
   web:
     build:

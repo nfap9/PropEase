@@ -40,4 +40,12 @@ export const config = {
   corsOrigins: envCorsOrigins(),
   adminInitUsername: envStr('ADMIN_INIT_USERNAME', 'admin'),
   adminInitPassword: envStr('ADMIN_INIT_PASSWORD', 'Admin@123456'),
+  wechatPayEnabled: envBool('WECHAT_PAY_ENABLED', false),
+  wechatMchId: envStr('WECHAT_MCH_ID', ''),
+  wechatApiv3Key: envStr('WECHAT_APIV3_KEY', ''),
+  wechatAppId: envStr('WECHAT_APP_ID', ''),
+  wechatCertSerialNo: envStr('WECHAT_CERT_SERIAL_NO', ''),
+  wechatPayNotifyUrlBase: envStr('WECHAT_PAY_NOTIFY_URL_BASE', ''),
+  wechatPrivateKey: envStr('WECHAT_PRIVATE_KEY', ''),
+  wechatPrivateKeyPath: envStr('WECHAT_PRIVATE_KEY_PATH', ''),
 };

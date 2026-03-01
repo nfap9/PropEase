@@ -6,15 +6,16 @@ Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是�
 
 代码库分为：
 
-- **后端 API** (`/api`): Python FastAPI 应用，采用分层架构设计
+- **后端 api** (`/api`): Node/Express/TypeScript 应用，**项目运行与调试均使用此后端**
 - **前端 Web** (`/web`): Next.js 应用，使用 TypeScript 和 React
-- **Docker 部署** (`/docker`): 容器化部署配置
+- **Docker 部署** (`/docker`): 容器化部署配置（后端为 api）
+- **api-legacy/**（Python FastAPI）: 仅作参考与迁移脚本使用，不参与运行与 CI
 
 ## 后端工作流
 
 - 阅读 `api/AGENTS.md` 了解详情
-- 通过 `uv run --project api <command>` 运行后端 CLI 命令
-- 集成测试仅在 CI 中运行，本地环境不要求运行
+- 本地：`make dev-api` 或 `cd api && pnpm dev`（端口 8000）
+- 代码质量：`make lint` / `make type-check` / `make test` 默认针对 api
 
 ## 前端工作流
 
@@ -23,8 +24,8 @@ Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是�
 ## 测试与质量实践
 
 - 遵循 TDD: 红 → 绿 → 重构
-- 后端使用 `pytest`，采用 Arrange-Act-Assert 结构
-- 强制使用强类型；避免 `Any`，优先使用显式类型注解
+- 后端（api）使用 Vitest；api-legacy 为参考代码
+- 强制使用强类型；避免 `Any`/`any`，优先使用显式类型注解
 - 编写自文档化代码；仅在需要解释意图时添加注释
 
 ## 语言风格

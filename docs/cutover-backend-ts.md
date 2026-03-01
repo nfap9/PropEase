@@ -1,15 +1,15 @@
 # 后端切换为 Node/Express 执行步骤
 
-在 api-ts 与现有 Python api 并存、且验证通过后，按以下步骤执行切换。**切换前不要删除现有 api 目录。**
+**已执行完毕**：当前后端为 `api/`（Node/Express），旧版 Python 为 `api-legacy/`。
 
-## 1. 重命名目录
+## 1. 重命名目录（已完成）
 
 ```bash
 mv api api-legacy
 mv api-ts api
 ```
 
-## 2. 统一引用
+## 2. 统一引用（已完成）
 
 ### 2.1 Makefile
 

@@ -30,37 +30,37 @@
 | 层级 | 技术 |
 |------|------|
 | Web | Next.js 14, shadcn/ui, Tailwind CSS, TypeScript |
-| API | FastAPI (Python) |
-| 数据库 | PostgreSQL, SQLAlchemy 2.0 |
+| API | Node.js + Express + TypeScript（**api/**，项目运行与调试均使用此后端） |
+| 数据库 | PostgreSQL, Prisma（迁移仍由 **api-legacy/** 内 Alembic 维护，仅作参考/迁移用） |
 | 认证 | JWT |
-| 包管理 | uv (Python), pnpm (Node.js) |
+| 包管理 | pnpm (Node.js) |
+
+> **说明**：仓库中 `api-legacy/` 为旧版 Python (FastAPI) 实现，仅保留供查看与迁移脚本使用，不参与运行与 CI。
 
 ## 快速开始
 
 ### 环境要求
 
-- Docker & Docker Compose
-- Python 3.11-3.12 (本地开发)
-- Node.js 18+ (本地开发)
-- [uv](https://docs.astral.sh/uv/) - Python 包管理器
+- Docker & Docker Compose（中间件与可选全栈运行）
+- Node.js 18+（本地开发后端与前端）
 - [pnpm](https://pnpm.io/) - Node.js 包管理器
 
 ### 方式一：Makefile（推荐）
 
 ```bash
-# 1. 一键设置开发环境（Docker 中间件 + API 依赖与迁移 + 前端依赖）
+# 1. 一键设置开发环境（Docker 中间件 + api 后端 + 前端依赖）
 make dev-setup
 
 # 2. 启动开发服务（任选其一）
-make dev-api    # 终端 1：启动 API
+make dev-api    # 终端 1：启动后端（api，端口 8000）
 make dev-web    # 终端 2：启动前端
-# 或一键启动：make dev-local  # API 后台 + 前端前台；停 API 用 make dev-local-stop
+# 或一键启动：make dev-local  # 后端后台 + 前端前台；停后端用 make dev-local-stop
 ```
 
 ### 方式二：Docker
 
 ```bash
-# 开发环境（全部服务在容器内，支持热重载）
+# 开发环境（全部服务在容器内，后端为 api，支持热重载）
 cd docker && docker compose -f docker-compose.dev.yaml up
 
 # 生产/联调
@@ -81,18 +81,14 @@ cd docker && docker compose -f docker-compose.yaml up
 ```
 apartment-ultra/
 ├── Makefile                # 开发命令入口
-├── docker/                 # Docker 配置
+├── docker/                 # Docker 配置（后端为 api）
 ├── docs/                   # 文档与计划（含商业化功能计划）
-├── api/                    # FastAPI 后端
-│   ├── app/
-│   │   ├── controllers/    # API 控制器（console / admin / webhooks）
-│   │   ├── services/       # 业务逻辑
-│   │   ├── repositories/   # 数据访问
-│   │   ├── models/         # ORM 模型
-│   │   ├── schemas/        # Pydantic 模型
-│   │   └── scheduler/      # 定时任务（账单生成、通知检查）
-│   ├── migrations/         # 数据库迁移
-│   └── tests/              # 测试
+├── api/                    # 后端（Node/Express/TypeScript，当前唯一运行后端）
+│   ├── src/                # 源码（路由、中间件、服务等）
+│   └── prisma/             # Prisma schema 与迁移
+├── api-legacy/             # 旧版 Python 后端（仅作参考与迁移脚本，不参与运行）
+│   ├── app/                # FastAPI 应用
+│   └── migrations/         # Alembic 迁移（make migrate 在此执行）
 └── web/                    # Next.js 前端
     └── src/
         ├── app/            # App Router（业务端 + /admin 运营后台）
@@ -103,17 +99,18 @@ apartment-ultra/
 ## 常用命令
 
 ```bash
-# 开发
-make dev-api         # 启动 API
+# 开发（后端为 api）
+make dev-api         # 启动后端（端口 8000）
 make dev-web         # 启动前端
-make dev-local       # 一键启动 API + 前端（停 API：make dev-local-stop）
+make dev-local       # 一键启动后端 + 前端（停后端：make dev-local-stop）
 
-# 代码质量
-make format          # 格式化代码
-make lint            # 修复代码问题
-make test            # 运行测试
+# 代码质量（默认针对 api + 前端）
+make format          # 格式化 api
+make lint            # api + 前端检查
+make type-check      # 类型检查
+make test            # 运行 api 测试
 
-# 数据库
+# 数据库（迁移在 api-legacy 中执行，与 api 共用库）
 make migrate         # 运行迁移
 make migrate-create  # 创建迁移
 make db-reset        # 重置数据库

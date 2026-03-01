@@ -6,6 +6,8 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import { healthHandler } from './routes/health.js';
 import { v1Router } from './routes/v1/index.js';
 import { seedAdminSuper } from './startup/seedAdmin.js';
+import { seedPermissions } from './startup/seedPermissions.js';
+import { startScheduler } from './scheduler/index.js';
 
 const app: Express = express();
 
@@ -26,6 +28,13 @@ async function start(): Promise<void> {
   } catch (e) {
     console.error('Startup seed failed:', e);
   }
+  try {
+    await seedPermissions();
+  } catch (e) {
+    console.error('Permission seed failed:', e);
+  }
+  startScheduler();
+
   app.listen(port, '0.0.0.0', () => {
     console.log(`${config.appName} listening on port ${port}`);
   });

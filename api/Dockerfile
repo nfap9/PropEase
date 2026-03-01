@@ -1,36 +1,26 @@
-# Apartment Ultra Backend Dockerfile
-# ===================================
+# Build stage
+FROM node:20-alpine AS builder
 
-FROM python:3.12-slim
-
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    UV_CACHE_DIR=/tmp/.uv-cache
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
-# Set work directory
 WORKDIR /app
 
-# Copy project files
-COPY pyproject.toml .
+COPY package.json pnpm-lock.yaml* ./
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
-# Install dependencies
-RUN uv sync --no-dev
-
-# Copy application code
 COPY . .
+RUN pnpm exec prisma generate
+RUN pnpm run build
 
-# Expose port
+# Production stage
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/prisma ./prisma
+
 EXPOSE 8000
 
-# Run the application
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["node", "dist/index.js"]
