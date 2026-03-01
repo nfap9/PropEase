@@ -439,13 +439,16 @@ export default function AdminUsersPage() {
                   <FormItem className="flex items-center gap-2">
                     <FormControl>
                       <input
+                        id="edit-form-is_active"
                         type="checkbox"
                         checked={field.value}
                         onChange={(e) => field.onChange(e.target.checked)}
                         className="h-4 w-4 rounded border-gray-300"
                       />
                     </FormControl>
-                    <FormLabel className="!mt-0">启用</FormLabel>
+                    <FormLabel htmlFor="edit-form-is_active" className="!mt-0">
+                      启用
+                    </FormLabel>
                     <FormMessage />
                   </FormItem>
                 )}

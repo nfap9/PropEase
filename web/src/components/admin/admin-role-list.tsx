@@ -55,7 +55,7 @@ export function AdminRoleList({
               }}
               className={cn(
                 'flex items-center gap-2 rounded-md px-3 py-2 text-sm cursor-pointer transition-colors',
-                'hover:bg-muted/80',
+                'hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 selectedRoleId === role.id && 'bg-muted font-medium'
               )}
             >

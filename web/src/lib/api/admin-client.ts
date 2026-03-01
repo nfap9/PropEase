@@ -65,8 +65,8 @@ export interface AdminUser {
   role_id: string;
   role_name: string | null;
   is_active: boolean;
-  /** 系统预置账号不可删除 */
-  is_system?: boolean;
+  /** 系统预置账号不可删除，后端必返（默认 false） */
+  is_system: boolean;
   last_login_at: string | null;
   created_at: string;
 }
