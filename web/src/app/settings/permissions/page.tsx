@@ -36,6 +36,7 @@ const RESOURCE_LABELS: Record<string, string> = {
   report: '报表分析',
 };
 
+/** 操作中文名称（仅用于展示，不展示权限码） */
 const ACTION_LABELS: Record<string, string> = {
   view: '查看',
   create: '创建',
@@ -44,6 +45,7 @@ const ACTION_LABELS: Record<string, string> = {
   export: '导出',
   manage: '管理（全部）',
 };
+
 
 export default function PermissionsPage() {
   const { organization, user } = useAuth();
@@ -166,26 +168,33 @@ export default function PermissionsPage() {
     <PermissionPageGuard>
       <MainLayout>
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <Shield className="h-8 w-8" />
-            <div>
-              <h1 className="text-3xl font-bold">权限管理</h1>
-              <p className="text-muted-foreground">
-                配置 {organization.name} 的角色权限
-              </p>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <Shield className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">权限管理</h1>
+                <p className="text-sm text-muted-foreground">
+                  为「{organization.name}」下的管理员、成员、查看者配置可执行的操作
+                </p>
+              </div>
             </div>
+            {isOwner && selectedRole !== 'owner' && (
+              <Button
+                onClick={handleSave}
+                disabled={updateMutation.isPending}
+                className="shrink-0"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                {updateMutation.isPending ? '保存中…' : '保存更改'}
+              </Button>
+            )}
           </div>
-          {isOwner && selectedRole !== 'owner' && (
-            <Button
-              onClick={handleSave}
-              disabled={updateMutation.isPending}
-            >
-              <Save className="mr-2 h-4 w-4" />
-              {updateMutation.isPending ? '保存中...' : '保存更改'}
-            </Button>
-          )}
-        </div>
+
+          <p className="text-sm text-muted-foreground">
+            选择角色标签后，在下方勾选该角色允许的权限；仅所有者可修改。
+          </p>
 
         <Tabs
           value={selectedRole}
@@ -203,9 +212,9 @@ export default function PermissionsPage() {
             <Card className="mt-4">
               <CardContent className="py-12 text-center">
                 <Shield className="mx-auto h-12 w-12 text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-semibold">所有者权限不可修改</h3>
+                <h3 className="mt-4 text-lg font-semibold">所有者拥有全部权限</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  所有者角色始终拥有所有权限
+                  所有者角色无需配置，始终拥有所有操作权限
                 </p>
               </CardContent>
             </Card>
@@ -213,9 +222,9 @@ export default function PermissionsPage() {
             <Card className="mt-4">
               <CardContent className="py-12 text-center">
                 <Shield className="mx-auto h-12 w-12 text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-semibold">无权限修改</h3>
+                <h3 className="mt-4 text-lg font-semibold">您无法修改权限</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  只有组织所有者可以修改角色权限
+                  仅组织所有者可以在此页面调整角色权限
                 </p>
               </CardContent>
             </Card>
@@ -249,10 +258,9 @@ export default function PermissionsPage() {
                             </CardTitle>
                           </div>
                           <Badge variant="secondary">
-                            {permissions.filter((p) =>
+                            已选 {permissions.filter((p) =>
                               selectedPermissions.has(p.code)
-                            ).length}{' '}
-                            / {permissions.length}
+                            ).length} / {permissions.length}
                           </Badge>
                         </div>
                       </CardHeader>
@@ -271,8 +279,8 @@ export default function PermissionsPage() {
                                 }
                                 disabled={!isOwner}
                               />
-                              <label className="text-sm cursor-pointer">
-                                {ACTION_LABELS[permission.action] || permission.action}
+                              <label className="text-sm cursor-pointer select-none">
+                                {permission.name || `${RESOURCE_LABELS[resource] || resource}${ACTION_LABELS[permission.action] || permission.action}`}
                               </label>
                             </div>
                           ))}

@@ -1,77 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { toast } from 'sonner';
-import { DataTable } from '@/components/common/data-table';
-import { TableActions } from '@/components/common/table-actions';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { ColumnDef } from '@tanstack/react-table';
 import {
   adminApiEndpoints,
   AdminRole,
   AdminRoleUpdate,
 } from '@/lib/api/admin-client';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { AdminRoleList } from '@/components/admin/admin-role-list';
+import { AdminRoleDetailPanel } from '@/components/admin/admin-role-detail-panel';
+import { AdminRoleCreateDialog } from '@/components/admin/admin-role-create-dialog';
+import { AdminRoleDeleteDialog } from '@/components/admin/admin-role-delete-dialog';
+import { togglePermissionCode } from './utils';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const roleSchema = z.object({
-  name: z.string().min(1, '请输入角色名称'),
-  permissions: z.string().optional(),
-});
-
-type RoleFormData = z.infer<typeof roleSchema>;
-
-function permissionsStringToArray(s: string): string[] {
-  return s
-    .split(/[\s,，]+/)
-    .map((x) => x.trim())
-    .filter(Boolean);
-}
-
-function permissionsArrayToString(arr: string[]): string {
-  return (arr ?? []).join(', ');
-}
+import { cn } from '@/lib/utils';
 
 export default function AdminRolesPage() {
   const queryClient = useQueryClient();
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<AdminRole | null>(null);
+  const [draftPermissionCodes, setDraftPermissionCodes] = useState<string[]>(
+    []
+  );
+  const [createPermissionCodes, setCreatePermissionCodes] = useState<string[]>(
+    []
+  );
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
-  const { data: roles, isLoading: rolesLoading } = useQuery({
+  const { data: roles = [], isLoading: rolesLoading } = useQuery({
     queryKey: ['admin', 'roles'],
     queryFn: async () => {
       const res = await adminApiEndpoints.listRoles({ limit: 200 });
@@ -79,25 +36,21 @@ export default function AdminRolesPage() {
     },
   });
 
-  const createForm = useForm<RoleFormData>({
-    resolver: zodResolver(roleSchema),
-    defaultValues: { name: '', permissions: '' },
-  });
-
-  const editForm = useForm<RoleFormData>({
-    resolver: zodResolver(roleSchema),
-  });
+  // 切换角色或进入页面时，从服务端数据加载权限草稿；未点保存离开则丢弃
+  useEffect(() => {
+    setDraftPermissionCodes(selectedRole?.permissions ?? []);
+  }, [selectedRole?.id, selectedRole?.permissions]);
 
   const createMutation = useMutation({
-    mutationFn: (data: RoleFormData) =>
+    mutationFn: (payload: { name: string; permissionCodes: string[] }) =>
       adminApiEndpoints.createRole({
-        name: data.name,
-        permissions: permissionsStringToArray(data.permissions ?? ''),
+        name: payload.name,
+        permissions: payload.permissionCodes,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
       setIsCreateOpen(false);
-      createForm.reset();
+      setCreatePermissionCodes([]);
       toast.success('角色创建成功');
     },
     onError: (e: Error & { response?: { data?: { message?: string } } }) => {
@@ -110,11 +63,9 @@ export default function AdminRolesPage() {
       adminApiEndpoints.updateRole(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
-      setIsEditOpen(false);
-      setSelectedRole(null);
-      toast.success('角色已更新');
+      toast.success('权限已保存');
     },
-    onError: () => toast.error('更新失败，请重试'),
+    onError: () => toast.error('保存失败，请重试'),
   });
 
   const deleteMutation = useMutation({
@@ -130,229 +81,90 @@ export default function AdminRolesPage() {
     },
   });
 
-  const handleEdit = (role: AdminRole) => {
+  const handleSelectRole = (role: AdminRole) => {
     setSelectedRole(role);
-    editForm.reset({
-      name: role.name,
-      permissions: permissionsArrayToString(role.permissions ?? []),
-    });
-    setIsEditOpen(true);
   };
 
-  const handleDelete = (role: AdminRole) => {
+  const handleToggleDraftPermission = (code: string, checked: boolean) => {
+    setDraftPermissionCodes((prev) => togglePermissionCode(prev, code, checked));
+  };
+
+  const handleSave = () => {
+    if (!selectedRole || selectedRole.is_system) return;
+    updateMutation.mutate({
+      id: selectedRole.id,
+      data: { permissions: draftPermissionCodes },
+    });
+  };
+
+  const handleCreateSubmit = (name: string, permissionCodes: string[]) => {
+    createMutation.mutate({ name, permissionCodes });
+  };
+
+  const handleToggleCreatePermission = (code: string, checked: boolean) => {
+    setCreatePermissionCodes((prev) => togglePermissionCode(prev, code, checked));
+  };
+
+  const handleDeleteRole = (role: AdminRole) => {
     setSelectedRole(role);
     setIsDeleteOpen(true);
   };
 
-  const columns: ColumnDef<AdminRole>[] = [
-    { accessorKey: 'name', header: '角色名称' },
-    {
-      accessorKey: 'permissions',
-      header: '权限',
-      cell: ({ row }) => {
-        const p = row.original.permissions ?? [];
-        if (p.length === 0) return '—';
-        if (p.length <= 3) return p.join(', ');
-        return `${p.slice(0, 2).join(', ')} 等 ${p.length} 项`;
-      },
-    },
-    {
-      accessorKey: 'is_system',
-      header: '系统预置',
-      cell: ({ row }) =>
-        row.original.is_system ? (
-          <Badge variant="secondary">是</Badge>
-        ) : (
-          <Badge variant="outline">否</Badge>
-        ),
-    },
-    {
-      id: 'actions',
-      header: '操作',
-      cell: ({ row }) => {
-        const role = row.original;
-        return (
-          <TableActions
-            actions={[
-              {
-                icon: Pencil,
-                label: '编辑',
-                onClick: () => handleEdit(role),
-                show: true,
-              },
-              {
-                icon: Trash2,
-                label: '删除',
-                variant: 'destructive',
-                onClick: () => handleDelete(role),
-                show: !role.is_system,
-              },
-            ]}
-          />
-        );
-      },
-    },
-  ];
+  const handleDeleteConfirm = () => {
+    if (selectedRole) deleteMutation.mutate(selectedRole.id);
+  };
+
+  useEffect(() => {
+    if (isCreateOpen) setCreatePermissionCodes([]);
+  }, [isCreateOpen]);
 
   if (rolesLoading) {
     return (
-      <div className="mx-auto max-w-6xl">
-        <Skeleton className="mb-4 h-8 w-48" />
-        <Skeleton className="h-64 w-full" />
+      <div className="flex h-[60vh]">
+        <Skeleton className="w-56 shrink-0" />
+        <Skeleton className={cn('flex-1')} />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">运营角色</h2>
-        <Button onClick={() => setIsCreateOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          新建角色
-        </Button>
-      </div>
+    <div className="flex h-[calc(100vh-8rem)] min-h-[400px] rounded-lg border bg-card">
+      <aside className="w-56 shrink-0">
+        <AdminRoleList
+          roles={roles}
+          selectedRoleId={selectedRole?.id ?? null}
+          onSelectRole={handleSelectRole}
+          onAddRole={() => setIsCreateOpen(true)}
+          onDeleteRole={handleDeleteRole}
+          isLoading={rolesLoading}
+        />
+      </aside>
+      <main className="flex min-w-0 flex-1 flex-col">
+        <AdminRoleDetailPanel
+          role={selectedRole}
+          draftPermissionCodes={draftPermissionCodes}
+          onTogglePermission={handleToggleDraftPermission}
+          onSave={handleSave}
+          isSaving={updateMutation.isPending}
+        />
+      </main>
 
-      <DataTable columns={columns} data={roles ?? []} />
+      <AdminRoleCreateDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        permissionCodes={createPermissionCodes}
+        onPermissionToggle={handleToggleCreatePermission}
+        onSubmit={handleCreateSubmit}
+        isPending={createMutation.isPending}
+      />
 
-      {/* 新建 */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>新建角色</DialogTitle>
-            <DialogDescription>权限为逗号或空格分隔的字符串，如 admin:user:read, admin:org:write</DialogDescription>
-          </DialogHeader>
-          <Form {...createForm}>
-            <form
-              onSubmit={createForm.handleSubmit((d) => createMutation.mutate(d))}
-              className="space-y-4"
-            >
-              <FormField
-                control={createForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>角色名称</FormLabel>
-                    <FormControl>
-                      <Input placeholder="如：运营专员" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={createForm.control}
-                name="permissions"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>权限（选填）</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="admin:user:read, admin:org:write"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
-                  取消
-                </Button>
-                <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? '提交中…' : '创建'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
-      {/* 编辑 */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>编辑角色</DialogTitle>
-            <DialogDescription>
-              {selectedRole?.is_system
-                ? '系统预置角色不可修改名称，仅可调整权限'
-                : `编辑 ${selectedRole?.name}`}
-            </DialogDescription>
-          </DialogHeader>
-          <Form {...editForm}>
-            <form
-              onSubmit={editForm.handleSubmit((d) => {
-                if (!selectedRole) return;
-                updateMutation.mutate({
-                  id: selectedRole.id,
-                  data: {
-                    name: selectedRole.is_system ? undefined : d.name,
-                    permissions: permissionsStringToArray(d.permissions ?? ''),
-                  },
-                });
-              })}
-              className="space-y-4"
-            >
-              <FormField
-                control={editForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>角色名称</FormLabel>
-                    <FormControl>
-                      <Input {...field} disabled={selectedRole?.is_system} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={editForm.control}
-                name="permissions"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>权限</FormLabel>
-                    <FormControl>
-                      <Input placeholder="逗号或空格分隔" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
-                  取消
-                </Button>
-                <Button type="submit" disabled={updateMutation.isPending}>
-                  {updateMutation.isPending ? '保存中…' : '保存'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
-      {/* 删除确认 */}
-      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>确认删除</AlertDialogTitle>
-            <AlertDialogDescription>
-              确定要删除角色「{selectedRole?.name}」吗？此操作不可恢复。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => selectedRole && deleteMutation.mutate(selectedRole.id)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteMutation.isPending ? '删除中…' : '删除'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <AdminRoleDeleteDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        role={selectedRole}
+        onConfirm={handleDeleteConfirm}
+        isPending={deleteMutation.isPending}
+      />
     </div>
   );
 }
