@@ -271,6 +271,8 @@ export const adminApiEndpoints = {
       `/admin/registered-users/${id}/active`,
       data
     ),
+  deleteRegisteredUser: (id: string) =>
+    adminApi.delete(`/admin/registered-users/${id}`),
 
   // 套餐
   listPlans: (params?: { active_only?: boolean }) =>

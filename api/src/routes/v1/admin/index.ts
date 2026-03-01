@@ -323,6 +323,20 @@ router.patch('/registered-users/:user_id/active', async (req: Request, res: Resp
   }
 });
 
+router.delete('/registered-users/:user_id', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.params.user_id } });
+    if (!user) {
+      res.status(404).json({ code: 40002, message: 'Resource not found' });
+      return;
+    }
+    await prisma.user.delete({ where: { id: req.params.user_id } });
+    res.status(204).send();
+  } catch (e) {
+    next(e);
+  }
+});
+
 // --- plans ---
 router.get('/plans', async (req: Request, res: Response, next: NextFunction) => {
   try {

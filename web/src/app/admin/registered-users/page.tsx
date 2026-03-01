@@ -37,7 +37,7 @@ import {
   AdminRegisteredUserDetail,
 } from '@/lib/api/admin-client';
 import { ColumnDef } from '@tanstack/react-table';
-import { Eye, Power, PowerOff } from 'lucide-react';
+import { Eye, Power, PowerOff, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type FilterActive = 'all' | 'active' | 'inactive';
@@ -50,6 +50,8 @@ export default function AdminRegisteredUsersPage() {
   const [detailUserId, setDetailUserId] = useState<string | null>(null);
   /** 待停用确认的用户 id，用于二次确认弹窗 */
   const [disableConfirmUserId, setDisableConfirmUserId] = useState<string | null>(null);
+  /** 待删除确认的用户 id */
+  const [deleteConfirmUserId, setDeleteConfirmUserId] = useState<string | null>(null);
 
   const isActiveParam =
     activeFilter === 'all' ? undefined : activeFilter === 'active';
@@ -90,6 +92,17 @@ export default function AdminRegisteredUsersPage() {
       toast.success('已更新');
     },
     onError: () => toast.error('操作失败，请重试'),
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: (id: string) => adminApiEndpoints.deleteRegisteredUser(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'registered-users'] });
+      if (detailUserId === id) setDetailUserId(null);
+      setDeleteConfirmUserId(null);
+      toast.success('已删除');
+    },
+    onError: () => toast.error('删除失败，请重试'),
   });
 
   const columns: ColumnDef<AdminRegisteredUser>[] = [
@@ -144,6 +157,12 @@ export default function AdminRegisteredUsersPage() {
                         }),
                     },
                   ]),
+              {
+                icon: Trash2,
+                label: '删除',
+                variant: 'destructive',
+                onClick: () => setDeleteConfirmUserId(user.id),
+              },
             ]}
           />
         );
@@ -226,6 +245,30 @@ export default function AdminRegisteredUsersPage() {
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={!!deleteConfirmUserId} onOpenChange={(open) => !open && setDeleteConfirmUserId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要删除该注册用户吗？删除后账号及其关联数据将无法恢复。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteConfirmUserId) {
+                  deleteUserMutation.mutate(deleteConfirmUserId);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteUserMutation.isPending ? '处理中…' : '确定删除'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Sheet open={!!detailUserId} onOpenChange={(open) => !open && setDetailUserId(null)}>
         <SheetContent className="sm:max-w-md">
           <SheetHeader>
@@ -279,7 +322,7 @@ export default function AdminRegisteredUsersPage() {
                       </ul>
                     )}
                   </div>
-                  <div className="pt-2">
+                  <div className="flex flex-wrap gap-2 pt-2">
                     {detail.is_active ? (
                       <Button
                         variant="destructive"
@@ -304,6 +347,15 @@ export default function AdminRegisteredUsersPage() {
                         启用账号
                       </Button>
                     )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                      onClick={() => setDeleteConfirmUserId(detail.id)}
+                      disabled={deleteUserMutation.isPending}
+                    >
+                      删除账号
+                    </Button>
                   </div>
                 </div>
               ) : (
