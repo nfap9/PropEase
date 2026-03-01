@@ -124,6 +124,30 @@ export interface AdminOrganizationSetActive {
   is_active: boolean;
 }
 
+/** 运营侧注册用户（业务侧账号） */
+export interface AdminRegisteredUserOrg {
+  id: string;
+  name: string;
+  slug: string;
+  role: string;
+}
+
+export interface AdminRegisteredUser {
+  id: string;
+  phone: string;
+  full_name: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AdminRegisteredUserDetail extends AdminRegisteredUser {
+  organizations: AdminRegisteredUserOrg[];
+}
+
+export interface AdminRegisteredUserSetActive {
+  is_active: boolean;
+}
+
 /** 套餐（运营侧与业务侧结构一致） */
 export interface AdminPlan {
   id: string;
@@ -225,6 +249,28 @@ export const adminApiEndpoints = {
     adminApi.get<AdminOrganization>(`/admin/organizations/${id}`),
   setOrganizationActive: (id: string, data: AdminOrganizationSetActive) =>
     adminApi.patch<AdminOrganization>(`/admin/organizations/${id}/active`, data),
+
+  // 注册用户（业务侧账号）
+  listRegisteredUsers: (params?: {
+    skip?: number;
+    limit?: number;
+    is_active?: boolean;
+    search?: string;
+  }) => adminApi.get<AdminRegisteredUser[]>('/admin/registered-users', { params }),
+  getRegisteredUserCount: (params?: {
+    is_active?: boolean;
+    search?: string;
+  }) => adminApi.get<{ total: number }>('/admin/registered-users/count', { params }),
+  getRegisteredUser: (id: string) =>
+    adminApi.get<AdminRegisteredUserDetail>(`/admin/registered-users/${id}`),
+  setRegisteredUserActive: (
+    id: string,
+    data: AdminRegisteredUserSetActive
+  ) =>
+    adminApi.patch<AdminRegisteredUser>(
+      `/admin/registered-users/${id}/active`,
+      data
+    ),
 
   // 套餐
   listPlans: (params?: { active_only?: boolean }) =>

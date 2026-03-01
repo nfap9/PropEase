@@ -49,6 +49,10 @@ class OrganizationMemberRepository(BaseRepository[OrganizationMember]):
         """Find all members of an organization."""
         return self.db.query(OrganizationMember).filter(OrganizationMember.organization_id == org_id).all()
 
+    def find_memberships_by_user(self, user_id: str) -> list[OrganizationMember]:
+        """Find all organization memberships for a user (运营侧注册用户详情用)."""
+        return self.db.query(OrganizationMember).filter(OrganizationMember.user_id == user_id).all()
+
     def is_member(self, org_id: str, user_id: str) -> bool:
         """Check if user is a member of organization."""
         return self.find_membership(org_id, user_id) is not None

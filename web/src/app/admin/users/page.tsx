@@ -56,7 +56,7 @@ const adminPasswordSchema = z
   .refine((s) => /[a-z]/.test(s), '密码须包含小写字母')
   .refine((s) => /[A-Z]/.test(s), '密码须包含大写字母')
   .refine((s) => /\d/.test(s), '密码须包含数字')
-  .refine((s) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?\s]/.test(s), '密码须包含特殊字符');
+  .refine((s) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?\s]/.test(s), '密码须包含特殊字符');
 
 const createUserSchema = z.object({
   username: z.string().min(1, '请输入用户名'),

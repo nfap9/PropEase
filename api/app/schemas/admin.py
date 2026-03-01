@@ -142,6 +142,53 @@ class AdminOrganizationSetActive(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+# ==================== 运营侧注册用户（业务侧账号） ====================
+
+
+class AdminRegisteredUserOrg(BaseModel):
+    """注册用户所属组织简要信息"""
+
+    id: str
+    name: str
+    slug: str
+    role: str
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class AdminRegisteredUserResponse(BaseModel):
+    """运营侧注册用户列表项"""
+
+    id: str
+    phone: str
+    full_name: str
+    is_active: bool
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True, extra="forbid")
+
+
+class AdminRegisteredUserDetailResponse(BaseModel):
+    """运营侧注册用户详情（含所属组织）"""
+
+    id: str
+    phone: str
+    full_name: str
+    is_active: bool
+    created_at: datetime
+    organizations: list[AdminRegisteredUserOrg]
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class AdminRegisteredUserSetActive(BaseModel):
+    """运营侧注册用户启用/停用"""
+
+    is_active: bool
+
+    model_config = ConfigDict(extra="forbid")
+
+
 # ==================== 运营侧订阅 ====================
 
 

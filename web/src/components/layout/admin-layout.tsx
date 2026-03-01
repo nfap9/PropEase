@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
   LayoutDashboard,
   Users,
+  UserCircle,
   Shield,
   Building2,
   Package,
@@ -20,6 +21,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/s
 const ADMIN_NAV = [
   { href: '/admin', label: '概览', icon: LayoutDashboard },
   { href: '/admin/users', label: '运营账号', icon: Users },
+  { href: '/admin/registered-users', label: '用户管理', icon: UserCircle },
   { href: '/admin/roles', label: '运营角色', icon: Shield },
   { href: '/admin/organizations', label: '组织管理', icon: Building2 },
   { href: '/admin/plans', label: '套餐配置', icon: Package },

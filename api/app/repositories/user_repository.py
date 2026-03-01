@@ -32,3 +32,35 @@ class UserRepository(BaseRepository[User]):
     def exists_by_phone(self, phone: str) -> bool:
         """Check if user exists by phone."""
         return self.find_by_phone(phone) is not None
+
+    def list_platform_users(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        is_active: bool | None = None,
+        search: str | None = None,
+    ) -> list[User]:
+        """
+        运营侧：平台级注册用户列表。支持按状态筛选、按手机号/姓名模糊搜索。
+        """
+        query = self.db.query(User)
+        if is_active is not None:
+            query = query.filter(User.is_active == is_active)
+        if search and search.strip():
+            term = f"%{search.strip()}%"
+            query = query.filter((User.phone.ilike(term)) | (User.full_name.ilike(term)))
+        return query.order_by(User.created_at.desc()).offset(skip).limit(limit).all()
+
+    def count_platform_users(
+        self,
+        is_active: bool | None = None,
+        search: str | None = None,
+    ) -> int:
+        """运营侧：平台级注册用户总数，与 list_platform_users 筛选一致。"""
+        query = self.db.query(User)
+        if is_active is not None:
+            query = query.filter(User.is_active == is_active)
+        if search and search.strip():
+            term = f"%{search.strip()}%"
+            query = query.filter((User.phone.ilike(term)) | (User.full_name.ilike(term)))
+        return query.count()
