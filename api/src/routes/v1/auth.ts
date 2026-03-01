@@ -161,7 +161,13 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
   }
 });
 
-// 发送短信验证码（stub：仅校验参数，不真实发送）
+/** 生成 6 位数字验证码 */
+function generateVerificationCode(): string {
+  const n = Math.floor(Math.random() * 900000) + 100000;
+  return String(n);
+}
+
+// 发送短信验证码（stub：仅校验参数，不真实发送；开发模式在控制台打印验证码）
 router.post('/sms/send', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = SendSmsCodeSchema.safeParse(req.body);
@@ -170,6 +176,11 @@ router.post('/sms/send', async (req: Request, res: Response, next: NextFunction)
         businessCode: 40001,
         fieldErrors: zodToFieldErrors(parsed.error),
       }));
+    }
+    const { phone, purpose } = parsed.data;
+    const code = generateVerificationCode();
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[开发] 短信验证码 phone=${phone} purpose=${purpose} => ${code}`);
     }
     res.status(204).send();
   } catch (e) {
