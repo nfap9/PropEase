@@ -3,7 +3,7 @@ Reset database - drop all tables and recreate them.
 Usage: uv run python scripts/reset_db.py [--seed]
 
 Options:
-  --seed    Run seed_admin.py after reset to create admin user
+  --seed    重置后运行种子脚本（仅添加一个系统管理员）
 """
 import argparse
 import sys
@@ -85,11 +85,11 @@ def reset_database():
 
 
 def run_seed():
-    """Run seed_admin.py to create admin user."""
-    print("\n📦 Running seed script...")
-    from scripts.seed_admin import seed_admin
+    """运行种子脚本：默认仅添加一个系统管理员。"""
+    print("\n📦 运行种子脚本...")
+    from scripts.seed_demo import seed_admin_only
 
-    seed_admin()
+    seed_admin_only()
 
 
 def main():
@@ -97,7 +97,7 @@ def main():
     parser.add_argument(
         "--seed",
         action="store_true",
-        help="Run seed_admin.py after reset to create admin user",
+        help="重置后运行种子脚本（仅添加一个系统管理员）",
     )
     parser.add_argument(
         "-y",
@@ -109,9 +109,9 @@ def main():
 
     # Confirm before resetting
     if not args.yes:
-        response = input("⚠️  This will delete ALL data. Continue? [y/N] ")
+        response = input("⚠️  将删除所有数据，是否继续？[y/N] ")
         if response.lower() != "y":
-            print("❌ Aborted")
+            print("❌ 已取消")
             return
 
     reset_database()
@@ -119,7 +119,7 @@ def main():
     if args.seed:
         run_seed()
     else:
-        print("\n💡 Tip: Run with --seed to create admin user")
+        print("\n💡 提示：可加 --seed 在重置后添加系统管理员")
 
 
 if __name__ == "__main__":

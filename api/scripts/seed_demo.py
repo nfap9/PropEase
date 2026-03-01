@@ -1,15 +1,10 @@
 """
-Generate comprehensive demo/test data for development.
-Usage: uv run python scripts/seed_demo.py
-
-This script creates:
-- Organization with admin user
-- Multiple apartments with rooms
-- Tenants
-- Active leases
-- Utility readings
-- Bills and payments
+Seed script for development.
+Usage:
+  uv run python scripts/seed_demo.py           # 默认：仅添加一个系统管理员（含默认组织）
+  uv run python scripts/seed_demo.py --full   # 完整演示数据：公寓、房间、租客、租约、账单等
 """
+import argparse
 import random
 import sys
 from datetime import date, timedelta
@@ -70,6 +65,60 @@ def generate_room_number(floor: int, room: int) -> str:
     return f"{floor}{room:02d}"
 
 
+# 默认种子：仅一个系统管理员时使用的组织
+DEFAULT_ORG_CONFIG = {
+    "name": "默认组织",
+    "slug": "default-org",
+}
+
+
+def seed_admin_only():
+    """仅添加一个系统管理员及其默认组织。"""
+    db = SessionLocal()
+    try:
+        existing = db.query(User).filter(User.phone == DEMO_CONFIG["admin_phone"]).first()
+        if existing:
+            print("✅ 系统管理员已存在")
+            print(f"   手机号: {DEMO_CONFIG['admin_phone']}")
+            print(f"   密码: {DEMO_CONFIG['admin_password']}")
+            return
+
+        org = Organization(
+            name=DEFAULT_ORG_CONFIG["name"],
+            slug=DEFAULT_ORG_CONFIG["slug"],
+        )
+        db.add(org)
+        db.flush()
+
+        admin = User(
+            phone=DEMO_CONFIG["admin_phone"],
+            password_hash=get_password_hash(DEMO_CONFIG["admin_password"]),
+            full_name=DEMO_CONFIG["admin_name"],
+            is_active=True,
+        )
+        db.add(admin)
+        db.flush()
+
+        db.add(
+            OrganizationMember(
+                organization_id=org.id,
+                user_id=admin.id,
+                role=MemberRole.OWNER,
+            )
+        )
+        db.commit()
+        print("✅ 已添加一个系统管理员")
+        print(f"   手机号: {DEMO_CONFIG['admin_phone']}")
+        print(f"   密码: {DEMO_CONFIG['admin_password']}")
+        print(f"   组织: {DEFAULT_ORG_CONFIG['name']}")
+    except Exception as e:
+        db.rollback()
+        print(f"❌ 添加失败: {e}")
+        raise
+    finally:
+        db.close()
+
+
 def seed_demo():
     """Generate comprehensive demo data."""
     db = SessionLocal()
@@ -81,12 +130,12 @@ def seed_demo():
         ).first()
 
         if existing_org:
-            print("⚠️  Demo data already exists!")
-            print(f"   Organization: {existing_org.name}")
-            print("   Run 'uv run python scripts/reset_db.py --seed' to reset first")
+            print("⚠️  完整演示数据已存在")
+            print(f"   组织: {existing_org.name}")
+            print("   可先执行 reset_db.py 再重试")
             return
 
-        print("🌱 Seeding demo data...")
+        print("🌱 正在生成完整演示数据...")
 
         # ========================================
         # 1. Create Organization
@@ -97,19 +146,24 @@ def seed_demo():
         )
         db.add(org)
         db.flush()
-        print(f"   ✅ Created organization: {org.name}")
+        print(f"   ✅ 组织: {org.name}")
 
         # ========================================
-        # 2. Create Admin User
+        # 2. Admin User（已存在则复用并加入本组织）
         # ========================================
-        admin = User(
-            phone=DEMO_CONFIG["admin_phone"],
-            password_hash=get_password_hash(DEMO_CONFIG["admin_password"]),
-            full_name=DEMO_CONFIG["admin_name"],
-            is_active=True,
-        )
-        db.add(admin)
-        db.flush()
+        admin = db.query(User).filter(User.phone == DEMO_CONFIG["admin_phone"]).first()
+        if not admin:
+            admin = User(
+                phone=DEMO_CONFIG["admin_phone"],
+                password_hash=get_password_hash(DEMO_CONFIG["admin_password"]),
+                full_name=DEMO_CONFIG["admin_name"],
+                is_active=True,
+            )
+            db.add(admin)
+            db.flush()
+            print(f"   ✅ 管理员: {admin.phone}")
+        else:
+            print(f"   ✅ 复用已有管理员: {admin.phone}")
 
         membership = OrganizationMember(
             organization_id=org.id,
@@ -117,7 +171,6 @@ def seed_demo():
             role=MemberRole.OWNER,
         )
         db.add(membership)
-        print(f"   ✅ Created admin: {admin.phone}")
 
         # ========================================
         # 3. Create Apartments and Rooms
@@ -164,7 +217,7 @@ def seed_demo():
                     rooms.append(room)
 
         db.flush()
-        print(f"   ✅ Created {len(apartments)} apartments with {len(rooms)} rooms")
+        print(f"   ✅ 已创建 {len(apartments)} 个公寓、{len(rooms)} 个房间")
 
         # ========================================
         # 4. Create Tenants
@@ -183,7 +236,7 @@ def seed_demo():
             tenants.append(tenant)
 
         db.flush()
-        print(f"   ✅ Created {len(tenants)} tenants")
+        print(f"   ✅ 已创建 {len(tenants)} 个租客")
 
         # ========================================
         # 5. Create Leases
@@ -220,7 +273,7 @@ def seed_demo():
             room.status = RoomStatus.OCCUPIED
 
         db.flush()
-        print(f"   ✅ Created {len(leases)} active leases")
+        print(f"   ✅ 已创建 {len(leases)} 个活跃租约")
 
         # ========================================
         # 6. Create Utility Readings
@@ -251,7 +304,7 @@ def seed_demo():
                 readings_count += 1
 
         db.flush()
-        print(f"   ✅ Created {readings_count} utility readings")
+        print(f"   ✅ 已创建 {readings_count} 条水电读数")
 
         # ========================================
         # 7. Create Bills
@@ -299,7 +352,7 @@ def seed_demo():
                 bill_count += 1
 
         db.flush()
-        print(f"   ✅ Created {bill_count} bills")
+        print(f"   ✅ 已创建 {bill_count} 条账单")
 
         # ========================================
         # 8. Create Payments for Paid Bills
@@ -327,7 +380,7 @@ def seed_demo():
                 payment_count += 1
 
         db.flush()
-        print(f"   ✅ Created {payment_count} payments")
+        print(f"   ✅ 已创建 {payment_count} 条支付记录")
 
         # Commit all changes
         db.commit()
@@ -351,11 +404,21 @@ def seed_demo():
 
     except Exception as e:
         db.rollback()
-        print(f"❌ Error seeding demo data: {e}")
+        print(f"❌ 完整演示数据写入失败: {e}")
         raise
     finally:
         db.close()
 
 
 if __name__ == "__main__":
-    seed_demo()
+    parser = argparse.ArgumentParser(description="种子数据脚本")
+    parser.add_argument(
+        "--full",
+        action="store_true",
+        help="生成完整演示数据（公寓、房间、租客、租约、账单等）；默认仅添加一个系统管理员",
+    )
+    args = parser.parse_args()
+    if args.full:
+        seed_demo()
+    else:
+        seed_admin_only()
