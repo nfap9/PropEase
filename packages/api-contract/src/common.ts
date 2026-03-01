@@ -28,7 +28,7 @@ export interface ErrorResponseBody {
   data?: ErrorResponseData;
 }
 
-/** 业务状态码（与 Python 后端一致） */
+/** 业务状态码 */
 export const BusinessCode = {
   SUCCESS: 0,
   BAD_REQUEST: 40000,

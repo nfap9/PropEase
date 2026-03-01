@@ -1,7 +1,7 @@
 /**
  * 检查当前数据库中仍使用 PostgreSQL ENUM 类型的列。
- * 若 Prisma schema 中对应字段为 String，这些列会导致 500，应通过迁移改为 VARCHAR。
- * 用法：在 api 目录下执行 pnpm exec tsx scripts/check-enum-columns.ts
+ * Prisma schema 中状态/角色/编码等为 String；若库内为 ENUM 会导致 500。可执行 prisma db push 以 schema 为准同步。
+ * 用法：在 api 目录下执行 pnpm run check:db-enums
  */
 import { PrismaClient } from '@prisma/client';
 

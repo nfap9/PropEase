@@ -9,7 +9,7 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端。
 - **语言**: TypeScript (ESM)
 - **ORM**: Prisma（PostgreSQL）
 - **校验**: Zod
-- **认证**: JWT (HS256)，与 Python 后端 SECRET_KEY 兼容；密码 bcrypt
+- **认证**: JWT (HS256)；密码 bcrypt
 
 ## 目录结构
 
@@ -23,7 +23,7 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端。
   - `startup/`：启动时种子（admin 超级管理员）
   - `utils/`：security、jwt、context、appError、orgContext
 
-- `prisma/schema.prisma`：与现有 PostgreSQL 表结构一致；数据库迁移由 Prisma 管理。
+- `prisma/schema.prisma`：数据库模型定义，由 Prisma 管理表结构。
 
 ## 响应契约
 

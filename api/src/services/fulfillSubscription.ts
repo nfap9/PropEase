@@ -2,7 +2,7 @@ import { ulid } from 'ulid';
 import { prisma } from '../lib/prisma.js';
 
 /**
- * 根据已支付订单开通/续费/升级组织订阅，与 Python _fulfill_subscription 对齐。
+ * 根据已支付订单开通/续费/升级组织订阅。
  */
 export async function fulfillSubscription(orderId: string): Promise<void> {
   const order = await prisma.subscriptionOrder.findUnique({

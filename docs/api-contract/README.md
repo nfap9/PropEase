@@ -22,7 +22,7 @@ api 请求/响应契约由本包与 [docs/naming-conventions.md](../naming-conve
 
 ## 导出 OpenAPI（可选）
 
-从当前 Python 服务导出契约，供对照与契约测试：
+从当前 API 服务导出契约，供对照与契约测试：
 
 1. 启动 API：`pnpm run dev:api`（当前为 Node 版 api）
 2. 请求：`GET http://localhost:8000/api/v1/openapi.json` 或 `GET http://localhost:8000/openapi.json`

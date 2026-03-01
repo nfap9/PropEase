@@ -3,7 +3,7 @@ import { runMonthlyBillGeneration } from './monthlyBills.js';
 import { checkExpiringLeases, checkOverdueBills } from './notificationChecks.js';
 
 /**
- * 注册定时任务（与 Python APScheduler 对齐）：
+ * 注册定时任务：
  * - 每月 1 日 00:05 生成月度账单
  * - 每日 08:00 检查即将到期租约
  * - 每日 08:05 检查逾期账单

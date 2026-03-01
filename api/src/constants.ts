@@ -1,6 +1,6 @@
 import { BusinessCode as ContractBusinessCode } from '@apartment-ultra/api-contract';
 
-/** 业务状态码（与 Python 后端一致，来自共享契约） */
+/** 业务状态码（与 api-contract 契约一致） */
 export const BusinessCode = ContractBusinessCode;
 
 /** 不包装为 { code, data, message } 的路径前缀 */

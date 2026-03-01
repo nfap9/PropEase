@@ -62,7 +62,7 @@ export const SYSTEM_ROLE_CONFIGS: Array<{ role: SystemRole; name: string; descri
   { role: 'readonly', name: '只读', description: '只能查看数据，无修改权限' },
 ];
 
-/** 系统角色对应的 (resource, action) 列表，与 Python DEFAULT_SYSTEM_ROLE_PERMISSIONS 一致 */
+/** 系统角色对应的 (resource, action) 列表 */
 export const DEFAULT_SYSTEM_ROLE_PERMISSIONS: Record<
   SystemRole,
   Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }>

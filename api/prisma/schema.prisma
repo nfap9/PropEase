@@ -1,5 +1,4 @@
-// Apartment Ultra - 与现有 PostgreSQL 表结构一致（与 api Alembic 迁移对齐）
-// 切换完成前由 Alembic 负责迁移；切换后仅使用 Prisma Migrate
+// Apartment Ultra - 数据库由 Prisma 管理，状态/角色/编码等字段统一为 VARCHAR，不使用 PG ENUM
 
 generator client {
   provider = "prisma-client-js"
