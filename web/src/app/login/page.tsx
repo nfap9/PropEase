@@ -123,8 +123,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Apartment Ultra</CardTitle>
-          <CardDescription>登录您的账户</CardDescription>
+          <CardTitle className="text-2xl">公寓管理系统</CardTitle>
+          <CardDescription>用户登录，管理公寓、租客与账单</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs value={loginMode} onValueChange={(v) => setLoginMode(v as 'password' | 'code')}>
@@ -232,11 +232,17 @@ export default function LoginPage() {
             </TabsContent>
           </Tabs>
         </CardContent>
-        <CardFooter className="flex justify-center">
+        <CardFooter className="flex flex-col items-center gap-2 border-t pt-4">
           <p className="text-sm text-muted-foreground">
             还没有账户？{' '}
             <Link href="/register" className="text-primary hover:underline">
               注册
+            </Link>
+          </p>
+          <p className="text-sm text-muted-foreground">
+            运营人员？{' '}
+            <Link href="/admin/login" className="text-primary hover:underline">
+              前往管理后台
             </Link>
           </p>
         </CardFooter>

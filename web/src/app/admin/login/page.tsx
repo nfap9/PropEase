@@ -64,8 +64,8 @@ export default function AdminLoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>运营后台登录</CardTitle>
-          <CardDescription>使用运营账号登录管理后台</CardDescription>
+          <CardTitle>管理后台登录</CardTitle>
+          <CardDescription>仅限运营账号登录，普通用户请前往公寓管理系统</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -106,8 +106,8 @@ export default function AdminLoginPage() {
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center border-t pt-4">
-          <Link href="/" className="text-sm text-muted-foreground hover:underline">
-            返回业务端
+          <Link href="/login" className="text-sm text-muted-foreground hover:underline">
+            普通用户？返回公寓管理系统
           </Link>
         </CardFooter>
       </Card>

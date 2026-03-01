@@ -125,7 +125,7 @@ test-cov:
 # 数据库：迁移与种子
 # ==================================================================
 
-.PHONY: migrate migrate-create migrate-down db-reset db-reset-seed db-seed-demo db-seed-demo-full db-reset-demo
+.PHONY: migrate migrate-create migrate-down db-reset
 
 # 执行所有未执行的迁移（upgrade head）
 migrate:
@@ -150,31 +150,6 @@ db-reset:
 	@echo "⚠️  Resetting database..."
 	@cd api && uv run python scripts/reset_db.py -y
 	@echo "✅ Database reset complete"
-
-# 重置数据库后仅种子一个系统管理员（业务端登录用）
-db-reset-seed:
-	@echo "⚠️  重置数据库并添加一个系统管理员..."
-	@cd api && uv run python scripts/reset_db.py --seed -y
-	@echo "✅ 已重置并添加系统管理员"
-
-# 仅种子：默认只添加一个系统管理员（不重置）
-db-seed-demo:
-	@echo "🌱 种子数据（默认仅添加一个系统管理员）..."
-	@cd api && uv run python scripts/seed_demo.py
-	@echo "✅ 种子完成"
-
-# 仅种子：完整演示数据（公寓、房间、租客、租约、账单等），不重置
-db-seed-demo-full:
-	@echo "🌱 种子完整演示数据（公寓、房间、租客、租约、账单等）..."
-	@cd api && uv run python scripts/seed_demo.py --full
-	@echo "✅ 完整演示数据已写入"
-
-# 重置 + 完整演示数据（常用于本地演示或测试）
-db-reset-demo:
-	@echo "🔄 重置数据库并写入完整演示数据..."
-	@cd api && uv run python scripts/reset_db.py -y
-	@cd api && uv run python scripts/seed_demo.py --full
-	@echo "✅ 已重置并写入完整演示数据"
 
 # ==================================================================
 # Docker 生产/联调（docker-compose.yaml）
@@ -239,11 +214,7 @@ help:
 	@echo "  make migrate       Run database migrations"
 	@echo "  make migrate-create Create new migration"
 	@echo "  make migrate-down  Rollback last migration"
-	@echo "  make db-reset          重置数据库（空库）"
-	@echo "  make db-reset-seed     重置并添加一个系统管理员"
-	@echo "  make db-seed-demo      仅添加一个系统管理员"
-	@echo "  make db-seed-demo-full 仅写入完整演示数据（不重置）"
-	@echo "  make db-reset-demo     重置并写入完整演示数据"
+	@echo "  make db-reset      重置数据库（空库）"
 	@echo ""
 	@echo "Docker:"
 	@echo "  make docker-build  Build Docker images"

@@ -1,9 +1,6 @@
 """
 Reset database - drop all tables and recreate them.
-Usage: uv run python scripts/reset_db.py [--seed]
-
-Options:
-  --seed    重置后运行种子脚本（仅添加一个系统管理员）
+Usage: uv run python scripts/reset_db.py
 """
 import argparse
 import sys
@@ -84,21 +81,8 @@ def reset_database():
     print("✅ Database reset complete!")
 
 
-def run_seed():
-    """运行种子脚本：默认仅添加一个系统管理员。"""
-    print("\n📦 运行种子脚本...")
-    from scripts.seed_demo import seed_admin_only
-
-    seed_admin_only()
-
-
 def main():
     parser = argparse.ArgumentParser(description="Reset database")
-    parser.add_argument(
-        "--seed",
-        action="store_true",
-        help="重置后运行种子脚本（仅添加一个系统管理员）",
-    )
     parser.add_argument(
         "-y",
         "--yes",
@@ -115,11 +99,6 @@ def main():
             return
 
     reset_database()
-
-    if args.seed:
-        run_seed()
-    else:
-        print("\n💡 提示：可加 --seed 在重置后添加系统管理员")
 
 
 if __name__ == "__main__":

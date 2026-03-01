@@ -21,10 +21,16 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
-    if payload.get("type") != "access":
+    token_type = payload.get("type")
+    if token_type != "access":
+        if token_type == "admin":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="请使用注册账号登录公寓管理系统",
+            )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token type",
+            detail="请使用注册账号登录公寓管理系统",
         )
     user_id = payload.get("sub")
     if user_id is None:
@@ -208,7 +214,7 @@ def get_current_admin_user(
     if payload.get("type") != "admin":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="需要运营后台登录",
+            detail="请使用运营账号登录管理后台",
         )
     admin_id = payload.get("sub")
     if not admin_id:
