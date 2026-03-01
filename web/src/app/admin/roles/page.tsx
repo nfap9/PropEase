@@ -106,12 +106,14 @@ export default function AdminRolesPage() {
   };
 
   const handleDeleteRole = (role: AdminRole) => {
+    if (role.is_system) return; // 系统预置角色（如超级管理员）不可删除
     setSelectedRole(role);
     setIsDeleteOpen(true);
   };
 
   const handleDeleteConfirm = () => {
-    if (selectedRole) deleteMutation.mutate(selectedRole.id);
+    if (!selectedRole || selectedRole.is_system) return;
+    deleteMutation.mutate(selectedRole.id);
   };
 
   useEffect(() => {

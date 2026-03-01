@@ -21,7 +21,7 @@ export interface AdminRoleDeleteDialogProps {
 }
 
 /**
- * 删除运营角色确认弹窗。单一职责：确认删除并触发回调，不关心 API。
+ * 删除运营角色确认弹窗。系统预置角色（如超级管理员）不可删除，弹窗内会禁用确认。
  */
 export function AdminRoleDeleteDialog({
   open,
@@ -30,23 +30,31 @@ export function AdminRoleDeleteDialog({
   onConfirm,
   isPending,
 }: AdminRoleDeleteDialogProps) {
+  const isSystemRole = role?.is_system ?? false;
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>确认删除</AlertDialogTitle>
           <AlertDialogDescription>
-            确定要删除角色「{role?.name}」吗？此操作不可恢复。
+            {isSystemRole ? (
+              <>系统预置角色「{role?.name}」不可删除。</>
+            ) : (
+              <>确定要删除角色「{role?.name}」吗？此操作不可恢复。</>
+            )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {isPending ? '删除中…' : '删除'}
-          </AlertDialogAction>
+          {!isSystemRole && (
+            <AlertDialogAction
+              onClick={onConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isPending ? '删除中…' : '删除'}
+            </AlertDialogAction>
+          )}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

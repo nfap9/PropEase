@@ -46,6 +46,7 @@ def seed_admin_super(session: Session) -> None:
             email=None,
             role_id=role.id,
             is_active=True,
+            is_system=True,
         )
         user_repo.create(admin_user)
         logger.info("Created admin user: %s", settings.ADMIN_INIT_USERNAME)

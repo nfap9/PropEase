@@ -236,6 +236,7 @@ export default function AdminUsersPage() {
               label: '删除',
               variant: 'destructive',
               onClick: () => handleDelete(row.original),
+              show: !row.original.is_system,
             },
           ]}
         />
@@ -519,23 +520,29 @@ export default function AdminUsersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 删除确认 */}
+      {/* 删除确认：系统预置账号不可删除 */}
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>确认删除</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要删除运营账号「{selectedUser?.username}」吗？此操作不可恢复。
+              {selectedUser?.is_system ? (
+                <>系统预置账号「{selectedUser?.username}」不可删除。</>
+              ) : (
+                <>确定要删除运营账号「{selectedUser?.username}」吗？此操作不可恢复。</>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => selectedUser && deleteMutation.mutate(selectedUser.id)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteMutation.isPending ? '删除中…' : '删除'}
-            </AlertDialogAction>
+            {!selectedUser?.is_system && (
+              <AlertDialogAction
+                onClick={() => selectedUser && deleteMutation.mutate(selectedUser.id)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteMutation.isPending ? '删除中…' : '删除'}
+              </AlertDialogAction>
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

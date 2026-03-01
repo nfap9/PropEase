@@ -47,6 +47,7 @@ class AdminUserResponse(BaseModel):
     role_id: str
     role_name: str | None = None
     is_active: bool
+    is_system: bool = False
     last_login_at: datetime | None
     created_at: datetime
 

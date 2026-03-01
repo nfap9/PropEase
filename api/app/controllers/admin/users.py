@@ -33,6 +33,7 @@ def _admin_user_to_response(admin: AdminUser) -> AdminUserResponse:
         role_id=admin.role_id,
         role_name=admin.role.name if admin.role else None,
         is_active=admin.is_active,
+        is_system=admin.is_system,
         last_login_at=admin.last_login_at,
         created_at=admin.created_at,
     )
@@ -112,9 +113,12 @@ def delete_user(
     user_id: str,
     service: AdminUserService = Depends(get_admin_user_service),
 ):
-    """删除运营账号。"""
-    if not service.delete_user(user_id):
-        raise NotFoundError("运营账号")
+    """删除运营账号。系统预置账号不可删除。"""
+    try:
+        if not service.delete_user(user_id):
+            raise NotFoundError("运营账号")
+    except ValueError as e:
+        raise BadRequestError(str(e)) from e
 
 
 @router.post("/{user_id}/reset-password", status_code=status.HTTP_204_NO_CONTENT)

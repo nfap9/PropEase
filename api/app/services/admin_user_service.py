@@ -51,6 +51,11 @@ class AdminUserService:
         return self.user_repo.get_with_role(user_id)
 
     def delete_user(self, user_id: str) -> bool:
+        admin = self.user_repo.get(user_id)
+        if not admin:
+            return False
+        if admin.is_system:
+            raise ValueError("系统预置账号不可删除")
         return self.user_repo.delete(user_id)
 
     def reset_password(self, user_id: str, data: AdminPasswordReset) -> None:
