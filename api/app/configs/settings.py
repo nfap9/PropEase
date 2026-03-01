@@ -50,6 +50,14 @@ class Settings(BaseSettings):
     ADMIN_INIT_USERNAME: str = "admin"
     ADMIN_INIT_PASSWORD: str = "Admin@123456"
 
+    # 运营后台账号安全
+    ADMIN_MAX_LOGIN_ATTEMPTS: int = 5  # 连续失败次数超过此次数后锁定
+    ADMIN_LOCKOUT_MINUTES: int = 15  # 锁定时长（分钟）
+    ADMIN_LOGIN_RATE_LIMIT_PER_MINUTE: int = 5  # 每 IP 每分钟最多登录尝试次数
+    ADMIN_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30  # 运营后台 JWT 过期时间（分钟）
+    ADMIN_PASSWORD_MIN_LENGTH: int = 8
+    ADMIN_PASSWORD_REQUIRE_COMPLEXITY: bool = True  # 密码需包含大小写、数字、特殊字符
+
     # 微信支付（订阅支付）
     WECHAT_PAY_ENABLED: bool = False
     WECHAT_MCH_ID: str = ""

@@ -6,6 +6,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
+from app.utils.security import validate_admin_password
+
 
 class AdminLogin(BaseModel):
     """运营后台登录请求"""
@@ -67,9 +69,8 @@ class AdminUserCreate(BaseModel):
 
     @field_validator("password")
     @classmethod
-    def password_min_length(cls, v: str) -> str:
-        if len(v) < 8:
-            raise ValueError("密码至少 8 位")
+    def password_strength(cls, v: str) -> str:
+        validate_admin_password(v)
         return v
 
 
@@ -93,9 +94,8 @@ class AdminPasswordReset(BaseModel):
 
     @field_validator("new_password")
     @classmethod
-    def password_min_length(cls, v: str) -> str:
-        if len(v) < 8:
-            raise ValueError("密码至少 8 位")
+    def password_strength(cls, v: str) -> str:
+        validate_admin_password(v)
         return v
 
 

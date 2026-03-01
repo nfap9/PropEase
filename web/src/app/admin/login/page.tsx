@@ -53,10 +53,22 @@ export default function AdminLoginPage() {
       }
       setError('登录失败');
     } catch (e) {
-      const msg = e && typeof e === 'object' && 'response' in e
-        ? (e as { response?: { data?: { message?: string } } }).response?.data?.message
-        : null;
-      setError(msg || '用户名或密码错误');
+      const err = e as {
+        response?: {
+          status?: number;
+          data?: { message?: string; detail?: string };
+          headers?: { 'retry-after'?: string };
+        };
+      };
+      const msg =
+        err.response?.data?.message ??
+        (typeof err.response?.data?.detail === 'string' ? err.response.data.detail : null);
+      if (err.response?.status === 429) {
+        const retry = err.response?.headers?.['retry-after'];
+        setError(retry ? `登录尝试过于频繁，请 ${retry} 秒后再试` : msg || '登录尝试过于频繁，请稍后再试');
+      } else {
+        setError(msg || '用户名或密码错误');
+      }
     }
   };
 

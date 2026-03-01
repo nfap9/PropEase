@@ -49,9 +49,18 @@ import { adminApiEndpoints, AdminUser, AdminRole } from '@/lib/api/admin-client'
 import { Plus, Pencil, Trash2, KeyRound } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+/** 运营账号密码强度：至少 8 位，含大小写、数字、特殊字符（与后端一致） */
+const adminPasswordSchema = z
+  .string()
+  .min(8, '密码至少 8 位')
+  .refine((s) => /[a-z]/.test(s), '密码须包含小写字母')
+  .refine((s) => /[A-Z]/.test(s), '密码须包含大写字母')
+  .refine((s) => /\d/.test(s), '密码须包含数字')
+  .refine((s) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?\s]/.test(s), '密码须包含特殊字符');
+
 const createUserSchema = z.object({
   username: z.string().min(1, '请输入用户名'),
-  password: z.string().min(8, '密码至少 8 位'),
+  password: adminPasswordSchema,
   name: z.string().min(1, '请输入姓名'),
   email: z.string().optional(),
   role_id: z.string().min(1, '请选择角色'),
@@ -66,7 +75,7 @@ const editUserSchema = z.object({
 
 const resetPasswordSchema = z
   .object({
-    new_password: z.string().min(8, '密码至少 8 位'),
+    new_password: adminPasswordSchema,
     confirm: z.string(),
   })
   .refine((d) => d.new_password === d.confirm, { message: '两次密码不一致', path: ['confirm'] });
@@ -128,8 +137,10 @@ export default function AdminUsersPage() {
       createForm.reset();
       toast.success('运营账号创建成功');
     },
-    onError: (e: Error & { response?: { data?: { message?: string } } }) => {
-      toast.error(e.response?.data?.message ?? '创建失败，请重试');
+    onError: (e: Error & { response?: { data?: { message?: string; data?: { errors?: { message?: string }[] } } } }) => {
+      const data = e.response?.data;
+      const msg = data?.data?.errors?.[0]?.message ?? data?.message ?? '创建失败，请重试';
+      toast.error(msg);
     },
   });
 
@@ -160,7 +171,11 @@ export default function AdminUsersPage() {
       resetForm.reset();
       toast.success('密码已重置');
     },
-    onError: () => toast.error('重置失败，请重试'),
+    onError: (e: Error & { response?: { data?: { message?: string; data?: { errors?: { message?: string }[] } } } }) => {
+      const data = e.response?.data;
+      const msg = data?.data?.errors?.[0]?.message ?? data?.message ?? '重置失败，请重试';
+      toast.error(msg);
+    },
   });
 
   const deleteMutation = useMutation({
@@ -297,7 +312,7 @@ export default function AdminUsersPage() {
                   <FormItem>
                     <FormLabel>密码</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="至少 8 位" {...field} />
+                      <Input type="password" placeholder="至少 8 位，含大小写、数字、特殊字符" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -491,7 +506,7 @@ export default function AdminUsersPage() {
                   <FormItem>
                     <FormLabel>新密码</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="至少 8 位" {...field} />
+                      <Input type="password" placeholder="至少 8 位，含大小写、数字、特殊字符" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

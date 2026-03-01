@@ -2,7 +2,6 @@
 运营侧组织管理：列表、详情、启用/停用。
 """
 
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 

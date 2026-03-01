@@ -63,4 +63,6 @@ class AdminUserService:
         if not admin:
             raise ValueError("运营账号不存在")
         admin.password_hash = get_password_hash(data.new_password)
+        admin.failed_login_attempts = 0
+        admin.locked_until = None
         self.db.commit()

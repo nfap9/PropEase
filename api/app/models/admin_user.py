@@ -40,6 +40,11 @@ class AdminUser(Base, TimestampMixin, ULIDMixin):
         DateTime(timezone=True),
         nullable=True,
     )
+    failed_login_attempts: Mapped[int] = mapped_column(default=0, nullable=False)
+    locked_until: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
 
     role: Mapped["AdminRole"] = relationship("AdminRole", back_populates="users")
 

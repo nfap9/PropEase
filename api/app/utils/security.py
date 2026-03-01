@@ -1,9 +1,30 @@
+import re
 from datetime import UTC, datetime, timedelta
 
 import bcrypt
 from jose import JWTError, jwt
 
 from app.configs import settings
+
+
+def validate_admin_password(password: str) -> None:
+    """
+    校验运营账号密码强度。不通过时抛出 ValueError，消息为中文说明。
+    规则：最小长度由配置决定；若要求复杂度则需包含大小写字母、数字、特殊字符。
+    """
+    min_len = settings.ADMIN_PASSWORD_MIN_LENGTH
+    if len(password) < min_len:
+        raise ValueError(f"密码至少 {min_len} 位")
+    if not settings.ADMIN_PASSWORD_REQUIRE_COMPLEXITY:
+        return
+    if not re.search(r"[a-z]", password):
+        raise ValueError("密码须包含小写字母")
+    if not re.search(r"[A-Z]", password):
+        raise ValueError("密码须包含大写字母")
+    if not re.search(r"\d", password):
+        raise ValueError("密码须包含数字")
+    if not re.search(r"[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>/?\s]", password):
+        raise ValueError("密码须包含特殊字符")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -47,6 +68,6 @@ def create_admin_access_token(admin_user_id: str, expires_delta: timedelta | Non
     if expires_delta:
         expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(UTC) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(UTC) + timedelta(minutes=settings.ADMIN_ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode["exp"] = expire
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
