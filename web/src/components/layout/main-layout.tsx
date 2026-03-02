@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth/context';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,7 +26,9 @@ import {
   Settings,
   Menu,
   Shield,
+  Bell,
 } from 'lucide-react';
+import { notificationsApi } from '@/lib/api/notifications';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { OrgSelector } from '@/components/common/org-selector';
@@ -34,6 +37,7 @@ import { PermissionGuard } from '@/components/common/permission-guard';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: '仪表盘', icon: Home, permission: null },
+  { href: '/notifications', label: '通知', icon: Bell, permission: null },
   { href: '/apartments', label: '公寓管理', icon: Building2, permission: PERMISSIONS.APARTMENT_VIEW },
   { href: '/rooms', label: '全部房间', icon: DoorOpen, permission: PERMISSIONS.ROOM_VIEW },
   { href: '/tenants', label: '租客管理', icon: Users, permission: PERMISSIONS.TENANT_VIEW },
@@ -53,6 +57,11 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   const { hasPermission, isSuperAdmin } = usePermissions();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['notifications', 'unread-count'],
+    queryFn: () => notificationsApi.getUnreadCount(),
+  });
 
   // 过滤有权限的导航项
   const visibleNavItems = NAV_ITEMS.filter(
@@ -149,6 +158,17 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
           <div className="flex-1 flex justify-center">
             <OrgSelector />
           </div>
+
+          <Button variant="ghost" size="icon" className="relative" asChild>
+            <Link href="/notifications" aria-label="通知">
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-medium text-destructive-foreground">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </Link>
+          </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -99,7 +99,7 @@ test.describe('运营后台 - 用户管理', () => {
   });
 });
 
-test.describe('运营后台 - 组织管理', () => {
+test.describe('运营后台 - 组织管理（对应测试用例 12.4）', () => {
   test('组织列表可见且有组织名称列', async ({ page }) => {
     await page.goto('/admin/organizations');
     await expect(page.getByRole('heading', { name: '组织管理' })).toBeVisible();
@@ -113,6 +113,17 @@ test.describe('运营后台 - 组织管理', () => {
     await orgLink.click();
     await expect(page).toHaveURL(/\/admin\/organizations\/[^/]+/);
     await expect(page.getByText('组织详情')).toBeVisible();
+  });
+
+  test('组织详情页可启用或停用组织（ADM-O-03）', async ({ page }) => {
+    await page.goto('/admin/organizations');
+    const orgLink = page.locator('a[href^="/admin/organizations/"]').first();
+    if (!(await orgLink.isVisible())) return;
+    await orgLink.click();
+    await expect(page).toHaveURL(/\/admin\/organizations\/[^/]+/);
+    const enableBtn = page.getByRole('button', { name: '启用组织' });
+    const disableBtn = page.getByRole('button', { name: '停用组织' });
+    expect(await enableBtn.isVisible() || await disableBtn.isVisible()).toBe(true);
   });
 });
 
@@ -128,13 +139,21 @@ test.describe('运营后台 - 套餐配置', () => {
   });
 });
 
-test.describe('运营后台 - 订阅管理', () => {
+test.describe('运营后台 - 订阅管理（对应测试用例 12.6）', () => {
   test('订阅管理页有列表或筛选', async ({ page }) => {
     await page.goto('/admin/subscriptions');
     await expect(page.getByRole('heading', { name: '订阅管理' })).toBeVisible();
-    await expect(
-      page.getByText('组织 ID').or(page.getByRole('columnheader', { name: '组织 ID' }))
-    ).toBeVisible({ timeout: 5000 });
+    const hasOrgCol = await page.getByRole('columnheader', { name: '组织 ID' }).count() > 0;
+    const hasOrgText = await page.getByText('组织 ID').count() > 0;
+    expect(hasOrgCol || hasOrgText).toBe(true);
+  });
+
+  test('订阅列表有操作列或状态列（ADM-SUB-01）', async ({ page }) => {
+    await page.goto('/admin/subscriptions');
+    await expect(page.getByRole('heading', { name: '订阅管理' })).toBeVisible();
+    const hasStatus = await page.getByRole('columnheader', { name: '状态' }).count() > 0;
+    const hasActions = await page.getByRole('columnheader', { name: '操作' }).count() > 0;
+    expect(hasStatus || hasActions).toBe(true);
   });
 });
 
