@@ -48,3 +48,7 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端。
 ## 数据库
 
 - 使用 PostgreSQL；表结构以 `prisma/schema.prisma` 为准，在 api 目录执行 `pnpm exec prisma db push` 同步。
+
+## E2E 测试用户
+
+- 运行 E2E 前可设置环境变量 `SEED_E2E_USER=true` 启动 API，将自动创建固定测试用户：手机号 `13800138000`、密码 `Test1234`、姓名「E2E测试」，并创建其个人组织，供「密码登录」等 E2E 用例使用。

@@ -111,7 +111,8 @@ pnpm run dev:local   # 一键启动后端 + 前端（停后端：pnpm run dev-lo
 pnpm run format      # 格式化 api
 pnpm run lint        # api + 前端检查
 pnpm run type-check  # 类型检查
-pnpm run test        # 运行 api 测试
+pnpm run test        # 运行单元测试（api + web）
+pnpm run test:e2e    # E2E 测试（需先启动 API 与前端，见下方 E2E 说明）
 
 # 数据库（Prisma）
 cd api && pnpm exec prisma db push   # 以 schema 同步数据库
@@ -123,7 +124,9 @@ pnpm run docker:down  # 停止容器
 
 ## 测试账号
 
-**业务端（公寓管理系统）**：无种子脚本，需在登录页自行注册。
+**业务端（公寓管理系统）**：无种子脚本时需在登录页自行注册。若启动 API 时设置 `SEED_E2E_USER=true`，将自动创建 E2E 测试用户：手机号 `13800138000`、密码 `Test1234`，供 E2E 用例「密码登录」使用。
+
+**E2E 测试**：运行 `pnpm run test:e2e` 前需先启动 API（端口 8000）与前端（端口 3000），如 `pnpm run dev:local`。若需「密码登录」用例通过，请以 `SEED_E2E_USER=true` 启动 API 一次以创建上述测试用户。**首次运行或升级 Playwright 后**须执行 `pnpm exec playwright install`（或 `pnpm exec playwright install chromium`）安装浏览器，否则 E2E 会报「Executable doesn't exist」。
 
 **运营后台（应用启动时自动种子）**
 
