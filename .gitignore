@@ -9,6 +9,11 @@ package-lock.json
 
 # Testing
 coverage/
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+.playwright/
 
 # Next.js
 .next/
