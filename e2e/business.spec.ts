@@ -464,3 +464,107 @@ test.describe('业务端 - 公寓详情（对应测试用例 3.2、3.4、3.6）'
     }
   });
 });
+
+// 覆盖完整业务流程：公寓 → 房间 → 租客 → 租约 → 账单 → 报表（APT-C-01、RM-C-01、TN-C-01、LE-C-01、BL-*、RP-*）
+test.describe('业务端 - 完整业务流程', () => {
+  test('从创建公寓到经营分析端到端可走通', async ({ page }) => {
+    const ts = Date.now();
+    const apartmentName = `E2E流程_公寓_${ts}`;
+    const roomNumber = `101_${ts}`;
+    const monthlyRent = 2000;
+    const tenantName = `E2E流程_租客_${ts}`;
+    const tenantPhone = `139${String(ts).slice(-8)}`;
+
+    await page.goto('/dashboard');
+    await expect(page).toHaveURL(/\/dashboard/);
+    await page.waitForLoadState('networkidle');
+
+    // 1. 公寓管理 → 新增公寓
+    await page.getByRole('link', { name: '公寓管理' }).click();
+    await expect(page).toHaveURL(/\/apartments$/);
+    await page.getByRole('button', { name: '新增公寓' }).first().click();
+    const createAptDialog = page.getByRole('dialog').filter({ hasText: '新增公寓' });
+    await expect(createAptDialog).toBeVisible({ timeout: 5000 });
+    await createAptDialog.getByRole('textbox', { name: '公寓名称' }).fill(apartmentName);
+    await createAptDialog.locator('input#address').fill('E2E测试地址');
+    await createAptDialog.getByRole('button', { name: '创建' }).click();
+    await expect(createAptDialog).toBeHidden({ timeout: 10000 });
+    await expect(page.getByText(apartmentName)).toBeVisible({ timeout: 10000 });
+
+    // 2. 进入公寓详情
+    await page.getByRole('link', { name: apartmentName }).click();
+    await expect(page).toHaveURL(/\/apartments\/[^/]+/, { timeout: 10000 });
+    await expect(page.getByRole('button', { name: '返回公寓列表' })).toBeVisible({ timeout: 5000 });
+
+    // 3. 新增房间
+    await page.getByRole('button', { name: '新增房间' }).click();
+    const roomDialog = page.getByRole('dialog').filter({ hasText: /新增房间|房间号/ });
+    await expect(roomDialog).toBeVisible({ timeout: 5000 });
+    await roomDialog.getByRole('textbox', { name: /房间号/ }).fill(roomNumber);
+    await roomDialog.locator('input#monthly_rent').fill(String(monthlyRent));
+    await roomDialog.getByRole('button', { name: '创建' }).click();
+    await expect(roomDialog).toBeHidden({ timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText(roomNumber)).toBeVisible({ timeout: 10000 });
+
+    // 4. 租客管理 → 新增租客
+    await page.getByRole('link', { name: '租客管理' }).click();
+    await expect(page).toHaveURL(/\/tenants$/);
+    await page.getByRole('button', { name: '新增租客' }).click();
+    const tenantDialog = page.getByRole('dialog').filter({ hasText: '新增租客' });
+    await expect(tenantDialog).toBeVisible({ timeout: 5000 });
+    await tenantDialog.locator('input#name').fill(tenantName);
+    await tenantDialog.locator('input#phone').fill(tenantPhone);
+    await tenantDialog.getByRole('button', { name: '创建' }).click();
+    await expect(tenantDialog).toBeHidden({ timeout: 10000 });
+    await expect(page.getByText(tenantName)).toBeVisible({ timeout: 10000 });
+
+    // 5. 租约管理 → 新增租约（先选公寓、再选房间、再选租客）
+    await page.getByRole('link', { name: '租约管理' }).click();
+    await expect(page).toHaveURL(/\/leases$/);
+    await page.getByRole('button', { name: '新增租约' }).click();
+    const leaseDialog = page.getByRole('dialog').filter({ hasText: '新增租约' });
+    await expect(leaseDialog).toBeVisible({ timeout: 5000 });
+    await leaseDialog.getByRole('combobox', { name: '选择公寓' }).click();
+    await page.getByRole('option', { name: apartmentName }).click();
+    await page.waitForLoadState('networkidle');
+    await leaseDialog.getByRole('combobox', { name: /选择房间/ }).click();
+    await page.getByRole('option', { name: new RegExp(`${roomNumber}.*¥${monthlyRent}`) }).click();
+    await leaseDialog.getByRole('combobox', { name: '选择租客' }).click();
+    await page.getByRole('option', { name: new RegExp(tenantName) }).click();
+    await leaseDialog.locator('input#monthly_rent').fill(String(monthlyRent));
+    await leaseDialog.getByRole('button', { name: '确认签约' }).click();
+    await expect(leaseDialog).toBeHidden({ timeout: 15000 });
+    await page.waitForLoadState('networkidle');
+
+    // 6. 账单管理：进入页面并断言列表或状态存在
+    await page.getByRole('link', { name: '账单管理' }).click();
+    await expect(page).toHaveURL(/\/bills$/);
+    await expect(page.getByRole('heading', { name: '账单管理' })).toBeVisible({ timeout: 10000 });
+    const hasTableOrFilter =
+      (await page.getByRole('columnheader', { name: '月份' }).count()) > 0 ||
+      (await page.getByText('待支付').count()) > 0 ||
+      (await page.getByText('已支付').count()) > 0;
+    expect(hasTableOrFilter).toBe(true);
+
+    // 7. 若有「登记付款」则执行一次（可选）
+    const payBtn = page.getByRole('button', { name: '登记付款' }).first();
+    if (await payBtn.isVisible()) {
+      await payBtn.click();
+      const payDialog = page.getByRole('dialog').filter({ hasText: '登记付款' });
+      if (await payDialog.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await payDialog.locator('input#amount').fill('2000');
+        await payDialog.getByRole('button', { name: '确认收款' }).click();
+        await expect(payDialog).toBeHidden({ timeout: 10000 });
+      }
+    }
+
+    // 8. 经营分析：断言 Tab 存在
+    await page.getByRole('link', { name: '经营分析' }).click();
+    await expect(page).toHaveURL(/\/reports$/);
+    await expect(page.getByRole('heading', { name: '经营分析' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('tab', { name: '收入分析' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: '入住率' })).toBeVisible();
+    await expect(page.getByRole('tab', { name: '总览' })).toBeVisible();
+  });
+});
