@@ -37,6 +37,7 @@ services:
     restart: unless-stopped
 
   api:
+    image: apartment-ultra_api
     build:
       context: ..
       dockerfile: api/Dockerfile
@@ -53,6 +54,7 @@ services:
     restart: unless-stopped
 
   web:
+    image: apartment-ultra_web
     build:
       context: ..
       dockerfile: web/Dockerfile
