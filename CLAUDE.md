@@ -15,7 +15,7 @@ Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是�
 ## 后端工作流
 
 - 阅读 `api/AGENTS.md` 了解详情
-- 本地：`pnpm run dev:api`（端口 8000）或 `pnpm run dev:local` 一键起前后端；依赖在根目录 `pnpm install`
+- 本地：`pnpm run dev:api`（端口 8000）或 `pnpm run dev:local` 一键起前后端（同终端，Ctrl+C 同时退出）；依赖在根目录 `pnpm install`
 - 代码质量：`pnpm run lint` / `pnpm run type-check` / `pnpm run test` 默认针对 api + 前端
 
 ## 前端工作流

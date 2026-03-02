@@ -7,7 +7,7 @@
     "dev:api": "PORT=8000 pnpm --filter apartment-ultra-api dev",
     "dev:web": "pnpm --filter frontend dev",
     "dev-setup": "bash scripts/dev-setup.sh",
-    "dev:local": "bash scripts/dev-local.sh",
+    "dev:local": "concurrently -n api,web -c blue,green \"pnpm run dev:api\" \"pnpm run dev:web\"",
     "dev-local-stop": "bash scripts/dev-local-stop.sh",
     "dev-check": "bash scripts/dev-check.sh",
     "dev-clean": "bash scripts/dev-clean.sh",
@@ -31,7 +31,8 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "devDependencies": {
-    "@playwright/test": "^1.52.0"
+    "@playwright/test": "^1.52.0",
+    "concurrently": "^9.2.1"
   },
   "engines": {
     "node": ">=18"

@@ -54,7 +54,7 @@ pnpm run dev-setup
 # 2. 启动开发服务（任选其一）
 pnpm run dev:api    # 终端 1：启动后端（api，端口 8000）
 pnpm run dev:web    # 终端 2：启动前端
-# 或一键启动：pnpm run dev:local  # 后端后台 + 前端前台；停后端用 pnpm run dev-local-stop
+# 或一键启动：pnpm run dev:local  # 同终端同时跑后端+前端，Ctrl+C 会一起退出
 ```
 
 ### 方式二：Docker
@@ -105,7 +105,7 @@ pnpm install
 # 开发（后端为 api）
 pnpm run dev:api     # 启动后端（端口 8000）
 pnpm run dev:web     # 启动前端
-pnpm run dev:local   # 一键启动后端 + 前端（停后端：pnpm run dev-local-stop）
+pnpm run dev:local   # 一键启动后端 + 前端（同终端，Ctrl+C 同时退出）
 
 # 代码质量（api + 前端）
 pnpm run format      # 格式化 api
