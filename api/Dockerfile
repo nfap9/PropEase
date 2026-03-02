@@ -12,6 +12,8 @@ RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
 # 复制 api 源码
 COPY api/ api/
+# 先构建 api-contract（api 依赖其 dist），再生成 Prisma 并构建 api
+RUN pnpm --filter @apartment-ultra/api-contract run build
 RUN pnpm --filter apartment-ultra-api exec prisma generate
 RUN pnpm --filter apartment-ultra-api run build
 
