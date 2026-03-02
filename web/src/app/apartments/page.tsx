@@ -222,7 +222,7 @@ export default function ApartmentsPage() {
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild onClick={(e) => e.preventDefault()}>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="更多操作">
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -302,7 +302,7 @@ export default function ApartmentsPage() {
               <h3 className="text-lg font-medium mb-2">暂无公寓</h3>
               <p className="text-muted-foreground text-sm mb-4">点击下方按钮添加您的第一个公寓</p>
               <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
-                <Button onClick={() => setIsCreateOpen(true)}>
+                <Button onClick={() => setIsCreateOpen(true)} aria-label="新增公寓（空状态）">
                   <Plus className="mr-2 h-4 w-4" />
                   新增公寓
                 </Button>

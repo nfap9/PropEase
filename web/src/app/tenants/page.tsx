@@ -253,8 +253,8 @@ export default function TenantsPage() {
           >
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">姓名 *</Label>
-                <Input id="name" {...createForm.register('name')} />
+                <Label htmlFor="name">姓名 <span aria-hidden="true">*</span></Label>
+                <Input id="name" aria-required {...createForm.register('name')} />
                 {createForm.formState.errors.name && (
                   <p className="text-sm text-destructive">
                     {createForm.formState.errors.name.message}
@@ -262,8 +262,8 @@ export default function TenantsPage() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">联系电话 *</Label>
-                <Input id="phone" {...createForm.register('phone')} />
+                <Label htmlFor="phone">联系电话 <span aria-hidden="true">*</span></Label>
+                <Input id="phone" aria-required {...createForm.register('phone')} />
                 {createForm.formState.errors.phone && (
                   <p className="text-sm text-destructive">
                     {createForm.formState.errors.phone.message}
@@ -324,12 +324,12 @@ export default function TenantsPage() {
           >
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-name">姓名 *</Label>
-                <Input id="edit-name" {...editForm.register('name')} />
+                <Label htmlFor="edit-name">姓名 <span aria-hidden="true">*</span></Label>
+                <Input id="edit-name" aria-required {...editForm.register('name')} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-phone">联系电话 *</Label>
-                <Input id="edit-phone" {...editForm.register('phone')} />
+                <Label htmlFor="edit-phone">联系电话 <span aria-hidden="true">*</span></Label>
+                <Input id="edit-phone" aria-required {...editForm.register('phone')} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">

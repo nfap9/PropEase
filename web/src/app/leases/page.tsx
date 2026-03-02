@@ -286,8 +286,9 @@ export default function LeasesPage() {
           >
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>房间</Label>
+                <Label htmlFor="edit-room">房间</Label>
                 <Input
+                  id="edit-room"
                   value={
                     selectedLease?.room
                       ? `${selectedLease.room.apartment?.name || ''} - ${selectedLease.room.room_number}`
@@ -297,8 +298,8 @@ export default function LeasesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>租客</Label>
-                <Input value={selectedLease?.tenant?.name || ''} disabled />
+                <Label htmlFor="edit-tenant">租客</Label>
+                <Input id="edit-tenant" value={selectedLease?.tenant?.name || ''} disabled />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">

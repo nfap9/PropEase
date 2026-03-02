@@ -109,6 +109,7 @@ test.describe('业务端 - 通知（对应测试用例 11）', () => {
   });
 });
 
+// 同屏存在多个相同 name 时（如「新增公寓」在页头与空状态各一），使用 .first()；空状态按钮已设 aria-label="新增公寓（空状态）"，可按需改用该 name 精确定位。
 test.describe('业务端 - 公寓管理（对应测试用例 3.1、3.2）', () => {
   test('公寓管理页有标题且为列表或空状态（APT-L-01）', async ({ page }) => {
     await page.goto('/apartments');
@@ -188,7 +189,7 @@ test.describe('业务端 - 公寓管理（对应测试用例 3.1、3.2）', () =
 
     const newName = `E2E公寓_编辑_${Date.now()}`;
     const card = page.getByRole('link', { name: new RegExp(name) });
-    await card.getByRole('button').first().click();
+    await card.getByRole('button', { name: '更多操作' }).click();
     await page.getByRole('menuitem', { name: '编辑' }).click();
     const editDialog = page.getByRole('dialog').filter({ hasText: '编辑公寓' });
     await expect(editDialog).toBeVisible({ timeout: 5000 });
@@ -212,7 +213,7 @@ test.describe('业务端 - 公寓管理（对应测试用例 3.1、3.2）', () =
     await expect(page.getByRole('link', { name: new RegExp(name) })).toBeVisible({ timeout: 10000 });
 
     const card = page.getByRole('link', { name: new RegExp(name) });
-    await card.getByRole('button').first().click();
+    await card.getByRole('button', { name: '更多操作' }).click();
     await page.getByRole('menuitem', { name: '删除' }).click();
     await expect(page.getByRole('alertdialog').filter({ hasText: '确认删除' })).toBeVisible();
     await page.getByRole('button', { name: /^删除/ }).click();
@@ -251,8 +252,7 @@ test.describe('业务端 - 租客管理（对应测试用例 4）', () => {
     const name = `E2E租客_${Date.now()}`;
     const phone = `139${String(Date.now()).slice(-8)}`;
     await dialog.getByLabel(/姓名/).fill(name);
-    // 仅匹配必填的「联系电话 *」，避免匹配「紧急联系电话」
-    await dialog.getByRole('textbox', { name: '联系电话 *' }).fill(phone);
+    await dialog.getByLabel('联系电话', { exact: true }).fill(phone);
     await dialog.getByRole('button', { name: '创建' }).click();
     await expect(dialog).toBeHidden({ timeout: 10000 });
     await expect(page.getByText(name)).toBeVisible({ timeout: 10000 });
@@ -370,6 +370,7 @@ test.describe('业务端 - 经营分析（对应测试用例 8）', () => {
   });
 });
 
+// 同屏存在多个相同 name 时使用 .first()，按需可改为 aria-label 区分。
 test.describe('业务端 - 组织/团队设置（对应测试用例 2.x）', () => {
   test('团队设置可打开创建组织弹窗（ORG-C-01 相关）', async ({ page }) => {
     await page.goto('/settings/team');
@@ -440,6 +441,7 @@ test.describe('业务端 - 设置', () => {
 
   test('可进入团队设置页', async ({ page }) => {
     await page.goto('/settings');
+    // 同屏存在多个相同 name 时使用 .first()
     await page.getByRole('link', { name: '团队设置' }).first().click();
     await expect(page).toHaveURL(/\/settings\/team/);
     await expect(page.getByRole('heading', { name: '团队设置' })).toBeVisible();
@@ -459,6 +461,7 @@ test.describe('业务端 - 设置', () => {
 
   test('可进入订阅管理页', async ({ page }) => {
     await page.goto('/settings');
+    // 同屏存在多个相同 name 时使用 .first()
     await page.getByRole('link', { name: '订阅管理' }).first().click();
     await expect(page).toHaveURL(/\/settings\/subscription/);
     await expect(page.getByText('订阅管理')).toBeVisible({ timeout: 10000 });

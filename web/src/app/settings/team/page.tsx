@@ -249,7 +249,7 @@ export default function TeamSettingsPage() {
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="更多操作">
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -319,7 +319,7 @@ export default function TeamSettingsPage() {
                       <CardTitle className="text-lg">{org.name}</CardTitle>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" aria-label="更多操作">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -410,8 +410,8 @@ export default function TeamSettingsPage() {
             className="space-y-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="name">组织名称 *</Label>
-              <Input id="name" {...createOrgForm.register('name')} />
+              <Label htmlFor="name">组织名称 <span aria-hidden="true">*</span></Label>
+              <Input id="name" aria-required {...createOrgForm.register('name')} />
               {createOrgForm.formState.errors.name && (
                 <p className="text-sm text-destructive">
                   {createOrgForm.formState.errors.name.message}
@@ -444,8 +444,8 @@ export default function TeamSettingsPage() {
             className="space-y-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="edit-name">组织名称 *</Label>
-              <Input id="edit-name" {...editOrgForm.register('name')} />
+              <Label htmlFor="edit-name">组织名称 <span aria-hidden="true">*</span></Label>
+              <Input id="edit-name" aria-required {...editOrgForm.register('name')} />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsEditOrgOpen(false)}>
@@ -471,8 +471,8 @@ export default function TeamSettingsPage() {
             className="space-y-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="phone">手机号 *</Label>
-              <Input id="phone" type="tel" placeholder="请输入手机号" {...inviteForm.register('phone')} />
+              <Label htmlFor="phone">手机号 <span aria-hidden="true">*</span></Label>
+              <Input id="phone" type="tel" placeholder="请输入手机号" aria-required {...inviteForm.register('phone')} />
               {inviteForm.formState.errors.phone && (
                 <p className="text-sm text-destructive">
                   {inviteForm.formState.errors.phone.message}
@@ -480,12 +480,12 @@ export default function TeamSettingsPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="role">角色 *</Label>
+              <Label htmlFor="role">角色 <span aria-hidden="true">*</span></Label>
               <Select
                 value={inviteForm.watch('role')}
                 onValueChange={(value: MemberRole) => inviteForm.setValue('role', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger id="role">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

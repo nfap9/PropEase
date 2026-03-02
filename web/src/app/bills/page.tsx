@@ -380,9 +380,10 @@ export default function BillsPage() {
             className="space-y-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="amount">付款金额 *</Label>
+              <Label htmlFor="amount">付款金额 <span aria-hidden="true">*</span></Label>
               <Input
                 id="amount"
+                aria-required
                 type="number"
                 step="0.01"
                 {...paymentForm.register('amount', { valueAsNumber: true })}
@@ -395,22 +396,23 @@ export default function BillsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="payment_date">付款日期 *</Label>
+                <Label htmlFor="payment_date">付款日期 <span aria-hidden="true">*</span></Label>
                 <Input
                   id="payment_date"
                   type="date"
+                  aria-required
                   {...paymentForm.register('payment_date')}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="payment_method">付款方式 *</Label>
+                <Label htmlFor="payment_method">付款方式 <span aria-hidden="true">*</span></Label>
                 <Select
                   value={paymentForm.watch('payment_method')}
                   onValueChange={(value: PaymentMethod) =>
                     paymentForm.setValue('payment_method', value)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="payment_method">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
