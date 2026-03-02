@@ -15,8 +15,9 @@ export async function requireOrgMembership(
   if (!user) throw createAppError(401, 'Could not validate credentials');
   const orgId =
     (req.params as Record<string, string>)[orgIdParamName] ??
-    (req.query as Record<string, string>).org_id;
-  if (!orgId) throw createAppError(400, '缺少组织 ID');
+    (req.query as Record<string, string>).org_id ??
+    (typeof req.headers['x-org-id'] === 'string' ? req.headers['x-org-id'].trim() || undefined : undefined);
+  if (!orgId) throw createAppError(400, '需要选择组织');
   const member = await prisma.organizationMember.findFirst({
     where: { organization_id: orgId, user_id: user.id },
   });

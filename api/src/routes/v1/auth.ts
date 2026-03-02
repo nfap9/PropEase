@@ -108,6 +108,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
       // 验证码登录：stub 暂不校验
       if (!verification_code) return next(createAppError(401, '验证码无效或已过期'));
     }
+    if (!user.is_active) return next(createAppError(401, '账号已停用或不允许登录'));
     const access_token = createAccessToken({ sub: user.id, phone: user.phone });
     const refresh_token = createRefreshToken({ sub: user.id, phone: user.phone });
     res.json({ access_token, refresh_token, token_type: 'bearer' });

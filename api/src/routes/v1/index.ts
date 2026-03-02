@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { createAppError } from '../../utils/appError.js';
 import { authRouter } from './auth.js';
 import { organizationsRouter } from './organizations.js';
 import { apartmentsRouter } from './apartments.js';
@@ -33,6 +34,10 @@ router.use('/webhooks', webhooksRouter);
 
 router.get('/', (_req, res) => {
   res.json({ message: 'API v1' });
+});
+
+router.use((_req, _res, next) => {
+  next(createAppError(404, 'Not Found'));
 });
 
 export const v1Router = router;
