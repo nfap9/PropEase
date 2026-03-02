@@ -5,7 +5,18 @@ import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
-import { SYSTEM_ROLES, type SystemRole } from '../../constants/permissionDefaults.js';
+import {
+  SYSTEM_ROLES,
+  ORG_MEMBER_ROLES,
+  DEFAULT_ORG_ROLE_PERMISSIONS,
+  toPermissionCodes,
+  type SystemRole,
+  type OrgMemberRole,
+} from '../../constants/permissionDefaults.js';
+
+const UpdateRolePermissionsSchema = z.object({
+  permission_codes: z.array(z.string().min(1)).max(200),
+});
 
 const router: Router = Router();
 
@@ -47,8 +58,37 @@ router.get('/grouped', async (_req: Request, res: Response, next: NextFunction) 
 
 router.get('/organization/:org_id/roles/:role', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await requireOrgMembership(req, 'org_id');
-    res.json({ role: req.params.role, permissions: [] });
+    const orgId = await requireOrgMembership(req, 'org_id');
+    const role = req.params.role as OrgMemberRole;
+    if (!ORG_MEMBER_ROLES.includes(role)) {
+      return next(createAppError(400, '无效的角色'));
+    }
+    const org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { settings: true },
+    });
+    if (!org) return next(createAppError(404, '组织不存在'));
+    const settings = (org.settings as Record<string, unknown> | null) ?? {};
+    const rolePermissions = (settings.role_permissions as Record<string, string[] | undefined> | undefined)?.[role];
+    const codes =
+      Array.isArray(rolePermissions) && rolePermissions.length > 0
+        ? rolePermissions
+        : toPermissionCodes(DEFAULT_ORG_ROLE_PERMISSIONS[role]);
+    const permissions = await prisma.permission.findMany({
+      where: { code: { in: codes } },
+    });
+    res.json({
+      role,
+      permissions: permissions.map((p) => ({
+        id: p.id,
+        resource: p.resource,
+        action: p.action,
+        code: p.code,
+        name: p.name,
+        description: p.description,
+        created_at: p.created_at.toISOString(),
+      })),
+    });
   } catch (e) {
     next(e);
   }
@@ -56,7 +96,47 @@ router.get('/organization/:org_id/roles/:role', async (req: Request, res: Respon
 
 router.put('/organization/:org_id/roles/:role', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await requireOrgMembership(req, 'org_id');
+    const user = getConsoleUser(req);
+    if (!user) return next(createAppError(401, '未授权或登录已过期'));
+    const orgId = await requireOrgMembership(req, 'org_id');
+    const role = req.params.role as OrgMemberRole;
+    if (!ORG_MEMBER_ROLES.includes(role)) {
+      return next(createAppError(400, '无效的角色'));
+    }
+    const member = await prisma.organizationMember.findFirst({
+      where: { organization_id: orgId, user_id: user.id },
+      select: { role: true },
+    });
+    if (!member || member.role !== 'owner') {
+      return next(createAppError(403, '仅组织所有者可修改角色权限'));
+    }
+    const parsed = UpdateRolePermissionsSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const fieldErrors = parsed.error.errors.map((e) => ({
+        field: e.path.join('.'),
+        message: e.message,
+      }));
+      return next(createAppError(422, '参数校验失败', { fieldErrors }));
+    }
+    const { permission_codes } = parsed.data;
+    const validCodes = await prisma.permission.findMany({
+      where: { code: { in: permission_codes } },
+      select: { code: true },
+    });
+    const validSet = new Set(validCodes.map((p) => p.code));
+    const codes = permission_codes.filter((c) => validSet.has(c));
+    const org = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { settings: true },
+    });
+    if (!org) return next(createAppError(404, '组织不存在'));
+    const settings = (org.settings as Record<string, unknown> | null) ?? {};
+    const rolePermissions = (settings.role_permissions as Record<string, string[]> | undefined) ?? {};
+    rolePermissions[role] = codes;
+    await prisma.organization.update({
+      where: { id: orgId },
+      data: { settings: { ...settings, role_permissions: rolePermissions } },
+    });
     res.json({ message: 'ok' });
   } catch (e) {
     next(e);

@@ -14,7 +14,7 @@ export const RESOURCES = [
   'report',
 ] as const;
 
-export const ACTIONS = ['view', 'create', 'edit', 'delete', 'export', 'manage'] as const;
+export const ACTIONS = ['view', 'create', 'edit', 'delete', 'export'] as const;
 
 export const RESOURCE_NAMES: Record<(typeof RESOURCES)[number], string> = {
   apartment: '公寓管理',
@@ -34,7 +34,6 @@ export const ACTION_NAMES: Record<(typeof ACTIONS)[number], string> = {
   edit: '编辑',
   delete: '删除',
   export: '导出',
-  manage: '管理（全部）',
 };
 
 export function getPermissionName(
@@ -118,3 +117,61 @@ export const DEFAULT_SYSTEM_ROLE_PERMISSIONS: Record<
     { resource: 'member', action: 'view' },
   ],
 };
+
+/** 组织内固定角色（MemberRole，不含 owner） */
+export const ORG_MEMBER_ROLES = ['admin', 'member', 'viewer'] as const;
+export type OrgMemberRole = (typeof ORG_MEMBER_ROLES)[number];
+
+/** 组织角色默认权限（(resource, action) 列表），用于未自定义时的 GET 与 /me 计算 */
+export const DEFAULT_ORG_ROLE_PERMISSIONS: Record<
+  OrgMemberRole,
+  Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }>
+> = {
+  admin: (() => {
+    const perms: Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }> = [];
+    const actions: Array<(typeof ACTIONS)[number]> = ['view', 'create', 'edit', 'delete', 'export'];
+    for (const r of RESOURCES) for (const a of actions) perms.push({ resource: r, action: a });
+    return perms;
+  })(),
+  member: [
+    { resource: 'apartment', action: 'view' },
+    { resource: 'apartment', action: 'create' },
+    { resource: 'apartment', action: 'edit' },
+    { resource: 'room', action: 'view' },
+    { resource: 'room', action: 'create' },
+    { resource: 'room', action: 'edit' },
+    { resource: 'tenant', action: 'view' },
+    { resource: 'tenant', action: 'create' },
+    { resource: 'tenant', action: 'edit' },
+    { resource: 'lease', action: 'view' },
+    { resource: 'lease', action: 'create' },
+    { resource: 'lease', action: 'edit' },
+    { resource: 'bill', action: 'view' },
+    { resource: 'bill', action: 'create' },
+    { resource: 'bill', action: 'edit' },
+    { resource: 'utility', action: 'view' },
+    { resource: 'utility', action: 'create' },
+    { resource: 'utility', action: 'edit' },
+    { resource: 'member', action: 'view' },
+    { resource: 'settings', action: 'view' },
+    { resource: 'report', action: 'view' },
+    { resource: 'report', action: 'export' },
+  ],
+  viewer: [
+    { resource: 'apartment', action: 'view' },
+    { resource: 'room', action: 'view' },
+    { resource: 'tenant', action: 'view' },
+    { resource: 'lease', action: 'view' },
+    { resource: 'bill', action: 'view' },
+    { resource: 'utility', action: 'view' },
+    { resource: 'member', action: 'view' },
+    { resource: 'report', action: 'view' },
+  ],
+};
+
+/** 将 (resource, action) 列表转为权限码列表 */
+export function toPermissionCodes(
+  perms: Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }>
+): string[] {
+  return perms.map((p) => `${p.resource}:${p.action}`);
+}

@@ -13,7 +13,7 @@ export type Resource =
   | 'report';
 
 /** 操作 */
-export type Action = 'view' | 'create' | 'edit' | 'delete' | 'export' | 'manage';
+export type Action = 'view' | 'create' | 'edit' | 'delete' | 'export';
 
 /** 权限 */
 export interface Permission {

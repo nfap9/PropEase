@@ -117,6 +117,10 @@ pnpm run test:e2e    # E2E 测试（需先启动 API 与前端，见下方 E2E �
 # 数据库（Prisma）
 cd api && pnpm exec prisma db push   # 以 schema 同步数据库
 
+# 清空数据库并重新生成（会删除所有数据，再按 schema 建表；种子在启动 API 时自动执行）
+cd api && pnpm run db:reset
+# 然后启动 API 一次以执行种子（权限、运营管理员、套餐等）：pnpm run dev:api
+
 # Docker
 pnpm run docker:up   # 启动容器
 pnpm run docker:down  # 停止容器

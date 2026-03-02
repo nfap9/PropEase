@@ -1,7 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getAdminPermissionGroups } from '@/lib/constants/admin-permissions';
+import { cn } from '@/lib/utils';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 export interface AdminPermissionCheckboxGroupProps {
   /** 当前选中的权限码 */
@@ -17,8 +20,7 @@ export interface AdminPermissionCheckboxGroupProps {
 }
 
 /**
- * 运营权限勾选组：按分组展示权限选项（仅中文），受控组件。
- * 单一职责：渲染权限勾选 UI，不关心数据来源与提交。
+ * 运营权限勾选组：树形结构，每个模块可展开显示权限列表。无「全部权限」单项，勾选模块内全部即表示该模块全部权限。
  */
 export function AdminPermissionCheckboxGroup({
   value,
@@ -28,51 +30,110 @@ export function AdminPermissionCheckboxGroup({
   fullHeight = false,
 }: AdminPermissionCheckboxGroupProps) {
   const groups = getAdminPermissionGroups();
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(groups.keys()));
+
+  const toggleExpanded = (group: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(group)) next.delete(group);
+      else next.add(group);
+      return next;
+    });
+  };
+
+  const handleGroupCheck = (group: string, opts: { code: string; label: string }[], checked: boolean) => {
+    opts.forEach((opt) => onToggle(opt.code, checked));
+  };
+
+  const isGroupAllChecked = (opts: { code: string }[]) =>
+    opts.length > 0 && opts.every((opt) => value.includes(opt.code));
+  const isGroupSomeChecked = (opts: { code: string }[]) =>
+    opts.some((opt) => value.includes(opt.code));
 
   return (
     <div className="space-y-3">
       <p className="text-sm font-medium leading-none">权限</p>
       <div
-        className={
-          fullHeight
-            ? 'rounded-md border p-3 space-y-4'
-            : 'rounded-md border p-3 space-y-4 max-h-64 overflow-y-auto'
-        }
+        className={cn(
+          'rounded-md border',
+          fullHeight ? 'p-3' : 'p-3 max-h-64 overflow-y-auto'
+        )}
       >
-        {Array.from(groups.entries()).map(([group, opts]) => (
-          <div key={group}>
-            <p className="text-sm font-medium text-muted-foreground mb-2">
-              {group}
-            </p>
-            <div className="flex flex-wrap gap-4">
-              {opts.map((opt) => (
-                <div
-                  key={opt.code}
-                  className="flex items-center space-x-2"
-                >
+        <ul className="space-y-0.5">
+          {Array.from(groups.entries()).map(([group, opts]) => {
+            const isOpen = expanded.has(group);
+            const allChecked = isGroupAllChecked(opts);
+            const someChecked = isGroupSomeChecked(opts);
+            const groupCount = opts.filter((o) => value.includes(o.code)).length;
+            return (
+              <li key={group} className="rounded-md">
+                <div className="flex items-center gap-2 py-1.5 pr-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleExpanded(group)}
+                    className="shrink-0 p-0.5 rounded hover:bg-muted/80 text-muted-foreground"
+                    aria-expanded={isOpen}
+                    aria-label={isOpen ? '收起' : '展开'}
+                  >
+                    {isOpen ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </button>
                   <Checkbox
-                    id={`${idPrefix}-${opt.code}`}
-                    checked={
-                      opt.code === '*'
-                        ? value.includes('*')
-                        : value.includes(opt.code)
-                    }
+                    id={`${idPrefix}-group-${group}`}
+                    checked={allChecked}
                     onCheckedChange={(checked) =>
-                      onToggle(opt.code, checked === true)
+                      handleGroupCheck(group, opts, checked === true)
                     }
                     disabled={disabled}
+                    className={cn(
+                      'shrink-0',
+                      someChecked && !allChecked && 'data-[state=unchecked]:opacity-70'
+                    )}
                   />
                   <label
-                    htmlFor={`${idPrefix}-${opt.code}`}
-                    className="text-sm cursor-pointer select-none"
+                    htmlFor={`${idPrefix}-group-${group}`}
+                    className="flex-1 text-sm font-medium cursor-pointer select-none py-0.5"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    {opt.label}
+                    {group}
                   </label>
+                  <span className="text-xs text-muted-foreground shrink-0">
+                    {groupCount}/{opts.length}
+                  </span>
                 </div>
-              ))}
-            </div>
-          </div>
-        ))}
+                {isOpen && (
+                  <ul className="pl-6 pb-1 space-y-0.5 border-l border-muted ml-2">
+                    {opts.map((opt) => (
+                      <li
+                        key={opt.code}
+                        className="flex items-center gap-2 py-1 pl-2 -ml-px border-b border-muted/50 last:border-b-0"
+                      >
+                        <Checkbox
+                          id={`${idPrefix}-${opt.code}`}
+                          checked={value.includes(opt.code)}
+                          onCheckedChange={(checked) =>
+                            onToggle(opt.code, checked === true)
+                          }
+                          disabled={disabled}
+                          className="shrink-0"
+                        />
+                        <label
+                          htmlFor={`${idPrefix}-${opt.code}`}
+                          className="text-sm cursor-pointer select-none flex-1"
+                        >
+                          {opt.label}
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );

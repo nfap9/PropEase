@@ -5,47 +5,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
 import { permissionsApi } from '@/lib/api/permissions';
 import { organizationsApi } from '@/lib/api';
 import { MemberRole, Permission } from '@/types';
 import { useAuth } from '@/lib/auth/context';
-import { Shield, Save } from 'lucide-react';
-
-const ROLE_LABELS: Record<MemberRole, string> = {
-  owner: '所有者',
-  admin: '管理员',
-  member: '成员',
-  viewer: '查看者',
-};
-
-const RESOURCE_LABELS: Record<string, string> = {
-  apartment: '公寓管理',
-  room: '房间管理',
-  tenant: '租客管理',
-  lease: '租约管理',
-  bill: '账单管理',
-  utility: '水电管理',
-  member: '成员管理',
-  settings: '系统设置',
-  report: '报表分析',
-};
-
-/** 操作中文名称（仅用于展示，不展示权限码） */
-const ACTION_LABELS: Record<string, string> = {
-  view: '查看',
-  create: '创建',
-  edit: '编辑',
-  delete: '删除',
-  export: '导出',
-  manage: '管理（全部）',
-};
-
+import { OrgRoleList } from '@/components/settings/org-role-list';
+import { OrgRoleDetailPanel } from '@/components/settings/org-role-detail-panel';
+import { Shield } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 export default function PermissionsPage() {
   const { organization, user } = useAuth();
@@ -55,20 +23,17 @@ export default function PermissionsPage() {
     new Set()
   );
 
-  // 获取当前用户的角色
   const { data: members } = useQuery({
     queryKey: ['organization-members', organization?.id],
     queryFn: () => organizationsApi.getMembers(organization!.id),
     enabled: !!organization,
   });
 
-  // 获取权限分组
   const { data: groupedPermissions, isLoading: permissionsLoading } = useQuery({
     queryKey: ['permissions-grouped'],
     queryFn: permissionsApi.getGrouped,
   });
 
-  // 获取角色当前权限
   const { data: rolePermissions, isLoading: rolePermissionsLoading } = useQuery({
     queryKey: ['role-permissions', organization?.id, selectedRole],
     queryFn: async () => {
@@ -82,7 +47,6 @@ export default function PermissionsPage() {
     enabled: !!organization && selectedRole !== 'owner',
   });
 
-  // 当角色权限加载完成后，更新选中的权限
   useEffect(() => {
     if (rolePermissions?.permissions) {
       setSelectedPermissions(
@@ -96,7 +60,6 @@ export default function PermissionsPage() {
   );
   const isOwner = currentMember?.role === 'owner';
 
-  // 更新权限
   const updateMutation = useMutation({
     mutationFn: (data: { role: MemberRole; codes: string[] }) =>
       permissionsApi.updateRolePermissions(organization!.id, data.role, {
@@ -125,7 +88,9 @@ export default function PermissionsPage() {
 
   const handleToggleResource = (resource: string, permissions: Permission[]) => {
     const resourceCodes = permissions.map((p) => p.code);
-    const allSelected = resourceCodes.every((code) => selectedPermissions.has(code));
+    const allSelected = resourceCodes.every((code) =>
+      selectedPermissions.has(code)
+    );
 
     const newSet = new Set(selectedPermissions);
     if (allSelected) {
@@ -157,8 +122,19 @@ export default function PermissionsPage() {
     return (
       <MainLayout>
         <div className="space-y-6">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-96" />
+          <div className="flex items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <Shield className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="mt-1 h-4 w-64" />
+            </div>
+          </div>
+          <div className="flex h-[calc(100vh-12rem)] min-h-[400px] rounded-lg border bg-card">
+            <Skeleton className="w-56 shrink-0" />
+            <Skeleton className={cn('flex-1')} />
+          </div>
         </div>
       </MainLayout>
     );
@@ -168,133 +144,42 @@ export default function PermissionsPage() {
     <PermissionPageGuard>
       <MainLayout>
         <div className="space-y-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                <Shield className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">权限管理</h1>
-                <p className="text-sm text-muted-foreground">
-                  为「{organization.name}」下的管理员、成员、查看者配置可执行的操作
-                </p>
-              </div>
+          <div className="flex items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <Shield className="h-5 w-5 text-primary" />
             </div>
-            {isOwner && selectedRole !== 'owner' && (
-              <Button
-                onClick={handleSave}
-                disabled={updateMutation.isPending}
-                className="shrink-0"
-              >
-                <Save className="mr-2 h-4 w-4" />
-                {updateMutation.isPending ? '保存中…' : '保存更改'}
-              </Button>
-            )}
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">权限管理</h1>
+              <p className="text-sm text-muted-foreground">
+                为「{organization.name}」下的管理员、成员、查看者配置可执行的操作；仅所有者可修改。
+              </p>
+            </div>
           </div>
 
-          <p className="text-sm text-muted-foreground">
-            选择角色标签后，在下方勾选该角色允许的权限；仅所有者可修改。
-          </p>
-
-        <Tabs
-          value={selectedRole}
-          onValueChange={(v) => setSelectedRole(v as MemberRole)}
-        >
-          <TabsList>
-            {(['admin', 'member', 'viewer'] as MemberRole[]).map((role) => (
-              <TabsTrigger key={role} value={role}>
-                {ROLE_LABELS[role]}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {selectedRole === 'owner' ? (
-            <Card className="mt-4">
-              <CardContent className="py-12 text-center">
-                <Shield className="mx-auto h-12 w-12 text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-semibold">所有者拥有全部权限</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  所有者角色无需配置，始终拥有所有操作权限
-                </p>
-              </CardContent>
-            </Card>
-          ) : !isOwner ? (
-            <Card className="mt-4">
-              <CardContent className="py-12 text-center">
-                <Shield className="mx-auto h-12 w-12 text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-semibold">您无法修改权限</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  仅组织所有者可以在此页面调整角色权限
-                </p>
-              </CardContent>
-            </Card>
-          ) : rolePermissionsLoading ? (
-            <div className="mt-4 space-y-4">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-32" />
-              ))}
-            </div>
-          ) : (
-            groupedPermissions && (
-              <div className="space-y-4 mt-4">
-                {Object.entries(groupedPermissions).map(
-                  ([resource, permissions]) => (
-                    <Card key={resource}>
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            {isOwner && (
-                              <Checkbox
-                                checked={permissions.every((p) =>
-                                  selectedPermissions.has(p.code)
-                                )}
-                                onCheckedChange={() =>
-                                  handleToggleResource(resource, permissions)
-                                }
-                              />
-                            )}
-                            <CardTitle className="text-lg">
-                              {RESOURCE_LABELS[resource] || resource}
-                            </CardTitle>
-                          </div>
-                          <Badge variant="secondary">
-                            已选 {permissions.filter((p) =>
-                              selectedPermissions.has(p.code)
-                            ).length} / {permissions.length}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                          {permissions.map((permission) => (
-                            <div
-                              key={permission.id}
-                              className="flex items-center space-x-2 cursor-pointer"
-                              onClick={() => handleTogglePermission(permission.code)}
-                            >
-                              <Checkbox
-                                checked={selectedPermissions.has(permission.code)}
-                                onCheckedChange={() =>
-                                  handleTogglePermission(permission.code)
-                                }
-                                disabled={!isOwner}
-                              />
-                              <label className="text-sm cursor-pointer select-none">
-                                {permission.name || `${RESOURCE_LABELS[resource] || resource}${ACTION_LABELS[permission.action] || permission.action}`}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
-                )}
-              </div>
-            )
-          )}
-        </Tabs>
-      </div>
-    </MainLayout>
+          <div className="flex h-[calc(100vh-12rem)] min-h-[400px] rounded-lg border bg-card">
+            <aside className="w-56 shrink-0">
+              <OrgRoleList
+                selectedRole={selectedRole}
+                onSelectRole={setSelectedRole}
+                showOwner
+              />
+            </aside>
+            <main className="flex min-w-0 flex-1 flex-col">
+              <OrgRoleDetailPanel
+                role={selectedRole}
+                selectedPermissions={selectedPermissions}
+                groupedPermissions={groupedPermissions ?? null}
+                onTogglePermission={handleTogglePermission}
+                onToggleResource={handleToggleResource}
+                onSave={handleSave}
+                isOwner={isOwner}
+                isLoadingRolePermissions={rolePermissionsLoading}
+                isSaving={updateMutation.isPending}
+              />
+            </main>
+          </div>
+        </div>
+      </MainLayout>
     </PermissionPageGuard>
   );
 }

@@ -12,6 +12,7 @@ import { AdminRoleList } from '@/components/admin/admin-role-list';
 import { AdminRoleDetailPanel } from '@/components/admin/admin-role-detail-panel';
 import { AdminRoleCreateDialog } from '@/components/admin/admin-role-create-dialog';
 import { AdminRoleDeleteDialog } from '@/components/admin/admin-role-delete-dialog';
+import { getAllAdminPermissionCodes } from '@/lib/constants/admin-permissions';
 import { togglePermissionCode } from './utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -36,9 +37,11 @@ export default function AdminRolesPage() {
     },
   });
 
-  // 切换角色或进入页面时，从服务端数据加载权限草稿；未点保存离开则丢弃
+  // 切换角色或进入页面时，从服务端数据加载权限草稿；历史「*」展开为全部权限码
   useEffect(() => {
-    setDraftPermissionCodes(selectedRole?.permissions ?? []);
+    const raw = selectedRole?.permissions ?? [];
+    const codes = raw.includes('*') ? getAllAdminPermissionCodes() : raw;
+    setDraftPermissionCodes(codes);
   }, [selectedRole?.id, selectedRole?.permissions]);
 
   const createMutation = useMutation({

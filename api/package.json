@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prisma:generate": "prisma generate",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "db:reset": "prisma db push --force-reset"
   },
   "dependencies": {
     "@apartment-ultra/api-contract": "workspace:*",

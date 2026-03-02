@@ -13,9 +13,10 @@ describe('admin-permissions', () => {
       expect(adminPermissionCodesToLabels(undefined as unknown as string[])).toEqual([])
     })
 
-    it('returns ["全部权限"] when codes includes *', () => {
-      expect(adminPermissionCodesToLabels(['*'])).toEqual(['全部权限'])
-      expect(adminPermissionCodesToLabels(['admin:user:read', '*'])).toEqual(['全部权限'])
+    it('treats unknown code * as 其他 (no separate 全部权限)', () => {
+      expect(adminPermissionCodesToLabels(['*'])).toContain('其他')
+      expect(adminPermissionCodesToLabels(['admin:user:read', '*'])).toContain('用户管理 · 查看')
+      expect(adminPermissionCodesToLabels(['admin:user:read', '*'])).toContain('其他')
     })
 
     it('returns group · label for known codes', () => {
@@ -59,9 +60,9 @@ describe('admin-permissions', () => {
   })
 
   describe('getAdminPermissionGroups', () => {
-    it('returns Map with group as key and options array as value', () => {
+    it('returns Map with group as key and options array as value (no 全部 group)', () => {
       const map = getAdminPermissionGroups()
-      expect(map.get('全部')).toEqual([ADMIN_PERMISSION_OPTIONS[0]])
+      expect(map.has('全部')).toBe(false)
       expect(map.get('用户管理')).toHaveLength(2)
       expect(map.get('组织管理')).toHaveLength(2)
     })

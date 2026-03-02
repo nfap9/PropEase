@@ -15,10 +15,6 @@ describe('permissionDefaults', () => {
     it('returns correct string for bill export', () => {
       expect(getPermissionName('bill', 'export')).toBe('账单管理导出');
     });
-
-    it('returns correct string for member manage', () => {
-      expect(getPermissionName('member', 'manage')).toBe('成员管理管理（全部）');
-    });
   });
 
   describe('DEFAULT_SYSTEM_ROLE_PERMISSIONS', () => {

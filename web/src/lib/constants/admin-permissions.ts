@@ -8,9 +8,8 @@ export interface AdminPermissionOption {
   group: string;
 }
 
-/** 运营权限选项（按分组） */
+/** 运营权限选项（按分组），不含「全部权限」单项，勾选模块内全部即表示该模块全部权限 */
 export const ADMIN_PERMISSION_OPTIONS: AdminPermissionOption[] = [
-  { code: '*', label: '全部权限', group: '全部' },
   { code: 'admin:user:read', label: '查看', group: '用户管理' },
   { code: 'admin:user:write', label: '编辑', group: '用户管理' },
   { code: 'admin:org:read', label: '查看', group: '组织管理' },
@@ -22,13 +21,12 @@ export const ADMIN_PERMISSION_OPTIONS: AdminPermissionOption[] = [
 ];
 
 const CODE_TO_LABEL = new Map<string, string>(
-  ADMIN_PERMISSION_OPTIONS.map((o) => [o.code, o.group === '全部' ? o.label : `${o.group} · ${o.label}`])
+  ADMIN_PERMISSION_OPTIONS.map((o) => [o.code, `${o.group} · ${o.label}`])
 );
 
 /** 将权限码列表转为中文展示（不展示权限码，未知码归为「其他」） */
 export function adminPermissionCodesToLabels(codes: string[]): string[] {
   if (!codes?.length) return [];
-  if (codes.includes('*')) return ['全部权限'];
   const labels: string[] = [];
   let hasOther = false;
   for (const c of codes) {
@@ -48,7 +46,7 @@ export function formatAdminPermissionsForDisplay(codes: string[]): string {
   return `${labels.slice(0, 3).join('、')} 等 ${labels.length} 项`;
 }
 
-/** 按分组聚合的选项，用于勾选 UI */
+/** 按分组聚合的选项，用于勾选 UI（树形展示，无「全部」单项） */
 export function getAdminPermissionGroups(): Map<string, AdminPermissionOption[]> {
   const map = new Map<string, AdminPermissionOption[]>();
   for (const opt of ADMIN_PERMISSION_OPTIONS) {
@@ -57,4 +55,9 @@ export function getAdminPermissionGroups(): Map<string, AdminPermissionOption[]>
     map.set(opt.group, list);
   }
   return map;
+}
+
+/** 所有运营权限码（用于将历史「*」展开为具体码） */
+export function getAllAdminPermissionCodes(): string[] {
+  return ADMIN_PERMISSION_OPTIONS.map((o) => o.code);
 }
