@@ -14,7 +14,12 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: [/admin\.spec\.ts/, /admin\.auth\.setup\.ts/],
+      testIgnore: [
+        /admin\.spec\.ts/,
+        /admin\.auth\.setup\.ts/,
+        /business\.spec\.ts/,
+        /business\.auth\.setup\.ts/,
+      ],
       use: { ...devices['Desktop Chrome'] },
     },
     {
@@ -30,6 +35,20 @@ export default defineConfig({
         storageState: '.auth/admin.json',
       },
       dependencies: ['admin-setup'],
+    },
+    {
+      name: 'business-setup',
+      testMatch: /business\.auth\.setup\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'business',
+      testMatch: /business\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '.auth/business.json',
+      },
+      dependencies: ['business-setup'],
     },
   ],
 });
