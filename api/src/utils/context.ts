@@ -14,6 +14,7 @@ export interface AdminUser {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace -- Express 类型扩展约定
   namespace Express {
     interface Request {
       consoleUser?: ConsoleUser;

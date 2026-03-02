@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   RESOURCES,
-  ACTIONS,
   getPermissionName,
   DEFAULT_SYSTEM_ROLE_PERMISSIONS,
   type SystemRole,

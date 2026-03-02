@@ -17,7 +17,7 @@ describe('security', () => {
 
   describe('hashPassword', () => {
     it('returns hashed string from bcrypt.hash', async () => {
-      vi.mocked(bcrypt.hash).mockResolvedValue('$2a$10$hashed');
+      (vi.mocked(bcrypt.hash) as unknown as { mockResolvedValue: (v: string) => void }).mockResolvedValue('$2a$10$hashed');
 
       const result = await hashPassword('plain');
 
@@ -28,7 +28,7 @@ describe('security', () => {
 
   describe('verifyPassword', () => {
     it('returns true when bcrypt.compare resolves true', async () => {
-      vi.mocked(bcrypt.compare).mockResolvedValue(true);
+      (vi.mocked(bcrypt.compare) as unknown as { mockResolvedValue: (v: boolean) => void }).mockResolvedValue(true);
 
       const result = await verifyPassword('plain', '$2a$10$hash');
 
@@ -37,7 +37,7 @@ describe('security', () => {
     });
 
     it('returns false when bcrypt.compare resolves false', async () => {
-      vi.mocked(bcrypt.compare).mockResolvedValue(false);
+      (vi.mocked(bcrypt.compare) as unknown as { mockResolvedValue: (v: boolean) => void }).mockResolvedValue(false);
 
       const result = await verifyPassword('wrong', '$2a$10$hash');
 

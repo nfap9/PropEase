@@ -26,9 +26,9 @@ describe('createErrorResponse', () => {
 
 describe('errorHandler', () => {
   function createMockRes(): { res: Response; statusSpy: ReturnType<typeof vi.fn>; jsonSpy: ReturnType<typeof vi.fn> } {
-    const statusSpy = vi.fn(function (this: Response, code: number) {
+    const statusSpy = vi.fn(function (this: Response, _code: number) {
       return this;
-    });
+    }) as ReturnType<typeof vi.fn>;
     const jsonSpy = vi.fn();
     const res = {
       status: statusSpy,
@@ -40,7 +40,7 @@ describe('errorHandler', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {}) as ReturnType<typeof vi.spyOn>;
   });
 
   afterEach(() => {
@@ -53,7 +53,7 @@ describe('errorHandler', () => {
     err.statusCode = 404;
     err.businessCode = BusinessCode.NOT_FOUND;
 
-    errorHandler(err, {} as Request, res, vi.fn());
+    errorHandler(err, {} as Request, res, vi.fn() as unknown as NextFunction);
 
     expect(statusSpy).toHaveBeenCalledWith(404);
     expect(jsonSpy).toHaveBeenCalledWith({
@@ -69,7 +69,7 @@ describe('errorHandler', () => {
     err.businessCode = BusinessCode.VALIDATION_ERROR;
     err.fieldErrors = [{ field: 'body.name', message: '必填' }];
 
-    errorHandler(err, {} as Request, res, vi.fn());
+    errorHandler(err, {} as Request, res, vi.fn() as unknown as NextFunction);
 
     expect(jsonSpy).toHaveBeenCalledWith({
       code: BusinessCode.VALIDATION_ERROR,
@@ -82,7 +82,7 @@ describe('errorHandler', () => {
     const { res, statusSpy, jsonSpy } = createMockRes();
     const err = new Error('boom') as AppError;
 
-    errorHandler(err, {} as Request, res, vi.fn());
+    errorHandler(err, {} as Request, res, vi.fn() as unknown as NextFunction);
 
     expect(statusSpy).toHaveBeenCalledWith(500);
     expect(jsonSpy).toHaveBeenCalledWith({
@@ -96,7 +96,7 @@ describe('errorHandler', () => {
     const err = new Error('server error') as AppError;
     err.statusCode = 500;
 
-    errorHandler(err, {} as Request, res, vi.fn());
+    errorHandler(err, {} as Request, res, vi.fn() as unknown as NextFunction);
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('[errorHandler] 500:', 'server error');
   });

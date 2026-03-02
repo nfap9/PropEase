@@ -68,8 +68,7 @@ describe('admin-permissions', () => {
 
     it('has all ADMIN_PERMISSION_OPTIONS distributed in groups', () => {
       const map = getAdminPermissionGroups()
-      let total = 0
-      for (const list of map.values()) total += list.length
+      const total = Array.from(map.values()).reduce((sum, list) => sum + list.length, 0)
       expect(total).toBe(ADMIN_PERMISSION_OPTIONS.length)
     })
   })
