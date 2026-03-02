@@ -41,13 +41,13 @@
 
 ### 3.1 ESLint
 
-- **命令**：`pnpm run lint`（即 `lint:api` + `lint:web`）
+- **命令**：`pnpm run lint`（api + 前端）
 - **结果**：通过，无错误、无警告。
 - **说明**：与 CI 一致；api 使用 `eslint src --ext .ts`，web 使用 `next lint --fix`。
 
 ### 3.2 TypeScript 类型检查
 
-- **命令**：`pnpm run type-check`（即 `type-check:api` + `type-check:web`）
+- **命令**：`pnpm run type-check`（api + 前端）
 - **结果**：通过。
 - **说明**：api 使用 `tsc --noEmit`（strict + noUnusedLocals 等），web 使用 Next.js 的 `tsc --noEmit`。
 

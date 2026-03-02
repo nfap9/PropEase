@@ -23,7 +23,6 @@ import {
   Zap,
   Receipt,
   BarChart3,
-  Settings,
   Menu,
   Shield,
   Bell,

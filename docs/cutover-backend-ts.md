@@ -13,7 +13,7 @@ mv api-ts api
 
 ### 2.1 根 package.json 与 scripts
 
-- 开发与代码质量由根目录 pnpm scripts 承担：`dev-setup`、`dev:api`、`dev:web`、`dev:local`、`lint`、`type-check`、`test` 等。
+- 开发与代码质量由根目录 pnpm scripts 承担：`dev`、`dev-setup`、`dev:api`、`dev:web`、`lint`、`type-check`、`test` 等。
 - 环境初始化与一键启动由 `scripts/dev-setup.sh`、`scripts/dev-local.sh` 等完成；Docker 相关为 `pnpm run docker:up` 等。
 - 数据库表结构在 `api/` 下由 Prisma schema 定义，执行 `cd api && pnpm exec prisma db push` 同步。
 

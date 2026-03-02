@@ -6,7 +6,7 @@
 
 - **业务端**：`e2e/business.spec.ts`，依赖 `e2e/business.auth.setup.ts` 提供的登录态（`.auth/business.json`），用例中**不要**再写登录步骤。
 - **运营端**：`e2e/admin.spec.ts`，依赖 `e2e/admin.auth.setup.ts`（`.auth/admin.json`）。
-- **运行**：先启动 API（端口 8000）与前端（端口 3000），例如 `pnpm run dev:local`；业务端密码登录需以 `SEED_E2E_USER=true` 启动 API 一次以创建测试用户。执行 `pnpm run test:e2e` 或 `pnpm exec playwright test business`（仅业务端）。
+- **运行**：先启动 API（端口 8000）与前端（端口 3000），例如 `pnpm run dev`；业务端密码登录需以 `SEED_E2E_USER=true` 启动 API 一次以创建测试用户。执行 `pnpm run test:e2e` 或 `pnpm exec playwright test business`（仅业务端）。
 - **配置**：`playwright.config.ts` 中 `baseURL: 'http://localhost:3000'`，未配置 webServer，需手动启动前后端。
 
 ## 2. 定位器策略

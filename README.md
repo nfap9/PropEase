@@ -52,9 +52,8 @@
 pnpm run dev-setup
 
 # 2. 启动开发服务（任选其一）
-pnpm run dev:api    # 终端 1：启动后端（api，端口 8000）
-pnpm run dev:web    # 终端 2：启动前端
-# 或一键启动：pnpm run dev:local  # 同终端同时跑后端+前端，Ctrl+C 会一起退出
+pnpm run dev        # 一键启动后端 + 前端（同终端，Ctrl+C 同时退出）
+# 或分终端：pnpm run dev:api（后端 8000）、pnpm run dev:web（前端）
 ```
 
 ### 方式二：Docker
@@ -80,7 +79,7 @@ cd docker && docker compose -f docker-compose.yaml up
 
 ```
 apartment-ultra/
-├── package.json            # 根 package（scripts：dev-setup / dev:api / dev:web / docker:* / lint / type-check / test）
+├── package.json            # 根 package（scripts：dev / dev:api / dev:web / dev-setup / docker:* / lint / type-check / test）
 ├── pnpm-workspace.yaml     # pnpm workspaces（api、web）
 ├── pnpm-lock.yaml          # 单一锁文件（仅在根目录执行 pnpm install）
 ├── scripts/                # 开发脚本（dev-setup、dev-local 等）
@@ -103,12 +102,11 @@ apartment-ultra/
 pnpm install
 
 # 开发（后端为 api）
-pnpm run dev:api     # 启动后端（端口 8000）
-pnpm run dev:web     # 启动前端
-pnpm run dev:local   # 一键启动后端 + 前端（同终端，Ctrl+C 同时退出）
+pnpm run dev         # 一键启动后端 + 前端（同终端，Ctrl+C 同时退出）
+pnpm run dev:api     # 仅启动后端（端口 8000）
+pnpm run dev:web     # 仅启动前端
 
-# 代码质量（api + 前端）
-pnpm run format      # 格式化 api
+# 代码质量（api + 前端；仅单包时用 pnpm --filter apartment-ultra-api run lint 等）
 pnpm run lint        # api + 前端检查
 pnpm run type-check  # 类型检查
 pnpm run test        # 运行单元测试（api + web）
@@ -119,7 +117,7 @@ cd api && pnpm exec prisma db push   # 以 schema 同步数据库
 
 # 清空数据库并重新生成（会删除所有数据，再按 schema 建表；种子在启动 API 时自动执行）
 cd api && pnpm run db:reset
-# 然后启动 API 一次以执行种子（权限、运营管理员、套餐等）：pnpm run dev:api
+# 然后启动 API 一次以执行种子（权限、运营管理员、套餐等）：pnpm run dev 或 pnpm run dev:api
 
 # Docker
 pnpm run docker:up   # 启动容器
@@ -130,7 +128,7 @@ pnpm run docker:down  # 停止容器
 
 **业务端（公寓管理系统）**：无种子脚本时需在登录页自行注册。若启动 API 时设置 `SEED_E2E_USER=true`，将自动创建 E2E 测试用户：手机号 `13800138000`、密码 `Test1234`，供 E2E 用例「密码登录」使用。
 
-**E2E 测试**：运行 `pnpm run test:e2e` 前需先启动 API（端口 8000）与前端（端口 3000），如 `pnpm run dev:local`。若需「密码登录」用例通过，请以 `SEED_E2E_USER=true` 启动 API 一次以创建上述测试用户。**首次运行或升级 Playwright 后**须执行 `pnpm exec playwright install`（或 `pnpm exec playwright install chromium`）安装浏览器，否则 E2E 会报「Executable doesn't exist」。仅运行运营后台 E2E：`pnpm exec playwright test admin`；仅运行业务端（公寓管理、房间、租客、租约、水电、账单、经营分析、设置）E2E：`pnpm exec playwright test business`（同样需 API 与前端已启动）。
+**E2E 测试**：运行 `pnpm run test:e2e` 前需先启动 API（端口 8000）与前端（端口 3000），如 `pnpm run dev`。若需「密码登录」用例通过，请以 `SEED_E2E_USER=true` 启动 API 一次以创建上述测试用户。**首次运行或升级 Playwright 后**须执行 `pnpm exec playwright install`（或 `pnpm exec playwright install chromium`）安装浏览器，否则 E2E 会报「Executable doesn't exist」。仅运行运营后台 E2E：`pnpm exec playwright test admin`；仅运行业务端（公寓管理、房间、租客、租约、水电、账单、经营分析、设置）E2E：`pnpm exec playwright test business`（同样需 API 与前端已启动）。
 
 **运营后台（应用启动时自动种子）**
 
