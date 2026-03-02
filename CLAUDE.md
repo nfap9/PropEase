@@ -24,10 +24,9 @@ Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是�
 
 ## 测试与质量实践
 
-- 遵循 TDD: 红 → 绿 → 重构
-- 后端（api）使用 Vitest
-- 强制使用强类型；避免 `Any`/`any`，优先使用显式类型注解
-- 编写自文档化代码；仅在需要解释意图时添加注释
+- **单元/集成测试**：遵循 TDD（红 → 绿 → 重构）；后端（api）使用 Vitest；根目录 `pnpm run test` 运行测试。
+- **E2E 测试**：使用 Playwright，用例在 `e2e/` 下（业务端 `business.spec.ts`、运营端 `admin.spec.ts`）；编写或修改 E2E 前须阅读 [e2e/AGENTS.md](e2e/AGENTS.md) 与 [docs/e2e-writing-guide.md](docs/e2e-writing-guide.md)，并与 [docs/测试用例.md](docs/测试用例.md) 中的用例编号对应。运行前需先启动前后端（如 `pnpm run dev:local`），再执行 `pnpm run test:e2e` 或 `pnpm exec playwright test business`。
+- **代码质量**：强制使用强类型，避免 `Any`/`any`，优先显式类型注解；编写自文档化代码，仅在需要解释意图时添加注释。
 
 ## 语言风格
 
