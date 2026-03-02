@@ -115,8 +115,8 @@ export default function SubscriptionPage() {
     return price === 0 ? '免费' : `¥${price}`;
   };
 
-  const getLimitText = (limit: number) => {
-    return limit === -1 ? '无限制' : limit.toString();
+  const getLimitText = (limit: number | null) => {
+    return limit == null || limit === -1 ? '无限制' : limit.toString();
   };
 
   const isLoading = plansLoading || statusLoading;
@@ -237,6 +237,10 @@ export default function SubscriptionPage() {
                     </div>
 
                     <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-green-500" />
+                        <span>组织: {getLimitText(plan.max_organizations)} 个</span>
+                      </div>
                       <div className="flex items-center gap-2">
                         <Check className="h-4 w-4 text-green-500" />
                         <span>公寓: {getLimitText(plan.max_apartments)} 个</span>

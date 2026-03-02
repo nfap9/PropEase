@@ -13,7 +13,7 @@ export async function seedPlans(): Promise<void> {
       id: ulid().toLowerCase(),
       name: '免费版',
       code: FREE_PLAN_CODE,
-      description: '免费组织，公寓、房间、成员数量受限，可在运营后台配置',
+      description: '免费版仅允许 1 个组织，公寓、房间、成员数量受限，可在运营后台配置',
       price_monthly: 0,
       price_yearly: 0,
       max_organizations: 1,

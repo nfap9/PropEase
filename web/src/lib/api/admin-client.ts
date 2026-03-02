@@ -156,6 +156,8 @@ export interface AdminPlan {
   description: string | null;
   price_monthly: number;
   price_yearly: number;
+  /** 用户最多可拥有的组织数，null 表示不限制 */
+  max_organizations: number | null;
   max_apartments: number;
   max_rooms: number;
   max_members: number;
@@ -172,6 +174,8 @@ export interface AdminPlanCreate {
   description?: string | null;
   price_monthly: number;
   price_yearly: number;
+  /** 用户最多可拥有的组织数，null 表示不限制 */
+  max_organizations?: number | null;
   max_apartments: number;
   max_rooms: number;
   max_members: number;
@@ -184,6 +188,7 @@ export interface AdminPlanUpdate {
   description?: string | null;
   price_monthly?: number | null;
   price_yearly?: number | null;
+  max_organizations?: number | null;
   max_apartments?: number | null;
   max_rooms?: number | null;
   max_members?: number | null;

@@ -52,6 +52,7 @@ const planCreateSchema = z.object({
   description: z.string().optional(),
   price_monthly: z.coerce.number().min(0, '月费不能为负'),
   price_yearly: z.coerce.number().min(0, '年费不能为负'),
+  max_organizations: z.coerce.number().min(-1, '-1 表示无限制'),
   max_apartments: z.coerce.number().min(-1, '-1 表示无限制'),
   max_rooms: z.coerce.number().min(-1, '-1 表示无限制'),
   max_members: z.coerce.number().min(-1, '-1 表示无限制'),
@@ -88,6 +89,7 @@ export default function AdminPlansPage() {
       description: '',
       price_monthly: 0,
       price_yearly: 0,
+      max_organizations: 1,
       max_apartments: 1,
       max_rooms: 100,
       max_members: 1,
@@ -107,6 +109,7 @@ export default function AdminPlansPage() {
         description: data.description || undefined,
         price_monthly: data.price_monthly,
         price_yearly: data.price_yearly,
+        max_organizations: data.max_organizations === -1 ? null : data.max_organizations,
         max_apartments: data.max_apartments,
         max_rooms: data.max_rooms,
         max_members: data.max_members,
@@ -156,6 +159,7 @@ export default function AdminPlansPage() {
       description: plan.description ?? '',
       price_monthly: plan.price_monthly,
       price_yearly: plan.price_yearly,
+      max_organizations: plan.max_organizations ?? -1,
       max_apartments: plan.max_apartments,
       max_rooms: plan.max_rooms,
       max_members: plan.max_members,
@@ -183,10 +187,12 @@ export default function AdminPlansPage() {
       header: '限制',
       cell: ({ row }) => {
         const p = row.original;
+        const orgs =
+          p.max_organizations == null || p.max_organizations < 0 ? '∞' : p.max_organizations;
         const apt = p.max_apartments < 0 ? '∞' : p.max_apartments;
         const rooms = p.max_rooms < 0 ? '∞' : p.max_rooms;
         const members = p.max_members < 0 ? '∞' : p.max_members;
-        return `公寓${apt} / 房间${rooms} / 成员${members}`;
+        return `组织${orgs} / 公寓${apt} / 房间${rooms} / 成员${members}`;
       },
     },
     {
@@ -322,7 +328,20 @@ export default function AdminPlansPage() {
                   )}
                 />
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <FormField
+                  control={createForm.control}
+                  name="max_organizations"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>最大组织数</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="-1 表示不限制" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={createForm.control}
                   name="max_apartments"
@@ -407,6 +426,7 @@ export default function AdminPlansPage() {
                         description: d.description || null,
                         price_monthly: d.price_monthly,
                         price_yearly: d.price_yearly,
+                        max_organizations: d.max_organizations === -1 ? null : d.max_organizations,
                         max_apartments: d.max_apartments,
                         max_rooms: d.max_rooms,
                         max_members: d.max_members,
@@ -485,7 +505,20 @@ export default function AdminPlansPage() {
                   )}
                 />
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <FormField
+                  control={editForm.control}
+                  name="max_organizations"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>最大组织数</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="-1 表示不限制" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={editForm.control}
                   name="max_apartments"
