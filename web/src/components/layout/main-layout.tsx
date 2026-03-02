@@ -28,8 +28,15 @@ import {
   Shield,
   Bell,
 } from 'lucide-react';
-import { notificationsApi } from '@/lib/api/notifications';
+import { notificationsApi, subscriptionsApi } from '@/lib/api';
 import { useState } from 'react';
+
+/** 套餐 code 到展示名的兜底映射（无订阅或加载中时使用） */
+const PLAN_CODE_LABEL: Record<string, string> = {
+  free: '免费版',
+  pro: '专业版',
+  enterprise: '企业版',
+};
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { OrgSelector } from '@/components/common/org-selector';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
@@ -53,7 +60,7 @@ const SETTINGS_ITEMS = [
 ];
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
+  const { user, organization, logout } = useAuth();
   const { hasPermission, isSuperAdmin } = usePermissions();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -62,6 +69,16 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
     queryKey: ['notifications', 'unread-count'],
     queryFn: () => notificationsApi.getUnreadCount(),
   });
+
+  const orgId = organization?.id;
+  const { data: subscriptionStatus } = useQuery({
+    queryKey: ['subscription-status', orgId],
+    queryFn: () => subscriptionsApi.getSubscriptionStatus(orgId!),
+    enabled: !!orgId,
+  });
+  const planLabel =
+    subscriptionStatus?.plan?.name ??
+    (organization?.plan ? PLAN_CODE_LABEL[organization.plan] ?? organization.plan : null);
 
   // 过滤有权限的导航项
   const visibleNavItems = NAV_ITEMS.filter(
@@ -188,6 +205,9 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">{user?.full_name}</p>
                   <p className="text-xs leading-none text-muted-foreground">{user?.phone}</p>
+                  {planLabel != null && (
+                    <p className="text-xs leading-none text-muted-foreground">当前套餐：{planLabel}</p>
+                  )}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
