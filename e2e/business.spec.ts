@@ -108,13 +108,13 @@ test.describe('业务端 - 通知（对应测试用例 11）', () => {
   });
 });
 
-test.describe('业务端 - 公寓管理（对应测试用例 3.1）', () => {
-  test('公寓管理页有标题且可打开新增公寓弹窗或显示空状态', async ({ page }) => {
+test.describe('业务端 - 公寓管理（对应测试用例 3.1、3.2）', () => {
+  test('公寓管理页有标题且为列表或空状态（APT-L-01）', async ({ page }) => {
     await page.goto('/apartments');
     await expect(page.getByRole('heading', { name: '公寓管理' })).toBeVisible({ timeout: 10000 });
-    const hasNewBtn = await page.getByRole('button', { name: '新增公寓' }).count() > 0;
-    const hasEmpty = await page.getByText('暂无公寓').count() > 0;
-    expect(hasNewBtn || hasEmpty).toBe(true);
+    const hasList = (await page.locator('a[href^="/apartments/"]').count()) > 0;
+    const hasEmpty = await page.getByText('暂无公寓').isVisible().catch(() => false);
+    expect(hasList || hasEmpty).toBe(true);
   });
 
   test('可打开新增公寓弹窗并看到表单', async ({ page }) => {
@@ -122,11 +122,29 @@ test.describe('业务端 - 公寓管理（对应测试用例 3.1）', () => {
     const newBtn = page.getByRole('button', { name: '新增公寓' }).first();
     if (await newBtn.isVisible()) {
       await newBtn.click();
-      await expect(page.getByRole('dialog').getByText('新增公寓')).toBeVisible();
-      await expect(page.getByRole('textbox', { name: '公寓名称' })).toBeVisible();
+      const dialog = page.getByRole('dialog');
+      await expect(dialog.getByText('新增公寓')).toBeVisible();
+      await expect(dialog.getByLabel('公寓名称')).toBeVisible();
+      await expect(dialog.getByLabel('地址')).toBeVisible();
+      await page.getByRole('button', { name: '取消' }).click();
+      await expect(dialog).toBeHidden();
     } else {
-      await expect(page.getByText('暂无公寓')).toBeVisible();
+      await expect(page.getByRole('heading', { name: '公寓管理' })).toBeVisible();
+      await expect(page).toHaveURL(/\/apartments$/);
     }
+  });
+
+  test('创建时公寓名称为必填（APT-C-02）', async ({ page }) => {
+    await page.goto('/apartments');
+    const newBtn = page.getByRole('button', { name: '新增公寓' }).first();
+    if (!(await newBtn.isVisible())) return;
+    await newBtn.click();
+    const dialog = page.getByRole('dialog').filter({ hasText: '新增公寓' });
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel('地址').fill('E2E测试地址');
+    await dialog.getByRole('button', { name: '创建' }).click();
+    await expect(dialog.getByText('请输入公寓名称')).toBeVisible({ timeout: 5000 });
+    await page.getByRole('button', { name: '取消' }).click();
   });
 
   test('可创建新公寓并出现在列表（APT-C-01）', async ({ page }) => {
@@ -135,17 +153,69 @@ test.describe('业务端 - 公寓管理（对应测试用例 3.1）', () => {
     if (!(await newBtn.isVisible())) return;
     await newBtn.click();
     const name = `E2E公寓_${Date.now()}`;
-    await page.getByRole('dialog').getByRole('textbox', { name: '公寓名称' }).fill(name);
-    await page.getByRole('dialog').getByRole('button', { name: '创建' }).click();
-    await expect(page.getByText(name)).toBeVisible({ timeout: 10000 });
+    const dialog = page.getByRole('dialog').filter({ hasText: '新增公寓' });
+    await dialog.getByLabel('公寓名称').fill(name);
+    await dialog.getByLabel('地址').fill('E2E测试地址');
+    await dialog.getByRole('button', { name: '创建' }).click();
+    await expect(dialog).toBeHidden({ timeout: 10000 });
+    await expect(page.getByRole('link', { name: new RegExp(name) })).toBeVisible({ timeout: 10000 });
   });
 
-  test('公寓管理页有列表或空状态（APT-D-01 操作入口所在页）', async ({ page }) => {
+  test('有公寓时可从列表进入公寓详情（APT-G-01）', async ({ page }) => {
     await page.goto('/apartments');
-    await expect(page.getByRole('heading', { name: '公寓管理' })).toBeVisible();
-    const hasNewBtn = await page.getByRole('button', { name: '新增公寓' }).count() > 0;
-    const hasEmpty = await page.getByText('暂无公寓').count() > 0;
-    expect(hasNewBtn || hasEmpty).toBe(true);
+    const firstCard = page.locator('a[href^="/apartments/"]').first();
+    if ((await firstCard.count()) === 0) return;
+    await firstCard.click();
+    await expect(page).toHaveURL(/\/apartments\/[^/]+$/, { timeout: 10000 });
+    await expect(
+      page.getByText('总房间数').or(page.getByText('房间列表'))
+    ).toBeVisible({ timeout: 10000 });
+  });
+
+  test('可编辑公寓并保存（APT-E-01）', async ({ page }) => {
+    const name = `E2E公寓_${Date.now()}`;
+    await page.goto('/apartments');
+    const newBtn = page.getByRole('button', { name: '新增公寓' }).first();
+    if (!(await newBtn.isVisible())) return;
+    await newBtn.click();
+    const createDialog = page.getByRole('dialog').filter({ hasText: '新增公寓' });
+    await createDialog.getByLabel('公寓名称').fill(name);
+    await createDialog.getByLabel('地址').fill('E2E测试地址');
+    await createDialog.getByRole('button', { name: '创建' }).click();
+    await expect(createDialog).toBeHidden({ timeout: 10000 });
+    await expect(page.getByRole('link', { name: new RegExp(name) })).toBeVisible({ timeout: 10000 });
+
+    const newName = `E2E公寓_编辑_${Date.now()}`;
+    const card = page.getByRole('link', { name: new RegExp(name) });
+    await card.getByRole('button').first().click();
+    await page.getByRole('menuitem', { name: '编辑' }).click();
+    const editDialog = page.getByRole('dialog').filter({ hasText: '编辑公寓' });
+    await expect(editDialog).toBeVisible({ timeout: 5000 });
+    await editDialog.getByLabel('公寓名称').fill(newName);
+    await editDialog.getByRole('button', { name: '保存' }).click();
+    await expect(editDialog).toBeHidden({ timeout: 10000 });
+    await expect(page.getByRole('link', { name: new RegExp(newName) })).toBeVisible({ timeout: 10000 });
+  });
+
+  test('可删除公寓（APT-D-01）', async ({ page }) => {
+    const name = `E2E公寓_待删_${Date.now()}`;
+    await page.goto('/apartments');
+    const newBtn = page.getByRole('button', { name: '新增公寓' }).first();
+    if (!(await newBtn.isVisible())) return;
+    await newBtn.click();
+    const createDialog = page.getByRole('dialog').filter({ hasText: '新增公寓' });
+    await createDialog.getByLabel('公寓名称').fill(name);
+    await createDialog.getByLabel('地址').fill('E2E测试地址');
+    await createDialog.getByRole('button', { name: '创建' }).click();
+    await expect(createDialog).toBeHidden({ timeout: 10000 });
+    await expect(page.getByRole('link', { name: new RegExp(name) })).toBeVisible({ timeout: 10000 });
+
+    const card = page.getByRole('link', { name: new RegExp(name) });
+    await card.getByRole('button').first().click();
+    await page.getByRole('menuitem', { name: '删除' }).click();
+    await expect(page.getByRole('alertdialog').filter({ hasText: '确认删除' })).toBeVisible();
+    await page.getByRole('button', { name: /^删除/ }).click();
+    await expect(page.getByRole('link', { name: new RegExp(name) })).toBeHidden({ timeout: 10000 });
   });
 });
 
