@@ -6,7 +6,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { MemberRole, Permission } from '@/types';
-import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronRight, Shield, Save } from 'lucide-react';
 
 const ROLE_LABELS: Record<MemberRole, string> = {

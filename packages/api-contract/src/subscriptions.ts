@@ -60,7 +60,7 @@ export type SubscriptionOrderStatus =
   | 'cancelled'
   | 'refunded';
 
-/** 订阅订单 */
+/** 订阅订单（GET 订单详情时可能包含 plan） */
 export interface SubscriptionOrder {
   id: string;
   order_no: string;
@@ -74,6 +74,8 @@ export interface SubscriptionOrder {
   expires_at: string;
   paid_at: string | null;
   created_at: string;
+  /** 订单详情接口返回时包含套餐信息 */
+  plan?: SubscriptionPlan | null;
 }
 
 /** 创建订阅订单 */

@@ -113,6 +113,22 @@ function SubscriptionPayContent() {
     );
   }
 
+  const isExpired =
+    order.status === 'pending' && new Date(order.expires_at).getTime() < Date.now();
+  if (isExpired) {
+    return (
+      <MainLayout>
+        <div className="space-y-6">
+          <p className="text-muted-foreground">订单已过期，请返回订阅管理重新下单</p>
+          <Button variant="outline" onClick={handleBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            返回订阅管理
+          </Button>
+        </div>
+      </MainLayout>
+    );
+  }
+
   const qrUrl = order.code_url
     ? `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(order.code_url)}`
     : null;
@@ -138,7 +154,14 @@ function SubscriptionPayContent() {
           <CardHeader>
             <CardTitle>订单号：{order.order_no}</CardTitle>
             <CardDescription>
-              金额 ¥{order.amount.toFixed(2)}，支付完成后将自动刷新
+              {order.plan?.name ? (
+                <>
+                  {order.plan.name} · 金额 ¥{order.amount.toFixed(2)}
+                </>
+              ) : (
+                <>金额 ¥{order.amount.toFixed(2)}</>
+              )}
+              ，支付完成后将自动刷新
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-6">
