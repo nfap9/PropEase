@@ -208,6 +208,19 @@ pnpm run docker:down  # 停止容器
 - **业务端**：设置 → 订阅管理 选择套餐；免费套餐直接开通，付费套餐创建订单后跳转微信扫码支付页，支付成功后自动开通/续费/升级。
 - **微信支付**：需配置 `WECHAT_PAY_*` 环境变量并开启 `WECHAT_PAY_ENABLED`；未配置时仍可创建订单，前端提示“未配置支付”。回调地址：`{WECHAT_PAY_NOTIFY_URL_BASE}/api/v1/webhooks/wechat-pay`。
 
+## 生产环境部署
+
+**以下环境变量在生产环境中必须覆盖默认值，不得使用开发默认值：**
+
+| 变量 | 说明 |
+|------|------|
+| `DATABASE_URL` | PostgreSQL 连接串；默认值为本地开发用，生产须指向正式库 |
+| `SECRET_KEY` | JWT 签名密钥；默认值仅用于开发，生产须使用强随机密钥 |
+| `ADMIN_INIT_PASSWORD` | 运营后台首次种子管理员密码；生产部署后请立即修改或禁用默认种子 |
+| `CORS_ORIGINS` | 允许的前端来源（JSON 数组字符串）；生产须配置实际前端域名 |
+
+**若启用微信支付**，还须配置并覆盖：`WECHAT_PAY_ENABLED`、`WECHAT_MCH_ID`、`WECHAT_APIV3_KEY`、`WECHAT_APP_ID`、`WECHAT_CERT_SERIAL_NO`、`WECHAT_PAY_NOTIFY_URL_BASE`、`WECHAT_PRIVATE_KEY` 或 `WECHAT_PRIVATE_KEY_PATH`。详见 [api/src/config.ts](api/src/config.ts)。
+
 ## 文档与计划
 
 - [商业化功能实现计划](docs/plans/commercial-features-plan.md)：P0～P3 阶段（公用费用、免费限制、订阅、账单自动生成、个人团队、团队删除、事务提醒、自定义角色、运营后台、支付集成）已完成。

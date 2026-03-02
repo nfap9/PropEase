@@ -249,9 +249,8 @@ export default function ReportsPage() {
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                          label={({ name, percent }: any) =>
-                            `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
+                          label={({ name, percent }: { name?: string; percent?: number }) =>
+                            `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`
                           }
                           outerRadius={100}
                           fill="#8884d8"

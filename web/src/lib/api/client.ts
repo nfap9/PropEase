@@ -11,6 +11,9 @@ import {
   BusinessCode,
 } from '@apartment-ultra/api-contract';
 
+/** 统一格式的原始响应（可能是成功包装或健康检查等未包装） */
+type RawApiPayload = SuccessBody<unknown> | Record<string, unknown>;
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
 /** 统一 API 成功响应格式（与共享契约一致） */
@@ -77,9 +80,8 @@ api.interceptors.request.use(
 
 // Response interceptor to unwrap unified response format
 api.interceptors.response.use(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (response: AxiosResponse<any>) => {
-    const { data: responseData } = response;
+  (response: AxiosResponse<RawApiPayload>) => {
+    const responseData = response.data;
 
     // 如果响应是统一格式 {code, data, message}
     if (
@@ -90,21 +92,22 @@ api.interceptors.response.use(
       // 业务成功（code === 0）
       if (responseData.code === 0) {
         // 解包：返回 data 部分
-        response.data = responseData.data;
-        return response;
+        (response as AxiosResponse<unknown>).data = responseData.data;
+        return response as AxiosResponse<unknown>;
       }
 
       // 业务失败：抛出 ApiError
+      const errBody = responseData as ErrorResponseBody;
       const error = new ApiError(
-        responseData.code,
-        responseData.message,
-        responseData.data
+        errBody.code,
+        errBody.message,
+        errBody.data
       );
-      return Promise.reject(error);
+      return Promise.reject(error) as Promise<AxiosResponse<unknown>>;
     }
 
     // 非统一格式（如健康检查），直接返回
-    return response;
+    return response as AxiosResponse<unknown>;
   },
   async (error: AxiosError<ErrorResponseBody>) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
@@ -126,16 +129,17 @@ api.interceptors.response.use(
           );
 
           // 处理统一响应格式：如果是 {code, data, message} 格式，需要解包
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const responseData = response.data as any;
-          const tokenData =
-            responseData && 'code' in responseData && 'data' in responseData
+          const responseData = response.data as
+            | SuccessBody<{ access_token: string; refresh_token: string }>
+            | { access_token: string; refresh_token: string };
+          const tokenData: { access_token: string; refresh_token: string } =
+            responseData &&
+            'code' in responseData &&
+            responseData.code === 0 &&
+            'data' in responseData
               ? responseData.data
-              : responseData;
-          const { access_token, refresh_token } = tokenData as {
-            access_token: string;
-            refresh_token: string;
-          };
+              : (responseData as { access_token: string; refresh_token: string });
+          const { access_token, refresh_token } = tokenData;
 
           localStorage.setItem('access_token', access_token);
           localStorage.setItem('refresh_token', refresh_token);

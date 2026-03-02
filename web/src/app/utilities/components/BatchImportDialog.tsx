@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Upload, Download, FileSpreadsheet, Loader2 } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { toast } from 'sonner';
 import { Room } from '@/types';
 import { utilitiesApi, UtilityExportRoom } from '@/lib/api/utilities';
@@ -83,7 +83,7 @@ export function BatchImportDialog({
         return;
       }
 
-      // 构建 Excel 数据
+      // 构建 Excel 数据（使用 exceljs，避免 xlsx 已知安全漏洞）
       const header = ['公寓名称', '房间号', '租客姓名', '账单日', '上期水表(m³)', '当前水表(m³)', '上期电表(kWh)', '当前电表(kWh)', '备注'];
       const data = rooms.map((room: UtilityExportRoom) => [
         room.apartment_name,
@@ -97,25 +97,24 @@ export function BatchImportDialog({
         '', // 备注 - 待填
       ]);
 
-      const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
-
-      // 设置列宽
-      ws['!cols'] = [
-        { wch: 12 }, // 公寓名称
-        { wch: 10 }, // 房间号
-        { wch: 10 }, // 租客姓名
-        { wch: 8 },  // 账单日
-        { wch: 14 }, // 上期水表
-        { wch: 14 }, // 当前水表
-        { wch: 14 }, // 上期电表
-        { wch: 14 }, // 当前电表
-        { wch: 20 }, // 备注
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('水电读数导入', {
+        views: [{ state: 'frozen', ySplit: 1 }],
+      });
+      ws.columns = [
+        { width: 12 }, { width: 10 }, { width: 10 }, { width: 8 },
+        { width: 14 }, { width: 14 }, { width: 14 }, { width: 14 }, { width: 20 },
       ];
+      ws.addRows([header, ...data]);
 
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, '水电读数导入');
-      const fileName = `水电读数模板_${selectedYear}年${selectedMonth}月.xlsx`;
-      XLSX.writeFile(wb, fileName);
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `水电读数模板_${selectedYear}年${selectedMonth}月.xlsx`;
+      a.click();
+      window.URL.revokeObjectURL(url);
 
       toast.success(`已导出 ${rooms.length} 个待录入房间`);
     } catch {
@@ -126,65 +125,73 @@ export function BatchImportDialog({
   };
 
   // 下载空白模板
-  const downloadBlankTemplate = () => {
+  const downloadBlankTemplate = async () => {
     const templateData = [
       ['公寓名称', '房间号', '租客姓名', '账单日', '上期水表(m³)', '当前水表(m³)', '上期电表(kWh)', '当前电表(kWh)', '备注'],
       ['示例公寓', '101', '张三', '15', '100.00', '', '500.00', '', ''],
       ['示例公寓', '102', '李四', '20', '200.00', '', '600.00', '', ''],
     ];
-    const ws = XLSX.utils.aoa_to_sheet(templateData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, '水电读数导入');
-    XLSX.writeFile(wb, '水电读数空白模板.xlsx');
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('水电读数导入');
+    ws.addRows(templateData);
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '水电读数空白模板.xlsx';
+    a.click();
+    window.URL.revokeObjectURL(url);
   };
 
-  // 解析 Excel 文件
-  const parseExcelFile = async (file: File) => {
-    return new Promise<{ room_number: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[]>((resolve, reject) => {
+  // 解析 Excel 文件（使用 exceljs）
+  const parseExcelFile = async (file: File): Promise<{ room_number: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[]> => {
+    const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = new Uint8Array(e.target?.result as ArrayBuffer);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][];
-
-          // 新格式: 公寓名称, 房间号, 租客姓名, 账单日, 上期水表, 当前水表, 上期电表, 当前电表, 备注
-          // 旧格式: 公寓名称, 房间号, 水表读数, 电表读数, 备注
-          const records = jsonData.slice(1)
-            .filter((row) => row[1]) // 房间号必填
-            .map((row) => {
-              // 检测是新格式还是旧格式
-              // 新格式: 当前水表在第5列(索引5)，当前电表在第7列(索引7)，备注在第8列(索引8)
-              // 旧格式: 水表读数在第2列(索引2)，电表读数在第3列(索引3)，备注在第4列(索引4)
-              const isNewFormat = row.length >= 8;
-
-              if (isNewFormat) {
-                return {
-                  room_number: String(row[1] || '').trim(),
-                  water_reading: row[5] !== undefined && row[5] !== '' && row[5] !== null ? Number(row[5]) : null,
-                  electricity_reading: row[7] !== undefined && row[7] !== '' && row[7] !== null ? Number(row[7]) : null,
-                  notes: row[8] !== undefined && row[8] !== '' && row[8] !== null ? String(row[8]) : null,
-                };
-              } else {
-                return {
-                  room_number: String(row[1] || '').trim(),
-                  water_reading: row[2] !== undefined && row[2] !== '' && row[2] !== null ? Number(row[2]) : null,
-                  electricity_reading: row[3] !== undefined && row[3] !== '' && row[3] !== null ? Number(row[3]) : null,
-                  notes: row[4] !== undefined && row[4] !== '' && row[4] !== null ? String(row[4]) : null,
-                };
-              }
-            });
-
-          resolve(records);
-        } catch {
-          reject(new Error('Excel 文件解析失败'));
-        }
-      };
+      reader.onload = (e) => resolve(e.target?.result as ArrayBuffer);
       reader.onerror = () => reject(new Error('文件读取失败'));
       reader.readAsArrayBuffer(file);
     });
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(arrayBuffer);
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) throw new Error('Excel 文件解析失败');
+
+    const jsonData: unknown[][] = [];
+    worksheet.eachRow((row) => {
+      const rowValues: unknown[] = [];
+      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        rowValues[colNumber - 1] = cell.value ?? '';
+      });
+      jsonData.push(rowValues);
+    });
+
+    // 新格式: 公寓名称, 房间号, 租客姓名, 账单日, 上期水表, 当前水表, 上期电表, 当前电表, 备注
+    // 旧格式: 公寓名称, 房间号, 水表读数, 电表读数, 备注
+    const records = jsonData.slice(1)
+      .filter((row) => row[1]) // 房间号必填
+      .map((row) => {
+        const isNewFormat = row.length >= 8;
+        const toNum = (v: unknown) => (v !== undefined && v !== '' && v !== null ? Number(v) : null);
+        const toStr = (v: unknown) => (v !== undefined && v !== '' && v !== null ? String(v) : null);
+        if (isNewFormat) {
+          return {
+            room_number: String(row[1] || '').trim(),
+            water_reading: toNum(row[5]),
+            electricity_reading: toNum(row[7]),
+            notes: toStr(row[8]),
+          };
+        }
+        return {
+          room_number: String(row[1] || '').trim(),
+          water_reading: toNum(row[2]),
+          electricity_reading: toNum(row[3]),
+          notes: toStr(row[4]),
+        };
+      });
+
+    return records;
   };
 
   // 处理文件上传

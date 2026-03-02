@@ -70,7 +70,7 @@ export default function AdminOrganizationDetailPage() {
         <CardContent className="space-y-3">
           <div className="grid gap-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Slug</span>
+              <span className="text-muted-foreground">短标识</span>
               <span>{org.slug}</span>
             </div>
             <div className="flex justify-between">
