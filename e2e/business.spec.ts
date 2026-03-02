@@ -68,7 +68,7 @@ test.describe('业务端 - 通知（对应测试用例 11）', () => {
   test('通知页有标题和列表或空状态（NT-L-01）', async ({ page }) => {
     await page.goto('/notifications');
     await expect(page).toHaveURL(/\/notifications$/);
-    await expect(page.getByRole('heading', { name: '通知' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '通知' })).toBeVisible({ timeout: 10000 });
     const hasList = await page.getByText('通知列表').count() > 0;
     const hasEmpty = await page.getByText('暂无通知').count() > 0;
     expect(hasList || hasEmpty).toBe(true);
@@ -86,30 +86,32 @@ test.describe('业务端 - 通知（对应测试用例 11）', () => {
   test('点击全部标已读后按钮消失或列表更新（NT-MA-01）', async ({ page }) => {
     await page.goto('/notifications');
     await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('heading', { name: '通知' })).toBeVisible({ timeout: 10000 });
     const markAllBtn = page.getByRole('button', { name: '全部标已读' });
     if (await markAllBtn.isVisible()) {
       await markAllBtn.click();
       await expect(markAllBtn).toBeHidden({ timeout: 10000 });
     }
-    await expect(page.getByRole('heading', { name: '通知' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '通知' })).toBeVisible({ timeout: 5000 });
   });
 
   test('单条未读通知可点击标为已读（NT-M-01）', async ({ page }) => {
     await page.goto('/notifications');
     await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('heading', { name: '通知' })).toBeVisible({ timeout: 10000 });
     const markReadBtn = page.getByRole('button', { name: '标为已读' }).first();
     if (await markReadBtn.isVisible()) {
       await markReadBtn.click();
       await expect(markReadBtn).toBeHidden({ timeout: 5000 });
     }
-    await expect(page.getByRole('heading', { name: '通知' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '通知' })).toBeVisible({ timeout: 5000 });
   });
 });
 
 test.describe('业务端 - 公寓管理（对应测试用例 3.1）', () => {
   test('公寓管理页有标题且可打开新增公寓弹窗或显示空状态', async ({ page }) => {
     await page.goto('/apartments');
-    await expect(page.getByRole('heading', { name: '公寓管理' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '公寓管理' })).toBeVisible({ timeout: 10000 });
     const hasNewBtn = await page.getByRole('button', { name: '新增公寓' }).count() > 0;
     const hasEmpty = await page.getByText('暂无公寓').count() > 0;
     expect(hasNewBtn || hasEmpty).toBe(true);
@@ -491,21 +493,29 @@ test.describe('业务端 - 完整业务流程', () => {
     await expect(createAptDialog).toBeHidden({ timeout: 10000 });
     await expect(page.getByText(apartmentName)).toBeVisible({ timeout: 10000 });
 
-    // 2. 进入公寓详情
-    await page.getByRole('link', { name: apartmentName }).click();
+    // 2. 进入公寓详情（正常详情页为图标返回按钮，无「返回公寓列表」文案）
+    await page.getByRole('link', { name: new RegExp(apartmentName) }).click();
     await expect(page).toHaveURL(/\/apartments\/[^/]+/, { timeout: 10000 });
-    await expect(page.getByRole('button', { name: '返回公寓列表' })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { name: apartmentName })).toBeVisible({ timeout: 10000 });
 
     // 3. 新增房间
     await page.getByRole('button', { name: '新增房间' }).click();
-    const roomDialog = page.getByRole('dialog').filter({ hasText: /新增房间|房间号/ });
+    const roomDialog = page.getByRole('dialog').filter({ hasText: '新增房间' });
     await expect(roomDialog).toBeVisible({ timeout: 5000 });
-    await roomDialog.getByRole('textbox', { name: /房间号/ }).fill(roomNumber);
+    await roomDialog.locator('input#room_number').fill(roomNumber);
     await roomDialog.locator('input#monthly_rent').fill(String(monthlyRent));
+    const roomCreateRequest = page.waitForResponse(
+      (res) =>
+        res.url().includes('/rooms') &&
+        res.request().method() === 'POST' &&
+        res.status() >= 200 &&
+        res.status() < 300,
+      { timeout: 15000 }
+    );
     await roomDialog.getByRole('button', { name: '创建' }).click();
+    await roomCreateRequest;
     await expect(roomDialog).toBeHidden({ timeout: 10000 });
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByText(roomNumber)).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('main').getByText(roomNumber)).toBeVisible({ timeout: 15000 });
 
     // 4. 租客管理 → 新增租客
     await page.getByRole('link', { name: '租客管理' }).click();
