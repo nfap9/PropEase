@@ -9,13 +9,14 @@ describe('responseWrapper', () => {
   }
 
   function createMockRes(statusCode = 200): { res: Response; jsonSpy: ReturnType<typeof vi.fn> } {
-    const jsonSpy = vi.fn(function (this: Response, _body?: unknown) {
-      return this as Response;
-    });
+    const jsonSpy = vi.fn();
     const res = {
       statusCode,
       locals: {} as Record<string, unknown>,
-      json: jsonSpy as unknown as Response['json'],
+      json(this: Response, body?: unknown) {
+        jsonSpy(body);
+        return this as Response;
+      },
     } as unknown as Response;
     return { res, jsonSpy };
   }

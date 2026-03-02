@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build api-contract
+        run: pnpm --filter @apartment-ultra/api-contract run build
+
       - name: Prisma generate
         run: pnpm --filter apartment-ultra-api exec prisma generate
 
@@ -63,6 +66,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Build api-contract
+        run: pnpm --filter @apartment-ultra/api-contract run build
 
       - name: Run ESLint
         run: pnpm --filter frontend run lint
