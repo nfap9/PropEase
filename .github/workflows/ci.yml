@@ -37,6 +37,9 @@ jobs:
       - name: Prisma generate
         run: pnpm --filter apartment-ultra-api exec prisma generate
 
+      - name: Run ESLint
+        run: pnpm --filter apartment-ultra-api run lint
+
       - name: Type check
         run: pnpm --filter apartment-ultra-api run type-check
 
@@ -72,6 +75,9 @@ jobs:
 
       - name: Run ESLint
         run: pnpm --filter frontend run lint
+
+      - name: Type check
+        run: pnpm --filter frontend run type-check
 
       - name: Run tests
         run: pnpm --filter frontend run test:run
