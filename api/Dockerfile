@@ -3,10 +3,11 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# 复制 workspace 根与各包 package.json，使用单一 lockfile 安装
+# 复制 workspace 根与各包（含 api-contract），使用单一 lockfile 安装
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY api/package.json api/package.json
 COPY web/package.json web/package.json
+COPY packages/ packages/
 RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
 # 复制 api 源码

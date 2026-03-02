@@ -7,11 +7,10 @@ on:
     branches: [main]
 
 jobs:
-  # 后端（api）：类型检查与测试
-  api:
-    name: api
+  # 构建共享契约并缓存，供 api / frontend 复用
+  build-contract:
+    name: api-contract
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,8 +30,69 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Audit dependencies
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
+
       - name: Build api-contract
         run: pnpm --filter @apartment-ultra/api-contract run build
+
+      - name: Cache api-contract build
+        uses: actions/cache@v4
+        with:
+          path: packages/api-contract/dist
+          key: contract-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'packages/api-contract/**') }}
+          restore-keys: |
+            contract-${{ runner.os }}-
+
+      - name: Upload api-contract artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-contract-dist
+          path: packages/api-contract/dist
+
+  # 后端（api）：lint、类型检查与测试
+  api:
+    name: api
+    runs-on: ubuntu-latest
+    needs: build-contract
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Restore api-contract build
+        id: contract-cache
+        uses: actions/cache@v4
+        with:
+          path: packages/api-contract/dist
+          key: contract-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'packages/api-contract/**') }}
+          restore-keys: |
+            contract-${{ runner.os }}-
+
+      - name: Get api-contract from artifact
+        if: steps.contract-cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: api-contract-dist
+
+      - name: Place api-contract artifact
+        if: steps.contract-cache.outputs.cache-hit != 'true'
+        run: mkdir -p packages/api-contract && cp -r api-contract-dist packages/api-contract/dist
 
       - name: Prisma generate
         run: pnpm --filter apartment-ultra-api exec prisma generate
@@ -50,7 +110,7 @@ jobs:
   frontend:
     name: Frontend
     runs-on: ubuntu-latest
-
+    needs: build-contract
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -70,8 +130,24 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build api-contract
-        run: pnpm --filter @apartment-ultra/api-contract run build
+      - name: Restore api-contract build
+        id: contract-cache
+        uses: actions/cache@v4
+        with:
+          path: packages/api-contract/dist
+          key: contract-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'packages/api-contract/**') }}
+          restore-keys: |
+            contract-${{ runner.os }}-
+
+      - name: Get api-contract from artifact
+        if: steps.contract-cache.outputs.cache-hit != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: api-contract-dist
+
+      - name: Place api-contract artifact
+        if: steps.contract-cache.outputs.cache-hit != 'true'
+        run: mkdir -p packages/api-contract && cp -r api-contract-dist packages/api-contract/dist
 
       - name: Run ESLint
         run: pnpm --filter frontend run lint
@@ -86,3 +162,47 @@ jobs:
         run: pnpm --filter frontend run build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+
+  # Docker 构建验证并推送到 GHCR（仅 push 到 main 时）
+  docker:
+    name: Docker build & push
+    runs-on: ubuntu-latest
+    needs: [api, frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build images with Compose
+        run: |
+          cd docker
+          docker compose -p apartment-ultra -f docker-compose.yaml build
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag and push API image
+        run: |
+          IMAGE_REF=ghcr.io/${{ github.repository_owner }}/apartment-ultra-api
+          docker tag apartment-ultra_api $IMAGE_REF:main
+          docker tag apartment-ultra_api $IMAGE_REF:${{ github.sha }}
+          docker push $IMAGE_REF:main
+          docker push $IMAGE_REF:${{ github.sha }}
+
+      - name: Tag and push Web image
+        run: |
+          IMAGE_REF=ghcr.io/${{ github.repository_owner }}/apartment-ultra-web
+          docker tag apartment-ultra_web $IMAGE_REF:main
+          docker tag apartment-ultra_web $IMAGE_REF:${{ github.sha }}
+          docker push $IMAGE_REF:main
+          docker push $IMAGE_REF:${{ github.sha }}
