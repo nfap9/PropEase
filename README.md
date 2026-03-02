@@ -126,7 +126,7 @@ pnpm run docker:down  # 停止容器
 
 **业务端（公寓管理系统）**：无种子脚本时需在登录页自行注册。若启动 API 时设置 `SEED_E2E_USER=true`，将自动创建 E2E 测试用户：手机号 `13800138000`、密码 `Test1234`，供 E2E 用例「密码登录」使用。
 
-**E2E 测试**：运行 `pnpm run test:e2e` 前需先启动 API（端口 8000）与前端（端口 3000），如 `pnpm run dev:local`。若需「密码登录」用例通过，请以 `SEED_E2E_USER=true` 启动 API 一次以创建上述测试用户。**首次运行或升级 Playwright 后**须执行 `pnpm exec playwright install`（或 `pnpm exec playwright install chromium`）安装浏览器，否则 E2E 会报「Executable doesn't exist」。
+**E2E 测试**：运行 `pnpm run test:e2e` 前需先启动 API（端口 8000）与前端（端口 3000），如 `pnpm run dev:local`。若需「密码登录」用例通过，请以 `SEED_E2E_USER=true` 启动 API 一次以创建上述测试用户。**首次运行或升级 Playwright 后**须执行 `pnpm exec playwright install`（或 `pnpm exec playwright install chromium`）安装浏览器，否则 E2E 会报「Executable doesn't exist」。仅运行运营后台 E2E：`pnpm exec playwright test admin`（同样需 API 与前端已启动，并使用下方运营后台账号）。
 
 **运营后台（应用启动时自动种子）**
 

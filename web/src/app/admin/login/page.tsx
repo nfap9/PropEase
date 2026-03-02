@@ -81,7 +81,7 @@ export default function AdminLoginPage() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {error && (
                 <p className="text-sm text-destructive">{error}</p>
               )}

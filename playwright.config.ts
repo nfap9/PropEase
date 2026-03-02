@@ -11,5 +11,25 @@ export default defineConfig({
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      testIgnore: [/admin\.spec\.ts/, /admin\.auth\.setup\.ts/],
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'admin-setup',
+      testMatch: /admin\.auth\.setup\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'admin',
+      testMatch: /admin\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '.auth/admin.json',
+      },
+      dependencies: ['admin-setup'],
+    },
+  ],
 });
