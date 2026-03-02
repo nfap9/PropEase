@@ -27,6 +27,7 @@ import {
   Menu,
   Shield,
   Bell,
+  CreditCard,
 } from 'lucide-react';
 import { notificationsApi, subscriptionsApi } from '@/lib/api';
 import { useState } from 'react';
@@ -40,7 +41,6 @@ const PLAN_CODE_LABEL: Record<string, string> = {
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { OrgSelector } from '@/components/common/org-selector';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
-import { PermissionGuard } from '@/components/common/permission-guard';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: '仪表盘', icon: Home, permission: null },
@@ -56,6 +56,7 @@ const NAV_ITEMS = [
 
 const SETTINGS_ITEMS = [
   { href: '/settings/team', label: '团队管理', icon: Users, permission: PERMISSIONS.MEMBER_VIEW },
+  { href: '/settings/subscription', label: '套餐购买', icon: CreditCard, permission: null },
   { href: '/settings/permissions', label: '权限管理', icon: Shield, permission: PERMISSIONS.SETTINGS_VIEW },
 ];
 
@@ -86,7 +87,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   );
 
   const visibleSettingsItems = SETTINGS_ITEMS.filter(
-    (item) => isSuperAdmin || hasPermission(item.permission)
+    (item) => !item.permission || isSuperAdmin || hasPermission(item.permission)
   );
 
   const NavContent = () => (
@@ -117,32 +118,6 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
             </Link>
           );
         })}
-
-        {/* 设置分组 */}
-        {visibleSettingsItems.length > 0 && (
-          <>
-            <div className="my-4 border-t" />
-            {visibleSettingsItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </>
-        )}
       </nav>
     </>
   );
@@ -211,17 +186,18 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <PermissionGuard permission={PERMISSIONS.MEMBER_VIEW}>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings/team">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>团队设置</span>
-                  </Link>
-                </DropdownMenuItem>
-              </PermissionGuard>
-              <PermissionGuard permission={PERMISSIONS.MEMBER_VIEW}>
-                <DropdownMenuSeparator />
-              </PermissionGuard>
+              {visibleSettingsItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <DropdownMenuItem key={item.href} asChild>
+                    <Link href={item.href}>
+                      <Icon className="mr-2 h-4 w-4" />
+                      <span>{item.label}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                );
+              })}
+              {visibleSettingsItems.length > 0 && <DropdownMenuSeparator />}
               <DropdownMenuItem onClick={logout}>
                 <span>退出登录</span>
               </DropdownMenuItem>
