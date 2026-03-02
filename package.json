@@ -24,8 +24,9 @@
     "type-check:web": "pnpm --filter frontend run type-check",
     "format": "pnpm --filter apartment-ultra-api run lint:fix",
     "check": "pnpm --filter apartment-ultra-api run lint",
-    "test": "pnpm run test:api",
-    "test:api": "pnpm --filter apartment-ultra-api run test"
+    "test": "pnpm run test:api && pnpm run test:web",
+    "test:api": "pnpm --filter apartment-ultra-api run test",
+    "test:web": "pnpm --filter frontend run test:run"
   },
   "engines": {
     "node": ">=18"
