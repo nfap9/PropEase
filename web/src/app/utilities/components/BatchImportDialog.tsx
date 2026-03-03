@@ -28,7 +28,7 @@ export interface BatchImportPayload {
   period_year: number;
   period_month: number;
   reading_date: string;
-  readings: { room_id: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[];
+  readings: { room_id: string; water_reading?: number; electricity_reading?: number; notes?: string }[];
 }
 
 interface BatchImportDialogProps {
@@ -127,6 +127,18 @@ export function BatchImportDialog({
     const file = event.target.files?.[0];
     if (!file) return;
 
+    const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+    if (ext === '.numbers') {
+      toast.error('请上传 .xlsx 格式的 Excel 文件，不支持 Apple Numbers (.numbers) 格式。请在 Numbers 中通过「文件 → 导出为 → Excel」另存为 .xlsx 后上传');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+    if (ext !== '.xlsx' && ext !== '.xls') {
+      toast.error('请上传 .xlsx 或 .xls 格式的 Excel 文件');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     try {
       const records = await parseExcelFile(file);
 
@@ -140,18 +152,25 @@ export function BatchImportDialog({
         roomMap.set(roomMatchKey(room), room);
       });
 
-      const matchedRecords: { room_id: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[] = [];
+      const matchedRecords: { room_id: string; water_reading?: number; electricity_reading?: number; notes?: string }[] = [];
       const unmatchedKeys: string[] = [];
 
       for (const record of records) {
         const key = `${record.apartment_name}|${record.room_number}`;
         const room = roomMap.get(key);
         if (room) {
+          const water =
+            record.water_reading != null && !Number.isNaN(record.water_reading) ? record.water_reading : undefined;
+          const electricity =
+            record.electricity_reading != null && !Number.isNaN(record.electricity_reading)
+              ? record.electricity_reading
+              : undefined;
+          const notes = record.notes != null && record.notes !== '' ? record.notes : undefined;
           matchedRecords.push({
             room_id: room.id,
-            water_reading: record.water_reading,
-            electricity_reading: record.electricity_reading,
-            notes: record.notes,
+            ...(water !== undefined && { water_reading: water }),
+            ...(electricity !== undefined && { electricity_reading: electricity }),
+            ...(notes !== undefined && { notes }),
           });
         } else {
           unmatchedKeys.push(`${record.apartment_name}-${record.room_number}`);
@@ -174,7 +193,9 @@ export function BatchImportDialog({
         readings: matchedRecords,
       });
     } catch (err) {
-      toast.error(getErrorMessage(err, '导入失败，请重试'));
+      const msg = String(err);
+      const hint = msg.includes('解析失败') ? '请确认文件为 .xlsx 格式（若使用 Numbers，需先导出为 Excel）' : undefined;
+      toast.error(hint ?? getErrorMessage(err, '导入失败，请重试'));
     }
 
     if (fileInputRef.current) {
