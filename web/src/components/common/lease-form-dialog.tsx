@@ -35,10 +35,10 @@ const leaseSchema = z.object({
   tenant_id: z.string().min(1, '请选择租客'),
   start_date: z.string().min(1, '请选择开始日期'),
   end_date: z.string().optional(),
-  monthly_rent: z.number().min(0, '月租不能为负'),
-  deposit: z.number().min(0, '押金不能为负').optional(),
-  water_rate: z.number().min(0).optional(),
-  electricity_rate: z.number().min(0).optional(),
+  monthly_rent: z.coerce.number().min(0, '月租不能为负'),
+  deposit: z.coerce.number().min(0, '押金不能为负').optional(),
+  water_rate: z.coerce.number().min(0).optional(),
+  electricity_rate: z.coerce.number().min(0).optional(),
   notes: z.string().optional(),
 });
 

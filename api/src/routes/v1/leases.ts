@@ -40,7 +40,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 
     const list = await prisma.lease.findMany({
       where,
-      include: { room: true, tenant: true },
+      include: { room: { include: { apartment: true } }, tenant: true },
     });
     res.json(list);
   } catch (e) {

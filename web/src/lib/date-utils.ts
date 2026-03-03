@@ -40,3 +40,12 @@ export function formatDateTime(input: string | Date | null | undefined): string 
   if (!d) return '—';
   return format(d, DATETIME_FORMAT, { locale: zhCN });
 }
+
+/**
+ * 将日期转为 input[type="date"] 所需的 yyyy-MM-dd 格式，用于表单回显
+ * @example toDateInputValue('2024-01-15T00:00:00.000Z') => '2024-01-15'
+ */
+export function toDateInputValue(input: string | Date | null | undefined): string {
+  const d = parseDate(input);
+  return d ? format(d, DATE_FORMAT) : '';
+}

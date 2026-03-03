@@ -17,6 +17,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -38,7 +46,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { leasesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
-import { formatDate } from '@/lib/date-utils';
+import { formatDate, toDateInputValue } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
 import { Lease } from '@/types';
 import { Plus, Pencil, Trash2, Ban, Building2 } from 'lucide-react';
@@ -49,10 +57,10 @@ const leaseSchema = z.object({
   tenant_id: z.string().min(1, '请选择租客'),
   start_date: z.string().min(1, '请选择开始日期'),
   end_date: z.string().optional(),
-  monthly_rent: z.number().min(0, '月租不能为负'),
-  deposit: z.number().min(0, '押金不能为负').optional(),
-  water_rate: z.number().min(0).optional(),
-  electricity_rate: z.number().min(0).optional(),
+  monthly_rent: z.coerce.number().min(0, '月租不能为负'),
+  deposit: z.coerce.number().min(0, '押金不能为负').optional(),
+  water_rate: z.coerce.number().min(0).optional(),
+  electricity_rate: z.coerce.number().optional(),
   notes: z.string().optional(),
 });
 
@@ -117,13 +125,13 @@ export default function LeasesPage() {
     editForm.reset({
       room_id: lease.room_id,
       tenant_id: lease.tenant_id,
-      start_date: lease.start_date,
-      end_date: lease.end_date || '',
+      start_date: toDateInputValue(lease.start_date),
+      end_date: toDateInputValue(lease.end_date),
       monthly_rent: lease.monthly_rent,
-      deposit: lease.deposit || 0,
-      water_rate: lease.water_rate || 0,
-      electricity_rate: lease.electricity_rate || 0,
-      notes: lease.notes || '',
+      deposit: lease.deposit ?? 0,
+      water_rate: lease.water_rate ?? 0,
+      electricity_rate: lease.electricity_rate ?? 0,
+      notes: lease.notes ?? '',
     });
     setIsEditOpen(true);
   };
@@ -275,81 +283,130 @@ export default function LeasesPage() {
             <DialogTitle>编辑租约</DialogTitle>
             <DialogDescription>修改租约信息</DialogDescription>
           </DialogHeader>
-          <form
-            onSubmit={editForm.handleSubmit((data) =>
-              updateMutation.mutate({ id: selectedLease!.id, data })
-            )}
-            className="space-y-4"
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-room">房间</Label>
-                <Input
-                  id="edit-room"
-                  value={
-                    selectedLease?.room
-                      ? `${selectedLease.room.apartment?.name || ''} - ${selectedLease.room.room_number}`
-                      : ''
-                  }
-                  disabled
+          <Form {...editForm}>
+            <form
+              id="edit-lease-form"
+              onSubmit={editForm.handleSubmit(
+                (data) => updateMutation.mutate({ id: selectedLease!.id, data }),
+                (errors) => toast.error('请检查表单填写是否正确')
+              )}
+              className="space-y-4"
+            >
+              <input type="hidden" {...editForm.register('room_id')} />
+              <input type="hidden" {...editForm.register('tenant_id')} />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-room">房间</Label>
+                  <Input
+                    id="edit-room"
+                    value={
+                      selectedLease?.room
+                        ? `${selectedLease.room.apartment?.name || ''} - ${selectedLease.room.room_number}`
+                        : ''
+                    }
+                    disabled
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-tenant">租客</Label>
+                  <Input id="edit-tenant" value={selectedLease?.tenant?.name || ''} disabled />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="start_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>开始日期 *</FormLabel>
+                      <FormControl>
+                        <Input id="edit-start_date" type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="end_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>结束日期</FormLabel>
+                      <FormControl>
+                        <Input id="edit-end_date" type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-tenant">租客</Label>
-                <Input id="edit-tenant" value={selectedLease?.tenant?.name || ''} disabled />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-start_date">开始日期 *</Label>
-                <Input
-                  id="edit-start_date"
-                  type="date"
-                  {...editForm.register('start_date')}
+              <div className="grid grid-cols-3 gap-4">
+                <FormField
+                  control={editForm.control}
+                  name="monthly_rent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>月租 (元) *</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.value === '' ? 0 : Number(e.target.value))
+                          }
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="deposit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>押金 (元)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.value === '' ? 0 : Number(e.target.value))
+                          }
+                          value={field.value ?? ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-end_date">结束日期</Label>
-                <Input
-                  id="edit-end_date"
-                  type="date"
-                  {...editForm.register('end_date')}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-monthly_rent">月租 (元) *</Label>
-                <Input
-                  id="edit-monthly_rent"
-                  type="number"
-                  step="0.01"
-                  {...editForm.register('monthly_rent', { valueAsNumber: true })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-deposit">押金 (元)</Label>
-                <Input
-                  id="edit-deposit"
-                  type="number"
-                  step="0.01"
-                  {...editForm.register('deposit', { valueAsNumber: true })}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-notes">备注</Label>
-              <Input id="edit-notes" {...editForm.register('notes')} />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
-                取消
-              </Button>
-              <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? '保存中...' : '保存'}
-              </Button>
-            </DialogFooter>
-          </form>
+              <FormField
+                control={editForm.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>备注</FormLabel>
+                    <FormControl>
+                      <Input id="edit-notes" {...field} value={field.value ?? ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                  取消
+                </Button>
+                <Button type="submit" disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? '保存中...' : '保存'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 
