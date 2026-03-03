@@ -124,6 +124,19 @@ pnpm run docker:up   # 启动容器
 pnpm run docker:down  # 停止容器
 ```
 
+## 开发脚本说明
+
+日常只需记住「`pnpm run dev-setup` 一次，然后 `pnpm run dev`」。其余脚本按需使用：
+
+| 脚本 | 用途 |
+|------|------|
+| `dev-setup` | 环境与中间件准备（Docker 中间件、pnpm 安装、Prisma generate） |
+| `dev` / `dev:local` | 一键启动后端 + 前端（同终端，Ctrl+C 同时退出） |
+| `dev:api` / `dev:web` | 分启后端（8000）或前端 |
+| `dev-check` | 检查 PostgreSQL 等依赖是否就绪（可手动执行 `bash scripts/dev-check.sh`） |
+| `dev-local-stop` | 停止占用 3000/8000 端口的进程（可选） |
+| `dev-clean` | 停止 Docker 中间件并删除 volumes（可选/高级） |
+
 ## 测试账号
 
 **业务端（公寓管理系统）**：无种子脚本时需在登录页自行注册。若启动 API 时设置 `SEED_E2E_USER=true`，将自动创建 E2E 测试用户：手机号 `13800138000`、密码 `Test1234`，供 E2E 用例「密码登录」使用。
