@@ -130,6 +130,7 @@ web/
 │   │   ├── tenants/         # 租客管理
 │   │   ├── leases/          # 租约管理
 │   │   ├── utilities/       # 水电读数
+│   │   │   └── history/     # 历史水电记录
 │   │   ├── bills/           # 账单管理
 │   │   ├── reports/         # 报表分析
 │   │   └── settings/        # 设置
