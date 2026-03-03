@@ -188,7 +188,7 @@ export function LeaseFormDialog({
                   value={selectedApartmentId || ''}
                   onValueChange={(value) => setSelectedApartmentId(value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="min-w-[140px]">
                     <SelectValue placeholder="选择公寓" />
                   </SelectTrigger>
                   <SelectContent>
@@ -206,7 +206,7 @@ export function LeaseFormDialog({
                   value={form.watch('room_id') || ''}
                   onValueChange={(value) => form.setValue('room_id', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="min-w-[140px]">
                     <SelectValue placeholder="选择房间" />
                   </SelectTrigger>
                   <SelectContent>

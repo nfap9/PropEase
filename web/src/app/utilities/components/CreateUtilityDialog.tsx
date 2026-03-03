@@ -83,7 +83,7 @@ export function CreateUtilityDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>录入水电读数</DialogTitle>
           <DialogDescription>录入房间的水电表读数</DialogDescription>
@@ -96,7 +96,7 @@ export function CreateUtilityDialog({
                 value={selectedApartmentId || ''}
                 onValueChange={(value) => onApartmentChange(value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="min-w-[140px]">
                   <SelectValue placeholder="选择公寓" />
                 </SelectTrigger>
                 <SelectContent>
@@ -114,7 +114,7 @@ export function CreateUtilityDialog({
                 value={form.watch('room_id') || ''}
                 onValueChange={(value) => form.setValue('room_id', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="min-w-[140px]">
                   <SelectValue placeholder="选择房间" />
                 </SelectTrigger>
                 <SelectContent>
@@ -127,14 +127,14 @@ export function CreateUtilityDialog({
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="period_year">年份</Label>
               <Select
                 value={form.watch('period_year')?.toString() || currentYear.toString()}
                 onValueChange={(value) => form.setValue('period_year', Number(value))}
               >
-                <SelectTrigger>
+                <SelectTrigger className="min-w-[120px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -152,7 +152,7 @@ export function CreateUtilityDialog({
                 value={form.watch('period_month')?.toString() || currentMonth.toString()}
                 onValueChange={(value) => form.setValue('period_month', Number(value))}
               >
-                <SelectTrigger>
+                <SelectTrigger className="min-w-[120px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -164,14 +164,14 @@ export function CreateUtilityDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="reading_date">读数日期 *</Label>
-              <Input
-                id="reading_date"
-                type="date"
-                {...form.register('reading_date')}
-              />
-            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="reading_date">读数日期 *</Label>
+            <Input
+              id="reading_date"
+              type="date"
+              {...form.register('reading_date')}
+            />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

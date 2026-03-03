@@ -12,6 +12,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Upload, Download, FileSpreadsheet, Loader2 } from 'lucide-react';
 import ExcelJS from 'exceljs';
 import { toast } from 'sonner';
@@ -267,27 +274,39 @@ export function BatchImportDialog({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>年份</Label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                <Select
+                  value={selectedYear.toString()}
+                  onValueChange={(v) => setSelectedYear(Number(v))}
                 >
-                  {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
-                    <option key={year} value={year}>{year}年</option>
-                  ))}
-                </select>
+                  <SelectTrigger className="min-w-[120px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}年
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>月份</Label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                <Select
+                  value={selectedMonth.toString()}
+                  onValueChange={(v) => setSelectedMonth(Number(v))}
                 >
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                    <option key={month} value={month}>{month}月</option>
-                  ))}
-                </select>
+                  <SelectTrigger className="min-w-[120px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                      <SelectItem key={month} value={month.toString()}>
+                        {month}月
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

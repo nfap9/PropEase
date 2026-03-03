@@ -15,6 +15,13 @@ import { useAuth } from '@/lib/auth/context';
 import { UtilityReading } from '@/types';
 import { Plus, Upload, Building2, Filter } from 'lucide-react';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   useColumns,
   CreateUtilityDialog,
   EditUtilityDialog,
@@ -163,30 +170,38 @@ export default function UtilitiesPage() {
             <span className="text-sm text-muted-foreground">筛选：</span>
           </div>
           <div className="flex items-center gap-2">
-            <select
-              className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
-              value={filterYear ?? ''}
-              onChange={(e) => setFilterYear(e.target.value ? Number(e.target.value) : undefined)}
+            <Select
+              value={filterYear?.toString() ?? 'all'}
+              onValueChange={(v) => setFilterYear(v === 'all' ? undefined : Number(v))}
             >
-              <option value="">全部年份</option>
-              {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
-                <option key={year} value={year}>
-                  {year}年
-                </option>
-              ))}
-            </select>
-            <select
-              className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
-              value={filterMonth ?? ''}
-              onChange={(e) => setFilterMonth(e.target.value ? Number(e.target.value) : undefined)}
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="全部年份" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部年份</SelectItem>
+                {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}年
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={filterMonth?.toString() ?? 'all'}
+              onValueChange={(v) => setFilterMonth(v === 'all' ? undefined : Number(v))}
             >
-              <option value="">全部月份</option>
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                <option key={month} value={month}>
-                  {month}月
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="全部月份" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部月份</SelectItem>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                  <SelectItem key={month} value={month.toString()}>
+                    {month}月
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {(filterYear || filterMonth) && (
               <Button
                 variant="ghost"

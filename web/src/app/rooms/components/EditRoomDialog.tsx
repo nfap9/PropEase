@@ -101,7 +101,7 @@ export function EditRoomDialog({
                 value={form.watch('layout') || ''}
                 onValueChange={(value) => form.setValue('layout', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="min-w-[120px]">
                   <SelectValue placeholder="选择户型" />
                 </SelectTrigger>
                 <SelectContent>
@@ -130,7 +130,7 @@ export function EditRoomDialog({
                 value={form.watch('status')}
                 onValueChange={(value: RoomStatus) => form.setValue('status', value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="min-w-[120px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

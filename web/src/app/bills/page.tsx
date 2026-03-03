@@ -361,7 +361,7 @@ export default function BillsPage() {
 
       {/* Payment Dialog */}
       <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>登记付款</DialogTitle>
             <DialogDescription>
@@ -407,7 +407,7 @@ export default function BillsPage() {
                     paymentForm.setValue('payment_method', value)
                   }
                 >
-                  <SelectTrigger id="payment_method">
+                  <SelectTrigger id="payment_method" className="min-w-[140px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

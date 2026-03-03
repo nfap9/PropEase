@@ -104,7 +104,7 @@ export function TenantSelect({
           onValueChange={(v) => onValueChange(v)}
           disabled={disabled}
         >
-          <SelectTrigger className="flex-1">
+          <SelectTrigger className="flex-1 min-w-[140px]">
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>

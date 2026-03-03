@@ -73,13 +73,13 @@ export function EditUtilityDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>编辑水电读数</DialogTitle>
           <DialogDescription>修改水电表读数</DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>年份</Label>
               <Input value={utility?.period_year} disabled />
@@ -88,14 +88,14 @@ export function EditUtilityDialog({
               <Label>月份</Label>
               <Input value={`${utility?.period_month}月`} disabled />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-reading_date">读数日期</Label>
-              <Input
-                id="edit-reading_date"
-                type="date"
-                {...form.register('reading_date')}
-              />
-            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-reading_date">读数日期</Label>
+            <Input
+              id="edit-reading_date"
+              type="date"
+              {...form.register('reading_date')}
+            />
           </div>
           <div className="space-y-2">
             <Label>房间</Label>

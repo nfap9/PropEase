@@ -853,7 +853,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
 
       {/* 编辑公寓对话框 */}
       <Dialog open={isEditApartmentOpen} onOpenChange={setIsEditApartmentOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>编辑公寓</DialogTitle>
             <DialogDescription>修改公寓信息</DialogDescription>
@@ -898,7 +898,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
 
       {/* 新增房间对话框 */}
       <Dialog open={isCreateRoomOpen} onOpenChange={setIsCreateRoomOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>新增房间</DialogTitle>
             <DialogDescription>在 {apartment.name} 添加新房间</DialogDescription>
@@ -923,7 +923,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                   value={createRoomForm.watch('layout') || ''}
                   onValueChange={(value) => createRoomForm.setValue('layout', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="min-w-[120px]">
                     <SelectValue placeholder="选择户型" />
                   </SelectTrigger>
                   <SelectContent>
@@ -968,7 +968,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                   value={createRoomForm.watch('status')}
                   onValueChange={(value: RoomStatus) => createRoomForm.setValue('status', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="min-w-[120px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1091,7 +1091,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                     value={batchCreateRoomForm.watch('layout') || ''}
                     onValueChange={(value) => batchCreateRoomForm.setValue('layout', value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="min-w-[120px]">
                       <SelectValue placeholder="选择户型" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1254,7 +1254,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
 
       {/* 编辑房间对话框 */}
       <Dialog open={isEditRoomOpen} onOpenChange={setIsEditRoomOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>编辑房间</DialogTitle>
             <DialogDescription>修改房间信息</DialogDescription>
@@ -1276,7 +1276,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                   value={editRoomForm.watch('layout') || ''}
                   onValueChange={(value) => editRoomForm.setValue('layout', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="min-w-[120px]">
                     <SelectValue placeholder="选择户型" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1316,7 +1316,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                   value={editRoomForm.watch('status')}
                   onValueChange={(value: RoomStatus) => editRoomForm.setValue('status', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="min-w-[120px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1373,7 +1373,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
 
       {/* 批量编辑对话框 */}
       <Dialog open={isBatchEditOpen} onOpenChange={setIsBatchEditOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>批量编辑</DialogTitle>
             <DialogDescription>
@@ -1390,7 +1390,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                 value={batchEditForm.watch('layout') || '__none__'}
                 onValueChange={(value) => batchEditForm.setValue('layout', value === '__none__' ? undefined : value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="min-w-[120px]">
                   <SelectValue placeholder="不修改" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1428,7 +1428,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                 value={batchEditForm.watch('status') || '__none__'}
                 onValueChange={(value) => batchEditForm.setValue('status', value === '__none__' ? undefined : value as RoomStatus)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="min-w-[120px]">
                   <SelectValue placeholder="不修改" />
                 </SelectTrigger>
                 <SelectContent>
