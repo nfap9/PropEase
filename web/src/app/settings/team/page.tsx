@@ -330,7 +330,13 @@ export default function TeamSettingsPage() {
                   <CardContent>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">
-                        查看
+                        {org.role ? (
+                          <Badge variant={ROLE_COLORS[org.role]}>
+                            {ROLE_LABELS[org.role]}
+                          </Badge>
+                        ) : (
+                          '—'
+                        )}
                       </span>
                       <Button
                         variant="outline"

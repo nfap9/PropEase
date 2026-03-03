@@ -12,6 +12,8 @@ export interface Organization {
   settings: Record<string, unknown>;
   is_personal: boolean;
   created_at: string;
+  /** 列表接口返回：当前用户在该组织中的角色 */
+  role?: MemberRole;
 }
 
 /** 迁移统计 */
