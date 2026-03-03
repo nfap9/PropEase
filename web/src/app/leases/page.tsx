@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,12 +43,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { ColumnDef } from '@tanstack/react-table';
-import { leasesApi } from '@/lib/api';
+import { leasesApi, apartmentsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { formatDate, toDateInputValue } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
 import { Lease } from '@/types';
+import { LeaseFilters, LeaseFiltersState } from './components';
 import { Plus, Pencil, Trash2, Ban, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -74,6 +75,20 @@ export default function LeasesPage() {
   const [isTerminateOpen, setIsTerminateOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedLease, setSelectedLease] = useState<Lease | null>(null);
+  const [filters, setFilters] = useState<LeaseFiltersState>({
+    apartmentId: null,
+    keyword: null,
+    startDateFrom: null,
+    startDateTo: null,
+    endDateFrom: null,
+    endDateTo: null,
+  });
+
+  const { data: apartments } = useQuery({
+    queryKey: ['apartments', orgId],
+    queryFn: () => apartmentsApi.list(orgId!),
+    enabled: !!orgId,
+  });
 
   const { data: leases, isLoading: leasesLoading } = useQuery({
     queryKey: ['leases', orgId],
@@ -144,6 +159,59 @@ export default function LeasesPage() {
   const handleDelete = (lease: Lease) => {
     setSelectedLease(lease);
     setIsDeleteOpen(true);
+  };
+
+  const filteredLeases = useMemo(() => {
+    if (!leases) return [];
+    return leases.filter((lease) => {
+      if (filters.apartmentId && lease.room?.apartment_id !== filters.apartmentId) {
+        return false;
+      }
+      if (filters.keyword) {
+        const kw = filters.keyword.toLowerCase();
+        const roomNum = lease.room?.room_number?.toLowerCase() ?? '';
+        const tenantName = lease.tenant?.name?.toLowerCase() ?? '';
+        const tenantPhone = lease.tenant?.phone ?? '';
+        const tenantIdCard = lease.tenant?.id_card ?? '';
+        const match =
+          roomNum.includes(kw) ||
+          tenantName.includes(kw) ||
+          tenantPhone.includes(kw) ||
+          tenantIdCard.includes(kw);
+        if (!match) return false;
+      }
+      if (filters.startDateFrom) {
+        const start = lease.start_date.slice(0, 10);
+        if (start < filters.startDateFrom) return false;
+      }
+      if (filters.startDateTo) {
+        const start = lease.start_date.slice(0, 10);
+        if (start > filters.startDateTo) return false;
+      }
+      const endDate = lease.end_date ? lease.end_date.slice(0, 10) : null;
+      if (filters.endDateFrom) {
+        if (!endDate || endDate < filters.endDateFrom) return false;
+      }
+      if (filters.endDateTo) {
+        if (!endDate || endDate > filters.endDateTo) return false;
+      }
+      return true;
+    });
+  }, [leases, filters]);
+
+  const handleFilterChange = (key: keyof LeaseFiltersState, value: unknown) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      apartmentId: null,
+      keyword: null,
+      startDateFrom: null,
+      startDateTo: null,
+      endDateFrom: null,
+      endDateTo: null,
+    });
   };
 
   const columns: ColumnDef<Lease>[] = [
@@ -262,11 +330,18 @@ export default function LeasesPage() {
             </Button>
           </div>
 
-        {leasesLoading ? (
-          <Skeleton className="h-96" />
-        ) : (
-          <DataTable columns={columns} data={leases || []} />
-        )}
+          <LeaseFilters
+            apartments={apartments?.map((a) => ({ id: a.id, name: a.name })) ?? []}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onClearFilters={handleClearFilters}
+          />
+
+          {leasesLoading ? (
+            <Skeleton className="h-96" />
+          ) : (
+            <DataTable columns={columns} data={filteredLeases} />
+          )}
       </div>
 
       {/* Create Dialog */}
@@ -288,7 +363,7 @@ export default function LeasesPage() {
               id="edit-lease-form"
               onSubmit={editForm.handleSubmit(
                 (data) => updateMutation.mutate({ id: selectedLease!.id, data }),
-                (errors) => toast.error('请检查表单填写是否正确')
+                () => toast.error('请检查表单填写是否正确')
               )}
               className="space-y-4"
             >
