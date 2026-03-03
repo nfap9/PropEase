@@ -98,7 +98,7 @@ export default function AdminBrandPage() {
         <CardHeader>
           <CardTitle>系统名称与品牌</CardTitle>
           <CardDescription>
-            配置业务端登录页、侧边栏、仪表盘等处的系统名称与描述，修改后立即生效
+            配置业务端登录页、侧边栏、首页等处的系统名称与描述，修改后立即生效
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -10,6 +10,8 @@ export interface DashboardOverview {
   monthly_revenue: number;
   pending_bills: number;
   overdue_bills: number;
+  /** 未录入签约月初始水电读数的房间数 */
+  rooms_missing_initial_readings?: number;
 }
 
 /** 收入报表 */

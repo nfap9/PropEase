@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -67,10 +68,15 @@ const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
 
 export default function BillsPage() {
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
 
-  const [statusFilter, setStatusFilter] = useState<BillStatus | 'all'>('all');
+  const statusFromUrl = searchParams.get('status');
+  const validStatus = ['pending', 'overdue', 'partial', 'paid'].includes(statusFromUrl ?? '')
+    ? (statusFromUrl as BillStatus)
+    : null;
+  const [statusFilter, setStatusFilter] = useState<BillStatus | 'all'>(validStatus ?? 'all');
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
 

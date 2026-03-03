@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 import {
   Building2,
   Home,
@@ -21,6 +22,8 @@ import {
   DollarSign,
   Clock,
   AlertCircle,
+  Zap,
+  ChevronRight,
 } from 'lucide-react';
 import { useBrandConfig } from '@/lib/brand-config-context';
 
@@ -121,7 +124,7 @@ export function DashboardContent() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">仪表盘</h1>
+      <h1 className="text-3xl font-bold">首页</h1>
 
       {overviewLoading ? (
         <DashboardSkeleton />
@@ -184,6 +187,59 @@ export function DashboardContent() {
               valueBadgeVariant="destructive"
             />
           </div>
+
+          {/* 待办提醒 */}
+          {(overview?.pending_bills ?? 0) > 0 ||
+          (overview?.overdue_bills ?? 0) > 0 ||
+          (overview?.rooms_missing_initial_readings ?? 0) > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>待办提醒</CardTitle>
+                <CardDescription>需要及时跟进的事项</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {(overview?.pending_bills ?? 0) > 0 && (
+                  <Link
+                    href="/bills?status=pending"
+                    className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-amber-600" />
+                      <span>待收账单</span>
+                      <Badge variant="warning">{overview?.pending_bills} 笔</Badge>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </Link>
+                )}
+                {(overview?.overdue_bills ?? 0) > 0 && (
+                  <Link
+                    href="/bills?status=overdue"
+                    className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 text-red-600" />
+                      <span>逾期账单</span>
+                      <Badge variant="destructive">{overview?.overdue_bills} 笔</Badge>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </Link>
+                )}
+                {(overview?.rooms_missing_initial_readings ?? 0) > 0 && (
+                  <Link
+                    href="/utilities"
+                    className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-amber-600" />
+                      <span>未录入签约月初始水电读数</span>
+                      <Badge variant="warning">{overview?.rooms_missing_initial_readings} 间</Badge>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </Link>
+                )}
+              </CardContent>
+            </Card>
+          ) : null}
 
           <div className="grid gap-4 md:grid-cols-2">
             <Card>

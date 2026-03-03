@@ -64,6 +64,53 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/** 未录入签约月初始水电商数的房间（有活跃租约但签约月无读数记录） */
+router.get('/rooms-missing-initial', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    const rooms = await prisma.room.findMany({
+      where: { apartment: { organization_id: orgId }, status: 'occupied' },
+      include: {
+        apartment: true,
+        leases: { where: { is_active: true }, include: { tenant: true }, take: 1, orderBy: { start_date: 'desc' } },
+      },
+    });
+
+    const result: Array<{
+      room_id: string;
+      apartment_name: string;
+      room_number: string;
+      tenant_name: string;
+      lease_start_date: string;
+    }> = [];
+
+    for (const r of rooms) {
+      const lease = r.leases[0];
+      if (!lease) continue;
+      const start = lease.start_date;
+      const periodYear = start.getFullYear();
+      const periodMonth = start.getMonth() + 1;
+
+      const existing = await prisma.utilityReading.findFirst({
+        where: { room_id: r.id, period_year: periodYear, period_month: periodMonth },
+      });
+      if (existing) continue;
+
+      result.push({
+        room_id: r.id,
+        apartment_name: r.apartment.name,
+        room_number: r.room_number,
+        tenant_name: lease.tenant?.name ?? '',
+        lease_start_date: start.toISOString().split('T')[0],
+      });
+    }
+
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.get('/export', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);

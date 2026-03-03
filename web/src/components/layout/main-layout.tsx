@@ -43,7 +43,7 @@ import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import { useBrandConfig } from '@/lib/brand-config-context';
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: '仪表盘', icon: Home, permission: null },
+  { href: '/dashboard', label: '首页', icon: Home, permission: null },
   { href: '/notifications', label: '通知', icon: Bell, permission: null },
   { href: '/apartments', label: '公寓管理', icon: Building2, permission: PERMISSIONS.APARTMENT_VIEW },
   { href: '/rooms', label: '全部房间', icon: DoorOpen, permission: PERMISSIONS.ROOM_VIEW },

@@ -8,12 +8,19 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { DataTable } from '@/components/common/data-table';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { apartmentsApi, roomsApi, utilitiesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import { UtilityReading } from '@/types';
-import { Plus, Upload, Download, Building2, Filter } from 'lucide-react';
+import { Plus, Upload, Download, Building2, Filter, AlertCircle } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -72,11 +79,19 @@ export default function UtilitiesPage() {
     enabled: !!orgId,
   });
 
+  const { data: roomsMissingInitial = [] } = useQuery({
+    queryKey: ['utilities', 'rooms-missing-initial', orgId],
+    queryFn: () => utilitiesApi.getRoomsMissingInitial(orgId!),
+    enabled: !!orgId,
+  });
+
   const createMutation = useMutation({
     mutationFn: (data: Parameters<typeof utilitiesApi.create>[1]) =>
       utilitiesApi.create(orgId!, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
       setIsCreateOpen(false);
       toast.success('水电读数录入成功');
     },
@@ -88,6 +103,8 @@ export default function UtilitiesPage() {
       utilitiesApi.update(orgId!, id, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
       setIsEditOpen(false);
       setSelectedUtility(null);
       toast.success('水电读数更新成功');
@@ -100,6 +117,8 @@ export default function UtilitiesPage() {
       utilitiesApi.batchCreate(orgId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
       setIsBatchImportOpen(false);
       toast.success('批量导入成功');
     },
@@ -163,6 +182,48 @@ export default function UtilitiesPage() {
               </Button>
             </div>
           </div>
+
+        {/* 未录入初始读数的房间 */}
+        {roomsMissingInitial.length > 0 && (
+          <Card className="border-amber-500/50">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                未录入签约月初始读数的房间
+              </CardTitle>
+              <CardDescription>
+                以下房间已签约但尚未录入签约月的初始水电读数，请及时补录
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="px-4 py-2 text-left font-medium">公寓</th>
+                      <th className="px-4 py-2 text-left font-medium">房间号</th>
+                      <th className="px-4 py-2 text-left font-medium">租客</th>
+                      <th className="px-4 py-2 text-left font-medium">签约日期</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {roomsMissingInitial.map((r) => (
+                      <tr key={r.room_id} className="border-b last:border-0">
+                        <td className="px-4 py-2">{r.apartment_name}</td>
+                        <td className="px-4 py-2">{r.room_number}</td>
+                        <td className="px-4 py-2">{r.tenant_name}</td>
+                        <td className="px-4 py-2">{r.lease_start_date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                点击「录入读数」可选择上述房间录入签约月的水电读数
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* 筛选区域 */}
         <div className="flex items-center gap-4">

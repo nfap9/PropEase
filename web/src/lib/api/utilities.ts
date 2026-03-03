@@ -15,6 +15,14 @@ export interface BatchUtilityReadingData {
   readings: BatchUtilityReadingItem[];
 }
 
+export interface RoomMissingInitialReading {
+  room_id: string;
+  apartment_name: string;
+  room_number: string;
+  tenant_name: string;
+  lease_start_date: string;
+}
+
 export interface UtilityExportRoom {
   room_id: string;  // ULID
   apartment_name: string;
@@ -71,6 +79,13 @@ export const utilitiesApi = {
     data: BatchUtilityReadingData
   ): Promise<UtilityReading[]> => {
     const response = await api.post<UtilityReading[]>('/utilities/batch', data, {
+      params: { org_id: orgId },
+    });
+    return response.data;
+  },
+
+  getRoomsMissingInitial: async (orgId: string): Promise<RoomMissingInitialReading[]> => {
+    const response = await api.get<RoomMissingInitialReading[]>('/utilities/rooms-missing-initial', {
       params: { org_id: orgId },
     });
     return response.data;

@@ -20,7 +20,7 @@ router.get('/overview', async (req: Request, res: Response, next: NextFunction) 
   try {
     const orgId = await requireOrgMembership(req);
     const today = new Date();
-    const [total_apartments, total_rooms, occupied_rooms, total_tenants, active_leases, monthly_revenue, pending_bills, overdue_bills] = await Promise.all([
+    const [total_apartments, total_rooms, occupied_rooms, total_tenants, active_leases, monthly_revenue, pending_bills, overdue_bills, rooms_missing_initial_readings] = await Promise.all([
       prisma.apartment.count({ where: { organization_id: orgId } }),
       prisma.room.count({ where: { apartment: { organization_id: orgId } } }),
       prisma.room.count({ where: { apartment: { organization_id: orgId }, status: 'occupied' } }),
@@ -29,6 +29,26 @@ router.get('/overview', async (req: Request, res: Response, next: NextFunction) 
       prisma.bill.aggregate({ where: { lease: { room: { apartment: { organization_id: orgId } } }, bill_year: today.getFullYear(), bill_month: today.getMonth() + 1 }, _sum: { total_amount: true } }).then((r) => Number(r._sum.total_amount ?? 0)),
       prisma.bill.count({ where: { lease: { room: { apartment: { organization_id: orgId } } }, status: 'pending' } }),
       prisma.bill.count({ where: { lease: { room: { apartment: { organization_id: orgId } } }, status: { not: 'paid' }, due_date: { lt: today } } }),
+      (async () => {
+        const rooms = await prisma.room.findMany({
+          where: { apartment: { organization_id: orgId }, status: 'occupied' },
+          include: { leases: { where: { is_active: true }, take: 1, orderBy: { start_date: 'desc' } } },
+        });
+        const roomIds = rooms.map((r) => r.id);
+        const readings = await prisma.utilityReading.findMany({
+          where: { room_id: { in: roomIds } },
+          select: { room_id: true, period_year: true, period_month: true },
+        });
+        const readingKeys = new Set(readings.map((r) => `${r.room_id}:${r.period_year}:${r.period_month}`));
+        let count = 0;
+        for (const r of rooms) {
+          const lease = r.leases[0];
+          if (!lease) continue;
+          const start = lease.start_date;
+          if (!readingKeys.has(`${r.id}:${start.getFullYear()}:${start.getMonth() + 1}`)) count += 1;
+        }
+        return count;
+      })(),
     ]);
     const available_rooms = total_rooms - occupied_rooms;
     const occupancy_rate = total_rooms > 0 ? Math.round((occupied_rooms / total_rooms) * 1000) / 10 : 0;
@@ -43,6 +63,7 @@ router.get('/overview', async (req: Request, res: Response, next: NextFunction) 
       monthly_revenue,
       pending_bills,
       overdue_bills,
+      rooms_missing_initial_readings,
     });
   } catch (e) {
     next(e);
