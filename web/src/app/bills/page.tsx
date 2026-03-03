@@ -43,9 +43,18 @@ import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
-import { Bill, BillStatus, PaymentMethod } from '@/types';
+import { Bill, BillStatus, PaymentMethod, Payment } from '@/types';
 import { BILL_STATUS_CONFIG } from '@/lib/status-config';
-import { Download, DollarSign, AlertCircle, Building2, ChevronDown, FileSpreadsheet } from 'lucide-react';
+import {
+  Download,
+  DollarSign,
+  AlertCircle,
+  Building2,
+  ChevronDown,
+  FileSpreadsheet,
+  FilePlus,
+  Eye,
+} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const paymentSchema = z.object({
@@ -66,6 +75,26 @@ const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   other: '其他',
 };
 
+const generateBillsSchema = z.object({
+  bill_year: z.number().min(2020, '年份无效').max(2100, '年份无效'),
+  bill_month: z.number().min(1, '请选择月份').max(12, '请选择月份'),
+  due_date: z.string().min(1, '请选择到期日'),
+});
+
+type GenerateBillsFormData = z.infer<typeof generateBillsSchema>;
+
+function getDefaultGenerateValues(): GenerateBillsFormData {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // 1-12
+  const dueDate = new Date(year, now.getMonth(), 15);
+  return {
+    bill_year: year,
+    bill_month: month,
+    due_date: dueDate.toISOString().split('T')[0],
+  };
+}
+
 export default function BillsPage() {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
@@ -78,6 +107,9 @@ export default function BillsPage() {
     : null;
   const [statusFilter, setStatusFilter] = useState<BillStatus | 'all'>(validStatus ?? 'all');
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [isGenerateOpen, setIsGenerateOpen] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedBillId, setSelectedBillId] = useState<string | null>(null);
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
 
   const { data: bills, isLoading: billsLoading } = useQuery({
@@ -97,6 +129,12 @@ export default function BillsPage() {
     },
   });
 
+  const { data: billDetail, isLoading: billDetailLoading } = useQuery({
+    queryKey: ['bills', orgId, selectedBillId],
+    queryFn: () => billsApi.get(orgId!, selectedBillId!),
+    enabled: !!orgId && !!selectedBillId && isDetailOpen,
+  });
+
   const paymentMutation = useMutation({
     mutationFn: (data: PaymentFormData) =>
       billsApi.createPayment(orgId!, selectedBill!.id, filterEmptyStrings(data)),
@@ -110,6 +148,33 @@ export default function BillsPage() {
     onError: (error) => toast.error(getErrorMessage(error, '登记失败，请重试')),
   });
 
+  const generateForm = useForm<GenerateBillsFormData>({
+    resolver: zodResolver(generateBillsSchema),
+    defaultValues: getDefaultGenerateValues(),
+  });
+
+  const generateMutation = useMutation({
+    mutationFn: (data: GenerateBillsFormData) =>
+      billsApi.generate(orgId!, {
+        bill_year: data.bill_year,
+        bill_month: data.bill_month,
+        due_date: data.due_date,
+      }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['bills', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
+      setIsGenerateOpen(false);
+      generateForm.reset(getDefaultGenerateValues());
+      toast.success(`出账完成：新增 ${result.created} 笔，跳过 ${result.skipped} 笔`);
+    },
+    onError: (error) => toast.error(getErrorMessage(error, '出账失败，请重试')),
+  });
+
+  const handleViewDetail = (bill: Bill) => {
+    setSelectedBillId(bill.id);
+    setIsDetailOpen(true);
+  };
+
   const handlePayment = (bill: Bill) => {
     setSelectedBill(bill);
     paymentForm.reset({
@@ -120,6 +185,14 @@ export default function BillsPage() {
       notes: '',
     });
     setIsPaymentOpen(true);
+  };
+
+  const handlePaymentFromDetail = () => {
+    if (billDetail) {
+      handlePayment(billDetail);
+      setIsDetailOpen(false);
+      setSelectedBillId(null);
+    }
   };
 
   const exportPdf = async (billId: string) => {
@@ -165,8 +238,8 @@ export default function BillsPage() {
     partial: bills?.filter((b: Bill) => b.status === 'partial').length || 0,
     paid: bills?.filter((b: Bill) => b.status === 'paid').length || 0,
     overdue: bills?.filter((b: Bill) => b.status === 'overdue').length || 0,
-    totalAmount: bills?.reduce((sum: number, b: Bill) => sum + b.total_amount, 0) || 0,
-    paidAmount: bills?.reduce((sum: number, b: Bill) => sum + b.paid_amount, 0) || 0,
+    totalAmount: bills?.reduce((sum: number, b: Bill) => sum + Number(b.total_amount), 0) ?? 0,
+    paidAmount: bills?.reduce((sum: number, b: Bill) => sum + Number(b.paid_amount), 0) ?? 0,
   };
 
   const columns: ColumnDef<Bill>[] = [
@@ -229,6 +302,11 @@ export default function BillsPage() {
       cell: ({ row }) => {
         const bill = row.original;
         const actions: TableAction[] = [
+          {
+            label: '查看详情',
+            icon: Eye,
+            onClick: () => handleViewDetail(bill),
+          },
           {
             label: '登记付款',
             icon: DollarSign,
@@ -296,7 +374,9 @@ export default function BillsPage() {
               <div className="text-2xl font-bold text-orange-600">
                 ¥{(stats.totalAmount - stats.paidAmount).toLocaleString()}
               </div>
-              <p className="text-xs text-muted-foreground">{stats.pending + stats.partial} 笔</p>
+              <p className="text-xs text-muted-foreground">
+                {stats.pending + stats.partial + stats.overdue} 笔
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -321,6 +401,10 @@ export default function BillsPage() {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <Button onClick={() => setIsGenerateOpen(true)}>
+              <FilePlus className="mr-2 h-4 w-4" />
+              手动出账
+            </Button>
             <Select
               value={statusFilter}
               onValueChange={(value) => setStatusFilter(value as BillStatus | 'all')}
@@ -364,6 +448,193 @@ export default function BillsPage() {
           <DataTable columns={columns} data={filteredBills || []} />
         )}
       </div>
+
+      {/* 账单详情弹窗 */}
+      <Dialog
+        open={isDetailOpen}
+        onOpenChange={(open) => {
+          setIsDetailOpen(open);
+          if (!open) setSelectedBillId(null);
+        }}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>账单详情</DialogTitle>
+            <DialogDescription>
+              {selectedBillId
+                ? billDetail
+                  ? `${billDetail.bill_year}年${billDetail.bill_month}月 - ${billDetail.lease?.room?.apartment?.name ?? ''} ${billDetail.lease?.room?.room_number ?? ''}`
+                  : ''
+                : ''}
+            </DialogDescription>
+          </DialogHeader>
+          {billDetailLoading ? (
+            <Skeleton className="h-64 w-full" />
+          ) : billDetail ? (
+            <div className="space-y-4">
+              <div className="grid gap-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">账单月份</span>
+                  <span>
+                    {billDetail.bill_year}年{billDetail.bill_month}月
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">公寓/房间</span>
+                  <span>
+                    {billDetail.lease?.room?.apartment?.name ?? '-'} - {billDetail.lease?.room?.room_number ?? '-'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">租客</span>
+                  <span>{billDetail.lease?.tenant?.name ?? '-'}</span>
+                </div>
+                <div className="border-t pt-3 grid gap-2">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">租金</span>
+                    <span>¥{Number(billDetail.rent_amount).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">水费</span>
+                    <span>¥{Number(billDetail.water_amount).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">电费</span>
+                    <span>¥{Number(billDetail.electricity_amount).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">其他费用</span>
+                    <span>¥{Number(billDetail.other_amount).toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className="flex justify-between font-medium border-t pt-3">
+                  <span>账单合计</span>
+                  <span>¥{Number(billDetail.total_amount).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">已付金额</span>
+                  <span className="text-green-600">¥{Number(billDetail.paid_amount).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">到期日</span>
+                  <span>{formatDate(billDetail.due_date)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">状态</span>
+                  <Badge variant={BILL_STATUS_CONFIG[billDetail.status].variant}>
+                    {BILL_STATUS_CONFIG[billDetail.status].label}
+                  </Badge>
+                </div>
+                {billDetail.notes && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">备注</span>
+                    <span>{billDetail.notes}</span>
+                  </div>
+                )}
+              </div>
+              {(billDetail as Bill & { payments?: Payment[] }).payments &&
+                (billDetail as Bill & { payments?: Payment[] }).payments!.length > 0 && (
+                <div>
+                  <h4 className="mb-2 text-sm font-medium">付款记录</h4>
+                  <div className="rounded-md border">
+                    <div className="divide-y">
+                      {(billDetail as Bill & { payments?: Payment[] }).payments!.map((p) => (
+                        <div key={p.id} className="flex justify-between px-3 py-2 text-sm">
+                          <span>
+                            ¥{p.amount.toLocaleString()} · {PAYMENT_METHOD_LABELS[p.payment_method]} ·{' '}
+                            {formatDate(p.payment_date)}
+                          </span>
+                          {p.reference && <span className="text-muted-foreground">{p.reference}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              <DialogFooter className="flex gap-2 sm:gap-0">
+                {billDetail.status !== 'paid' && (
+                  <Button onClick={handlePaymentFromDetail}>
+                    <DollarSign className="mr-2 h-4 w-4" />
+                    登记付款
+                  </Button>
+                )}
+                <Button variant="outline" onClick={() => exportPdf(billDetail.id)}>
+                  <Download className="mr-2 h-4 w-4" />
+                  导出PDF
+                </Button>
+                <Button variant="outline" onClick={() => setIsDetailOpen(false)}>
+                  关闭
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      {/* 手动出账弹窗 */}
+      <Dialog open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>手动出账</DialogTitle>
+            <DialogDescription>
+              为当前组织在租房间生成指定月份的账单。已有账单的租约将被跳过。
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={generateForm.handleSubmit((d) => generateMutation.mutate(d))}
+            className="space-y-4"
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="bill_year">账单年份</Label>
+                <Input
+                  id="bill_year"
+                  type="number"
+                  min={2020}
+                  max={2100}
+                  {...generateForm.register('bill_year', { valueAsNumber: true })}
+                />
+                {generateForm.formState.errors.bill_year && (
+                  <p className="text-sm text-destructive">{generateForm.formState.errors.bill_year.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bill_month">账单月份</Label>
+                <Select
+                  value={String(generateForm.watch('bill_month'))}
+                  onValueChange={(v) => generateForm.setValue('bill_month', Number(v))}
+                >
+                  <SelectTrigger id="bill_month">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                      <SelectItem key={m} value={String(m)}>
+                        {m} 月
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="due_date">到期日</Label>
+              <Input id="due_date" type="date" {...generateForm.register('due_date')} />
+              {generateForm.formState.errors.due_date && (
+                <p className="text-sm text-destructive">{generateForm.formState.errors.due_date.message}</p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsGenerateOpen(false)}>
+                取消
+              </Button>
+              <Button type="submit" disabled={generateMutation.isPending}>
+                {generateMutation.isPending ? '生成中...' : '生成账单'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Payment Dialog */}
       <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>

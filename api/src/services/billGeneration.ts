@@ -17,7 +17,11 @@ export async function generateBillsForOrg(
   });
   const roomIds = rooms.map((r) => r.id);
   let leases = await prisma.lease.findMany({
-    where: { room_id: { in: roomIds }, is_active: true },
+    where: {
+      room_id: { in: roomIds },
+      is_active: true,
+      room: { status: 'occupied' },
+    },
     include: { room: { include: { apartment: true } } },
   });
   if (leaseIds?.length) leases = leases.filter((l) => leaseIds.includes(l.id));

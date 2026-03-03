@@ -24,8 +24,13 @@ export const billsApi = {
     return response.data;
   },
 
-  generate: async (orgId: string, data: { bill_year: number; bill_month: number; due_date: string }): Promise<{ created: number; skipped: number }> => {
-    const response = await api.post<{ created: number; skipped: number }>('/bills/generate', data, { params: { org_id: orgId } });
+  generate: async (
+    orgId: string,
+    data: { bill_year: number; bill_month: number; due_date: string; lease_ids?: string[] }
+  ): Promise<{ created: number; skipped: number }> => {
+    const response = await api.post<{ created: number; skipped: number }>('/bills/generate', data, {
+      params: { org_id: orgId },
+    });
     return response.data;
   },
 
