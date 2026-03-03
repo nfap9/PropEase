@@ -94,7 +94,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <div className="flex h-16 items-center border-b px-4">
         <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
           <Building2 className="h-6 w-6" />
-          <span>Apartment Ultra</span>
+          <span>公寓管理系统</span>
         </Link>
       </div>
       <nav className="flex-1 space-y-1 p-4">

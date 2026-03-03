@@ -6,7 +6,7 @@ import { Providers } from '@/components/layout/providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Apartment Ultra - 公寓管理系统',
+  title: '公寓管理系统',
   description: '多租户 SaaS 公寓/物业管理系统',
 };
 

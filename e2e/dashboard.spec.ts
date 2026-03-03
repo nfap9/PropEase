@@ -46,7 +46,7 @@ test.describe('仪表盘（认证正向）', () => {
 
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
     await expect(
-      page.getByRole('heading', { name: '仪表盘' }).or(page.getByText('欢迎使用 Apartment Ultra'))
+      page.getByRole('heading', { name: '仪表盘' }).or(page.getByText('欢迎使用公寓管理系统'))
     ).toBeVisible({ timeout: 10000 });
   });
 
@@ -59,7 +59,7 @@ test.describe('仪表盘（认证正向）', () => {
 
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
     await expect(
-      page.getByRole('heading', { name: '仪表盘' }).or(page.getByText('欢迎使用 Apartment Ultra'))
+      page.getByRole('heading', { name: '仪表盘' }).or(page.getByText('欢迎使用公寓管理系统'))
     ).toBeVisible({ timeout: 10000 });
   });
 });

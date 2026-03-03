@@ -37,7 +37,7 @@ setup('业务端登录并保存登录态', async ({ page, request }) => {
   await page.goto('/dashboard');
   await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
   await expect(
-    page.getByRole('heading', { name: '仪表盘' }).or(page.getByText('欢迎使用 Apartment Ultra'))
+    page.getByRole('heading', { name: '仪表盘' }).or(page.getByText('欢迎使用公寓管理系统'))
   ).toBeVisible();
   await page.context().storageState({ path: businessAuthFile });
 });

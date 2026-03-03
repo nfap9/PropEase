@@ -82,7 +82,7 @@ export function DashboardContent() {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <Building2 className="h-16 w-16 text-muted-foreground mb-4" />
-        <h2 className="text-xl font-semibold mb-2">欢迎使用 Apartment Ultra</h2>
+        <h2 className="text-xl font-semibold mb-2">欢迎使用公寓管理系统</h2>
         <p className="text-muted-foreground mb-4">
           您还没有加入任何组织，请先创建一个组织开始使用
         </p>

@@ -101,7 +101,7 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Apartment Ultra</CardTitle>
+          <CardTitle className="text-2xl">公寓管理系统</CardTitle>
           <CardDescription>创建新账户</CardDescription>
         </CardHeader>
         <CardContent>
