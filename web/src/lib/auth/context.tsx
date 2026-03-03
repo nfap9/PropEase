@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { User, Organization, SendSmsCodeData } from '@/types';
 import { authApi, organizationsApi } from '@/lib/api';
 
@@ -27,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const loadOrganizations = async () => {
     try {
@@ -114,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setOrganization(null);
     setOrganizations([]);
+    queryClient.clear();
     router.push('/login');
   };
 
