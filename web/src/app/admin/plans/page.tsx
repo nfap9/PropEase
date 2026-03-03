@@ -43,6 +43,7 @@ import {
   AdminPlan,
   AdminPlanUpdate,
 } from '@/lib/api/admin-client';
+import { getErrorMessage } from '@/lib/utils/error';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -57,6 +58,7 @@ const planCreateSchema = z.object({
   max_rooms: z.coerce.number().min(-1, '-1 表示无限制'),
   max_members: z.coerce.number().min(-1, '-1 表示无限制'),
   sort_order: z.coerce.number().min(0),
+  free_validity_days: z.coerce.number().nullable().optional(),
 });
 
 const planUpdateSchema = planCreateSchema.extend({
@@ -94,6 +96,7 @@ export default function AdminPlansPage() {
       max_rooms: 100,
       max_members: 1,
       sort_order: 0,
+      free_validity_days: null,
     },
   });
 
@@ -111,19 +114,18 @@ export default function AdminPlansPage() {
         price_yearly: data.price_yearly,
         max_organizations: data.max_organizations === -1 ? null : data.max_organizations,
         max_apartments: data.max_apartments,
-        max_rooms: data.max_rooms,
-        max_members: data.max_members,
-        sort_order: data.sort_order,
-      }),
+      max_rooms: data.max_rooms,
+      max_members: data.max_members,
+      sort_order: data.sort_order,
+      free_validity_days: data.free_validity_days ?? undefined,
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'plans'] });
       setIsCreateOpen(false);
       createForm.reset();
       toast.success('套餐创建成功');
     },
-    onError: (e: Error & { response?: { data?: { message?: string } } }) => {
-      toast.error(e.response?.data?.message ?? '创建失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
@@ -135,7 +137,7 @@ export default function AdminPlansPage() {
       setSelectedPlan(null);
       toast.success('套餐已更新');
     },
-    onError: () => toast.error('更新失败，请重试'),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -146,9 +148,7 @@ export default function AdminPlansPage() {
       setSelectedPlan(null);
       toast.success('套餐已删除');
     },
-    onError: (e: Error & { response?: { data?: { message?: string } } }) => {
-      toast.error(e.response?.data?.message ?? '删除失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const handleEdit = (plan: AdminPlan) => {
@@ -165,6 +165,7 @@ export default function AdminPlansPage() {
       max_members: plan.max_members,
       sort_order: plan.sort_order,
       is_active: plan.is_active,
+      free_validity_days: plan.free_validity_days ?? null,
     });
     setIsEditOpen(true);
   };
@@ -206,6 +207,14 @@ export default function AdminPlansPage() {
         ),
     },
     { accessorKey: 'sort_order', header: '排序' },
+    {
+      id: 'free_validity_days',
+      header: '免费有效期',
+      cell: ({ row }) => {
+        const v = row.original.free_validity_days;
+        return v != null ? `${v}天` : (row.original.code === 'free' ? '无限期' : '-');
+      },
+    },
     {
       id: 'actions',
       header: '操作',
@@ -424,14 +433,17 @@ export default function AdminPlansPage() {
                       data: {
                         name: d.name,
                         description: d.description || null,
-                        price_monthly: d.price_monthly,
-                        price_yearly: d.price_yearly,
+                        ...(selectedPlan?.code !== 'free' && {
+                          price_monthly: d.price_monthly,
+                          price_yearly: d.price_yearly,
+                        }),
                         max_organizations: d.max_organizations === -1 ? null : d.max_organizations,
                         max_apartments: d.max_apartments,
                         max_rooms: d.max_rooms,
                         max_members: d.max_members,
                         is_active: d.is_active,
                         sort_order: d.sort_order,
+                        free_validity_days: d.free_validity_days ?? null,
                       },
                     })
                   : undefined
@@ -485,7 +497,13 @@ export default function AdminPlansPage() {
                     <FormItem>
                       <FormLabel>月价</FormLabel>
                       <FormControl>
-                        <Input type="number" step="0.01" {...field} />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          {...field}
+                          disabled={selectedPlan?.code === 'free'}
+                          placeholder={selectedPlan?.code === 'free' ? '免费套餐不可修改' : undefined}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -498,13 +516,39 @@ export default function AdminPlansPage() {
                     <FormItem>
                       <FormLabel>年价</FormLabel>
                       <FormControl>
-                        <Input type="number" step="0.01" {...field} />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          {...field}
+                          disabled={selectedPlan?.code === 'free'}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
+              <FormField
+                control={editForm.control}
+                name="free_validity_days"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>免费有效期（天数，空=无限期，仅免费套餐）</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="空为无限期"
+                        {...field}
+                        value={field.value ?? ''}
+                        onChange={(e) =>
+                          field.onChange(e.target.value === '' ? null : Number(e.target.value))
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 <FormField
                   control={editForm.control}

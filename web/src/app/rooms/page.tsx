@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { roomsApi, apartmentsApi, leasesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
+import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import { Room, RoomStatus } from '@/types';
 import { Building2, Search } from 'lucide-react';
@@ -146,9 +147,7 @@ export default function RoomsPage() {
       setSelectedRoom(null);
       toast.success('房间更新成功');
     },
-    onError: () => {
-      toast.error('更新失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -160,9 +159,7 @@ export default function RoomsPage() {
       setSelectedRoom(null);
       toast.success('房间删除成功');
     },
-    onError: () => {
-      toast.error('删除失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const terminateLeaseMutation = useMutation({
@@ -175,9 +172,7 @@ export default function RoomsPage() {
       setSelectedRoom(null);
       toast.success('退租成功');
     },
-    onError: () => {
-      toast.error('退租失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '退租失败，请重试')),
   });
 
   const updateStatusMutation = useMutation({
@@ -188,9 +183,7 @@ export default function RoomsPage() {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       toast.success('状态更新成功');
     },
-    onError: () => {
-      toast.error('状态更新失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '状态更新失败，请重试')),
   });
 
   const handleEdit = (room: Room) => {

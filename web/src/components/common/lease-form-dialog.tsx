@@ -27,6 +27,7 @@ import {
 import { TenantSelect } from '@/components/common/tenant-select';
 import { leasesApi, apartmentsApi, roomsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
+import { getErrorMessage } from '@/lib/utils/error';
 import { Room, Apartment } from '@/types';
 
 const leaseSchema = z.object({
@@ -137,9 +138,7 @@ export function LeaseFormDialog({
       toast.success('签约成功');
       onSuccess?.();
     },
-    onError: () => {
-      toast.error('签约失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '签约失败，请重试')),
   });
 
   const handleSubmit = (data: LeaseFormData) => {

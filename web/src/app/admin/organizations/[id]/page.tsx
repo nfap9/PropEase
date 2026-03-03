@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { adminApiEndpoints } from '@/lib/api/admin-client';
+import { getErrorMessage } from '@/lib/utils/error';
 import { ArrowLeft, Power, PowerOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -33,7 +34,7 @@ export default function AdminOrganizationDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'organizations'] });
       toast.success('已更新');
     },
-    onError: () => toast.error('操作失败，请重试'),
+    onError: (error) => toast.error(getErrorMessage(error, '操作失败，请重试')),
   });
 
   if (isLoading || !org) {

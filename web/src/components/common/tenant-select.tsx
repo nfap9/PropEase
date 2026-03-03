@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { tenantsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
+import { getErrorMessage } from '@/lib/utils/error';
 import { Tenant } from '@/types';
 import { Plus } from 'lucide-react';
 
@@ -87,9 +88,7 @@ export function TenantSelect({
       onValueChange(newTenant.id);
       toast.success('租客创建成功');
     },
-    onError: () => {
-      toast.error('创建失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const handleOpenCreate = () => {

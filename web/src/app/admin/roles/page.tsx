@@ -8,6 +8,7 @@ import {
   AdminRole,
   AdminRoleUpdate,
 } from '@/lib/api/admin-client';
+import { getErrorMessage } from '@/lib/utils/error';
 import { AdminRoleList } from '@/components/admin/admin-role-list';
 import { AdminRoleDetailPanel } from '@/components/admin/admin-role-detail-panel';
 import { AdminRoleCreateDialog } from '@/components/admin/admin-role-create-dialog';
@@ -56,9 +57,7 @@ export default function AdminRolesPage() {
       setCreatePermissionCodes([]);
       toast.success('角色创建成功');
     },
-    onError: (e: Error & { response?: { data?: { message?: string } } }) => {
-      toast.error(e.response?.data?.message ?? '创建失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
@@ -68,7 +67,7 @@ export default function AdminRolesPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
       toast.success('权限已保存');
     },
-    onError: () => toast.error('保存失败，请重试'),
+    onError: (error) => toast.error(getErrorMessage(error, '保存失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -79,9 +78,7 @@ export default function AdminRolesPage() {
       setSelectedRole(null);
       toast.success('角色已删除');
     },
-    onError: (e: Error & { response?: { data?: { message?: string } } }) => {
-      toast.error(e.response?.data?.message ?? '删除失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const handleSelectRole = (role: AdminRole) => {

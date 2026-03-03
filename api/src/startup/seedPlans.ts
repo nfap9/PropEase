@@ -24,6 +24,7 @@ export async function seedPlans(): Promise<void> {
       members_count_scope: 'organization',
       is_active: true,
       sort_order: 0,
+      free_validity_days: null,
     },
   });
   console.log('Created subscription plan:', FREE_PLAN_CODE);

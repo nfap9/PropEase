@@ -7,6 +7,7 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { permissionsApi } from '@/lib/api/permissions';
 import { organizationsApi } from '@/lib/api';
+import { getErrorMessage } from '@/lib/utils/error';
 import { MemberRole, Permission } from '@/types';
 import { useAuth } from '@/lib/auth/context';
 import { OrgRoleList } from '@/components/settings/org-role-list';
@@ -71,9 +72,7 @@ export default function PermissionsPage() {
         queryKey: ['role-permissions', organization?.id],
       });
     },
-    onError: () => {
-      toast.error('更新失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const handleTogglePermission = (code: string) => {

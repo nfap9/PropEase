@@ -17,6 +17,7 @@ import ExcelJS from 'exceljs';
 import { toast } from 'sonner';
 import { Room } from '@/types';
 import { utilitiesApi, UtilityExportRoom } from '@/lib/api/utilities';
+import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 
 interface BatchImportDialogProps {
@@ -117,8 +118,8 @@ export function BatchImportDialog({
       window.URL.revokeObjectURL(url);
 
       toast.success(`已导出 ${rooms.length} 个待录入房间`);
-    } catch {
-      toast.error('导出失败，请重试');
+    } catch (err) {
+      toast.error(getErrorMessage(err, '导出失败，请重试'));
     } finally {
       setIsExporting(false);
     }
@@ -239,8 +240,8 @@ export function BatchImportDialog({
       }
 
       onImport(matchedRecords);
-    } catch {
-      toast.error('导入失败');
+    } catch (err) {
+      toast.error(getErrorMessage(err, '导入失败，请重试'));
     }
 
     if (fileInputRef.current) {

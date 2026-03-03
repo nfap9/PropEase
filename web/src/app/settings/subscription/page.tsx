@@ -18,7 +18,16 @@ import {
   Loader2,
   CreditCard,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { subscriptionsApi } from '@/lib/api';
+import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 
 const PLAN_ICONS: Record<string, typeof Crown> = {
@@ -70,9 +79,7 @@ export default function SubscriptionPage() {
       queryClient.invalidateQueries({ queryKey: ['organization-usage', orgId] });
       setSelectedPlan(null);
     },
-    onError: (error: Error) => {
-      toast.error(`订阅失败: ${error.message}`);
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '订阅失败，请重试')),
   });
 
   // 付费套餐：创建订单后跳转支付页
@@ -86,14 +93,13 @@ export default function SubscriptionPage() {
       setSelectedPlan(null);
       router.push(`/settings/subscription/pay?order_id=${order.id}`);
     },
-    onError: (error: Error) => {
-      toast.error(`创建订单失败: ${error.message}`);
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '创建订单失败，请重试')),
   });
 
   const handleSubscribe = (planId: string) => {
     const plan = plans?.find((p) => p.id === planId);
-    if (plan?.code === 'free') {
+    const price = plan ? (billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly) : 0;
+    if (price <= 0) {
       subscribeMutation.mutate(planId);
     } else {
       setSelectedPlan(planId);
@@ -200,9 +206,9 @@ export default function SubscriptionPage() {
               </Card>
             ))}
           </div>
-        ) : (
+        ) : plans && plans.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-3">
-            {plans?.map((plan) => {
+            {plans.map((plan) => {
               const Icon = PLAN_ICONS[plan.code] || Building2;
               const price = billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly;
               const isCurrentPlan = subscriptionStatus?.plan?.code === plan.code;
@@ -269,40 +275,52 @@ export default function SubscriptionPage() {
                       selectedPlan === plan.id ? (
                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       ) : null}
-                      {isCurrentPlan ? '当前套餐' : plan.code === 'free' ? '切换到免费版' : '立即订阅'}
+                      {isCurrentPlan
+                        ? '当前套餐'
+                        : (billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly) <= 0
+                          ? '立即开通'
+                          : '立即订阅'}
                     </Button>
                   </CardContent>
                 </Card>
               );
             })}
           </div>
-        )}
-
-        {/* 付费套餐确认：跳转微信扫码支付 */}
-        {selectedPlan && (
-          <Card className="border-primary/50 bg-muted/30">
+        ) : (
+          <Card>
             <CardContent className="pt-6">
-              <p className="text-center mb-4">
-                确认订阅 {plans?.find((p) => p.id === selectedPlan)?.name}？
-                确认后将跳转至微信扫码支付。
+              <p className="text-muted-foreground text-center">
+                暂无可订阅的付费套餐，免费套餐已在注册时自动开通。请联系运营方配置更多套餐。
               </p>
-              <div className="flex justify-center gap-4">
-                <Button variant="outline" onClick={() => setSelectedPlan(null)}>
-                  取消
-                </Button>
-                <Button
-                  onClick={handleConfirmSubscribe}
-                  disabled={subscribeMutation.isPending || createOrderMutation.isPending}
-                >
-                  {(subscribeMutation.isPending || createOrderMutation.isPending) && (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  )}
-                  确认并去支付
-                </Button>
-              </div>
             </CardContent>
           </Card>
         )}
+
+        {/* 付费套餐确认弹窗：跳转微信扫码支付 */}
+        <Dialog open={!!selectedPlan} onOpenChange={(open) => !open && setSelectedPlan(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>确认订阅</DialogTitle>
+              <DialogDescription>
+                确认订阅 {plans?.find((p) => p.id === selectedPlan)?.name}？确认后将跳转至微信扫码支付。
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setSelectedPlan(null)}>
+                取消
+              </Button>
+              <Button
+                onClick={handleConfirmSubscribe}
+                disabled={subscribeMutation.isPending || createOrderMutation.isPending}
+              >
+                {(subscribeMutation.isPending || createOrderMutation.isPending) && (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                )}
+                确认并去支付
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );

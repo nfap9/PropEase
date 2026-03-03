@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { apartmentsApi, roomsApi, utilitiesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
+import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import { UtilityReading } from '@/types';
 import { Plus, Upload, Building2, Filter } from 'lucide-react';
@@ -70,9 +71,7 @@ export default function UtilitiesPage() {
       setIsCreateOpen(false);
       toast.success('水电读数录入成功');
     },
-    onError: () => {
-      toast.error('录入失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '录入失败，请重试')),
   });
 
   const updateMutation = useMutation({
@@ -84,9 +83,7 @@ export default function UtilitiesPage() {
       setSelectedUtility(null);
       toast.success('水电读数更新成功');
     },
-    onError: () => {
-      toast.error('更新失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const batchImportMutation = useMutation({
@@ -97,9 +94,7 @@ export default function UtilitiesPage() {
       setIsBatchImportOpen(false);
       toast.success('批量导入成功');
     },
-    onError: () => {
-      toast.error('批量导入失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '批量导入失败，请重试')),
   });
 
   const handleEdit = (utility: UtilityReading) => {

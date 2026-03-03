@@ -159,12 +159,14 @@ api.interceptors.response.use(
       }
     }
 
-    // 处理统一格式的错误响应
-    if (error.response?.data) {
-      const responseData = error.response.data;
-      if ('code' in responseData && 'message' in responseData) {
+    // 处理错误响应：优先使用接口返回的 message
+    if (error.response?.data && typeof error.response.data === 'object') {
+      const responseData = error.response.data as unknown as Record<string, unknown>;
+      const msg = typeof responseData.message === 'string' ? responseData.message : null;
+      if (msg) {
+        const code = typeof responseData.code === 'number' ? responseData.code : error.response.status || 500;
         return Promise.reject(
-          new ApiError(responseData.code, responseData.message, responseData.data)
+          new ApiError(code, msg, responseData.data ?? responseData)
         );
       }
     }

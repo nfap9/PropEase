@@ -8,4 +8,5 @@ export { billsApi } from './bills';
 export { reportsApi } from './reports';
 export { utilitiesApi } from './utilities';
 export { subscriptionsApi } from './subscriptions';
+export { usageApi } from './usage';
 export { notificationsApi } from './notifications';

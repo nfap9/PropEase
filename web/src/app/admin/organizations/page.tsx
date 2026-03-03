@@ -19,6 +19,7 @@ import {
   adminApiEndpoints,
   AdminOrganization,
 } from '@/lib/api/admin-client';
+import { getErrorMessage } from '@/lib/utils/error';
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye, Power, PowerOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -51,7 +52,7 @@ export default function AdminOrganizationsPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'organizations'] });
       toast.success('已更新');
     },
-    onError: () => toast.error('操作失败，请重试'),
+    onError: (error) => toast.error(getErrorMessage(error, '操作失败，请重试')),
   });
 
   const columns: ColumnDef<AdminOrganization>[] = [

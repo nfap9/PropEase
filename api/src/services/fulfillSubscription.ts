@@ -46,7 +46,13 @@ export async function fulfillSubscription(orderId: string): Promise<void> {
         end_date: endDate,
         auto_renew: true,
       },
-      update: { plan_id: planId, status: 'active', start_date: startDate, end_date: endDate },
+      update: {
+        plan_id: planId,
+        status: 'active',
+        start_date: startDate,
+        end_date: endDate,
+        next_plan_id: null,
+      },
     });
     await prisma.organization.update({
       where: { id: orgId },
@@ -61,7 +67,7 @@ export async function fulfillSubscription(orderId: string): Promise<void> {
     else newEnd.setMonth(newEnd.getMonth() + 1);
     await prisma.organizationSubscription.update({
       where: { organization_id: orgId },
-      data: { end_date: newEnd },
+      data: { end_date: newEnd, next_plan_id: null },
     });
     await prisma.organization.update({
       where: { id: orgId },
@@ -70,7 +76,7 @@ export async function fulfillSubscription(orderId: string): Promise<void> {
   } else {
     await prisma.organizationSubscription.update({
       where: { organization_id: orgId },
-      data: { plan_id: planId, billing_cycle: billingCycle },
+      data: { plan_id: planId, billing_cycle: billingCycle, next_plan_id: null },
     });
     await prisma.organization.update({
       where: { id: orgId },

@@ -37,6 +37,7 @@ import {
 import { ColumnDef } from '@tanstack/react-table';
 import { leasesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
+import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import { Lease } from '@/types';
 import { Plus, Pencil, Trash2, Ban, Building2 } from 'lucide-react';
@@ -84,9 +85,7 @@ export default function LeasesPage() {
       setSelectedLease(null);
       toast.success('租约更新成功');
     },
-    onError: () => {
-      toast.error('更新失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const terminateMutation = useMutation({
@@ -98,9 +97,7 @@ export default function LeasesPage() {
       setSelectedLease(null);
       toast.success('租约已终止');
     },
-    onError: () => {
-      toast.error('终止失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '终止失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -111,9 +108,7 @@ export default function LeasesPage() {
       setSelectedLease(null);
       toast.success('租约删除成功');
     },
-    onError: () => {
-      toast.error('删除失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const handleEdit = (lease: Lease) => {

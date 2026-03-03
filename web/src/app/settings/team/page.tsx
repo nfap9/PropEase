@@ -50,6 +50,7 @@ import {
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
 import { organizationsApi } from '@/lib/api';
+import { getErrorMessage } from '@/lib/utils/error';
 import { Organization, OrganizationMember, MemberRole } from '@/types';
 import { Plus, MoreHorizontal, Pencil, Trash2, UserPlus, Building2, Users } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -138,9 +139,7 @@ export default function TeamSettingsPage() {
       createOrgForm.reset();
       toast.success('组织创建成功');
     },
-    onError: () => {
-      toast.error('创建失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateOrgMutation = useMutation({
@@ -152,9 +151,7 @@ export default function TeamSettingsPage() {
       setSelectedOrg(null);
       toast.success('组织更新成功');
     },
-    onError: () => {
-      toast.error('更新失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const inviteMutation = useMutation({
@@ -171,9 +168,7 @@ export default function TeamSettingsPage() {
       inviteForm.reset();
       toast.success('邀请已发送');
     },
-    onError: () => {
-      toast.error('邀请失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '邀请失败，请重试')),
   });
 
   const removeMemberMutation = useMutation({
@@ -187,9 +182,7 @@ export default function TeamSettingsPage() {
       setSelectedMember(null);
       toast.success('成员已移除');
     },
-    onError: () => {
-      toast.error('移除失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '移除失败，请重试')),
   });
 
   const handleEditOrg = (org: Organization) => {

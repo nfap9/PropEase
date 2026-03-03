@@ -9,14 +9,26 @@ import { createAppError } from '../../utils/appError.js';
 import { NotFoundMessages } from '../../messages.js';
 import { createWechatPayNativeOrder } from '../../services/wechatPayNative.js';
 import { fulfillSubscription } from '../../services/fulfillSubscription.js';
+import { calculateUpgradeProration } from '../../utils/subscriptionProration.js';
 
 const router: Router = Router();
+
+function isSubscriptionActive(sub: { status: string; end_date: Date | null }): boolean {
+  if (sub.status !== 'active') return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (!sub.end_date) return true;
+  return new Date(sub.end_date) >= today;
+}
 
 router.use(requireConsoleAuth);
 
 router.get('/plans', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const list = await prisma.subscriptionPlan.findMany({ where: { is_active: true } });
+    const list = await prisma.subscriptionPlan.findMany({
+      where: { is_active: true, code: { not: 'free' } },
+      orderBy: { sort_order: 'asc' },
+    });
     res.json(list);
   } catch (e) {
     next(e);
@@ -26,7 +38,7 @@ router.get('/plans', async (_req: Request, res: Response, next: NextFunction) =>
 router.get('/plans/:plan_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const plan = await prisma.subscriptionPlan.findFirst({
-      where: { id: req.params.plan_id, is_active: true },
+      where: { id: req.params.plan_id, is_active: true, code: { not: 'free' } },
     });
     if (!plan) return next(createAppError(404, NotFoundMessages.PLAN));
     res.json(plan);
@@ -55,9 +67,39 @@ router.get('/organizations/:org_id/subscription/status', async (req: Request, re
       where: { organization_id: req.params.org_id },
       include: { plan: true },
     });
-    res.json(sub ? { status: sub.status, plan: sub.plan.code } : { status: 'none', plan: null });
+    if (!sub) {
+      return res.json({
+        has_subscription: false,
+        plan: null,
+        status: 'none',
+        is_active: false,
+        end_date: null,
+        auto_renew: false,
+        days_remaining: null,
+      });
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const active =
+      sub.status === 'active' &&
+      (!sub.end_date || new Date(sub.end_date) >= today);
+    let daysRemaining: number | null = null;
+    if (sub.end_date) {
+      const end = new Date(sub.end_date);
+      end.setHours(0, 0, 0, 0);
+      daysRemaining = Math.max(0, Math.ceil((end.getTime() - today.getTime()) / (24 * 60 * 60 * 1000)));
+    }
+    return res.json({
+      has_subscription: true,
+      plan: sub.plan,
+      status: sub.status,
+      is_active: active,
+      end_date: sub.end_date ? sub.end_date.toISOString().slice(0, 10) : null,
+      auto_renew: sub.auto_renew,
+      days_remaining: daysRemaining,
+    });
   } catch (e) {
-    next(e);
+    return next(e);
   }
 });
 
@@ -70,14 +112,25 @@ router.post('/organizations/:org_id/subscription', async (req: Request, res: Res
     const orgId = req.params.org_id;
     const plan = await prisma.subscriptionPlan.findFirst({ where: { id: parsed.data.plan_id } });
     if (!plan) return next(createAppError(404, NotFoundMessages.PLAN));
-    const existing = await prisma.organizationSubscription.findUnique({ where: { organization_id: orgId } });
+    if (plan.code === 'free') {
+      return next(createAppError(400, '免费套餐仅在注册时自动开通，请通过付费套餐订阅'));
+    }
+    const existing = await prisma.organizationSubscription.findUnique({
+      where: { organization_id: orgId },
+      include: { plan: true },
+    });
     const start = new Date();
     const end = new Date(start);
     end.setFullYear(end.getFullYear() + 1);
+    if (existing && existing.plan && isSubscriptionActive(existing)) {
+      if (plan.sort_order < existing.plan.sort_order) {
+        return next(createAppError(400, '不支持降级到低等级套餐'));
+      }
+    }
     if (existing) {
       const updated = await prisma.organizationSubscription.update({
         where: { organization_id: orgId },
-        data: { plan_id: plan.id, status: 'active', start_date: start, end_date: end },
+        data: { plan_id: plan.id, status: 'active', start_date: start, end_date: end, next_plan_id: null },
       });
       return res.json(updated);
     }
@@ -93,15 +146,36 @@ router.post('/organizations/:org_id/subscription', async (req: Request, res: Res
 router.put('/organizations/:org_id/subscription', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await requireOrgMembership(req, 'org_id');
-    const body = req.body as { plan_id?: string };
+    const body = req.body as { plan_id?: string; effective?: 'immediate' | 'next_cycle' };
     if (!body?.plan_id) return next(createAppError(400, '缺少 plan_id'));
     const plan = await prisma.subscriptionPlan.findFirst({ where: { id: body.plan_id } });
     if (!plan) return next(createAppError(404, NotFoundMessages.PLAN));
-    const sub = await prisma.organizationSubscription.findUnique({ where: { organization_id: req.params.org_id } });
+    if (plan.code === 'free') {
+      return next(createAppError(400, '免费套餐不可通过此接口修改'));
+    }
+    const sub = await prisma.organizationSubscription.findUnique({
+      where: { organization_id: req.params.org_id },
+      include: { plan: true },
+    });
     if (!sub) return next(createAppError(404, NotFoundMessages.SUBSCRIPTION));
+    const effective = body.effective ?? 'immediate';
+    if (effective === 'next_cycle') {
+      const updated = await prisma.organizationSubscription.update({
+        where: { organization_id: req.params.org_id },
+        data: { next_plan_id: plan.id },
+      });
+      return res.json(updated);
+    }
+    const currentSort = sub.plan?.sort_order ?? 0;
+    if (plan.sort_order < currentSort) {
+      return next(createAppError(400, '不支持降级，当前套餐等级更高'));
+    }
+    if (plan.sort_order > currentSort) {
+      return next(createAppError(400, '升级请通过订阅页创建订单并支付差价'));
+    }
     const updated = await prisma.organizationSubscription.update({
       where: { organization_id: req.params.org_id },
-      data: { plan_id: plan.id },
+      data: { plan_id: plan.id, next_plan_id: null },
     });
     res.json(updated);
   } catch (e) {
@@ -131,9 +205,43 @@ router.post('/organizations/:org_id/orders', async (req: Request, res: Response,
     if (!body?.plan_id) return next(createAppError(400, '缺少 plan_id'));
     const plan = await prisma.subscriptionPlan.findFirst({ where: { id: body.plan_id } });
     if (!plan) return next(createAppError(404, NotFoundMessages.PLAN));
+    if (plan.code === 'free') {
+      return next(createAppError(400, '免费套餐无需购买，注册时已自动开通'));
+    }
     const billingCycle = (body.billing_cycle as 'monthly' | 'yearly') ?? 'monthly';
-    const amount =
-      billingCycle === 'yearly' ? Number(plan.price_yearly) : Number(plan.price_monthly);
+    const orgId = req.params.org_id;
+    const sub = await prisma.organizationSubscription.findUnique({
+      where: { organization_id: orgId },
+      include: { plan: true },
+    });
+    let amount: number;
+    if (sub && isSubscriptionActive(sub) && sub.plan) {
+      const currentSort = sub.plan.sort_order;
+      if (plan.sort_order < currentSort) {
+        return next(createAppError(400, '不支持降级到低等级套餐'));
+      }
+      if (plan.sort_order > currentSort) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const endDate = sub.end_date ? new Date(sub.end_date) : null;
+        if (!endDate || endDate < today) {
+          amount = billingCycle === 'yearly' ? Number(plan.price_yearly) : Number(plan.price_monthly);
+        } else {
+          const totalDays = sub.billing_cycle === 'yearly' ? 365 : 30;
+          const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+          const oldMonthly = Number(sub.plan.price_monthly);
+          const newMonthly = Number(plan.price_monthly);
+          amount = calculateUpgradeProration(newMonthly, oldMonthly, remainingDays, totalDays);
+          if (amount <= 0) {
+            return next(createAppError(400, '当前套餐剩余价值已覆盖新套餐，无需补差'));
+          }
+        }
+      } else {
+        amount = billingCycle === 'yearly' ? Number(plan.price_yearly) : Number(plan.price_monthly);
+      }
+    } else {
+      amount = billingCycle === 'yearly' ? Number(plan.price_yearly) : Number(plan.price_monthly);
+    }
     const orderNo = `SUB${Date.now()}`;
     const expires = new Date();
     expires.setHours(expires.getHours() + 2);
@@ -142,7 +250,7 @@ router.post('/organizations/:org_id/orders', async (req: Request, res: Response,
       data: {
         id: ulid().toLowerCase(),
         order_no: orderNo,
-        organization_id: req.params.org_id,
+        organization_id: orgId,
         plan_id: plan.id,
         billing_cycle: billingCycle,
         amount,

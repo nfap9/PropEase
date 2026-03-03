@@ -62,6 +62,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { filterEmptyStrings } from '@/lib/utils/form';
+import { getErrorMessage } from '@/lib/utils/error';
 
 const apartmentSchema = z.object({
   name: z.string().min(1, '请输入公寓名称'),
@@ -105,9 +106,7 @@ export default function ApartmentsPage() {
       createForm.reset();
       toast.success('公寓创建成功');
     },
-    onError: () => {
-      toast.error('创建失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
@@ -119,9 +118,7 @@ export default function ApartmentsPage() {
       setSelectedApartment(null);
       toast.success('公寓更新成功');
     },
-    onError: () => {
-      toast.error('更新失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -132,9 +129,7 @@ export default function ApartmentsPage() {
       setSelectedApartment(null);
       toast.success('公寓删除成功');
     },
-    onError: () => {
-      toast.error('删除失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const handleEdit = (apartment: ApartmentWithStats) => {

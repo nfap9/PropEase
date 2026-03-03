@@ -14,6 +14,7 @@ export interface SubscriptionPlan {
   features: Record<string, unknown> | null;
   is_active: boolean;
   sort_order: number;
+  free_validity_days?: number | null;
   created_at: string;
   updated_at: string;
 }

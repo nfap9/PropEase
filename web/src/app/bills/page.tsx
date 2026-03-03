@@ -39,6 +39,7 @@ import {
 import { ColumnDef } from '@tanstack/react-table';
 import { billsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
+import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import { Bill, BillStatus, PaymentMethod } from '@/types';
 import { Download, DollarSign, AlertCircle, CheckCircle, Clock, Building2, ChevronDown, FileSpreadsheet } from 'lucide-react';
@@ -105,9 +106,7 @@ export default function BillsPage() {
       setSelectedBill(null);
       toast.success('付款登记成功');
     },
-    onError: () => {
-      toast.error('登记失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '登记失败，请重试')),
   });
 
   const handlePayment = (bill: Bill) => {
@@ -150,8 +149,8 @@ export default function BillsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       toast.success('导出成功');
-    } catch {
-      toast.error('导出失败，请重试');
+    } catch (err) {
+      toast.error(getErrorMessage(err, '导出失败，请重试'));
     }
   };
 

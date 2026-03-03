@@ -35,6 +35,7 @@ import {
 import { ColumnDef } from '@tanstack/react-table';
 import { tenantsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
+import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import { Tenant } from '@/types';
 import { Plus, Pencil, Trash2, Phone, User, Building2 } from 'lucide-react';
@@ -91,9 +92,7 @@ export default function TenantsPage() {
       createForm.reset();
       toast.success('租客创建成功');
     },
-    onError: () => {
-      toast.error('创建失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
@@ -105,9 +104,7 @@ export default function TenantsPage() {
       setSelectedTenant(null);
       toast.success('租客信息更新成功');
     },
-    onError: () => {
-      toast.error('更新失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -118,9 +115,7 @@ export default function TenantsPage() {
       setSelectedTenant(null);
       toast.success('租客删除成功');
     },
-    onError: () => {
-      toast.error('删除失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const handleEdit = (tenant: Tenant) => {

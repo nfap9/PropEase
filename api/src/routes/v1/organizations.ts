@@ -247,7 +247,7 @@ router.post('/:orgId/members', async (req: Request, res: Response, next: NextFun
     const orgId = req.params.orgId;
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const limits = await getEffectivePlanLimits(orgId);
+    const limits = await getEffectivePlanLimits(orgId, user.id);
     const members_used = await getMembersUsedForLimitCheck(orgId, user.id);
     if (members_used >= limits.max_members)
       return next(createAppError(403, `当前套餐最多允许 ${limits.max_members} 名成员`));
@@ -316,7 +316,7 @@ router.get('/:orgId/usage', async (req: Request, res: Response, next: NextFuncti
     const [rooms_used, members_used, limits, planRecord, orgCount, maxOrgs] = await Promise.all([
       getRoomsUsedForLimitCheck(orgId, user.id),
       getMembersUsedForLimitCheck(orgId, user.id),
-      getEffectivePlanLimits(orgId),
+      getEffectivePlanLimits(orgId, user.id),
       getEffectivePlanForOrg(orgId),
       userOrganizationCount(user.id),
       getMaxOrganizationsForUser(user.id),

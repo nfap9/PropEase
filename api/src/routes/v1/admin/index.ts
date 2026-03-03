@@ -375,6 +375,7 @@ const PlanCreateSchema = z.object({
   members_count_scope: CountScopeSchema.optional(),
   is_active: z.boolean().optional(),
   sort_order: z.number().optional(),
+  free_validity_days: z.number().nullable().optional(),
 });
 const PlanUpdateSchema = PlanCreateSchema.partial();
 router.post('/plans', async (req: Request, res: Response, next: NextFunction) => {
@@ -396,6 +397,7 @@ router.post('/plans', async (req: Request, res: Response, next: NextFunction) =>
         members_count_scope: parsed.data.members_count_scope ?? 'organization',
         is_active: parsed.data.is_active ?? true,
         sort_order: parsed.data.sort_order ?? 0,
+        free_validity_days: parsed.data.free_validity_days ?? undefined,
       },
     });
     res.status(201).json(plan);
@@ -410,11 +412,14 @@ router.put('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const existing = await prisma.subscriptionPlan.findUnique({ where: { id: req.params.plan_id } });
     if (!existing) return next(createAppError(404, NotFoundMessages.PLAN));
+    const isFree = existing.code === 'free';
     const data: Record<string, unknown> = {};
     if (parsed.data.name != null) data.name = parsed.data.name;
     if (parsed.data.code != null) data.code = parsed.data.code;
-    if (parsed.data.price_monthly != null) data.price_monthly = parsed.data.price_monthly;
-    if (parsed.data.price_yearly != null) data.price_yearly = parsed.data.price_yearly;
+    if (!isFree) {
+      if (parsed.data.price_monthly != null) data.price_monthly = parsed.data.price_monthly;
+      if (parsed.data.price_yearly != null) data.price_yearly = parsed.data.price_yearly;
+    }
     if (parsed.data.max_organizations !== undefined) data.max_organizations = parsed.data.max_organizations;
     if (parsed.data.max_apartments != null) data.max_apartments = parsed.data.max_apartments;
     if (parsed.data.max_rooms != null) data.max_rooms = parsed.data.max_rooms;
@@ -423,6 +428,7 @@ router.put('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
     if (parsed.data.members_count_scope != null) data.members_count_scope = parsed.data.members_count_scope;
     if (parsed.data.is_active !== undefined) data.is_active = parsed.data.is_active;
     if (parsed.data.sort_order != null) data.sort_order = parsed.data.sort_order;
+    if (parsed.data.free_validity_days !== undefined) data.free_validity_days = parsed.data.free_validity_days;
     const plan = await prisma.subscriptionPlan.update({ where: { id: req.params.plan_id }, data });
     res.json(plan);
   } catch (e) {
@@ -508,11 +514,96 @@ router.post('/subscriptions/:subscription_id/cancel', async (req: Request, res: 
 
 router.get('/stats', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const [orgCount, userCount] = await Promise.all([
-      prisma.organization.count(),
-      prisma.user.count(),
-    ]);
-    res.json({ organizations: orgCount, users: userCount });
+    const [organizations_count, users_count, apartments_count, rooms_count, active_subscriptions_count] =
+      await Promise.all([
+        prisma.organization.count(),
+        prisma.user.count(),
+        prisma.apartment.count(),
+        prisma.room.count(),
+        prisma.organizationSubscription.count({
+          where: {
+            status: 'active',
+            OR: [
+              { end_date: null },
+              { end_date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
+            ],
+          },
+        }),
+      ]);
+    res.json({
+      organizations_count,
+      users_count,
+      apartments_count,
+      rooms_count,
+      active_subscriptions_count,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+const UsagePricingUpdateSchema = z.object({
+  price_per_org: z.number().min(0).optional(),
+  price_per_apartment: z.number().min(0).optional(),
+  price_per_room: z.number().min(0).optional(),
+  price_per_member: z.number().min(0).optional(),
+  is_active: z.boolean().optional(),
+});
+
+router.get('/usage-pricing', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const pricing = await prisma.usagePricing.findFirst({
+      where: { is_active: true },
+    });
+    if (!pricing) return next(createAppError(404, '按量定价未配置'));
+    res.json(pricing);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.put('/usage-pricing', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const parsed = UsagePricingUpdateSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    let pricing = await prisma.usagePricing.findFirst({ where: { is_active: true } });
+    if (!pricing) {
+      pricing = await prisma.usagePricing.create({
+        data: {
+          id: ulid().toLowerCase(),
+          price_per_org: parsed.data.price_per_org ?? 0,
+          price_per_apartment: parsed.data.price_per_apartment ?? 0,
+          price_per_room: parsed.data.price_per_room ?? 0,
+          price_per_member: parsed.data.price_per_member ?? 0,
+          is_active: parsed.data.is_active ?? true,
+        },
+      });
+      return res.json(pricing);
+    }
+    const data: Record<string, unknown> = {};
+    if (parsed.data.price_per_org !== undefined) data.price_per_org = parsed.data.price_per_org;
+    if (parsed.data.price_per_apartment !== undefined) data.price_per_apartment = parsed.data.price_per_apartment;
+    if (parsed.data.price_per_room !== undefined) data.price_per_room = parsed.data.price_per_room;
+    if (parsed.data.price_per_member !== undefined) data.price_per_member = parsed.data.price_per_member;
+    if (parsed.data.is_active !== undefined) data.is_active = parsed.data.is_active;
+    const updated = await prisma.usagePricing.update({ where: { id: pricing.id }, data });
+    res.json(updated);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/usage-orders', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const skip = req.query.skip != null ? Number(req.query.skip) : undefined;
+    const limit = req.query.limit != null ? Number(req.query.limit) : undefined;
+    const list = await prisma.usageQuotaOrder.findMany({
+      skip,
+      take: limit ?? 50,
+      orderBy: { created_at: 'desc' },
+      include: { user: { select: { id: true, phone: true, full_name: true } } },
+    });
+    res.json(list);
   } catch (e) {
     next(e);
   }

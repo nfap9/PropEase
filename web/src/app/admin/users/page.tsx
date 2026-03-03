@@ -46,6 +46,7 @@ import {
 } from '@/components/ui/form';
 import { ColumnDef } from '@tanstack/react-table';
 import { adminApiEndpoints, AdminUser, AdminRole } from '@/lib/api/admin-client';
+import { getErrorMessage } from '@/lib/utils/error';
 import { Plus, Pencil, Trash2, KeyRound } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -137,11 +138,7 @@ export default function AdminUsersPage() {
       createForm.reset();
       toast.success('运营账号创建成功');
     },
-    onError: (e: Error & { response?: { data?: { message?: string; data?: { errors?: { message?: string }[] } } } }) => {
-      const data = e.response?.data;
-      const msg = data?.data?.errors?.[0]?.message ?? data?.message ?? '创建失败，请重试';
-      toast.error(msg);
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
@@ -158,7 +155,7 @@ export default function AdminUsersPage() {
       setSelectedUser(null);
       toast.success('运营账号已更新');
     },
-    onError: () => toast.error('更新失败，请重试'),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const resetMutation = useMutation({
@@ -171,11 +168,7 @@ export default function AdminUsersPage() {
       resetForm.reset();
       toast.success('密码已重置');
     },
-    onError: (e: Error & { response?: { data?: { message?: string; data?: { errors?: { message?: string }[] } } } }) => {
-      const data = e.response?.data;
-      const msg = data?.data?.errors?.[0]?.message ?? data?.message ?? '重置失败，请重试';
-      toast.error(msg);
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '重置失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -186,7 +179,7 @@ export default function AdminUsersPage() {
       setSelectedUser(null);
       toast.success('运营账号已删除');
     },
-    onError: () => toast.error('删除失败，请重试'),
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const handleEdit = (user: AdminUser) => {

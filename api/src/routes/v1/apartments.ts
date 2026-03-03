@@ -60,7 +60,8 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const limits = await getEffectivePlanLimits(orgId);
+    const user = getConsoleUser(req);
+    const limits = await getEffectivePlanLimits(orgId, user?.id);
     const apartments_used = await prisma.apartment.count({ where: { organization_id: orgId } });
     if (apartments_used >= limits.max_apartments)
       return next(createAppError(403, `当前套餐最多允许 ${limits.max_apartments} 个公寓`));
@@ -151,7 +152,7 @@ router.post('/:apartmentId/rooms', async (req: Request, res: Response, next: Nex
     const apartmentId = req.params.apartmentId;
     const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
     if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
-    const limits = await getEffectivePlanLimits(orgId);
+    const limits = await getEffectivePlanLimits(orgId, user.id);
     const rooms_used = await getRoomsUsedForLimitCheck(orgId, user.id);
     if (rooms_used + 1 > limits.max_rooms)
       return next(createAppError(403, `当前套餐最多允许 ${limits.max_rooms} 个房间`));
@@ -183,7 +184,7 @@ router.post('/:apartmentId/rooms/batch', async (req: Request, res: Response, nex
     const apartmentId = req.params.apartmentId;
     const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
     if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
-    const limits = await getEffectivePlanLimits(orgId);
+    const limits = await getEffectivePlanLimits(orgId, user.id);
     const rooms_used = await getRoomsUsedForLimitCheck(orgId, user.id);
     const parsed = RoomBatchSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));

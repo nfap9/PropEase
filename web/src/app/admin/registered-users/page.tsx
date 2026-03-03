@@ -36,6 +36,7 @@ import {
   AdminRegisteredUser,
   AdminRegisteredUserDetail,
 } from '@/lib/api/admin-client';
+import { getErrorMessage } from '@/lib/utils/error';
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye, Power, PowerOff, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -91,7 +92,7 @@ export default function AdminRegisteredUsersPage() {
       setDisableConfirmUserId(null);
       toast.success('已更新');
     },
-    onError: () => toast.error('操作失败，请重试'),
+    onError: (error) => toast.error(getErrorMessage(error, '操作失败，请重试')),
   });
 
   const deleteUserMutation = useMutation({
@@ -102,7 +103,7 @@ export default function AdminRegisteredUsersPage() {
       setDeleteConfirmUserId(null);
       toast.success('已删除');
     },
-    onError: () => toast.error('删除失败，请重试'),
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const columns: ColumnDef<AdminRegisteredUser>[] = [

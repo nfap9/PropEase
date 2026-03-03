@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowLeft, Loader2, Smartphone, FlaskConical } from 'lucide-react';
 import { subscriptionsApi } from '@/lib/api';
+import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import { toast } from 'sonner';
 
@@ -41,9 +42,7 @@ function SubscriptionPayContent() {
         router.replace(`/settings/subscription/result?order_id=${orderId}&status=success`);
       }
     },
-    onError: (err) => {
-      toast.error(`模拟支付失败: ${err instanceof Error ? err.message : '未知错误'}`);
-    },
+    onError: (err) => toast.error(getErrorMessage(err, '模拟支付失败，请重试')),
   });
 
   const handleBack = useCallback(() => {

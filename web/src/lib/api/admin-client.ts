@@ -2,7 +2,8 @@
  * 运营后台 API 客户端。
  * 使用独立的 admin_access_token，与业务端 access_token 分离。
  */
-import axios, { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import { ApiError } from './client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
@@ -38,7 +39,20 @@ adminApi.interceptors.response.use(
     }
     return response;
   },
-  (error) => Promise.reject(error)
+  (error: AxiosError<Record<string, unknown>>) => {
+    // 优先使用接口响应的 message，保持与业务端一致
+    if (error.response?.data && typeof error.response.data === 'object') {
+      const responseData = error.response.data;
+      const msg = typeof responseData.message === 'string' ? responseData.message : null;
+      if (msg) {
+        const code = typeof responseData.code === 'number' ? responseData.code : error.response.status ?? 500;
+        return Promise.reject(
+          new ApiError(code, msg, responseData.data ?? responseData)
+        );
+      }
+    }
+    return Promise.reject(error);
+  }
 );
 
 /** 运营登录响应 */
@@ -164,6 +178,7 @@ export interface AdminPlan {
   features: Record<string, unknown> | null;
   is_active: boolean;
   sort_order: number;
+  free_validity_days: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -181,6 +196,7 @@ export interface AdminPlanCreate {
   max_members: number;
   features?: Record<string, unknown> | null;
   sort_order?: number;
+  free_validity_days?: number | null;
 }
 
 export interface AdminPlanUpdate {
@@ -195,6 +211,7 @@ export interface AdminPlanUpdate {
   features?: Record<string, unknown> | null;
   is_active?: boolean | null;
   sort_order?: number | null;
+  free_validity_days?: number | null;
 }
 
 /** 订阅（运营侧） */
@@ -301,4 +318,20 @@ export const adminApiEndpoints = {
     adminApi.post<AdminSubscription>(`/admin/subscriptions/${id}/renew`, data),
   cancelSubscription: (id: string) =>
     adminApi.post<AdminSubscription>(`/admin/subscriptions/${id}/cancel`),
+
+  // 按量定价
+  getUsagePricing: () =>
+    adminApi.get<{
+      id: string;
+      price_per_org: number;
+      price_per_apartment: number;
+      price_per_room: number;
+      price_per_member: number;
+    }>('/admin/usage-pricing'),
+  updateUsagePricing: (data: {
+    price_per_org?: number;
+    price_per_apartment?: number;
+    price_per_room?: number;
+    price_per_member?: number;
+  }) => adminApi.put<unknown>('/admin/usage-pricing', data),
 };

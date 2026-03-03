@@ -22,6 +22,8 @@ model User {
   notifications            Notification[]
   system_roles_granted     UserSystemRole[]     @relation("UserSystemRolesGranted")
   system_roles             UserSystemRole[]     @relation("UserSystemRoles")
+  usage_quotas            UsageQuota[]
+  usage_quota_orders       UsageQuotaOrder[]
 
   @@map("users")
 }
@@ -318,11 +320,13 @@ model SubscriptionPlan {
   features            Json?
   is_active           Boolean  @default(true)
   sort_order          Int      @default(0)
+  free_validity_days  Int?     @db.Integer
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
 
-  subscriptions     OrganizationSubscription[]
-  subscription_orders SubscriptionOrder[]
+  subscriptions        OrganizationSubscription[]
+  subscription_orders   SubscriptionOrder[]
+  next_plan_subscriptions OrganizationSubscription[] @relation("NextPlan")
 
   @@map("subscription_plans")
 }
@@ -337,12 +341,15 @@ model OrganizationSubscription {
   end_date        DateTime? @db.Date
   auto_renew      Boolean   @default(true)
   trial_ends_at   DateTime? @db.Date
+  next_plan_id    String?   @db.VarChar(26)
+  limits_snapshot Json?
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt
 
-  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  plan         SubscriptionPlan @relation(fields: [plan_id], references: [id])
-  orders       SubscriptionOrder[]
+  organization   Organization      @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  plan           SubscriptionPlan  @relation(fields: [plan_id], references: [id])
+  next_plan      SubscriptionPlan? @relation("NextPlan", fields: [next_plan_id], references: [id], onDelete: SetNull)
+  orders         SubscriptionOrder[]
 
   @@map("organization_subscriptions")
 }
@@ -370,6 +377,62 @@ model SubscriptionOrder {
   org_subscription OrganizationSubscription? @relation(fields: [organization_subscription_id], references: [id], onDelete: SetNull)
 
   @@map("subscription_orders")
+}
+
+model UsagePricing {
+  id                   String   @id @db.VarChar(26)
+  price_per_org        Decimal  @db.Decimal(10, 2)
+  price_per_apartment  Decimal  @db.Decimal(10, 2)
+  price_per_room       Decimal  @db.Decimal(10, 2)
+  price_per_member     Decimal  @db.Decimal(10, 2)
+  is_active            Boolean  @default(true)
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+
+  @@map("usage_pricing")
+}
+
+model UsageQuota {
+  id                   String   @id @db.VarChar(26)
+  user_id              String   @db.VarChar(26)
+  orgs                 Int      @default(0)
+  apartments           Int      @default(0)
+  rooms                Int      @default(0)
+  members              Int      @default(0)
+  valid_from           DateTime @db.Date
+  valid_to             DateTime @db.Date
+  usage_quota_order_id String?  @unique @db.VarChar(26)
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+
+  user   User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  order  UsageQuotaOrder? @relation(fields: [usage_quota_order_id], references: [id], onDelete: SetNull)
+
+  @@map("usage_quotas")
+}
+
+model UsageQuotaOrder {
+  id                   String   @id @db.VarChar(26)
+  order_no             String   @unique @db.VarChar(64)
+  user_id              String   @db.VarChar(26)
+  orgs                 Int      @default(0)
+  apartments           Int      @default(0)
+  rooms                Int      @default(0)
+  members              Int      @default(0)
+  amount               Decimal  @db.Decimal(10, 2)
+  currency             String   @default("CNY") @db.VarChar(10)
+  status               String   @default("pending") @db.VarChar(32)
+  code_url             String?  @db.VarChar(512)
+  wechat_transaction_id String? @db.VarChar(64)
+  paid_at              DateTime?
+  expires_at           DateTime
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+
+  user   User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  quota  UsageQuota?
+
+  @@map("usage_quota_orders")
 }
 
 model SmsVerificationCode {

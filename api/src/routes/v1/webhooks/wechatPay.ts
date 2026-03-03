@@ -3,6 +3,7 @@ import { prisma } from '../../../lib/prisma.js';
 import { config } from '../../../config.js';
 import { decryptWechatPayResource } from '../../../utils/wechatPayCallback.js';
 import { fulfillSubscription } from '../../../services/fulfillSubscription.js';
+import { fulfillUsageQuota } from '../../../services/fulfillUsageQuota.js';
 
 const router: Router = Router();
 
@@ -52,32 +53,56 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       return;
     }
 
-    const order = await prisma.subscriptionOrder.findFirst({
+    const subOrder = await prisma.subscriptionOrder.findFirst({
       where: { order_no: outTradeNo },
     });
-    if (!order) {
+    if (subOrder) {
+      if (subOrder.status === 'paid') {
+        res.status(200).json({ code: 'SUCCESS', message: 'already paid' });
+        return;
+      }
+      const now = new Date();
+      await prisma.subscriptionOrder.update({
+        where: { id: subOrder.id },
+        data: {
+          status: 'paid',
+          wechat_transaction_id: transactionId ?? null,
+          paid_at: now,
+        },
+      });
+      try {
+        await fulfillSubscription(subOrder.id);
+      } catch (e) {
+        console.error('Fulfill subscription failed:', e);
+      }
       res.status(200).json({ code: 'SUCCESS', message: 'ok' });
       return;
     }
-    if (order.status === 'paid') {
-      res.status(200).json({ code: 'SUCCESS', message: 'already paid' });
-      return;
-    }
 
-    const now = new Date();
-    await prisma.subscriptionOrder.update({
-      where: { id: order.id },
-      data: {
-        status: 'paid',
-        wechat_transaction_id: transactionId ?? null,
-        paid_at: now,
-      },
+    const usageOrder = await prisma.usageQuotaOrder.findFirst({
+      where: { order_no: outTradeNo },
     });
-
-    try {
-      await fulfillSubscription(order.id);
-    } catch (e) {
-      console.error('Fulfill subscription failed:', e);
+    if (usageOrder) {
+      if (usageOrder.status === 'paid') {
+        res.status(200).json({ code: 'SUCCESS', message: 'already paid' });
+        return;
+      }
+      const now = new Date();
+      await prisma.usageQuotaOrder.update({
+        where: { id: usageOrder.id },
+        data: {
+          status: 'paid',
+          wechat_transaction_id: transactionId ?? null,
+          paid_at: now,
+        },
+      });
+      try {
+        await fulfillUsageQuota(usageOrder.id);
+      } catch (e) {
+        console.error('Fulfill usage quota failed:', e);
+      }
+      res.status(200).json({ code: 'SUCCESS', message: 'ok' });
+      return;
     }
 
     res.status(200).json({ code: 'SUCCESS', message: 'ok' });

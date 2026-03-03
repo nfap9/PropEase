@@ -47,6 +47,7 @@ import {
 } from '@/components/ui/select';
 import { apartmentsApi, roomsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
+import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import { Room, RoomStatus } from '@/types';
 import {
@@ -337,9 +338,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       setIsEditApartmentOpen(false);
       toast.success('公寓信息更新成功');
     },
-    onError: () => {
-      toast.error('更新失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   // 创建房间
@@ -352,9 +351,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       createRoomForm.reset();
       toast.success('房间创建成功');
     },
-    onError: () => {
-      toast.error('创建失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   // 批量创建房间
@@ -378,9 +375,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       setSelectedRooms(new Set());
       toast.success(`成功创建 ${rooms.length} 个房间`);
     },
-    onError: () => {
-      toast.error('批量创建失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '批量创建失败，请重试')),
   });
 
   // 更新房间
@@ -393,9 +388,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       setSelectedRoom(null);
       toast.success('房间信息更新成功');
     },
-    onError: () => {
-      toast.error('更新失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   // 删除房间
@@ -407,9 +400,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       setSelectedRoom(null);
       toast.success('房间删除成功');
     },
-    onError: () => {
-      toast.error('删除失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   // 批量更新房间
@@ -438,9 +429,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       batchEditForm.reset();
       toast.success('批量更新成功');
     },
-    onError: () => {
-      toast.error('批量更新失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '批量更新失败，请重试')),
   });
 
   // 批量删除房间
@@ -455,9 +444,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       setSelectedRoomIds(new Set());
       toast.success('批量删除成功');
     },
-    onError: () => {
-      toast.error('批量删除失败，请重试');
-    },
+    onError: (error) => toast.error(getErrorMessage(error, '批量删除失败，请重试')),
   });
 
   // 切换房间选中状态（批量模式）

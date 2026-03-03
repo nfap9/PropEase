@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Settings } from 'lucide-react';
 import { utilityConfigApi } from '@/lib/api';
+import { getErrorMessage } from '@/lib/utils/error';
 
 const utilityConfigSchema = z.object({
   water_price_per_unit: z.number().min(0, '单价不能为负').optional(),
@@ -108,8 +109,8 @@ export function UtilityConfigDialog({
       queryClient.invalidateQueries({ queryKey: ['utility-config', orgId, apartmentId] });
       onOpenChange(false);
     },
-    onError: (error: Error) => {
-      toast.error(`保存失败: ${error.message}`);
+    onError: (error) => {
+      toast.error(getErrorMessage(error, '保存失败，请重试'));
     },
   });
 

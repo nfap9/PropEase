@@ -8,6 +8,7 @@ import { createAccessToken, createRefreshToken, decodeToken } from '../../utils/
 import { getConsoleUser } from '../../utils/context.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { createAppError } from '../../utils/appError.js';
+import { createPersonalOrgWithFreePlan } from '../../services/createPersonalOrgWithFreePlan.js';
 
 /** 开发环境万能验证码，无需发送短信，输入此码即可通过 */
 const DEV_VERIFICATION_CODE = '123456';
@@ -84,6 +85,7 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
         password_hash: passwordHash,
       },
     });
+    await createPersonalOrgWithFreePlan(user.id);
     res.status(201).json({
       id: user.id,
       phone: user.phone,

@@ -50,6 +50,7 @@ import {
   adminApiEndpoints,
   AdminSubscription,
 } from '@/lib/api/admin-client';
+import { getErrorMessage } from '@/lib/utils/error';
 import { CalendarPlus, Ban } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -94,7 +95,7 @@ export default function AdminSubscriptionsPage() {
       renewForm.reset({ extend_days: 30 });
       toast.success('续期成功');
     },
-    onError: () => toast.error('续期失败，请重试'),
+    onError: (error) => toast.error(getErrorMessage(error, '续期失败，请重试')),
   });
 
   const cancelMutation = useMutation({
@@ -105,7 +106,7 @@ export default function AdminSubscriptionsPage() {
       setSelectedSub(null);
       toast.success('已取消订阅');
     },
-    onError: () => toast.error('取消失败，请重试'),
+    onError: (error) => toast.error(getErrorMessage(error, '取消失败，请重试')),
   });
 
   const handleRenew = (sub: AdminSubscription) => {
