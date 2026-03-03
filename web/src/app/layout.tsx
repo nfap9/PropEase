@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/layout/providers';
 
+export const dynamic = 'force-dynamic';
+
 const inter = Inter({ subsets: ['latin'] });
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';

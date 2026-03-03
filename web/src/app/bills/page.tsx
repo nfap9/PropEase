@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -95,7 +95,7 @@ function getDefaultGenerateValues(): GenerateBillsFormData {
   };
 }
 
-export default function BillsPage() {
+function BillsContent() {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const { organization, isLoading: authLoading } = useAuth();
@@ -718,5 +718,22 @@ export default function BillsPage() {
       </Dialog>
     </MainLayout>
     </PermissionPageGuard>
+  );
+}
+
+export default function BillsPage() {
+  return (
+    <Suspense
+      fallback={
+        <MainLayout>
+          <div className="space-y-6">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-96" />
+          </div>
+        </MainLayout>
+      }
+    >
+      <BillsContent />
+    </Suspense>
   );
 }
