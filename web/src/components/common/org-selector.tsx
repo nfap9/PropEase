@@ -1,6 +1,9 @@
 'use client';
 
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth/context';
+import { invalidateOrgScopedQueries } from '@/lib/query-utils';
 import {
   Select,
   SelectContent,
@@ -8,13 +11,45 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Building2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { Organization } from '@/types';
 
 export function OrgSelector() {
   const { organization, organizations, setOrganization } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const [pendingOrg, setPendingOrg] = useState<Organization | null>(null);
+
+  const handleSelectOrg = (value: string) => {
+    const org = organizations.find((o) => o.id.toString() === value);
+    if (!org || org.id === organization?.id) return;
+    setPendingOrg(org);
+  };
+
+  const handleConfirmSwitch = () => {
+    if (pendingOrg) {
+      setOrganization(pendingOrg);
+      invalidateOrgScopedQueries(queryClient);
+      setPendingOrg(null);
+      router.refresh();
+    }
+  };
+
+  const handleCancelSwitch = () => {
+    setPendingOrg(null);
+  };
 
   if (organizations.length === 0) {
     return (
@@ -31,28 +66,40 @@ export function OrgSelector() {
   }
 
   return (
-    <Select
-      value={organization?.id?.toString() || ''}
-      onValueChange={(value) => {
-        const org = organizations.find((o) => o.id.toString() === value);
-        if (org) {
-          setOrganization(org);
-          // 刷新当前页面以加载新组织的数据
-          router.refresh();
-        }
-      }}
-    >
-      <SelectTrigger className="w-[200px] h-9">
-        <Building2 className="mr-2 h-4 w-4" />
-        <SelectValue placeholder="选择组织" />
-      </SelectTrigger>
-      <SelectContent>
-        {organizations.map((org) => (
-          <SelectItem key={org.id} value={org.id.toString()}>
-            {org.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <>
+      <Select
+        value={organization?.id?.toString() || ''}
+        onValueChange={handleSelectOrg}
+      >
+        <SelectTrigger className="w-[200px] h-9">
+          <Building2 className="mr-2 h-4 w-4" />
+          <SelectValue placeholder="选择组织" />
+        </SelectTrigger>
+        <SelectContent>
+          {organizations.map((org) => (
+            <SelectItem key={org.id} value={org.id.toString()}>
+              {org.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <AlertDialog open={!!pendingOrg} onOpenChange={(open) => !open && handleCancelSwitch()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认切换组织</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要切换到组织「{pendingOrg?.name}」吗？切换后页面将刷新以加载新组织的数据。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSwitch}>
+              确认切换
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -86,9 +86,8 @@ const ROLE_COLORS: Record<MemberRole, 'default' | 'secondary' | 'destructive' | 
 };
 
 export default function TeamSettingsPage() {
-  const { user } = useAuth();
+  const { user, organization, setOrganization, refreshOrganizations } = useAuth();
   const queryClient = useQueryClient();
-  const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [isCreateOrgOpen, setIsCreateOrgOpen] = useState(false);
   const [isEditOrgOpen, setIsEditOrgOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
@@ -100,17 +99,10 @@ export default function TeamSettingsPage() {
     queryFn: organizationsApi.list,
   });
 
-  // 自动选择第一个组织
-  useEffect(() => {
-    if (organizations && organizations.length > 0 && !selectedOrg) {
-      setSelectedOrg(organizations[0]);
-    }
-  }, [organizations, selectedOrg]);
-
   const { data: members, isLoading: membersLoading } = useQuery({
-    queryKey: ['organization-members', selectedOrg?.id],
-    queryFn: () => organizationsApi.getMembers(selectedOrg!.id),
-    enabled: !!selectedOrg,
+    queryKey: ['organization-members', organization?.id],
+    queryFn: () => organizationsApi.getMembers(organization!.id),
+    enabled: !!organization,
   });
 
   const createOrgForm = useForm<OrganizationFormData>({
@@ -133,8 +125,9 @@ export default function TeamSettingsPage() {
         name: data.name,
         slug: data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
       }),
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      await refreshOrganizations();
       setIsCreateOrgOpen(false);
       createOrgForm.reset();
       toast.success('组织创建成功');
@@ -145,10 +138,11 @@ export default function TeamSettingsPage() {
   const updateOrgMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: OrganizationFormData }) =>
       organizationsApi.update(id, data),
-    onSuccess: () => {
+    onSuccess: (updatedOrg) => {
       queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      queryClient.invalidateQueries({ queryKey: ['organization-members', updatedOrg.id] });
+      setOrganization(updatedOrg);
       setIsEditOrgOpen(false);
-      setSelectedOrg(null);
       toast.success('组织更新成功');
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
@@ -156,13 +150,13 @@ export default function TeamSettingsPage() {
 
   const inviteMutation = useMutation({
     mutationFn: (data: InviteFormData) =>
-      organizationsApi.addMember(selectedOrg!.id, {
+      organizationsApi.addMember(organization!.id, {
         user_phone: data.phone,
         role: data.role as MemberRole,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['organization-members', selectedOrg?.id],
+        queryKey: ['organization-members', organization?.id],
       });
       setIsInviteOpen(false);
       inviteForm.reset();
@@ -173,10 +167,10 @@ export default function TeamSettingsPage() {
 
   const removeMemberMutation = useMutation({
     mutationFn: (memberId: string) =>
-      organizationsApi.removeMember(selectedOrg!.id, memberId),
+      organizationsApi.removeMember(organization!.id, memberId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['organization-members', selectedOrg?.id],
+        queryKey: ['organization-members', organization?.id],
       });
       setIsRemoveMemberOpen(false);
       setSelectedMember(null);
@@ -185,12 +179,11 @@ export default function TeamSettingsPage() {
     onError: (error) => toast.error(getErrorMessage(error, '移除失败，请重试')),
   });
 
-  const handleEditOrg = (org: Organization) => {
-    setSelectedOrg(org);
-    editOrgForm.reset({
-      name: org.name,
-    });
-    setIsEditOrgOpen(true);
+  const handleEditOrg = () => {
+    if (organization) {
+      editOrgForm.reset({ name: organization.name });
+      setIsEditOrgOpen(true);
+    }
   };
 
   const handleRemoveMember = (member: OrganizationMember) => {
@@ -282,9 +275,9 @@ export default function TeamSettingsPage() {
           <TabsList>
             <TabsTrigger value="organizations">
               <Building2 className="mr-2 h-4 w-4" />
-              组织管理
+              组织信息
             </TabsTrigger>
-            <TabsTrigger value="members" disabled={!selectedOrg}>
+            <TabsTrigger value="members" disabled={!organization}>
               <Users className="mr-2 h-4 w-4" />
               成员管理
             </TabsTrigger>
@@ -292,66 +285,39 @@ export default function TeamSettingsPage() {
 
           <TabsContent value="organizations" className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">我的组织</h2>
+              <h2 className="text-xl font-semibold">当前组织</h2>
               <Button onClick={() => setIsCreateOrgOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 创建组织
               </Button>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {organizations?.map((org) => (
-                <Card
-                  key={org.id}
-                  className={`cursor-pointer transition-colors ${
-                    selectedOrg?.id === org.id ? 'border-primary' : ''
-                  }`}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{org.name}</CardTitle>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" aria-label="更多操作">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <PermissionGuard permission={PERMISSIONS.SETTINGS_EDIT}>
-                            <DropdownMenuItem onClick={() => handleEditOrg(org)}>
-                              <Pencil className="mr-2 h-4 w-4" />
-                              编辑
-                            </DropdownMenuItem>
-                          </PermissionGuard>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        {org.role ? (
-                          <Badge variant={ROLE_COLORS[org.role]}>
-                            {ROLE_LABELS[org.role]}
-                          </Badge>
-                        ) : (
-                          '—'
-                        )}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedOrg(org)}
-                      >
-                        选择
+            {organization ? (
+              <Card>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">{organization.name}</CardTitle>
+                    <PermissionGuard permission={PERMISSIONS.SETTINGS_EDIT}>
+                      <Button variant="outline" size="sm" onClick={handleEditOrg}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        编辑
                       </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {organizations?.length === 0 && (
+                    </PermissionGuard>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-muted-foreground">
+                    {organization.role ? (
+                      <Badge variant={ROLE_COLORS[organization.role]}>
+                        {ROLE_LABELS[organization.role]}
+                      </Badge>
+                    ) : (
+                      '—'
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : organizations?.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
                   <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -365,15 +331,19 @@ export default function TeamSettingsPage() {
                   </Button>
                 </CardContent>
               </Card>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                请从顶部导航栏的组织下拉框切换组织
+              </p>
             )}
           </TabsContent>
 
           <TabsContent value="members" className="space-y-4">
-            {selectedOrg && (
+            {organization && (
               <>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-semibold">{selectedOrg.name} - 成员</h2>
+                    <h2 className="text-xl font-semibold">{organization.name} - 成员</h2>
                     <p className="text-sm text-muted-foreground">
                       管理组织成员和权限
                     </p>
@@ -438,7 +408,7 @@ export default function TeamSettingsPage() {
           </DialogHeader>
           <form
             onSubmit={editOrgForm.handleSubmit((data) =>
-              updateOrgMutation.mutate({ id: selectedOrg!.id, data })
+              organization && updateOrgMutation.mutate({ id: organization.id, data })
             )}
             className="space-y-4"
           >
