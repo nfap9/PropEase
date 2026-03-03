@@ -29,6 +29,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { DataTable } from '@/components/common/data-table';
+import { formatDate } from '@/lib/date-utils';
 import { ColumnDef } from '@tanstack/react-table';
 
 export default function TenantDetailPage({ params }: { params: { id: string } }) {
@@ -84,11 +85,12 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
     {
       accessorKey: 'start_date',
       header: '开始日期',
+      cell: ({ row }) => formatDate(row.original.start_date),
     },
     {
       accessorKey: 'end_date',
       header: '结束日期',
-      cell: ({ row }) => row.original.end_date || '长期',
+      cell: ({ row }) => row.original.end_date ? formatDate(row.original.end_date) : '长期',
     },
     {
       accessorKey: 'monthly_rent',
@@ -243,11 +245,11 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-muted-foreground">开始日期</Label>
-                      <p className="font-medium">{activeLease.start_date}</p>
+                      <p className="font-medium">{formatDate(activeLease.start_date)}</p>
                     </div>
                     <div>
                       <Label className="text-muted-foreground">结束日期</Label>
-                      <p className="font-medium">{activeLease.end_date || '长期'}</p>
+                      <p className="font-medium">{activeLease.end_date ? formatDate(activeLease.end_date) : '长期'}</p>
                     </div>
                   </div>
                   {activeLease.deposit && activeLease.deposit > 0 && (

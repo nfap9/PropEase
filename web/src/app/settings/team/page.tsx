@@ -51,6 +51,7 @@ import {
 import { ColumnDef } from '@tanstack/react-table';
 import { organizationsApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
+import { formatDateTime } from '@/lib/date-utils';
 import { OrganizationMember, MemberRole } from '@/types';
 import { Plus, MoreHorizontal, Pencil, Trash2, UserPlus, Building2, Users } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -225,7 +226,7 @@ export default function TeamSettingsPage() {
     {
       accessorKey: 'joined_at',
       header: '加入时间',
-      cell: ({ row }) => new Date(row.original.joined_at).toLocaleDateString('zh-CN'),
+      cell: ({ row }) => formatDateTime(row.original.joined_at),
     },
     {
       id: 'actions',

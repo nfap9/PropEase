@@ -3,6 +3,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Zap, Droplets } from 'lucide-react';
 import { TableActions, TableAction } from '@/components/common/table-actions';
+import { formatDate } from '@/lib/date-utils';
 import { UtilityReading } from '@/types';
 
 interface UseColumnsOptions {
@@ -27,7 +28,7 @@ export function useColumns({ onEdit }: UseColumnsOptions): ColumnDef<UtilityRead
     {
       accessorKey: 'reading_date',
       header: '记录日期',
-      cell: ({ row }) => row.original.reading_date,
+      cell: ({ row }) => formatDate(row.original.reading_date),
     },
     {
       accessorKey: 'water_reading',

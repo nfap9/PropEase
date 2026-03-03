@@ -20,6 +20,7 @@ import {
   AdminOrganization,
 } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
+import { formatDateTime } from '@/lib/date-utils';
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye, Power, PowerOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -93,8 +94,7 @@ export default function AdminOrganizationsPage() {
     {
       accessorKey: 'created_at',
       header: '创建时间',
-      cell: ({ row }) =>
-        new Date(row.original.created_at).toLocaleDateString('zh-CN'),
+      cell: ({ row }) => formatDateTime(row.original.created_at),
     },
     {
       id: 'actions',

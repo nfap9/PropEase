@@ -46,6 +46,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
+import { formatDate } from '@/lib/date-utils';
 import {
   adminApiEndpoints,
   AdminSubscription,
@@ -161,12 +162,12 @@ export default function AdminSubscriptionsPage() {
     {
       accessorKey: 'start_date',
       header: '开始日期',
-      cell: ({ row }) => row.original.start_date ?? '—',
+      cell: ({ row }) => formatDate(row.original.start_date),
     },
     {
       accessorKey: 'end_date',
       header: '结束日期',
-      cell: ({ row }) => row.original.end_date ?? '—',
+      cell: ({ row }) => formatDate(row.original.end_date),
     },
     {
       accessorKey: 'auto_renew',

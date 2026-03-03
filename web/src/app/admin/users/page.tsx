@@ -47,6 +47,7 @@ import {
 import { ColumnDef } from '@tanstack/react-table';
 import { adminApiEndpoints, AdminUser, AdminRole } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
+import { formatDateTime } from '@/lib/date-utils';
 import { Plus, Pencil, Trash2, KeyRound } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -224,7 +225,7 @@ export default function AdminUsersPage() {
       header: '最后登录',
       cell: ({ row }) => {
         const t = row.original.last_login_at;
-        return t ? new Date(t).toLocaleString('zh-CN') : '—';
+        return t ? formatDateTime(t) : '—';
       },
     },
     {

@@ -37,6 +37,7 @@ import {
   AdminRegisteredUserDetail,
 } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
+import { formatDateTime } from '@/lib/date-utils';
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye, Power, PowerOff, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -122,8 +123,7 @@ export default function AdminRegisteredUsersPage() {
     {
       accessorKey: 'created_at',
       header: '注册时间',
-      cell: ({ row }) =>
-        new Date(row.original.created_at).toLocaleString('zh-CN'),
+      cell: ({ row }) => formatDateTime(row.original.created_at),
     },
     {
       id: 'actions',
@@ -302,7 +302,7 @@ export default function AdminRegisteredUsersPage() {
                   <div>
                     <span className="text-muted-foreground">注册时间</span>
                     <p className="font-medium">
-                      {new Date(detail.created_at).toLocaleString('zh-CN')}
+                      {formatDateTime(detail.created_at)}
                     </p>
                   </div>
                   <div>

@@ -40,6 +40,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { billsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
+import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
 import { Bill, BillStatus, PaymentMethod } from '@/types';
 import { Download, DollarSign, AlertCircle, CheckCircle, Clock, Building2, ChevronDown, FileSpreadsheet } from 'lucide-react';
@@ -207,6 +208,7 @@ export default function BillsPage() {
     {
       accessorKey: 'due_date',
       header: '到期日',
+      cell: ({ row }) => formatDate(row.original.due_date),
     },
     {
       accessorKey: 'status',

@@ -11,6 +11,7 @@ import { adminApiEndpoints } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import { ArrowLeft, Power, PowerOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatDateTime } from '@/lib/date-utils';
 
 export default function AdminOrganizationDetailPage() {
   const params = useParams();
@@ -84,7 +85,7 @@ export default function AdminOrganizationDetailPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">创建时间</span>
-              <span>{new Date(org.created_at).toLocaleString('zh-CN')}</span>
+              <span>{formatDateTime(org.created_at)}</span>
             </div>
           </div>
           <div className="pt-4">

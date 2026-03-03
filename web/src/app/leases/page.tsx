@@ -38,6 +38,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { leasesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
+import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
 import { Lease } from '@/types';
 import { Plus, Pencil, Trash2, Ban, Building2 } from 'lucide-react';
@@ -168,11 +169,12 @@ export default function LeasesPage() {
     {
       accessorKey: 'start_date',
       header: '开始日期',
+      cell: ({ row }) => formatDate(row.original.start_date),
     },
     {
       accessorKey: 'end_date',
       header: '结束日期',
-      cell: ({ row }) => row.original.end_date || '长期',
+      cell: ({ row }) => row.original.end_date ? formatDate(row.original.end_date) : '长期',
     },
     {
       accessorKey: 'monthly_rent',

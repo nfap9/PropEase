@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { notificationsApi, type Notification } from '@/lib/api/notifications';
 import { Bell, CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatDateTime } from '@/lib/date-utils';
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
@@ -114,7 +115,7 @@ function NotificationItem({
             <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{item.body}</p>
           )}
           <p className="mt-1 text-xs text-muted-foreground">
-            {new Date(item.created_at).toLocaleString('zh-CN')}
+            {formatDateTime(item.created_at)}
           </p>
         </div>
         {!item.is_read && (
