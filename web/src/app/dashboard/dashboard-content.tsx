@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Building2,
@@ -29,12 +30,14 @@ function StatCard({
   description,
   icon: Icon,
   iconColor,
+  valueBadgeVariant,
 }: {
   title: string;
   value: string | number;
   description?: string;
   icon: React.ElementType;
   iconColor?: string;
+  valueBadgeVariant?: 'warning' | 'destructive';
 }) {
   return (
     <Card>
@@ -43,7 +46,13 @@ function StatCard({
         <Icon className={`h-4 w-4 ${iconColor || 'text-muted-foreground'}`} />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        {valueBadgeVariant ? (
+          <Badge variant={valueBadgeVariant} className="text-base px-3 py-1">
+            {value}
+          </Badge>
+        ) : (
+          <div className="text-2xl font-bold">{value}</div>
+        )}
         {description && (
           <p className="text-xs text-muted-foreground">{description}</p>
         )}
@@ -164,6 +173,7 @@ export function DashboardContent() {
               value={overview?.pending_bills || 0}
               icon={Clock}
               iconColor="text-amber-500"
+              valueBadgeVariant="warning"
             />
             <StatCard
               title="逾期账单"
@@ -171,6 +181,7 @@ export function DashboardContent() {
               description={overview?.overdue_bills ? '需要及时跟进' : ''}
               icon={AlertCircle}
               iconColor="text-red-500"
+              valueBadgeVariant="destructive"
             />
           </div>
 
@@ -209,17 +220,13 @@ export function DashboardContent() {
                       ¥{(overview?.monthly_revenue || 0).toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">待收账单</span>
-                    <span className="font-medium text-orange-600">
-                      {overview?.pending_bills || 0} 笔
-                    </span>
+                    <Badge variant="warning">{overview?.pending_bills || 0} 笔</Badge>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">逾期账单</span>
-                    <span className="font-medium text-red-600">
-                      {overview?.overdue_bills || 0} 笔
-                    </span>
+                    <Badge variant="destructive">{overview?.overdue_bills || 0} 笔</Badge>
                   </div>
                 </div>
               </CardContent>

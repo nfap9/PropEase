@@ -5,13 +5,8 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Room, RoomStatus } from '@/types';
+import { ROOM_STATUS_CONFIG } from '@/lib/status-config';
 import { Pencil, Trash2, FileText, Ban, Wrench, CheckCircle } from 'lucide-react';
-
-const STATUS_MAP: Record<RoomStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  available: { label: '空置', variant: 'secondary' },
-  occupied: { label: '已租', variant: 'default' },
-  maintenance: { label: '维修中', variant: 'destructive' },
-};
 
 export interface UseColumnsOptions {
   onEdit: (room: Room) => void;
@@ -75,7 +70,7 @@ export function useColumns({
       header: '状态',
       enableSorting: true,
       cell: ({ row }) => {
-        const status = STATUS_MAP[row.original.status];
+        const status = ROOM_STATUS_CONFIG[row.original.status];
         return <Badge variant={status.variant}>{status.label}</Badge>;
       },
     },

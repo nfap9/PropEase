@@ -8,6 +8,7 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { SUBSCRIPTION_STATUS_CONFIG } from '@/lib/status-config';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Check,
@@ -155,10 +156,15 @@ export default function SubscriptionPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{subscriptionStatus.plan?.name || '免费版'}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
                     状态:
-                    <Badge variant={subscriptionStatus.is_active ? 'default' : 'secondary'} className="ml-2">
-                      {subscriptionStatus.status === 'active' ? '已激活' : subscriptionStatus.status}
+                    <Badge
+                      variant={
+                        SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus.status]?.variant ?? 'secondary'
+                      }
+                    >
+                      {SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus.status]?.label ??
+                        subscriptionStatus.status}
                     </Badge>
                   </p>
                   {subscriptionStatus.days_remaining !== null && subscriptionStatus.days_remaining > 0 && (

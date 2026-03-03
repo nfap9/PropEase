@@ -11,6 +11,7 @@ import { TableActions } from '@/components/common/table-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { ORG_STATUS_CONFIG } from '@/lib/status-config';
 import {
   Dialog,
   DialogContent,
@@ -213,12 +214,12 @@ export default function AdminUsersPage() {
     {
       accessorKey: 'is_active',
       header: '状态',
-      cell: ({ row }) =>
-        row.original.is_active ? (
-          <Badge variant="default">启用</Badge>
-        ) : (
-          <Badge variant="secondary">停用</Badge>
-        ),
+      cell: ({ row }) => {
+        const config = row.original.is_active
+          ? ORG_STATUS_CONFIG.active
+          : ORG_STATUS_CONFIG.inactive;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
+      },
     },
     {
       accessorKey: 'last_login_at',

@@ -43,7 +43,8 @@ import { getErrorMessage } from '@/lib/utils/error';
 import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
 import { Bill, BillStatus, PaymentMethod } from '@/types';
-import { Download, DollarSign, AlertCircle, CheckCircle, Clock, Building2, ChevronDown, FileSpreadsheet } from 'lucide-react';
+import { BILL_STATUS_CONFIG } from '@/lib/status-config';
+import { Download, DollarSign, AlertCircle, Building2, ChevronDown, FileSpreadsheet } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const paymentSchema = z.object({
@@ -55,13 +56,6 @@ const paymentSchema = z.object({
 });
 
 type PaymentFormData = z.infer<typeof paymentSchema>;
-
-const STATUS_CONFIG: Record<BillStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof CheckCircle }> = {
-  pending: { label: '待支付', variant: 'secondary', icon: Clock },
-  partial: { label: '部分支付', variant: 'outline', icon: DollarSign },
-  paid: { label: '已支付', variant: 'default', icon: CheckCircle },
-  overdue: { label: '已逾期', variant: 'destructive', icon: AlertCircle },
-};
 
 const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   cash: '现金',
@@ -214,7 +208,7 @@ export default function BillsPage() {
       accessorKey: 'status',
       header: '状态',
       cell: ({ row }) => {
-        const config = STATUS_CONFIG[row.original.status];
+        const config = BILL_STATUS_CONFIG[row.original.status];
         const Icon = config.icon;
         return (
           <Badge variant={config.variant} className="gap-1">

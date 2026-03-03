@@ -12,6 +12,7 @@ import { TableActions } from '@/components/common/table-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { SUBSCRIPTION_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import {
   Dialog,
   DialogContent,
@@ -121,13 +122,6 @@ export default function AdminSubscriptionsPage() {
     setIsCancelOpen(true);
   };
 
-  const statusLabel: Record<string, string> = {
-    active: '生效中',
-    expired: '已过期',
-    cancelled: '已取消',
-    trial: '试用',
-  };
-
   const columns: ColumnDef<AdminSubscription>[] = [
     {
       accessorKey: 'organization_id',
@@ -152,11 +146,11 @@ export default function AdminSubscriptionsPage() {
       header: '状态',
       cell: ({ row }) => {
         const s = row.original.status;
-        return (
-          <Badge variant={s === 'active' ? 'default' : 'secondary'}>
-            {statusLabel[s] ?? s}
-          </Badge>
-        );
+        const config = SUBSCRIPTION_STATUS_CONFIG[s] ?? {
+          label: s,
+          variant: 'secondary' as const,
+        };
+        return <Badge variant={config.variant}>{config.label}</Badge>;
       },
     },
     {
@@ -172,7 +166,12 @@ export default function AdminSubscriptionsPage() {
     {
       accessorKey: 'auto_renew',
       header: '自动续费',
-      cell: ({ row }) => (row.original.auto_renew ? '是' : '否'),
+      cell: ({ row }) => {
+        const config = row.original.auto_renew
+          ? BOOLEAN_YES_NO_CONFIG.yes
+          : BOOLEAN_YES_NO_CONFIG.no;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
+      },
     },
     {
       id: 'actions',

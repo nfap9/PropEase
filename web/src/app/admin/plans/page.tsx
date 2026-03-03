@@ -11,6 +11,7 @@ import { TableActions } from '@/components/common/table-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import {
   Dialog,
   DialogContent,
@@ -199,12 +200,12 @@ export default function AdminPlansPage() {
     {
       accessorKey: 'is_active',
       header: '启用',
-      cell: ({ row }) =>
-        row.original.is_active ? (
-          <Badge variant="default">是</Badge>
-        ) : (
-          <Badge variant="secondary">否</Badge>
-        ),
+      cell: ({ row }) => {
+        const config = row.original.is_active
+          ? BOOLEAN_YES_NO_CONFIG.yes
+          : BOOLEAN_YES_NO_CONFIG.no;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
+      },
     },
     { accessorKey: 'sort_order', header: '排序' },
     {

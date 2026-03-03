@@ -49,6 +49,7 @@ import { getErrorMessage } from '@/lib/utils/error';
 import { formatDate, toDateInputValue } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
 import { Lease } from '@/types';
+import { LEASE_STATUS_CONFIG } from '@/lib/status-config';
 import { LeaseFilters, LeaseFiltersState } from './components';
 import { Plus, Pencil, Trash2, Ban, Building2, Info } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -260,11 +261,12 @@ export default function LeasesPage() {
     {
       accessorKey: 'is_active',
       header: '状态',
-      cell: ({ row }) => (
-        <Badge variant={row.original.is_active ? 'default' : 'secondary'}>
-          {row.original.is_active ? '生效中' : '已终止'}
-        </Badge>
-      ),
+      cell: ({ row }) => {
+        const config = row.original.is_active
+          ? LEASE_STATUS_CONFIG.active
+          : LEASE_STATUS_CONFIG.inactive;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
+      },
     },
     {
       id: 'actions',

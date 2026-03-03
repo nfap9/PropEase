@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ORG_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import { adminApiEndpoints } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import { ArrowLeft, Power, PowerOff } from 'lucide-react';
@@ -62,11 +63,13 @@ export default function AdminOrganizationDetailPage() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>{org.name}</span>
-            {org.is_active ? (
-              <Badge variant="default">启用</Badge>
-            ) : (
-              <Badge variant="secondary">停用</Badge>
-            )}
+            <Badge
+              variant={
+                org.is_active ? ORG_STATUS_CONFIG.active.variant : ORG_STATUS_CONFIG.inactive.variant
+              }
+            >
+              {org.is_active ? ORG_STATUS_CONFIG.active.label : ORG_STATUS_CONFIG.inactive.label}
+            </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -81,7 +84,13 @@ export default function AdminOrganizationDetailPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">个人团队</span>
-              <span>{org.is_personal ? '是' : '否'}</span>
+              <Badge
+                variant={
+                  org.is_personal ? BOOLEAN_YES_NO_CONFIG.yes.variant : BOOLEAN_YES_NO_CONFIG.no.variant
+                }
+              >
+                {org.is_personal ? BOOLEAN_YES_NO_CONFIG.yes.label : BOOLEAN_YES_NO_CONFIG.no.label}
+              </Badge>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">创建时间</span>

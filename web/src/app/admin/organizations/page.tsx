@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions } from '@/components/common/table-actions';
 import { Badge } from '@/components/ui/badge';
+import { ORG_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import {
   Select,
   SelectContent,
@@ -74,22 +75,22 @@ export default function AdminOrganizationsPage() {
     {
       accessorKey: 'is_personal',
       header: '个人团队',
-      cell: ({ row }) =>
-        row.original.is_personal ? (
-          <Badge variant="secondary">是</Badge>
-        ) : (
-          <Badge variant="outline">否</Badge>
-        ),
+      cell: ({ row }) => {
+        const config = row.original.is_personal
+          ? BOOLEAN_YES_NO_CONFIG.yes
+          : BOOLEAN_YES_NO_CONFIG.no;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
+      },
     },
     {
       accessorKey: 'is_active',
       header: '状态',
-      cell: ({ row }) =>
-        row.original.is_active ? (
-          <Badge variant="default">启用</Badge>
-        ) : (
-          <Badge variant="secondary">停用</Badge>
-        ),
+      cell: ({ row }) => {
+        const config = row.original.is_active
+          ? ORG_STATUS_CONFIG.active
+          : ORG_STATUS_CONFIG.inactive;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
+      },
     },
     {
       accessorKey: 'created_at',

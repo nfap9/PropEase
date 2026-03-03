@@ -7,6 +7,7 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { LEASE_STATUS_CONFIG } from '@/lib/status-config';
 import {
   Card,
   CardContent,
@@ -100,11 +101,12 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
     {
       accessorKey: 'is_active',
       header: '状态',
-      cell: ({ row }) => (
-        <Badge variant={row.original.is_active ? 'default' : 'secondary'}>
-          {row.original.is_active ? '生效中' : '已终止'}
-        </Badge>
-      ),
+      cell: ({ row }) => {
+        const config = row.original.is_active
+          ? LEASE_STATUS_CONFIG.active
+          : LEASE_STATUS_CONFIG.inactive;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
+      },
     },
     {
       id: 'actions',

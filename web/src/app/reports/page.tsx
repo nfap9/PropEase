@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { BILL_STATUS_CONFIG, ROOM_STATUS_CONFIG } from '@/lib/status-config';
 import { reportsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { IncomeReport } from '@/types';
@@ -472,11 +473,15 @@ export default function ReportsPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span>待收账单</span>
-                      <Badge variant="secondary">{overview?.pending_bills || 0} 笔</Badge>
+                      <Badge variant={BILL_STATUS_CONFIG.pending.variant}>
+                        {overview?.pending_bills || 0} 笔
+                      </Badge>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>逾期账单</span>
-                      <Badge variant="destructive">{overview?.overdue_bills || 0} 笔</Badge>
+                      <Badge variant={BILL_STATUS_CONFIG.overdue.variant}>
+                        {overview?.overdue_bills || 0} 笔
+                      </Badge>
                     </div>
                   </div>
                 </CardContent>
@@ -493,11 +498,15 @@ export default function ReportsPage() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span>已入住房间</span>
-                      <Badge>{overview?.occupied_rooms || 0} 间</Badge>
+                      <Badge variant={ROOM_STATUS_CONFIG.occupied.variant}>
+                        {overview?.occupied_rooms || 0} 间
+                      </Badge>
                     </div>
                     <div className="flex items-center justify-between">
                       <span>空置房间</span>
-                      <Badge variant="secondary">{overview?.available_rooms || 0} 间</Badge>
+                      <Badge variant={ROOM_STATUS_CONFIG.available.variant}>
+                        {overview?.available_rooms || 0} 间
+                      </Badge>
                     </div>
                   </div>
                 </CardContent>

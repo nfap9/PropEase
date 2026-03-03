@@ -71,7 +71,9 @@ import {
   X,
   Settings,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ROOM_STATUS_CONFIG } from '@/lib/status-config';
 import { UtilityConfigDialog } from './components/UtilityConfigDialog';
 
 const roomSchema = z.object({
@@ -115,13 +117,6 @@ const STATUS_BORDER_COLORS: Record<RoomStatus, string> = {
   available: 'border-green-500',
   occupied: 'border-blue-500',
   maintenance: 'border-orange-500',
-};
-
-// 状态标签映射
-const STATUS_LABELS: Record<RoomStatus, string> = {
-  available: '空置',
-  occupied: '已租',
-  maintenance: '维修中',
 };
 
 // 从房间号提取楼层（假设格式为 {楼层}{房间序号:02d}，如 101、305）
@@ -736,12 +731,15 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
             ) : rooms && rooms.length > 0 ? (
               <>
                 {/* 状态图例 */}
-                <div className="flex items-center gap-4 mb-4 text-sm">
-                  {(Object.keys(STATUS_LABELS) as RoomStatus[]).map((status) => (
-                    <div key={status} className="flex items-center gap-1.5">
-                      <div className={`w-3 h-3 rounded border-2 ${STATUS_BORDER_COLORS[status]}`} />
-                      <span className="text-muted-foreground">{STATUS_LABELS[status]}</span>
-                    </div>
+                <div className="flex items-center gap-2 mb-4">
+                  {(Object.keys(ROOM_STATUS_CONFIG) as RoomStatus[]).map((status) => (
+                    <Badge
+                      key={status}
+                      variant={ROOM_STATUS_CONFIG[status].variant}
+                      className="text-xs"
+                    >
+                      {ROOM_STATUS_CONFIG[status].label}
+                    </Badge>
                   ))}
                 </div>
                 {/* 楼层分组 */}

@@ -6,7 +6,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ORDER_STATUS_CONFIG } from '@/lib/status-config';
 import { ArrowLeft, Loader2, Smartphone, FlaskConical } from 'lucide-react';
 import { subscriptionsApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
@@ -112,12 +114,14 @@ function SubscriptionPayContent() {
   }
 
   if (order.status === 'failed' || order.status === 'cancelled') {
+    const config =
+      order.status === 'cancelled' ? ORDER_STATUS_CONFIG.cancelled : ORDER_STATUS_CONFIG.failed;
     return (
       <MainLayout>
         <div className="space-y-6">
-          <p className="text-muted-foreground">
-            {order.status === 'cancelled' ? '订单已取消' : '支付失败'}
-          </p>
+          <div className="flex items-center gap-2">
+            <Badge variant={config.variant}>{config.label}</Badge>
+          </div>
           <Button variant="outline" onClick={handleBack}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             返回订阅管理
@@ -130,10 +134,14 @@ function SubscriptionPayContent() {
   const isExpired =
     order.status === 'pending' && new Date(order.expires_at).getTime() < Date.now();
   if (isExpired) {
+    const config = ORDER_STATUS_CONFIG.expired;
     return (
       <MainLayout>
         <div className="space-y-6">
-          <p className="text-muted-foreground">订单已过期，请返回订阅管理重新下单</p>
+          <div className="flex items-center gap-2">
+            <Badge variant={config.variant}>{config.label}</Badge>
+            <span className="text-muted-foreground">请返回订阅管理重新下单</span>
+          </div>
           <Button variant="outline" onClick={handleBack}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             返回订阅管理

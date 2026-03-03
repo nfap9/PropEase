@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions } from '@/components/common/table-actions';
 import { Badge } from '@/components/ui/badge';
+import { ORG_STATUS_CONFIG } from '@/lib/status-config';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -113,12 +114,12 @@ export default function AdminRegisteredUsersPage() {
     {
       accessorKey: 'is_active',
       header: '状态',
-      cell: ({ row }) =>
-        row.original.is_active ? (
-          <Badge variant="default">启用</Badge>
-        ) : (
-          <Badge variant="secondary">停用</Badge>
-        ),
+      cell: ({ row }) => {
+        const config = row.original.is_active
+          ? ORG_STATUS_CONFIG.active
+          : ORG_STATUS_CONFIG.inactive;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
+      },
     },
     {
       accessorKey: 'created_at',
@@ -292,11 +293,15 @@ export default function AdminRegisteredUsersPage() {
                   <div>
                     <span className="text-muted-foreground">状态</span>
                     <p>
-                      {detail.is_active ? (
-                        <Badge variant="default">启用</Badge>
-                      ) : (
-                        <Badge variant="secondary">停用</Badge>
-                      )}
+                      <Badge
+                        variant={
+                          detail.is_active
+                            ? ORG_STATUS_CONFIG.active.variant
+                            : ORG_STATUS_CONFIG.inactive.variant
+                        }
+                      >
+                        {detail.is_active ? ORG_STATUS_CONFIG.active.label : ORG_STATUS_CONFIG.inactive.label}
+                      </Badge>
                     </p>
                   </div>
                   <div>
