@@ -58,14 +58,15 @@ export function InitialReadingDialog({
   const start = new Date(startDate);
   const periodYear = start.getFullYear();
   const periodMonth = start.getMonth() + 1;
-  const today = new Date().toISOString().split('T')[0];
+  /** 读数日期默认签约日期 */
+  const defaultReadingDate = startDate.includes('T') ? startDate.split('T')[0] : startDate;
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       water_reading: undefined,
       electricity_reading: undefined,
-      reading_date: today,
+      reading_date: defaultReadingDate,
     },
   });
 

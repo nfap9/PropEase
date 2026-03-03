@@ -35,6 +35,8 @@ import {
   ExportTemplateDialog,
   BatchImportDialog,
 } from './components';
+import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
+import type { RoomMissingInitialReading } from '@/lib/api/utilities';
 
 export default function UtilitiesPage() {
   const queryClient = useQueryClient();
@@ -47,6 +49,7 @@ export default function UtilitiesPage() {
   const [isExportTemplateOpen, setIsExportTemplateOpen] = useState(false);
   const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
   const [selectedUtility, setSelectedUtility] = useState<UtilityReading | null>(null);
+  const [initialReadingRoom, setInitialReadingRoom] = useState<RoomMissingInitialReading | null>(null);
 
   // 筛选状态
   const today = new Date();
@@ -205,6 +208,7 @@ export default function UtilitiesPage() {
                       <th className="px-4 py-2 text-left font-medium">房间号</th>
                       <th className="px-4 py-2 text-left font-medium">租客</th>
                       <th className="px-4 py-2 text-left font-medium">签约日期</th>
+                      <th className="px-4 py-2 text-right font-medium">操作</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -214,13 +218,22 @@ export default function UtilitiesPage() {
                         <td className="px-4 py-2">{r.room_number}</td>
                         <td className="px-4 py-2">{r.tenant_name}</td>
                         <td className="px-4 py-2">{r.lease_start_date}</td>
+                        <td className="px-4 py-2 text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setInitialReadingRoom(r)}
+                          >
+                            录入
+                          </Button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                点击「录入读数」可选择上述房间录入签约月的水电读数
+                点击每行「录入」按钮可快速录入该房间签约月的初始水电读数，读数日期默认签约日期
               </p>
             </CardContent>
           </Card>
@@ -340,6 +353,22 @@ export default function UtilitiesPage() {
         allRooms={allRooms}
         apartments={apartments}
       />
+
+      {initialReadingRoom && (
+        <InitialReadingDialog
+          orgId={orgId}
+          roomId={initialReadingRoom.room_id}
+          roomDisplay={`${initialReadingRoom.apartment_name} - ${initialReadingRoom.room_number}`}
+          startDate={initialReadingRoom.lease_start_date}
+          open={!!initialReadingRoom}
+          onOpenChange={(open) => !open && setInitialReadingRoom(null)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
+            queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
+            setInitialReadingRoom(null);
+          }}
+        />
+      )}
     </MainLayout>
     </PermissionPageGuard>
   );

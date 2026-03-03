@@ -1,2 +1,0 @@
-{"sessionId":"8d5397","location":"lease-form-dialog:onSuccess","message":"invalidating queries","data":{"keys":["leases","rooms","all-rooms","apartments"]},"timestamp":1772514377869,"hypothesisId":"H2"}
-{"sessionId":"8d5397","location":"leases.ts:create","message":"lease created, room updated to occupied","data":{"room_id":"01kjs0xjk5j8gf6cahqvrs3h3w","room_status":"occupied","lease_id":"01kjs1e03khgftav0jef14bd2p"},"timestamp":1772514377855,"runId":"post-fix"}
