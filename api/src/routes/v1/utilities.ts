@@ -23,7 +23,17 @@ const ReadingCreateSchema = z.object({
   notes: z.string().optional(),
 });
 const ReadingUpdateSchema = ReadingCreateSchema.partial();
-const BatchReadingSchema = z.object({ room_id: z.string(), period_year: z.number(), period_month: z.number(), reading_date: z.string(), readings: z.array(z.object({ water_reading: z.number().optional(), electricity_reading: z.number().optional(), water_previous: z.number().optional(), electricity_previous: z.number().optional(), notes: z.string().optional() })) });
+const BatchReadingSchema = z.object({
+  period_year: z.number(),
+  period_month: z.number(),
+  reading_date: z.string(),
+  readings: z.array(z.object({
+    room_id: z.string(),
+    water_reading: z.number().optional(),
+    electricity_reading: z.number().optional(),
+    notes: z.string().optional(),
+  })),
+});
 
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -84,6 +94,23 @@ router.get('/export', async (req: Request, res: Response, next: NextFunction) =>
         const lease = r.leases[0];
         return lease && billingDays.has(lease.billing_day);
       });
+    }
+
+    // 仅导出待录入房间：排除该月已有读数的房间
+    if (periodYear != null && periodMonth != null && roomsToExport.length > 0) {
+      const roomIdsWithReadings = new Set(
+        (
+          await prisma.utilityReading.findMany({
+            where: {
+              room_id: { in: roomsToExport.map((r) => r.id) },
+              period_year: periodYear,
+              period_month: periodMonth,
+            },
+            select: { room_id: true },
+          })
+        ).map((r) => r.room_id)
+      );
+      roomsToExport = roomsToExport.filter((r) => !roomIdsWithReadings.has(r.id));
     }
 
     const period = periodYear != null && periodMonth != null ? { year: periodYear, month: periodMonth } : null;
@@ -151,27 +178,41 @@ router.post('/batch', async (req: Request, res: Response, next: NextFunction) =>
     const orgId = await requireOrgMembership(req);
     const parsed = BatchReadingSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const room = await prisma.room.findFirst({ where: { id: parsed.data.room_id }, include: { apartment: true } });
-    if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.ROOM));
-    const created = await Promise.all(
-      parsed.data.readings.map((r) =>
-        prisma.utilityReading.create({
-          data: {
-            id: ulid().toLowerCase(),
-            room_id: parsed.data!.room_id,
-            period_year: parsed.data!.period_year,
-            period_month: parsed.data!.period_month,
-            reading_date: new Date(parsed.data!.reading_date),
-            water_reading: r.water_reading ?? undefined,
-            electricity_reading: r.electricity_reading ?? undefined,
-            water_previous: r.water_previous ?? undefined,
-            electricity_previous: r.electricity_previous ?? undefined,
-            notes: r.notes ?? undefined,
-          },
-        })
+
+    const { period_year, period_month, reading_date, readings } = parsed.data;
+    const readingDate = new Date(reading_date);
+
+    const orgRoomIds = new Set(
+      (await prisma.room.findMany({ where: { apartment: { organization_id: orgId } }, select: { id: true } })).map(
+        (r) => r.id
       )
     );
-    res.json(created);
+
+    const created = await prisma.$transaction(async (tx) => {
+      const results: Awaited<ReturnType<typeof prisma.utilityReading.create>>[] = [];
+      for (const r of readings) {
+        if (!orgRoomIds.has(r.room_id)) {
+          throw createAppError(404, NotFoundMessages.ROOM);
+        }
+        results.push(
+          await tx.utilityReading.create({
+            data: {
+              id: ulid().toLowerCase(),
+              room_id: r.room_id,
+              period_year,
+              period_month,
+              reading_date: readingDate,
+              water_reading: r.water_reading ?? undefined,
+              electricity_reading: r.electricity_reading ?? undefined,
+              notes: r.notes ?? undefined,
+            },
+          })
+        );
+      }
+      return results;
+    });
+
+    res.status(201).json(created);
   } catch (e) {
     next(e);
   }

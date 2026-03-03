@@ -11,7 +11,8 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
-import { LeaseFormDialog, LeaseFormData } from '@/components/common/lease-form-dialog';
+import { LeaseFormDialog, LeaseFormData, LeaseCreatedParams } from '@/components/common/lease-form-dialog';
+import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -73,6 +74,7 @@ export default function LeasesPage() {
   const orgId = organization?.id;
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [pendingInitialReading, setPendingInitialReading] = useState<LeaseCreatedParams | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isTerminateOpen, setIsTerminateOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -347,12 +349,24 @@ export default function LeasesPage() {
           )}
       </div>
 
-      {/* Create Dialog */}
       <LeaseFormDialog
         orgId={orgId!}
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
+        onLeaseCreated={setPendingInitialReading}
       />
+
+      {pendingInitialReading && (
+        <InitialReadingDialog
+          orgId={orgId!}
+          roomId={pendingInitialReading.room_id}
+          roomDisplay={pendingInitialReading.room_display}
+          startDate={pendingInitialReading.start_date}
+          open={!!pendingInitialReading}
+          onOpenChange={(open) => !open && setPendingInitialReading(null)}
+          onSuccess={() => setPendingInitialReading(null)}
+        />
+      )}
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>

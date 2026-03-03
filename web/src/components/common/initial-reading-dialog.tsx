@@ -1,0 +1,175 @@
+'use client';
+
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { utilitiesApi } from '@/lib/api';
+import { filterEmptyStrings } from '@/lib/utils/form';
+import { getErrorMessage } from '@/lib/utils/error';
+import { toast } from 'sonner';
+import { Droplets, Zap } from 'lucide-react';
+
+const schema = z.object({
+  water_reading: z
+    .union([z.number().min(0), z.nan()])
+    .optional()
+    .transform((v) => (typeof v === 'number' && !Number.isNaN(v) ? v : undefined)),
+  electricity_reading: z
+    .union([z.number().min(0), z.nan()])
+    .optional()
+    .transform((v) => (typeof v === 'number' && !Number.isNaN(v) ? v : undefined)),
+  reading_date: z.string().min(1),
+});
+
+type FormData = z.infer<typeof schema>;
+
+export interface InitialReadingDialogProps {
+  orgId: string;
+  roomId: string;
+  roomDisplay: string;
+  /** 签约开始日期，用于确定录入月份 */
+  startDate: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
+}
+
+export function InitialReadingDialog({
+  orgId,
+  roomId,
+  roomDisplay,
+  startDate,
+  open,
+  onOpenChange,
+  onSuccess,
+}: InitialReadingDialogProps) {
+  const start = new Date(startDate);
+  const periodYear = start.getFullYear();
+  const periodMonth = start.getMonth() + 1;
+  const today = new Date().toISOString().split('T')[0];
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      water_reading: undefined,
+      electricity_reading: undefined,
+      reading_date: today,
+    },
+  });
+
+  const queryClient = useQueryClient();
+  const saveMutation = useMutation({
+    mutationFn: (data: FormData) =>
+      utilitiesApi.create(orgId, filterEmptyStrings({
+        room_id: roomId,
+        period_year: periodYear,
+        period_month: periodMonth,
+        reading_date: data.reading_date,
+        water_reading: data.water_reading ?? undefined,
+        electricity_reading: data.electricity_reading ?? undefined,
+      })),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
+      onOpenChange(false);
+      toast.success('初始水电读数已录入');
+      onSuccess?.();
+    },
+    onError: (error: unknown) => toast.error(getErrorMessage(error, '录入失败，请重试')),
+  });
+
+  const handleSkip = () => {
+    onOpenChange(false);
+    onSuccess?.();
+  };
+
+  const handleSubmit = (data: FormData) => {
+    if (data.water_reading == null && data.electricity_reading == null) {
+      handleSkip();
+      return;
+    }
+    saveMutation.mutate(data);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>录入初始水电读数</DialogTitle>
+          <DialogDescription>
+            签约后需记录初始水电表读数，便于后续出账计算。可填写后保存，或跳过稍后在水电录入页补录。
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label>房间</Label>
+            <Input value={roomDisplay} disabled />
+          </div>
+          <div className="space-y-2">
+            <Label>月份</Label>
+            <Input value={`${periodYear}年${periodMonth}月`} disabled />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="initial-reading_date">读数日期</Label>
+            <Input
+              id="initial-reading_date"
+              type="date"
+              {...form.register('reading_date')}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="initial-water">
+                <span className="flex items-center gap-2">
+                  <Droplets className="h-4 w-4 text-blue-500" />
+                  水表读数 (m³)
+                </span>
+              </Label>
+              <Input
+                id="initial-water"
+                type="number"
+                step="0.01"
+                placeholder="选填"
+                {...form.register('water_reading', { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="initial-electricity">
+                <span className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-yellow-500" />
+                  电表读数 (kWh)
+                </span>
+              </Label>
+              <Input
+                id="initial-electricity"
+                type="number"
+                step="0.01"
+                placeholder="选填"
+                {...form.register('electricity_reading', { valueAsNumber: true })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={handleSkip}>
+              跳过
+            </Button>
+            <Button type="submit" disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? '保存中...' : '保存'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

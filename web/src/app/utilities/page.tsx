@@ -13,7 +13,7 @@ import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import { UtilityReading } from '@/types';
-import { Plus, Upload, Building2, Filter } from 'lucide-react';
+import { Plus, Upload, Download, Building2, Filter } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -25,6 +25,7 @@ import {
   useColumns,
   CreateUtilityDialog,
   EditUtilityDialog,
+  ExportTemplateDialog,
   BatchImportDialog,
 } from './components';
 
@@ -36,6 +37,7 @@ export default function UtilitiesPage() {
   const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isExportTemplateOpen, setIsExportTemplateOpen] = useState(false);
   const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
   const [selectedUtility, setSelectedUtility] = useState<UtilityReading | null>(null);
 
@@ -110,14 +112,9 @@ export default function UtilitiesPage() {
   };
 
   const handleBatchImport = (
-    readings: { room_id: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[]
+    payload: Parameters<typeof utilitiesApi.batchCreate>[1]
   ) => {
-    batchImportMutation.mutate({
-      period_year: currentYear,
-      period_month: currentMonth,
-      reading_date: today.toISOString().split('T')[0],
-      readings,
-    });
+    batchImportMutation.mutate(payload);
   };
 
   const columns = useColumns({ onEdit: handleEdit });
@@ -152,6 +149,10 @@ export default function UtilitiesPage() {
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold">水电录入</h1>
             <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setIsExportTemplateOpen(true)}>
+                <Download className="mr-2 h-4 w-4" />
+                导出模版
+              </Button>
               <Button variant="outline" onClick={() => setIsBatchImportOpen(true)}>
                 <Upload className="mr-2 h-4 w-4" />
                 批量导入
@@ -247,12 +248,18 @@ export default function UtilitiesPage() {
         utility={selectedUtility}
       />
 
+      <ExportTemplateDialog
+        open={isExportTemplateOpen}
+        onOpenChange={setIsExportTemplateOpen}
+      />
+
       <BatchImportDialog
         open={isBatchImportOpen}
         onOpenChange={setIsBatchImportOpen}
         onImport={handleBatchImport}
         isPending={batchImportMutation.isPending}
         allRooms={allRooms}
+        apartments={apartments}
       />
     </MainLayout>
     </PermissionPageGuard>

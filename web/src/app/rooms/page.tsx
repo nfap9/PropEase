@@ -6,7 +6,8 @@ import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { DataTable } from '@/components/common/data-table';
-import { LeaseFormDialog } from '@/components/common/lease-form-dialog';
+import { LeaseFormDialog, LeaseCreatedParams } from '@/components/common/lease-form-dialog';
+import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { roomsApi, apartmentsApi, leasesApi } from '@/lib/api';
@@ -53,6 +54,7 @@ export default function RoomsPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isLeaseOpen, setIsLeaseOpen] = useState(false);
+  const [pendingInitialReading, setPendingInitialReading] = useState<LeaseCreatedParams | null>(null);
   const [isTerminateOpen, setIsTerminateOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
 
@@ -311,7 +313,20 @@ export default function RoomsPage() {
         onOpenChange={setIsLeaseOpen}
         room={selectedRoom}
         onSuccess={handleLeaseSuccess}
+        onLeaseCreated={setPendingInitialReading}
       />
+
+      {pendingInitialReading && (
+        <InitialReadingDialog
+          orgId={orgId!}
+          roomId={pendingInitialReading.room_id}
+          roomDisplay={pendingInitialReading.room_display}
+          startDate={pendingInitialReading.start_date}
+          open={!!pendingInitialReading}
+          onOpenChange={(open) => !open && setPendingInitialReading(null)}
+          onSuccess={() => setPendingInitialReading(null)}
+        />
+      )}
 
       <TerminateDialog
         open={isTerminateOpen}

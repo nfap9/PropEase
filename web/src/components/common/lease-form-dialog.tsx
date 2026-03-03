@@ -44,6 +44,12 @@ const leaseSchema = z.object({
 
 export type LeaseFormData = z.infer<typeof leaseSchema>;
 
+export interface LeaseCreatedParams {
+  room_id: string;
+  room_display: string;
+  start_date: string;
+}
+
 export interface LeaseFormDialogProps {
   orgId: string;
   open: boolean;
@@ -52,6 +58,8 @@ export interface LeaseFormDialogProps {
   room?: Room | null;
   /** 成功回调 */
   onSuccess?: () => void;
+  /** 签约成功回调，用于后续录入初始水电等 */
+  onLeaseCreated?: (params: LeaseCreatedParams) => void;
 }
 
 export function LeaseFormDialog({
@@ -60,6 +68,7 @@ export function LeaseFormDialog({
   onOpenChange,
   room,
   onSuccess,
+  onLeaseCreated,
 }: LeaseFormDialogProps) {
   const queryClient = useQueryClient();
   const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
@@ -128,7 +137,7 @@ export function LeaseFormDialog({
 
   const createMutation = useMutation({
     mutationFn: (data: LeaseFormData) => leasesApi.create(orgId, filterEmptyStrings(data)),
-    onSuccess: () => {
+    onSuccess: (createdLease, variables) => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
       queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
@@ -136,6 +145,15 @@ export function LeaseFormDialog({
       onOpenChange(false);
       form.reset();
       toast.success('签约成功');
+      const roomId = createdLease.room_id;
+      const startDate = createdLease.start_date;
+      const matchedRoom = room ?? rooms?.find((r) => r.id === variables.room_id);
+      const aptName =
+        matchedRoom?.apartment?.name ??
+        apartments?.find((a) => a.id === matchedRoom?.apartment_id)?.name ??
+        '';
+      const roomDisplay = matchedRoom ? `${aptName} - ${matchedRoom.room_number}` : '';
+      onLeaseCreated?.({ room_id: roomId, room_display: roomDisplay, start_date: startDate });
       onSuccess?.();
     },
     onError: (error) => toast.error(getErrorMessage(error, '签约失败，请重试')),

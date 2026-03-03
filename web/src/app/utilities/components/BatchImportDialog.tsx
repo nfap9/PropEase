@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -19,29 +18,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Upload, Download, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { Upload, FileSpreadsheet } from 'lucide-react';
 import ExcelJS from 'exceljs';
 import { toast } from 'sonner';
-import { Room } from '@/types';
-import { utilitiesApi, UtilityExportRoom } from '@/lib/api/utilities';
+import { Apartment, Room } from '@/types';
 import { getErrorMessage } from '@/lib/utils/error';
-import { useAuth } from '@/lib/auth/context';
+
+export interface BatchImportPayload {
+  period_year: number;
+  period_month: number;
+  reading_date: string;
+  readings: { room_id: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[];
+}
 
 interface BatchImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onImport: (readings: { room_id: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[]) => void;
+  onImport: (payload: BatchImportPayload) => void;
   isPending: boolean;
   allRooms: Room[] | undefined;
+  apartments: Apartment[] | undefined;
 }
-
-const DAYS_RANGE_OPTIONS = [
-  { value: '0', label: '全部待录入房间' },
-  { value: '5', label: '5天内应出账' },
-  { value: '10', label: '10天内应出账' },
-  { value: '15', label: '15天内应出账' },
-  { value: '30', label: '30天内应出账' },
-];
 
 export function BatchImportDialog({
   open,
@@ -49,111 +46,23 @@ export function BatchImportDialog({
   onImport,
   isPending,
   allRooms,
+  apartments,
 }: BatchImportDialogProps) {
-  const { organization } = useAuth();
-  const orgId = organization?.id;
-
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [daysRange, setDaysRange] = useState('0');
-  const [isExporting, setIsExporting] = useState(false);
-
   const today = new Date();
   const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth() + 1;
 
-  // 计算日期范围描述
-  const getDateRangeDescription = () => {
-    if (daysRange === '0') return '';
-    const range = parseInt(daysRange);
-    const currentDay = today.getDate();
-    const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
-    const endDay = currentDay + range - 1;
+  const [importYear, setImportYear] = useState(currentYear);
+  const [importMonth, setImportMonth] = useState(currentMonth);
 
-    if (endDay <= daysInMonth) {
-      return `(${currentDay}日 - ${endDay}日)`;
-    } else {
-      return `(${currentDay}日 - ${(endDay - daysInMonth)}日)`;
-    }
-  };
+  const apartmentMap = new Map(apartments?.map((a) => [a.id, a.name]) ?? []);
+  const roomMatchKey = (room: Room) =>
+    `${apartmentMap.get(room.apartment_id) ?? ''}|${room.room_number}`;
 
-  // 导出待录入房间的 Excel
-  const handleExport = async () => {
-    if (!orgId) return;
-
-    setIsExporting(true);
-    try {
-      const range = daysRange === '0' ? undefined : parseInt(daysRange);
-      const rooms = await utilitiesApi.exportRooms(orgId, selectedYear, selectedMonth, range);
-
-      if (rooms.length === 0) {
-        toast.warning('没有待录入的房间');
-        return;
-      }
-
-      // 构建 Excel 数据（使用 exceljs，避免 xlsx 已知安全漏洞）
-      const header = ['公寓名称', '房间号', '租客姓名', '账单日', '上期水表(m³)', '当前水表(m³)', '上期电表(kWh)', '当前电表(kWh)', '备注'];
-      const data = rooms.map((room: UtilityExportRoom) => [
-        room.apartment_name,
-        room.room_number,
-        room.tenant_name,
-        room.billing_day,
-        room.water_previous ?? '',
-        '', // 当前水表 - 待填
-        room.electricity_previous ?? '',
-        '', // 当前电表 - 待填
-        '', // 备注 - 待填
-      ]);
-
-      const wb = new ExcelJS.Workbook();
-      const ws = wb.addWorksheet('水电读数导入', {
-        views: [{ state: 'frozen', ySplit: 1 }],
-      });
-      ws.columns = [
-        { width: 12 }, { width: 10 }, { width: 10 }, { width: 8 },
-        { width: 14 }, { width: 14 }, { width: 14 }, { width: 14 }, { width: 20 },
-      ];
-      ws.addRows([header, ...data]);
-
-      const buffer = await wb.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `水电读数模板_${selectedYear}年${selectedMonth}月.xlsx`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-
-      toast.success(`已导出 ${rooms.length} 个待录入房间`);
-    } catch (err) {
-      toast.error(getErrorMessage(err, '导出失败，请重试'));
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  // 下载空白模板
-  const downloadBlankTemplate = async () => {
-    const templateData = [
-      ['公寓名称', '房间号', '租客姓名', '账单日', '上期水表(m³)', '当前水表(m³)', '上期电表(kWh)', '当前电表(kWh)', '备注'],
-      ['示例公寓', '101', '张三', '15', '100.00', '', '500.00', '', ''],
-      ['示例公寓', '102', '李四', '20', '200.00', '', '600.00', '', ''],
-    ];
-    const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet('水电读数导入');
-    ws.addRows(templateData);
-    const buffer = await wb.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '水电读数空白模板.xlsx';
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
-
-  // 解析 Excel 文件（使用 exceljs）
-  const parseExcelFile = async (file: File): Promise<{ room_number: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[]> => {
+  const parseExcelFile = async (
+    file: File
+  ): Promise<{ apartment_name: string; room_number: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[]> => {
     const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => resolve(e.target?.result as ArrayBuffer);
@@ -175,29 +84,40 @@ export function BatchImportDialog({
       jsonData.push(rowValues);
     });
 
-    // 新格式: 公寓名称, 房间号, 租客姓名, 账单日, 上期水表, 当前水表, 上期电表, 当前电表, 备注
-    // 旧格式: 公寓名称, 房间号, 水表读数, 电表读数, 备注
-    const records = jsonData.slice(1)
-      .filter((row) => row[1]) // 房间号必填
-      .map((row) => {
-        const isNewFormat = row.length >= 8;
-        const toNum = (v: unknown) => (v !== undefined && v !== '' && v !== null ? Number(v) : null);
-        const toStr = (v: unknown) => (v !== undefined && v !== '' && v !== null ? String(v) : null);
-        if (isNewFormat) {
-          return {
-            room_number: String(row[1] || '').trim(),
-            water_reading: toNum(row[5]),
-            electricity_reading: toNum(row[7]),
-            notes: toStr(row[8]),
-          };
-        }
+    const toNum = (v: unknown) => (v !== undefined && v !== '' && v !== null ? Number(v) : null);
+    const toStr = (v: unknown) => (v !== undefined && v !== '' && v !== null ? String(v) : null);
+    const toApartment = (v: unknown) => String(v ?? '').trim();
+    const toRoom = (v: unknown) => String(v ?? '').trim();
+
+    const records = jsonData.slice(1).filter((row) => row[1]).map((row) => {
+      const apartmentName = toApartment(row[0]);
+      const roomNumber = toRoom(row[1]);
+      if (row.length >= 8) {
         return {
-          room_number: String(row[1] || '').trim(),
-          water_reading: toNum(row[2]),
-          electricity_reading: toNum(row[3]),
-          notes: toStr(row[4]),
+          apartment_name: apartmentName,
+          room_number: roomNumber,
+          water_reading: toNum(row[5]),
+          electricity_reading: toNum(row[7]),
+          notes: toStr(row[8]),
         };
-      });
+      }
+      if (row.length >= 7) {
+        return {
+          apartment_name: apartmentName,
+          room_number: roomNumber,
+          water_reading: toNum(row[4]),
+          electricity_reading: toNum(row[5]),
+          notes: toStr(row[6]),
+        };
+      }
+      return {
+        apartment_name: apartmentName,
+        room_number: roomNumber,
+        water_reading: toNum(row[2]),
+        electricity_reading: toNum(row[3]),
+        notes: toStr(row[4]),
+      };
+    });
 
     return records;
   };
@@ -217,14 +137,15 @@ export function BatchImportDialog({
 
       const roomMap = new Map<string, Room>();
       allRooms?.forEach((room) => {
-        roomMap.set(room.room_number, room);
+        roomMap.set(roomMatchKey(room), room);
       });
 
       const matchedRecords: { room_id: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[] = [];
-      const unmatchedRooms: string[] = [];
+      const unmatchedKeys: string[] = [];
 
       for (const record of records) {
-        const room = roomMap.get(record.room_number);
+        const key = `${record.apartment_name}|${record.room_number}`;
+        const room = roomMap.get(key);
         if (room) {
           matchedRecords.push({
             room_id: room.id,
@@ -233,12 +154,12 @@ export function BatchImportDialog({
             notes: record.notes,
           });
         } else {
-          unmatchedRooms.push(record.room_number);
+          unmatchedKeys.push(`${record.apartment_name}-${record.room_number}`);
         }
       }
 
-      if (unmatchedRooms.length > 0) {
-        toast.warning(`以下房间号未找到匹配: ${unmatchedRooms.join(', ')}`);
+      if (unmatchedKeys.length > 0) {
+        toast.warning(`以下房间未找到匹配: ${unmatchedKeys.join(', ')}`);
       }
 
       if (matchedRecords.length === 0) {
@@ -246,7 +167,12 @@ export function BatchImportDialog({
         return;
       }
 
-      onImport(matchedRecords);
+      onImport({
+        period_year: importYear,
+        period_month: importMonth,
+        reading_date: today.toISOString().split('T')[0],
+        readings: matchedRecords,
+      });
     } catch (err) {
       toast.error(getErrorMessage(err, '导入失败，请重试'));
     }
@@ -262,22 +188,17 @@ export function BatchImportDialog({
         <DialogHeader>
           <DialogTitle>批量导入水电读数</DialogTitle>
           <DialogDescription>
-            导出待录入房间模板，填写后上传完成批量录入
+            选择导入月份后上传已填写的 Excel 模板，完成批量录入
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* 导出区域 */}
-          <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
-            <h4 className="font-medium text-sm">导出待录入模板</h4>
-
+          <div className="space-y-4">
+            <h4 className="font-medium text-sm">导入月份</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>年份</Label>
-                <Select
-                  value={selectedYear.toString()}
-                  onValueChange={(v) => setSelectedYear(Number(v))}
-                >
+                <Select value={importYear.toString()} onValueChange={(v) => setImportYear(Number(v))}>
                   <SelectTrigger className="min-w-[120px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -292,10 +213,7 @@ export function BatchImportDialog({
               </div>
               <div className="space-y-2">
                 <Label>月份</Label>
-                <Select
-                  value={selectedMonth.toString()}
-                  onValueChange={(v) => setSelectedMonth(Number(v))}
-                >
+                <Select value={importMonth.toString()} onValueChange={(v) => setImportMonth(Number(v))}>
                   <SelectTrigger className="min-w-[120px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -309,46 +227,8 @@ export function BatchImportDialog({
                 </Select>
               </div>
             </div>
-
-            <div className="space-y-2">
-              <Label>导出范围</Label>
-              <RadioGroup value={daysRange} onValueChange={setDaysRange} className="grid grid-cols-2 gap-2">
-                {DAYS_RANGE_OPTIONS.map((option) => (
-                  <div key={option.value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option.value} id={`range-${option.value}`} />
-                    <Label htmlFor={`range-${option.value}`} className="text-sm font-normal cursor-pointer">
-                      {option.label} {option.value !== '0' && daysRange === option.value && getDateRangeDescription()}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-
-            <Button
-              className="w-full"
-              onClick={handleExport}
-              disabled={isExporting}
-            >
-              {isExporting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="mr-2 h-4 w-4" />
-              )}
-              {isExporting ? '导出中...' : '导出 Excel 模板'}
-            </Button>
           </div>
 
-          {/* 分隔线 */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">上传已填写的文件</span>
-            </div>
-          </div>
-
-          {/* 上传区域 */}
           <div className="rounded-lg border border-dashed border-muted p-6 text-center">
             <FileSpreadsheet className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             <div className="space-y-2">
@@ -379,14 +259,9 @@ export function BatchImportDialog({
           </div>
 
           {/* 提示信息 */}
-          <div className="flex justify-between items-center">
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p>• 填写「当前水表」和「当前电表」列</p>
-              <p>• 导入时间默认为当前年月和今天日期</p>
-            </div>
-            <Button variant="link" onClick={downloadBlankTemplate} className="text-xs shrink-0">
-              下载空白模板
-            </Button>
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p>• 使用「导出模版」获取待录入房间列表，填写「当前水表」和「当前电表」列后上传</p>
+            <p>• 导入将写入所选的导入月份，记录日期为今天</p>
           </div>
         </div>
 
