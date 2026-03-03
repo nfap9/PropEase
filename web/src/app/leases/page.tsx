@@ -50,7 +50,7 @@ import { formatDate, toDateInputValue } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
 import { Lease } from '@/types';
 import { LeaseFilters, LeaseFiltersState } from './components';
-import { Plus, Pencil, Trash2, Ban, Building2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Ban, Building2, Info } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const leaseSchema = z.object({
@@ -358,6 +358,15 @@ export default function LeasesPage() {
             <DialogTitle>编辑租约</DialogTitle>
             <DialogDescription>修改租约信息</DialogDescription>
           </DialogHeader>
+          <div
+            role="status"
+            className="flex gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/40 px-3 py-2.5 text-sm text-blue-800 dark:text-blue-200"
+          >
+            <Info className="h-5 w-5 shrink-0 mt-0.5" aria-hidden />
+            <span>
+              已出账单不受影响；后续生成的账单将按新的租约信息计算。
+            </span>
+          </div>
           <Form {...editForm}>
             <form
               id="edit-lease-form"
