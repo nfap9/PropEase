@@ -9,6 +9,7 @@ import { createAppError } from '../../utils/appError.js';
 import { NotFoundMessages } from '../../messages.js';
 import { generateBillsExcel, generateBillPdf } from '../../utils/billExports.js';
 import { generateBillsForOrg } from '../../services/billGeneration.js';
+import { getBrandConfig } from '../../services/platformConfig.js';
 
 const router: Router = Router();
 
@@ -159,7 +160,8 @@ router.get('/export/excel', async (req: Request, res: Response, next: NextFuncti
     const tenantNameById = Object.fromEntries(tenants.map((t) => [t.id, t.name]));
 
     const org = await prisma.organization.findUnique({ where: { id: orgId } });
-    const orgName = org?.name ?? '公寓管理系统';
+    const brandConfig = await getBrandConfig();
+    const orgName = org?.name ?? brandConfig.app_name;
     const billsData = bills.map((b) => ({
       id: b.id,
       bill_year: b.bill_year,
@@ -209,7 +211,8 @@ router.get('/:id/pdf', async (req: Request, res: Response, next: NextFunction) =
     if (!bill || bill.lease.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.BILL));
     const tenant = await prisma.tenant.findUnique({ where: { id: bill.lease.tenant_id }, select: { name: true } });
     const org = await prisma.organization.findUnique({ where: { id: orgId } });
-    const orgName = org?.name ?? '公寓管理系统';
+    const brandConfig = await getBrandConfig();
+    const orgName = org?.name ?? brandConfig.app_name;
     const buffer = await generateBillPdf(
       {
         id: bill.id,

@@ -75,6 +75,10 @@ cd docker && docker compose -f docker-compose.yaml up
 | API 文档 (Swagger) | http://localhost:8000/docs |
 | API 文档 (ReDoc) | http://localhost:8000/redoc |
 
+### 品牌配置
+
+品牌化配置在**运营后台**管理：登录运营后台 → **品牌配置**，可设置系统名称、描述、登录/注册副标题、Logo URL 等。修改后立即生效，业务端、账单导出等将使用新配置。
+
 ## 项目结构
 
 ```

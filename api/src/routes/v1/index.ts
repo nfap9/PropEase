@@ -15,9 +15,11 @@ import { notificationsRouter } from './notifications.js';
 import { customRolesRouter } from './customRoles.js';
 import { adminRouter } from './admin/index.js';
 import { webhooksRouter } from './webhooks/index.js';
+import { configRouter } from './config.js';
 
 const router: Router = Router();
 
+router.use('/config', configRouter);
 router.use('/auth', authRouter);
 router.use('/organizations', organizationsRouter);
 router.use('/apartments', apartmentsRouter);

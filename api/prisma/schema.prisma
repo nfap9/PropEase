@@ -480,3 +480,11 @@ model AdminUser {
 
   @@map("admin_users")
 }
+
+model PlatformConfig {
+  id         String   @id @default("default") @db.VarChar(26)
+  brand      Json?    @db.Json
+  updated_at DateTime @updatedAt
+
+  @@map("platform_config")
+}

@@ -40,6 +40,7 @@ const PLAN_CODE_LABEL: Record<string, string> = {
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { OrgSelector } from '@/components/common/org-selector';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
+import { useBrandConfig } from '@/lib/brand-config-context';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: '仪表盘', icon: Home, permission: null },
@@ -61,6 +62,7 @@ const SETTINGS_ITEMS = [
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, organization, logout } = useAuth();
+  const brandConfig = useBrandConfig();
   const { hasPermission, isSuperAdmin } = usePermissions();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -93,8 +95,13 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
     <>
       <div className="flex h-16 items-center border-b px-4">
         <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-          <Building2 className="h-6 w-6" />
-          <span>公寓管理系统</span>
+          {brandConfig.logo_url ? (
+            // eslint-disable-next-line @next/next/no-img-element -- Logo URL 来自运营配置，域名动态
+            <img src={brandConfig.logo_url} alt="" className="h-6 w-6 object-contain" />
+          ) : (
+            <Building2 className="h-6 w-6" />
+          )}
+          <span>{brandConfig.app_name}</span>
         </Link>
       </div>
       <nav className="flex-1 space-y-1 p-4">

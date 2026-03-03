@@ -14,12 +14,14 @@ import {
   Menu,
   LogOut,
   ExternalLink,
+  Palette,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 const ADMIN_NAV = [
   { href: '/admin', label: '概览', icon: LayoutDashboard },
+  { href: '/admin/brand', label: '品牌配置', icon: Palette },
   { href: '/admin/users', label: '运营账号', icon: Users },
   { href: '/admin/registered-users', label: '用户管理', icon: UserCircle },
   { href: '/admin/roles', label: '运营角色', icon: Shield },

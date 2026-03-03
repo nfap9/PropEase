@@ -319,6 +319,25 @@ export const adminApiEndpoints = {
   cancelSubscription: (id: string) =>
     adminApi.post<AdminSubscription>(`/admin/subscriptions/${id}/cancel`),
 
+  // 品牌配置
+  getPlatformConfig: () =>
+    adminApi.get<{
+      app_name: string;
+      app_description: string;
+      logo_url: string;
+      favicon_url: string;
+      login_subtitle: string;
+      register_subtitle: string;
+    }>('/admin/platform-config'),
+  updatePlatformConfig: (data: {
+    app_name: string;
+    app_description: string;
+    logo_url: string;
+    favicon_url: string;
+    login_subtitle: string;
+    register_subtitle: string;
+  }) => adminApi.put<unknown>('/admin/platform-config', data),
+
   // 按量定价
   getUsagePricing: () =>
     adminApi.get<{

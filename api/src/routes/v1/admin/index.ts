@@ -609,4 +609,47 @@ router.get('/usage-orders', async (req: Request, res: Response, next: NextFuncti
   }
 });
 
+// --- platform config (品牌配置) ---
+const PlatformBrandSchema = z.object({
+  app_name: z.string(),
+  app_description: z.string(),
+  logo_url: z.string(),
+  favicon_url: z.string(),
+  login_subtitle: z.string(),
+  register_subtitle: z.string(),
+});
+
+router.get('/platform-config', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const row = await prisma.platformConfig.findUnique({ where: { id: 'default' } });
+    const brand = (row?.brand as Record<string, unknown>) ?? {};
+    res.json({
+      app_name: brand.app_name ?? '公寓管理系统',
+      app_description: brand.app_description ?? '多租户 SaaS 公寓/物业管理系统',
+      logo_url: brand.logo_url ?? '',
+      favicon_url: brand.favicon_url ?? '',
+      login_subtitle: brand.login_subtitle ?? '用户登录，管理公寓、租客与账单',
+      register_subtitle: brand.register_subtitle ?? '创建新账户',
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.put('/platform-config', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const parsed = PlatformBrandSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const brand = parsed.data;
+    await prisma.platformConfig.upsert({
+      where: { id: 'default' },
+      create: { id: 'default', brand },
+      update: { brand },
+    });
+    res.json(brand);
+  } catch (e) {
+    next(e);
+  }
+});
+
 export const adminRouter = router;

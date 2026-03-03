@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useBrandConfig } from '@/lib/brand-config-context';
 
 // 手机号验证正则
 const phoneRegex = /^1[3-9]\d{9}$/;
@@ -45,6 +46,7 @@ type CodeLoginFormValues = z.infer<typeof codeLoginSchema>;
 
 export default function LoginPage() {
   const { login, sendSmsCode } = useAuth();
+  const brandConfig = useBrandConfig();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -123,8 +125,8 @@ export default function LoginPage() {
     <div className="relative flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">公寓管理系统</CardTitle>
-          <CardDescription>用户登录，管理公寓、租客与账单</CardDescription>
+          <CardTitle className="text-2xl">{brandConfig.app_name}</CardTitle>
+          <CardDescription>{brandConfig.login_subtitle}</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs value={loginMode} onValueChange={(v) => setLoginMode(v as 'password' | 'code')}>

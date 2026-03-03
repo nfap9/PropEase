@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/lib/auth/context';
 import { Button } from '@/components/ui/button';
+import { useBrandConfig } from '@/lib/brand-config-context';
 import { Input } from '@/components/ui/input';
 import {
   Card,
@@ -44,6 +45,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const { register: registerUser, sendSmsCode } = useAuth();
+  const brandConfig = useBrandConfig();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -101,8 +103,8 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">公寓管理系统</CardTitle>
-          <CardDescription>创建新账户</CardDescription>
+          <CardTitle className="text-2xl">{brandConfig.app_name}</CardTitle>
+          <CardDescription>{brandConfig.register_subtitle}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>

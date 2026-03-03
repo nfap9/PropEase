@@ -10,6 +10,7 @@ import { seedE2EUser } from './startup/seedE2E.js';
 import { seedPermissions } from './startup/seedPermissions.js';
 import { seedPlans } from './startup/seedPlans.js';
 import { seedUsagePricing } from './startup/seedUsagePricing.js';
+import { seedPlatformConfig } from './startup/seedPlatformConfig.js';
 import { startScheduler } from './scheduler/index.js';
 
 const app: Express = express();
@@ -45,6 +46,11 @@ async function start(): Promise<void> {
     await seedUsagePricing();
   } catch (e) {
     console.error('Usage pricing seed failed:', e);
+  }
+  try {
+    await seedPlatformConfig();
+  } catch (e) {
+    console.error('Platform config seed failed:', e);
   }
   if (process.env.SEED_E2E_USER === 'true') {
     try {
