@@ -37,13 +37,15 @@ export const utilitiesApi = {
   list: async (
     orgId: string,
     periodYear?: number,
-    periodMonth?: number
+    periodMonth?: number,
+    apartmentId?: string | null
   ): Promise<UtilityReading[]> => {
     const response = await api.get<UtilityReading[]>('/utilities', {
       params: {
         org_id: orgId,
         period_year: periodYear,
         period_month: periodMonth,
+        apartment_id: apartmentId || undefined,
       },
     });
     return response.data;

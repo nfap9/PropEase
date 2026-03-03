@@ -52,6 +52,7 @@ export default function UtilitiesPage() {
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
+  const [filterApartmentId, setFilterApartmentId] = useState<string | null>(null);
   const [filterYear, setFilterYear] = useState<number | undefined>(currentYear);
   const [filterMonth, setFilterMonth] = useState<number | undefined>(currentMonth);
 
@@ -74,8 +75,8 @@ export default function UtilitiesPage() {
   });
 
   const { data: utilities, isLoading: utilitiesLoading } = useQuery({
-    queryKey: ['utilities', orgId, filterYear, filterMonth],
-    queryFn: () => utilitiesApi.list(orgId!, filterYear, filterMonth),
+    queryKey: ['utilities', orgId, filterApartmentId, filterYear, filterMonth],
+    queryFn: () => utilitiesApi.list(orgId!, filterYear, filterMonth, filterApartmentId),
     enabled: !!orgId,
   });
 
@@ -233,6 +234,22 @@ export default function UtilitiesPage() {
           </div>
           <div className="flex items-center gap-2">
             <Select
+              value={filterApartmentId ?? 'all'}
+              onValueChange={(v) => setFilterApartmentId(v === 'all' ? null : v)}
+            >
+              <SelectTrigger className="w-[160px]">
+                <SelectValue placeholder="全部公寓" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部公寓</SelectItem>
+                {apartments?.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
               value={filterYear?.toString() ?? 'all'}
               onValueChange={(v) => setFilterYear(v === 'all' ? undefined : Number(v))}
             >
@@ -264,11 +281,12 @@ export default function UtilitiesPage() {
                 ))}
               </SelectContent>
             </Select>
-            {(filterYear || filterMonth) && (
+            {(filterApartmentId || filterYear || filterMonth) && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
+                  setFilterApartmentId(null);
                   setFilterYear(currentYear);
                   setFilterMonth(currentMonth);
                 }}

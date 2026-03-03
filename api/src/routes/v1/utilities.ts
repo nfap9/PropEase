@@ -39,11 +39,17 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
     const roomId = typeof req.query.room_id === 'string' ? req.query.room_id : undefined;
+    const apartmentId = typeof req.query.apartment_id === 'string' ? req.query.apartment_id : undefined;
     const periodYear = req.query.period_year != null ? Number(req.query.period_year) : undefined;
     const periodMonth = req.query.period_month != null ? Number(req.query.period_month) : undefined;
 
+    const roomsWhere: { apartment: { organization_id: string }; apartment_id?: string } = {
+      apartment: { organization_id: orgId },
+    };
+    if (apartmentId) roomsWhere.apartment_id = apartmentId;
+
     const rooms = await prisma.room.findMany({
-      where: { apartment: { organization_id: orgId } },
+      where: roomsWhere,
       select: { id: true },
     });
     const roomIds = rooms.map((r) => r.id);
@@ -56,7 +62,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 
     const list = await prisma.utilityReading.findMany({
       where,
-      include: { room: true },
+      include: { room: { include: { apartment: true } } },
     });
     res.json(list);
   } catch (e) {
