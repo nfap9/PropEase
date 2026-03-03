@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Card,
@@ -18,6 +19,7 @@ import {
 import { apartmentsApi, roomsApi, utilitiesApi, leasesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
+import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
 import { Plus, Upload, Download, Building2, AlertCircle, History } from 'lucide-react';
 import {
@@ -27,6 +29,44 @@ import {
 } from './components';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 import type { RoomMissingInitialReading } from '@/lib/api/utilities';
+
+// 从签约日期提取出账日（每月几号出账）
+function getBillingDay(dateStr: string): number {
+  return new Date(dateStr).getDate();
+}
+
+// 计算出账状态
+type BillingStatus = 'recorded' | 'pending' | 'upcoming' | 'overdue';
+
+function getBillingStatus(billingDay: number, isRecorded: boolean): BillingStatus {
+  if (isRecorded) return 'recorded';
+
+  const today = new Date();
+  const currentDay = today.getDate();
+  const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  const adjustedBillingDay = Math.min(billingDay, daysInMonth);
+
+  if (currentDay > adjustedBillingDay) {
+    return 'overdue';
+  } else if (currentDay >= adjustedBillingDay - 5) {
+    return 'upcoming';
+  }
+  return 'pending';
+}
+
+const BILLING_STATUS_CONFIG: Record<BillingStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+  recorded: { label: '已录入', variant: 'default' }, // 绿色（默认使用 default，但需要自定义样式）
+  pending: { label: '未录入', variant: 'secondary' }, // 蓝色
+  upcoming: { label: '即将到期', variant: 'outline' }, // 橙色（需要自定义样式）
+  overdue: { label: '已逾期', variant: 'destructive' }, // 红色
+};
+
+// 格式化合同期
+function formatLeasePeriod(startDate: string, endDate: string | null): string {
+  const start = formatDate(startDate);
+  const end = endDate ? formatDate(endDate) : '长期';
+  return `${start} ~ ${end}`;
+}
 
 export default function UtilitiesPage() {
   const queryClient = useQueryClient();
@@ -108,6 +148,24 @@ export default function UtilitiesPage() {
     monthRoomsNeedInputCount == null || monthRoomsRecordedCount == null
       ? null
       : Math.max(0, monthRoomsNeedInputCount - monthRoomsRecordedCount);
+
+  // 本月未录入水电的活跃租约列表
+  const monthMissingLeases = useMemo(() => {
+    if (!scopeRooms || !activeLeases.length) return [];
+    const recordedRoomIds = new Set(monthUtilities.map((u) => u.room_id));
+    const occupiedRoomIds = new Set(
+      scopeRooms.filter((r) => r.status === 'occupied').map((r) => r.id)
+    );
+
+    return activeLeases
+      .filter((lease) => occupiedRoomIds.has(lease.room_id) && !recordedRoomIds.has(lease.room_id))
+      .sort((a, b) => {
+        // 按出账日期（签约日的日部分）排序
+        const aDay = new Date(a.start_date).getDate();
+        const bDay = new Date(b.start_date).getDate();
+        return aDay - bDay;
+      });
+  }, [activeLeases, monthUtilities, scopeRooms]);
 
   const createMutation = useMutation({
     mutationFn: (data: Parameters<typeof utilitiesApi.create>[1]) =>
@@ -219,6 +277,65 @@ export default function UtilitiesPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* 本月未录入水电的租约 */}
+          {monthMissingLeases.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">本月未录入水电的租约</CardTitle>
+                <CardDescription>
+                  以下活跃租约本月尚未录入水电读数
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-muted/50">
+                        <th className="px-4 py-2 text-left font-medium">公寓</th>
+                        <th className="px-4 py-2 text-left font-medium">房间号</th>
+                        <th className="px-4 py-2 text-left font-medium">租客</th>
+                        <th className="px-4 py-2 text-left font-medium">出账日期</th>
+                        <th className="px-4 py-2 text-left font-medium">合同期</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {monthMissingLeases.map((lease) => {
+                        const billingDay = getBillingDay(lease.start_date);
+                        const status = getBillingStatus(billingDay, false);
+                        const config = BILLING_STATUS_CONFIG[status];
+                        return (
+                          <tr key={lease.id} className="border-b last:border-0">
+                            <td className="px-4 py-2">{lease.room?.apartment?.name ?? '-'}</td>
+                            <td className="px-4 py-2">{lease.room?.room_number ?? '-'}</td>
+                            <td className="px-4 py-2">{lease.tenant?.name ?? '-'}</td>
+                            <td className="px-4 py-2">
+                              <div className="flex items-center gap-2">
+                                <span>每月{billingDay}日</span>
+                                <Badge
+                                  variant={config.variant}
+                                  className={
+                                    status === 'recorded'
+                                      ? 'bg-green-600 hover:bg-green-700'
+                                      : status === 'upcoming'
+                                        ? 'border-orange-500 text-orange-600'
+                                        : undefined
+                                  }
+                                >
+                                  {config.label}
+                                </Badge>
+                              </div>
+                            </td>
+                            <td className="px-4 py-2">{formatLeasePeriod(lease.start_date, lease.end_date)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* 未录入初始读数的房间 */}
           {roomsMissingInitial.length > 0 && (
