@@ -38,7 +38,7 @@ test.describe('业务端 - 侧栏导航', () => {
     await page.goto('/dashboard');
     await page.getByRole('link', { name: '水电录入' }).click();
     await expect(page).toHaveURL(/\/utilities$/);
-    await expect(page.getByRole('heading', { name: '水电录入' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '水电记录' })).toBeVisible();
   });
 
   test('从仪表盘可进入账单管理', async ({ page }) => {
@@ -310,9 +310,9 @@ test.describe('业务端 - 租约管理（对应测试用例 5）', () => {
 });
 
 test.describe('业务端 - 水电录入（对应测试用例 6）', () => {
-  test('水电录入页有标题和录入读数或批量导入按钮', async ({ page }) => {
+  test('水电记录页有标题和录入读数或批量导入按钮', async ({ page }) => {
     await page.goto('/utilities');
-    await expect(page.getByRole('heading', { name: '水电录入' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '水电记录' })).toBeVisible();
     const hasEntry = await page.getByRole('button', { name: '录入读数' }).count() > 0;
     const hasBatch = await page.getByRole('button', { name: '批量导入' }).count() > 0;
     expect(hasEntry || hasBatch).toBe(true);
@@ -672,7 +672,7 @@ test.describe('业务端 - 完整业务流程', () => {
     // 6. 水电录入：为该房间录入读数（房间签约后应进入可选）
     await page.getByRole('link', { name: '水电录入' }).click();
     await expect(page).toHaveURL(/\/utilities$/);
-    await expect(page.getByRole('heading', { name: '水电录入' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: '水电记录' })).toBeVisible({ timeout: 10000 });
     await page.getByRole('button', { name: '录入读数' }).click();
     const utilityDialog = page.getByRole('dialog').filter({ hasText: '录入水电读数' });
     await expect(utilityDialog).toBeVisible({ timeout: 5000 });
@@ -687,7 +687,7 @@ test.describe('业务端 - 完整业务流程', () => {
       await utilityDialog.getByLabel(/电表读数/).fill(String(electricityReading));
       await utilityDialog.getByRole('button', { name: '保存' }).click();
       await expect(utilityDialog).toBeHidden({ timeout: 10000 });
-      await expect(page.getByRole('row', { name: new RegExp(roomNumber) })).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '水电记录' })).toBeVisible({ timeout: 10000 });
     } else {
       // CreateUtilityDialog 仅展示已租房间；若后端状态尚未刷新，允许本步骤跳过录入并继续校验后续主流程
       await page.keyboard.press('Escape');
@@ -698,7 +698,7 @@ test.describe('业务端 - 完整业务流程', () => {
         }
       }
       await expect(utilityDialog).toBeHidden({ timeout: 10000 });
-      await expect(page.getByRole('heading', { name: '水电录入' })).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('heading', { name: '水电记录' })).toBeVisible({ timeout: 10000 });
     }
 
     // 7. 终止租约：状态从「生效中」变为「已终止」

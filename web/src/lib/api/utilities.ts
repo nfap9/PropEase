@@ -36,16 +36,21 @@ export interface UtilityExportRoom {
 export const utilitiesApi = {
   list: async (
     orgId: string,
-    periodYear?: number,
-    periodMonth?: number,
-    apartmentId?: string | null
+    filters?: {
+      room_id?: string;
+      period_year?: number;
+      period_month?: number;
+      apartment_id?: string | null;
+    }
   ): Promise<UtilityReading[]> => {
+    const { room_id, period_year, period_month, apartment_id } = filters ?? {};
     const response = await api.get<UtilityReading[]>('/utilities', {
       params: {
         org_id: orgId,
-        period_year: periodYear,
-        period_month: periodMonth,
-        apartment_id: apartmentId || undefined,
+        room_id: room_id || undefined,
+        period_year: period_year ?? undefined,
+        period_month: period_month ?? undefined,
+        apartment_id: apartment_id || undefined,
       },
     });
     return response.data;

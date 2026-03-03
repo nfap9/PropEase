@@ -2,7 +2,10 @@ import api from './client';
 import { Bill, Payment, BillStatus } from '@/types';
 
 export const billsApi = {
-  list: async (orgId: string, filters?: { year?: number; month?: number; status?: BillStatus }): Promise<Bill[]> => {
+  list: async (
+    orgId: string,
+    filters?: { lease_id?: string; year?: number; month?: number; status?: BillStatus }
+  ): Promise<Bill[]> => {
     const response = await api.get<Bill[]>('/bills', {
       params: { org_id: orgId, ...filters },
     });
