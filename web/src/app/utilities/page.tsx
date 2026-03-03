@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -14,75 +15,32 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { apartmentsApi, roomsApi, utilitiesApi, leasesApi, billsApi } from '@/lib/api';
+import { apartmentsApi, roomsApi, utilitiesApi, leasesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
-import { UtilityReading } from '@/types';
-import { Plus, Upload, Download, Building2, AlertCircle, Droplets, Zap, Pencil } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Plus, Upload, Download, Building2, AlertCircle, History } from 'lucide-react';
 import {
   CreateUtilityDialog,
-  EditUtilityDialog,
   ExportTemplateDialog,
   BatchImportDialog,
 } from './components';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 import type { RoomMissingInitialReading } from '@/lib/api/utilities';
-import { formatDate } from '@/lib/date-utils';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-
-/** 租约期内某月的水电读数与费用 */
-interface LeaseMonthRow {
-  year: number;
-  month: number;
-  label: string;
-  reading: UtilityReading | null;
-  waterFee: number;
-  electricityFee: number;
-}
-
-/** 生成租约起止月之间的所有月份 */
-function getMonthsInLeasePeriod(startDate: string, endDate: string | null): { year: number; month: number }[] {
-  const start = new Date(startDate);
-  const end = endDate ? new Date(endDate) : new Date();
-  if (end < start) return [];
-  const months: { year: number; month: number }[] = [];
-  const cur = new Date(start.getFullYear(), start.getMonth(), 1);
-  const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
-  while (cur <= endMonth) {
-    months.push({ year: cur.getFullYear(), month: cur.getMonth() + 1 });
-    cur.setMonth(cur.getMonth() + 1);
-  }
-  return months;
-}
 
 export default function UtilitiesPage() {
   const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
 
-  const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-  const [selectedLeaseId, setSelectedLeaseId] = useState<string | null>(null);
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth() + 1;
+
+  const [createApartmentId, setCreateApartmentId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
   const [isExportTemplateOpen, setIsExportTemplateOpen] = useState(false);
   const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
-  const [selectedUtility, setSelectedUtility] = useState<UtilityReading | null>(null);
   const [initialReadingRoom, setInitialReadingRoom] = useState<RoomMissingInitialReading | null>(null);
 
   const { data: apartments } = useQuery({
@@ -92,9 +50,9 @@ export default function UtilitiesPage() {
   });
 
   const { data: rooms } = useQuery({
-    queryKey: ['rooms', orgId, selectedApartmentId],
-    queryFn: () => roomsApi.list(orgId!, selectedApartmentId!),
-    enabled: !!orgId && selectedApartmentId !== null,
+    queryKey: ['rooms', orgId, createApartmentId],
+    queryFn: () => roomsApi.list(orgId!, createApartmentId!),
+    enabled: !!orgId && createApartmentId !== null,
   });
 
   const { data: allRooms } = useQuery({
@@ -103,49 +61,20 @@ export default function UtilitiesPage() {
     enabled: !!orgId && !!apartments && apartments.length > 0,
   });
 
-  const { data: leases = [] } = useQuery({
-    queryKey: ['leases', orgId],
-    queryFn: () => leasesApi.list(orgId!),
+  const { data: activeLeases = [] } = useQuery({
+    queryKey: ['leases', orgId, true],
+    queryFn: () => leasesApi.list(orgId!, true),
     enabled: !!orgId,
   });
 
-  const leasesForRoom = useMemo(() => {
-    if (!selectedRoomId) return [];
-    return leases
-      .filter((l) => l.room_id === selectedRoomId)
-      .sort((a, b) => {
-        const aActive = a.is_active ? 1 : 0;
-        const bActive = b.is_active ? 1 : 0;
-        if (aActive !== bActive) return bActive - aActive;
-        return new Date(b.start_date).getTime() - new Date(a.start_date).getTime();
-      });
-  }, [leases, selectedRoomId]);
-
-  const latestLeaseForRoom = leasesForRoom[0] ?? null;
-
-  useEffect(() => {
-    if (!selectedRoomId) {
-      setSelectedLeaseId(null);
-      return;
-    }
-    setSelectedLeaseId(latestLeaseForRoom?.id ?? null);
-  }, [selectedRoomId, latestLeaseForRoom?.id]);
-
-  const selectedLease = useMemo(
-    () => leases.find((l) => l.id === selectedLeaseId) ?? null,
-    [leases, selectedLeaseId]
-  );
-
-  const { data: leaseUtilities = [], isLoading: utilitiesLoading } = useQuery({
-    queryKey: ['utilities', orgId, selectedLease?.room_id],
-    queryFn: () => utilitiesApi.list(orgId!, { room_id: selectedLease!.room_id }),
-    enabled: !!orgId && !!selectedLease?.room_id,
-  });
-
-  const { data: leaseBills = [], isLoading: billsLoading } = useQuery({
-    queryKey: ['bills', orgId, selectedLeaseId],
-    queryFn: () => billsApi.list(orgId!, { lease_id: selectedLeaseId! }),
-    enabled: !!orgId && !!selectedLeaseId,
+  const { data: monthUtilities = [], isLoading: monthUtilitiesLoading } = useQuery({
+    queryKey: ['utilities', orgId, 'period', currentYear, currentMonth],
+    queryFn: () =>
+      utilitiesApi.list(orgId!, {
+        period_year: currentYear,
+        period_month: currentMonth,
+      }),
+    enabled: !!orgId,
   });
 
   const { data: roomsMissingInitial = [] } = useQuery({
@@ -154,33 +83,31 @@ export default function UtilitiesPage() {
     enabled: !!orgId,
   });
 
-  const leaseMonthRows = useMemo((): LeaseMonthRow[] => {
-    if (!selectedLease) return [];
-    const months = getMonthsInLeasePeriod(selectedLease.start_date, selectedLease.end_date);
-    const readingByPeriod = new Map<string, UtilityReading>();
-    for (const r of leaseUtilities) {
-      readingByPeriod.set(`${r.period_year}-${r.period_month}`, r);
-    }
-    const billByPeriod = new Map<string, { water_amount: number; electricity_amount: number }>();
-    for (const b of leaseBills) {
-      billByPeriod.set(`${b.bill_year}-${b.bill_month}`, {
-        water_amount: b.water_amount ?? 0,
-        electricity_amount: b.electricity_amount ?? 0,
-      });
-    }
-    return months.map(({ year, month }) => {
-      const reading = readingByPeriod.get(`${year}-${month}`) ?? null;
-      const bill = billByPeriod.get(`${year}-${month}`);
-      return {
-        year,
-        month,
-        label: `${year}年${month}月`,
-        reading,
-        waterFee: bill?.water_amount ?? 0,
-        electricityFee: bill?.electricity_amount ?? 0,
-      };
+  const scopeRooms = allRooms;
+  const activeLeaseRoomIds = useMemo(() => new Set(activeLeases.map((l) => l.room_id)), [activeLeases]);
+
+  const monthRoomsNeedInputCount = useMemo(() => {
+    if (!scopeRooms) return null;
+    return scopeRooms.filter((r) => r.status === 'occupied' && activeLeaseRoomIds.has(r.id)).length;
+  }, [activeLeaseRoomIds, scopeRooms]);
+
+  const monthRoomsRecordedCount = useMemo(() => {
+    if (!scopeRooms) return null;
+    const needRoomIds = new Set(
+      scopeRooms.filter((r) => r.status === 'occupied' && activeLeaseRoomIds.has(r.id)).map((r) => r.id)
+    );
+    const recordedRoomIds = new Set(monthUtilities.map((u) => u.room_id));
+    let cnt = 0;
+    needRoomIds.forEach((id) => {
+      if (recordedRoomIds.has(id)) cnt += 1;
     });
-  }, [selectedLease, leaseUtilities, leaseBills]);
+    return cnt;
+  }, [activeLeaseRoomIds, monthUtilities, scopeRooms]);
+
+  const monthRoomsMissingCount =
+    monthRoomsNeedInputCount == null || monthRoomsRecordedCount == null
+      ? null
+      : Math.max(0, monthRoomsNeedInputCount - monthRoomsRecordedCount);
 
   const createMutation = useMutation({
     mutationFn: (data: Parameters<typeof utilitiesApi.create>[1]) =>
@@ -195,20 +122,6 @@ export default function UtilitiesPage() {
     onError: (error) => toast.error(getErrorMessage(error, '录入失败，请重试')),
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof utilitiesApi.update>[2] }) =>
-      utilitiesApi.update(orgId!, id, filterEmptyStrings(data)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
-      setIsEditOpen(false);
-      setSelectedUtility(null);
-      toast.success('水电读数更新成功');
-    },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
-  });
-
   const batchImportMutation = useMutation({
     mutationFn: (data: Parameters<typeof utilitiesApi.batchCreate>[1]) =>
       utilitiesApi.batchCreate(orgId!, data),
@@ -221,11 +134,6 @@ export default function UtilitiesPage() {
     },
     onError: (error) => toast.error(getErrorMessage(error, '批量导入失败，请重试')),
   });
-
-  const handleEdit = (utility: UtilityReading) => {
-    setSelectedUtility(utility);
-    setIsEditOpen(true);
-  };
 
   const handleBatchImport = (payload: Parameters<typeof utilitiesApi.batchCreate>[1]) => {
     batchImportMutation.mutate(payload);
@@ -254,27 +162,6 @@ export default function UtilitiesPage() {
     );
   }
 
-  const leaseOptions = leasesForRoom.map((l) => {
-    const tenant = l.tenant?.name ?? '';
-    const range = `${formatDate(l.start_date)} 至 ${l.end_date ? formatDate(l.end_date) : '至今'}`;
-    const suffix = l.is_active ? ' (当前)' : '';
-    return {
-      id: l.id,
-      label: `${tenant} | ${range}${suffix}`,
-    };
-  });
-
-  const handleApartmentChange = (v: string) => {
-    const id = v === 'none' ? null : v;
-    setSelectedApartmentId(id);
-    setSelectedRoomId(null);
-    setSelectedLeaseId(null);
-  };
-
-  const handleRoomChange = (v: string) => {
-    setSelectedRoomId(v === 'none' ? null : v);
-  };
-
   return (
     <PermissionPageGuard>
       <MainLayout>
@@ -282,6 +169,12 @@ export default function UtilitiesPage() {
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold">水电记录</h1>
             <div className="flex gap-2">
+              <Button variant="outline" asChild>
+                <Link href="/utilities/history">
+                  <History className="mr-2 h-4 w-4" />
+                  历史水电记录
+                </Link>
+              </Button>
               <Button variant="outline" onClick={() => setIsExportTemplateOpen(true)}>
                 <Download className="mr-2 h-4 w-4" />
                 导出模版
@@ -296,6 +189,36 @@ export default function UtilitiesPage() {
               </Button>
             </div>
           </div>
+
+          {/* 本月水电录入概览 */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">{currentYear}年{currentMonth}月水电录入概览</CardTitle>
+              <CardDescription>统计范围：全部公寓（仅统计有活跃租约的已入住房间）</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {monthUtilitiesLoading || !allRooms ? (
+                <Skeleton className="h-20" />
+              ) : monthRoomsNeedInputCount == null || monthRoomsRecordedCount == null || monthRoomsMissingCount == null ? (
+                <p className="text-sm text-muted-foreground py-6">暂无数据</p>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="rounded-md border p-4">
+                    <div className="text-sm text-muted-foreground">需要录入房间</div>
+                    <div className="mt-1 text-2xl font-bold">{monthRoomsNeedInputCount}</div>
+                  </div>
+                  <div className="rounded-md border p-4">
+                    <div className="text-sm text-muted-foreground">已记录房间</div>
+                    <div className="mt-1 text-2xl font-bold">{monthRoomsRecordedCount}</div>
+                  </div>
+                  <div className="rounded-md border p-4">
+                    <div className="text-sm text-muted-foreground">未记录房间</div>
+                    <div className="mt-1 text-2xl font-bold">{monthRoomsMissingCount}</div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* 未录入初始读数的房间 */}
           {roomsMissingInitial.length > 0 && (
@@ -348,164 +271,6 @@ export default function UtilitiesPage() {
               </CardContent>
             </Card>
           )}
-
-          {/* 按租约查看 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>按租约查看水电记录</CardTitle>
-              <CardDescription>依次选择公寓、房间后查看租期内各月水电读数及产生的费用</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">公寓</span>
-                    <Select
-                      value={selectedApartmentId ?? 'none'}
-                      onValueChange={handleApartmentChange}
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="请选择公寓" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">请选择公寓</SelectItem>
-                        {apartments?.map((a) => (
-                          <SelectItem key={a.id} value={a.id}>
-                            {a.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">房间</span>
-                    <Select
-                      value={selectedRoomId ?? 'none'}
-                      onValueChange={handleRoomChange}
-                      disabled={!selectedApartmentId}
-                    >
-                      <SelectTrigger className="w-[140px]">
-                        <SelectValue placeholder="请选择房间" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">请选择房间</SelectItem>
-                        {rooms?.map((r) => (
-                          <SelectItem key={r.id} value={r.id}>
-                            {r.room_number}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">租约</span>
-                    <Select
-                      value={selectedLeaseId ?? 'none'}
-                      onValueChange={(v) => setSelectedLeaseId(v === 'none' ? null : v)}
-                      disabled={!selectedRoomId}
-                    >
-                      <SelectTrigger className="w-[280px]">
-                        <SelectValue placeholder="默认最新租约" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">请选择租约</SelectItem>
-                        {leaseOptions.map((o) => (
-                          <SelectItem key={o.id} value={o.id}>
-                            {o.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {selectedRoomId && leaseOptions.length === 0 && (
-                  <p className="text-sm text-muted-foreground py-8">
-                    该房间暂无租约
-                  </p>
-                )}
-
-                {selectedLease && (
-                  <>
-                    {utilitiesLoading || billsLoading ? (
-                      <Skeleton className="h-64" />
-                    ) : leaseMonthRows.length === 0 ? (
-                      <p className="text-sm text-muted-foreground py-8">
-                        该租约暂无可展示的月份
-                      </p>
-                    ) : (
-                      <div className="rounded-md border">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>月份</TableHead>
-                              <TableHead>记录日期</TableHead>
-                              <TableHead>
-                                <span className="flex items-center gap-1">
-                                  <Droplets className="h-4 w-4 text-blue-500" />
-                                  水表读数 (m³)
-                                </span>
-                              </TableHead>
-                              <TableHead>
-                                <span className="flex items-center gap-1">
-                                  <Zap className="h-4 w-4 text-yellow-500" />
-                                  电表读数 (kWh)
-                                </span>
-                              </TableHead>
-                              <TableHead>水费 (元)</TableHead>
-                              <TableHead>电费 (元)</TableHead>
-                              <TableHead className="w-[80px]">操作</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {leaseMonthRows.map((row) => (
-                              <TableRow key={`${row.year}-${row.month}`}>
-                                <TableCell className="font-medium">{row.label}</TableCell>
-                                <TableCell>
-                                  {row.reading
-                                    ? formatDate(row.reading.reading_date)
-                                    : '—'}
-                                </TableCell>
-                                <TableCell>
-                                  {row.reading?.water_reading != null
-                                    ? String(row.reading.water_reading)
-                                    : '—'}
-                                </TableCell>
-                                <TableCell>
-                                  {row.reading?.electricity_reading != null
-                                    ? String(row.reading.electricity_reading)
-                                    : '—'}
-                                </TableCell>
-                                <TableCell>{row.waterFee > 0 ? row.waterFee.toFixed(2) : '—'}</TableCell>
-                                <TableCell>
-                                  {row.electricityFee > 0 ? row.electricityFee.toFixed(2) : '—'}
-                                </TableCell>
-                                <TableCell>
-                                  {row.reading ? (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() => handleEdit(row.reading!)}
-                                      aria-label={`编辑${row.label}读数`}
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                  ) : (
-                                    '—'
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         <CreateUtilityDialog
@@ -515,20 +280,8 @@ export default function UtilitiesPage() {
           isPending={createMutation.isPending}
           apartments={apartments}
           rooms={rooms}
-          selectedApartmentId={selectedApartmentId}
-          onApartmentChange={setSelectedApartmentId}
-        />
-
-        <EditUtilityDialog
-          open={isEditOpen}
-          onOpenChange={setIsEditOpen}
-          onSubmit={(data) => {
-            if (selectedUtility) {
-              updateMutation.mutate({ id: selectedUtility.id, data });
-            }
-          }}
-          isPending={updateMutation.isPending}
-          utility={selectedUtility}
+          selectedApartmentId={createApartmentId}
+          onApartmentChange={setCreateApartmentId}
         />
 
         <ExportTemplateDialog

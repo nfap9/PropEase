@@ -27,6 +27,7 @@ import {
   Shield,
   Bell,
   CreditCard,
+  History,
 } from 'lucide-react';
 import { notificationsApi, subscriptionsApi } from '@/lib/api';
 import { useState } from 'react';
@@ -49,7 +50,8 @@ const NAV_ITEMS = [
   { href: '/rooms', label: '全部房间', icon: DoorOpen, permission: PERMISSIONS.ROOM_VIEW },
   { href: '/tenants', label: '租客管理', icon: Users, permission: PERMISSIONS.TENANT_VIEW },
   { href: '/leases', label: '租约管理', icon: FileText, permission: PERMISSIONS.LEASE_VIEW },
-  { href: '/utilities', label: '水电录入', icon: Zap, permission: PERMISSIONS.UTILITY_VIEW },
+  { href: '/utilities', label: '水电录入', icon: Zap, permission: PERMISSIONS.UTILITY_VIEW, exact: true },
+  { href: '/utilities/history', label: '历史水电记录', icon: History, permission: PERMISSIONS.UTILITY_VIEW },
   { href: '/bills', label: '账单管理', icon: Receipt, permission: PERMISSIONS.BILL_VIEW },
   { href: '/reports', label: '经营分析', icon: BarChart3, permission: PERMISSIONS.REPORT_VIEW },
 ];
@@ -107,7 +109,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <nav className="flex-1 space-y-1 p-4">
         {visibleNavItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          const isActive = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + '/');
           return (
             <Link
               key={item.href}

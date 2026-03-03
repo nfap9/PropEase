@@ -196,7 +196,7 @@ export default function RegisterPage() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? '注册中...' : '注册'}
+                {isLoading ? '注册并登录中...' : '注册并登录'}
               </Button>
             </form>
           </Form>

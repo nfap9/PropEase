@@ -7,7 +7,6 @@ import { healthHandler } from './routes/health.js';
 import { v1Router } from './routes/v1/index.js';
 import { seedAdminSuper } from './startup/seedAdmin.js';
 import { seedE2EUser } from './startup/seedE2E.js';
-import { seedTimeTestData } from './startup/seedTimeTestData.js';
 import { seedPermissions } from './startup/seedPermissions.js';
 import { seedPlans } from './startup/seedPlans.js';
 import { seedUsagePricing } from './startup/seedUsagePricing.js';
@@ -58,13 +57,6 @@ async function start(): Promise<void> {
       await seedE2EUser();
     } catch (e) {
       console.error('E2E seed failed:', e);
-    }
-  }
-  if (process.env.SEED_TIME_TEST_DATA === 'true') {
-    try {
-      await seedTimeTestData();
-    } catch (e) {
-      console.error('Time test data seed failed:', e);
     }
   }
   startScheduler();
