@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/context';
 
 export default function HomePage() {
@@ -21,7 +22,7 @@ export default function HomePage() {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
         <p className="mt-4 text-muted-foreground">加载中...</p>
       </div>
     </div>

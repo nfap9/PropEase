@@ -349,7 +349,7 @@ export function BatchImportDialog({
           </div>
 
           {/* 上传区域 */}
-          <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center">
+          <div className="rounded-lg border border-dashed border-muted p-6 text-center">
             <FileSpreadsheet className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">

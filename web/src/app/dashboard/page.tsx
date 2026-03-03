@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/lib/auth/context';
 import { MainLayout } from '@/components/layout/main-layout';
+import { Loader2 } from 'lucide-react';
 import { DashboardContent } from './dashboard-content';
 
 export default function DashboardPage() {
@@ -10,7 +11,7 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { adminApiEndpoints, AdminPlatformStats } from '@/lib/api/admin-client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 function StatCard({
   title,
@@ -38,7 +39,7 @@ export default function AdminDashboardPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }

@@ -6,7 +6,7 @@ import { AuthGuard } from '@/components/layout/auth-guard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { notificationsApi, type Notification } from '@/lib/api/notifications';
-import { Bell, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/lib/date-utils';
 
@@ -68,7 +68,7 @@ export default function NotificationsPage() {
           <CardContent>
             {listLoading ? (
               <div className="flex justify-center py-8">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : list.length === 0 ? (
               <p className="py-8 text-center text-muted-foreground">暂无通知</p>

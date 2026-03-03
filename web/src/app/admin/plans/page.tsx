@@ -11,6 +11,7 @@ import { TableActions } from '@/components/common/table-actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import {
   Dialog,
@@ -623,11 +624,9 @@ export default function AdminPlansPage() {
                 render={({ field }) => (
                   <FormItem className="flex items-center gap-2">
                     <FormControl>
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={field.value}
-                        onChange={(e) => field.onChange(e.target.checked)}
-                        className="h-4 w-4 rounded border-gray-300"
+                        onCheckedChange={(v) => field.onChange(v === true)}
                       />
                     </FormControl>
                     <FormLabel className="!mt-0">启用</FormLabel>

@@ -2,6 +2,7 @@
 
 import { useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/context';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -68,7 +69,7 @@ export function PermissionPageGuard({
     return (
       <MainLayout>
         <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </MainLayout>
     );
