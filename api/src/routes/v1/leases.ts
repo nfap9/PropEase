@@ -57,21 +57,28 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.ROOM));
     const tenant = await prisma.tenant.findFirst({ where: { id: parsed.data.tenant_id, organization_id: orgId } });
     if (!tenant) return next(createAppError(404, NotFoundMessages.TENANT));
-    const lease = await prisma.lease.create({
-      data: {
-        id: ulid().toLowerCase(),
-        room_id: parsed.data.room_id,
-        tenant_id: parsed.data.tenant_id,
-        start_date: new Date(parsed.data.start_date),
-        end_date: parsed.data.end_date ? new Date(parsed.data.end_date) : undefined,
-        billing_day: parsed.data.billing_day ?? 1,
-        monthly_rent: parsed.data.monthly_rent,
-        deposit: parsed.data.deposit ?? 0,
-        water_rate: parsed.data.water_rate ?? 0,
-        electricity_rate: parsed.data.electricity_rate ?? 0,
-        notes: parsed.data.notes ?? undefined,
-      },
-    });
+    const leaseId = ulid().toLowerCase();
+    const [lease] = await prisma.$transaction([
+      prisma.lease.create({
+        data: {
+          id: leaseId,
+          room_id: parsed.data.room_id,
+          tenant_id: parsed.data.tenant_id,
+          start_date: new Date(parsed.data.start_date),
+          end_date: parsed.data.end_date ? new Date(parsed.data.end_date) : undefined,
+          billing_day: parsed.data.billing_day ?? 1,
+          monthly_rent: parsed.data.monthly_rent,
+          deposit: parsed.data.deposit ?? 0,
+          water_rate: parsed.data.water_rate ?? 0,
+          electricity_rate: parsed.data.electricity_rate ?? 0,
+          notes: parsed.data.notes ?? undefined,
+        },
+      }),
+      prisma.room.update({
+        where: { id: parsed.data.room_id },
+        data: { status: 'occupied' },
+      }),
+    ]);
     res.status(201).json(lease);
   } catch (e) {
     next(e);
@@ -122,7 +129,12 @@ router.post('/:id/terminate', async (req: Request, res: Response, next: NextFunc
     const orgId = await requireOrgMembership(req);
     const existing = await prisma.lease.findFirst({ where: { id: req.params.id }, include: { room: { include: { apartment: true } } } });
     if (!existing || existing.room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.LEASE));
+    const roomId = existing.room_id;
+    const otherActive = await prisma.lease.count({ where: { room_id: roomId, is_active: true, id: { not: req.params.id } } });
     await prisma.lease.update({ where: { id: req.params.id }, data: { is_active: false } });
+    if (otherActive === 0) {
+      await prisma.room.update({ where: { id: roomId }, data: { status: 'available' } });
+    }
     res.locals.successMessage = Messages.LEASE_TERMINATED;
     res.json({});
   } catch (e) {

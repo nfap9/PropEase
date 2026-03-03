@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,11 +12,23 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ApartmentWithStats, RoomStatus } from '@/types';
-import { X, Filter } from 'lucide-react';
+import { X, Filter, ChevronDown, ChevronRight } from 'lucide-react';
+
+const LAYOUT_OPTIONS = [
+  '单间',
+  '一室一厅',
+  '两室一厅',
+  '三室一厅',
+  '三室两厅',
+  '四室两厅',
+  '复式',
+  'Loft',
+];
 
 export interface RoomFiltersState {
   apartmentId: string | null;
   status: RoomStatus | null;
+  layout: string | null;
   rentMin: number | null;
   rentMax: number | null;
   areaMin: number | null;
@@ -35,15 +48,32 @@ export function RoomFilters({
   onFilterChange,
   onClearFilters,
 }: RoomFiltersProps) {
+  const [expanded, setExpanded] = useState(true);
   const hasActiveFilters = Object.values(filters).some((v) => v !== null);
 
   return (
-    <div className="flex flex-wrap items-end gap-4 p-4 bg-muted/50 rounded-lg">
-      <div className="flex items-center gap-2 text-sm font-medium h-9">
-        <Filter className="h-4 w-4" />
-        筛选
-      </div>
+    <div className="rounded-lg border bg-muted/50 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setExpanded((e) => !e)}
+        className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium hover:bg-muted/80 transition-colors"
+        aria-expanded={expanded}
+        aria-label={expanded ? '收起筛选' : '展开筛选'}
+      >
+        {expanded ? (
+          <ChevronDown className="h-4 w-4 shrink-0" />
+        ) : (
+          <ChevronRight className="h-4 w-4 shrink-0" />
+        )}
+        <Filter className="h-4 w-4 shrink-0" />
+        <span>筛选</span>
+        {hasActiveFilters && (
+          <span className="text-muted-foreground text-xs font-normal">（已选条件）</span>
+        )}
+      </button>
 
+      {expanded && (
+        <div className="flex flex-wrap items-end gap-4 px-4 pb-4 pt-0">
       {/* 公寓筛选 */}
       <div className="space-y-1">
         <Label className="text-xs">公寓</Label>
@@ -84,6 +114,29 @@ export function RoomFilters({
             <SelectItem value="available">空置</SelectItem>
             <SelectItem value="occupied">已租</SelectItem>
             <SelectItem value="maintenance">维修中</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* 户型筛选 */}
+      <div className="space-y-1">
+        <Label className="text-xs">户型</Label>
+        <Select
+          value={filters.layout || 'all'}
+          onValueChange={(value) =>
+            onFilterChange('layout', value === 'all' ? null : value)
+          }
+        >
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="全部户型" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">全部户型</SelectItem>
+            {LAYOUT_OPTIONS.map((layout) => (
+              <SelectItem key={layout} value={layout}>
+                {layout}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -146,6 +199,8 @@ export function RoomFilters({
           <X className="mr-1 h-4 w-4" />
           清除筛选
         </Button>
+      )}
+        </div>
       )}
     </div>
   );

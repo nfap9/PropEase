@@ -43,6 +43,7 @@ export default function RoomsPage() {
   const [filters, setFilters] = useState<RoomFiltersState>({
     apartmentId: null,
     status: null,
+    layout: null,
     rentMin: null,
     rentMax: null,
     areaMin: null,
@@ -97,6 +98,9 @@ export default function RoomsPage() {
       if (filters.status && room.status !== filters.status) {
         return false;
       }
+      if (filters.layout && room.layout !== filters.layout) {
+        return false;
+      }
       if (filters.rentMin !== null && room.monthly_rent < filters.rentMin) {
         return false;
       }
@@ -129,6 +133,7 @@ export default function RoomsPage() {
     setFilters({
       apartmentId: null,
       status: null,
+      layout: null,
       rentMin: null,
       rentMax: null,
       areaMin: null,
