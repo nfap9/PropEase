@@ -2,11 +2,13 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { z } from 'zod';
 import { ulid } from 'ulid';
 import { prisma } from '../../lib/prisma.js';
+import { config } from '../../config.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
 import { NotFoundMessages } from '../../messages.js';
 import { createWechatPayNativeOrder } from '../../services/wechatPayNative.js';
+import { fulfillSubscription } from '../../services/fulfillSubscription.js';
 
 const router: Router = Router();
 
@@ -176,7 +178,41 @@ router.get('/organizations/:org_id/orders/:order_id', async (req: Request, res: 
       include: { plan: true },
     });
     if (!order) return next(createAppError(404, NotFoundMessages.ORDER));
-    res.json(order);
+    const payload = order as typeof order & { simulate_pay_available?: boolean };
+    if (config.isDev && order.status === 'pending' && !order.code_url) {
+      payload.simulate_pay_available = true;
+    }
+    res.json(payload);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/** 开发环境模拟支付：将待支付订单标记为已支付并开通订阅，仅 isDev 时可用 */
+router.post('/organizations/:org_id/orders/:order_id/simulate-pay', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!config.isDev) {
+      return next(createAppError(403, '模拟支付仅限开发环境'));
+    }
+    await requireOrgMembership(req, 'org_id');
+    const order = await prisma.subscriptionOrder.findFirst({
+      where: { id: req.params.order_id, organization_id: req.params.org_id },
+      include: { plan: true },
+    });
+    if (!order) return next(createAppError(404, NotFoundMessages.ORDER));
+    if (order.status !== 'pending') {
+      return next(createAppError(400, '订单状态不允许模拟支付'));
+    }
+    await prisma.subscriptionOrder.update({
+      where: { id: order.id },
+      data: { status: 'paid', paid_at: new Date() },
+    });
+    await fulfillSubscription(order.id);
+    const updated = await prisma.subscriptionOrder.findUnique({
+      where: { id: order.id },
+      include: { plan: true },
+    });
+    res.json(updated ?? order);
   } catch (e) {
     next(e);
   }

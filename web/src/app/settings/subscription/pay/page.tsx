@@ -2,19 +2,21 @@
 
 import { Suspense, useCallback, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Loader2, Smartphone } from 'lucide-react';
+import { ArrowLeft, Loader2, Smartphone, FlaskConical } from 'lucide-react';
 import { subscriptionsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
+import { toast } from 'sonner';
 
 const POLL_INTERVAL_MS = 2500;
 
 function SubscriptionPayContent() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('order_id');
   const { organization } = useAuth();
@@ -28,6 +30,19 @@ function SubscriptionPayContent() {
       const status = query.state.data?.status;
       if (status === 'paid' || status === 'failed' || status === 'cancelled') return false;
       return POLL_INTERVAL_MS;
+    },
+  });
+
+  const simulatePayMutation = useMutation({
+    mutationFn: () => subscriptionsApi.simulatePay(orgId!, orderId!),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ['subscription-order', orgId, orderId] });
+      if (updated?.status === 'paid') {
+        router.replace(`/settings/subscription/result?order_id=${orderId}&status=success`);
+      }
+    },
+    onError: (err) => {
+      toast.error(`模拟支付失败: ${err instanceof Error ? err.message : '未知错误'}`);
     },
   });
 
@@ -156,10 +171,10 @@ function SubscriptionPayContent() {
             <CardDescription>
               {order.plan?.name ? (
                 <>
-                  {order.plan.name} · 金额 ¥{order.amount.toFixed(2)}
+                  {order.plan.name} · 金额 ¥{Number(order.amount).toFixed(2)}
                 </>
               ) : (
-                <>金额 ¥{order.amount.toFixed(2)}</>
+                <>金额 ¥{Number(order.amount).toFixed(2)}</>
               )}
               ，支付完成后将自动刷新
             </CardDescription>
@@ -180,15 +195,36 @@ function SubscriptionPayContent() {
                   请使用微信扫描二维码完成支付
                 </p>
               </>
+            ) : order.simulate_pay_available ? (
+              <div className="flex flex-col items-center gap-4 py-4">
+                <p className="text-muted-foreground text-center">
+                  开发环境：微信支付未配置，可使用模拟支付完成流程
+                </p>
+                <Button
+                  onClick={() => simulatePayMutation.mutate()}
+                  disabled={simulatePayMutation.isPending}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  {simulatePayMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FlaskConical className="h-4 w-4" />
+                  )}
+                  模拟支付
+                </Button>
+              </div>
             ) : (
               <p className="text-muted-foreground text-center py-8">
                 当前环境未配置支付，无法展示二维码。请联系管理员配置微信支付。
               </p>
             )}
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              等待支付中…
-            </div>
+            {qrUrl && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                等待支付中…
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

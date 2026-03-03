@@ -28,6 +28,8 @@ function envCorsOrigins(): string[] {
 }
 
 export const config = {
+  /** 是否开发环境：NODE_ENV !== 'production' 或显式 IS_DEV=true，用于支付/验证码等功能的模拟或跳过 */
+  isDev: process.env.NODE_ENV !== 'production' || envBool('IS_DEV', false),
   appName: envStr('APP_NAME', 'Apartment Ultra API'),
   apiV1Prefix: envStr('API_V1_PREFIX', '/api/v1'),
   debug: envBool('DEBUG', false),

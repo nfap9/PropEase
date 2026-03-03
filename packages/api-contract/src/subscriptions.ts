@@ -76,6 +76,8 @@ export interface SubscriptionOrder {
   created_at: string;
   /** 订单详情接口返回时包含套餐信息 */
   plan?: SubscriptionPlan | null;
+  /** 开发环境且无 code_url 时为 true，表示可调用模拟支付接口 */
+  simulate_pay_available?: boolean;
 }
 
 /** 创建订阅订单 */

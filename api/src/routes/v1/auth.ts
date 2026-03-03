@@ -2,11 +2,15 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import { z } from 'zod';
 import { ulid } from 'ulid';
 import { prisma } from '../../lib/prisma.js';
+import { config } from '../../config.js';
 import { hashPassword, verifyPassword } from '../../utils/security.js';
 import { createAccessToken, createRefreshToken, decodeToken } from '../../utils/jwt.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { createAppError } from '../../utils/appError.js';
+
+/** 开发环境万能验证码，无需发送短信，输入此码即可通过 */
+const DEV_VERIFICATION_CODE = '123456';
 
 const router: Router = Router();
 
@@ -59,9 +63,14 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
       return next(err);
     }
     const { phone, full_name, password, verification_code } = parsed.data;
-    // Stub: 暂不校验验证码，仅要求提供
     if (!verification_code) {
       return next(createAppError(400, '验证码不能为空'));
+    }
+    // 开发环境：仅固定码 123456 通过；生产环境 TODO 对接短信服务并校验
+    if (config.isDev) {
+      if (verification_code !== DEV_VERIFICATION_CODE) {
+        return next(createAppError(400, '验证码无效，开发环境请使用 123456'));
+      }
     }
     const existing = await prisma.user.findUnique({ where: { phone } });
     if (existing) return next(createAppError(400, '手机号已注册'));
@@ -105,8 +114,14 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
       const ok = await verifyPassword(password, user.password_hash);
       if (!ok) return next(createAppError(401, '手机号或密码错误'));
     } else {
-      // 验证码登录：stub 暂不校验
+      // 验证码登录
       if (!verification_code) return next(createAppError(401, '验证码无效或已过期'));
+      // 开发环境：仅固定码 123456 通过；生产环境 TODO 校验 Redis 中的验证码
+      if (config.isDev) {
+        if (verification_code !== DEV_VERIFICATION_CODE) {
+          return next(createAppError(401, '验证码无效或已过期，开发环境请使用 123456'));
+        }
+      }
     }
     if (!user.is_active) return next(createAppError(401, '账号已停用或不允许登录'));
     const access_token = createAccessToken({ sub: user.id, phone: user.phone });
@@ -144,13 +159,7 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
   }
 });
 
-/** 生成 6 位数字验证码 */
-function generateVerificationCode(): string {
-  const n = Math.floor(Math.random() * 900000) + 100000;
-  return String(n);
-}
-
-// 发送短信验证码（stub：仅校验参数，不真实发送；开发模式在控制台打印验证码）
+// 发送短信验证码（stub：仅校验参数，不真实发送；开发环境使用固定码 123456）
 router.post('/sms/send', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = SendSmsCodeSchema.safeParse(req.body);
@@ -161,9 +170,8 @@ router.post('/sms/send', async (req: Request, res: Response, next: NextFunction)
       }));
     }
     const { phone, purpose } = parsed.data;
-    const code = generateVerificationCode();
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`[开发] 短信验证码 phone=${phone} purpose=${purpose} => ${code}`);
+    if (config.isDev) {
+      console.log(`[开发] 短信验证码 phone=${phone} purpose=${purpose} => 请使用固定码 ${DEV_VERIFICATION_CODE}`);
     }
     res.status(204).send();
   } catch (e) {
