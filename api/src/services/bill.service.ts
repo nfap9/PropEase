@@ -1,4 +1,4 @@
-import type { Bill, Payment, Prisma } from '@prisma/client';
+import type { Bill, Payment, Prisma } from '../generated/client/index.js';
 import { ulid } from 'ulid';
 import {
   createBillRepository,

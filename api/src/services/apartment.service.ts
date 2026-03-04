@@ -1,4 +1,4 @@
-import type { Apartment, Prisma } from '@prisma/client';
+import type { Apartment, Prisma } from '../generated/client/index.js';
 import { ulid } from 'ulid';
 import {
   createApartmentRepository,

@@ -1,4 +1,4 @@
-import type { Permission, SystemRoleConfig } from '@prisma/client';
+import type { Permission, SystemRoleConfig } from '../generated/client/index.js';
 import type { PermissionRepository } from '../repositories/permission.repo.js';
 import { defaultPermissionRepo } from '../repositories/permission.repo.js';
 import { createAppError } from '../utils/appError.js';
@@ -10,7 +10,7 @@ import {
   type SystemRole,
   type OrgMemberRole,
 } from '../constants/permissionDefaults.js';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '../generated/client/index.js';
 
 /**
  * 权限响应

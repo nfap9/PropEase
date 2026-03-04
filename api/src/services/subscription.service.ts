@@ -1,4 +1,4 @@
-import type { SubscriptionPlan, OrganizationSubscription, SubscriptionOrder } from '@prisma/client';
+import type { SubscriptionPlan, OrganizationSubscription, SubscriptionOrder } from '../generated/client/index.js';
 import { ulid } from 'ulid';
 import {
   createSubscriptionRepository,

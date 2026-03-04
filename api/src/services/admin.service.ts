@@ -1,4 +1,7 @@
-import type { AdminUser, AdminRole, User, Organization, SubscriptionPlan, OrganizationSubscription, UsagePricing, UsageQuotaOrder } from '@prisma/client';
+import type { AdminUser, AdminRole, User, Organization, SubscriptionPlan, OrganizationSubscription, UsagePricing, UsageQuotaOrder, Prisma } from '../generated/client/index.js';
+
+// 使用 Prisma.InputJsonValue 类型
+type InputJsonValue = Prisma.InputJsonValue;
 import type { AdminRepository, AdminUserWithRole, SubscriptionWithRelations } from '../repositories/admin.repo.js';
 import { defaultAdminRepo } from '../repositories/admin.repo.js';
 import { createAppError } from '../utils/appError.js';
@@ -6,8 +9,6 @@ import { NotFoundMessages } from '../messages.js';
 import { hashPassword, verifyPassword } from '../utils/security.js';
 import { createAdminAccessToken } from '../utils/jwt.js';
 import { ulid } from 'ulid';
-import type { Prisma } from '@prisma/client';
-import type { InputJsonValue } from '@prisma/client/runtime/library.js';
 
 /**
  * 登录结果

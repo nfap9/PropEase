@@ -1,4 +1,4 @@
-import type { CustomRole } from '@prisma/client';
+import type { CustomRole } from '../generated/client/index.js';
 import type { CustomRoleRepository } from '../repositories/customRole.repo.js';
 import { defaultCustomRoleRepo } from '../repositories/customRole.repo.js';
 import { createAppError } from '../utils/appError.js';

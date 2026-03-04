@@ -1,4 +1,4 @@
-import type { Notification } from '@prisma/client';
+import type { Notification } from '../generated/client/index.js';
 import type { NotificationRepository } from '../repositories/notification.repo.js';
 import { defaultNotificationRepo } from '../repositories/notification.repo.js';
 import { createAppError } from '../utils/appError.js';

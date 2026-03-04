@@ -47,6 +47,9 @@ yarn-error.log*
 next-env.d.ts
 # api 构建产物已由 dist/ 覆盖
 
+# Prisma generated client
+api/src/generated/
+
 # Python
 __pycache__/
 *.py[cod]

@@ -1,4 +1,7 @@
-import type { Decimal } from '@prisma/client/runtime/library.js';
+import type { Prisma } from '../generated/client/index.js';
+
+// 使用 Prisma.Decimal 类型
+type Decimal = Prisma.Decimal;
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 

@@ -1,12 +1,13 @@
 // Apartment Ultra - 数据库由 Prisma 管理，状态/角色/编码等字段统一为 VARCHAR，不使用 PG ENUM
 
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  output     = "../src/generated/client"
+  engineType = "library"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {

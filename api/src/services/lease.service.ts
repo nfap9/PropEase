@@ -1,4 +1,4 @@
-import type { Lease, Prisma } from '@prisma/client';
+import type { Lease, Prisma } from '../generated/client/index.js';
 import { ulid } from 'ulid';
 import { createLeaseRepository, type LeaseRepository, type LeaseWithRelations } from '../repositories/lease.repo.js';
 import { createAppError } from '../utils/appError.js';

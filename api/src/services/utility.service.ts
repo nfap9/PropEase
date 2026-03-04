@@ -1,4 +1,4 @@
-import type { UtilityReading, Prisma } from '@prisma/client';
+import type { UtilityReading, Prisma } from '../generated/client/index.js';
 import { ulid } from 'ulid';
 import { createUtilityRepository, type UtilityRepository, type ReadingWithRelations, type ReadingFilter } from '../repositories/utility.repo.js';
 import { createAppError } from '../utils/appError.js';

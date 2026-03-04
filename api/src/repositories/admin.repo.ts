@@ -1,5 +1,7 @@
-import type { AdminUser, AdminRole, User, Organization, SubscriptionPlan, OrganizationSubscription, UsagePricing, UsageQuotaOrder, PlatformConfig, Prisma } from '@prisma/client';
-import type { InputJsonValue } from '@prisma/client/runtime/library.js';
+import type { AdminUser, AdminRole, User, Organization, SubscriptionPlan, OrganizationSubscription, UsagePricing, UsageQuotaOrder, PlatformConfig, Prisma } from '../generated/client/index.js';
+
+// 使用 Prisma.InputJsonValue 类型
+type InputJsonValue = Prisma.InputJsonValue;
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 

@@ -1,4 +1,4 @@
-import type { Room, Prisma } from '@prisma/client';
+import type { Room, Prisma } from '../generated/client/index.js';
 import { ulid } from 'ulid';
 import { createRoomRepository, type RoomRepository, type RoomWithApartment } from '../repositories/room.repo.js';
 import { createAppError } from '../utils/appError.js';
