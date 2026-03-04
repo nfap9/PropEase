@@ -1,6 +1,5 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
-import { ulid } from 'ulid';
 import { prisma } from '../../lib/prisma.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { getConsoleUser } from '../../utils/context.js';
@@ -16,6 +15,7 @@ import {
   userOrganizationCount,
   orgHasActiveSubscription,
 } from '../../utils/orgPlanLimits.js';
+import { defaultOrgService } from '../../services/organization.service.js';
 
 const router: Router = Router();
 
@@ -29,20 +29,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const members = await prisma.organizationMember.findMany({
-      where: { user_id: user.id },
-      include: { organization: true },
-    });
-    const list = members.map((m) => ({
-      id: m.organization.id,
-      name: m.organization.name,
-      slug: m.organization.slug,
-      plan: m.organization.plan,
-      is_personal: m.organization.is_personal,
-      is_active: m.organization.is_active,
-      role: m.role,
-      created_at: m.organization.created_at,
-    }));
+    const list = await defaultOrgService.listByUser(user.id);
     res.json(list);
   } catch (e) {
     next(e);
@@ -60,20 +47,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       return next(createAppError(403, `当前最多可拥有 ${maxOrgs} 个组织，如需更多请升级套餐`));
     const parsed = CreateOrgSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败', { fieldErrors: parsed.error.errors.map((e) => ({ field: e.path.join('.'), message: e.message })) }));
-    const { name, slug: rawSlug } = parsed.data;
-    let slug = rawSlug ?? (name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'org');
-    let n = 1;
-    while (await prisma.organization.findUnique({ where: { slug } })) {
-      slug = `${slug}-${n}`;
-      n += 1;
-    }
-    const orgId = ulid().toLowerCase();
-    const org = await prisma.organization.create({
-      data: { id: orgId, name, slug, is_personal: false },
-    });
-    await prisma.organizationMember.create({
-      data: { id: ulid().toLowerCase(), organization_id: orgId, user_id: user.id, role: 'owner' },
-    });
+    const org = await defaultOrgService.create(user.id, parsed.data);
     res.status(201).json(toOrgResponse(org));
   } catch (e) {
     next(e);
@@ -84,10 +58,7 @@ router.get('/personal', async (req: Request, res: Response, next: NextFunction) 
   try {
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const personal = await prisma.organization.findFirst({
-      where: { is_personal: true, members: { some: { user_id: user.id } } },
-    });
-    if (!personal) return next(createAppError(404, NotFoundMessages.ORGANIZATION));
+    const personal = await defaultOrgService.getPersonalOrg(user.id);
     res.json(toOrgResponse(personal));
   } catch (e) {
     next(e);
@@ -136,13 +107,8 @@ router.post('/personal/migrate', async (req: Request, res: Response, next: NextF
 router.get('/:orgId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
-    const orgId = req.params.orgId;
-    const member = await prisma.organizationMember.findFirst({
-      where: { organization_id: orgId, user_id: user?.id },
-      include: { organization: true },
-    });
-    if (!member) return next(createAppError(404, NotFoundMessages.ORGANIZATION));
-    res.json(toOrgResponse(member.organization));
+    const org = await defaultOrgService.getById(req.params.orgId, user?.id ?? '');
+    res.json(toOrgResponse(org));
   } catch (e) {
     next(e);
   }
@@ -152,17 +118,14 @@ const UpdateOrgSchema = z.object({ name: z.string().min(1).optional(), settings:
 router.put('/:orgId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await requireOrgMembership(req, 'orgId');
-    const orgId = req.params.orgId;
-    const member = await prisma.organizationMember.findFirst({
-      where: { organization_id: orgId, user_id: getConsoleUser(req)!.id },
-    });
-    if (member?.role !== 'owner' && member?.role !== 'admin') return next(createAppError(403, '权限不足'));
+    const user = getConsoleUser(req);
+    if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const parsed = UpdateOrgSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const data: { name?: string; settings?: object } = {};
-    if (parsed.data.name != null) data.name = parsed.data.name;
-    if (parsed.data.settings != null) data.settings = parsed.data.settings;
-    const org = await prisma.organization.update({ where: { id: orgId }, data });
+    const org = await defaultOrgService.update(req.params.orgId, user.id, {
+      name: parsed.data.name,
+      settings: parsed.data.settings as Record<string, unknown> | undefined,
+    });
     res.json(toOrgResponse(org));
   } catch (e) {
     next(e);
@@ -200,18 +163,14 @@ router.get('/:orgId/deletion-preview', async (req: Request, res: Response, next:
 const ConfirmDeleteSchema = z.object({ confirmed_name: z.string().min(1) });
 router.delete('/:orgId', async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const user = getConsoleUser(req);
+    if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const orgId = req.params.orgId;
-    const member = await prisma.organizationMember.findFirst({
-      where: { organization_id: orgId, user_id: getConsoleUser(req)?.id },
-    });
-    if (!member || member.role !== 'owner') return next(createAppError(403, '只有组织所有者可以删除组织'));
     const hasActiveSub = await orgHasActiveSubscription(orgId);
     if (hasActiveSub) return next(createAppError(403, '当前有有效订阅，需先取消订阅后再删除组织'));
     const parsed = ConfirmDeleteSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(400, '请提供组织名称以确认删除'));
-    const org = await prisma.organization.findUnique({ where: { id: orgId } });
-    if (!org || org.name !== parsed.data.confirmed_name) return next(createAppError(400, '组织名称不匹配'));
-    await prisma.organization.delete({ where: { id: orgId } });
+    await defaultOrgService.delete(orgId, user.id, parsed.data.confirmed_name);
     res.locals.successMessage = Messages.TEAM_DELETED;
     res.json({});
   } catch (e) {
@@ -222,11 +181,7 @@ router.delete('/:orgId', async (req: Request, res: Response, next: NextFunction)
 router.get('/:orgId/members', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await requireOrgMembership(req, 'orgId');
-    const orgId = req.params.orgId;
-    const members = await prisma.organizationMember.findMany({
-      where: { organization_id: orgId },
-      include: { user: true },
-    });
+    const members = await defaultOrgService.getMembers(req.params.orgId);
     res.json(members.map((m) => ({
       id: m.id,
       organization_id: m.organization_id,
@@ -254,15 +209,16 @@ router.post('/:orgId/members', async (req: Request, res: Response, next: NextFun
     const phone = (req.query.phone as string) ?? (req.body?.phone as string);
     const role = ((req.query.role as string) ?? req.body?.role ?? 'member') as string;
     if (!phone) return next(createAppError(400, '缺少 phone'));
-    const targetUser = await prisma.user.findUnique({ where: { phone } });
-    if (!targetUser) return next(createAppError(400, '用户不存在'));
-    const existing = await prisma.organizationMember.findFirst({ where: { organization_id: orgId, user_id: targetUser.id } });
-    if (existing) return next(createAppError(409, '用户已在组织中'));
-    const m = await prisma.organizationMember.create({
-      data: { id: ulid().toLowerCase(), organization_id: orgId, user_id: targetUser.id, role },
+    const m = await defaultOrgService.addMember(orgId, { phone, role });
+    res.status(201).json({
+      id: m.id,
+      organization_id: m.organization_id,
+      user_id: m.user_id,
+      role: m.role,
+      created_at: m.created_at,
+      user_phone: m.user?.phone ?? null,
+      user_full_name: m.user?.full_name ?? '未知用户',
     });
-    const u = await prisma.user.findUnique({ where: { id: m.user_id } });
-    res.status(201).json({ id: m.id, organization_id: m.organization_id, user_id: m.user_id, role: m.role, created_at: m.created_at, user_phone: u?.phone ?? null, user_full_name: u?.full_name ?? '未知用户' });
   } catch (e) {
     next(e);
   }
@@ -273,17 +229,20 @@ router.put('/:orgId/members/:userId', async (req: Request, res: Response, next: 
     const orgId = req.params.orgId;
     const userId = req.params.userId;
     await requireOrgMembership(req, 'orgId');
-    const me = await prisma.organizationMember.findFirst({ where: { organization_id: orgId, user_id: getConsoleUser(req)!.id } });
-    if (me?.role !== 'owner' && me?.role !== 'admin') return next(createAppError(403, '仅所有者可修改角色'));
+    const user = getConsoleUser(req);
+    if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const role = (req.query.role as string) ?? req.body?.role;
     if (!role) return next(createAppError(400, '缺少 role'));
-    const m = await prisma.organizationMember.updateMany({
-      where: { organization_id: orgId, user_id: userId },
-      data: { role },
+    const m = await defaultOrgService.updateMemberRole(orgId, userId, role, user.id);
+    res.json({
+      id: m.id,
+      organization_id: m.organization_id,
+      user_id: m.user_id,
+      role: m.role,
+      created_at: m.created_at,
+      user_phone: m.user?.phone ?? null,
+      user_full_name: m.user?.full_name ?? '未知用户',
     });
-    if (m.count === 0) return next(createAppError(404, NotFoundMessages.MEMBER));
-    const updated = await prisma.organizationMember.findFirst({ where: { organization_id: orgId, user_id: userId }, include: { user: true } });
-    res.json({ id: updated!.id, organization_id: updated!.organization_id, user_id: updated!.user_id, role: updated!.role, created_at: updated!.created_at, user_phone: updated!.user?.phone ?? null, user_full_name: updated!.user?.full_name ?? '未知用户' });
   } catch (e) {
     next(e);
   }
@@ -292,11 +251,9 @@ router.put('/:orgId/members/:userId', async (req: Request, res: Response, next: 
 router.delete('/:orgId/members/:userId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await requireOrgMembership(req, 'orgId');
-    const orgId = req.params.orgId;
-    const userId = req.params.userId;
-    const me = await prisma.organizationMember.findFirst({ where: { organization_id: orgId, user_id: getConsoleUser(req)!.id } });
-    if (me?.role !== 'owner' && me?.role !== 'admin') return next(createAppError(403, '仅所有者可移除成员'));
-    await prisma.organizationMember.deleteMany({ where: { organization_id: orgId, user_id: userId } });
+    const user = getConsoleUser(req);
+    if (!user) return next(createAppError(401, '未授权或登录已过期'));
+    await defaultOrgService.removeMember(req.params.orgId, req.params.userId, user.id);
     res.locals.successMessage = Messages.MEMBER_REMOVED;
     res.json({});
   } catch (e) {
