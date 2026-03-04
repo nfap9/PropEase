@@ -17,6 +17,8 @@
     "docker:logs": "cd docker && docker compose -f docker-compose.yaml logs -f",
     "build": "pnpm -r run build",
     "lint": "pnpm --filter apartment-ultra-api run lint && pnpm --filter frontend run lint:fix",
+    "format": "prettier --write \"api/src/**/*.ts\" \"web/src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"api/src/**/*.ts\" \"web/src/**/*.{ts,tsx}\"",
     "type-check": "pnpm --filter apartment-ultra-api run type-check && pnpm --filter frontend run type-check",
     "test": "pnpm --filter apartment-ultra-api run test && pnpm --filter frontend run test:run",
     "test:e2e": "playwright test",
@@ -24,7 +26,9 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2"
   },
   "engines": {
     "node": ">=18"

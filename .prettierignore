@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Cache
+.pnpm-store/
+*.tsbuildinfo
+
+# Generated code
+api/src/generated/
+
+# Test results
+coverage/
+test-results/
+playwright-report/
+
+# Misc
+*.md
+pnpm-lock.yaml
