@@ -1,14 +1,10 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
-import { ulid } from 'ulid';
-import { prisma } from '../../lib/prisma.js';
 import { config } from '../../config.js';
-import { hashPassword, verifyPassword } from '../../utils/security.js';
-import { createAccessToken, createRefreshToken, decodeToken } from '../../utils/jwt.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { createAppError } from '../../utils/appError.js';
-import { createPersonalOrgWithFreePlan } from '../../services/createPersonalOrgWithFreePlan.js';
+import { defaultAuthService } from '../../services/auth.service.js';
 
 /** 开发环境万能验证码，无需发送短信，输入此码即可通过 */
 const DEV_VERIFICATION_CODE = '123456';
@@ -63,36 +59,20 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
       });
       return next(err);
     }
-    const { phone, full_name, password, verification_code } = parsed.data;
+    const { verification_code } = parsed.data;
+
+    // 验证码校验
     if (!verification_code) {
       return next(createAppError(400, '验证码不能为空'));
     }
-    // 开发环境：仅固定码 123456 通过；生产环境 TODO 对接短信服务并校验
     if (config.isDev) {
-      if (verification_code !== DEV_VERIFICATION_CODE) {
+      if (!defaultAuthService.validateVerificationCode(verification_code)) {
         return next(createAppError(400, '验证码无效，开发环境请使用 123456'));
       }
     }
-    const existing = await prisma.user.findUnique({ where: { phone } });
-    if (existing) return next(createAppError(400, '手机号已注册'));
-    const passwordHash = await hashPassword(password);
-    const userId = ulid().toLowerCase();
-    const user = await prisma.user.create({
-      data: {
-        id: userId,
-        phone,
-        full_name,
-        password_hash: passwordHash,
-      },
-    });
-    await createPersonalOrgWithFreePlan(user.id);
-    res.status(201).json({
-      id: user.id,
-      phone: user.phone,
-      full_name: user.full_name,
-      is_active: user.is_active,
-      created_at: user.created_at,
-    });
+
+    const user = await defaultAuthService.register(parsed.data);
+    res.status(201).json(user);
   } catch (e) {
     next(e);
   }
@@ -109,26 +89,8 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
       });
       return next(err);
     }
-    const { phone, password, verification_code } = parsed.data;
-    const user = await prisma.user.findUnique({ where: { phone } });
-    if (!user) return next(createAppError(401, '手机号或密码错误'));
-    if (password) {
-      const ok = await verifyPassword(password, user.password_hash);
-      if (!ok) return next(createAppError(401, '手机号或密码错误'));
-    } else {
-      // 验证码登录
-      if (!verification_code) return next(createAppError(401, '验证码无效或已过期'));
-      // 开发环境：仅固定码 123456 通过；生产环境 TODO 校验 Redis 中的验证码
-      if (config.isDev) {
-        if (verification_code !== DEV_VERIFICATION_CODE) {
-          return next(createAppError(401, '验证码无效或已过期，开发环境请使用 123456'));
-        }
-      }
-    }
-    if (!user.is_active) return next(createAppError(401, '账号已停用或不允许登录'));
-    const access_token = createAccessToken({ sub: user.id, phone: user.phone });
-    const refresh_token = createRefreshToken({ sub: user.id, phone: user.phone });
-    res.json({ access_token, refresh_token, token_type: 'bearer' });
+    const result = await defaultAuthService.login(parsed.data);
+    res.json(result);
   } catch (e) {
     next(e);
   }
@@ -144,18 +106,8 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
         fieldErrors: zodToFieldErrors(parsed.error),
       }));
     }
-    const payload = decodeToken(parsed.data.refresh_token);
-    if (!payload || (payload.type as string) !== 'refresh') {
-      return next(createAppError(401, 'Could not validate credentials'));
-    }
-    const sub = payload.sub as string;
-    const user = await prisma.user.findUnique({ where: { id: sub } });
-    if (!user || !user.is_active) {
-      return next(createAppError(401, 'Could not validate credentials'));
-    }
-    const access_token = createAccessToken({ sub: user.id, phone: user.phone });
-    const refresh_token = createRefreshToken({ sub: user.id, phone: user.phone });
-    res.json({ access_token, refresh_token, token_type: 'bearer' });
+    const result = await defaultAuthService.refreshToken(parsed.data.refresh_token);
+    res.json(result);
   } catch (e) {
     next(e);
   }
@@ -182,22 +134,16 @@ router.post('/sms/send', async (req: Request, res: Response, next: NextFunction)
 });
 
 // 当前用户信息
-router.get('/me', requireConsoleAuth, (req: Request, res: Response, next: NextFunction) => {
-  const user = getConsoleUser(req);
-  if (!user) return next(createAppError(401, 'Could not validate credentials'));
-  prisma.user
-    .findUnique({ where: { id: user.id } })
-    .then((u) => {
-      if (!u) return next(createAppError(401, 'User not found'));
-      res.json({
-        id: u.id,
-        phone: u.phone,
-        full_name: u.full_name,
-        is_active: u.is_active,
-        created_at: u.created_at,
-      });
-    })
-    .catch(next);
+router.get('/me', requireConsoleAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = getConsoleUser(req);
+    if (!user) return next(createAppError(401, 'Could not validate credentials'));
+    const u = await defaultAuthService.getUserById(user.id);
+    if (!u) return next(createAppError(401, 'User not found'));
+    res.json(u);
+  } catch (e) {
+    next(e);
+  }
 });
 
 export const authRouter = router;

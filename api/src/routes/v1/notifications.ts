@@ -1,9 +1,8 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { prisma } from '../../lib/prisma.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
-import { NotFoundMessages } from '../../messages.js';
+import { defaultNotificationService } from '../../services/notification.service.js';
 
 const router: Router = Router();
 
@@ -13,11 +12,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const list = await prisma.notification.findMany({
-      where: { user_id: user.id },
-      orderBy: { created_at: 'desc' },
-      take: 50,
-    });
+    const list = await defaultNotificationService.list(user.id);
     res.json(list);
   } catch (e) {
     next(e);
@@ -28,7 +23,7 @@ router.get('/unread-count', async (req: Request, res: Response, next: NextFuncti
   try {
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const count = await prisma.notification.count({ where: { user_id: user.id, is_read: false } });
+    const count = await defaultNotificationService.getUnreadCount(user.id);
     res.json({ count });
   } catch (e) {
     next(e);
@@ -39,7 +34,7 @@ router.post('/mark-all-read', async (req: Request, res: Response, next: NextFunc
   try {
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    await prisma.notification.updateMany({ where: { user_id: user.id }, data: { is_read: true } });
+    await defaultNotificationService.markAllRead(user.id);
     res.json({ message: 'ok' });
   } catch (e) {
     next(e);
@@ -50,9 +45,7 @@ router.post('/:id/read', async (req: Request, res: Response, next: NextFunction)
   try {
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const n = await prisma.notification.findFirst({ where: { id: req.params.id, user_id: user.id } });
-    if (!n) return next(createAppError(404, NotFoundMessages.NOTIFICATION));
-    await prisma.notification.update({ where: { id: req.params.id }, data: { is_read: true } });
+    await defaultNotificationService.markRead(user.id, req.params.id);
     res.json({ message: 'ok' });
   } catch (e) {
     next(e);

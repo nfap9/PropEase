@@ -72,7 +72,7 @@ export function createBillRepository(db: DbClient): BillRepository {
         where: { room_id: { in: roomIds } },
         select: { id: true },
       });
-      let leaseIds = leases.map((l) => l.id);
+      const leaseIds = leases.map((l) => l.id);
 
       const where: Prisma.BillWhereInput = {};
 

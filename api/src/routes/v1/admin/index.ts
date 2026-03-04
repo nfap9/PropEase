@@ -1,13 +1,10 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { ulid } from 'ulid';
 import { adminAuthRouter } from './auth.js';
 import { requireAdmin } from '../../../middlewares/requireAdmin.js';
-import { prisma } from '../../../lib/prisma.js';
 import { getAdminUser } from '../../../utils/context.js';
-import { hashPassword } from '../../../utils/security.js';
 import { createAppError } from '../../../utils/appError.js';
-import { NotFoundMessages } from '../../../messages.js';
+import { defaultAdminService } from '../../../services/admin.service.js';
 import type { Request, Response, NextFunction } from 'express';
 
 const router: Router = Router();
@@ -21,8 +18,7 @@ router.get('/users/me', async (req: Request, res: Response, next: NextFunction) 
   try {
     const admin = getAdminUser(req);
     if (!admin) return next(createAppError(401, '未授权或登录已过期'));
-    const user = await prisma.adminUser.findUnique({ where: { id: admin.id }, include: { role: true } });
-    if (!user) return next(createAppError(404, NotFoundMessages.USER));
+    const user = await defaultAdminService.getMe(admin.id);
     res.json(user);
   } catch (e) {
     next(e);
@@ -33,11 +29,7 @@ router.get('/users', async (req: Request, res: Response, next: NextFunction) => 
   try {
     const skip = req.query.skip != null ? Number(req.query.skip) : undefined;
     const limit = req.query.limit != null ? Number(req.query.limit) : undefined;
-    const list = await prisma.adminUser.findMany({
-      skip,
-      take: limit,
-      include: { role: true },
-    });
+    const list = await defaultAdminService.listAdmins(skip, limit);
     res.json(list);
   } catch (e) {
     next(e);
@@ -49,21 +41,7 @@ router.post('/users', async (req: Request, res: Response, next: NextFunction) =>
   try {
     const parsed = AdminUserCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const role = await prisma.adminRole.findUnique({ where: { id: parsed.data.role_id } });
-    if (!role) return next(createAppError(404, NotFoundMessages.ROLE));
-    const existing = await prisma.adminUser.findUnique({ where: { username: parsed.data.username } });
-    if (existing) return next(createAppError(409, '用户名已存在'));
-    const hash = await hashPassword(parsed.data.password);
-    const user = await prisma.adminUser.create({
-      data: {
-        id: ulid().toLowerCase(),
-        username: parsed.data.username,
-        password_hash: hash,
-        name: parsed.data.name,
-        email: parsed.data.email ?? undefined,
-        role_id: parsed.data.role_id,
-      },
-    });
+    const user = await defaultAdminService.createAdminUser(parsed.data);
     res.status(201).json(user);
   } catch (e) {
     next(e);
@@ -72,8 +50,7 @@ router.post('/users', async (req: Request, res: Response, next: NextFunction) =>
 
 router.get('/users/:user_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = await prisma.adminUser.findUnique({ where: { id: req.params.user_id }, include: { role: true } });
-    if (!user) return next(createAppError(404, NotFoundMessages.USER));
+    const user = await defaultAdminService.getAdminUser(req.params.user_id);
     res.json(user);
   } catch (e) {
     next(e);
@@ -85,18 +62,7 @@ router.put('/users/:user_id', async (req: Request, res: Response, next: NextFunc
   try {
     const parsed = AdminUserUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const existing = await prisma.adminUser.findUnique({ where: { id: req.params.user_id } });
-    if (!existing) return next(createAppError(404, NotFoundMessages.USER));
-    const data: Record<string, unknown> = {};
-    if (parsed.data.name != null) data.name = parsed.data.name;
-    if (parsed.data.email !== undefined) data.email = parsed.data.email;
-    if (parsed.data.role_id != null) {
-      const role = await prisma.adminRole.findUnique({ where: { id: parsed.data.role_id } });
-      if (!role) return next(createAppError(404, NotFoundMessages.ROLE));
-      data.role_id = parsed.data.role_id;
-    }
-    if (parsed.data.is_active !== undefined) data.is_active = parsed.data.is_active;
-    const user = await prisma.adminUser.update({ where: { id: req.params.user_id }, data });
+    const user = await defaultAdminService.updateAdminUser(req.params.user_id, parsed.data);
     res.json(user);
   } catch (e) {
     next(e);
@@ -105,10 +71,7 @@ router.put('/users/:user_id', async (req: Request, res: Response, next: NextFunc
 
 router.delete('/users/:user_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const existing = await prisma.adminUser.findUnique({ where: { id: req.params.user_id } });
-    if (!existing) return next(createAppError(404, NotFoundMessages.USER));
-    if (existing.is_system) return next(createAppError(400, '系统管理员不可删除'));
-    await prisma.adminUser.delete({ where: { id: req.params.user_id } });
+    await defaultAdminService.deleteAdminUser(req.params.user_id);
     res.status(204).send();
   } catch (e) {
     next(e);
@@ -125,10 +88,7 @@ router.post('/users/:user_id/reset-password', async (req: Request, res: Response
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const newPassword = parsed.data.new_password ?? parsed.data.password;
     if (!newPassword) return next(createAppError(422, '需要 password 或 new_password'));
-    const existing = await prisma.adminUser.findUnique({ where: { id: req.params.user_id } });
-    if (!existing) return next(createAppError(404, NotFoundMessages.USER));
-    const hash = await hashPassword(newPassword);
-    await prisma.adminUser.update({ where: { id: req.params.user_id }, data: { password_hash: hash } });
+    await defaultAdminService.resetAdminPassword(req.params.user_id, newPassword);
     res.json({ message: 'ok' });
   } catch (e) {
     next(e);
@@ -138,7 +98,7 @@ router.post('/users/:user_id/reset-password', async (req: Request, res: Response
 // --- roles ---
 router.get('/roles', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const list = await prisma.adminRole.findMany();
+    const list = await defaultAdminService.listAdminRoles();
     res.json(list);
   } catch (e) {
     next(e);
@@ -147,8 +107,7 @@ router.get('/roles', async (_req: Request, res: Response, next: NextFunction) =>
 
 router.get('/roles/:role_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const role = await prisma.adminRole.findUnique({ where: { id: req.params.role_id } });
-    if (!role) return next(createAppError(404, NotFoundMessages.ROLE));
+    const role = await defaultAdminService.getAdminRole(req.params.role_id);
     res.json(role);
   } catch (e) {
     next(e);
@@ -160,9 +119,10 @@ router.post('/roles', async (req: Request, res: Response, next: NextFunction) =>
   try {
     const parsed = AdminRoleCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const permissions = Array.isArray(parsed.data.permissions) ? parsed.data.permissions : (parsed.data.permissions ?? []);
-    const role = await prisma.adminRole.create({
-      data: { id: ulid().toLowerCase(), name: parsed.data.name, permissions: permissions as object, is_system: parsed.data.is_system ?? false },
+    const role = await defaultAdminService.createAdminRole({
+      name: parsed.data.name,
+      permissions: parsed.data.permissions,
+      is_system: parsed.data.is_system,
     });
     res.status(201).json(role);
   } catch (e) {
@@ -175,12 +135,10 @@ router.put('/roles/:role_id', async (req: Request, res: Response, next: NextFunc
   try {
     const parsed = AdminRoleUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const existing = await prisma.adminRole.findUnique({ where: { id: req.params.role_id } });
-    if (!existing) return next(createAppError(404, NotFoundMessages.ROLE));
-    const data: Record<string, unknown> = {};
-    if (parsed.data.name != null) data.name = parsed.data.name;
-    if (parsed.data.permissions !== undefined) data.permissions = Array.isArray(parsed.data.permissions) ? parsed.data.permissions : parsed.data.permissions;
-    const role = await prisma.adminRole.update({ where: { id: req.params.role_id }, data });
+    const role = await defaultAdminService.updateAdminRole(req.params.role_id, {
+      name: parsed.data.name,
+      permissions: parsed.data.permissions,
+    });
     res.json(role);
   } catch (e) {
     next(e);
@@ -189,11 +147,7 @@ router.put('/roles/:role_id', async (req: Request, res: Response, next: NextFunc
 
 router.delete('/roles/:role_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const existing = await prisma.adminRole.findUnique({ where: { id: req.params.role_id }, include: { users: true } });
-    if (!existing) return next(createAppError(404, NotFoundMessages.ROLE));
-    if (existing.is_system) return next(createAppError(400, '系统角色不可删除'));
-    if (existing.users.length > 0) return next(createAppError(400, '该角色下仍有用户，无法删除'));
-    await prisma.adminRole.delete({ where: { id: req.params.role_id } });
+    await defaultAdminService.deleteAdminRole(req.params.role_id);
     res.status(204).send();
   } catch (e) {
     next(e);
@@ -206,8 +160,7 @@ router.get('/organizations', async (req: Request, res: Response, next: NextFunct
     const skip = req.query.skip != null ? Number(req.query.skip) : undefined;
     const limit = req.query.limit != null ? Number(req.query.limit) : undefined;
     const isActive = req.query.is_active === 'true' ? true : req.query.is_active === 'false' ? false : undefined;
-    const where = isActive !== undefined ? { is_active: isActive } : undefined;
-    const list = await prisma.organization.findMany({ skip, take: limit, where });
+    const list = await defaultAdminService.listOrganizations(skip, limit, isActive);
     res.json(list);
   } catch (e) {
     next(e);
@@ -216,8 +169,7 @@ router.get('/organizations', async (req: Request, res: Response, next: NextFunct
 
 router.get('/organizations/:org_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const org = await prisma.organization.findUnique({ where: { id: req.params.org_id } });
-    if (!org) return next(createAppError(404, NotFoundMessages.ORGANIZATION));
+    const org = await defaultAdminService.getOrganization(req.params.org_id);
     res.json(org);
   } catch (e) {
     next(e);
@@ -228,10 +180,8 @@ router.patch('/organizations/:org_id/active', async (req: Request, res: Response
   try {
     const body = req.body as { active?: boolean };
     const active = body?.active ?? true;
-    const org = await prisma.organization.findUnique({ where: { id: req.params.org_id } });
-    if (!org) return next(createAppError(404, NotFoundMessages.ORGANIZATION));
-    await prisma.organization.update({ where: { id: req.params.org_id }, data: { is_active: active } });
-    res.json({ ...org, is_active: active });
+    const org = await defaultAdminService.setOrganizationActive(req.params.org_id, active);
+    res.json(org);
   } catch (e) {
     next(e);
   }
@@ -242,15 +192,7 @@ router.get('/registered-users/count', async (req: Request, res: Response, next: 
   try {
     const isActive = req.query.is_active === 'true' ? true : req.query.is_active === 'false' ? false : undefined;
     const search = typeof req.query.search === 'string' ? req.query.search.trim() : undefined;
-    const where: { is_active?: boolean; OR?: Array<{ phone?: { contains: string; mode: 'insensitive' }; full_name?: { contains: string; mode: 'insensitive' } }> } = {};
-    if (isActive !== undefined) where.is_active = isActive;
-    if (search && search.length > 0) {
-      where.OR = [
-        { phone: { contains: search, mode: 'insensitive' } },
-        { full_name: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-    const count = await prisma.user.count({ where: Object.keys(where).length ? where : undefined });
+    const count = await defaultAdminService.countRegisteredUsers(isActive, search);
     res.json({ count });
   } catch (e) {
     next(e);
@@ -263,20 +205,7 @@ router.get('/registered-users', async (req: Request, res: Response, next: NextFu
     const limit = req.query.limit != null ? Number(req.query.limit) : undefined;
     const isActive = req.query.is_active === 'true' ? true : req.query.is_active === 'false' ? false : undefined;
     const search = typeof req.query.search === 'string' ? req.query.search.trim() : undefined;
-    const where: { is_active?: boolean; OR?: Array<{ phone?: { contains: string; mode: 'insensitive' }; full_name?: { contains: string; mode: 'insensitive' } }> } = {};
-    if (isActive !== undefined) where.is_active = isActive;
-    if (search && search.length > 0) {
-      where.OR = [
-        { phone: { contains: search, mode: 'insensitive' } },
-        { full_name: { contains: search, mode: 'insensitive' } },
-      ];
-    }
-    const list = await prisma.user.findMany({
-      skip,
-      take: limit,
-      where: Object.keys(where).length ? where : undefined,
-      select: { id: true, phone: true, full_name: true, is_active: true, created_at: true },
-    });
+    const list = await defaultAdminService.listRegisteredUsers(skip, limit, isActive, search);
     res.json(list);
   } catch (e) {
     next(e);
@@ -285,27 +214,8 @@ router.get('/registered-users', async (req: Request, res: Response, next: NextFu
 
 router.get('/registered-users/:user_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.params.user_id },
-      include: {
-        organization_memberships: { include: { organization: { select: { id: true, name: true, slug: true } } } },
-      },
-    });
-    if (!user) return next(createAppError(404, NotFoundMessages.USER));
-    const organizations = user.organization_memberships.map((m) => ({
-      id: m.organization.id,
-      name: m.organization.name,
-      slug: m.organization.slug,
-      role: m.role,
-    }));
-    res.json({
-      id: user.id,
-      phone: user.phone,
-      full_name: user.full_name,
-      is_active: user.is_active,
-      created_at: user.created_at,
-      organizations,
-    });
+    const user = await defaultAdminService.getRegisteredUser(req.params.user_id);
+    res.json(user);
   } catch (e) {
     next(e);
   }
@@ -315,10 +225,8 @@ router.patch('/registered-users/:user_id/active', async (req: Request, res: Resp
   try {
     const body = req.body as { active?: boolean; is_active?: boolean };
     const active = body?.active ?? body?.is_active ?? true;
-    const user = await prisma.user.findUnique({ where: { id: req.params.user_id } });
-    if (!user) return next(createAppError(404, NotFoundMessages.USER));
-    await prisma.user.update({ where: { id: req.params.user_id }, data: { is_active: active } });
-    res.json({ ...user, is_active: active });
+    const user = await defaultAdminService.setRegisteredUserActive(req.params.user_id, active);
+    res.json(user);
   } catch (e) {
     next(e);
   }
@@ -326,9 +234,7 @@ router.patch('/registered-users/:user_id/active', async (req: Request, res: Resp
 
 router.delete('/registered-users/:user_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.params.user_id } });
-    if (!user) return next(createAppError(404, NotFoundMessages.USER));
-    await prisma.user.delete({ where: { id: req.params.user_id } });
+    await defaultAdminService.deleteRegisteredUser(req.params.user_id);
     res.status(204).send();
   } catch (e) {
     next(e);
@@ -339,10 +245,7 @@ router.delete('/registered-users/:user_id', async (req: Request, res: Response, 
 router.get('/plans', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const activeOnly = req.query.active_only === 'true';
-    const list = await prisma.subscriptionPlan.findMany({
-      where: activeOnly ? { is_active: true } : undefined,
-      orderBy: { sort_order: 'asc' },
-    });
+    const list = await defaultAdminService.listPlans(activeOnly);
     res.json(list);
   } catch (e) {
     next(e);
@@ -351,10 +254,7 @@ router.get('/plans', async (req: Request, res: Response, next: NextFunction) => 
 
 router.get('/plans/:plan_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const plan = await prisma.subscriptionPlan.findUnique({
-      where: { id: req.params.plan_id },
-    });
-    if (!plan) return next(createAppError(404, NotFoundMessages.PLAN));
+    const plan = await defaultAdminService.getPlan(req.params.plan_id);
     res.json(plan);
   } catch (e) {
     next(e);
@@ -382,24 +282,7 @@ router.post('/plans', async (req: Request, res: Response, next: NextFunction) =>
   try {
     const parsed = PlanCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const plan = await prisma.subscriptionPlan.create({
-      data: {
-        id: ulid().toLowerCase(),
-        name: parsed.data.name,
-        code: parsed.data.code,
-        price_monthly: parsed.data.price_monthly,
-        price_yearly: parsed.data.price_yearly ?? parsed.data.price_monthly,
-        max_organizations: parsed.data.max_organizations ?? undefined,
-        max_apartments: parsed.data.max_apartments ?? 1,
-        max_rooms: parsed.data.max_rooms ?? 100,
-        max_members: parsed.data.max_members ?? 1,
-        rooms_count_scope: parsed.data.rooms_count_scope ?? 'organization',
-        members_count_scope: parsed.data.members_count_scope ?? 'organization',
-        is_active: parsed.data.is_active ?? true,
-        sort_order: parsed.data.sort_order ?? 0,
-        free_validity_days: parsed.data.free_validity_days ?? undefined,
-      },
-    });
+    const plan = await defaultAdminService.createPlan(parsed.data);
     res.status(201).json(plan);
   } catch (e) {
     next(e);
@@ -410,26 +293,7 @@ router.put('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
   try {
     const parsed = PlanUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const existing = await prisma.subscriptionPlan.findUnique({ where: { id: req.params.plan_id } });
-    if (!existing) return next(createAppError(404, NotFoundMessages.PLAN));
-    const isFree = existing.code === 'free';
-    const data: Record<string, unknown> = {};
-    if (parsed.data.name != null) data.name = parsed.data.name;
-    if (parsed.data.code != null) data.code = parsed.data.code;
-    if (!isFree) {
-      if (parsed.data.price_monthly != null) data.price_monthly = parsed.data.price_monthly;
-      if (parsed.data.price_yearly != null) data.price_yearly = parsed.data.price_yearly;
-    }
-    if (parsed.data.max_organizations !== undefined) data.max_organizations = parsed.data.max_organizations;
-    if (parsed.data.max_apartments != null) data.max_apartments = parsed.data.max_apartments;
-    if (parsed.data.max_rooms != null) data.max_rooms = parsed.data.max_rooms;
-    if (parsed.data.max_members != null) data.max_members = parsed.data.max_members;
-    if (parsed.data.rooms_count_scope != null) data.rooms_count_scope = parsed.data.rooms_count_scope;
-    if (parsed.data.members_count_scope != null) data.members_count_scope = parsed.data.members_count_scope;
-    if (parsed.data.is_active !== undefined) data.is_active = parsed.data.is_active;
-    if (parsed.data.sort_order != null) data.sort_order = parsed.data.sort_order;
-    if (parsed.data.free_validity_days !== undefined) data.free_validity_days = parsed.data.free_validity_days;
-    const plan = await prisma.subscriptionPlan.update({ where: { id: req.params.plan_id }, data });
+    const plan = await defaultAdminService.updatePlan(req.params.plan_id, parsed.data);
     res.json(plan);
   } catch (e) {
     next(e);
@@ -438,9 +302,7 @@ router.put('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
 
 router.delete('/plans/:plan_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const existing = await prisma.subscriptionPlan.findUnique({ where: { id: req.params.plan_id } });
-    if (!existing) return next(createAppError(404, NotFoundMessages.PLAN));
-    await prisma.subscriptionPlan.delete({ where: { id: req.params.plan_id } });
+    await defaultAdminService.deletePlan(req.params.plan_id);
     res.status(204).send();
   } catch (e) {
     next(e);
@@ -454,15 +316,7 @@ router.get('/subscriptions', async (req: Request, res: Response, next: NextFunct
     const limit = req.query.limit != null ? Number(req.query.limit) : undefined;
     const organizationId = typeof req.query.organization_id === 'string' ? req.query.organization_id : undefined;
     const statusFilter = typeof req.query.status_filter === 'string' ? req.query.status_filter : undefined;
-    const where: { organization_id?: string; status?: string } = {};
-    if (organizationId) where.organization_id = organizationId;
-    if (statusFilter) where.status = statusFilter;
-    const list = await prisma.organizationSubscription.findMany({
-      skip,
-      take: limit,
-      where: Object.keys(where).length ? where : undefined,
-      include: { plan: true, organization: true },
-    });
+    const list = await defaultAdminService.listSubscriptions(skip, limit, organizationId, statusFilter);
     res.json(list);
   } catch (e) {
     next(e);
@@ -471,11 +325,7 @@ router.get('/subscriptions', async (req: Request, res: Response, next: NextFunct
 
 router.get('/subscriptions/:subscription_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const sub = await prisma.organizationSubscription.findUnique({
-      where: { id: req.params.subscription_id },
-      include: { plan: true, organization: true },
-    });
-    if (!sub) return next(createAppError(404, NotFoundMessages.SUBSCRIPTION));
+    const sub = await defaultAdminService.getSubscription(req.params.subscription_id);
     res.json(sub);
   } catch (e) {
     next(e);
@@ -484,14 +334,7 @@ router.get('/subscriptions/:subscription_id', async (req: Request, res: Response
 
 router.post('/subscriptions/:subscription_id/renew', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const sub = await prisma.organizationSubscription.findUnique({ where: { id: req.params.subscription_id } });
-    if (!sub) return next(createAppError(404, NotFoundMessages.SUBSCRIPTION));
-    const end = sub.end_date ? new Date(sub.end_date) : new Date();
-    end.setFullYear(end.getFullYear() + 1);
-    const updated = await prisma.organizationSubscription.update({
-      where: { id: req.params.subscription_id },
-      data: { end_date: end, status: 'active' },
-    });
+    const updated = await defaultAdminService.renewSubscription(req.params.subscription_id);
     res.json(updated);
   } catch (e) {
     next(e);
@@ -500,12 +343,7 @@ router.post('/subscriptions/:subscription_id/renew', async (req: Request, res: R
 
 router.post('/subscriptions/:subscription_id/cancel', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const sub = await prisma.organizationSubscription.findUnique({ where: { id: req.params.subscription_id } });
-    if (!sub) return next(createAppError(404, NotFoundMessages.SUBSCRIPTION));
-    await prisma.organizationSubscription.update({
-      where: { id: req.params.subscription_id },
-      data: { status: 'cancelled' },
-    });
+    await defaultAdminService.cancelSubscription(req.params.subscription_id);
     res.json({ message: 'ok' });
   } catch (e) {
     next(e);
@@ -514,29 +352,8 @@ router.post('/subscriptions/:subscription_id/cancel', async (req: Request, res: 
 
 router.get('/stats', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const [organizations_count, users_count, apartments_count, rooms_count, active_subscriptions_count] =
-      await Promise.all([
-        prisma.organization.count(),
-        prisma.user.count(),
-        prisma.apartment.count(),
-        prisma.room.count(),
-        prisma.organizationSubscription.count({
-          where: {
-            status: 'active',
-            OR: [
-              { end_date: null },
-              { end_date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
-            ],
-          },
-        }),
-      ]);
-    res.json({
-      organizations_count,
-      users_count,
-      apartments_count,
-      rooms_count,
-      active_subscriptions_count,
-    });
+    const stats = await defaultAdminService.getStats();
+    res.json(stats);
   } catch (e) {
     next(e);
   }
@@ -552,10 +369,7 @@ const UsagePricingUpdateSchema = z.object({
 
 router.get('/usage-pricing', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const pricing = await prisma.usagePricing.findFirst({
-      where: { is_active: true },
-    });
-    if (!pricing) return next(createAppError(404, '按量定价未配置'));
+    const pricing = await defaultAdminService.getUsagePricing();
     res.json(pricing);
   } catch (e) {
     next(e);
@@ -566,28 +380,8 @@ router.put('/usage-pricing', async (req: Request, res: Response, next: NextFunct
   try {
     const parsed = UsagePricingUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    let pricing = await prisma.usagePricing.findFirst({ where: { is_active: true } });
-    if (!pricing) {
-      pricing = await prisma.usagePricing.create({
-        data: {
-          id: ulid().toLowerCase(),
-          price_per_org: parsed.data.price_per_org ?? 0,
-          price_per_apartment: parsed.data.price_per_apartment ?? 0,
-          price_per_room: parsed.data.price_per_room ?? 0,
-          price_per_member: parsed.data.price_per_member ?? 0,
-          is_active: parsed.data.is_active ?? true,
-        },
-      });
-      return res.json(pricing);
-    }
-    const data: Record<string, unknown> = {};
-    if (parsed.data.price_per_org !== undefined) data.price_per_org = parsed.data.price_per_org;
-    if (parsed.data.price_per_apartment !== undefined) data.price_per_apartment = parsed.data.price_per_apartment;
-    if (parsed.data.price_per_room !== undefined) data.price_per_room = parsed.data.price_per_room;
-    if (parsed.data.price_per_member !== undefined) data.price_per_member = parsed.data.price_per_member;
-    if (parsed.data.is_active !== undefined) data.is_active = parsed.data.is_active;
-    const updated = await prisma.usagePricing.update({ where: { id: pricing.id }, data });
-    res.json(updated);
+    const pricing = await defaultAdminService.updateUsagePricing(parsed.data);
+    res.json(pricing);
   } catch (e) {
     next(e);
   }
@@ -597,12 +391,7 @@ router.get('/usage-orders', async (req: Request, res: Response, next: NextFuncti
   try {
     const skip = req.query.skip != null ? Number(req.query.skip) : undefined;
     const limit = req.query.limit != null ? Number(req.query.limit) : undefined;
-    const list = await prisma.usageQuotaOrder.findMany({
-      skip,
-      take: limit ?? 50,
-      orderBy: { created_at: 'desc' },
-      include: { user: { select: { id: true, phone: true, full_name: true } } },
-    });
+    const list = await defaultAdminService.listUsageOrders(skip, limit);
     res.json(list);
   } catch (e) {
     next(e);
@@ -621,16 +410,8 @@ const PlatformBrandSchema = z.object({
 
 router.get('/platform-config', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const row = await prisma.platformConfig.findUnique({ where: { id: 'default' } });
-    const brand = (row?.brand as Record<string, unknown>) ?? {};
-    res.json({
-      app_name: brand.app_name ?? '公寓管理系统',
-      app_description: brand.app_description ?? '多租户 SaaS 公寓/物业管理系统',
-      logo_url: brand.logo_url ?? '',
-      favicon_url: brand.favicon_url ?? '',
-      login_subtitle: brand.login_subtitle ?? '用户登录，管理公寓、租客与账单',
-      register_subtitle: brand.register_subtitle ?? '创建新账户',
-    });
+    const config = await defaultAdminService.getPlatformConfig();
+    res.json(config);
   } catch (e) {
     next(e);
   }
@@ -640,12 +421,7 @@ router.put('/platform-config', async (req: Request, res: Response, next: NextFun
   try {
     const parsed = PlatformBrandSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const brand = parsed.data;
-    await prisma.platformConfig.upsert({
-      where: { id: 'default' },
-      create: { id: 'default', brand },
-      update: { brand },
-    });
+    const brand = await defaultAdminService.updatePlatformConfig(parsed.data);
     res.json(brand);
   } catch (e) {
     next(e);

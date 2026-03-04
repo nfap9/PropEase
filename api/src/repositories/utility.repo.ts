@@ -70,7 +70,7 @@ export function createUtilityRepository(db: DbClient): UtilityRepository {
         where: roomsWhere,
         select: { id: true },
       });
-      let roomIds = rooms.map((r) => r.id);
+      const roomIds = rooms.map((r) => r.id);
 
       const where: Prisma.UtilityReadingWhereInput = {};
 
