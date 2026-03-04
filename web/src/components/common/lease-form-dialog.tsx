@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { TenantSelect } from '@/components/common/tenant-select';
+import { TenantSelectWithCreate } from '@/components/common/tenant-select-with-create';
 import { leasesApi, apartmentsApi, roomsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
@@ -245,7 +245,7 @@ export function LeaseFormDialog({
           {/* 租客选择 */}
           <div className="space-y-2">
             <Label htmlFor="tenant_id">选择租客 *</Label>
-            <TenantSelect
+            <TenantSelectWithCreate
               orgId={orgId}
               value={form.watch('tenant_id')}
               onValueChange={(value) => form.setValue('tenant_id', value)}
