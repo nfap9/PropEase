@@ -6,7 +6,11 @@ import { createAppError } from '../utils/appError.js';
 /**
  * 运营后台 JWT 认证：从 Authorization Bearer 解析 admin 用户并挂到 req.adminUser。
  */
-export async function requireAdmin(req: Request, _res: Response, next: NextFunction): Promise<void> {
+export async function requireAdmin(
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): Promise<void> {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) {
     next(createAppError(401, 'Could not validate credentials'));

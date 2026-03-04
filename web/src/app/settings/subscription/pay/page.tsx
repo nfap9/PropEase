@@ -25,7 +25,11 @@ function SubscriptionPayContent() {
   const { organization } = useAuth();
   const orgId = organization?.id;
 
-  const { data: order, isLoading, isError } = useQuery({
+  const {
+    data: order,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['subscription-order', orgId, orderId],
     queryFn: () => subscriptionsApi.getOrder(orgId!, orderId!),
     enabled: !!orgId && !!orderId,
@@ -63,7 +67,7 @@ function SubscriptionPayContent() {
         <div className="space-y-6">
           <p className="text-muted-foreground">缺少订单信息</p>
           <Button variant="outline" onClick={handleBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             返回订阅管理
           </Button>
         </div>
@@ -77,7 +81,9 @@ function SubscriptionPayContent() {
         <div className="space-y-6">
           <Skeleton className="h-10 w-48" />
           <Card>
-            <CardHeader><Skeleton className="h-6 w-32" /></CardHeader>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
             <CardContent className="flex flex-col items-center gap-4">
               <Skeleton className="h-48 w-48 rounded" />
               <Skeleton className="h-4 w-64" />
@@ -94,7 +100,7 @@ function SubscriptionPayContent() {
         <div className="space-y-6">
           <p className="text-destructive">无法加载订单</p>
           <Button variant="outline" onClick={handleBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             返回订阅管理
           </Button>
         </div>
@@ -123,7 +129,7 @@ function SubscriptionPayContent() {
             <Badge variant={config.variant}>{config.label}</Badge>
           </div>
           <Button variant="outline" onClick={handleBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             返回订阅管理
           </Button>
         </div>
@@ -131,8 +137,7 @@ function SubscriptionPayContent() {
     );
   }
 
-  const isExpired =
-    order.status === 'pending' && new Date(order.expires_at).getTime() < Date.now();
+  const isExpired = order.status === 'pending' && new Date(order.expires_at).getTime() < Date.now();
   if (isExpired) {
     const config = ORDER_STATUS_CONFIG.expired;
     return (
@@ -143,7 +148,7 @@ function SubscriptionPayContent() {
             <span className="text-muted-foreground">请返回订阅管理重新下单</span>
           </div>
           <Button variant="outline" onClick={handleBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             返回订阅管理
           </Button>
         </div>
@@ -160,11 +165,11 @@ function SubscriptionPayContent() {
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={handleBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             返回
           </Button>
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
+            <h1 className="flex items-center gap-2 text-2xl font-bold">
               <Smartphone className="h-7 w-7" />
               微信扫码支付
             </h1>
@@ -172,7 +177,7 @@ function SubscriptionPayContent() {
           </div>
         </div>
 
-        <Card className="max-w-md mx-auto">
+        <Card className="mx-auto max-w-md">
           <CardHeader>
             <CardTitle>订单号：{order.order_no}</CardTitle>
             <CardDescription>
@@ -198,13 +203,13 @@ function SubscriptionPayContent() {
                   width={220}
                   height={220}
                 />
-                <p className="text-sm text-muted-foreground text-center">
+                <p className="text-center text-sm text-muted-foreground">
                   请使用微信扫描二维码完成支付
                 </p>
               </>
             ) : order.simulate_pay_available ? (
               <div className="flex flex-col items-center gap-4 py-4">
-                <p className="text-muted-foreground text-center">
+                <p className="text-center text-muted-foreground">
                   开发环境：微信支付未配置，可使用模拟支付完成流程
                 </p>
                 <Button
@@ -222,7 +227,7 @@ function SubscriptionPayContent() {
                 </Button>
               </div>
             ) : (
-              <p className="text-muted-foreground text-center py-8">
+              <p className="py-8 text-center text-muted-foreground">
                 当前环境未配置支付，无法展示二维码。请联系管理员配置微信支付。
               </p>
             )}
@@ -247,7 +252,9 @@ export default function SubscriptionPayPage() {
           <div className="space-y-6">
             <Skeleton className="h-10 w-48" />
             <Card>
-              <CardHeader><Skeleton className="h-6 w-32" /></CardHeader>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
               <CardContent className="flex flex-col items-center gap-4">
                 <Skeleton className="h-48 w-48 rounded" />
                 <Skeleton className="h-4 w-64" />

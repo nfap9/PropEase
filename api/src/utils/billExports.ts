@@ -31,7 +31,20 @@ export async function generateBillsExcel(
   titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
   sheet.getRow(1).height = 30;
 
-  const headers = ['账单ID', '账单周期', '公寓', '房间', '租客', '租金', '水费', '电费', '其他', '合计', '已付', '状态'];
+  const headers = [
+    '账单ID',
+    '账单周期',
+    '公寓',
+    '房间',
+    '租客',
+    '租金',
+    '水费',
+    '电费',
+    '其他',
+    '合计',
+    '已付',
+    '状态',
+  ];
   sheet.addRow([]);
   const headerRow = sheet.addRow(headers);
   headerRow.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
@@ -65,7 +78,7 @@ export async function generateBillsExcel(
     });
   }
 
-  const buffer = await workbook.xlsx.writeBuffer() as ArrayBuffer;
+  const buffer = (await workbook.xlsx.writeBuffer()) as ArrayBuffer;
   return Buffer.from(buffer);
 }
 

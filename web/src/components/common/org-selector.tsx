@@ -67,11 +67,8 @@ export function OrgSelector() {
 
   return (
     <>
-      <Select
-        value={organization?.id?.toString() || ''}
-        onValueChange={handleSelectOrg}
-      >
-        <SelectTrigger className="w-[200px] h-9">
+      <Select value={organization?.id?.toString() || ''} onValueChange={handleSelectOrg}>
+        <SelectTrigger className="h-9 w-[200px]">
           <Building2 className="mr-2 h-4 w-4" />
           <SelectValue placeholder="选择组织" />
         </SelectTrigger>
@@ -94,9 +91,7 @@ export function OrgSelector() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmSwitch}>
-              确认切换
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirmSwitch}>确认切换</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

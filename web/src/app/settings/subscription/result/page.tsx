@@ -22,7 +22,7 @@ function SubscriptionResultContent() {
 
   return (
     <MainLayout>
-      <div className="space-y-6 max-w-md mx-auto">
+      <div className="mx-auto max-w-md space-y-6">
         <Card className={isSuccess ? 'border-green-500/50' : 'border-destructive/50'}>
           <CardHeader>
             <div className="flex items-center gap-3">
@@ -32,9 +32,7 @@ function SubscriptionResultContent() {
                 <XCircle className="h-10 w-10 text-destructive" />
               )}
               <div>
-                <CardTitle>
-                  {isSuccess ? '支付成功' : '支付未完成'}
-                </CardTitle>
+                <CardTitle>{isSuccess ? '支付成功' : '支付未完成'}</CardTitle>
                 <CardDescription>
                   {isSuccess
                     ? '您的订阅已开通/续费/升级，感谢使用！'
@@ -50,7 +48,7 @@ function SubscriptionResultContent() {
           )}
         </Card>
         <Button className="w-full" onClick={handleBack}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeft className="mr-2 h-4 w-4" />
           返回订阅管理
         </Button>
       </div>
@@ -63,7 +61,7 @@ export default function SubscriptionResultPage() {
     <Suspense
       fallback={
         <MainLayout>
-          <div className="space-y-6 max-w-md mx-auto">
+          <div className="mx-auto max-w-md space-y-6">
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-10 w-full" />
           </div>

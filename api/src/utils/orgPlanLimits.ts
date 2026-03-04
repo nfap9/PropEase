@@ -15,9 +15,7 @@ export type CountScope = 'organization' | 'user';
 /**
  * 判断组织的订阅是否有效：存在且 status=active 且 end_date 为空或 >= 今天
  */
-function isSubscriptionActive(
-  sub: { status: string; end_date: Date | null } | null
-): boolean {
+function isSubscriptionActive(sub: { status: string; end_date: Date | null } | null): boolean {
   if (!sub || sub.status !== 'active') return false;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -30,9 +28,7 @@ function isSubscriptionActive(
 /**
  * 返回组织当前应使用的套餐（有有效订阅用订阅套餐，否则用 org.plan 对应的套餐）
  */
-export async function getEffectivePlanForOrg(
-  orgId: string
-): Promise<SubscriptionPlan | null> {
+export async function getEffectivePlanForOrg(orgId: string): Promise<SubscriptionPlan | null> {
   const org = await prisma.organization.findUnique({
     where: { id: orgId },
     select: { plan: true },
@@ -73,17 +69,13 @@ interface LimitsSnapshot {
  * 免费套餐订阅若有 limits_snapshot 则优先使用（注册时快照，不受运营后续修改影响）
  * userId 可选：提供时叠加用户按量购买额度（用户级，所有组织共享）
  */
-export async function getEffectivePlanLimits(
-  orgId: string,
-  userId?: string
-): Promise<PlanLimits> {
+export async function getEffectivePlanLimits(orgId: string, userId?: string): Promise<PlanLimits> {
   const sub = await prisma.organizationSubscription.findUnique({
     where: { organization_id: orgId },
     include: { plan: true },
   });
   const plan = await getEffectivePlanForOrg(orgId);
-  const scope = (s: string | null): CountScope =>
-    s === 'user' ? 'user' : 'organization';
+  const scope = (s: string | null): CountScope => (s === 'user' ? 'user' : 'organization');
   let base: PlanLimits = {
     max_organizations: DEFAULT_FREE_LIMITS.max_organizations,
     max_apartments: DEFAULT_FREE_LIMITS.max_apartments,
@@ -94,21 +86,20 @@ export async function getEffectivePlanLimits(
   };
   if (plan) {
     const snapshot = sub?.limits_snapshot as LimitsSnapshot | null | undefined;
-    const useSnapshot =
-      sub && isSubscriptionActive(sub) && sub.plan?.code === 'free' && snapshot;
+    const useSnapshot = sub && isSubscriptionActive(sub) && sub.plan?.code === 'free' && snapshot;
     base = {
-      max_organizations: useSnapshot && snapshot.max_organizations !== undefined
-        ? snapshot.max_organizations
-        : plan.max_organizations,
-      max_apartments: useSnapshot && snapshot.max_apartments !== undefined
-        ? snapshot.max_apartments
-        : plan.max_apartments,
-      max_rooms: useSnapshot && snapshot.max_rooms !== undefined
-        ? snapshot.max_rooms
-        : plan.max_rooms,
-      max_members: useSnapshot && snapshot.max_members !== undefined
-        ? snapshot.max_members
-        : plan.max_members,
+      max_organizations:
+        useSnapshot && snapshot.max_organizations !== undefined
+          ? snapshot.max_organizations
+          : plan.max_organizations,
+      max_apartments:
+        useSnapshot && snapshot.max_apartments !== undefined
+          ? snapshot.max_apartments
+          : plan.max_apartments,
+      max_rooms:
+        useSnapshot && snapshot.max_rooms !== undefined ? snapshot.max_rooms : plan.max_rooms,
+      max_members:
+        useSnapshot && snapshot.max_members !== undefined ? snapshot.max_members : plan.max_members,
       rooms_count_scope: scope(plan.rooms_count_scope),
       members_count_scope: scope(plan.members_count_scope),
     };
@@ -132,13 +123,16 @@ export async function getEffectivePlanLimits(
     }),
     { orgs: 0, apartments: 0, rooms: 0, members: 0 }
   );
-  if (usageBonus.orgs === 0 && usageBonus.apartments === 0 && usageBonus.rooms === 0 && usageBonus.members === 0) {
+  if (
+    usageBonus.orgs === 0 &&
+    usageBonus.apartments === 0 &&
+    usageBonus.rooms === 0 &&
+    usageBonus.members === 0
+  ) {
     return base;
   }
   const resultOrgs =
-    base.max_organizations === null
-      ? null
-      : base.max_organizations + usageBonus.orgs;
+    base.max_organizations === null ? null : base.max_organizations + usageBonus.orgs;
   return {
     ...base,
     max_organizations: resultOrgs,
@@ -238,10 +232,7 @@ export async function getMaxOrganizationsForUser(userId: string): Promise<number
 /**
  * 用于限额校验的“已用房间数”：scope=organization 为当前组织房间数，scope=user 为用户所属全部组织的房间总数
  */
-export async function getRoomsUsedForLimitCheck(
-  orgId: string,
-  userId: string
-): Promise<number> {
+export async function getRoomsUsedForLimitCheck(orgId: string, userId: string): Promise<number> {
   const limits = await getEffectivePlanLimits(orgId);
   if (limits.rooms_count_scope === 'user') {
     const memberOrgs = await prisma.organizationMember.findMany({
@@ -262,10 +253,7 @@ export async function getRoomsUsedForLimitCheck(
 /**
  * 用于限额校验的“已用成员数”：scope=organization 为当前组织成员数，scope=user 为用户所属全部组织的成员总数
  */
-export async function getMembersUsedForLimitCheck(
-  orgId: string,
-  userId: string
-): Promise<number> {
+export async function getMembersUsedForLimitCheck(orgId: string, userId: string): Promise<number> {
   const limits = await getEffectivePlanLimits(orgId);
   if (limits.members_count_scope === 'user') {
     const memberOrgs = await prisma.organizationMember.findMany({

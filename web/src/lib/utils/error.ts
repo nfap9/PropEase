@@ -15,10 +15,7 @@ interface ErrorResponseData {
  * @param fallback - 无法提取时的默认提示
  * @returns 用于展示的错误文案
  */
-export function getErrorMessage(
-  error: unknown,
-  fallback = '操作失败，请重试'
-): string {
+export function getErrorMessage(error: unknown, fallback = '操作失败，请重试'): string {
   // ApiError：业务端已从接口解包，message 即接口响应的 message
   if (error instanceof ApiError && error.message) {
     return error.message;

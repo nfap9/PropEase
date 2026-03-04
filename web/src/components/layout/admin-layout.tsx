@@ -49,8 +49,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         {ADMIN_NAV.map((item) => {
           const Icon = item.icon;
           const isActive =
-            pathname === item.href ||
-            (item.href !== '/admin' && pathname.startsWith(item.href));
+            pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}

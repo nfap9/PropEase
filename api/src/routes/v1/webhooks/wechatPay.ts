@@ -20,7 +20,12 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
     const body = req.body as {
       event_type?: string;
-      resource?: { algorithm?: string; ciphertext?: string; nonce?: string; associated_data?: string };
+      resource?: {
+        algorithm?: string;
+        ciphertext?: string;
+        nonce?: string;
+        associated_data?: string;
+      };
     };
 
     const eventType = body?.event_type;

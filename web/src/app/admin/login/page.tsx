@@ -67,7 +67,9 @@ export default function AdminLoginPage() {
         (typeof err.response?.data?.detail === 'string' ? err.response.data.detail : null);
       if (err.response?.status === 429) {
         const retry = err.response?.headers?.['retry-after'];
-        setError(retry ? `登录尝试过于频繁，请 ${retry} 秒后再试` : msg || '登录尝试过于频繁，请稍后再试');
+        setError(
+          retry ? `登录尝试过于频繁，请 ${retry} 秒后再试` : msg || '登录尝试过于频繁，请稍后再试'
+        );
       } else {
         setError(msg || '用户名或密码错误');
       }
@@ -84,9 +86,7 @@ export default function AdminLoginPage() {
         <CardContent>
           <Form {...form}>
             <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {error && (
-                <p className="text-sm text-destructive">{error}</p>
-              )}
+              {error && <p className="text-sm text-destructive">{error}</p>}
               <FormField
                 control={form.control}
                 name="username"
@@ -107,7 +107,12 @@ export default function AdminLoginPage() {
                   <FormItem>
                     <FormLabel>密码</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="请输入密码" {...field} autoComplete="current-password" />
+                      <Input
+                        type="password"
+                        placeholder="请输入密码"
+                        {...field}
+                        autoComplete="current-password"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

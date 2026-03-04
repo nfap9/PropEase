@@ -33,7 +33,11 @@ type FormData = z.infer<typeof schema>;
 
 export default function AdminBrandPage() {
   const queryClient = useQueryClient();
-  const { data: config, isLoading, isError } = useQuery({
+  const {
+    data: config,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['admin', 'platform-config'],
     queryFn: async () => {
       const res = await adminApiEndpoints.getPlatformConfig();

@@ -18,7 +18,12 @@ export function responseWrapper(req: Request, res: Response, next: NextFunction)
   const originalJson = res.json.bind(res);
   res.json = function (body: unknown): Response {
     if (res.statusCode >= 400) return originalJson(body);
-    if (typeof body === 'object' && body !== null && 'code' in body && (body as { code: number }).code === 0) {
+    if (
+      typeof body === 'object' &&
+      body !== null &&
+      'code' in body &&
+      (body as { code: number }).code === 0
+    ) {
       return originalJson(body);
     }
     const message =

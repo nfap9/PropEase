@@ -150,7 +150,10 @@ router.post('/:apartmentId/rooms', async (req: Request, res: Response, next: Nex
     if (roomsUsed + 1 > limits.max_rooms) {
       return next(createAppError(403, `当前套餐最多允许 ${limits.max_rooms} 个房间`));
     }
-    const parsed = RoomCreateSchema.safeParse({ ...req.body, apartment_id: req.params.apartmentId });
+    const parsed = RoomCreateSchema.safeParse({
+      ...req.body,
+      apartment_id: req.params.apartmentId,
+    });
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const room = await defaultRoomService.create(orgId, req.params.apartmentId, parsed.data);
     res.status(201).json(room);
@@ -160,101 +163,132 @@ router.post('/:apartmentId/rooms', async (req: Request, res: Response, next: Nex
 });
 
 // POST /apartments/:apartmentId/rooms/batch - 批量创建房间
-router.post('/:apartmentId/rooms/batch', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const orgId = await requireOrgMembership(req);
-    const user = getConsoleUser(req);
-    if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const limits = await getEffectivePlanLimits(orgId, user.id);
-    const roomsUsed = await getRoomsUsedForLimitCheck(orgId, user.id);
-    const parsed = RoomBatchSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const addCount = parsed.data.room_numbers.length;
-    if (roomsUsed + addCount > limits.max_rooms) {
-      return next(createAppError(403, `当前套餐最多允许 ${limits.max_rooms} 个房间，当前已用 ${roomsUsed}，无法再添加 ${addCount} 个`));
+router.post(
+  '/:apartmentId/rooms/batch',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = await requireOrgMembership(req);
+      const user = getConsoleUser(req);
+      if (!user) return next(createAppError(401, '未授权或登录已过期'));
+      const limits = await getEffectivePlanLimits(orgId, user.id);
+      const roomsUsed = await getRoomsUsedForLimitCheck(orgId, user.id);
+      const parsed = RoomBatchSchema.safeParse(req.body);
+      if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+      const addCount = parsed.data.room_numbers.length;
+      if (roomsUsed + addCount > limits.max_rooms) {
+        return next(
+          createAppError(
+            403,
+            `当前套餐最多允许 ${limits.max_rooms} 个房间，当前已用 ${roomsUsed}，无法再添加 ${addCount} 个`
+          )
+        );
+      }
+      const created = await defaultRoomService.batchCreate(
+        orgId,
+        req.params.apartmentId,
+        parsed.data
+      );
+      res.status(201).json(created);
+    } catch (e) {
+      next(e);
     }
-    const created = await defaultRoomService.batchCreate(orgId, req.params.apartmentId, parsed.data);
-    res.status(201).json(created);
-  } catch (e) {
-    next(e);
   }
-});
+);
 
 // GET /apartments/:apartmentId/utility-config - 获取水电配置
-router.get('/:apartmentId/utility-config', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const orgId = await requireOrgMembership(req);
-    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    const config = await prisma.utilityConfig.findUnique({ where: { apartment_id: req.params.apartmentId } });
-    if (!config) return next(createAppError(404, NotFoundMessages.UTILITY_CONFIG));
-    res.json(config);
-  } catch (e) {
-    next(e);
+router.get(
+  '/:apartmentId/utility-config',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = await requireOrgMembership(req);
+      await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
+      const config = await prisma.utilityConfig.findUnique({
+        where: { apartment_id: req.params.apartmentId },
+      });
+      if (!config) return next(createAppError(404, NotFoundMessages.UTILITY_CONFIG));
+      res.json(config);
+    } catch (e) {
+      next(e);
+    }
   }
-});
+);
 
 // POST /apartments/:apartmentId/utility-config - 创建水电配置
-router.post('/:apartmentId/utility-config', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const orgId = await requireOrgMembership(req);
-    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    const parsed = UtilityConfigSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const effectiveFrom = new Date(parsed.data.effective_from);
-    const config = await prisma.utilityConfig.create({
-      data: {
-        id: ulid().toLowerCase(),
-        apartment_id: req.params.apartmentId,
-        water_price_per_unit: parsed.data.water_price_per_unit ?? undefined,
-        electricity_price_per_unit: parsed.data.electricity_price_per_unit ?? undefined,
-        internet_fee: parsed.data.internet_fee ?? undefined,
-        management_fee: parsed.data.management_fee ?? undefined,
-        service_fee: parsed.data.service_fee ?? undefined,
-        effective_from: effectiveFrom,
-        notes: parsed.data.notes ?? undefined,
-      },
-    });
-    res.status(201).json(config);
-  } catch (e) {
-    next(e);
+router.post(
+  '/:apartmentId/utility-config',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = await requireOrgMembership(req);
+      await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
+      const parsed = UtilityConfigSchema.safeParse(req.body);
+      if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+      const effectiveFrom = new Date(parsed.data.effective_from);
+      const config = await prisma.utilityConfig.create({
+        data: {
+          id: ulid().toLowerCase(),
+          apartment_id: req.params.apartmentId,
+          water_price_per_unit: parsed.data.water_price_per_unit ?? undefined,
+          electricity_price_per_unit: parsed.data.electricity_price_per_unit ?? undefined,
+          internet_fee: parsed.data.internet_fee ?? undefined,
+          management_fee: parsed.data.management_fee ?? undefined,
+          service_fee: parsed.data.service_fee ?? undefined,
+          effective_from: effectiveFrom,
+          notes: parsed.data.notes ?? undefined,
+        },
+      });
+      res.status(201).json(config);
+    } catch (e) {
+      next(e);
+    }
   }
-});
+);
 
 // PUT /apartments/:apartmentId/utility-config - 更新水电配置
-router.put('/:apartmentId/utility-config', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const orgId = await requireOrgMembership(req);
-    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    const parsed = UtilityConfigSchema.partial().safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const existing = await prisma.utilityConfig.findUnique({ where: { apartment_id: req.params.apartmentId } });
-    if (!existing) return next(createAppError(404, NotFoundMessages.UTILITY_CONFIG));
-    const data: Record<string, unknown> = {};
-    if (parsed.data.water_price_per_unit != null) data.water_price_per_unit = parsed.data.water_price_per_unit;
-    if (parsed.data.electricity_price_per_unit != null) data.electricity_price_per_unit = parsed.data.electricity_price_per_unit;
-    if (parsed.data.internet_fee != null) data.internet_fee = parsed.data.internet_fee;
-    if (parsed.data.management_fee != null) data.management_fee = parsed.data.management_fee;
-    if (parsed.data.service_fee != null) data.service_fee = parsed.data.service_fee;
-    if (parsed.data.effective_from != null) data.effective_from = new Date(parsed.data.effective_from);
-    if (parsed.data.notes !== undefined) data.notes = parsed.data.notes;
-    const config = await prisma.utilityConfig.update({ where: { id: existing.id }, data });
-    res.json(config);
-  } catch (e) {
-    next(e);
+router.put(
+  '/:apartmentId/utility-config',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = await requireOrgMembership(req);
+      await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
+      const parsed = UtilityConfigSchema.partial().safeParse(req.body);
+      if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+      const existing = await prisma.utilityConfig.findUnique({
+        where: { apartment_id: req.params.apartmentId },
+      });
+      if (!existing) return next(createAppError(404, NotFoundMessages.UTILITY_CONFIG));
+      const data: Record<string, unknown> = {};
+      if (parsed.data.water_price_per_unit != null)
+        data.water_price_per_unit = parsed.data.water_price_per_unit;
+      if (parsed.data.electricity_price_per_unit != null)
+        data.electricity_price_per_unit = parsed.data.electricity_price_per_unit;
+      if (parsed.data.internet_fee != null) data.internet_fee = parsed.data.internet_fee;
+      if (parsed.data.management_fee != null) data.management_fee = parsed.data.management_fee;
+      if (parsed.data.service_fee != null) data.service_fee = parsed.data.service_fee;
+      if (parsed.data.effective_from != null)
+        data.effective_from = new Date(parsed.data.effective_from);
+      if (parsed.data.notes !== undefined) data.notes = parsed.data.notes;
+      const config = await prisma.utilityConfig.update({ where: { id: existing.id }, data });
+      res.json(config);
+    } catch (e) {
+      next(e);
+    }
   }
-});
+);
 
 // DELETE /apartments/:apartmentId/utility-config - 删除水电配置
-router.delete('/:apartmentId/utility-config', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const orgId = await requireOrgMembership(req);
-    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    await prisma.utilityConfig.deleteMany({ where: { apartment_id: req.params.apartmentId } });
-    res.status(204).send();
-  } catch (e) {
-    next(e);
+router.delete(
+  '/:apartmentId/utility-config',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = await requireOrgMembership(req);
+      await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
+      await prisma.utilityConfig.deleteMany({ where: { apartment_id: req.params.apartmentId } });
+      res.status(204).send();
+    } catch (e) {
+      next(e);
+    }
   }
-});
+);
 
 // GET /apartments/:id - 获取单个公寓
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {

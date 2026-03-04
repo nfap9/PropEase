@@ -124,7 +124,10 @@ export default function TeamSettingsPage() {
     mutationFn: (data: OrganizationFormData) =>
       organizationsApi.create({
         name: data.name,
-        slug: data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+        slug: data.name
+          .toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9-]/g, ''),
       }),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['organizations'] });
@@ -167,8 +170,7 @@ export default function TeamSettingsPage() {
   });
 
   const removeMemberMutation = useMutation({
-    mutationFn: (memberId: string) =>
-      organizationsApi.removeMember(organization!.id, memberId),
+    mutationFn: (memberId: string) => organizationsApi.removeMember(organization!.id, memberId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['organization-members', organization?.id],
@@ -218,9 +220,7 @@ export default function TeamSettingsPage() {
       accessorKey: 'role',
       header: '角色',
       cell: ({ row }) => (
-        <Badge variant={ROLE_COLORS[row.original.role]}>
-          {ROLE_LABELS[row.original.role]}
-        </Badge>
+        <Badge variant={ROLE_COLORS[row.original.role]}>{ROLE_LABELS[row.original.role]}</Badge>
       ),
     },
     {
@@ -272,232 +272,242 @@ export default function TeamSettingsPage() {
         <div className="space-y-6">
           <h1 className="text-3xl font-bold">团队设置</h1>
 
-        <Tabs defaultValue="organizations" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="organizations">
-              <Building2 className="mr-2 h-4 w-4" />
-              组织信息
-            </TabsTrigger>
-            <TabsTrigger value="members" disabled={!organization}>
-              <Users className="mr-2 h-4 w-4" />
-              成员管理
-            </TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="organizations" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="organizations">
+                <Building2 className="mr-2 h-4 w-4" />
+                组织信息
+              </TabsTrigger>
+              <TabsTrigger value="members" disabled={!organization}>
+                <Users className="mr-2 h-4 w-4" />
+                成员管理
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="organizations" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">当前组织</h2>
-              <Button onClick={() => setIsCreateOrgOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                创建组织
-              </Button>
-            </div>
+            <TabsContent value="organizations" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">当前组织</h2>
+                <Button onClick={() => setIsCreateOrgOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  创建组织
+                </Button>
+              </div>
 
-            {organization ? (
-              <Card>
-                <CardHeader className="pb-2">
+              {organization ? (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{organization.name}</CardTitle>
+                      <PermissionGuard permission={PERMISSIONS.SETTINGS_EDIT}>
+                        <Button variant="outline" size="sm" onClick={handleEditOrg}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          编辑
+                        </Button>
+                      </PermissionGuard>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm text-muted-foreground">
+                      {organization.role ? (
+                        <Badge variant={ROLE_COLORS[organization.role]}>
+                          {ROLE_LABELS[organization.role]}
+                        </Badge>
+                      ) : (
+                        '—'
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : organizations?.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <h3 className="mt-4 text-lg font-semibold">还没有组织</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      创建一个组织开始管理您的公寓
+                    </p>
+                    <Button className="mt-4" onClick={() => setIsCreateOrgOpen(true)}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      创建组织
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <p className="text-sm text-muted-foreground">请从顶部导航栏的组织下拉框切换组织</p>
+              )}
+            </TabsContent>
+
+            <TabsContent value="members" className="space-y-4">
+              {organization && (
+                <>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{organization.name}</CardTitle>
-                    <PermissionGuard permission={PERMISSIONS.SETTINGS_EDIT}>
-                      <Button variant="outline" size="sm" onClick={handleEditOrg}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        编辑
+                    <div>
+                      <h2 className="text-xl font-semibold">{organization.name} - 成员</h2>
+                      <p className="text-sm text-muted-foreground">管理组织成员和权限</p>
+                    </div>
+                    {canManage && (
+                      <Button onClick={() => setIsInviteOpen(true)}>
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        邀请成员
                       </Button>
-                    </PermissionGuard>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm text-muted-foreground">
-                    {organization.role ? (
-                      <Badge variant={ROLE_COLORS[organization.role]}>
-                        {ROLE_LABELS[organization.role]}
-                      </Badge>
-                    ) : (
-                      '—'
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            ) : organizations?.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-4 text-lg font-semibold">还没有组织</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    创建一个组织开始管理您的公寓
-                  </p>
-                  <Button className="mt-4" onClick={() => setIsCreateOrgOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    创建组织
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                请从顶部导航栏的组织下拉框切换组织
-              </p>
-            )}
-          </TabsContent>
 
-          <TabsContent value="members" className="space-y-4">
-            {organization && (
-              <>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-semibold">{organization.name} - 成员</h2>
-                    <p className="text-sm text-muted-foreground">
-                      管理组织成员和权限
-                    </p>
-                  </div>
-                  {canManage && (
-                    <Button onClick={() => setIsInviteOpen(true)}>
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      邀请成员
-                    </Button>
+                  {membersLoading ? (
+                    <Skeleton className="h-64" />
+                  ) : (
+                    <DataTable columns={memberColumns} data={members || []} />
                   )}
-                </div>
-
-                {membersLoading ? (
-                  <Skeleton className="h-64" />
-                ) : (
-                  <DataTable columns={memberColumns} data={members || []} />
-                )}
-              </>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      {/* Create Organization Dialog */}
-      <Dialog open={isCreateOrgOpen} onOpenChange={setIsCreateOrgOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>创建组织</DialogTitle>
-            <DialogDescription>创建一个新的组织来管理您的公寓</DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={createOrgForm.handleSubmit((data) => createOrgMutation.mutate(data))}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="name">组织名称 <span aria-hidden="true">*</span></Label>
-              <Input id="name" aria-required {...createOrgForm.register('name')} />
-              {createOrgForm.formState.errors.name && (
-                <p className="text-sm text-destructive">
-                  {createOrgForm.formState.errors.name.message}
-                </p>
+                </>
               )}
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOrgOpen(false)}>
-                取消
-              </Button>
-              <Button type="submit" disabled={createOrgMutation.isPending}>
-                {createOrgMutation.isPending ? '创建中...' : '创建'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+            </TabsContent>
+          </Tabs>
+        </div>
 
-      {/* Edit Organization Dialog */}
-      <Dialog open={isEditOrgOpen} onOpenChange={setIsEditOrgOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>编辑组织</DialogTitle>
-            <DialogDescription>修改组织信息</DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={editOrgForm.handleSubmit((data) =>
-              organization && updateOrgMutation.mutate({ id: organization.id, data })
-            )}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">组织名称 <span aria-hidden="true">*</span></Label>
-              <Input id="edit-name" aria-required {...editOrgForm.register('name')} />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsEditOrgOpen(false)}>
-                取消
-              </Button>
-              <Button type="submit" disabled={updateOrgMutation.isPending}>
-                {updateOrgMutation.isPending ? '保存中...' : '保存'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Invite Member Dialog */}
-      <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>邀请成员</DialogTitle>
-            <DialogDescription>邀请新成员加入组织</DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={inviteForm.handleSubmit((data) => inviteMutation.mutate(data))}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="phone">手机号 <span aria-hidden="true">*</span></Label>
-              <Input id="phone" type="tel" placeholder="请输入手机号" aria-required {...inviteForm.register('phone')} />
-              {inviteForm.formState.errors.phone && (
-                <p className="text-sm text-destructive">
-                  {inviteForm.formState.errors.phone.message}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">角色 <span aria-hidden="true">*</span></Label>
-              <Select
-                value={inviteForm.watch('role')}
-                onValueChange={(value: MemberRole) => inviteForm.setValue('role', value)}
-              >
-                <SelectTrigger id="role">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">管理员</SelectItem>
-                  <SelectItem value="member">成员</SelectItem>
-                  <SelectItem value="viewer">查看者</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsInviteOpen(false)}>
-                取消
-              </Button>
-              <Button type="submit" disabled={inviteMutation.isPending}>
-                {inviteMutation.isPending ? '邀请中...' : '发送邀请'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Remove Member Alert Dialog */}
-      <AlertDialog open={isRemoveMemberOpen} onOpenChange={setIsRemoveMemberOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>确认移除</AlertDialogTitle>
-            <AlertDialogDescription>
-              确定要从组织中移除成员 &ldquo;{selectedMember?.user_full_name}&rdquo; 吗？
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => removeMemberMutation.mutate(selectedMember!.id)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        {/* Create Organization Dialog */}
+        <Dialog open={isCreateOrgOpen} onOpenChange={setIsCreateOrgOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>创建组织</DialogTitle>
+              <DialogDescription>创建一个新的组织来管理您的公寓</DialogDescription>
+            </DialogHeader>
+            <form
+              onSubmit={createOrgForm.handleSubmit((data) => createOrgMutation.mutate(data))}
+              className="space-y-4"
             >
-              {removeMemberMutation.isPending ? '移除中...' : '确认移除'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </MainLayout>
+              <div className="space-y-2">
+                <Label htmlFor="name">
+                  组织名称 <span aria-hidden="true">*</span>
+                </Label>
+                <Input id="name" aria-required {...createOrgForm.register('name')} />
+                {createOrgForm.formState.errors.name && (
+                  <p className="text-sm text-destructive">
+                    {createOrgForm.formState.errors.name.message}
+                  </p>
+                )}
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsCreateOrgOpen(false)}>
+                  取消
+                </Button>
+                <Button type="submit" disabled={createOrgMutation.isPending}>
+                  {createOrgMutation.isPending ? '创建中...' : '创建'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Organization Dialog */}
+        <Dialog open={isEditOrgOpen} onOpenChange={setIsEditOrgOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>编辑组织</DialogTitle>
+              <DialogDescription>修改组织信息</DialogDescription>
+            </DialogHeader>
+            <form
+              onSubmit={editOrgForm.handleSubmit(
+                (data) => organization && updateOrgMutation.mutate({ id: organization.id, data })
+              )}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">
+                  组织名称 <span aria-hidden="true">*</span>
+                </Label>
+                <Input id="edit-name" aria-required {...editOrgForm.register('name')} />
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsEditOrgOpen(false)}>
+                  取消
+                </Button>
+                <Button type="submit" disabled={updateOrgMutation.isPending}>
+                  {updateOrgMutation.isPending ? '保存中...' : '保存'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Invite Member Dialog */}
+        <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>邀请成员</DialogTitle>
+              <DialogDescription>邀请新成员加入组织</DialogDescription>
+            </DialogHeader>
+            <form
+              onSubmit={inviteForm.handleSubmit((data) => inviteMutation.mutate(data))}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="phone">
+                  手机号 <span aria-hidden="true">*</span>
+                </Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="请输入手机号"
+                  aria-required
+                  {...inviteForm.register('phone')}
+                />
+                {inviteForm.formState.errors.phone && (
+                  <p className="text-sm text-destructive">
+                    {inviteForm.formState.errors.phone.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="role">
+                  角色 <span aria-hidden="true">*</span>
+                </Label>
+                <Select
+                  value={inviteForm.watch('role')}
+                  onValueChange={(value: MemberRole) => inviteForm.setValue('role', value)}
+                >
+                  <SelectTrigger id="role">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">管理员</SelectItem>
+                    <SelectItem value="member">成员</SelectItem>
+                    <SelectItem value="viewer">查看者</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsInviteOpen(false)}>
+                  取消
+                </Button>
+                <Button type="submit" disabled={inviteMutation.isPending}>
+                  {inviteMutation.isPending ? '邀请中...' : '发送邀请'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Remove Member Alert Dialog */}
+        <AlertDialog open={isRemoveMemberOpen} onOpenChange={setIsRemoveMemberOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>确认移除</AlertDialogTitle>
+              <AlertDialogDescription>
+                确定要从组织中移除成员 &ldquo;{selectedMember?.user_full_name}&rdquo; 吗？
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>取消</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => removeMemberMutation.mutate(selectedMember!.id)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {removeMemberMutation.isPending ? '移除中...' : '确认移除'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </MainLayout>
     </PermissionPageGuard>
   );
 }

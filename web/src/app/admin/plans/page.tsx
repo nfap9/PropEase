@@ -40,11 +40,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { ColumnDef } from '@tanstack/react-table';
-import {
-  adminApiEndpoints,
-  AdminPlan,
-  AdminPlanUpdate,
-} from '@/lib/api/admin-client';
+import { adminApiEndpoints, AdminPlan, AdminPlanUpdate } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -116,11 +112,11 @@ export default function AdminPlansPage() {
         price_yearly: data.price_yearly,
         max_organizations: data.max_organizations === -1 ? null : data.max_organizations,
         max_apartments: data.max_apartments,
-      max_rooms: data.max_rooms,
-      max_members: data.max_members,
-      sort_order: data.sort_order,
-      free_validity_days: data.free_validity_days ?? undefined,
-    }),
+        max_rooms: data.max_rooms,
+        max_members: data.max_members,
+        sort_order: data.sort_order,
+        free_validity_days: data.free_validity_days ?? undefined,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'plans'] });
       setIsCreateOpen(false);
@@ -214,7 +210,7 @@ export default function AdminPlansPage() {
       header: '免费有效期',
       cell: ({ row }) => {
         const v = row.original.free_validity_days;
-        return v != null ? `${v}天` : (row.original.code === 'free' ? '无限期' : '-');
+        return v != null ? `${v}天` : row.original.code === 'free' ? '无限期' : '-';
       },
     },
     {
@@ -504,7 +500,9 @@ export default function AdminPlansPage() {
                           step="0.01"
                           {...field}
                           disabled={selectedPlan?.code === 'free'}
-                          placeholder={selectedPlan?.code === 'free' ? '免费套餐不可修改' : undefined}
+                          placeholder={
+                            selectedPlan?.code === 'free' ? '免费套餐不可修改' : undefined
+                          }
                         />
                       </FormControl>
                       <FormMessage />

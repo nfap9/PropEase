@@ -273,7 +273,13 @@ function BillsContent() {
       accessorKey: 'paid_amount',
       header: '已付金额',
       cell: ({ row }) => (
-        <span className={row.original.paid_amount < row.original.total_amount ? 'text-orange-600' : 'text-green-600'}>
+        <span
+          className={
+            row.original.paid_amount < row.original.total_amount
+              ? 'text-orange-600'
+              : 'text-green-600'
+          }
+        >
           ¥{row.original.paid_amount.toLocaleString()}
         </span>
       ),
@@ -339,7 +345,7 @@ function BillsContent() {
   if (!orgId) {
     return (
       <MainLayout>
-        <div className="flex flex-col items-center justify-center h-full space-y-4">
+        <div className="flex h-full flex-col items-center justify-center space-y-4">
           <Building2 className="h-16 w-16 text-muted-foreground" />
           <h2 className="text-xl font-semibold">请先创建或加入组织</h2>
           <p className="text-muted-foreground">在顶部导航栏选择或创建一个组织开始使用</p>
@@ -356,367 +362,385 @@ function BillsContent() {
             <h1 className="text-3xl font-bold">账单管理</h1>
           </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">账单总数</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">待收款</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">
-                ¥{(stats.totalAmount - stats.paidAmount).toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {stats.pending + stats.partial + stats.overdue} 笔
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">已收款</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                ¥{stats.paidAmount.toLocaleString()}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">逾期账单</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button onClick={() => setIsGenerateOpen(true)}>
-              <FilePlus className="mr-2 h-4 w-4" />
-              手动出账
-            </Button>
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => setStatusFilter(value as BillStatus | 'all')}
-            >
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="筛选状态" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部</SelectItem>
-                <SelectItem value="pending">待支付</SelectItem>
-                <SelectItem value="partial">部分支付</SelectItem>
-                <SelectItem value="paid">已支付</SelectItem>
-                <SelectItem value="overdue">已逾期</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Stats Cards */}
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">账单总数</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.total}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">待收款</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-orange-600">
+                  ¥{(stats.totalAmount - stats.paidAmount).toLocaleString()}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {stats.pending + stats.partial + stats.overdue} 笔
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">已收款</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  ¥{stats.paidAmount.toLocaleString()}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">逾期账单</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
+              </CardContent>
+            </Card>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" disabled={!bills || bills.length === 0}>
-                <Download className="mr-2 h-4 w-4" />
-                批量导出
-                <ChevronDown className="ml-2 h-4 w-4" />
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button onClick={() => setIsGenerateOpen(true)}>
+                <FilePlus className="mr-2 h-4 w-4" />
+                手动出账
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => exportExcel('all')}>
-                <FileSpreadsheet className="mr-2 h-4 w-4" />
-                导出全部账单
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => exportExcel('unfinished')}>
-                <AlertCircle className="mr-2 h-4 w-4" />
-                导出未完成账单
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <Select
+                value={statusFilter}
+                onValueChange={(value) => setStatusFilter(value as BillStatus | 'all')}
+              >
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="筛选状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部</SelectItem>
+                  <SelectItem value="pending">待支付</SelectItem>
+                  <SelectItem value="partial">部分支付</SelectItem>
+                  <SelectItem value="paid">已支付</SelectItem>
+                  <SelectItem value="overdue">已逾期</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={!bills || bills.length === 0}>
+                  <Download className="mr-2 h-4 w-4" />
+                  批量导出
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => exportExcel('all')}>
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  导出全部账单
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => exportExcel('unfinished')}>
+                  <AlertCircle className="mr-2 h-4 w-4" />
+                  导出未完成账单
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {billsLoading ? (
+            <Skeleton className="h-96" />
+          ) : (
+            <DataTable columns={columns} data={filteredBills || []} />
+          )}
         </div>
 
-        {billsLoading ? (
-          <Skeleton className="h-96" />
-        ) : (
-          <DataTable columns={columns} data={filteredBills || []} />
-        )}
-      </div>
-
-      {/* 账单详情弹窗 */}
-      <Dialog
-        open={isDetailOpen}
-        onOpenChange={(open) => {
-          setIsDetailOpen(open);
-          if (!open) setSelectedBillId(null);
-        }}
-      >
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>账单详情</DialogTitle>
-            <DialogDescription>
-              {selectedBillId
-                ? billDetail
-                  ? `${billDetail.bill_year}年${billDetail.bill_month}月 - ${billDetail.lease?.room?.apartment?.name ?? ''} ${billDetail.lease?.room?.room_number ?? ''}`
-                  : ''
-                : ''}
-            </DialogDescription>
-          </DialogHeader>
-          {billDetailLoading ? (
-            <Skeleton className="h-64 w-full" />
-          ) : billDetail ? (
-            <div className="space-y-4">
-              <div className="grid gap-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">账单月份</span>
-                  <span>
-                    {billDetail.bill_year}年{billDetail.bill_month}月
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">公寓/房间</span>
-                  <span>
-                    {billDetail.lease?.room?.apartment?.name ?? '-'} - {billDetail.lease?.room?.room_number ?? '-'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">租客</span>
-                  <span>{billDetail.lease?.tenant?.name ?? '-'}</span>
-                </div>
-                <div className="border-t pt-3 grid gap-2">
+        {/* 账单详情弹窗 */}
+        <Dialog
+          open={isDetailOpen}
+          onOpenChange={(open) => {
+            setIsDetailOpen(open);
+            if (!open) setSelectedBillId(null);
+          }}
+        >
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>账单详情</DialogTitle>
+              <DialogDescription>
+                {selectedBillId
+                  ? billDetail
+                    ? `${billDetail.bill_year}年${billDetail.bill_month}月 - ${billDetail.lease?.room?.apartment?.name ?? ''} ${billDetail.lease?.room?.room_number ?? ''}`
+                    : ''
+                  : ''}
+              </DialogDescription>
+            </DialogHeader>
+            {billDetailLoading ? (
+              <Skeleton className="h-64 w-full" />
+            ) : billDetail ? (
+              <div className="space-y-4">
+                <div className="grid gap-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">租金</span>
-                    <span>¥{Number(billDetail.rent_amount).toLocaleString()}</span>
+                    <span className="text-muted-foreground">账单月份</span>
+                    <span>
+                      {billDetail.bill_year}年{billDetail.bill_month}月
+                    </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">水费</span>
-                    <span>¥{Number(billDetail.water_amount).toLocaleString()}</span>
+                    <span className="text-muted-foreground">公寓/房间</span>
+                    <span>
+                      {billDetail.lease?.room?.apartment?.name ?? '-'} -{' '}
+                      {billDetail.lease?.room?.room_number ?? '-'}
+                    </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">电费</span>
-                    <span>¥{Number(billDetail.electricity_amount).toLocaleString()}</span>
+                    <span className="text-muted-foreground">租客</span>
+                    <span>{billDetail.lease?.tenant?.name ?? '-'}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">其他费用</span>
-                    <span>¥{Number(billDetail.other_amount).toLocaleString()}</span>
-                  </div>
-                </div>
-                <div className="flex justify-between font-medium border-t pt-3">
-                  <span>账单合计</span>
-                  <span>¥{Number(billDetail.total_amount).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">已付金额</span>
-                  <span className="text-green-600">¥{Number(billDetail.paid_amount).toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">到期日</span>
-                  <span>{formatDate(billDetail.due_date)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">状态</span>
-                  <Badge variant={BILL_STATUS_CONFIG[billDetail.status].variant}>
-                    {BILL_STATUS_CONFIG[billDetail.status].label}
-                  </Badge>
-                </div>
-                {billDetail.notes && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">备注</span>
-                    <span>{billDetail.notes}</span>
-                  </div>
-                )}
-              </div>
-              {(billDetail as Bill & { payments?: Payment[] }).payments &&
-                (billDetail as Bill & { payments?: Payment[] }).payments!.length > 0 && (
-                <div>
-                  <h4 className="mb-2 text-sm font-medium">付款记录</h4>
-                  <div className="rounded-md border">
-                    <div className="divide-y">
-                      {(billDetail as Bill & { payments?: Payment[] }).payments!.map((p) => (
-                        <div key={p.id} className="flex justify-between px-3 py-2 text-sm">
-                          <span>
-                            ¥{p.amount.toLocaleString()} · {PAYMENT_METHOD_LABELS[p.payment_method]} ·{' '}
-                            {formatDate(p.payment_date)}
-                          </span>
-                          {p.reference && <span className="text-muted-foreground">{p.reference}</span>}
-                        </div>
-                      ))}
+                  <div className="grid gap-2 border-t pt-3">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">租金</span>
+                      <span>¥{Number(billDetail.rent_amount).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">水费</span>
+                      <span>¥{Number(billDetail.water_amount).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">电费</span>
+                      <span>¥{Number(billDetail.electricity_amount).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">其他费用</span>
+                      <span>¥{Number(billDetail.other_amount).toLocaleString()}</span>
                     </div>
                   </div>
+                  <div className="flex justify-between border-t pt-3 font-medium">
+                    <span>账单合计</span>
+                    <span>¥{Number(billDetail.total_amount).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">已付金额</span>
+                    <span className="text-green-600">
+                      ¥{Number(billDetail.paid_amount).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">到期日</span>
+                    <span>{formatDate(billDetail.due_date)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">状态</span>
+                    <Badge variant={BILL_STATUS_CONFIG[billDetail.status].variant}>
+                      {BILL_STATUS_CONFIG[billDetail.status].label}
+                    </Badge>
+                  </div>
+                  {billDetail.notes && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">备注</span>
+                      <span>{billDetail.notes}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-              <DialogFooter className="flex gap-2 sm:gap-0">
-                {billDetail.status !== 'paid' && (
-                  <Button onClick={handlePaymentFromDetail}>
-                    <DollarSign className="mr-2 h-4 w-4" />
-                    登记付款
+                {(billDetail as Bill & { payments?: Payment[] }).payments &&
+                  (billDetail as Bill & { payments?: Payment[] }).payments!.length > 0 && (
+                    <div>
+                      <h4 className="mb-2 text-sm font-medium">付款记录</h4>
+                      <div className="rounded-md border">
+                        <div className="divide-y">
+                          {(billDetail as Bill & { payments?: Payment[] }).payments!.map((p) => (
+                            <div key={p.id} className="flex justify-between px-3 py-2 text-sm">
+                              <span>
+                                ¥{p.amount.toLocaleString()} ·{' '}
+                                {PAYMENT_METHOD_LABELS[p.payment_method]} ·{' '}
+                                {formatDate(p.payment_date)}
+                              </span>
+                              {p.reference && (
+                                <span className="text-muted-foreground">{p.reference}</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                <DialogFooter className="flex gap-2 sm:gap-0">
+                  {billDetail.status !== 'paid' && (
+                    <Button onClick={handlePaymentFromDetail}>
+                      <DollarSign className="mr-2 h-4 w-4" />
+                      登记付款
+                    </Button>
+                  )}
+                  <Button variant="outline" onClick={() => exportPdf(billDetail.id)}>
+                    <Download className="mr-2 h-4 w-4" />
+                    导出PDF
                   </Button>
+                  <Button variant="outline" onClick={() => setIsDetailOpen(false)}>
+                    关闭
+                  </Button>
+                </DialogFooter>
+              </div>
+            ) : null}
+          </DialogContent>
+        </Dialog>
+
+        {/* 手动出账弹窗 */}
+        <Dialog open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>手动出账</DialogTitle>
+              <DialogDescription>
+                为当前组织在租房间生成指定月份的账单。已有账单的租约将被跳过。
+              </DialogDescription>
+            </DialogHeader>
+            <form
+              onSubmit={generateForm.handleSubmit((d) => generateMutation.mutate(d))}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="bill_year">账单年份</Label>
+                  <Input
+                    id="bill_year"
+                    type="number"
+                    min={2020}
+                    max={2100}
+                    {...generateForm.register('bill_year', { valueAsNumber: true })}
+                  />
+                  {generateForm.formState.errors.bill_year && (
+                    <p className="text-sm text-destructive">
+                      {generateForm.formState.errors.bill_year.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bill_month">账单月份</Label>
+                  <Select
+                    value={String(generateForm.watch('bill_month'))}
+                    onValueChange={(v) => generateForm.setValue('bill_month', Number(v))}
+                  >
+                    <SelectTrigger id="bill_month">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                        <SelectItem key={m} value={String(m)}>
+                          {m} 月
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="due_date">到期日</Label>
+                <Input id="due_date" type="date" {...generateForm.register('due_date')} />
+                {generateForm.formState.errors.due_date && (
+                  <p className="text-sm text-destructive">
+                    {generateForm.formState.errors.due_date.message}
+                  </p>
                 )}
-                <Button variant="outline" onClick={() => exportPdf(billDetail.id)}>
-                  <Download className="mr-2 h-4 w-4" />
-                  导出PDF
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsGenerateOpen(false)}>
+                  取消
                 </Button>
-                <Button variant="outline" onClick={() => setIsDetailOpen(false)}>
-                  关闭
+                <Button type="submit" disabled={generateMutation.isPending}>
+                  {generateMutation.isPending ? '生成中...' : '生成账单'}
                 </Button>
               </DialogFooter>
-            </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+            </form>
+          </DialogContent>
+        </Dialog>
 
-      {/* 手动出账弹窗 */}
-      <Dialog open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>手动出账</DialogTitle>
-            <DialogDescription>
-              为当前组织在租房间生成指定月份的账单。已有账单的租约将被跳过。
-            </DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={generateForm.handleSubmit((d) => generateMutation.mutate(d))}
-            className="space-y-4"
-          >
-            <div className="grid grid-cols-2 gap-4">
+        {/* Payment Dialog */}
+        <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>登记付款</DialogTitle>
+              <DialogDescription>
+                账单金额: ¥{selectedBill?.total_amount.toLocaleString()}， 已付: ¥
+                {selectedBill?.paid_amount.toLocaleString()}， 待付: ¥
+                {(
+                  (selectedBill?.total_amount || 0) - (selectedBill?.paid_amount || 0)
+                ).toLocaleString()}
+              </DialogDescription>
+            </DialogHeader>
+            <form
+              onSubmit={paymentForm.handleSubmit((data) => paymentMutation.mutate(data))}
+              className="space-y-4"
+            >
               <div className="space-y-2">
-                <Label htmlFor="bill_year">账单年份</Label>
+                <Label htmlFor="amount">
+                  付款金额 <span aria-hidden="true">*</span>
+                </Label>
                 <Input
-                  id="bill_year"
+                  id="amount"
+                  aria-required
                   type="number"
-                  min={2020}
-                  max={2100}
-                  {...generateForm.register('bill_year', { valueAsNumber: true })}
+                  step="0.01"
+                  {...paymentForm.register('amount', { valueAsNumber: true })}
                 />
-                {generateForm.formState.errors.bill_year && (
-                  <p className="text-sm text-destructive">{generateForm.formState.errors.bill_year.message}</p>
+                {paymentForm.formState.errors.amount && (
+                  <p className="text-sm text-destructive">
+                    {paymentForm.formState.errors.amount.message}
+                  </p>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="bill_month">账单月份</Label>
-                <Select
-                  value={String(generateForm.watch('bill_month'))}
-                  onValueChange={(v) => generateForm.setValue('bill_month', Number(v))}
-                >
-                  <SelectTrigger id="bill_month">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                      <SelectItem key={m} value={String(m)}>
-                        {m} 月
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="due_date">到期日</Label>
-              <Input id="due_date" type="date" {...generateForm.register('due_date')} />
-              {generateForm.formState.errors.due_date && (
-                <p className="text-sm text-destructive">{generateForm.formState.errors.due_date.message}</p>
-              )}
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsGenerateOpen(false)}>
-                取消
-              </Button>
-              <Button type="submit" disabled={generateMutation.isPending}>
-                {generateMutation.isPending ? '生成中...' : '生成账单'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Payment Dialog */}
-      <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>登记付款</DialogTitle>
-            <DialogDescription>
-              账单金额: ¥{selectedBill?.total_amount.toLocaleString()}，
-              已付: ¥{selectedBill?.paid_amount.toLocaleString()}，
-              待付: ¥{((selectedBill?.total_amount || 0) - (selectedBill?.paid_amount || 0)).toLocaleString()}
-            </DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={paymentForm.handleSubmit((data) => paymentMutation.mutate(data))}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="amount">付款金额 <span aria-hidden="true">*</span></Label>
-              <Input
-                id="amount"
-                aria-required
-                type="number"
-                step="0.01"
-                {...paymentForm.register('amount', { valueAsNumber: true })}
-              />
-              {paymentForm.formState.errors.amount && (
-                <p className="text-sm text-destructive">
-                  {paymentForm.formState.errors.amount.message}
-                </p>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="payment_date">付款日期 <span aria-hidden="true">*</span></Label>
-                <Input
-                  id="payment_date"
-                  type="date"
-                  aria-required
-                  {...paymentForm.register('payment_date')}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="payment_date">
+                    付款日期 <span aria-hidden="true">*</span>
+                  </Label>
+                  <Input
+                    id="payment_date"
+                    type="date"
+                    aria-required
+                    {...paymentForm.register('payment_date')}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="payment_method">
+                    付款方式 <span aria-hidden="true">*</span>
+                  </Label>
+                  <Select
+                    value={paymentForm.watch('payment_method')}
+                    onValueChange={(value: PaymentMethod) =>
+                      paymentForm.setValue('payment_method', value)
+                    }
+                  >
+                    <SelectTrigger id="payment_method" className="min-w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(PAYMENT_METHOD_LABELS).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="payment_method">付款方式 <span aria-hidden="true">*</span></Label>
-                <Select
-                  value={paymentForm.watch('payment_method')}
-                  onValueChange={(value: PaymentMethod) =>
-                    paymentForm.setValue('payment_method', value)
-                  }
-                >
-                  <SelectTrigger id="payment_method" className="min-w-[140px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PAYMENT_METHOD_LABELS).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="reference">交易号/参考号</Label>
+                <Input id="reference" {...paymentForm.register('reference')} />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="reference">交易号/参考号</Label>
-              <Input id="reference" {...paymentForm.register('reference')} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">备注</Label>
-              <Input id="notes" {...paymentForm.register('notes')} />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsPaymentOpen(false)}>
-                取消
-              </Button>
-              <Button type="submit" disabled={paymentMutation.isPending}>
-                {paymentMutation.isPending ? '处理中...' : '确认收款'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </MainLayout>
+              <div className="space-y-2">
+                <Label htmlFor="notes">备注</Label>
+                <Input id="notes" {...paymentForm.register('notes')} />
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsPaymentOpen(false)}>
+                  取消
+                </Button>
+                <Button type="submit" disabled={paymentMutation.isPending}>
+                  {paymentMutation.isPending ? '处理中...' : '确认收款'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </MainLayout>
     </PermissionPageGuard>
   );
 }

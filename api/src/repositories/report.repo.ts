@@ -23,19 +23,30 @@ export interface ReportRepository {
   // 收入统计
   getRoomIds(orgId: string): Promise<string[]>;
   getLeaseIds(roomIds: string[]): Promise<string[]>;
-  getBillsByYear(leaseIds: string[], year: number, startMonth?: number, endMonth?: number): Promise<Array<{
-    bill_month: number;
-    rent_amount: Decimal | null;
-    water_amount: Decimal | null;
-    electricity_amount: Decimal | null;
-    other_amount: Decimal | null;
-    total_amount: Decimal | null;
-    paid_amount: Decimal | null;
-  }>>;
+  getBillsByYear(
+    leaseIds: string[],
+    year: number,
+    startMonth?: number,
+    endMonth?: number
+  ): Promise<
+    Array<{
+      bill_month: number;
+      rent_amount: Decimal | null;
+      water_amount: Decimal | null;
+      electricity_amount: Decimal | null;
+      other_amount: Decimal | null;
+      total_amount: Decimal | null;
+      paid_amount: Decimal | null;
+    }>
+  >;
 
   // 入住率统计
   countRoomsTotal(orgId: string): Promise<number>;
-  countOccupiedRoomsInMonth(roomIds: string[], monthStart: Date, monthEndNext: Date): Promise<number>;
+  countOccupiedRoomsInMonth(
+    roomIds: string[],
+    monthStart: Date,
+    monthEndNext: Date
+  ): Promise<number>;
 }
 
 /**
@@ -52,7 +63,9 @@ export function createReportRepository(db: DbClient): ReportRepository {
     },
 
     countOccupiedRooms: async (orgId: string) => {
-      return db.room.count({ where: { apartment: { organization_id: orgId }, status: 'occupied' } });
+      return db.room.count({
+        where: { apartment: { organization_id: orgId }, status: 'occupied' },
+      });
     },
 
     countTenants: async (orgId: string) => {
@@ -60,7 +73,9 @@ export function createReportRepository(db: DbClient): ReportRepository {
     },
 
     countActiveLeases: async (orgId: string) => {
-      return db.lease.count({ where: { room: { apartment: { organization_id: orgId } }, is_active: true } });
+      return db.lease.count({
+        where: { room: { apartment: { organization_id: orgId } }, is_active: true },
+      });
     },
 
     sumMonthlyRevenue: async (orgId: string, year: number, month: number) => {
@@ -94,14 +109,18 @@ export function createReportRepository(db: DbClient): ReportRepository {
     getRoomsMissingInitialReadings: async (orgId: string) => {
       const rooms = await db.room.findMany({
         where: { apartment: { organization_id: orgId }, status: 'occupied' },
-        include: { leases: { where: { is_active: true }, take: 1, orderBy: { start_date: 'desc' } } },
+        include: {
+          leases: { where: { is_active: true }, take: 1, orderBy: { start_date: 'desc' } },
+        },
       });
       const roomIds = rooms.map((r) => r.id);
       const readings = await db.utilityReading.findMany({
         where: { room_id: { in: roomIds } },
         select: { room_id: true, period_year: true, period_month: true },
       });
-      const readingKeys = new Set(readings.map((r) => `${r.room_id}:${r.period_year}:${r.period_month}`));
+      const readingKeys = new Set(
+        readings.map((r) => `${r.room_id}:${r.period_year}:${r.period_month}`)
+      );
       let count = 0;
       for (const r of rooms) {
         const lease = r.leases[0];
@@ -128,7 +147,12 @@ export function createReportRepository(db: DbClient): ReportRepository {
       return leases.map((l) => l.id);
     },
 
-    getBillsByYear: async (leaseIds: string[], year: number, startMonth?: number, endMonth?: number) => {
+    getBillsByYear: async (
+      leaseIds: string[],
+      year: number,
+      startMonth?: number,
+      endMonth?: number
+    ) => {
       return db.bill.findMany({
         where: {
           lease_id: { in: leaseIds },

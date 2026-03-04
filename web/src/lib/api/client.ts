@@ -1,8 +1,4 @@
-import axios, {
-  AxiosError,
-  AxiosResponse,
-  InternalAxiosRequestConfig,
-} from 'axios';
+import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import {
   type SuccessBody,
   type ErrorResponseBody,
@@ -36,7 +32,7 @@ export class ApiError extends Error {
     this.data = data;
     this.fieldErrors =
       data && typeof data === 'object' && 'errors' in data
-        ? (data as ErrorResponseData).errors ?? []
+        ? ((data as ErrorResponseData).errors ?? [])
         : [];
   }
 
@@ -84,11 +80,7 @@ api.interceptors.response.use(
     const responseData = response.data;
 
     // 如果响应是统一格式 {code, data, message}
-    if (
-      responseData &&
-      typeof responseData === 'object' &&
-      'code' in responseData
-    ) {
+    if (responseData && typeof responseData === 'object' && 'code' in responseData) {
       // 业务成功（code === 0）
       if (responseData.code === 0) {
         // 解包：返回 data 部分
@@ -98,11 +90,7 @@ api.interceptors.response.use(
 
       // 业务失败：抛出 ApiError
       const errBody = responseData as ErrorResponseBody;
-      const error = new ApiError(
-        errBody.code,
-        errBody.message,
-        errBody.data
-      );
+      const error = new ApiError(errBody.code, errBody.message, errBody.data);
       return Promise.reject(error) as Promise<AxiosResponse<unknown>>;
     }
 
@@ -121,12 +109,9 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('refresh_token');
         if (refreshToken) {
-          const response = await axios.post(
-            `${API_URL}/auth/refresh`,
-            {
-              refresh_token: refreshToken,
-            }
-          );
+          const response = await axios.post(`${API_URL}/auth/refresh`, {
+            refresh_token: refreshToken,
+          });
 
           // 处理统一响应格式：如果是 {code, data, message} 格式，需要解包
           const responseData = response.data as
@@ -164,10 +149,9 @@ api.interceptors.response.use(
       const responseData = error.response.data as unknown as Record<string, unknown>;
       const msg = typeof responseData.message === 'string' ? responseData.message : null;
       if (msg) {
-        const code = typeof responseData.code === 'number' ? responseData.code : error.response.status || 500;
-        return Promise.reject(
-          new ApiError(code, msg, responseData.data ?? responseData)
-        );
+        const code =
+          typeof responseData.code === 'number' ? responseData.code : error.response.status || 500;
+        return Promise.reject(new ApiError(code, msg, responseData.data ?? responseData));
       }
     }
 

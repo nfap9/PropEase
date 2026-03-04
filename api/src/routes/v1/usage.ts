@@ -53,7 +53,9 @@ router.post('/orders', async (req: Request, res: Response, next: NextFunction) =
       out_trade_no: order.order_no,
       description: `按量购买-组织${parsed.data.orgs}公寓${parsed.data.apartments}房间${parsed.data.rooms}成员${parsed.data.members}`,
       amount_yuan: Number(order.amount),
-      time_expire: expires ? expires.toISOString() : new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+      time_expire: expires
+        ? expires.toISOString()
+        : new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
     });
 
     if (wechatResult?.code_url) {
@@ -78,15 +80,18 @@ router.get('/orders/:order_id', async (req: Request, res: Response, next: NextFu
   }
 });
 
-router.post('/orders/:order_id/simulate-pay', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const user = getConsoleUser(req);
-    if (!user) return next(createAppError(401, '未授权'));
-    const order = await defaultUsageService.simulatePay(user.id, req.params.order_id);
-    res.json(order);
-  } catch (e) {
-    return next(e);
+router.post(
+  '/orders/:order_id/simulate-pay',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = getConsoleUser(req);
+      if (!user) return next(createAppError(401, '未授权'));
+      const order = await defaultUsageService.simulatePay(user.id, req.params.order_id);
+      res.json(order);
+    } catch (e) {
+      return next(e);
+    }
   }
-});
+);
 
 export const usageRouter = router;

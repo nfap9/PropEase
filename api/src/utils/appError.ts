@@ -8,7 +8,8 @@ export function createAppError(
 ): AppErrorType {
   const err = new Error(message) as AppErrorType;
   err.statusCode = statusCode;
-  err.businessCode = options?.businessCode ?? (statusCode === 422 ? BusinessCode.VALIDATION_ERROR : undefined);
+  err.businessCode =
+    options?.businessCode ?? (statusCode === 422 ? BusinessCode.VALIDATION_ERROR : undefined);
   err.fieldErrors = options?.fieldErrors;
   if (err.businessCode === undefined) {
     const map: Record<number, number> = {

@@ -10,15 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { SUBSCRIPTION_STATUS_CONFIG } from '@/lib/status-config';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Check,
-  Crown,
-  Zap,
-  Building2,
-  ArrowLeft,
-  Loader2,
-  CreditCard,
-} from 'lucide-react';
+import { Check, Crown, Zap, Building2, ArrowLeft, Loader2, CreditCard } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -134,11 +126,11 @@ export default function SubscriptionPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => router.push('/settings')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             返回
           </Button>
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
+            <h1 className="flex items-center gap-2 text-3xl font-bold">
               <CreditCard className="h-8 w-8" />
               订阅管理
             </h1>
@@ -156,22 +148,24 @@ export default function SubscriptionPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{subscriptionStatus.plan?.name || '免费版'}</p>
-                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <p className="flex items-center gap-2 text-sm text-muted-foreground">
                     状态:
                     <Badge
                       variant={
-                        SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus.status]?.variant ?? 'secondary'
+                        SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus.status]?.variant ??
+                        'secondary'
                       }
                     >
                       {SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus.status]?.label ??
                         subscriptionStatus.status}
                     </Badge>
                   </p>
-                  {subscriptionStatus.days_remaining !== null && subscriptionStatus.days_remaining > 0 && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      剩余 {subscriptionStatus.days_remaining} 天
-                    </p>
-                  )}
+                  {subscriptionStatus.days_remaining !== null &&
+                    subscriptionStatus.days_remaining > 0 && (
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        剩余 {subscriptionStatus.days_remaining} 天
+                      </p>
+                    )}
                 </div>
               </div>
             </CardContent>
@@ -203,7 +197,7 @@ export default function SubscriptionPage() {
               <Card key={i} className="relative">
                 <CardHeader>
                   <Skeleton className="h-6 w-24" />
-                  <Skeleton className="h-4 w-full mt-2" />
+                  <Skeleton className="mt-2 h-4 w-full" />
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Skeleton className="h-10 w-full" />
@@ -279,7 +273,7 @@ export default function SubscriptionPage() {
                     >
                       {(subscribeMutation.isPending || createOrderMutation.isPending) &&
                       selectedPlan === plan.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       ) : null}
                       {isCurrentPlan
                         ? '当前套餐'
@@ -295,7 +289,7 @@ export default function SubscriptionPage() {
         ) : (
           <Card>
             <CardContent className="pt-6">
-              <p className="text-muted-foreground text-center">
+              <p className="text-center text-muted-foreground">
                 暂无可订阅的付费套餐，免费套餐已在注册时自动开通。请联系运营方配置更多套餐。
               </p>
             </CardContent>
@@ -308,7 +302,8 @@ export default function SubscriptionPage() {
             <DialogHeader>
               <DialogTitle>确认订阅</DialogTitle>
               <DialogDescription>
-                确认订阅 {plans?.find((p) => p.id === selectedPlan)?.name}？确认后将跳转至微信扫码支付。
+                确认订阅 {plans?.find((p) => p.id === selectedPlan)?.name}
+                ？确认后将跳转至微信扫码支付。
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -320,7 +315,7 @@ export default function SubscriptionPage() {
                 disabled={subscribeMutation.isPending || createOrderMutation.isPending}
               >
                 {(subscribeMutation.isPending || createOrderMutation.isPending) && (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
                 确认并去支付
               </Button>

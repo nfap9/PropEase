@@ -2,7 +2,7 @@ import api from './client';
 import { UtilityReading } from '@/types';
 
 export interface BatchUtilityReadingItem {
-  room_id: string;  // ULID
+  room_id: string; // ULID
   water_reading?: number | null;
   electricity_reading?: number | null;
   notes?: string | null;
@@ -24,7 +24,7 @@ export interface RoomMissingInitialReading {
 }
 
 export interface UtilityExportRoom {
-  room_id: string;  // ULID
+  room_id: string; // ULID
   apartment_name: string;
   room_number: string;
   tenant_name: string;
@@ -70,7 +70,11 @@ export const utilitiesApi = {
     return response.data;
   },
 
-  update: async (orgId: string, id: string, data: Partial<UtilityReading>): Promise<UtilityReading> => {
+  update: async (
+    orgId: string,
+    id: string,
+    data: Partial<UtilityReading>
+  ): Promise<UtilityReading> => {
     const response = await api.put<UtilityReading>(`/utilities/${id}`, data, {
       params: { org_id: orgId },
     });
@@ -81,10 +85,7 @@ export const utilitiesApi = {
     await api.delete(`/utilities/${id}`, { params: { org_id: orgId } });
   },
 
-  batchCreate: async (
-    orgId: string,
-    data: BatchUtilityReadingData
-  ): Promise<UtilityReading[]> => {
+  batchCreate: async (orgId: string, data: BatchUtilityReadingData): Promise<UtilityReading[]> => {
     const response = await api.post<UtilityReading[]>('/utilities/batch', data, {
       params: { org_id: orgId },
     });
@@ -92,9 +93,12 @@ export const utilitiesApi = {
   },
 
   getRoomsMissingInitial: async (orgId: string): Promise<RoomMissingInitialReading[]> => {
-    const response = await api.get<RoomMissingInitialReading[]>('/utilities/rooms-missing-initial', {
-      params: { org_id: orgId },
-    });
+    const response = await api.get<RoomMissingInitialReading[]>(
+      '/utilities/rooms-missing-initial',
+      {
+        params: { org_id: orgId },
+      }
+    );
     return response.data;
   },
 

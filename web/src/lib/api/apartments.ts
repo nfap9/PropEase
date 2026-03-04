@@ -1,9 +1,19 @@
 import api from './client';
-import { Apartment, ApartmentWithStats, Room, RoomBatchCreate, UtilityConfig, UtilityConfigCreate, UtilityConfigUpdate } from '@/types';
+import {
+  Apartment,
+  ApartmentWithStats,
+  Room,
+  RoomBatchCreate,
+  UtilityConfig,
+  UtilityConfigCreate,
+  UtilityConfigUpdate,
+} from '@/types';
 
 export const apartmentsApi = {
   list: async (orgId: string): Promise<ApartmentWithStats[]> => {
-    const response = await api.get<ApartmentWithStats[]>('/apartments', { params: { org_id: orgId } });
+    const response = await api.get<ApartmentWithStats[]>('/apartments', {
+      params: { org_id: orgId },
+    });
     return response.data;
   },
 
@@ -18,7 +28,9 @@ export const apartmentsApi = {
   },
 
   update: async (orgId: string, id: string, data: Partial<Apartment>): Promise<Apartment> => {
-    const response = await api.put<Apartment>(`/apartments/${id}`, data, { params: { org_id: orgId } });
+    const response = await api.put<Apartment>(`/apartments/${id}`, data, {
+      params: { org_id: orgId },
+    });
     return response.data;
   },
 
@@ -50,11 +62,17 @@ export const roomsApi = {
   },
 
   create: async (orgId: string, apartmentId: string, data: Partial<Room>): Promise<Room> => {
-    const response = await api.post<Room>(`/apartments/${apartmentId}/rooms`, data, { params: { org_id: orgId } });
+    const response = await api.post<Room>(`/apartments/${apartmentId}/rooms`, data, {
+      params: { org_id: orgId },
+    });
     return response.data;
   },
 
-  batchCreate: async (orgId: string, apartmentId: string, data: RoomBatchCreate): Promise<Room[]> => {
+  batchCreate: async (
+    orgId: string,
+    apartmentId: string,
+    data: RoomBatchCreate
+  ): Promise<Room[]> => {
     const response = await api.post<Room[]>(`/apartments/${apartmentId}/rooms/batch`, data, {
       params: { org_id: orgId },
     });
@@ -62,7 +80,9 @@ export const roomsApi = {
   },
 
   update: async (orgId: string, id: string, data: Partial<Room>): Promise<Room> => {
-    const response = await api.put<Room>(`/apartments/rooms/${id}`, data, { params: { org_id: orgId } });
+    const response = await api.put<Room>(`/apartments/rooms/${id}`, data, {
+      params: { org_id: orgId },
+    });
     return response.data;
   },
 
@@ -79,17 +99,33 @@ export const utilityConfigApi = {
     return response.data;
   },
 
-  createOrUpdate: async (orgId: string, apartmentId: string, data: UtilityConfigCreate): Promise<UtilityConfig> => {
-    const response = await api.post<UtilityConfig>(`/apartments/${apartmentId}/utility-config`, data, {
-      params: { org_id: orgId },
-    });
+  createOrUpdate: async (
+    orgId: string,
+    apartmentId: string,
+    data: UtilityConfigCreate
+  ): Promise<UtilityConfig> => {
+    const response = await api.post<UtilityConfig>(
+      `/apartments/${apartmentId}/utility-config`,
+      data,
+      {
+        params: { org_id: orgId },
+      }
+    );
     return response.data;
   },
 
-  update: async (orgId: string, apartmentId: string, data: UtilityConfigUpdate): Promise<UtilityConfig> => {
-    const response = await api.put<UtilityConfig>(`/apartments/${apartmentId}/utility-config`, data, {
-      params: { org_id: orgId },
-    });
+  update: async (
+    orgId: string,
+    apartmentId: string,
+    data: UtilityConfigUpdate
+  ): Promise<UtilityConfig> => {
+    const response = await api.put<UtilityConfig>(
+      `/apartments/${apartmentId}/utility-config`,
+      data,
+      {
+        params: { org_id: orgId },
+      }
+    );
     return response.data;
   },
 

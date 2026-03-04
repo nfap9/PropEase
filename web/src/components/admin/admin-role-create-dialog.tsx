@@ -69,15 +69,10 @@ export function AdminRoleCreateDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto overscroll-contain">
         <DialogHeader>
           <DialogTitle>新建角色</DialogTitle>
-          <DialogDescription>
-            填写角色名称并勾选该角色可执行的权限
-          </DialogDescription>
+          <DialogDescription>填写角色名称并勾选该角色可执行的权限</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -97,11 +92,7 @@ export function AdminRoleCreateDialog({
               idPrefix="create"
             />
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 取消
               </Button>
               <Button type="submit" disabled={isPending}>

@@ -34,8 +34,7 @@ export const usageApi = {
   getPricing: (): Promise<UsagePricing> =>
     api.get<UsagePricing>('/usage/pricing').then((r) => r.data),
 
-  getQuota: (): Promise<UsageQuota> =>
-    api.get<UsageQuota>('/usage/quota').then((r) => r.data),
+  getQuota: (): Promise<UsageQuota> => api.get<UsageQuota>('/usage/quota').then((r) => r.data),
 
   createOrder: (data: {
     orgs: number;

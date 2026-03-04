@@ -112,7 +112,10 @@ router.get('/export/excel', async (req: Request, res: Response, next: NextFuncti
     if (bills.length === 0) return next(createAppError(400, '没有可导出的账单'));
 
     const tenantIds = [...new Set(bills.map((b) => b.lease.tenant_id))];
-    const tenants = await prisma.tenant.findMany({ where: { id: { in: tenantIds } }, select: { id: true, name: true } });
+    const tenants = await prisma.tenant.findMany({
+      where: { id: { in: tenantIds } },
+      select: { id: true, name: true },
+    });
     const tenantNameById = Object.fromEntries(tenants.map((t) => [t.id, t.name]));
 
     const org = await prisma.organization.findUnique({ where: { id: orgId } });
@@ -141,7 +144,10 @@ router.get('/export/excel', async (req: Request, res: Response, next: NextFuncti
     else if (status) filename += `_${status}`;
     filename += '.xlsx';
     res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
     res.send(buffer);
   } catch (e) {
     next(e);
@@ -162,7 +168,10 @@ router.get('/:id/pdf', async (req: Request, res: Response, next: NextFunction) =
   try {
     const orgId = await requireOrgMembership(req);
     const bill = await defaultBillService.validateOwnership(orgId, req.params.id);
-    const tenant = await prisma.tenant.findUnique({ where: { id: bill.lease.tenant_id }, select: { name: true } });
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: bill.lease.tenant_id },
+      select: { name: true },
+    });
     const org = await prisma.organization.findUnique({ where: { id: orgId } });
     const brandConfig = await getBrandConfig();
     const orgName = org?.name ?? brandConfig.app_name;

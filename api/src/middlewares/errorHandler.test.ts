@@ -1,11 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Request, Response, NextFunction } from 'express';
 import { BusinessCode } from '@apartment-ultra/api-contract';
-import {
-  createErrorResponse,
-  errorHandler,
-  type AppError,
-} from './errorHandler.js';
+import { createErrorResponse, errorHandler, type AppError } from './errorHandler.js';
 
 describe('createErrorResponse', () => {
   it('returns body with code and message only when no data', () => {
@@ -25,7 +21,11 @@ describe('createErrorResponse', () => {
 });
 
 describe('errorHandler', () => {
-  function createMockRes(): { res: Response; statusSpy: ReturnType<typeof vi.fn>; jsonSpy: ReturnType<typeof vi.fn> } {
+  function createMockRes(): {
+    res: Response;
+    statusSpy: ReturnType<typeof vi.fn>;
+    jsonSpy: ReturnType<typeof vi.fn>;
+  } {
     const statusSpy = vi.fn(function (this: Response, _code: number) {
       return this;
     }) as ReturnType<typeof vi.fn>;
@@ -40,7 +40,9 @@ describe('errorHandler', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {}) as ReturnType<typeof vi.spyOn>;
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {}) as ReturnType<
+      typeof vi.spyOn
+    >;
   });
 
   afterEach(() => {

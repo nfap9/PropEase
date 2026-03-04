@@ -57,7 +57,10 @@ function buildCreateData(orgId: string, data: CreateApartmentInput): Prisma.Apar
 /**
  * 构建公寓更新数据
  */
-function buildUpdateData(existing: Apartment, data: UpdateApartmentInput): Prisma.ApartmentUpdateInput {
+function buildUpdateData(
+  existing: Apartment,
+  data: UpdateApartmentInput
+): Prisma.ApartmentUpdateInput {
   return {
     name: data.name ?? existing.name,
     address: data.address ?? existing.address,

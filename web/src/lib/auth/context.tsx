@@ -13,7 +13,12 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (phone: string, password?: string, verificationCode?: string) => Promise<void>;
-  register: (phone: string, password: string, fullName: string, verificationCode: string) => Promise<void>;
+  register: (
+    phone: string,
+    password: string,
+    fullName: string,
+    verificationCode: string
+  ) => Promise<void>;
   sendSmsCode: (data: SendSmsCodeData) => Promise<void>;
   logout: () => void;
   setOrganization: (org: Organization | null) => void;
@@ -99,8 +104,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/dashboard');
   };
 
-  const register = async (phone: string, password: string, fullName: string, verificationCode: string) => {
-    await authApi.register({ phone, password, full_name: fullName, verification_code: verificationCode });
+  const register = async (
+    phone: string,
+    password: string,
+    fullName: string,
+    verificationCode: string
+  ) => {
+    await authApi.register({
+      phone,
+      password,
+      full_name: fullName,
+      verification_code: verificationCode,
+    });
     // 注册成功后自动登录
     await login(phone, password);
   };

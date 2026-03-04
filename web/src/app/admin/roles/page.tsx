@@ -3,11 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import {
-  adminApiEndpoints,
-  AdminRole,
-  AdminRoleUpdate,
-} from '@/lib/api/admin-client';
+import { adminApiEndpoints, AdminRole, AdminRoleUpdate } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import { AdminRoleList } from '@/components/admin/admin-role-list';
 import { AdminRoleDetailPanel } from '@/components/admin/admin-role-detail-panel';
@@ -21,12 +17,8 @@ import { cn } from '@/lib/utils';
 export default function AdminRolesPage() {
   const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<AdminRole | null>(null);
-  const [draftPermissionCodes, setDraftPermissionCodes] = useState<string[]>(
-    []
-  );
-  const [createPermissionCodes, setCreatePermissionCodes] = useState<string[]>(
-    []
-  );
+  const [draftPermissionCodes, setDraftPermissionCodes] = useState<string[]>([]);
+  const [createPermissionCodes, setCreatePermissionCodes] = useState<string[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 

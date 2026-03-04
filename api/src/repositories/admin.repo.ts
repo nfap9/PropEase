@@ -1,4 +1,15 @@
-import type { AdminUser, AdminRole, User, Organization, SubscriptionPlan, OrganizationSubscription, UsagePricing, UsageQuotaOrder, PlatformConfig, Prisma } from '../generated/client/index.js';
+import type {
+  AdminUser,
+  AdminRole,
+  User,
+  Organization,
+  SubscriptionPlan,
+  OrganizationSubscription,
+  UsagePricing,
+  UsageQuotaOrder,
+  PlatformConfig,
+  Prisma,
+} from '../generated/client/index.js';
 
 // 使用 Prisma.InputJsonValue 类型
 type InputJsonValue = Prisma.InputJsonValue;
@@ -54,10 +65,14 @@ export interface AdminRepository {
   createAdminRole(data: Prisma.AdminRoleCreateInput): Promise<AdminRole>;
   updateAdminRole(id: string, data: Prisma.AdminRoleUpdateInput): Promise<AdminRole>;
   deleteAdminRole(id: string): Promise<void>;
-  findAdminRoleWithUsers(id: string): Promise<AdminRole & { users: AdminUser[] } | null>;
+  findAdminRoleWithUsers(id: string): Promise<(AdminRole & { users: AdminUser[] }) | null>;
 
   // Organizations
-  listOrganizations(skip?: number, limit?: number, where?: Prisma.OrganizationWhereInput): Promise<Organization[]>;
+  listOrganizations(
+    skip?: number,
+    limit?: number,
+    where?: Prisma.OrganizationWhereInput
+  ): Promise<Organization[]>;
   findOrganizationById(id: string): Promise<Organization | null>;
   updateOrganizationActive(id: string, active: boolean): Promise<Organization>;
 
@@ -77,7 +92,11 @@ export interface AdminRepository {
   deletePlan(id: string): Promise<void>;
 
   // Subscriptions
-  listSubscriptions(skip?: number, limit?: number, where?: Prisma.OrganizationSubscriptionWhereInput): Promise<SubscriptionWithRelations[]>;
+  listSubscriptions(
+    skip?: number,
+    limit?: number,
+    where?: Prisma.OrganizationSubscriptionWhereInput
+  ): Promise<SubscriptionWithRelations[]>;
   findSubscriptionById(id: string): Promise<SubscriptionWithRelations | null>;
   renewSubscription(id: string, endDate: Date): Promise<OrganizationSubscription>;
   cancelSubscription(id: string): Promise<void>;
@@ -95,7 +114,16 @@ export interface AdminRepository {
   updateUsagePricing(id: string, data: Prisma.UsagePricingUpdateInput): Promise<UsagePricing>;
 
   // Usage Orders
-  listUsageOrders(skip?: number, limit?: number): Promise<Array<UsageQuotaOrder & { user: { id: string; phone: string | null; full_name: string | null } | null }>>;
+  listUsageOrders(
+    skip?: number,
+    limit?: number
+  ): Promise<
+    Array<
+      UsageQuotaOrder & {
+        user: { id: string; phone: string | null; full_name: string | null } | null;
+      }
+    >
+  >;
 
   // Platform Config
   getPlatformConfig(): Promise<PlatformConfig | null>;
@@ -172,7 +200,11 @@ export function createAdminRepository(db: DbClient): AdminRepository {
       });
     },
 
-    listOrganizations: async (skip?: number, limit?: number, where?: Prisma.OrganizationWhereInput) => {
+    listOrganizations: async (
+      skip?: number,
+      limit?: number,
+      where?: Prisma.OrganizationWhereInput
+    ) => {
       return db.organization.findMany({ skip, take: limit, where });
     },
 
@@ -251,7 +283,11 @@ export function createAdminRepository(db: DbClient): AdminRepository {
       await db.subscriptionPlan.delete({ where: { id } });
     },
 
-    listSubscriptions: async (skip?: number, limit?: number, where?: Prisma.OrganizationSubscriptionWhereInput) => {
+    listSubscriptions: async (
+      skip?: number,
+      limit?: number,
+      where?: Prisma.OrganizationSubscriptionWhereInput
+    ) => {
       return db.organizationSubscription.findMany({
         skip,
         take: limit,

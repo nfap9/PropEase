@@ -42,7 +42,10 @@ export interface UsageService {
   getPricing(): Promise<PricingInfo>;
   getQuota(userId: string): Promise<QuotaSummary>;
   createOrder(userId: string, data: CreateOrderInput): Promise<UsageQuotaOrder>;
-  getOrder(userId: string, orderId: string): Promise<UsageQuotaOrder & { simulate_pay_available?: boolean }>;
+  getOrder(
+    userId: string,
+    orderId: string
+  ): Promise<UsageQuotaOrder & { simulate_pay_available?: boolean }>;
   simulatePay(userId: string, orderId: string): Promise<UsageQuotaOrder>;
 }
 

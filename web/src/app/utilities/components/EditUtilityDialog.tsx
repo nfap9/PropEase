@@ -91,11 +91,7 @@ export function EditUtilityDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-reading_date">读数日期</Label>
-            <Input
-              id="edit-reading_date"
-              type="date"
-              {...form.register('reading_date')}
-            />
+            <Input id="edit-reading_date" type="date" {...form.register('reading_date')} />
           </div>
           <div className="space-y-2">
             <Label>房间</Label>

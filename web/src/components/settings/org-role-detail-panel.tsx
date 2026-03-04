@@ -62,9 +62,7 @@ export function OrgRoleDetailPanel({
   isSaving,
 }: OrgRoleDetailPanelProps) {
   const readOnly = role === 'owner';
-  const entries = groupedPermissions
-    ? Object.entries(groupedPermissions)
-    : [];
+  const entries = groupedPermissions ? Object.entries(groupedPermissions) : [];
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(entries.map(([k]) => k)));
 
   const toggleExpanded = (resource: string) => {
@@ -116,7 +114,7 @@ export function OrgRoleDetailPanel({
           </div>
         ) : entries.length > 0 ? (
           <div className="space-y-0.5 rounded-md border p-3">
-            <p className="text-sm font-medium leading-none mb-2">权限</p>
+            <p className="mb-2 text-sm font-medium leading-none">权限</p>
             <ul className="space-y-0.5">
               {entries.map(([resource, permissions]) => {
                 const isOpen = expanded.has(resource);
@@ -132,7 +130,7 @@ export function OrgRoleDetailPanel({
                       <button
                         type="button"
                         onClick={() => toggleExpanded(resource)}
-                        className="shrink-0 p-0.5 rounded hover:bg-muted/80 text-muted-foreground"
+                        className="shrink-0 rounded p-0.5 text-muted-foreground hover:bg-muted/80"
                         aria-expanded={isOpen}
                         aria-label={isOpen ? '收起' : '展开'}
                       >
@@ -145,40 +143,36 @@ export function OrgRoleDetailPanel({
                       <Checkbox
                         id={`org-res-${resource}`}
                         checked={allChecked}
-                        onCheckedChange={() =>
-                          onToggleResource(resource, permissions)
-                        }
+                        onCheckedChange={() => onToggleResource(resource, permissions)}
                         className="shrink-0"
                       />
                       <label
                         htmlFor={`org-res-${resource}`}
-                        className="flex-1 text-sm font-medium cursor-pointer select-none py-0.5"
+                        className="flex-1 cursor-pointer select-none py-0.5 text-sm font-medium"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {RESOURCE_LABELS[resource] || resource}
                       </label>
-                      <span className="text-xs text-muted-foreground shrink-0">
+                      <span className="shrink-0 text-xs text-muted-foreground">
                         {groupCount}/{permissions.length}
                       </span>
                     </div>
                     {isOpen && (
-                      <ul className="pl-6 pb-1 space-y-0.5 border-l border-muted ml-2">
+                      <ul className="ml-2 space-y-0.5 border-l border-muted pb-1 pl-6">
                         {permissions.map((permission) => (
                           <li
                             key={permission.id}
-                            className="flex items-center gap-2 py-1 pl-2 -ml-px border-b border-muted/50 last:border-b-0"
+                            className="-ml-px flex items-center gap-2 border-b border-muted/50 py-1 pl-2 last:border-b-0"
                           >
                             <Checkbox
                               id={`org-perm-${permission.id}`}
                               checked={selectedPermissions.has(permission.code)}
-                              onCheckedChange={() =>
-                                onTogglePermission(permission.code)
-                              }
+                              onCheckedChange={() => onTogglePermission(permission.code)}
                               className="shrink-0"
                             />
                             <label
                               htmlFor={`org-perm-${permission.id}`}
-                              className="text-sm cursor-pointer select-none flex-1"
+                              className="flex-1 cursor-pointer select-none text-sm"
                             >
                               {permission.name ||
                                 `${RESOURCE_LABELS[resource] || resource}${ACTION_LABELS[permission.action] || permission.action}`}

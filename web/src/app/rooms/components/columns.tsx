@@ -36,10 +36,7 @@ export function useColumns({
       cell: ({ row }) => {
         const apartment = row.original.apartment;
         return apartment ? (
-          <Link
-            href={`/apartments/${apartment.id}`}
-            className="text-primary hover:underline"
-          >
+          <Link href={`/apartments/${apartment.id}`} className="text-primary hover:underline">
             {apartment.name}
           </Link>
         ) : (
@@ -77,11 +74,7 @@ export function useColumns({
     {
       accessorKey: 'notes',
       header: '备注',
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">
-          {row.original.notes || '-'}
-        </span>
-      ),
+      cell: ({ row }) => <span className="text-muted-foreground">{row.original.notes || '-'}</span>,
     },
     {
       id: 'actions',

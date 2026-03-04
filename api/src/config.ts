@@ -33,7 +33,10 @@ export const config = {
   appName: envStr('APP_NAME', 'Apartment Ultra API'),
   apiV1Prefix: envStr('API_V1_PREFIX', '/api/v1'),
   debug: envBool('DEBUG', false),
-  databaseUrl: envStr('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/apartment_ultra'),
+  databaseUrl: envStr(
+    'DATABASE_URL',
+    'postgresql://postgres:postgres@localhost:5432/apartment_ultra'
+  ),
   secretKey: envStr('SECRET_KEY', 'dev-secret-key-do-not-use-in-production'),
   algorithm: envStr('ALGORITHM', 'HS256') as 'HS256',
   accessTokenExpireMinutes: envInt('ACCESS_TOKEN_EXPIRE_MINUTES', 30),

@@ -126,9 +126,7 @@ export function UtilityConfigDialog({
             <Settings className="h-5 w-5" />
             费用配置
           </DialogTitle>
-          <DialogDescription>
-            配置 {apartmentName} 的公用费用，将在生成账单时使用
-          </DialogDescription>
+          <DialogDescription>配置 {apartmentName} 的公用费用，将在生成账单时使用</DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
@@ -182,7 +180,7 @@ export function UtilityConfigDialog({
                     placeholder="网费"
                     {...form.register('internet_fee', { valueAsNumber: true })}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">网费</p>
+                  <p className="mt-1 text-xs text-muted-foreground">网费</p>
                 </div>
                 <div>
                   <Input
@@ -191,7 +189,7 @@ export function UtilityConfigDialog({
                     placeholder="管理费"
                     {...form.register('management_fee', { valueAsNumber: true })}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">管理费</p>
+                  <p className="mt-1 text-xs text-muted-foreground">管理费</p>
                 </div>
                 <div>
                   <Input
@@ -200,7 +198,7 @@ export function UtilityConfigDialog({
                     placeholder="服务费"
                     {...form.register('service_fee', { valueAsNumber: true })}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">服务费</p>
+                  <p className="mt-1 text-xs text-muted-foreground">服务费</p>
                 </div>
               </div>
             </div>
@@ -208,11 +206,7 @@ export function UtilityConfigDialog({
             {/* 生效日期 */}
             <div className="space-y-2">
               <Label htmlFor="effective_from">生效日期</Label>
-              <Input
-                id="effective_from"
-                type="date"
-                {...form.register('effective_from')}
-              />
+              <Input id="effective_from" type="date" {...form.register('effective_from')} />
               {form.formState.errors.effective_from && (
                 <p className="text-sm text-destructive">
                   {form.formState.errors.effective_from.message}
@@ -223,11 +217,7 @@ export function UtilityConfigDialog({
             {/* 备注 */}
             <div className="space-y-2">
               <Label htmlFor="notes">备注</Label>
-              <Input
-                id="notes"
-                placeholder="可选备注信息"
-                {...form.register('notes')}
-              />
+              <Input id="notes" placeholder="可选备注信息" {...form.register('notes')} />
             </div>
 
             <DialogFooter>

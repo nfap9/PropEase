@@ -18,7 +18,8 @@ async function getBrandConfig(): Promise<{ app_name: string; app_description: st
       brand?: { app_name: string; app_description: string };
     };
     const brand = json?.data?.brand ?? json?.brand;
-    if (brand?.app_name) return { app_name: brand.app_name, app_description: brand.app_description ?? '' };
+    if (brand?.app_name)
+      return { app_name: brand.app_name, app_description: brand.app_description ?? '' };
   } catch {
     // ignore
   }

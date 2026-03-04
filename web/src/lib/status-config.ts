@@ -25,10 +25,7 @@ export const BILL_STATUS_CONFIG: Record<
 };
 
 /** 房间状态 */
-export const ROOM_STATUS_CONFIG: Record<
-  string,
-  { label: string; variant: BadgeVariant }
-> = {
+export const ROOM_STATUS_CONFIG: Record<string, { label: string; variant: BadgeVariant }> = {
   available: { label: '空置', variant: 'success' },
   occupied: { label: '已租', variant: 'info' },
   maintenance: { label: '维修中', variant: 'warning' },
@@ -53,21 +50,16 @@ export const BOOLEAN_YES_NO_CONFIG = {
 };
 
 /** 订阅状态 */
-export const SUBSCRIPTION_STATUS_CONFIG: Record<
-  string,
-  { label: string; variant: BadgeVariant }
-> = {
-  active: { label: '生效中', variant: 'success' },
-  expired: { label: '已过期', variant: 'secondary' },
-  cancelled: { label: '已取消', variant: 'destructive' },
-  trial: { label: '试用', variant: 'info' },
-};
+export const SUBSCRIPTION_STATUS_CONFIG: Record<string, { label: string; variant: BadgeVariant }> =
+  {
+    active: { label: '生效中', variant: 'success' },
+    expired: { label: '已过期', variant: 'secondary' },
+    cancelled: { label: '已取消', variant: 'destructive' },
+    trial: { label: '试用', variant: 'info' },
+  };
 
 /** 订单支付状态 */
-export const ORDER_STATUS_CONFIG: Record<
-  string,
-  { label: string; variant: BadgeVariant }
-> = {
+export const ORDER_STATUS_CONFIG: Record<string, { label: string; variant: BadgeVariant }> = {
   paid: { label: '已支付', variant: 'success' },
   pending: { label: '待支付', variant: 'warning' },
   failed: { label: '支付失败', variant: 'destructive' },

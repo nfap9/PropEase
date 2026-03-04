@@ -7,12 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { MoreHorizontal } from 'lucide-react';
 import { useMediaQuery } from '@/hooks/use-mobile';
 
@@ -77,9 +72,7 @@ export function TableActions({ actions, maxInline = 2 }: TableActionsProps) {
                 size="sm"
                 onClick={action.onClick}
                 className={
-                  action.variant === 'destructive'
-                    ? 'text-destructive hover:text-destructive'
-                    : ''
+                  action.variant === 'destructive' ? 'text-destructive hover:text-destructive' : ''
                 }
               >
                 {action.icon && <action.icon className="h-4 w-4" />}
@@ -89,33 +82,33 @@ export function TableActions({ actions, maxInline = 2 }: TableActionsProps) {
             <TooltipContent side="top">{action.label}</TooltipContent>
           </Tooltip>
         ))}
-      {menuActions.length > 0 && (
-        <DropdownMenu>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" aria-label="更多操作">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent side="top">更多操作</TooltipContent>
-          </Tooltip>
-          <DropdownMenuContent align="end">
-            {menuActions.map((action, i) => (
-              <DropdownMenuItem
-                key={i}
-                onClick={action.onClick}
-                className={action.variant === 'destructive' ? 'text-destructive' : ''}
-              >
-                {action.icon && <action.icon className="mr-2 h-4 w-4" />}
-                {action.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-    </div>
+        {menuActions.length > 0 && (
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" aria-label="更多操作">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="top">更多操作</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="end">
+              {menuActions.map((action, i) => (
+                <DropdownMenuItem
+                  key={i}
+                  onClick={action.onClick}
+                  className={action.variant === 'destructive' ? 'text-destructive' : ''}
+                >
+                  {action.icon && <action.icon className="mr-2 h-4 w-4" />}
+                  {action.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
     </TooltipProvider>
   );
 }

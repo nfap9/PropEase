@@ -1,4 +1,11 @@
-import type { Prisma, UtilityReading, Room, Apartment, Lease, Tenant } from '../generated/client/index.js';
+import type {
+  Prisma,
+  UtilityReading,
+  Room,
+  Apartment,
+  Lease,
+  Tenant,
+} from '../generated/client/index.js';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -38,7 +45,11 @@ export interface UtilityRepository {
   createBatch(readings: Array<Prisma.UtilityReadingCreateInput>): Promise<UtilityReading[]>;
   update(id: string, data: Prisma.UtilityReadingUpdateInput): Promise<UtilityReading>;
   delete(id: string): Promise<void>;
-  findExistingReading(roomId: string, periodYear: number, periodMonth: number): Promise<UtilityReading | null>;
+  findExistingReading(
+    roomId: string,
+    periodYear: number,
+    periodMonth: number
+  ): Promise<UtilityReading | null>;
   getRoomIdsByOrg(orgId: string): Promise<string[]>;
 }
 
@@ -98,9 +109,7 @@ export function createUtilityRepository(db: DbClient): UtilityRepository {
         return Promise.all(readings.map((data) => db.utilityReading.create({ data })));
       }
 
-      return prismaClient.$transaction(
-        readings.map((data) => db.utilityReading.create({ data }))
-      );
+      return prismaClient.$transaction(readings.map((data) => db.utilityReading.create({ data })));
     },
 
     update: async (id: string, data: Prisma.UtilityReadingUpdateInput) => {

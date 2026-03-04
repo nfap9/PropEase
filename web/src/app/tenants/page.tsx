@@ -207,7 +207,7 @@ export default function TenantsPage() {
   if (!orgId) {
     return (
       <MainLayout>
-        <div className="flex flex-col items-center justify-center h-full space-y-4">
+        <div className="flex h-full flex-col items-center justify-center space-y-4">
           <Building2 className="h-16 w-16 text-muted-foreground" />
           <h2 className="text-xl font-semibold">请先创建或加入组织</h2>
           <p className="text-muted-foreground">在顶部导航栏选择或创建一个组织开始使用</p>
@@ -228,164 +228,160 @@ export default function TenantsPage() {
             </Button>
           </div>
 
-        {tenantsLoading ? (
-          <Skeleton className="h-96" />
-        ) : (
-          <DataTable columns={columns} data={tenants || []} />
-        )}
-      </div>
+          {tenantsLoading ? (
+            <Skeleton className="h-96" />
+          ) : (
+            <DataTable columns={columns} data={tenants || []} />
+          )}
+        </div>
 
-      {/* Create Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>新增租客</DialogTitle>
-            <DialogDescription>填写租客信息</DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={createForm.handleSubmit((data) => createMutation.mutate(data))}
-            className="space-y-4"
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">姓名 <span aria-hidden="true">*</span></Label>
-                <Input id="name" aria-required {...createForm.register('name')} />
-                {createForm.formState.errors.name && (
-                  <p className="text-sm text-destructive">
-                    {createForm.formState.errors.name.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">联系电话 <span aria-hidden="true">*</span></Label>
-                <Input id="phone" aria-required {...createForm.register('phone')} />
-                {createForm.formState.errors.phone && (
-                  <p className="text-sm text-destructive">
-                    {createForm.formState.errors.phone.message}
-                  </p>
-                )}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="id_card">身份证号</Label>
-                <Input id="id_card" {...createForm.register('id_card')} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="emergency_contact">紧急联系人</Label>
-                <Input
-                  id="emergency_contact"
-                  {...createForm.register('emergency_contact')}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="emergency_phone">紧急联系电话</Label>
-                <Input
-                  id="emergency_phone"
-                  {...createForm.register('emergency_phone')}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">备注</Label>
-              <Input id="notes" {...createForm.register('notes')} />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
-                取消
-              </Button>
-              <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? '创建中...' : '创建'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>编辑租客</DialogTitle>
-            <DialogDescription>修改租客信息</DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={editForm.handleSubmit((data) =>
-              updateMutation.mutate({ id: selectedTenant!.id, data })
-            )}
-            className="space-y-4"
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-name">姓名 <span aria-hidden="true">*</span></Label>
-                <Input id="edit-name" aria-required {...editForm.register('name')} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-phone">联系电话 <span aria-hidden="true">*</span></Label>
-                <Input id="edit-phone" aria-required {...editForm.register('phone')} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-id_card">身份证号</Label>
-                <Input id="edit-id_card" {...editForm.register('id_card')} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-emergency_contact">紧急联系人</Label>
-                <Input
-                  id="edit-emergency_contact"
-                  {...editForm.register('emergency_contact')}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-emergency_phone">紧急联系电话</Label>
-                <Input
-                  id="edit-emergency_phone"
-                  {...editForm.register('emergency_phone')}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-notes">备注</Label>
-              <Input id="edit-notes" {...editForm.register('notes')} />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
-                取消
-              </Button>
-              <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? '保存中...' : '保存'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Alert Dialog */}
-      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>确认删除</AlertDialogTitle>
-            <AlertDialogDescription>
-              确定要删除租客 &ldquo;{selectedTenant?.name}&rdquo; 吗？此操作不可撤销。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteMutation.mutate(selectedTenant!.id)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        {/* Create Dialog */}
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>新增租客</DialogTitle>
+              <DialogDescription>填写租客信息</DialogDescription>
+            </DialogHeader>
+            <form
+              onSubmit={createForm.handleSubmit((data) => createMutation.mutate(data))}
+              className="space-y-4"
             >
-              {deleteMutation.isPending ? '删除中...' : '删除'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </MainLayout>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">
+                    姓名 <span aria-hidden="true">*</span>
+                  </Label>
+                  <Input id="name" aria-required {...createForm.register('name')} />
+                  {createForm.formState.errors.name && (
+                    <p className="text-sm text-destructive">
+                      {createForm.formState.errors.name.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">
+                    联系电话 <span aria-hidden="true">*</span>
+                  </Label>
+                  <Input id="phone" aria-required {...createForm.register('phone')} />
+                  {createForm.formState.errors.phone && (
+                    <p className="text-sm text-destructive">
+                      {createForm.formState.errors.phone.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="id_card">身份证号</Label>
+                  <Input id="id_card" {...createForm.register('id_card')} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="emergency_contact">紧急联系人</Label>
+                  <Input id="emergency_contact" {...createForm.register('emergency_contact')} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="emergency_phone">紧急联系电话</Label>
+                  <Input id="emergency_phone" {...createForm.register('emergency_phone')} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="notes">备注</Label>
+                <Input id="notes" {...createForm.register('notes')} />
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+                  取消
+                </Button>
+                <Button type="submit" disabled={createMutation.isPending}>
+                  {createMutation.isPending ? '创建中...' : '创建'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Dialog */}
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>编辑租客</DialogTitle>
+              <DialogDescription>修改租客信息</DialogDescription>
+            </DialogHeader>
+            <form
+              onSubmit={editForm.handleSubmit((data) =>
+                updateMutation.mutate({ id: selectedTenant!.id, data })
+              )}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">
+                    姓名 <span aria-hidden="true">*</span>
+                  </Label>
+                  <Input id="edit-name" aria-required {...editForm.register('name')} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-phone">
+                    联系电话 <span aria-hidden="true">*</span>
+                  </Label>
+                  <Input id="edit-phone" aria-required {...editForm.register('phone')} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-id_card">身份证号</Label>
+                  <Input id="edit-id_card" {...editForm.register('id_card')} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-emergency_contact">紧急联系人</Label>
+                  <Input id="edit-emergency_contact" {...editForm.register('emergency_contact')} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-emergency_phone">紧急联系电话</Label>
+                  <Input id="edit-emergency_phone" {...editForm.register('emergency_phone')} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-notes">备注</Label>
+                <Input id="edit-notes" {...editForm.register('notes')} />
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                  取消
+                </Button>
+                <Button type="submit" disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? '保存中...' : '保存'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Alert Dialog */}
+        <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>确认删除</AlertDialogTitle>
+              <AlertDialogDescription>
+                确定要删除租客 &ldquo;{selectedTenant?.name}&rdquo; 吗？此操作不可撤销。
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>取消</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteMutation.mutate(selectedTenant!.id)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteMutation.isPending ? '删除中...' : '删除'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </MainLayout>
     </PermissionPageGuard>
   );
 }

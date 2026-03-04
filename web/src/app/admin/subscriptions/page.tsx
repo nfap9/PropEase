@@ -48,10 +48,7 @@ import {
 } from '@/components/ui/select';
 import { ColumnDef } from '@tanstack/react-table';
 import { formatDate } from '@/lib/date-utils';
-import {
-  adminApiEndpoints,
-  AdminSubscription,
-} from '@/lib/api/admin-client';
+import { adminApiEndpoints, AdminSubscription } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import { CalendarPlus, Ban } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -224,7 +221,10 @@ export default function AdminSubscriptionsPage() {
             onChange={(e) => setOrgIdFilter(e.target.value)}
             className="w-48"
           />
-          <Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
+          <Select
+            value={statusFilter || 'all'}
+            onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}
+          >
             <SelectTrigger className="w-32">
               <SelectValue placeholder="状态" />
             </SelectTrigger>
@@ -247,9 +247,7 @@ export default function AdminSubscriptionsPage() {
           <DialogHeader>
             <DialogTitle>手动续期</DialogTitle>
             <DialogDescription>
-              {selectedSub
-                ? `为组织 ${selectedSub.organization_id} 的订阅延长有效期`
-                : ''}
+              {selectedSub ? `为组织 ${selectedSub.organization_id} 的订阅延长有效期` : ''}
             </DialogDescription>
           </DialogHeader>
           <Form {...renewForm}>
@@ -296,7 +294,8 @@ export default function AdminSubscriptionsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>确认取消订阅</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要取消组织「{selectedSub?.organization_id}」的订阅吗？取消后该组织将按免费版限制使用。
+              确定要取消组织「{selectedSub?.organization_id}
+              」的订阅吗？取消后该组织将按免费版限制使用。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -37,7 +37,9 @@ export function invalidateOrgScopedQueries(queryClient: QueryClient): void {
       const key = query.queryKey;
       if (!Array.isArray(key) || key.length === 0) return false;
       const firstKey = String(key[0]);
-      return ORG_SCOPED_QUERY_PREFIXES.includes(firstKey as (typeof ORG_SCOPED_QUERY_PREFIXES)[number]);
+      return ORG_SCOPED_QUERY_PREFIXES.includes(
+        firstKey as (typeof ORG_SCOPED_QUERY_PREFIXES)[number]
+      );
     },
   });
 }

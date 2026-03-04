@@ -45,10 +45,11 @@ adminApi.interceptors.response.use(
       const responseData = error.response.data;
       const msg = typeof responseData.message === 'string' ? responseData.message : null;
       if (msg) {
-        const code = typeof responseData.code === 'number' ? responseData.code : error.response.status ?? 500;
-        return Promise.reject(
-          new ApiError(code, msg, responseData.data ?? responseData)
-        );
+        const code =
+          typeof responseData.code === 'number'
+            ? responseData.code
+            : (error.response.status ?? 500);
+        return Promise.reject(new ApiError(code, msg, responseData.data ?? responseData));
       }
     }
     return Promise.reject(error);
@@ -267,8 +268,7 @@ export const adminApiEndpoints = {
   // 组织
   listOrganizations: (params?: { skip?: number; limit?: number; is_active?: boolean }) =>
     adminApi.get<AdminOrganization[]>('/admin/organizations', { params }),
-  getOrganization: (id: string) =>
-    adminApi.get<AdminOrganization>(`/admin/organizations/${id}`),
+  getOrganization: (id: string) => adminApi.get<AdminOrganization>(`/admin/organizations/${id}`),
   setOrganizationActive: (id: string, data: AdminOrganizationSetActive) =>
     adminApi.patch<AdminOrganization>(`/admin/organizations/${id}/active`, data),
 
@@ -279,22 +279,13 @@ export const adminApiEndpoints = {
     is_active?: boolean;
     search?: string;
   }) => adminApi.get<AdminRegisteredUser[]>('/admin/registered-users', { params }),
-  getRegisteredUserCount: (params?: {
-    is_active?: boolean;
-    search?: string;
-  }) => adminApi.get<{ total: number }>('/admin/registered-users/count', { params }),
+  getRegisteredUserCount: (params?: { is_active?: boolean; search?: string }) =>
+    adminApi.get<{ total: number }>('/admin/registered-users/count', { params }),
   getRegisteredUser: (id: string) =>
     adminApi.get<AdminRegisteredUserDetail>(`/admin/registered-users/${id}`),
-  setRegisteredUserActive: (
-    id: string,
-    data: AdminRegisteredUserSetActive
-  ) =>
-    adminApi.patch<AdminRegisteredUser>(
-      `/admin/registered-users/${id}/active`,
-      data
-    ),
-  deleteRegisteredUser: (id: string) =>
-    adminApi.delete(`/admin/registered-users/${id}`),
+  setRegisteredUserActive: (id: string, data: AdminRegisteredUserSetActive) =>
+    adminApi.patch<AdminRegisteredUser>(`/admin/registered-users/${id}/active`, data),
+  deleteRegisteredUser: (id: string) => adminApi.delete(`/admin/registered-users/${id}`),
 
   // 套餐
   listPlans: (params?: { active_only?: boolean }) =>
@@ -312,8 +303,7 @@ export const adminApiEndpoints = {
     organization_id?: string;
     status_filter?: string;
   }) => adminApi.get<AdminSubscription[]>('/admin/subscriptions', { params }),
-  getSubscription: (id: string) =>
-    adminApi.get<AdminSubscription>(`/admin/subscriptions/${id}`),
+  getSubscription: (id: string) => adminApi.get<AdminSubscription>(`/admin/subscriptions/${id}`),
   renewSubscription: (id: string, data: AdminSubscriptionRenew) =>
     adminApi.post<AdminSubscription>(`/admin/subscriptions/${id}/renew`, data),
   cancelSubscription: (id: string) =>

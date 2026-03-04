@@ -29,8 +29,7 @@ export default function AdminOrganizationDetailPage() {
   });
 
   const setActiveMutation = useMutation({
-    mutationFn: (is_active: boolean) =>
-      adminApiEndpoints.setOrganizationActive(id, { is_active }),
+    mutationFn: (is_active: boolean) => adminApiEndpoints.setOrganizationActive(id, { is_active }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'organization', id] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'organizations'] });
@@ -65,7 +64,9 @@ export default function AdminOrganizationDetailPage() {
             <span>{org.name}</span>
             <Badge
               variant={
-                org.is_active ? ORG_STATUS_CONFIG.active.variant : ORG_STATUS_CONFIG.inactive.variant
+                org.is_active
+                  ? ORG_STATUS_CONFIG.active.variant
+                  : ORG_STATUS_CONFIG.inactive.variant
               }
             >
               {org.is_active ? ORG_STATUS_CONFIG.active.label : ORG_STATUS_CONFIG.inactive.label}
@@ -86,7 +87,9 @@ export default function AdminOrganizationDetailPage() {
               <span className="text-muted-foreground">个人团队</span>
               <Badge
                 variant={
-                  org.is_personal ? BOOLEAN_YES_NO_CONFIG.yes.variant : BOOLEAN_YES_NO_CONFIG.no.variant
+                  org.is_personal
+                    ? BOOLEAN_YES_NO_CONFIG.yes.variant
+                    : BOOLEAN_YES_NO_CONFIG.no.variant
                 }
               >
                 {org.is_personal ? BOOLEAN_YES_NO_CONFIG.yes.label : BOOLEAN_YES_NO_CONFIG.no.label}

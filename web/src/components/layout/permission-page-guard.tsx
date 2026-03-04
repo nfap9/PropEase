@@ -40,13 +40,9 @@ interface PermissionPageGuardProps {
  *   </MainLayout>
  * </PermissionPageGuard>
  */
-export function PermissionPageGuard({
-  children,
-  permission,
-}: PermissionPageGuardProps) {
+export function PermissionPageGuard({ children, permission }: PermissionPageGuardProps) {
   const { isAuthenticated, isLoading: authLoading, organization } = useAuth();
-  const { hasPermission, isLoading: permissionsLoading, isSuperAdmin } =
-    usePermissions();
+  const { hasPermission, isLoading: permissionsLoading, isSuperAdmin } = usePermissions();
   const router = useRouter();
   const pathname = usePathname();
 

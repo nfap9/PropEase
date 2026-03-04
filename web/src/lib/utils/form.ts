@@ -5,12 +5,8 @@ import { ApiError } from '@/lib/api/client';
  * 过滤对象中的空字符串，避免后端验证错误
  * 将空字符串 '' 转换为 undefined（从对象中移除）
  */
-export function filterEmptyStrings<T extends Record<string, unknown>>(
-  data: T
-): Partial<T> {
-  return Object.fromEntries(
-    Object.entries(data).filter(([, v]) => v !== '')
-  ) as Partial<T>;
+export function filterEmptyStrings<T extends Record<string, unknown>>(data: T): Partial<T> {
+  return Object.fromEntries(Object.entries(data).filter(([, v]) => v !== '')) as Partial<T>;
 }
 
 /**
@@ -31,7 +27,7 @@ export function filterEmptyStrings<T extends Record<string, unknown>>(
  */
 export function setFormErrors<T extends FieldValues>(
   setError: UseFormSetError<T>,
-  error: unknown,
+  error: unknown
 ): void {
   if (error instanceof ApiError && error.fieldErrors.length > 0) {
     error.fieldErrors.forEach((fieldError) => {
@@ -51,10 +47,7 @@ export function setFormErrors<T extends FieldValues>(
 export function extractFieldErrors(error: unknown): Record<string, string> {
   if (error instanceof ApiError && error.fieldErrors.length > 0) {
     return Object.fromEntries(
-      error.fieldErrors.map((e) => [
-        e.field.replace(/^body\./, ''),
-        e.message,
-      ])
+      error.fieldErrors.map((e) => [e.field.replace(/^body\./, ''), e.message])
     );
   }
   return {};

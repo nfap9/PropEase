@@ -68,7 +68,15 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
         return;
       }
 
-      const header = ['公寓名称', '房间号', '租客姓名', '账单日', '当前水表(m³)', '当前电表(kWh)', '备注'];
+      const header = [
+        '公寓名称',
+        '房间号',
+        '租客姓名',
+        '账单日',
+        '当前水表(m³)',
+        '当前电表(kWh)',
+        '备注',
+      ];
       const data = rooms.map((room: UtilityExportRoom) => [
         room.apartment_name,
         room.room_number,
@@ -84,13 +92,20 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
         views: [{ state: 'frozen', ySplit: 1 }],
       });
       ws.columns = [
-        { width: 12 }, { width: 10 }, { width: 10 }, { width: 8 },
-        { width: 14 }, { width: 14 }, { width: 20 },
+        { width: 12 },
+        { width: 10 },
+        { width: 10 },
+        { width: 8 },
+        { width: 14 },
+        { width: 14 },
+        { width: 20 },
       ];
       ws.addRows([header, ...data]);
 
       const buffer = await wb.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -117,7 +132,9 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
     const ws = wb.addWorksheet('水电读数导入');
     ws.addRows(templateData);
     const buffer = await wb.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -156,7 +173,10 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
             </div>
             <div className="space-y-2">
               <Label>月份</Label>
-              <Select value={exportMonth.toString()} onValueChange={(v) => setExportMonth(Number(v))}>
+              <Select
+                value={exportMonth.toString()}
+                onValueChange={(v) => setExportMonth(Number(v))}
+              >
                 <SelectTrigger className="min-w-[120px]">
                   <SelectValue />
                 </SelectTrigger>
@@ -187,12 +207,14 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
                 className="w-24"
               />
               <span className="text-sm text-muted-foreground">
-                {daysRange <= 0 ? '全部待录入房间' : `近期 ${daysRange} 天内应出账${getDateRangeDescription()}`}
+                {daysRange <= 0
+                  ? '全部待录入房间'
+                  : `近期 ${daysRange} 天内应出账${getDateRangeDescription()}`}
               </span>
             </div>
           </div>
 
-          <div className="flex justify-between items-center pt-2">
+          <div className="flex items-center justify-between pt-2">
             <Button variant="link" onClick={downloadBlankTemplate} className="text-sm">
               下载空白模板
             </Button>

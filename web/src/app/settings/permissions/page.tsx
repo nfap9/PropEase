@@ -20,9 +20,7 @@ export default function PermissionsPage() {
   const { organization, user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<MemberRole>('admin');
-  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(
-    new Set()
-  );
+  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set());
 
   const { data: members } = useQuery({
     queryKey: ['organization-members', organization?.id],
@@ -39,10 +37,7 @@ export default function PermissionsPage() {
     queryKey: ['role-permissions', organization?.id, selectedRole],
     queryFn: async () => {
       if (!organization) return null;
-      const response = await permissionsApi.getRolePermissions(
-        organization.id,
-        selectedRole
-      );
+      const response = await permissionsApi.getRolePermissions(organization.id, selectedRole);
       return response;
     },
     enabled: !!organization && selectedRole !== 'owner',
@@ -50,15 +45,11 @@ export default function PermissionsPage() {
 
   useEffect(() => {
     if (rolePermissions?.permissions) {
-      setSelectedPermissions(
-        new Set(rolePermissions.permissions.map((p: Permission) => p.code))
-      );
+      setSelectedPermissions(new Set(rolePermissions.permissions.map((p: Permission) => p.code)));
     }
   }, [rolePermissions]);
 
-  const currentMember = members?.find(
-    (m: { user_id: string }) => m.user_id === user?.id
-  );
+  const currentMember = members?.find((m: { user_id: string }) => m.user_id === user?.id);
   const isOwner = currentMember?.role === 'owner';
 
   const updateMutation = useMutation({
@@ -87,9 +78,7 @@ export default function PermissionsPage() {
 
   const handleToggleResource = (resource: string, permissions: Permission[]) => {
     const resourceCodes = permissions.map((p) => p.code);
-    const allSelected = resourceCodes.every((code) =>
-      selectedPermissions.has(code)
-    );
+    const allSelected = resourceCodes.every((code) => selectedPermissions.has(code));
 
     const newSet = new Set(selectedPermissions);
     if (allSelected) {
@@ -110,7 +99,7 @@ export default function PermissionsPage() {
   if (!organization) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center h-96">
+        <div className="flex h-96 items-center justify-center">
           <p className="text-muted-foreground">请先选择一个组织</p>
         </div>
       </MainLayout>
@@ -157,11 +146,7 @@ export default function PermissionsPage() {
 
           <div className="flex h-[calc(100vh-12rem)] min-h-[400px] rounded-lg border bg-card">
             <aside className="w-56 shrink-0">
-              <OrgRoleList
-                selectedRole={selectedRole}
-                onSelectRole={setSelectedRole}
-                showOwner
-              />
+              <OrgRoleList selectedRole={selectedRole} onSelectRole={setSelectedRole} showOwner />
             </aside>
             <main className="flex min-w-0 flex-1 flex-col">
               <OrgRoleDetailPanel

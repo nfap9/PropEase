@@ -5,7 +5,11 @@ import { prisma } from '../lib/prisma.js';
 export async function checkExpiringLeases(): Promise<Record<string, number>> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const stats: Record<string, number> = { lease_expiring_7: 0, lease_expiring_3: 0, lease_expiring_1: 0 };
+  const stats: Record<string, number> = {
+    lease_expiring_7: 0,
+    lease_expiring_3: 0,
+    lease_expiring_1: 0,
+  };
 
   for (const days of [7, 3, 1]) {
     const target = new Date(today);
@@ -16,9 +20,14 @@ export async function checkExpiringLeases(): Promise<Record<string, number>> {
       where: { is_active: true, end_date: { not: null } },
       include: { room: { include: { apartment: true } } },
     });
-    const expiring = leases.filter((l) => l.end_date && l.end_date.toISOString().slice(0, 10) === targetStr);
+    const expiring = leases.filter(
+      (l) => l.end_date && l.end_date.toISOString().slice(0, 10) === targetStr
+    );
     const tenantIds = [...new Set(expiring.map((l) => l.tenant_id))];
-    const tenants = await prisma.tenant.findMany({ where: { id: { in: tenantIds } }, select: { id: true, name: true } });
+    const tenants = await prisma.tenant.findMany({
+      where: { id: { in: tenantIds } },
+      select: { id: true, name: true },
+    });
     const tenantByName = Object.fromEntries(tenants.map((t) => [t.id, t.name]));
 
     for (const lease of expiring) {
@@ -66,7 +75,10 @@ export async function checkOverdueBills(): Promise<Record<string, number>> {
     include: { lease: { include: { room: { include: { apartment: true } } } } },
   });
   const tenantIds = [...new Set(bills.map((b) => b.lease.tenant_id))];
-  const tenants = await prisma.tenant.findMany({ where: { id: { in: tenantIds } }, select: { id: true, name: true } });
+  const tenants = await prisma.tenant.findMany({
+    where: { id: { in: tenantIds } },
+    select: { id: true, name: true },
+  });
   const tenantByName = Object.fromEntries(tenants.map((t) => [t.id, t.name]));
 
   for (const bill of bills) {

@@ -1,6 +1,10 @@
 import type { Lease, Prisma } from '../generated/client/index.js';
 import { ulid } from 'ulid';
-import { createLeaseRepository, type LeaseRepository, type LeaseWithRelations } from '../repositories/lease.repo.js';
+import {
+  createLeaseRepository,
+  type LeaseRepository,
+  type LeaseWithRelations,
+} from '../repositories/lease.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
@@ -77,7 +81,8 @@ function buildUpdateData(data: UpdateLeaseInput): Prisma.LeaseUpdateInput {
   if (data.room_id != null) updateData.room = { connect: { id: data.room_id } };
   if (data.tenant_id != null) updateData.tenant = { connect: { id: data.tenant_id } };
   if (data.start_date != null) updateData.start_date = new Date(data.start_date);
-  if (data.end_date !== undefined) updateData.end_date = data.end_date ? new Date(data.end_date) : null;
+  if (data.end_date !== undefined)
+    updateData.end_date = data.end_date ? new Date(data.end_date) : null;
   if (data.billing_day != null) updateData.billing_day = data.billing_day;
   if (data.monthly_rent != null) updateData.monthly_rent = data.monthly_rent;
   if (data.deposit != null) updateData.deposit = data.deposit;

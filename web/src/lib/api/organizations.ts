@@ -1,5 +1,12 @@
 import api from './client';
-import { Organization, OrganizationMember, OrganizationUsage, MemberRole, MigrationStats, DeletionPreview } from '@/types';
+import {
+  Organization,
+  OrganizationMember,
+  OrganizationUsage,
+  MemberRole,
+  MigrationStats,
+  DeletionPreview,
+} from '@/types';
 
 export const organizationsApi = {
   list: async (): Promise<Organization[]> => {
@@ -44,15 +51,26 @@ export const organizationsApi = {
     return response.data;
   },
 
-  addMember: async (orgId: string, data: { user_phone: string; role: MemberRole }): Promise<OrganizationMember> => {
+  addMember: async (
+    orgId: string,
+    data: { user_phone: string; role: MemberRole }
+  ): Promise<OrganizationMember> => {
     const params = new URLSearchParams({ phone: data.user_phone, role: data.role });
-    const response = await api.post<OrganizationMember>(`/organizations/${orgId}/members?${params}`);
+    const response = await api.post<OrganizationMember>(
+      `/organizations/${orgId}/members?${params}`
+    );
     return response.data;
   },
 
-  updateMember: async (orgId: string, memberId: string, data: { role: MemberRole }): Promise<OrganizationMember> => {
+  updateMember: async (
+    orgId: string,
+    memberId: string,
+    data: { role: MemberRole }
+  ): Promise<OrganizationMember> => {
     const params = new URLSearchParams({ role: data.role });
-    const response = await api.put<OrganizationMember>(`/organizations/${orgId}/members/${memberId}?${params}`);
+    const response = await api.put<OrganizationMember>(
+      `/organizations/${orgId}/members/${memberId}?${params}`
+    );
     return response.data;
   },
 

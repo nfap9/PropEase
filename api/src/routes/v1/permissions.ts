@@ -17,8 +17,14 @@ const UpdateRolePermissionsSchema = z.object({
 
 const router: Router = Router();
 
-const GrantSystemRoleSchema = z.object({ user_id: z.string(), role: z.enum(SYSTEM_ROLES as unknown as [string, ...string[]]) });
-const RevokeSystemRoleSchema = z.object({ user_id: z.string(), role: z.enum(SYSTEM_ROLES as unknown as [string, ...string[]]) });
+const GrantSystemRoleSchema = z.object({
+  user_id: z.string(),
+  role: z.enum(SYSTEM_ROLES as unknown as [string, ...string[]]),
+});
+const RevokeSystemRoleSchema = z.object({
+  user_id: z.string(),
+  role: z.enum(SYSTEM_ROLES as unknown as [string, ...string[]]),
+});
 
 router.use(requireConsoleAuth);
 
@@ -40,42 +46,48 @@ router.get('/grouped', async (_req: Request, res: Response, next: NextFunction) 
   }
 });
 
-router.get('/organization/:org_id/roles/:role', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    await requireOrgMembership(req, 'org_id');
-    const role = req.params.role as OrgMemberRole;
-    const result = await defaultPermissionService.getRolePermissions(req.params.org_id, role);
-    res.json(result);
-  } catch (e) {
-    next(e);
-  }
-});
-
-router.put('/organization/:org_id/roles/:role', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const user = getConsoleUser(req);
-    if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    await requireOrgMembership(req, 'org_id');
-    const role = req.params.role as OrgMemberRole;
-    const parsed = UpdateRolePermissionsSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const fieldErrors = parsed.error.errors.map((e) => ({
-        field: e.path.join('.'),
-        message: e.message,
-      }));
-      return next(createAppError(422, '参数校验失败', { fieldErrors }));
+router.get(
+  '/organization/:org_id/roles/:role',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await requireOrgMembership(req, 'org_id');
+      const role = req.params.role as OrgMemberRole;
+      const result = await defaultPermissionService.getRolePermissions(req.params.org_id, role);
+      res.json(result);
+    } catch (e) {
+      next(e);
     }
-    await defaultPermissionService.updateRolePermissions(
-      req.params.org_id,
-      role,
-      parsed.data.permission_codes,
-      user.id
-    );
-    res.json({ message: 'ok' });
-  } catch (e) {
-    next(e);
   }
-});
+);
+
+router.put(
+  '/organization/:org_id/roles/:role',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = getConsoleUser(req);
+      if (!user) return next(createAppError(401, '未授权或登录已过期'));
+      await requireOrgMembership(req, 'org_id');
+      const role = req.params.role as OrgMemberRole;
+      const parsed = UpdateRolePermissionsSchema.safeParse(req.body);
+      if (!parsed.success) {
+        const fieldErrors = parsed.error.errors.map((e) => ({
+          field: e.path.join('.'),
+          message: e.message,
+        }));
+        return next(createAppError(422, '参数校验失败', { fieldErrors }));
+      }
+      await defaultPermissionService.updateRolePermissions(
+        req.params.org_id,
+        role,
+        parsed.data.permission_codes,
+        user.id
+      );
+      res.json({ message: 'ok' });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
 
 router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
   try {

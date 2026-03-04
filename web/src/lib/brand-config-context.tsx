@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  createContext,
-  useContext,
-  type ReactNode,
-} from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { configApi, type BrandConfig } from '@/lib/api/config';
 
@@ -31,11 +27,7 @@ export function BrandConfigProvider({ children }: { children: ReactNode }) {
 
   const brand = isLoading ? DEFAULT_BRAND : (data ?? DEFAULT_BRAND);
 
-  return (
-    <BrandConfigContext.Provider value={brand}>
-      {children}
-    </BrandConfigContext.Provider>
-  );
+  return <BrandConfigContext.Provider value={brand}>{children}</BrandConfigContext.Provider>;
 }
 
 export function useBrandConfig(): BrandConfig {

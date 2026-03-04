@@ -1,6 +1,11 @@
 import type { UtilityReading, Prisma } from '../generated/client/index.js';
 import { ulid } from 'ulid';
-import { createUtilityRepository, type UtilityRepository, type ReadingWithRelations, type ReadingFilter } from '../repositories/utility.repo.js';
+import {
+  createUtilityRepository,
+  type UtilityRepository,
+  type ReadingWithRelations,
+  type ReadingFilter,
+} from '../repositories/utility.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
@@ -85,7 +90,12 @@ export interface UtilityService {
   update(orgId: string, id: string, data: UpdateReadingInput): Promise<UtilityReading>;
   delete(orgId: string, id: string): Promise<void>;
   getMissingInitialReadings(orgId: string): Promise<MissingInitialRoom[]>;
-  getExportList(orgId: string, periodYear?: number, periodMonth?: number, daysRange?: number): Promise<RoomExportInfo[]>;
+  getExportList(
+    orgId: string,
+    periodYear?: number,
+    periodMonth?: number,
+    daysRange?: number
+  ): Promise<RoomExportInfo[]>;
 }
 
 /**
@@ -116,9 +126,11 @@ function buildUpdateData(data: UpdateReadingInput): Prisma.UtilityReadingUpdateI
   if (data.period_month != null) updateData.period_month = data.period_month;
   if (data.reading_date != null) updateData.reading_date = new Date(data.reading_date);
   if (data.water_reading !== undefined) updateData.water_reading = data.water_reading;
-  if (data.electricity_reading !== undefined) updateData.electricity_reading = data.electricity_reading;
+  if (data.electricity_reading !== undefined)
+    updateData.electricity_reading = data.electricity_reading;
   if (data.water_previous !== undefined) updateData.water_previous = data.water_previous;
-  if (data.electricity_previous !== undefined) updateData.electricity_previous = data.electricity_previous;
+  if (data.electricity_previous !== undefined)
+    updateData.electricity_previous = data.electricity_previous;
   if (data.notes !== undefined) updateData.notes = data.notes;
   return updateData;
 }
@@ -231,7 +243,12 @@ export function createUtilityService(
       return result;
     },
 
-    getExportList: async (orgId: string, periodYear?: number, periodMonth?: number, daysRange?: number) => {
+    getExportList: async (
+      orgId: string,
+      periodYear?: number,
+      periodMonth?: number,
+      daysRange?: number
+    ) => {
       const rooms = await prisma.room.findMany({
         where: { apartment: { organization_id: orgId } },
         include: {
@@ -281,7 +298,8 @@ export function createUtilityService(
         roomsToExport = roomsToExport.filter((r) => !roomIdsWithReadings.has(r.id));
       }
 
-      const period = periodYear != null && periodMonth != null ? { year: periodYear, month: periodMonth } : null;
+      const period =
+        periodYear != null && periodMonth != null ? { year: periodYear, month: periodMonth } : null;
 
       const exportList = await Promise.all(
         roomsToExport.map(async (r) => {
@@ -293,7 +311,8 @@ export function createUtilityService(
             const prev = await getRepo().findExistingReading(r.id, period.year, period.month);
             if (prev) {
               waterPrevious = prev.water_reading != null ? Number(prev.water_reading) : null;
-              electricityPrevious = prev.electricity_reading != null ? Number(prev.electricity_reading) : null;
+              electricityPrevious =
+                prev.electricity_reading != null ? Number(prev.electricity_reading) : null;
             }
           }
 

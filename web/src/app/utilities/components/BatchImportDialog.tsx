@@ -28,7 +28,12 @@ export interface BatchImportPayload {
   period_year: number;
   period_month: number;
   reading_date: string;
-  readings: { room_id: string; water_reading?: number; electricity_reading?: number; notes?: string }[];
+  readings: {
+    room_id: string;
+    water_reading?: number;
+    electricity_reading?: number;
+    notes?: string;
+  }[];
 }
 
 interface BatchImportDialogProps {
@@ -62,7 +67,15 @@ export function BatchImportDialog({
 
   const parseExcelFile = async (
     file: File
-  ): Promise<{ apartment_name: string; room_number: string; water_reading: number | null; electricity_reading: number | null; notes: string | null }[]> => {
+  ): Promise<
+    {
+      apartment_name: string;
+      room_number: string;
+      water_reading: number | null;
+      electricity_reading: number | null;
+      notes: string | null;
+    }[]
+  > => {
     const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => resolve(e.target?.result as ArrayBuffer);
@@ -89,35 +102,38 @@ export function BatchImportDialog({
     const toApartment = (v: unknown) => String(v ?? '').trim();
     const toRoom = (v: unknown) => String(v ?? '').trim();
 
-    const records = jsonData.slice(1).filter((row) => row[1]).map((row) => {
-      const apartmentName = toApartment(row[0]);
-      const roomNumber = toRoom(row[1]);
-      if (row.length >= 8) {
+    const records = jsonData
+      .slice(1)
+      .filter((row) => row[1])
+      .map((row) => {
+        const apartmentName = toApartment(row[0]);
+        const roomNumber = toRoom(row[1]);
+        if (row.length >= 8) {
+          return {
+            apartment_name: apartmentName,
+            room_number: roomNumber,
+            water_reading: toNum(row[5]),
+            electricity_reading: toNum(row[7]),
+            notes: toStr(row[8]),
+          };
+        }
+        if (row.length >= 7) {
+          return {
+            apartment_name: apartmentName,
+            room_number: roomNumber,
+            water_reading: toNum(row[4]),
+            electricity_reading: toNum(row[5]),
+            notes: toStr(row[6]),
+          };
+        }
         return {
           apartment_name: apartmentName,
           room_number: roomNumber,
-          water_reading: toNum(row[5]),
-          electricity_reading: toNum(row[7]),
-          notes: toStr(row[8]),
+          water_reading: toNum(row[2]),
+          electricity_reading: toNum(row[3]),
+          notes: toStr(row[4]),
         };
-      }
-      if (row.length >= 7) {
-        return {
-          apartment_name: apartmentName,
-          room_number: roomNumber,
-          water_reading: toNum(row[4]),
-          electricity_reading: toNum(row[5]),
-          notes: toStr(row[6]),
-        };
-      }
-      return {
-        apartment_name: apartmentName,
-        room_number: roomNumber,
-        water_reading: toNum(row[2]),
-        electricity_reading: toNum(row[3]),
-        notes: toStr(row[4]),
-      };
-    });
+      });
 
     return records;
   };
@@ -129,7 +145,9 @@ export function BatchImportDialog({
 
     const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
     if (ext === '.numbers') {
-      toast.error('请上传 .xlsx 格式的 Excel 文件，不支持 Apple Numbers (.numbers) 格式。请在 Numbers 中通过「文件 → 导出为 → Excel」另存为 .xlsx 后上传');
+      toast.error(
+        '请上传 .xlsx 格式的 Excel 文件，不支持 Apple Numbers (.numbers) 格式。请在 Numbers 中通过「文件 → 导出为 → Excel」另存为 .xlsx 后上传'
+      );
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -152,7 +170,12 @@ export function BatchImportDialog({
         roomMap.set(roomMatchKey(room), room);
       });
 
-      const matchedRecords: { room_id: string; water_reading?: number; electricity_reading?: number; notes?: string }[] = [];
+      const matchedRecords: {
+        room_id: string;
+        water_reading?: number;
+        electricity_reading?: number;
+        notes?: string;
+      }[] = [];
       const unmatchedKeys: string[] = [];
 
       for (const record of records) {
@@ -160,7 +183,9 @@ export function BatchImportDialog({
         const room = roomMap.get(key);
         if (room) {
           const water =
-            record.water_reading != null && !Number.isNaN(record.water_reading) ? record.water_reading : undefined;
+            record.water_reading != null && !Number.isNaN(record.water_reading)
+              ? record.water_reading
+              : undefined;
           const electricity =
             record.electricity_reading != null && !Number.isNaN(record.electricity_reading)
               ? record.electricity_reading
@@ -194,7 +219,9 @@ export function BatchImportDialog({
       });
     } catch (err) {
       const msg = String(err);
-      const hint = msg.includes('解析失败') ? '请确认文件为 .xlsx 格式（若使用 Numbers，需先导出为 Excel）' : undefined;
+      const hint = msg.includes('解析失败')
+        ? '请确认文件为 .xlsx 格式（若使用 Numbers，需先导出为 Excel）'
+        : undefined;
       toast.error(hint ?? getErrorMessage(err, '导入失败，请重试'));
     }
 
@@ -208,18 +235,19 @@ export function BatchImportDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>批量导入水电读数</DialogTitle>
-          <DialogDescription>
-            选择导入月份后上传已填写的 Excel 模板，完成批量录入
-          </DialogDescription>
+          <DialogDescription>选择导入月份后上传已填写的 Excel 模板，完成批量录入</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           <div className="space-y-4">
-            <h4 className="font-medium text-sm">导入月份</h4>
+            <h4 className="text-sm font-medium">导入月份</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>年份</Label>
-                <Select value={importYear.toString()} onValueChange={(v) => setImportYear(Number(v))}>
+                <Select
+                  value={importYear.toString()}
+                  onValueChange={(v) => setImportYear(Number(v))}
+                >
                   <SelectTrigger className="min-w-[120px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -234,7 +262,10 @@ export function BatchImportDialog({
               </div>
               <div className="space-y-2">
                 <Label>月份</Label>
-                <Select value={importMonth.toString()} onValueChange={(v) => setImportMonth(Number(v))}>
+                <Select
+                  value={importMonth.toString()}
+                  onValueChange={(v) => setImportMonth(Number(v))}
+                >
                   <SelectTrigger className="min-w-[120px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -251,14 +282,10 @@ export function BatchImportDialog({
           </div>
 
           <div className="rounded-lg border border-dashed border-muted p-6 text-center">
-            <FileSpreadsheet className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <FileSpreadsheet className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                支持的格式: .xlsx, .xls
-              </p>
-              <p className="text-xs text-muted-foreground">
-                填写导出的模板后上传
-              </p>
+              <p className="text-sm text-muted-foreground">支持的格式: .xlsx, .xls</p>
+              <p className="text-xs text-muted-foreground">填写导出的模板后上传</p>
             </div>
             <input
               ref={fileInputRef}
@@ -280,7 +307,7 @@ export function BatchImportDialog({
           </div>
 
           {/* 提示信息 */}
-          <div className="text-xs text-muted-foreground space-y-1">
+          <div className="space-y-1 text-xs text-muted-foreground">
             <p>• 使用「导出模版」获取待录入房间列表，填写「当前水表」和「当前电表」列后上传</p>
             <p>• 导入将写入所选的导入月份，记录日期为今天</p>
           </div>

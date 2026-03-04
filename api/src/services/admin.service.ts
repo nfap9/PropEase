@@ -1,8 +1,22 @@
-import type { AdminUser, AdminRole, User, Organization, SubscriptionPlan, OrganizationSubscription, UsagePricing, UsageQuotaOrder, Prisma } from '../generated/client/index.js';
+import type {
+  AdminUser,
+  AdminRole,
+  User,
+  Organization,
+  SubscriptionPlan,
+  OrganizationSubscription,
+  UsagePricing,
+  UsageQuotaOrder,
+  Prisma,
+} from '../generated/client/index.js';
 
 // 使用 Prisma.InputJsonValue 类型
 type InputJsonValue = Prisma.InputJsonValue;
-import type { AdminRepository, AdminUserWithRole, SubscriptionWithRelations } from '../repositories/admin.repo.js';
+import type {
+  AdminRepository,
+  AdminUserWithRole,
+  SubscriptionWithRelations,
+} from '../repositories/admin.repo.js';
 import { defaultAdminRepo } from '../repositories/admin.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
@@ -144,7 +158,12 @@ export interface AdminService {
 
   // Registered Users
   countRegisteredUsers(isActive?: boolean, search?: string): Promise<number>;
-  listRegisteredUsers(skip?: number, limit?: number, isActive?: boolean, search?: string): Promise<Partial<User>[]>;
+  listRegisteredUsers(
+    skip?: number,
+    limit?: number,
+    isActive?: boolean,
+    search?: string
+  ): Promise<Partial<User>[]>;
   getRegisteredUser(userId: string): Promise<{
     id: string;
     phone: string | null;
@@ -164,7 +183,12 @@ export interface AdminService {
   deletePlan(planId: string): Promise<void>;
 
   // Subscriptions
-  listSubscriptions(skip?: number, limit?: number, organizationId?: string, statusFilter?: string): Promise<SubscriptionWithRelations[]>;
+  listSubscriptions(
+    skip?: number,
+    limit?: number,
+    organizationId?: string,
+    statusFilter?: string
+  ): Promise<SubscriptionWithRelations[]>;
   getSubscription(subscriptionId: string): Promise<SubscriptionWithRelations>;
   renewSubscription(subscriptionId: string): Promise<OrganizationSubscription>;
   cancelSubscription(subscriptionId: string): Promise<void>;
@@ -177,7 +201,16 @@ export interface AdminService {
   updateUsagePricing(data: UpdateUsagePricingInput): Promise<UsagePricing>;
 
   // Usage Orders
-  listUsageOrders(skip?: number, limit?: number): Promise<Array<UsageQuotaOrder & { user: { id: string; phone: string | null; full_name: string | null } | null }>>;
+  listUsageOrders(
+    skip?: number,
+    limit?: number
+  ): Promise<
+    Array<
+      UsageQuotaOrder & {
+        user: { id: string; phone: string | null; full_name: string | null } | null;
+      }
+    >
+  >;
 
   // Platform Config
   getPlatformConfig(): Promise<PlatformBrand>;
@@ -299,7 +332,9 @@ export function createAdminService(
     },
 
     createAdminRole: async (data: CreateAdminRoleInput) => {
-      const permissions = Array.isArray(data.permissions) ? data.permissions : (data.permissions ?? []);
+      const permissions = Array.isArray(data.permissions)
+        ? data.permissions
+        : (data.permissions ?? []);
       return getRepo().createAdminRole({
         id: ulid().toLowerCase(),
         name: data.name,
@@ -361,9 +396,18 @@ export function createAdminService(
       return getRepo().countUsers(Object.keys(where).length ? where : undefined);
     },
 
-    listRegisteredUsers: async (skip?: number, limit?: number, isActive?: boolean, search?: string) => {
+    listRegisteredUsers: async (
+      skip?: number,
+      limit?: number,
+      isActive?: boolean,
+      search?: string
+    ) => {
       const where = buildUserWhere(isActive, search);
-      return getRepo().listUsers(skip, limit, Object.keys(where).length ? where : undefined) as Promise<Partial<User>[]>;
+      return getRepo().listUsers(
+        skip,
+        limit,
+        Object.keys(where).length ? where : undefined
+      ) as Promise<Partial<User>[]>;
     },
 
     getRegisteredUser: async (userId: string) => {
@@ -446,15 +490,18 @@ export function createAdminService(
         if (data.price_monthly != null) updateData.price_monthly = data.price_monthly;
         if (data.price_yearly != null) updateData.price_yearly = data.price_yearly;
       }
-      if (data.max_organizations !== undefined) updateData.max_organizations = data.max_organizations;
+      if (data.max_organizations !== undefined)
+        updateData.max_organizations = data.max_organizations;
       if (data.max_apartments != null) updateData.max_apartments = data.max_apartments;
       if (data.max_rooms != null) updateData.max_rooms = data.max_rooms;
       if (data.max_members != null) updateData.max_members = data.max_members;
       if (data.rooms_count_scope != null) updateData.rooms_count_scope = data.rooms_count_scope;
-      if (data.members_count_scope != null) updateData.members_count_scope = data.members_count_scope;
+      if (data.members_count_scope != null)
+        updateData.members_count_scope = data.members_count_scope;
       if (data.is_active !== undefined) updateData.is_active = data.is_active;
       if (data.sort_order != null) updateData.sort_order = data.sort_order;
-      if (data.free_validity_days !== undefined) updateData.free_validity_days = data.free_validity_days;
+      if (data.free_validity_days !== undefined)
+        updateData.free_validity_days = data.free_validity_days;
       return getRepo().updatePlan(planId, updateData);
     },
 
@@ -466,11 +513,20 @@ export function createAdminService(
       await getRepo().deletePlan(planId);
     },
 
-    listSubscriptions: async (skip?: number, limit?: number, organizationId?: string, statusFilter?: string) => {
+    listSubscriptions: async (
+      skip?: number,
+      limit?: number,
+      organizationId?: string,
+      statusFilter?: string
+    ) => {
       const where: Prisma.OrganizationSubscriptionWhereInput = {};
       if (organizationId) where.organization_id = organizationId;
       if (statusFilter) where.status = statusFilter;
-      return getRepo().listSubscriptions(skip, limit, Object.keys(where).length ? where : undefined);
+      return getRepo().listSubscriptions(
+        skip,
+        limit,
+        Object.keys(where).length ? where : undefined
+      );
     },
 
     getSubscription: async (subscriptionId: string) => {
@@ -500,14 +556,19 @@ export function createAdminService(
     },
 
     getStats: async () => {
-      const [organizations_count, users_count, apartments_count, rooms_count, active_subscriptions_count] =
-        await Promise.all([
-          getRepo().countOrganizations(),
-          getRepo().countUsersTotal(),
-          getRepo().countApartments(),
-          getRepo().countRooms(),
-          getRepo().countActiveSubscriptions(),
-        ]);
+      const [
+        organizations_count,
+        users_count,
+        apartments_count,
+        rooms_count,
+        active_subscriptions_count,
+      ] = await Promise.all([
+        getRepo().countOrganizations(),
+        getRepo().countUsersTotal(),
+        getRepo().countApartments(),
+        getRepo().countRooms(),
+        getRepo().countActiveSubscriptions(),
+      ]);
       return {
         organizations_count,
         users_count,
@@ -540,7 +601,8 @@ export function createAdminService(
       }
       const updateData: Prisma.UsagePricingUpdateInput = {};
       if (data.price_per_org !== undefined) updateData.price_per_org = data.price_per_org;
-      if (data.price_per_apartment !== undefined) updateData.price_per_apartment = data.price_per_apartment;
+      if (data.price_per_apartment !== undefined)
+        updateData.price_per_apartment = data.price_per_apartment;
       if (data.price_per_room !== undefined) updateData.price_per_room = data.price_per_room;
       if (data.price_per_member !== undefined) updateData.price_per_member = data.price_per_member;
       if (data.is_active !== undefined) updateData.is_active = data.is_active;
@@ -555,12 +617,12 @@ export function createAdminService(
       const row = await getRepo().getPlatformConfig();
       const brand = (row?.brand as Record<string, unknown>) ?? {};
       return {
-        app_name: brand.app_name as string ?? '公寓管理系统',
-        app_description: brand.app_description as string ?? '多租户 SaaS 公寓/物业管理系统',
-        logo_url: brand.logo_url as string ?? '',
-        favicon_url: brand.favicon_url as string ?? '',
-        login_subtitle: brand.login_subtitle as string ?? '用户登录，管理公寓、租客与账单',
-        register_subtitle: brand.register_subtitle as string ?? '创建新账户',
+        app_name: (brand.app_name as string) ?? '公寓管理系统',
+        app_description: (brand.app_description as string) ?? '多租户 SaaS 公寓/物业管理系统',
+        logo_url: (brand.logo_url as string) ?? '',
+        favicon_url: (brand.favicon_url as string) ?? '',
+        login_subtitle: (brand.login_subtitle as string) ?? '用户登录，管理公寓、租客与账单',
+        register_subtitle: (brand.register_subtitle as string) ?? '创建新账户',
       };
     },
 

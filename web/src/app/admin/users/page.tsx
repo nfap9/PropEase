@@ -308,7 +308,11 @@ export default function AdminUsersPage() {
                   <FormItem>
                     <FormLabel>密码</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="至少 8 位，含大小写、数字、特殊字符" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="至少 8 位，含大小写、数字、特殊字符"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -500,7 +504,11 @@ export default function AdminUsersPage() {
                   <FormItem>
                     <FormLabel>新密码</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="至少 8 位，含大小写、数字、特殊字符" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="至少 8 位，含大小写、数字、特殊字符"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

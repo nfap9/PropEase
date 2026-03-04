@@ -11,7 +11,11 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
-import { LeaseFormDialog, LeaseFormData, LeaseCreatedParams } from '@/components/common/lease-form-dialog';
+import {
+  LeaseFormDialog,
+  LeaseFormData,
+  LeaseCreatedParams,
+} from '@/components/common/lease-form-dialog';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,7 +78,9 @@ export default function LeasesPage() {
   const orgId = organization?.id;
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [pendingInitialReading, setPendingInitialReading] = useState<LeaseCreatedParams | null>(null);
+  const [pendingInitialReading, setPendingInitialReading] = useState<LeaseCreatedParams | null>(
+    null
+  );
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isTerminateOpen, setIsTerminateOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -254,7 +260,7 @@ export default function LeasesPage() {
     {
       accessorKey: 'end_date',
       header: '结束日期',
-      cell: ({ row }) => row.original.end_date ? formatDate(row.original.end_date) : '长期',
+      cell: ({ row }) => (row.original.end_date ? formatDate(row.original.end_date) : '长期'),
     },
     {
       accessorKey: 'monthly_rent',
@@ -314,7 +320,7 @@ export default function LeasesPage() {
   if (!orgId) {
     return (
       <MainLayout>
-        <div className="flex flex-col items-center justify-center h-full space-y-4">
+        <div className="flex h-full flex-col items-center justify-center space-y-4">
           <Building2 className="h-16 w-16 text-muted-foreground" />
           <h2 className="text-xl font-semibold">请先创建或加入组织</h2>
           <p className="text-muted-foreground">在顶部导航栏选择或创建一个组织开始使用</p>
@@ -347,209 +353,205 @@ export default function LeasesPage() {
           ) : (
             <DataTable columns={columns} data={filteredLeases} />
           )}
-      </div>
+        </div>
 
-      <LeaseFormDialog
-        orgId={orgId!}
-        open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
-        onLeaseCreated={setPendingInitialReading}
-      />
-
-      {pendingInitialReading && (
-        <InitialReadingDialog
+        <LeaseFormDialog
           orgId={orgId!}
-          roomId={pendingInitialReading.room_id}
-          roomDisplay={pendingInitialReading.room_display}
-          startDate={pendingInitialReading.start_date}
-          open={!!pendingInitialReading}
-          onOpenChange={(open) => !open && setPendingInitialReading(null)}
-          onSuccess={() => setPendingInitialReading(null)}
+          open={isCreateOpen}
+          onOpenChange={setIsCreateOpen}
+          onLeaseCreated={setPendingInitialReading}
         />
-      )}
 
-      {/* Edit Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>编辑租约</DialogTitle>
-            <DialogDescription>修改租约信息</DialogDescription>
-          </DialogHeader>
-          <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/40 text-blue-800 dark:text-blue-200 [&>svg]:text-blue-800 dark:[&>svg]:text-blue-200">
-            <Info className="h-4 w-4" />
-            <AlertTitle>提示</AlertTitle>
-            <AlertDescription>
-              已出账单不受影响；后续生成的账单将按新的租约信息计算。
-            </AlertDescription>
-          </Alert>
-          <Form {...editForm}>
-            <form
-              id="edit-lease-form"
-              onSubmit={editForm.handleSubmit(
-                (data) => updateMutation.mutate({ id: selectedLease!.id, data }),
-                () => toast.error('请检查表单填写是否正确')
-              )}
-              className="space-y-4"
-            >
-              <input type="hidden" {...editForm.register('room_id')} />
-              <input type="hidden" {...editForm.register('tenant_id')} />
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-room">房间</Label>
-                  <Input
-                    id="edit-room"
-                    value={
-                      selectedLease?.room
-                        ? `${selectedLease.room.apartment?.name || ''} - ${selectedLease.room.room_number}`
-                        : ''
-                    }
-                    disabled
+        {pendingInitialReading && (
+          <InitialReadingDialog
+            orgId={orgId!}
+            roomId={pendingInitialReading.room_id}
+            roomDisplay={pendingInitialReading.room_display}
+            startDate={pendingInitialReading.start_date}
+            open={!!pendingInitialReading}
+            onOpenChange={(open) => !open && setPendingInitialReading(null)}
+            onSuccess={() => setPendingInitialReading(null)}
+          />
+        )}
+
+        {/* Edit Dialog */}
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>编辑租约</DialogTitle>
+              <DialogDescription>修改租约信息</DialogDescription>
+            </DialogHeader>
+            <Alert className="border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-200 [&>svg]:text-blue-800 dark:[&>svg]:text-blue-200">
+              <Info className="h-4 w-4" />
+              <AlertTitle>提示</AlertTitle>
+              <AlertDescription>
+                已出账单不受影响；后续生成的账单将按新的租约信息计算。
+              </AlertDescription>
+            </Alert>
+            <Form {...editForm}>
+              <form
+                id="edit-lease-form"
+                onSubmit={editForm.handleSubmit(
+                  (data) => updateMutation.mutate({ id: selectedLease!.id, data }),
+                  () => toast.error('请检查表单填写是否正确')
+                )}
+                className="space-y-4"
+              >
+                <input type="hidden" {...editForm.register('room_id')} />
+                <input type="hidden" {...editForm.register('tenant_id')} />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-room">房间</Label>
+                    <Input
+                      id="edit-room"
+                      value={
+                        selectedLease?.room
+                          ? `${selectedLease.room.apartment?.name || ''} - ${selectedLease.room.room_number}`
+                          : ''
+                      }
+                      disabled
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-tenant">租客</Label>
+                    <Input id="edit-tenant" value={selectedLease?.tenant?.name || ''} disabled />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="start_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>开始日期 *</FormLabel>
+                        <FormControl>
+                          <Input id="edit-start_date" type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="end_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>结束日期</FormLabel>
+                        <FormControl>
+                          <Input id="edit-end_date" type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-tenant">租客</Label>
-                  <Input id="edit-tenant" value={selectedLease?.tenant?.name || ''} disabled />
+                <div className="grid grid-cols-3 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="monthly_rent"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>月租 (元) *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value === '' ? 0 : Number(e.target.value))
+                            }
+                            value={field.value ?? ''}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="deposit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>押金 (元)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(e.target.value === '' ? 0 : Number(e.target.value))
+                            }
+                            value={field.value ?? ''}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={editForm.control}
-                  name="start_date"
+                  name="notes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>开始日期 *</FormLabel>
+                      <FormLabel>备注</FormLabel>
                       <FormControl>
-                        <Input id="edit-start_date" type="date" {...field} />
+                        <Input id="edit-notes" {...field} value={field.value ?? ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={editForm.control}
-                  name="end_date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>结束日期</FormLabel>
-                      <FormControl>
-                        <Input id="edit-end_date" type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="monthly_rent"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>月租 (元) *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.value === '' ? 0 : Number(e.target.value))
-                          }
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={editForm.control}
-                  name="deposit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>押金 (元)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(e.target.value === '' ? 0 : Number(e.target.value))
-                          }
-                          value={field.value ?? ''}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <FormField
-                control={editForm.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>备注</FormLabel>
-                    <FormControl>
-                      <Input id="edit-notes" {...field} value={field.value ?? ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
-                  取消
-                </Button>
-                <Button type="submit" disabled={updateMutation.isPending}>
-                  {updateMutation.isPending ? '保存中...' : '保存'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                    取消
+                  </Button>
+                  <Button type="submit" disabled={updateMutation.isPending}>
+                    {updateMutation.isPending ? '保存中...' : '保存'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
 
-      {/* Terminate Alert Dialog */}
-      <AlertDialog open={isTerminateOpen} onOpenChange={setIsTerminateOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>确认终止租约</AlertDialogTitle>
-            <AlertDialogDescription>
-              确定要终止此租约吗？终止后房间将变为空置状态。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => terminateMutation.mutate(selectedLease!.id)}
-            >
-              {terminateMutation.isPending ? '处理中...' : '确认终止'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        {/* Terminate Alert Dialog */}
+        <AlertDialog open={isTerminateOpen} onOpenChange={setIsTerminateOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>确认终止租约</AlertDialogTitle>
+              <AlertDialogDescription>
+                确定要终止此租约吗？终止后房间将变为空置状态。
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>取消</AlertDialogCancel>
+              <AlertDialogAction onClick={() => terminateMutation.mutate(selectedLease!.id)}>
+                {terminateMutation.isPending ? '处理中...' : '确认终止'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
-      {/* Delete Alert Dialog */}
-      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>确认删除</AlertDialogTitle>
-            <AlertDialogDescription>
-              确定要删除此租约吗？此操作不可撤销。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteMutation.mutate(selectedLease!.id)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteMutation.isPending ? '删除中...' : '删除'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </MainLayout>
+        {/* Delete Alert Dialog */}
+        <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>确认删除</AlertDialogTitle>
+              <AlertDialogDescription>确定要删除此租约吗？此操作不可撤销。</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>取消</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteMutation.mutate(selectedLease!.id)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteMutation.isPending ? '删除中...' : '删除'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </MainLayout>
     </PermissionPageGuard>
   );
 }

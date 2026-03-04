@@ -1,6 +1,10 @@
 import type { Organization, OrganizationMember, Prisma } from '../generated/client/index.js';
 import { ulid } from 'ulid';
-import { createOrganizationRepository, type OrganizationRepository, type MemberWithUser } from '../repositories/organization.repo.js';
+import {
+  createOrganizationRepository,
+  type OrganizationRepository,
+  type MemberWithUser,
+} from '../repositories/organization.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
@@ -41,7 +45,12 @@ export interface OrganizationService {
   delete(orgId: string, userId: string, confirmedName: string): Promise<void>;
   getMembers(orgId: string): Promise<MemberWithUser[]>;
   addMember(orgId: string, data: AddMemberInput): Promise<MemberWithUser>;
-  updateMemberRole(orgId: string, userId: string, role: string, requesterId: string): Promise<MemberWithUser>;
+  updateMemberRole(
+    orgId: string,
+    userId: string,
+    role: string,
+    requesterId: string
+  ): Promise<MemberWithUser>;
   removeMember(orgId: string, userId: string, requesterId: string): Promise<void>;
   generateUniqueSlug(baseSlug: string): Promise<string>;
 }
@@ -86,7 +95,13 @@ export function createOrganizationService(
     },
 
     create: async (userId: string, data: CreateOrgInput) => {
-      const baseSlug = data.slug ?? (data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'org');
+      const baseSlug =
+        data.slug ??
+        (data.name
+          .toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9-]/g, '') ||
+          'org');
 
       // 确保唯一 slug
       let finalSlug = baseSlug;
@@ -173,7 +188,9 @@ export function createOrganizationService(
         throw createAppError(403, '仅所有者可修改角色');
       }
 
-      const count = await getRepo().updateMember(orgId, userId, { role } as Partial<OrganizationMember>);
+      const count = await getRepo().updateMember(orgId, userId, {
+        role,
+      } as Partial<OrganizationMember>);
       if (count === 0) {
         throw createAppError(404, NotFoundMessages.MEMBER);
       }

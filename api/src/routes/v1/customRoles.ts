@@ -10,8 +10,17 @@ const router: Router = Router();
 
 router.use(requireConsoleAuth);
 
-const CustomRoleCreateSchema = z.object({ name: z.string(), description: z.string().optional(), permissions: z.string().optional() });
-const CustomRoleUpdateSchema = z.object({ name: z.string().optional(), description: z.string().optional(), permissions: z.string().optional(), is_active: z.boolean().optional() });
+const CustomRoleCreateSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  permissions: z.string().optional(),
+});
+const CustomRoleUpdateSchema = z.object({
+  name: z.string().optional(),
+  description: z.string().optional(),
+  permissions: z.string().optional(),
+  is_active: z.boolean().optional(),
+});
 
 router.get('/orgs/:org_id/roles', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -50,36 +59,45 @@ router.post('/orgs/:org_id/roles', async (req: Request, res: Response, next: Nex
   }
 });
 
-router.get('/orgs/:org_id/roles/:role_id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    await requireOrgMembership(req, 'org_id');
-    const role = await defaultCustomRoleService.getById(req.params.org_id, req.params.role_id);
-    res.json(role);
-  } catch (e) {
-    next(e);
+router.get(
+  '/orgs/:org_id/roles/:role_id',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await requireOrgMembership(req, 'org_id');
+      const role = await defaultCustomRoleService.getById(req.params.org_id, req.params.role_id);
+      res.json(role);
+    } catch (e) {
+      next(e);
+    }
   }
-});
+);
 
-router.put('/orgs/:org_id/roles/:role_id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const orgId = await requireOrgMembership(req, 'org_id');
-    const parsed = CustomRoleUpdateSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const role = await defaultCustomRoleService.update(orgId, req.params.role_id, parsed.data);
-    res.json(role);
-  } catch (e) {
-    next(e);
+router.put(
+  '/orgs/:org_id/roles/:role_id',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = await requireOrgMembership(req, 'org_id');
+      const parsed = CustomRoleUpdateSchema.safeParse(req.body);
+      if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+      const role = await defaultCustomRoleService.update(orgId, req.params.role_id, parsed.data);
+      res.json(role);
+    } catch (e) {
+      next(e);
+    }
   }
-});
+);
 
-router.delete('/orgs/:org_id/roles/:role_id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const orgId = await requireOrgMembership(req, 'org_id');
-    await defaultCustomRoleService.delete(orgId, req.params.role_id);
-    res.status(204).send();
-  } catch (e) {
-    next(e);
+router.delete(
+  '/orgs/:org_id/roles/:role_id',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = await requireOrgMembership(req, 'org_id');
+      await defaultCustomRoleService.delete(orgId, req.params.role_id);
+      res.status(204).send();
+    } catch (e) {
+      next(e);
+    }
   }
-});
+);
 
 export const customRolesRouter = router;

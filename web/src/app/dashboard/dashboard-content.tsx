@@ -3,13 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { reportsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
@@ -50,15 +44,13 @@ function StatCard({
       </CardHeader>
       <CardContent>
         {valueBadgeVariant ? (
-          <Badge variant={valueBadgeVariant} className="text-base px-3 py-1">
+          <Badge variant={valueBadgeVariant} className="px-3 py-1 text-base">
             {value}
           </Badge>
         ) : (
           <div className="text-2xl font-bold">{value}</div>
         )}
-        {description && (
-          <p className="text-xs text-muted-foreground">{description}</p>
-        )}
+        {description && <p className="text-xs text-muted-foreground">{description}</p>}
       </CardContent>
     </Card>
   );
@@ -95,15 +87,10 @@ export function DashboardContent() {
   if (!organizations || organizations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <Building2 className="h-16 w-16 text-muted-foreground mb-4" />
-        <h2 className="text-xl font-semibold mb-2">欢迎使用{brandConfig.app_name}</h2>
-        <p className="text-muted-foreground mb-4">
-          您还没有加入任何组织，请先创建一个组织开始使用
-        </p>
-        <a
-          href="/settings/team"
-          className="text-primary hover:underline"
-        >
+        <Building2 className="mb-4 h-16 w-16 text-muted-foreground" />
+        <h2 className="mb-2 text-xl font-semibold">欢迎使用{brandConfig.app_name}</h2>
+        <p className="mb-4 text-muted-foreground">您还没有加入任何组织，请先创建一个组织开始使用</p>
+        <a href="/settings/team" className="text-primary hover:underline">
           前往创建组织
         </a>
       </div>
@@ -113,11 +100,9 @@ export function DashboardContent() {
   if (!orgId) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <Building2 className="h-16 w-16 text-muted-foreground mb-4" />
-        <h2 className="text-xl font-semibold mb-2">请选择组织</h2>
-        <p className="text-muted-foreground mb-4">
-          请在顶部导航栏选择一个组织开始使用
-        </p>
+        <Building2 className="mb-4 h-16 w-16 text-muted-foreground" />
+        <h2 className="mb-2 text-xl font-semibold">请选择组织</h2>
+        <p className="mb-4 text-muted-foreground">请在顶部导航栏选择一个组织开始使用</p>
       </div>
     );
   }
@@ -251,12 +236,10 @@ export function DashboardContent() {
                 <div className="text-4xl font-bold text-green-600">
                   {overview?.available_rooms || 0}
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="mt-2 text-sm text-muted-foreground">
                   占总房间的{' '}
                   {overview?.total_rooms
-                    ? Math.round(
-                        ((overview?.available_rooms || 0) / overview.total_rooms) * 100
-                      )
+                    ? Math.round(((overview?.available_rooms || 0) / overview.total_rooms) * 100)
                     : 0}
                   %
                 </p>
@@ -276,11 +259,11 @@ export function DashboardContent() {
                       ¥{(overview?.monthly_revenue || 0).toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">待收账单</span>
                     <Badge variant="warning">{overview?.pending_bills || 0} 笔</Badge>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">逾期账单</span>
                     <Badge variant="destructive">{overview?.overdue_bills || 0} 笔</Badge>
                   </div>

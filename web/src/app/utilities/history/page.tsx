@@ -9,8 +9,21 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { apartmentsApi, billsApi, leasesApi, utilitiesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
@@ -21,7 +34,10 @@ import { Building2, Droplets, History, Pencil, Zap } from 'lucide-react';
 import { EditUtilityDialog } from '../components';
 
 /** 生成租约起止月之间的所有月份（含起止月） */
-function getMonthsInLeasePeriod(startDate: string, endDate: string | null): { year: number; month: number }[] {
+function getMonthsInLeasePeriod(
+  startDate: string,
+  endDate: string | null
+): { year: number; month: number }[] {
   const start = new Date(startDate);
   const end = endDate ? new Date(endDate) : new Date();
   if (end < start) return [];
@@ -158,7 +174,7 @@ export default function UtilitiesHistoryPage() {
   if (!orgId) {
     return (
       <MainLayout>
-        <div className="flex flex-col items-center justify-center h-full space-y-4">
+        <div className="flex h-full flex-col items-center justify-center space-y-4">
           <Building2 className="h-16 w-16 text-muted-foreground" />
           <h2 className="text-xl font-semibold">请先创建或加入组织</h2>
           <p className="text-muted-foreground">在顶部导航栏选择或创建一个组织开始使用</p>
@@ -186,7 +202,9 @@ export default function UtilitiesHistoryPage() {
           <Card>
             <CardHeader>
               <CardTitle>生效中租约列表</CardTitle>
-              <CardDescription>先选择公寓，再从该公寓下的生效租约中选择一个查看租期内历史水电记录</CardDescription>
+              <CardDescription>
+                先选择公寓，再从该公寓下的生效租约中选择一个查看租期内历史水电记录
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-wrap items-center gap-4">
@@ -212,11 +230,11 @@ export default function UtilitiesHistoryPage() {
               </div>
 
               {!selectedApartmentId ? (
-                <p className="text-sm text-muted-foreground py-8">请选择公寓后查看租约列表</p>
+                <p className="py-8 text-sm text-muted-foreground">请选择公寓后查看租约列表</p>
               ) : leasesLoading ? (
                 <Skeleton className="h-40" />
               ) : leasesInApartment.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-8">该公寓暂无生效中的租约</p>
+                <p className="py-8 text-sm text-muted-foreground">该公寓暂无生效中的租约</p>
               ) : (
                 <div className="rounded-md border">
                   <Table>
@@ -237,7 +255,9 @@ export default function UtilitiesHistoryPage() {
                             className={isSelected ? 'bg-muted/50' : 'cursor-pointer'}
                             onClick={() => setSelectedLeaseId(l.id)}
                           >
-                            <TableCell className="font-medium">{l.room?.room_number ?? '-'}</TableCell>
+                            <TableCell className="font-medium">
+                              {l.room?.room_number ?? '-'}
+                            </TableCell>
                             <TableCell>{l.tenant?.name ?? '-'}</TableCell>
                             <TableCell>{formatDate(l.start_date)}</TableCell>
                             <TableCell>{l.end_date ? formatDate(l.end_date) : '至今'}</TableCell>
@@ -264,11 +284,11 @@ export default function UtilitiesHistoryPage() {
             </CardHeader>
             <CardContent>
               {!selectedLease ? (
-                <p className="text-sm text-muted-foreground py-8">请选择租约后查看历史水电记录</p>
+                <p className="py-8 text-sm text-muted-foreground">请选择租约后查看历史水电记录</p>
               ) : utilitiesLoading || billsLoading ? (
                 <Skeleton className="h-64" />
               ) : leaseMonthRows.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-8">该租约暂无可展示的月份</p>
+                <p className="py-8 text-sm text-muted-foreground">该租约暂无可展示的月份</p>
               ) : (
                 <div className="rounded-md border">
                   <Table>
@@ -297,13 +317,23 @@ export default function UtilitiesHistoryPage() {
                       {leaseMonthRows.map((row) => (
                         <TableRow key={`${row.year}-${row.month}`}>
                           <TableCell className="font-medium">{row.label}</TableCell>
-                          <TableCell>{row.reading ? formatDate(row.reading.reading_date) : '—'}</TableCell>
-                          <TableCell>{row.reading?.water_reading != null ? String(row.reading.water_reading) : '—'}</TableCell>
                           <TableCell>
-                            {row.reading?.electricity_reading != null ? String(row.reading.electricity_reading) : '—'}
+                            {row.reading ? formatDate(row.reading.reading_date) : '—'}
+                          </TableCell>
+                          <TableCell>
+                            {row.reading?.water_reading != null
+                              ? String(row.reading.water_reading)
+                              : '—'}
+                          </TableCell>
+                          <TableCell>
+                            {row.reading?.electricity_reading != null
+                              ? String(row.reading.electricity_reading)
+                              : '—'}
                           </TableCell>
                           <TableCell>{row.waterFee > 0 ? row.waterFee.toFixed(2) : '—'}</TableCell>
-                          <TableCell>{row.electricityFee > 0 ? row.electricityFee.toFixed(2) : '—'}</TableCell>
+                          <TableCell>
+                            {row.electricityFee > 0 ? row.electricityFee.toFixed(2) : '—'}
+                          </TableCell>
                           <TableCell>
                             {row.reading ? (
                               <Button
@@ -344,4 +374,3 @@ export default function UtilitiesHistoryPage() {
     </PermissionPageGuard>
   );
 }
-

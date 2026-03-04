@@ -21,8 +21,28 @@ const router: Router = Router();
 
 router.use(requireConsoleAuth);
 
-function toOrgResponse(o: { id: string; name: string; slug: string; plan: string; settings: unknown; is_personal: boolean; is_active: boolean; created_at: Date; updated_at: Date }) {
-  return { id: o.id, name: o.name, slug: o.slug, plan: o.plan, settings: o.settings, is_personal: o.is_personal, is_active: o.is_active, created_at: o.created_at, updated_at: o.updated_at };
+function toOrgResponse(o: {
+  id: string;
+  name: string;
+  slug: string;
+  plan: string;
+  settings: unknown;
+  is_personal: boolean;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}) {
+  return {
+    id: o.id,
+    name: o.name,
+    slug: o.slug,
+    plan: o.plan,
+    settings: o.settings,
+    is_personal: o.is_personal,
+    is_active: o.is_active,
+    created_at: o.created_at,
+    updated_at: o.updated_at,
+  };
 }
 
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
@@ -46,7 +66,15 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     if (orgCount >= maxOrgs)
       return next(createAppError(403, `当前最多可拥有 ${maxOrgs} 个组织，如需更多请升级套餐`));
     const parsed = CreateOrgSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败', { fieldErrors: parsed.error.errors.map((e) => ({ field: e.path.join('.'), message: e.message })) }));
+    if (!parsed.success)
+      return next(
+        createAppError(422, '参数校验失败', {
+          fieldErrors: parsed.error.errors.map((e) => ({
+            field: e.path.join('.'),
+            message: e.message,
+          })),
+        })
+      );
     const org = await defaultOrgService.create(user.id, parsed.data);
     res.status(201).json(toOrgResponse(org));
   } catch (e) {
@@ -85,16 +113,26 @@ router.post('/personal/migrate', async (req: Request, res: Response, next: NextF
       prisma.room.count({ where: { apartment: { organization_id: personal.id } } }),
       prisma.tenant.count({ where: { organization_id: personal.id } }),
       prisma.lease.count({ where: { room: { apartment: { organization_id: personal.id } } } }),
-      prisma.bill.count({ where: { lease: { room: { apartment: { organization_id: personal.id } } } } }),
-      prisma.utilityReading.count({ where: { room: { apartment: { organization_id: personal.id } } } }),
+      prisma.bill.count({
+        where: { lease: { room: { apartment: { organization_id: personal.id } } } },
+      }),
+      prisma.utilityReading.count({
+        where: { room: { apartment: { organization_id: personal.id } } },
+      }),
     ]);
     const targetId = parsed.data.target_org_id;
     await prisma.$transaction(async (tx) => {
-      const aptsToMove = await tx.apartment.findMany({ where: { organization_id: personal!.id }, include: { rooms: true } });
+      const aptsToMove = await tx.apartment.findMany({
+        where: { organization_id: personal!.id },
+        include: { rooms: true },
+      });
       for (const apt of aptsToMove) {
         await tx.apartment.update({ where: { id: apt.id }, data: { organization_id: targetId } });
       }
-      await tx.tenant.updateMany({ where: { organization_id: personal!.id }, data: { organization_id: targetId } });
+      await tx.tenant.updateMany({
+        where: { organization_id: personal!.id },
+        data: { organization_id: targetId },
+      });
       await tx.organization.delete({ where: { id: personal!.id } });
     });
     res.locals.successMessage = Messages.TEAM_MIGRATED;
@@ -114,7 +152,10 @@ router.get('/:orgId', async (req: Request, res: Response, next: NextFunction) =>
   }
 });
 
-const UpdateOrgSchema = z.object({ name: z.string().min(1).optional(), settings: z.record(z.unknown()).optional() });
+const UpdateOrgSchema = z.object({
+  name: z.string().min(1).optional(),
+  settings: z.record(z.unknown()).optional(),
+});
 router.put('/:orgId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await requireOrgMembership(req, 'orgId');
@@ -182,15 +223,17 @@ router.get('/:orgId/members', async (req: Request, res: Response, next: NextFunc
   try {
     await requireOrgMembership(req, 'orgId');
     const members = await defaultOrgService.getMembers(req.params.orgId);
-    res.json(members.map((m) => ({
-      id: m.id,
-      organization_id: m.organization_id,
-      user_id: m.user_id,
-      role: m.role,
-      created_at: m.created_at,
-      user_phone: m.user?.phone ?? null,
-      user_full_name: m.user?.full_name ?? '未知用户',
-    })));
+    res.json(
+      members.map((m) => ({
+        id: m.id,
+        organization_id: m.organization_id,
+        user_id: m.user_id,
+        role: m.role,
+        created_at: m.created_at,
+        user_phone: m.user?.phone ?? null,
+        user_full_name: m.user?.full_name ?? '未知用户',
+      }))
+    );
   } catch (e) {
     next(e);
   }
@@ -248,18 +291,21 @@ router.put('/:orgId/members/:userId', async (req: Request, res: Response, next: 
   }
 });
 
-router.delete('/:orgId/members/:userId', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    await requireOrgMembership(req, 'orgId');
-    const user = getConsoleUser(req);
-    if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    await defaultOrgService.removeMember(req.params.orgId, req.params.userId, user.id);
-    res.locals.successMessage = Messages.MEMBER_REMOVED;
-    res.json({});
-  } catch (e) {
-    next(e);
+router.delete(
+  '/:orgId/members/:userId',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await requireOrgMembership(req, 'orgId');
+      const user = getConsoleUser(req);
+      if (!user) return next(createAppError(401, '未授权或登录已过期'));
+      await defaultOrgService.removeMember(req.params.orgId, req.params.userId, user.id);
+      res.locals.successMessage = Messages.MEMBER_REMOVED;
+      res.json({});
+    } catch (e) {
+      next(e);
+    }
   }
-});
+);
 
 router.get('/:orgId/usage', async (req: Request, res: Response, next: NextFunction) => {
   try {

@@ -31,7 +31,11 @@ type FormData = z.infer<typeof schema>;
 
 export default function AdminUsagePricingPage() {
   const queryClient = useQueryClient();
-  const { data: pricing, isLoading, isError } = useQuery({
+  const {
+    data: pricing,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['admin', 'usage-pricing'],
     queryFn: async () => {
       const res = await adminApiEndpoints.getUsagePricing();

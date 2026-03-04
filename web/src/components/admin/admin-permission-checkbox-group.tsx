@@ -41,7 +41,11 @@ export function AdminPermissionCheckboxGroup({
     });
   };
 
-  const handleGroupCheck = (group: string, opts: { code: string; label: string }[], checked: boolean) => {
+  const handleGroupCheck = (
+    group: string,
+    opts: { code: string; label: string }[],
+    checked: boolean
+  ) => {
     opts.forEach((opt) => onToggle(opt.code, checked));
   };
 
@@ -53,12 +57,7 @@ export function AdminPermissionCheckboxGroup({
   return (
     <div className="space-y-3">
       <p className="text-sm font-medium leading-none">权限</p>
-      <div
-        className={cn(
-          'rounded-md border',
-          fullHeight ? 'p-3' : 'p-3 max-h-64 overflow-y-auto'
-        )}
-      >
+      <div className={cn('rounded-md border', fullHeight ? 'p-3' : 'max-h-64 overflow-y-auto p-3')}>
         <ul className="space-y-0.5">
           {Array.from(groups.entries()).map(([group, opts]) => {
             const isOpen = expanded.has(group);
@@ -71,7 +70,7 @@ export function AdminPermissionCheckboxGroup({
                   <button
                     type="button"
                     onClick={() => toggleExpanded(group)}
-                    className="shrink-0 p-0.5 rounded hover:bg-muted/80 text-muted-foreground"
+                    className="shrink-0 rounded p-0.5 text-muted-foreground hover:bg-muted/80"
                     aria-expanded={isOpen}
                     aria-label={isOpen ? '收起' : '展开'}
                   >
@@ -84,9 +83,7 @@ export function AdminPermissionCheckboxGroup({
                   <Checkbox
                     id={`${idPrefix}-group-${group}`}
                     checked={allChecked}
-                    onCheckedChange={(checked) =>
-                      handleGroupCheck(group, opts, checked === true)
-                    }
+                    onCheckedChange={(checked) => handleGroupCheck(group, opts, checked === true)}
                     disabled={disabled}
                     className={cn(
                       'shrink-0',
@@ -95,34 +92,32 @@ export function AdminPermissionCheckboxGroup({
                   />
                   <label
                     htmlFor={`${idPrefix}-group-${group}`}
-                    className="flex-1 text-sm font-medium cursor-pointer select-none py-0.5"
+                    className="flex-1 cursor-pointer select-none py-0.5 text-sm font-medium"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {group}
                   </label>
-                  <span className="text-xs text-muted-foreground shrink-0">
+                  <span className="shrink-0 text-xs text-muted-foreground">
                     {groupCount}/{opts.length}
                   </span>
                 </div>
                 {isOpen && (
-                  <ul className="pl-6 pb-1 space-y-0.5 border-l border-muted ml-2">
+                  <ul className="ml-2 space-y-0.5 border-l border-muted pb-1 pl-6">
                     {opts.map((opt) => (
                       <li
                         key={opt.code}
-                        className="flex items-center gap-2 py-1 pl-2 -ml-px border-b border-muted/50 last:border-b-0"
+                        className="-ml-px flex items-center gap-2 border-b border-muted/50 py-1 pl-2 last:border-b-0"
                       >
                         <Checkbox
                           id={`${idPrefix}-${opt.code}`}
                           checked={value.includes(opt.code)}
-                          onCheckedChange={(checked) =>
-                            onToggle(opt.code, checked === true)
-                          }
+                          onCheckedChange={(checked) => onToggle(opt.code, checked === true)}
                           disabled={disabled}
                           className="shrink-0"
                         />
                         <label
                           htmlFor={`${idPrefix}-${opt.code}`}
-                          className="text-sm cursor-pointer select-none flex-1"
+                          className="flex-1 cursor-pointer select-none text-sm"
                         >
                           {opt.label}
                         </label>

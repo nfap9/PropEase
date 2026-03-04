@@ -54,7 +54,9 @@ export default function RoomsPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isLeaseOpen, setIsLeaseOpen] = useState(false);
-  const [pendingInitialReading, setPendingInitialReading] = useState<LeaseCreatedParams | null>(null);
+  const [pendingInitialReading, setPendingInitialReading] = useState<LeaseCreatedParams | null>(
+    null
+  );
   const [isTerminateOpen, setIsTerminateOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
 
@@ -243,7 +245,7 @@ export default function RoomsPage() {
   if (!orgId) {
     return (
       <MainLayout>
-        <div className="flex flex-col items-center justify-center h-full space-y-4">
+        <div className="flex h-full flex-col items-center justify-center space-y-4">
           <Building2 className="h-16 w-16 text-muted-foreground" />
           <h2 className="text-xl font-semibold">请先创建或加入组织</h2>
           <p className="text-muted-foreground">在顶部导航栏选择或创建一个组织开始使用</p>
@@ -255,106 +257,104 @@ export default function RoomsPage() {
   return (
     <PermissionPageGuard>
       <MainLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">全部房间</h1>
-          <p className="text-muted-foreground mt-1">
-            查看和管理所有公寓的房间
-          </p>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold">全部房间</h1>
+            <p className="mt-1 text-muted-foreground">查看和管理所有公寓的房间</p>
+          </div>
+
+          {allRooms && <RoomStatsCards rooms={allRooms} />}
+
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="搜索房间号或备注..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {apartments && apartments.length > 0 && (
+            <RoomFilters
+              apartments={apartments}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onClearFilters={handleClearFilters}
+            />
+          )}
+
+          <div className="text-sm text-muted-foreground">
+            显示 {filteredRooms.length} / {allRooms?.length || 0} 个房间
+          </div>
+
+          {roomsLoading || apartmentsLoading ? (
+            <Skeleton className="h-96" />
+          ) : (
+            <DataTable columns={columns} data={filteredRooms} />
+          )}
         </div>
 
-        {allRooms && <RoomStatsCards rooms={allRooms} />}
-
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="搜索房间号或备注..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-
-        {apartments && apartments.length > 0 && (
-          <RoomFilters
-            apartments={apartments}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            onClearFilters={handleClearFilters}
-          />
-        )}
-
-        <div className="text-sm text-muted-foreground">
-          显示 {filteredRooms.length} / {allRooms?.length || 0} 个房间
-        </div>
-
-        {roomsLoading || apartmentsLoading ? (
-          <Skeleton className="h-96" />
-        ) : (
-          <DataTable columns={columns} data={filteredRooms} />
-        )}
-      </div>
-
-      <EditRoomDialog
-        open={isEditOpen}
-        onOpenChange={setIsEditOpen}
-        onSubmit={(data) => {
-          if (selectedRoom) {
-            updateMutation.mutate({ id: selectedRoom.id, data });
-          }
-        }}
-        isPending={updateMutation.isPending}
-        room={selectedRoom}
-      />
-
-      <LeaseFormDialog
-        orgId={orgId!}
-        open={isLeaseOpen}
-        onOpenChange={setIsLeaseOpen}
-        room={selectedRoom}
-        onSuccess={handleLeaseSuccess}
-        onLeaseCreated={setPendingInitialReading}
-      />
-
-      {pendingInitialReading && (
-        <InitialReadingDialog
-          orgId={orgId!}
-          roomId={pendingInitialReading.room_id}
-          roomDisplay={pendingInitialReading.room_display}
-          startDate={pendingInitialReading.start_date}
-          open={!!pendingInitialReading}
-          onOpenChange={(open) => !open && setPendingInitialReading(null)}
-          onSuccess={() => setPendingInitialReading(null)}
-        />
-      )}
-
-      <TerminateDialog
-        open={isTerminateOpen}
-        onOpenChange={setIsTerminateOpen}
-        onConfirm={() => {
-          if (selectedRoom) {
-            const activeLease = getActiveLease(selectedRoom.id);
-            if (activeLease) {
-              terminateLeaseMutation.mutate(activeLease.id);
+        <EditRoomDialog
+          open={isEditOpen}
+          onOpenChange={setIsEditOpen}
+          onSubmit={(data) => {
+            if (selectedRoom) {
+              updateMutation.mutate({ id: selectedRoom.id, data });
             }
-          }
-        }}
-        isPending={terminateLeaseMutation.isPending}
-        room={selectedRoom}
-      />
+          }}
+          isPending={updateMutation.isPending}
+          room={selectedRoom}
+        />
 
-      <DeleteRoomDialog
-        open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
-        onConfirm={() => {
-          if (selectedRoom) {
-            deleteMutation.mutate(selectedRoom.id);
-          }
-        }}
-        isPending={deleteMutation.isPending}
-        room={selectedRoom}
-      />
-    </MainLayout>
+        <LeaseFormDialog
+          orgId={orgId!}
+          open={isLeaseOpen}
+          onOpenChange={setIsLeaseOpen}
+          room={selectedRoom}
+          onSuccess={handleLeaseSuccess}
+          onLeaseCreated={setPendingInitialReading}
+        />
+
+        {pendingInitialReading && (
+          <InitialReadingDialog
+            orgId={orgId!}
+            roomId={pendingInitialReading.room_id}
+            roomDisplay={pendingInitialReading.room_display}
+            startDate={pendingInitialReading.start_date}
+            open={!!pendingInitialReading}
+            onOpenChange={(open) => !open && setPendingInitialReading(null)}
+            onSuccess={() => setPendingInitialReading(null)}
+          />
+        )}
+
+        <TerminateDialog
+          open={isTerminateOpen}
+          onOpenChange={setIsTerminateOpen}
+          onConfirm={() => {
+            if (selectedRoom) {
+              const activeLease = getActiveLease(selectedRoom.id);
+              if (activeLease) {
+                terminateLeaseMutation.mutate(activeLease.id);
+              }
+            }
+          }}
+          isPending={terminateLeaseMutation.isPending}
+          room={selectedRoom}
+        />
+
+        <DeleteRoomDialog
+          open={isDeleteOpen}
+          onOpenChange={setIsDeleteOpen}
+          onConfirm={() => {
+            if (selectedRoom) {
+              deleteMutation.mutate(selectedRoom.id);
+            }
+          }}
+          isPending={deleteMutation.isPending}
+          room={selectedRoom}
+        />
+      </MainLayout>
     </PermissionPageGuard>
   );
 }

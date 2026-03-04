@@ -53,13 +53,14 @@ export const SYSTEM_ROLES = [
 
 export type SystemRole = (typeof SYSTEM_ROLES)[number];
 
-export const SYSTEM_ROLE_CONFIGS: Array<{ role: SystemRole; name: string; description?: string }> = [
-  { role: 'super_admin', name: '超级管理员', description: '拥有系统所有权限，可管理所有组织' },
-  { role: 'support', name: '客服', description: '可查看所有组织数据，协助用户解决问题' },
-  { role: 'operations', name: '运营', description: '可查看和导出数据，进行运营分析' },
-  { role: 'finance', name: '财务', description: '可管理账单和查看财务报表' },
-  { role: 'readonly', name: '只读', description: '只能查看数据，无修改权限' },
-];
+export const SYSTEM_ROLE_CONFIGS: Array<{ role: SystemRole; name: string; description?: string }> =
+  [
+    { role: 'super_admin', name: '超级管理员', description: '拥有系统所有权限，可管理所有组织' },
+    { role: 'support', name: '客服', description: '可查看所有组织数据，协助用户解决问题' },
+    { role: 'operations', name: '运营', description: '可查看和导出数据，进行运营分析' },
+    { role: 'finance', name: '财务', description: '可管理账单和查看财务报表' },
+    { role: 'readonly', name: '只读', description: '只能查看数据，无修改权限' },
+  ];
 
 /** 系统角色对应的 (resource, action) 列表 */
 export const DEFAULT_SYSTEM_ROLE_PERMISSIONS: Record<
@@ -67,7 +68,8 @@ export const DEFAULT_SYSTEM_ROLE_PERMISSIONS: Record<
   Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }>
 > = {
   super_admin: (() => {
-    const perms: Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }> = [];
+    const perms: Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }> =
+      [];
     const actions: Array<(typeof ACTIONS)[number]> = ['view', 'create', 'edit', 'delete', 'export'];
     for (const r of RESOURCES) for (const a of actions) perms.push({ resource: r, action: a });
     return perms;
@@ -128,7 +130,8 @@ export const DEFAULT_ORG_ROLE_PERMISSIONS: Record<
   Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }>
 > = {
   admin: (() => {
-    const perms: Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }> = [];
+    const perms: Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }> =
+      [];
     const actions: Array<(typeof ACTIONS)[number]> = ['view', 'create', 'edit', 'delete', 'export'];
     for (const r of RESOURCES) for (const a of actions) perms.push({ resource: r, action: a });
     return perms;

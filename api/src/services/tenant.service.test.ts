@@ -116,9 +116,7 @@ describe('TenantService', () => {
     it('should throw 404 when updating non-existent tenant', async () => {
       vi.mocked(mockRepo.findByIdAndOrg).mockResolvedValue(null);
 
-      await expect(
-        service.update(orgId, 'non-existent', { name: '李四' })
-      ).rejects.toMatchObject({
+      await expect(service.update(orgId, 'non-existent', { name: '李四' })).rejects.toMatchObject({
         statusCode: 404,
       });
     });

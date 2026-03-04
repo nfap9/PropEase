@@ -99,12 +99,8 @@ export function TenantSelect({
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
-        <Select
-          value={value || ''}
-          onValueChange={(v) => onValueChange(v)}
-          disabled={disabled}
-        >
-          <SelectTrigger className="flex-1 min-w-[140px]">
+        <Select value={value || ''} onValueChange={(v) => onValueChange(v)} disabled={disabled}>
+          <SelectTrigger className="min-w-[140px] flex-1">
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
@@ -175,10 +171,7 @@ export function TenantSelect({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="tenant-emergency_phone">紧急联系电话</Label>
-                <Input
-                  id="tenant-emergency_phone"
-                  {...createForm.register('emergency_phone')}
-                />
+                <Input id="tenant-emergency_phone" {...createForm.register('emergency_phone')} />
               </div>
             </div>
             <div className="space-y-2">

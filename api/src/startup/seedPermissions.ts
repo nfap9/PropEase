@@ -84,10 +84,9 @@ export async function seedPermissions(): Promise<void> {
     }
   }
 
-  for (const [role, perms] of Object.entries(DEFAULT_SYSTEM_ROLE_PERMISSIONS) as Array<[
-    SystemRole,
-    Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }>,
-  ]>) {
+  for (const [role, perms] of Object.entries(DEFAULT_SYSTEM_ROLE_PERMISSIONS) as Array<
+    [SystemRole, Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }>]
+  >) {
     for (const { resource, action } of perms) {
       const code = `${resource}:${action}`;
       const permission = await prisma.permission.findUnique({ where: { code } });

@@ -53,7 +53,9 @@ export async function generateBillsForOrg(
         const rate =
           lease.water_rate != null
             ? Number(lease.water_rate)
-            : (config?.water_price_per_unit != null ? Number(config.water_price_per_unit) : 0);
+            : config?.water_price_per_unit != null
+              ? Number(config.water_price_per_unit)
+              : 0;
         waterAmount = usage * rate;
       }
     }
@@ -64,7 +66,9 @@ export async function generateBillsForOrg(
         const rate =
           lease.electricity_rate != null
             ? Number(lease.electricity_rate)
-            : (config?.electricity_price_per_unit != null ? Number(config.electricity_price_per_unit) : 0);
+            : config?.electricity_price_per_unit != null
+              ? Number(config.electricity_price_per_unit)
+              : 0;
         electricityAmount = usage * rate;
       }
     }

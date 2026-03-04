@@ -46,12 +46,28 @@ import { useBrandConfig } from '@/lib/brand-config-context';
 const NAV_ITEMS = [
   { href: '/dashboard', label: '首页', icon: Home, permission: null },
   { href: '/notifications', label: '通知', icon: Bell, permission: null },
-  { href: '/apartments', label: '公寓管理', icon: Building2, permission: PERMISSIONS.APARTMENT_VIEW },
+  {
+    href: '/apartments',
+    label: '公寓管理',
+    icon: Building2,
+    permission: PERMISSIONS.APARTMENT_VIEW,
+  },
   { href: '/rooms', label: '全部房间', icon: DoorOpen, permission: PERMISSIONS.ROOM_VIEW },
   { href: '/tenants', label: '租客管理', icon: Users, permission: PERMISSIONS.TENANT_VIEW },
   { href: '/leases', label: '租约管理', icon: FileText, permission: PERMISSIONS.LEASE_VIEW },
-  { href: '/utilities', label: '水电录入', icon: Zap, permission: PERMISSIONS.UTILITY_VIEW, exact: true },
-  { href: '/utilities/history', label: '历史水电记录', icon: History, permission: PERMISSIONS.UTILITY_VIEW },
+  {
+    href: '/utilities',
+    label: '水电录入',
+    icon: Zap,
+    permission: PERMISSIONS.UTILITY_VIEW,
+    exact: true,
+  },
+  {
+    href: '/utilities/history',
+    label: '历史水电记录',
+    icon: History,
+    permission: PERMISSIONS.UTILITY_VIEW,
+  },
   { href: '/bills', label: '账单管理', icon: Receipt, permission: PERMISSIONS.BILL_VIEW },
   { href: '/reports', label: '经营分析', icon: BarChart3, permission: PERMISSIONS.REPORT_VIEW },
 ];
@@ -59,7 +75,12 @@ const NAV_ITEMS = [
 const SETTINGS_ITEMS = [
   { href: '/settings/team', label: '团队管理', icon: Users, permission: PERMISSIONS.MEMBER_VIEW },
   { href: '/settings/subscription', label: '套餐购买', icon: CreditCard, permission: null },
-  { href: '/settings/permissions', label: '权限管理', icon: Shield, permission: PERMISSIONS.SETTINGS_VIEW },
+  {
+    href: '/settings/permissions',
+    label: '权限管理',
+    icon: Shield,
+    permission: PERMISSIONS.SETTINGS_VIEW,
+  },
 ];
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
@@ -82,7 +103,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   });
   const planLabel =
     subscriptionStatus?.plan?.name ??
-    (organization?.plan ? PLAN_CODE_LABEL[organization.plan] ?? organization.plan : null);
+    (organization?.plan ? (PLAN_CODE_LABEL[organization.plan] ?? organization.plan) : null);
 
   // 过滤有权限的导航项
   const visibleNavItems = NAV_ITEMS.filter(
@@ -109,7 +130,9 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <nav className="flex-1 space-y-1 p-4">
         {visibleNavItems.map((item) => {
           const Icon = item.icon;
-          const isActive = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + '/');
+          const isActive = item.exact
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(item.href + '/');
           return (
             <Link
               key={item.href}
@@ -155,7 +178,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
           </Sheet>
 
           {/* 全局组织选择器 */}
-          <div className="flex-1 flex justify-center">
+          <div className="flex flex-1 justify-center">
             <OrgSelector />
           </div>
 
@@ -172,11 +195,9 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 flex items-center gap-2">
+              <Button variant="ghost" className="relative flex h-8 items-center gap-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback>
-                    {user?.full_name?.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
+                  <AvatarFallback>{user?.full_name?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
                 <span className="hidden font-medium md:inline-block">
                   {user?.full_name || '用户'}
@@ -189,7 +210,9 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                   <p className="text-sm font-medium leading-none">{user?.full_name}</p>
                   <p className="text-xs leading-none text-muted-foreground">{user?.phone}</p>
                   {planLabel != null && (
-                    <p className="text-xs leading-none text-muted-foreground">当前套餐：{planLabel}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      当前套餐：{planLabel}
+                    </p>
                   )}
                 </div>
               </DropdownMenuLabel>

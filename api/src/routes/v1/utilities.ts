@@ -26,12 +26,14 @@ const BatchReadingSchema = z.object({
   period_year: z.number(),
   period_month: z.number(),
   reading_date: z.string(),
-  readings: z.array(z.object({
-    room_id: z.string(),
-    water_reading: z.number().optional(),
-    electricity_reading: z.number().optional(),
-    notes: z.string().optional(),
-  })),
+  readings: z.array(
+    z.object({
+      room_id: z.string(),
+      water_reading: z.number().optional(),
+      electricity_reading: z.number().optional(),
+      notes: z.string().optional(),
+    })
+  ),
 });
 
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
@@ -67,7 +69,12 @@ router.get('/export', async (req: Request, res: Response, next: NextFunction) =>
     const periodMonth = req.query.period_month != null ? Number(req.query.period_month) : undefined;
     const daysRange = req.query.days_range != null ? Number(req.query.days_range) : undefined;
 
-    const exportList = await defaultUtilityService.getExportList(orgId, periodYear, periodMonth, daysRange);
+    const exportList = await defaultUtilityService.getExportList(
+      orgId,
+      periodYear,
+      periodMonth,
+      daysRange
+    );
     res.json(exportList);
   } catch (e) {
     next(e);

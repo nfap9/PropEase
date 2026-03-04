@@ -1,4 +1,9 @@
-import type { Prisma, SubscriptionPlan, OrganizationSubscription, SubscriptionOrder } from '../generated/client/index.js';
+import type {
+  Prisma,
+  SubscriptionPlan,
+  OrganizationSubscription,
+  SubscriptionOrder,
+} from '../generated/client/index.js';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -26,13 +31,21 @@ export interface SubscriptionRepository {
 
   // 组织订阅
   findSubscriptionByOrgId(orgId: string): Promise<SubscriptionWithPlan | null>;
-  createSubscription(data: Prisma.OrganizationSubscriptionCreateInput): Promise<OrganizationSubscription>;
-  updateSubscription(orgId: string, data: Prisma.OrganizationSubscriptionUpdateInput): Promise<OrganizationSubscription>;
+  createSubscription(
+    data: Prisma.OrganizationSubscriptionCreateInput
+  ): Promise<OrganizationSubscription>;
+  updateSubscription(
+    orgId: string,
+    data: Prisma.OrganizationSubscriptionUpdateInput
+  ): Promise<OrganizationSubscription>;
 
   // 订单
   findOrderById(orderId: string, orgId: string): Promise<OrderWithPlan | null>;
   createOrder(data: Prisma.SubscriptionOrderCreateInput): Promise<SubscriptionOrder>;
-  updateOrder(orderId: string, data: Prisma.SubscriptionOrderUpdateInput): Promise<SubscriptionOrder>;
+  updateOrder(
+    orderId: string,
+    data: Prisma.SubscriptionOrderUpdateInput
+  ): Promise<SubscriptionOrder>;
 }
 
 /**

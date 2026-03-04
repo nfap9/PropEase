@@ -190,11 +190,7 @@ export function LeaseFormDialog({
             <div className="space-y-2">
               <Label>房间</Label>
               <Input
-                value={
-                  room
-                    ? `${room.apartment?.name || ''} - ${room.room_number}`
-                    : ''
-                }
+                value={room ? `${room.apartment?.name || ''} - ${room.room_number}` : ''}
                 disabled
               />
             </div>
@@ -261,19 +257,11 @@ export function LeaseFormDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="start_date">开始日期 *</Label>
-              <Input
-                id="start_date"
-                type="date"
-                {...form.register('start_date')}
-              />
+              <Input id="start_date" type="date" {...form.register('start_date')} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="end_date">结束日期</Label>
-              <Input
-                id="end_date"
-                type="date"
-                {...form.register('end_date')}
-              />
+              <Input id="end_date" type="date" {...form.register('end_date')} />
             </div>
           </div>
 
@@ -328,11 +316,7 @@ export function LeaseFormDialog({
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               取消
             </Button>
             <Button type="submit" disabled={createMutation.isPending}>

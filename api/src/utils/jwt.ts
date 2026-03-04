@@ -6,11 +6,7 @@ const TYP = 'JWT';
 
 function base64UrlEncode(input: Buffer | string): string {
   const buf = typeof input === 'string' ? Buffer.from(input, 'utf8') : input;
-  return buf
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+  return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function sign(payload: Record<string, unknown>, expiresInMinutes: number): string {
@@ -52,17 +48,11 @@ function verify(token: string): Record<string, unknown> | null {
 }
 
 export function createAccessToken(data: { sub: string; phone?: string }): string {
-  return sign(
-    { ...data, type: 'access' },
-    config.accessTokenExpireMinutes
-  );
+  return sign({ ...data, type: 'access' }, config.accessTokenExpireMinutes);
 }
 
 export function createRefreshToken(data: { sub: string; phone?: string }): string {
-  return sign(
-    { ...data, type: 'refresh' },
-    config.refreshTokenExpireDays * 24 * 60
-  );
+  return sign({ ...data, type: 'refresh' }, config.refreshTokenExpireDays * 24 * 60);
 }
 
 export function decodeToken(token: string): Record<string, unknown> | null {
@@ -70,8 +60,5 @@ export function decodeToken(token: string): Record<string, unknown> | null {
 }
 
 export function createAdminAccessToken(adminUserId: string): string {
-  return sign(
-    { sub: adminUserId, type: 'admin' },
-    config.adminAccessTokenExpireMinutes
-  );
+  return sign({ sub: adminUserId, type: 'admin' }, config.adminAccessTokenExpireMinutes);
 }

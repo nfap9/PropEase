@@ -43,8 +43,7 @@ export function PermissionGuard({
   children,
   fallback = null,
 }: PermissionGuardProps) {
-  const { hasAnyPermission, hasAllPermissions, isLoading } =
-    usePermissions();
+  const { hasAnyPermission, hasAllPermissions, isLoading } = usePermissions();
 
   // 加载中不显示
   if (isLoading) {
@@ -53,10 +52,7 @@ export function PermissionGuard({
 
   const permissions = Array.isArray(permission) ? permission : [permission];
 
-  const hasAccess =
-    mode === 'any'
-      ? hasAnyPermission(permissions)
-      : hasAllPermissions(permissions);
+  const hasAccess = mode === 'any' ? hasAnyPermission(permissions) : hasAllPermissions(permissions);
 
   if (!hasAccess) {
     return <>{fallback}</>;

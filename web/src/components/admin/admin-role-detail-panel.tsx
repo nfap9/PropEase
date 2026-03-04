@@ -26,7 +26,7 @@ export function AdminRoleDetailPanel({
 }: AdminRoleDetailPanelProps) {
   if (!role) {
     return (
-      <div className="flex flex-1 items-center justify-center text-muted-foreground text-sm">
+      <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
         请从左侧选择一个角色
       </div>
     );
@@ -39,9 +39,7 @@ export function AdminRoleDetailPanel({
       <div className="border-b p-4">
         <h3 className="font-semibold">{role.name}</h3>
         {readOnly && (
-          <p className="mt-1 text-sm text-muted-foreground">
-            系统预置角色仅可查看，不可修改
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">系统预置角色仅可查看，不可修改</p>
         )}
       </div>
       <div className="flex-1 overflow-y-auto p-4">

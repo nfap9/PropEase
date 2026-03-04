@@ -19,12 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Select,
   SelectContent,
@@ -56,8 +51,7 @@ export default function AdminRegisteredUsersPage() {
   /** 待删除确认的用户 id */
   const [deleteConfirmUserId, setDeleteConfirmUserId] = useState<string | null>(null);
 
-  const isActiveParam =
-    activeFilter === 'all' ? undefined : activeFilter === 'active';
+  const isActiveParam = activeFilter === 'all' ? undefined : activeFilter === 'active';
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin', 'registered-users', isActiveParam, searchSubmitted],
@@ -202,10 +196,7 @@ export default function AdminRegisteredUsersPage() {
               搜索
             </Button>
           </form>
-          <Select
-            value={activeFilter}
-            onValueChange={(v) => setActiveFilter(v as FilterActive)}
-          >
+          <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as FilterActive)}>
             <SelectTrigger className="w-36">
               <SelectValue placeholder="状态筛选" />
             </SelectTrigger>
@@ -220,7 +211,10 @@ export default function AdminRegisteredUsersPage() {
 
       <DataTable columns={columns} data={users ?? []} />
 
-      <AlertDialog open={!!disableConfirmUserId} onOpenChange={(open) => !open && setDisableConfirmUserId(null)}>
+      <AlertDialog
+        open={!!disableConfirmUserId}
+        onOpenChange={(open) => !open && setDisableConfirmUserId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>确认停用</AlertDialogTitle>
@@ -247,7 +241,10 @@ export default function AdminRegisteredUsersPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={!!deleteConfirmUserId} onOpenChange={(open) => !open && setDeleteConfirmUserId(null)}>
+      <AlertDialog
+        open={!!deleteConfirmUserId}
+        onOpenChange={(open) => !open && setDeleteConfirmUserId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>确认删除</AlertDialogTitle>
@@ -300,15 +297,15 @@ export default function AdminRegisteredUsersPage() {
                             : ORG_STATUS_CONFIG.inactive.variant
                         }
                       >
-                        {detail.is_active ? ORG_STATUS_CONFIG.active.label : ORG_STATUS_CONFIG.inactive.label}
+                        {detail.is_active
+                          ? ORG_STATUS_CONFIG.active.label
+                          : ORG_STATUS_CONFIG.inactive.label}
                       </Badge>
                     </p>
                   </div>
                   <div>
                     <span className="text-muted-foreground">注册时间</span>
-                    <p className="font-medium">
-                      {formatDateTime(detail.created_at)}
-                    </p>
+                    <p className="font-medium">{formatDateTime(detail.created_at)}</p>
                   </div>
                   <div>
                     <span className="text-muted-foreground">所属组织</span>

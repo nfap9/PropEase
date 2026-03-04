@@ -1,4 +1,10 @@
-import type { Permission, SystemRoleConfig, UserSystemRole, Organization, Prisma } from '../generated/client/index.js';
+import type {
+  Permission,
+  SystemRoleConfig,
+  UserSystemRole,
+  Organization,
+  Prisma,
+} from '../generated/client/index.js';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 

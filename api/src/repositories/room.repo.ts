@@ -5,7 +5,9 @@ import { prisma } from '../lib/prisma.js';
 /**
  * 房间包含公寓信息
  */
-export type RoomWithApartment = Room & { apartment: { id: string; name: string; organization_id: string } };
+export type RoomWithApartment = Room & {
+  apartment: { id: string; name: string; organization_id: string };
+};
 
 /**
  * Room Repository 接口

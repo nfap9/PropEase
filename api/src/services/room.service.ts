@@ -1,6 +1,10 @@
 import type { Room, Prisma } from '../generated/client/index.js';
 import { ulid } from 'ulid';
-import { createRoomRepository, type RoomRepository, type RoomWithApartment } from '../repositories/room.repo.js';
+import {
+  createRoomRepository,
+  type RoomRepository,
+  type RoomWithApartment,
+} from '../repositories/room.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
@@ -79,7 +83,12 @@ function buildUpdateData(existing: Room, data: UpdateRoomInput): Prisma.RoomUpda
     layout: data.layout ?? existing.layout,
     status: data.status ?? existing.status,
     monthly_rent: data.monthly_rent ?? Number(existing.monthly_rent),
-    area: data.area !== undefined ? data.area : (existing.area != null ? Number(existing.area) : undefined),
+    area:
+      data.area !== undefined
+        ? data.area
+        : existing.area != null
+          ? Number(existing.area)
+          : undefined,
     notes: data.notes ?? existing.notes,
   };
 }

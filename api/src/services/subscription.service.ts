@@ -1,4 +1,8 @@
-import type { SubscriptionPlan, OrganizationSubscription, SubscriptionOrder } from '../generated/client/index.js';
+import type {
+  SubscriptionPlan,
+  OrganizationSubscription,
+  SubscriptionOrder,
+} from '../generated/client/index.js';
 import { ulid } from 'ulid';
 import {
   createSubscriptionRepository,
@@ -33,9 +37,17 @@ export interface SubscriptionService {
   getSubscription(orgId: string): Promise<SubscriptionWithPlan | null>;
   getSubscriptionStatus(orgId: string): Promise<SubscriptionStatus>;
   subscribe(orgId: string, planId: string): Promise<OrganizationSubscription>;
-  updateSubscription(orgId: string, planId: string, effective: 'immediate' | 'next_cycle'): Promise<OrganizationSubscription>;
+  updateSubscription(
+    orgId: string,
+    planId: string,
+    effective: 'immediate' | 'next_cycle'
+  ): Promise<OrganizationSubscription>;
   cancelSubscription(orgId: string): Promise<void>;
-  createOrder(orgId: string, planId: string, billingCycle: 'monthly' | 'yearly'): Promise<SubscriptionOrder>;
+  createOrder(
+    orgId: string,
+    planId: string,
+    billingCycle: 'monthly' | 'yearly'
+  ): Promise<SubscriptionOrder>;
   getOrder(orgId: string, orderId: string): Promise<OrderWithPlan>;
 }
 
@@ -85,7 +97,10 @@ export function createSubscriptionService(
       if (sub.end_date) {
         const end = new Date(sub.end_date);
         end.setHours(0, 0, 0, 0);
-        daysRemaining = Math.max(0, Math.ceil((end.getTime() - today.getTime()) / (24 * 60 * 60 * 1000)));
+        daysRemaining = Math.max(
+          0,
+          Math.ceil((end.getTime() - today.getTime()) / (24 * 60 * 60 * 1000))
+        );
       }
 
       return {
@@ -138,7 +153,11 @@ export function createSubscriptionService(
       });
     },
 
-    updateSubscription: async (orgId: string, planId: string, effective: 'immediate' | 'next_cycle') => {
+    updateSubscription: async (
+      orgId: string,
+      planId: string,
+      effective: 'immediate' | 'next_cycle'
+    ) => {
       const plan = await getRepo().findPlanById(planId);
       if (!plan) {
         throw createAppError(404, NotFoundMessages.PLAN);

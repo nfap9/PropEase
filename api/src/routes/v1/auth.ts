@@ -24,15 +24,18 @@ const RegisterSchema = z.object({
   verification_code: z.string().min(1, '验证码不能为空'),
 });
 
-const LoginSchema = z.object({
-  phone: z.string().regex(PHONE_REG, '请输入有效的中国大陆手机号'),
-  password: z.string().optional(),
-  verification_code: z.string().optional(),
-}).refine((d) => !!d.password !== !!d.verification_code, {
-  message: '密码和验证码只能提供一个',
-}).refine((d) => !!d.password || !!d.verification_code, {
-  message: '密码和验证码至少提供一个',
-});
+const LoginSchema = z
+  .object({
+    phone: z.string().regex(PHONE_REG, '请输入有效的中国大陆手机号'),
+    password: z.string().optional(),
+    verification_code: z.string().optional(),
+  })
+  .refine((d) => !!d.password !== !!d.verification_code, {
+    message: '密码和验证码只能提供一个',
+  })
+  .refine((d) => !!d.password || !!d.verification_code, {
+    message: '密码和验证码至少提供一个',
+  });
 
 const RefreshSchema = z.object({ refresh_token: z.string().min(1) });
 
@@ -101,10 +104,12 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
   try {
     const parsed = RefreshSchema.safeParse(req.body);
     if (!parsed.success) {
-      return next(createAppError(422, '参数校验失败', {
-        businessCode: 40001,
-        fieldErrors: zodToFieldErrors(parsed.error),
-      }));
+      return next(
+        createAppError(422, '参数校验失败', {
+          businessCode: 40001,
+          fieldErrors: zodToFieldErrors(parsed.error),
+        })
+      );
     }
     const result = await defaultAuthService.refreshToken(parsed.data.refresh_token);
     res.json(result);
@@ -118,14 +123,18 @@ router.post('/sms/send', async (req: Request, res: Response, next: NextFunction)
   try {
     const parsed = SendSmsCodeSchema.safeParse(req.body);
     if (!parsed.success) {
-      return next(createAppError(422, '参数校验失败', {
-        businessCode: 40001,
-        fieldErrors: zodToFieldErrors(parsed.error),
-      }));
+      return next(
+        createAppError(422, '参数校验失败', {
+          businessCode: 40001,
+          fieldErrors: zodToFieldErrors(parsed.error),
+        })
+      );
     }
     const { phone, purpose } = parsed.data;
     if (config.isDev) {
-      console.log(`[开发] 短信验证码 phone=${phone} purpose=${purpose} => 请使用固定码 ${DEV_VERIFICATION_CODE}`);
+      console.log(
+        `[开发] 短信验证码 phone=${phone} purpose=${purpose} => 请使用固定码 ${DEV_VERIFICATION_CODE}`
+      );
     }
     res.status(204).send();
   } catch (e) {

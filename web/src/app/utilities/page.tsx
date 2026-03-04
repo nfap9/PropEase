@@ -9,24 +9,14 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { apartmentsApi, roomsApi, utilitiesApi, leasesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
 import { Plus, Upload, Download, Building2, AlertCircle, History } from 'lucide-react';
-import {
-  CreateUtilityDialog,
-  ExportTemplateDialog,
-  BatchImportDialog,
-} from './components';
+import { CreateUtilityDialog, ExportTemplateDialog, BatchImportDialog } from './components';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 import type { RoomMissingInitialReading } from '@/lib/api/utilities';
 
@@ -54,7 +44,10 @@ function getBillingStatus(billingDay: number, isRecorded: boolean): BillingStatu
   return 'pending';
 }
 
-const BILLING_STATUS_CONFIG: Record<BillingStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+const BILLING_STATUS_CONFIG: Record<
+  BillingStatus,
+  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+> = {
   recorded: { label: '已录入', variant: 'default' }, // 绿色（默认使用 default，但需要自定义样式）
   pending: { label: '未录入', variant: 'secondary' }, // 蓝色
   upcoming: { label: '即将到期', variant: 'outline' }, // 橙色（需要自定义样式）
@@ -81,7 +74,9 @@ export default function UtilitiesPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isExportTemplateOpen, setIsExportTemplateOpen] = useState(false);
   const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
-  const [initialReadingRoom, setInitialReadingRoom] = useState<RoomMissingInitialReading | null>(null);
+  const [initialReadingRoom, setInitialReadingRoom] = useState<RoomMissingInitialReading | null>(
+    null
+  );
 
   const { data: apartments } = useQuery({
     queryKey: ['apartments', orgId],
@@ -124,7 +119,10 @@ export default function UtilitiesPage() {
   });
 
   const scopeRooms = allRooms;
-  const activeLeaseRoomIds = useMemo(() => new Set(activeLeases.map((l) => l.room_id)), [activeLeases]);
+  const activeLeaseRoomIds = useMemo(
+    () => new Set(activeLeases.map((l) => l.room_id)),
+    [activeLeases]
+  );
 
   const monthRoomsNeedInputCount = useMemo(() => {
     if (!scopeRooms) return null;
@@ -134,7 +132,9 @@ export default function UtilitiesPage() {
   const monthRoomsRecordedCount = useMemo(() => {
     if (!scopeRooms) return null;
     const needRoomIds = new Set(
-      scopeRooms.filter((r) => r.status === 'occupied' && activeLeaseRoomIds.has(r.id)).map((r) => r.id)
+      scopeRooms
+        .filter((r) => r.status === 'occupied' && activeLeaseRoomIds.has(r.id))
+        .map((r) => r.id)
     );
     const recordedRoomIds = new Set(monthUtilities.map((u) => u.room_id));
     let cnt = 0;
@@ -211,7 +211,7 @@ export default function UtilitiesPage() {
   if (!orgId) {
     return (
       <MainLayout>
-        <div className="flex flex-col items-center justify-center h-full space-y-4">
+        <div className="flex h-full flex-col items-center justify-center space-y-4">
           <Building2 className="h-16 w-16 text-muted-foreground" />
           <h2 className="text-xl font-semibold">请先创建或加入组织</h2>
           <p className="text-muted-foreground">在顶部导航栏选择或创建一个组织开始使用</p>
@@ -251,14 +251,18 @@ export default function UtilitiesPage() {
           {/* 本月水电录入概览 */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">{currentYear}年{currentMonth}月水电录入概览</CardTitle>
+              <CardTitle className="text-base">
+                {currentYear}年{currentMonth}月水电录入概览
+              </CardTitle>
               <CardDescription>统计范围：全部公寓（仅统计有活跃租约的已入住房间）</CardDescription>
             </CardHeader>
             <CardContent>
               {monthUtilitiesLoading || !allRooms ? (
                 <Skeleton className="h-20" />
-              ) : monthRoomsNeedInputCount == null || monthRoomsRecordedCount == null || monthRoomsMissingCount == null ? (
-                <p className="text-sm text-muted-foreground py-6">暂无数据</p>
+              ) : monthRoomsNeedInputCount == null ||
+                monthRoomsRecordedCount == null ||
+                monthRoomsMissingCount == null ? (
+                <p className="py-6 text-sm text-muted-foreground">暂无数据</p>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div className="rounded-md border p-4">
@@ -283,9 +287,7 @@ export default function UtilitiesPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">本月未录入水电的租约</CardTitle>
-                <CardDescription>
-                  以下活跃租约本月尚未录入水电读数
-                </CardDescription>
+                <CardDescription>以下活跃租约本月尚未录入水电读数</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
@@ -326,7 +328,9 @@ export default function UtilitiesPage() {
                                 </Badge>
                               </div>
                             </td>
-                            <td className="px-4 py-2">{formatLeasePeriod(lease.start_date, lease.end_date)}</td>
+                            <td className="px-4 py-2">
+                              {formatLeasePeriod(lease.start_date, lease.end_date)}
+                            </td>
                           </tr>
                         );
                       })}
@@ -401,10 +405,7 @@ export default function UtilitiesPage() {
           onApartmentChange={setCreateApartmentId}
         />
 
-        <ExportTemplateDialog
-          open={isExportTemplateOpen}
-          onOpenChange={setIsExportTemplateOpen}
-        />
+        <ExportTemplateDialog open={isExportTemplateOpen} onOpenChange={setIsExportTemplateOpen} />
 
         <BatchImportDialog
           open={isBatchImportOpen}
@@ -424,7 +425,9 @@ export default function UtilitiesPage() {
             open={!!initialReadingRoom}
             onOpenChange={(open) => !open && setInitialReadingRoom(null)}
             onSuccess={() => {
-              queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
+              queryClient.invalidateQueries({
+                queryKey: ['utilities', 'rooms-missing-initial', orgId],
+              });
               queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
               setInitialReadingRoom(null);
             }}

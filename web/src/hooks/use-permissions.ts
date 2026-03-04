@@ -16,8 +16,7 @@ export function usePermissions(orgId?: string) {
 
   const { data: response, isLoading } = useQuery({
     queryKey: ['my-permissions', targetOrgId],
-    queryFn: () =>
-      targetOrgId ? permissionsApi.getMyPermissions(targetOrgId) : null,
+    queryFn: () => (targetOrgId ? permissionsApi.getMyPermissions(targetOrgId) : null),
     enabled: !!targetOrgId,
     staleTime: 5 * 60 * 1000, // 5 分钟缓存
   });

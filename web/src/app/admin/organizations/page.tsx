@@ -16,10 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  adminApiEndpoints,
-  AdminOrganization,
-} from '@/lib/api/admin-client';
+import { adminApiEndpoints, AdminOrganization } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import { formatDateTime } from '@/lib/date-utils';
 import { ColumnDef } from '@tanstack/react-table';
@@ -33,8 +30,7 @@ export default function AdminOrganizationsPage() {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<FilterActive>('all');
 
-  const isActiveParam =
-    activeFilter === 'all' ? undefined : activeFilter === 'active';
+  const isActiveParam = activeFilter === 'all' ? undefined : activeFilter === 'active';
 
   const { data: organizations, isLoading } = useQuery({
     queryKey: ['admin', 'organizations', isActiveParam],
@@ -154,10 +150,7 @@ export default function AdminOrganizationsPage() {
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold">组织管理</h2>
-        <Select
-          value={activeFilter}
-          onValueChange={(v) => setActiveFilter(v as FilterActive)}
-        >
+        <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as FilterActive)}>
           <SelectTrigger className="w-36">
             <SelectValue placeholder="状态筛选" />
           </SelectTrigger>

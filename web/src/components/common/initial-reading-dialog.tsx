@@ -73,14 +73,17 @@ export function InitialReadingDialog({
   const queryClient = useQueryClient();
   const saveMutation = useMutation({
     mutationFn: (data: FormData) =>
-      utilitiesApi.create(orgId, filterEmptyStrings({
-        room_id: roomId,
-        period_year: periodYear,
-        period_month: periodMonth,
-        reading_date: data.reading_date,
-        water_reading: data.water_reading ?? undefined,
-        electricity_reading: data.electricity_reading ?? undefined,
-      })),
+      utilitiesApi.create(
+        orgId,
+        filterEmptyStrings({
+          room_id: roomId,
+          period_year: periodYear,
+          period_month: periodMonth,
+          reading_date: data.reading_date,
+          water_reading: data.water_reading ?? undefined,
+          electricity_reading: data.electricity_reading ?? undefined,
+        })
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       onOpenChange(false);
@@ -123,11 +126,7 @@ export function InitialReadingDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="initial-reading_date">读数日期</Label>
-            <Input
-              id="initial-reading_date"
-              type="date"
-              {...form.register('reading_date')}
-            />
+            <Input id="initial-reading_date" type="date" {...form.register('reading_date')} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

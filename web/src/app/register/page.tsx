@@ -30,16 +30,22 @@ import {
 // 手机号验证正则
 const phoneRegex = /^1[3-9]\d{9}$/;
 
-const registerSchema = z.object({
-  phone: z.string().regex(phoneRegex, '请输入有效的手机号'),
-  verification_code: z.string().length(6, '验证码必须是6位数字'),
-  password: z.string().min(8, '密码至少8个字符').regex(/[a-zA-Z]/, '密码必须包含字母').regex(/\d/, '密码必须包含数字'),
-  full_name: z.string().min(2, '姓名至少2个字符'),
-  confirm_password: z.string(),
-}).refine((data) => data.password === data.confirm_password, {
-  message: '两次输入的密码不一致',
-  path: ['confirm_password'],
-});
+const registerSchema = z
+  .object({
+    phone: z.string().regex(phoneRegex, '请输入有效的手机号'),
+    verification_code: z.string().length(6, '验证码必须是6位数字'),
+    password: z
+      .string()
+      .min(8, '密码至少8个字符')
+      .regex(/[a-zA-Z]/, '密码必须包含字母')
+      .regex(/\d/, '密码必须包含数字'),
+    full_name: z.string().min(2, '姓名至少2个字符'),
+    confirm_password: z.string(),
+  })
+  .refine((data) => data.password === data.confirm_password, {
+    message: '两次输入的密码不一致',
+    path: ['confirm_password'],
+  });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -148,12 +154,7 @@ export default function RegisterPage() {
                     <FormLabel>验证码</FormLabel>
                     <div className="flex gap-2">
                       <FormControl>
-                        <Input
-                          type="text"
-                          maxLength={6}
-                          placeholder="请输入验证码"
-                          {...field}
-                        />
+                        <Input type="text" maxLength={6} placeholder="请输入验证码" {...field} />
                       </FormControl>
                       <Button
                         type="button"
@@ -176,7 +177,11 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>密码</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="请输入密码（至少8位，包含字母和数字）" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="请输入密码（至少8位，包含字母和数字）"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

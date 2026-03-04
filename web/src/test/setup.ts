@@ -1,5 +1,5 @@
 /// <reference types="vitest/globals" />
-import '@testing-library/jest-dom'
+import '@testing-library/jest-dom';
 
 // Mock Next.js router
 vi.mock('next/navigation', () => ({
@@ -13,7 +13,7 @@ vi.mock('next/navigation', () => ({
   }),
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
-}))
+}));
 
 // Mock localStorage
 const localStorageMock = {
@@ -21,13 +21,13 @@ const localStorageMock = {
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
-}
+};
 Object.defineProperty(global, 'localStorage', {
   value: localStorageMock,
-})
+});
 
 // Reset mocks between tests
 beforeEach(() => {
-  vi.clearAllMocks()
-  localStorageMock.getItem.mockReturnValue(null)
-})
+  vi.clearAllMocks();
+  localStorageMock.getItem.mockReturnValue(null);
+});

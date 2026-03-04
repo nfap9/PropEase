@@ -27,7 +27,8 @@ const LeaseUpdateSchema = LeaseCreateSchema.partial();
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const isActive = req.query.is_active === 'true' ? true : req.query.is_active === 'false' ? false : undefined;
+    const isActive =
+      req.query.is_active === 'true' ? true : req.query.is_active === 'false' ? false : undefined;
     const list = await defaultLeaseService.list(orgId, isActive);
     res.json(list);
   } catch (e) {

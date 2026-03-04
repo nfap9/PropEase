@@ -56,10 +56,7 @@ export const subscriptionsApi = {
     return response.data;
   },
 
-  cancelSubscription: async (
-    orgId: string,
-    reason?: string
-  ): Promise<{ message: string }> => {
+  cancelSubscription: async (orgId: string, reason?: string): Promise<{ message: string }> => {
     const response = await api.post<{ message: string }>(
       `/subscriptions/organizations/${orgId}/subscription/cancel`,
       { reason }
@@ -68,10 +65,7 @@ export const subscriptionsApi = {
   },
 
   // 订阅支付订单（付费套餐）
-  createOrder: async (
-    orgId: string,
-    data: SubscriptionOrderCreate
-  ): Promise<SubscriptionOrder> => {
+  createOrder: async (orgId: string, data: SubscriptionOrderCreate): Promise<SubscriptionOrder> => {
     const response = await api.post<SubscriptionOrder>(
       `/subscriptions/organizations/${orgId}/orders`,
       { plan_id: data.plan_id, billing_cycle: data.billing_cycle ?? 'monthly' }
@@ -79,10 +73,7 @@ export const subscriptionsApi = {
     return response.data;
   },
 
-  getOrder: async (
-    orgId: string,
-    orderId: string
-  ): Promise<SubscriptionOrder> => {
+  getOrder: async (orgId: string, orderId: string): Promise<SubscriptionOrder> => {
     const response = await api.get<SubscriptionOrder>(
       `/subscriptions/organizations/${orgId}/orders/${orderId}`
     );
@@ -90,10 +81,7 @@ export const subscriptionsApi = {
   },
 
   /** 开发环境模拟支付，仅当订单返回 simulate_pay_available 时可用 */
-  simulatePay: async (
-    orgId: string,
-    orderId: string
-  ): Promise<SubscriptionOrder> => {
+  simulatePay: async (orgId: string, orderId: string): Promise<SubscriptionOrder> => {
     const response = await api.post<SubscriptionOrder>(
       `/subscriptions/organizations/${orgId}/orders/${orderId}/simulate-pay`
     );

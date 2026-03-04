@@ -43,7 +43,12 @@ export interface PermissionService {
 
   // 组织角色权限
   getRolePermissions(orgId: string, role: OrgMemberRole): Promise<RolePermissionsResult>;
-  updateRolePermissions(orgId: string, role: OrgMemberRole, permissionCodes: string[], requesterId: string): Promise<void>;
+  updateRolePermissions(
+    orgId: string,
+    role: OrgMemberRole,
+    permissionCodes: string[],
+    requesterId: string
+  ): Promise<void>;
 
   // 我的权限
   getMyPermissions(): Promise<{ permissions: string[] }>;
@@ -91,7 +96,9 @@ export function createPermissionService(
       }
 
       const settings = (org.settings as Record<string, unknown> | null) ?? {};
-      const rolePermissions = (settings.role_permissions as Record<string, string[] | undefined> | undefined)?.[role];
+      const rolePermissions = (
+        settings.role_permissions as Record<string, string[] | undefined> | undefined
+      )?.[role];
       const codes =
         Array.isArray(rolePermissions) && rolePermissions.length > 0
           ? rolePermissions
@@ -113,7 +120,12 @@ export function createPermissionService(
       };
     },
 
-    updateRolePermissions: async (orgId: string, role: OrgMemberRole, permissionCodes: string[], requesterId: string) => {
+    updateRolePermissions: async (
+      orgId: string,
+      role: OrgMemberRole,
+      permissionCodes: string[],
+      requesterId: string
+    ) => {
       if (!ORG_MEMBER_ROLES.includes(role)) {
         throw createAppError(400, '无效的角色');
       }
@@ -136,10 +148,14 @@ export function createPermissionService(
       }
 
       const settings = (org.settings as Record<string, unknown> | null) ?? {};
-      const rolePermissions = (settings.role_permissions as Record<string, string[]> | undefined) ?? {};
+      const rolePermissions =
+        (settings.role_permissions as Record<string, string[]> | undefined) ?? {};
       rolePermissions[role] = codes;
 
-      await getRepo().updateOrgSettings(orgId, { ...settings, role_permissions: rolePermissions } as Prisma.InputJsonValue);
+      await getRepo().updateOrgSettings(orgId, {
+        ...settings,
+        role_permissions: rolePermissions,
+      } as Prisma.InputJsonValue);
     },
 
     getMyPermissions: async () => {

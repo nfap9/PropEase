@@ -48,7 +48,12 @@ export interface MonthlyOccupancy {
  */
 export interface ReportService {
   getOverview(orgId: string): Promise<OverviewStats>;
-  getIncome(orgId: string, year: number, startMonth?: number, endMonth?: number): Promise<MonthlyIncome[]>;
+  getIncome(
+    orgId: string,
+    year: number,
+    startMonth?: number,
+    endMonth?: number
+  ): Promise<MonthlyIncome[]>;
   getOccupancy(orgId: string, year: number): Promise<MonthlyOccupancy[]>;
 }
 
@@ -84,7 +89,8 @@ export function createReportService(
       ]);
 
       const available_rooms = total_rooms - occupied_rooms;
-      const occupancy_rate = total_rooms > 0 ? Math.round((occupied_rooms / total_rooms) * 1000) / 10 : 0;
+      const occupancy_rate =
+        total_rooms > 0 ? Math.round((occupied_rooms / total_rooms) * 1000) / 10 : 0;
 
       return {
         total_apartments,
@@ -106,14 +112,17 @@ export function createReportService(
       const leaseIds = await getRepo().getLeaseIds(roomIds);
       const bills = await getRepo().getBillsByYear(leaseIds, year, startMonth, endMonth);
 
-      const byMonth = new Map<number, {
-        total_rent: number;
-        total_water: number;
-        total_electricity: number;
-        total_other: number;
-        total_amount: number;
-        collected_amount: number;
-      }>();
+      const byMonth = new Map<
+        number,
+        {
+          total_rent: number;
+          total_water: number;
+          total_electricity: number;
+          total_other: number;
+          total_amount: number;
+          collected_amount: number;
+        }
+      >();
 
       for (const b of bills) {
         const m = b.bill_month;
@@ -145,7 +154,10 @@ export function createReportService(
         total_other: row.total_other,
         total_amount: row.total_amount,
         collected_amount: row.collected_amount,
-        collection_rate: row.total_amount > 0 ? Math.round((row.collected_amount / row.total_amount) * 1000) / 10 : 0,
+        collection_rate:
+          row.total_amount > 0
+            ? Math.round((row.collected_amount / row.total_amount) * 1000) / 10
+            : 0,
       }));
     },
 
@@ -162,9 +174,14 @@ export function createReportService(
         const monthStart = new Date(year, month - 1, 1);
         const monthEndNext = new Date(year, month, 1);
 
-        const occupiedInMonth = await getRepo().countOccupiedRoomsInMonth(roomIds, monthStart, monthEndNext);
+        const occupiedInMonth = await getRepo().countOccupiedRoomsInMonth(
+          roomIds,
+          monthStart,
+          monthEndNext
+        );
         const vacant_rooms = total_rooms - occupiedInMonth;
-        const occupancy_rate = total_rooms > 0 ? Math.round((occupiedInMonth / total_rooms) * 1000) / 10 : 0;
+        const occupancy_rate =
+          total_rooms > 0 ? Math.round((occupiedInMonth / total_rooms) * 1000) / 10 : 0;
 
         result.push({
           period: `${month}月`,

@@ -167,11 +167,7 @@ export function CreateUtilityDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="reading_date">读数日期 *</Label>
-            <Input
-              id="reading_date"
-              type="date"
-              {...form.register('reading_date')}
-            />
+            <Input id="reading_date" type="date" {...form.register('reading_date')} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

@@ -13,6 +13,5 @@ export interface BrandConfig {
 }
 
 export const configApi = {
-  getPublic: () =>
-    api.get<{ brand: BrandConfig }>('/config/public'),
+  getPublic: () => api.get<{ brand: BrandConfig }>('/config/public'),
 };

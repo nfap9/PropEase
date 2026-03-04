@@ -59,9 +59,10 @@ export async function fulfillSubscription(orderId: string): Promise<void> {
       data: { plan: plan.code },
     });
   } else if (subscription.plan_id === planId) {
-    const baseDate = subscription.end_date && new Date(subscription.end_date) >= today
-      ? new Date(subscription.end_date)
-      : today;
+    const baseDate =
+      subscription.end_date && new Date(subscription.end_date) >= today
+        ? new Date(subscription.end_date)
+        : today;
     const newEnd = new Date(baseDate);
     if (billingCycle === 'yearly') newEnd.setFullYear(newEnd.getFullYear() + 1);
     else newEnd.setMonth(newEnd.getMonth() + 1);
