@@ -8,13 +8,23 @@ import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
 import { Messages, NotFoundMessages } from '../../messages.js';
 import { getEffectivePlanLimits, getRoomsUsedForLimitCheck } from '../../utils/orgPlanLimits.js';
+import { defaultApartmentService } from '../../services/apartment.service.js';
+import { defaultRoomService } from '../../services/room.service.js';
 
 const router: Router = Router();
 
 router.use(requireConsoleAuth);
 
-const ApartmentCreateSchema = z.object({ name: z.string().min(1), address: z.string().optional(), description: z.string().optional() });
-const ApartmentUpdateSchema = z.object({ name: z.string().min(1).optional(), address: z.string().optional(), description: z.string().optional() });
+const ApartmentCreateSchema = z.object({
+  name: z.string().min(1),
+  address: z.string().optional(),
+  description: z.string().optional(),
+});
+const ApartmentUpdateSchema = z.object({
+  name: z.string().min(1).optional(),
+  address: z.string().optional(),
+  description: z.string().optional(),
+});
 const RoomCreateSchema = z.object({
   apartment_id: z.string(),
   room_number: z.string().min(1),
@@ -24,92 +34,81 @@ const RoomCreateSchema = z.object({
   notes: z.string().optional(),
   status: z.enum(['available', 'occupied', 'maintenance']).optional(),
 });
-const RoomBatchSchema = z.object({ room_numbers: z.array(z.string()), layout: z.string().optional(), monthly_rent: z.number(), area: z.number().optional(), notes: z.string().optional() });
-const RoomUpdateSchema = z.object({ room_number: z.string().optional(), layout: z.string().optional(), status: z.string().optional(), monthly_rent: z.number().optional(), area: z.number().optional(), notes: z.string().optional() });
+const RoomBatchSchema = z.object({
+  room_numbers: z.array(z.string()),
+  layout: z.string().optional(),
+  monthly_rent: z.number(),
+  area: z.number().optional(),
+  notes: z.string().optional(),
+});
+const RoomUpdateSchema = z.object({
+  room_number: z.string().optional(),
+  layout: z.string().optional(),
+  status: z.string().optional(),
+  monthly_rent: z.number().optional(),
+  area: z.number().optional(),
+  notes: z.string().optional(),
+});
 const UtilityConfigSchema = z.object({
   water_price_per_unit: z.number().min(0).optional(),
   electricity_price_per_unit: z.number().min(0).optional(),
   internet_fee: z.number().min(0).optional(),
   management_fee: z.number().min(0).optional(),
   service_fee: z.number().min(0).optional(),
-  effective_from: z.string(), // date YYYY-MM-DD
+  effective_from: z.string(),
   notes: z.string().max(500).optional(),
 });
 
+// GET /apartments - 列出所有公寓（带统计）
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const list = await prisma.apartment.findMany({
-      where: { organization_id: orgId },
-      include: { rooms: true },
-    });
-    const withStats = list.map((apt) => {
-      const rooms = apt.rooms;
-      const total = rooms.length;
-      const available = rooms.filter((r) => r.status === 'available').length;
-      const occupied = rooms.filter((r) => r.status === 'occupied').length;
-      const maintenance = rooms.filter((r) => r.status === 'maintenance').length;
-      return { ...apt, room_stats: { total, available, occupied, maintenance } };
-    });
-    res.json(withStats);
+    const list = await defaultApartmentService.listByOrg(orgId);
+    res.json(list);
   } catch (e) {
     next(e);
   }
 });
 
+// POST /apartments - 创建公寓
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
     const user = getConsoleUser(req);
     const limits = await getEffectivePlanLimits(orgId, user?.id);
-    const apartments_used = await prisma.apartment.count({ where: { organization_id: orgId } });
-    if (apartments_used >= limits.max_apartments)
+    const apartmentsUsed = await prisma.apartment.count({ where: { organization_id: orgId } });
+    if (apartmentsUsed >= limits.max_apartments) {
       return next(createAppError(403, `当前套餐最多允许 ${limits.max_apartments} 个公寓`));
+    }
     const parsed = ApartmentCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const apt = await prisma.apartment.create({
-      data: { id: ulid().toLowerCase(), organization_id: orgId, name: parsed.data.name, address: parsed.data.address ?? undefined, description: parsed.data.description ?? undefined },
-    });
+    const apt = await defaultApartmentService.create(orgId, parsed.data);
     res.status(201).json(apt);
   } catch (e) {
     next(e);
   }
 });
 
-// /rooms/:roomId must come before /:apartmentId/rooms so /apartments/rooms/xxx is not matched as apartmentId=rooms
+// GET /apartments/rooms/:roomId - 获取单个房间
 router.get('/rooms/:roomId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const roomId = req.params.roomId;
-    const room = await prisma.room.findFirst({
-      where: { id: roomId },
-      include: { apartment: true },
-    });
-    if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.ROOM));
+    const room = await defaultRoomService.getById(orgId, req.params.roomId);
     res.json(room);
   } catch (e) {
     next(e);
   }
 });
 
+// PUT /apartments/rooms/:roomId - 更新房间
 router.put('/rooms/:roomId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const roomId = req.params.roomId;
-    const room = await prisma.room.findFirst({ where: { id: roomId }, include: { apartment: true } });
-    if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.ROOM));
     const parsed = RoomUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const updated = await prisma.room.update({
-      where: { id: roomId },
-      data: {
-        room_number: parsed.data.room_number ?? room.room_number,
-        layout: parsed.data.layout ?? room.layout ?? undefined,
-        status: (parsed.data.status as 'available' | 'occupied' | 'maintenance') ?? room.status,
-        monthly_rent: parsed.data.monthly_rent ?? Number(room.monthly_rent),
-        area: parsed.data.area !== undefined ? parsed.data.area : (room.area != null ? Number(room.area) : undefined),
-        notes: parsed.data.notes ?? room.notes ?? undefined,
-      },
+    const updated = await defaultRoomService.update(orgId, req.params.roomId, {
+      ...parsed.data,
+      status: parsed.data.status as 'available' | 'occupied' | 'maintenance' | undefined,
     });
     res.json(updated);
   } catch (e) {
@@ -117,13 +116,11 @@ router.put('/rooms/:roomId', async (req: Request, res: Response, next: NextFunct
   }
 });
 
+// DELETE /apartments/rooms/:roomId - 删除房间
 router.delete('/rooms/:roomId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const roomId = req.params.roomId;
-    const room = await prisma.room.findFirst({ where: { id: roomId }, include: { apartment: true } });
-    if (!room || room.apartment.organization_id !== orgId) return next(createAppError(404, NotFoundMessages.ROOM));
-    await prisma.room.delete({ where: { id: roomId } });
+    await defaultRoomService.delete(orgId, req.params.roomId);
     res.locals.successMessage = Messages.ROOM_DELETED;
     res.json({});
   } catch (e) {
@@ -131,95 +128,64 @@ router.delete('/rooms/:roomId', async (req: Request, res: Response, next: NextFu
   }
 });
 
+// GET /apartments/:apartmentId/rooms - 列出公寓的房间
 router.get('/:apartmentId/rooms', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const apartmentId = req.params.apartmentId;
-    const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
-    const rooms = await prisma.room.findMany({ where: { apartment_id: apartmentId } });
+    const rooms = await defaultRoomService.listByApartment(orgId, req.params.apartmentId);
     res.json(rooms);
   } catch (e) {
     next(e);
   }
 });
 
+// POST /apartments/:apartmentId/rooms - 创建房间
 router.post('/:apartmentId/rooms', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const apartmentId = req.params.apartmentId;
-    const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
     const limits = await getEffectivePlanLimits(orgId, user.id);
-    const rooms_used = await getRoomsUsedForLimitCheck(orgId, user.id);
-    if (rooms_used + 1 > limits.max_rooms)
+    const roomsUsed = await getRoomsUsedForLimitCheck(orgId, user.id);
+    if (roomsUsed + 1 > limits.max_rooms) {
       return next(createAppError(403, `当前套餐最多允许 ${limits.max_rooms} 个房间`));
-    const parsed = RoomCreateSchema.safeParse({ ...req.body, apartment_id: apartmentId });
+    }
+    const parsed = RoomCreateSchema.safeParse({ ...req.body, apartment_id: req.params.apartmentId });
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const room = await prisma.room.create({
-      data: {
-        id: ulid().toLowerCase(),
-        apartment_id: apartmentId,
-        room_number: parsed.data.room_number,
-        layout: parsed.data.layout ?? undefined,
-        monthly_rent: parsed.data.monthly_rent,
-        area: parsed.data.area ?? undefined,
-        notes: parsed.data.notes ?? undefined,
-        status: (parsed.data.status as 'available' | 'occupied' | 'maintenance') ?? 'available',
-      },
-    });
+    const room = await defaultRoomService.create(orgId, req.params.apartmentId, parsed.data);
     res.status(201).json(room);
   } catch (e) {
     next(e);
   }
 });
 
+// POST /apartments/:apartmentId/rooms/batch - 批量创建房间
 router.post('/:apartmentId/rooms/batch', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const apartmentId = req.params.apartmentId;
-    const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
     const limits = await getEffectivePlanLimits(orgId, user.id);
-    const rooms_used = await getRoomsUsedForLimitCheck(orgId, user.id);
+    const roomsUsed = await getRoomsUsedForLimitCheck(orgId, user.id);
     const parsed = RoomBatchSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const addCount = parsed.data.room_numbers.length;
-    if (rooms_used + addCount > limits.max_rooms)
-      return next(createAppError(403, `当前套餐最多允许 ${limits.max_rooms} 个房间，当前已用 ${rooms_used}，无法再添加 ${addCount} 个`));
-    const created = await Promise.all(
-      parsed.data.room_numbers.map((rn) =>
-        prisma.room.create({
-          data: {
-            id: ulid().toLowerCase(),
-            apartment_id: apartmentId,
-            room_number: rn,
-            layout: parsed.data!.layout ?? undefined,
-            monthly_rent: parsed.data!.monthly_rent,
-            area: parsed.data!.area ?? undefined,
-            notes: parsed.data!.notes ?? undefined,
-            status: 'available',
-          },
-        })
-      )
-    );
+    if (roomsUsed + addCount > limits.max_rooms) {
+      return next(createAppError(403, `当前套餐最多允许 ${limits.max_rooms} 个房间，当前已用 ${roomsUsed}，无法再添加 ${addCount} 个`));
+    }
+    const created = await defaultRoomService.batchCreate(orgId, req.params.apartmentId, parsed.data);
     res.status(201).json(created);
   } catch (e) {
     next(e);
   }
 });
 
+// GET /apartments/:apartmentId/utility-config - 获取水电配置
 router.get('/:apartmentId/utility-config', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const apartmentId = req.params.apartmentId;
-    const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
-    const config = await prisma.utilityConfig.findUnique({ where: { apartment_id: apartmentId } });
+    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
+    const config = await prisma.utilityConfig.findUnique({ where: { apartment_id: req.params.apartmentId } });
     if (!config) return next(createAppError(404, NotFoundMessages.UTILITY_CONFIG));
     res.json(config);
   } catch (e) {
@@ -227,19 +193,18 @@ router.get('/:apartmentId/utility-config', async (req: Request, res: Response, n
   }
 });
 
+// POST /apartments/:apartmentId/utility-config - 创建水电配置
 router.post('/:apartmentId/utility-config', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const apartmentId = req.params.apartmentId;
-    const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
+    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
     const parsed = UtilityConfigSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const effectiveFrom = new Date(parsed.data.effective_from);
     const config = await prisma.utilityConfig.create({
       data: {
         id: ulid().toLowerCase(),
-        apartment_id: apartmentId,
+        apartment_id: req.params.apartmentId,
         water_price_per_unit: parsed.data.water_price_per_unit ?? undefined,
         electricity_price_per_unit: parsed.data.electricity_price_per_unit ?? undefined,
         internet_fee: parsed.data.internet_fee ?? undefined,
@@ -255,15 +220,14 @@ router.post('/:apartmentId/utility-config', async (req: Request, res: Response, 
   }
 });
 
+// PUT /apartments/:apartmentId/utility-config - 更新水电配置
 router.put('/:apartmentId/utility-config', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const apartmentId = req.params.apartmentId;
-    const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
+    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
     const parsed = UtilityConfigSchema.partial().safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const existing = await prisma.utilityConfig.findUnique({ where: { apartment_id: apartmentId } });
+    const existing = await prisma.utilityConfig.findUnique({ where: { apartment_id: req.params.apartmentId } });
     if (!existing) return next(createAppError(404, NotFoundMessages.UTILITY_CONFIG));
     const data: Record<string, unknown> = {};
     if (parsed.data.water_price_per_unit != null) data.water_price_per_unit = parsed.data.water_price_per_unit;
@@ -280,56 +244,47 @@ router.put('/:apartmentId/utility-config', async (req: Request, res: Response, n
   }
 });
 
+// DELETE /apartments/:apartmentId/utility-config - 删除水电配置
 router.delete('/:apartmentId/utility-config', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const apartmentId = req.params.apartmentId;
-    const apt = await prisma.apartment.findFirst({ where: { id: apartmentId, organization_id: orgId } });
-    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
-    await prisma.utilityConfig.deleteMany({ where: { apartment_id: apartmentId } });
+    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
+    await prisma.utilityConfig.deleteMany({ where: { apartment_id: req.params.apartmentId } });
     res.status(204).send();
   } catch (e) {
     next(e);
   }
 });
 
+// GET /apartments/:id - 获取单个公寓
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const apt = await prisma.apartment.findFirst({
-      where: { id: req.params.id, organization_id: orgId },
-      include: { rooms: true },
-    });
-    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
+    const apt = await defaultApartmentService.getById(orgId, req.params.id);
     res.json(apt);
   } catch (e) {
     next(e);
   }
 });
 
+// PUT /apartments/:id - 更新公寓
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
     const parsed = ApartmentUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const apt = await prisma.apartment.findFirst({ where: { id: req.params.id, organization_id: orgId } });
-    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
-    const updated = await prisma.apartment.update({
-      where: { id: req.params.id },
-      data: { name: parsed.data.name ?? apt.name, address: parsed.data.address ?? apt.address ?? undefined, description: parsed.data.description ?? apt.description ?? undefined },
-    });
-    res.json(updated);
+    const apt = await defaultApartmentService.update(orgId, req.params.id, parsed.data);
+    res.json(apt);
   } catch (e) {
     next(e);
   }
 });
 
+// DELETE /apartments/:id - 删除公寓
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const apt = await prisma.apartment.findFirst({ where: { id: req.params.id, organization_id: orgId } });
-    if (!apt) return next(createAppError(404, NotFoundMessages.APARTMENT));
-    await prisma.apartment.delete({ where: { id: req.params.id } });
+    await defaultApartmentService.delete(orgId, req.params.id);
     res.locals.successMessage = Messages.APARTMENT_DELETED;
     res.json({});
   } catch (e) {
