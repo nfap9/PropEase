@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/lib/auth/context';
 import { BrandConfigProvider } from '@/lib/brand-config-context';
+import { ThemeProvider } from '@/components/theme/theme-provider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -21,9 +22,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrandConfigProvider>
-        <AuthProvider>{children}</AuthProvider>
-      </BrandConfigProvider>
+      <ThemeProvider>
+        <BrandConfigProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </BrandConfigProvider>
+      </ThemeProvider>
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );

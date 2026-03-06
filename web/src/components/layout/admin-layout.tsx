@@ -17,6 +17,7 @@ import {
   Palette,
 } from 'lucide-react';
 import { useState } from 'react';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 const ADMIN_NAV = [
@@ -93,6 +94,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <div className="flex-1" />
 
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Link href="/">
               <Button variant="ghost" size="sm">
                 <ExternalLink className="mr-2 h-4 w-4" />

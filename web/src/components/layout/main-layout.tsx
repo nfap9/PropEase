@@ -15,6 +15,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Bell } from 'lucide-react';
 import { notificationsApi, subscriptionsApi } from '@/lib/api';
+import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { OrgSelector } from '@/components/common/org-selector';
@@ -74,6 +75,8 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
           <div className="flex flex-1 justify-center">
             <OrgSelector />
           </div>
+
+          <ThemeToggle />
 
           <Button variant="ghost" size="icon" className="relative" asChild>
             <Link href="/notifications" aria-label="通知">
