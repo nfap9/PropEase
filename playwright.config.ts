@@ -19,6 +19,7 @@ export default defineConfig({
         /admin\.auth\.setup\.ts/,
         /business\.spec\.ts/,
         /business\.auth\.setup\.ts/,
+        /example-using-testids\.spec\.ts/, // 示例文件，不参与实际测试
       ],
       use: { ...devices['Desktop Chrome'] },
     },

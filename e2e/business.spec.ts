@@ -700,10 +700,11 @@ test.describe('业务端 - 公寓详情（对应测试用例 3.2、3.4、3.6）'
 test.describe('业务端 - 完整业务流程', () => {
   test('主流程可完整走通并验证关键状态变化（BIZ-FLOW-01）', async ({ page }) => {
     const ts = Date.now();
-    const apartmentName = createUniqueName('E2E流程_公寓_');
+    // 使用相同的时间戳确保可以验证
+    const apartmentName = `E2E流程_公寓_${ts}`;
     const roomNumber = `101_${ts}`;
     const monthlyRent = 2000;
-    const tenantName = createUniqueName('E2E流程_租客_');
+    const tenantName = `E2E流程_租客_${ts}`;
     const tenantPhone = createUniquePhone();
     const waterReading = 123.45;
     const electricityReading = 456.78;
@@ -820,18 +821,45 @@ test.describe('业务端 - 完整业务流程', () => {
     await page.getByRole('option', { name: new RegExp(tenantName) }).click();
     // TODO: 前端添加 data-testid 后改为 page.getByTestId(LEASES.MONTHLY_RENT_INPUT)
     await leaseDialog.getByLabel(/月租/).fill(String(monthlyRent));
+    // 设置等待租约创建请求（在点击按钮之前设置）
+    const createLeasePromise = page.waitForResponse(
+      (res) => res.url().includes('/leases') && res.request().method() === 'POST',
+      { timeout: 15000 }
+    );
     // TODO: 前端添加 data-testid 后改为 page.getByTestId(LEASES.CONFIRM_BUTTON)
     await leaseDialog.getByRole('button', { name: '确认签约' }).click();
+    // 等待租约创建请求完成
+    const createLeaseRes = await createLeasePromise;
+    expect(createLeaseRes.ok()).toBeTruthy();
     await expect(leaseDialog).toBeHidden({ timeout: 15000 });
+
+    // 处理可能出现的初始水电读数弹窗（签约成功后前端自动弹出）
+    const initialReadingDialog = page.getByRole('dialog').filter({ hasText: '录入初始水电读数' });
+    if (await initialReadingDialog.isVisible({ timeout: 5000 }).catch(() => false)) {
+      // 跳过初始读数录入，稍后会在水电录入步骤处理
+      await initialReadingDialog.getByRole('button', { name: '跳过' }).click();
+      await expect(initialReadingDialog).toBeHidden({ timeout: 5000 });
+    }
+
     await page.waitForLoadState('networkidle');
     // 确保在租约列表页面
     await expect(page).toHaveURL(/\/leases/);
-    // 验证租约创建成功，尝试多种方式匹配
-    const hasRoomNumber = await page.getByText(roomNumber).count() > 0;
-    const hasTenantName = await page.getByText(tenantName).count() > 0;
-    const hasActiveStatus = await page.getByText('生效中').count() > 0;
-    // 只要能找到房间号和租客名，说明租约创建成功
-    expect(hasRoomNumber && hasTenantName).toBe(true);
+
+    // 验证租约创建成功 - 使用搜索功能更可靠
+    // 使用搜索框搜索房间号
+    const searchInput = page.getByPlaceholder(/房间号|租客姓名|手机号/);
+    await searchInput.fill(roomNumber);
+    await page.waitForTimeout(500); // 等待搜索触发
+    await page.waitForLoadState('networkidle');
+
+    // 验证搜索结果中包含新创建的租约
+    const table = page.getByRole('table');
+    await expect(table.getByText(roomNumber)).toBeVisible({ timeout: 10000 });
+    await expect(table.getByText(tenantName)).toBeVisible({ timeout: 10000 });
+
+    // 清空搜索框以恢复完整列表
+    await searchInput.fill('');
+    await page.waitForTimeout(500);
 
     // 返回仪表盘再进入水电录入
     await page.goto('/dashboard');
@@ -884,6 +912,13 @@ test.describe('业务端 - 完整业务流程', () => {
     // TODO: 前端添加 data-testid 后改为 page.getByTestId(NAV.LEASES)
     await page.getByRole('link', { name: '租约管理' }).click();
     await expect(page).toHaveURL(/\/leases$/);
+
+    // 使用搜索功能定位新创建的租约
+    const leaseSearchInput = page.getByPlaceholder(/房间号|租客姓名|手机号/);
+    await leaseSearchInput.fill(roomNumber);
+    await page.waitForTimeout(500);
+    await page.waitForLoadState('networkidle');
+
     const leaseRow = page.getByRole('row', { name: new RegExp(`${roomNumber}.*${tenantName}`) });
     await expect(leaseRow).toBeVisible({ timeout: 10000 });
     // TODO: 前端添加 data-testid 后改为 page.getByTestId(LEASES.TERMINATE_BUTTON)
@@ -893,6 +928,10 @@ test.describe('业务端 - 完整业务流程', () => {
     // TODO: 前端添加 data-testid 后改为 page.getByTestId(COMMON.CONFIRM_BUTTON)
     await terminateDialog.getByRole('button', { name: '确认终止' }).click();
     await expect(terminateDialog).toBeHidden({ timeout: 10000 });
+    // 重新搜索验证状态变为已终止
+    await leaseSearchInput.fill(roomNumber);
+    await page.waitForTimeout(500);
+    await page.waitForLoadState('networkidle');
     await expect(
       page.getByRole('row', { name: new RegExp(`${roomNumber}.*${tenantName}.*已终止`) })
     ).toBeVisible({ timeout: 10000 });
