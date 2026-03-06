@@ -16,8 +16,10 @@ function envInt(key: string, defaultValue: number): number {
   return Number.isNaN(n) ? defaultValue : n;
 }
 
-function envCorsOrigins(): string[] {
+function envCorsOrigins(): string[] | true {
   const v = process.env.CORS_ORIGINS;
+  // 通配符 "*" 表示允许所有来源（仅用于开发环境）
+  if (v === '*') return true;
   if (!v || v === '') return ['http://localhost:3000'];
   try {
     const parsed = JSON.parse(v) as unknown;

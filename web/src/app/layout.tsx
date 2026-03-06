@@ -7,7 +7,11 @@ export const dynamic = 'force-dynamic';
 
 const inter = Inter({ subsets: ['latin'] });
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+// 服务端使用内部网络地址（Docker 服务名），客户端使用 localhost
+const getServerApiUrl = () =>
+  process.env.API_URL_SERVER || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+
+const API_URL = getServerApiUrl();
 
 async function getBrandConfig(): Promise<{ app_name: string; app_description: string }> {
   try {

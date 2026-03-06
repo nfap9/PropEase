@@ -5,7 +5,8 @@
 x-shared-env: &shared-api-env
   DATABASE_URL: postgresql://postgres:postgres@postgres:5432/apartment_ultra
   SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-production}
-  CORS_ORIGINS: '["http://localhost:3000"]'
+  # 开发环境使用宽松 CORS，允许所有来源
+  CORS_ORIGINS: "*"
   DEBUG: "true"
 
 services:
@@ -46,6 +47,9 @@ services:
       - "8000:8000"
     volumes:
       - ../api:/app/api
+      # 保留容器内的 node_modules，避免被宿主机覆盖
+      - /app/api/node_modules
+      - /app/node_modules
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,11 +61,17 @@ services:
       dockerfile: web/Dockerfile
     container_name: apartment_ultra_web
     environment:
+      # 客户端请求：浏览器访问宿主机的 localhost:8000
       NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+      # 服务端请求：Docker 内部网络使用服务名
+      API_URL_SERVER: http://api:8000/api/v1
     ports:
       - "3000:3000"
     volumes:
       - ../web:/app/web
+      # 保留容器内的 node_modules，避免被宿主机覆盖
+      - /app/web/node_modules
+      - /app/node_modules
     depends_on:
       - api
 
