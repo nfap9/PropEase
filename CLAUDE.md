@@ -12,11 +12,28 @@ Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是�
 - **前端 Web** (`/web`): Next.js 应用，使用 TypeScript 和 React
 - **Docker 部署** (`/docker`): 容器化部署配置（构建上下文为仓库根，后端为 api）
 
-## 后端工作流
+## 开发工作流
 
-- 阅读 `api/AGENTS.md` 了解详情
-- 本地：`pnpm run dev` 一键起前后端（同终端，Ctrl+C 同时退出），或 `pnpm run dev:api`（端口 8000）/ `pnpm run dev:web` 分启；依赖在根目录 `pnpm install`
-- 代码质量：`pnpm run lint` / `pnpm run type-check` / `pnpm run test` 默认针对 api + 前端
+```bash
+# 1. 启动 Docker 中间件
+cd docker && docker compose -f docker-compose.middleware.yaml up -d
+
+# 2. 安装依赖（首次或 lock 文件变更后）
+pnpm install
+
+# 3. 同步数据库 Schema
+pnpm --filter apartment-ultra-api exec prisma db push
+
+# 4. 启动后端（端口 8000）
+pnpm dev:api
+
+# 5. 启动前端（端口 3000，另开终端）
+pnpm dev:web
+```
+
+- 后端详情：`api/AGENTS.md`
+- 前端详情：`web/AGENTS.md`
+- 代码质量：`pnpm lint` / `pnpm type-check` / `pnpm test`
 
 ## 前端工作流
 
@@ -25,7 +42,7 @@ Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是�
 ## 测试与质量实践
 
 - **单元/集成测试**：遵循 TDD（红 → 绿 → 重构）；后端（api）使用 Vitest；根目录 `pnpm run test` 运行测试。
-- **E2E 测试**：使用 Playwright，用例在 `e2e/` 下（业务端 `business.spec.ts`、运营端 `admin.spec.ts`）；编写或修改 E2E 前须阅读 [e2e/AGENTS.md](e2e/AGENTS.md) 与 [docs/e2e-writing-guide.md](docs/e2e-writing-guide.md)，并与 [docs/测试用例.md](docs/测试用例.md) 中的用例编号对应。运行前需先启动前后端（如 `pnpm run dev`），再执行 `pnpm run test:e2e` 或 `pnpm exec playwright test business`。
+- **E2E 测试**：使用 Playwright，用例在 `e2e/` 下（业务端 `business.spec.ts`、运营端 `admin.spec.ts`）；编写或修改 E2E 前须阅读 [e2e/AGENTS.md](e2e/AGENTS.md) 与 [docs/e2e-writing-guide.md](docs/e2e-writing-guide.md)，并与 [docs/测试用例.md](docs/测试用例.md) 中的用例编号对应。运行前需先启动前后端，再执行 `pnpm test:e2e` 或 `pnpm exec playwright test business`。
 - **代码质量**：强制使用强类型，避免 `Any`/`any`，优先显式类型注解；编写自文档化代码，仅在需要解释意图时添加注释。
 
 ## 语言风格

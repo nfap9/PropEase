@@ -39,13 +39,20 @@
 ### 本地开发
 
 ```bash
-# 一键设置开发环境
-pnpm run dev-setup
+# 1. 启动 Docker 中间件（PostgreSQL, Redis）
+cd docker && docker compose -f docker-compose.middleware.yaml up -d
 
-# 启动开发服务（任选其一）
-pnpm run dev        # 后端 + 前端（同终端）
-pnpm run dev:api    # 仅后端（端口 8000）
-pnpm run dev:web    # 仅前端
+# 2. 安装依赖
+pnpm install
+
+# 3. 同步数据库 Schema
+pnpm --filter apartment-ultra-api exec prisma db push
+
+# 4. 启动后端（端口 8000）
+pnpm dev:api
+
+# 5. 启动前端（端口 3000，另开终端）
+pnpm dev:web
 ```
 
 ### Docker 部署

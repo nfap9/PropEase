@@ -4,17 +4,8 @@
   "private": true,
   "description": "Apartment Ultra - 多租户公寓管理系统",
   "scripts": {
-    "dev": "pnpm run dev:local",
     "dev:api": "PORT=8000 pnpm --filter apartment-ultra-api dev",
     "dev:web": "pnpm --filter frontend dev",
-    "dev-setup": "bash scripts/dev-setup.sh",
-    "dev:local": "concurrently -n api,web -c blue,green \"pnpm run dev:api\" \"pnpm run dev:web\"",
-    "dev-local-stop": "bash scripts/dev-local-stop.sh",
-    "dev-clean": "bash scripts/dev-clean.sh",
-    "docker:build": "cd docker && docker compose -f docker-compose.yaml build",
-    "docker:up": "cd docker && docker compose -f docker-compose.yaml up -d",
-    "docker:down": "cd docker && docker compose -f docker-compose.yaml down",
-    "docker:logs": "cd docker && docker compose -f docker-compose.yaml logs -f",
     "build": "pnpm -r run build",
     "lint": "pnpm --filter apartment-ultra-api run lint && pnpm --filter frontend run lint:fix",
     "format": "prettier --write \"api/src/**/*.ts\" \"web/src/**/*.{ts,tsx}\"",
@@ -26,7 +17,6 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",
-    "concurrently": "^9.2.1",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2"
   },
