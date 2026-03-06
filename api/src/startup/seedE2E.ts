@@ -30,7 +30,6 @@ export async function seedE2EUser(): Promise<void> {
       id: orgId,
       name: E2E_PERSONAL_ORG_NAME,
       slug: E2E_PERSONAL_ORG_SLUG,
-      plan: 'free',
       is_personal: true,
     },
   });

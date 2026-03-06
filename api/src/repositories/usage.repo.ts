@@ -1,5 +1,4 @@
 import type {
-  UsagePricing,
   UsageQuota,
   UsageQuotaOrder,
   Prisma,
@@ -11,9 +10,6 @@ import { prisma } from '../lib/prisma.js';
  * Usage Repository 接口
  */
 export interface UsageRepository {
-  // 定价
-  findActivePricing(): Promise<UsagePricing | null>;
-
   // 配额
   findValidQuotas(userId: string, today: Date): Promise<UsageQuota[]>;
 
@@ -29,10 +25,6 @@ export interface UsageRepository {
  */
 export function createUsageRepository(db: DbClient): UsageRepository {
   return {
-    findActivePricing: async () => {
-      return db.usagePricing.findFirst({ where: { is_active: true } });
-    },
-
     findValidQuotas: async (userId: string, today: Date) => {
       return db.usageQuota.findMany({
         where: {

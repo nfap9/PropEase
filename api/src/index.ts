@@ -9,7 +9,6 @@ import { seedAdminSuper } from './startup/seedAdmin.js';
 import { seedE2EUser } from './startup/seedE2E.js';
 import { seedPermissions } from './startup/seedPermissions.js';
 import { seedPlans } from './startup/seedPlans.js';
-import { seedUsagePricing } from './startup/seedUsagePricing.js';
 import { seedPlatformConfig } from './startup/seedPlatformConfig.js';
 import { startScheduler } from './scheduler/index.js';
 
@@ -41,11 +40,6 @@ async function start(): Promise<void> {
     await seedPlans();
   } catch (e) {
     console.error('Plan seed failed:', e);
-  }
-  try {
-    await seedUsagePricing();
-  } catch (e) {
-    console.error('Usage pricing seed failed:', e);
   }
   try {
     await seedPlatformConfig();

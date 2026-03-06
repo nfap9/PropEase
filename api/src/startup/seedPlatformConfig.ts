@@ -9,6 +9,13 @@ const DEFAULT_BRAND = {
   register_subtitle: '创建新账户',
 };
 
+const DEFAULT_USAGE_PRICING = {
+  price_per_org: 0,
+  price_per_apartment: 0,
+  price_per_room: 0,
+  price_per_member: 0,
+};
+
 export async function seedPlatformConfig(): Promise<void> {
   const existing = await prisma.platformConfig.findUnique({ where: { id: 'default' } });
   if (existing) return;
@@ -16,6 +23,7 @@ export async function seedPlatformConfig(): Promise<void> {
     data: {
       id: 'default',
       brand: DEFAULT_BRAND,
+      usage_pricing: DEFAULT_USAGE_PRICING,
     },
   });
   console.log('Created platform config');

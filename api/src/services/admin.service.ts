@@ -5,7 +5,6 @@ import type {
   Organization,
   SubscriptionPlan,
   OrganizationSubscription,
-  UsagePricing,
   UsageQuotaOrder,
   Prisma,
 } from '../generated/client/index.js';
@@ -95,6 +94,16 @@ export interface CreatePlanInput {
 export type UpdatePlanInput = Partial<CreatePlanInput>;
 
 /**
+ * 使用量定价
+ */
+export interface UsagePricing {
+  price_per_org: number;
+  price_per_apartment: number;
+  price_per_room: number;
+  price_per_member: number;
+}
+
+/**
  * 使用量定价更新输入
  */
 export interface UpdateUsagePricingInput {
@@ -102,7 +111,6 @@ export interface UpdateUsagePricingInput {
   price_per_apartment?: number;
   price_per_room?: number;
   price_per_member?: number;
-  is_active?: boolean;
 }
 
 /**
@@ -579,34 +587,28 @@ export function createAdminService(
     },
 
     getUsagePricing: async () => {
-      const pricing = await getRepo().findActiveUsagePricing();
-      if (!pricing) {
-        throw createAppError(404, '按量定价未配置');
-      }
-      return pricing;
+      const config = await getRepo().getPlatformConfig();
+      const pricing = (config?.usage_pricing as Record<string, unknown>) ?? {};
+      return {
+        price_per_org: (pricing.price_per_org as number) ?? 0,
+        price_per_apartment: (pricing.price_per_apartment as number) ?? 0,
+        price_per_room: (pricing.price_per_room as number) ?? 0,
+        price_per_member: (pricing.price_per_member as number) ?? 0,
+      };
     },
 
     updateUsagePricing: async (data: UpdateUsagePricingInput) => {
-      let pricing = await getRepo().findActiveUsagePricing();
-      if (!pricing) {
-        pricing = await getRepo().createUsagePricing({
-          id: ulid().toLowerCase(),
-          price_per_org: data.price_per_org ?? 0,
-          price_per_apartment: data.price_per_apartment ?? 0,
-          price_per_room: data.price_per_room ?? 0,
-          price_per_member: data.price_per_member ?? 0,
-          is_active: data.is_active ?? true,
-        });
-        return pricing;
-      }
-      const updateData: Prisma.UsagePricingUpdateInput = {};
-      if (data.price_per_org !== undefined) updateData.price_per_org = data.price_per_org;
-      if (data.price_per_apartment !== undefined)
-        updateData.price_per_apartment = data.price_per_apartment;
-      if (data.price_per_room !== undefined) updateData.price_per_room = data.price_per_room;
-      if (data.price_per_member !== undefined) updateData.price_per_member = data.price_per_member;
-      if (data.is_active !== undefined) updateData.is_active = data.is_active;
-      return getRepo().updateUsagePricing(pricing.id, updateData);
+      const config = await getRepo().getPlatformConfig();
+      const current = (config?.usage_pricing as Record<string, unknown>) ?? {};
+      const updated = {
+        price_per_org: data.price_per_org ?? (current.price_per_org as number) ?? 0,
+        price_per_apartment:
+          data.price_per_apartment ?? (current.price_per_apartment as number) ?? 0,
+        price_per_room: data.price_per_room ?? (current.price_per_room as number) ?? 0,
+        price_per_member: data.price_per_member ?? (current.price_per_member as number) ?? 0,
+      };
+      await getRepo().updateUsagePricingConfig(updated as unknown as InputJsonValue);
+      return updated;
     },
 
     listUsageOrders: async (skip?: number, limit?: number) => {

@@ -5,7 +5,6 @@ import type {
   Organization,
   SubscriptionPlan,
   OrganizationSubscription,
-  UsagePricing,
   UsageQuotaOrder,
   PlatformConfig,
   Prisma,
@@ -108,11 +107,6 @@ export interface AdminRepository {
   countRooms(): Promise<number>;
   countActiveSubscriptions(): Promise<number>;
 
-  // Usage Pricing
-  findActiveUsagePricing(): Promise<UsagePricing | null>;
-  createUsagePricing(data: Prisma.UsagePricingCreateInput): Promise<UsagePricing>;
-  updateUsagePricing(id: string, data: Prisma.UsagePricingUpdateInput): Promise<UsagePricing>;
-
   // Usage Orders
   listUsageOrders(
     skip?: number,
@@ -128,6 +122,7 @@ export interface AdminRepository {
   // Platform Config
   getPlatformConfig(): Promise<PlatformConfig | null>;
   upsertPlatformConfig(brand: InputJsonValue): Promise<PlatformConfig>;
+  updateUsagePricingConfig(usagePricing: InputJsonValue): Promise<PlatformConfig>;
 }
 
 /**
@@ -345,18 +340,6 @@ export function createAdminRepository(db: DbClient): AdminRepository {
       });
     },
 
-    findActiveUsagePricing: async () => {
-      return db.usagePricing.findFirst({ where: { is_active: true } });
-    },
-
-    createUsagePricing: async (data: Prisma.UsagePricingCreateInput) => {
-      return db.usagePricing.create({ data });
-    },
-
-    updateUsagePricing: async (id: string, data: Prisma.UsagePricingUpdateInput) => {
-      return db.usagePricing.update({ where: { id }, data });
-    },
-
     listUsageOrders: async (skip?: number, limit?: number) => {
       return db.usageQuotaOrder.findMany({
         skip,
@@ -375,6 +358,14 @@ export function createAdminRepository(db: DbClient): AdminRepository {
         where: { id: 'default' },
         create: { id: 'default', brand },
         update: { brand },
+      });
+    },
+
+    updateUsagePricingConfig: async (usagePricing: InputJsonValue) => {
+      return db.platformConfig.upsert({
+        where: { id: 'default' },
+        create: { id: 'default', usage_pricing: usagePricing },
+        update: { usage_pricing: usagePricing },
       });
     },
   };

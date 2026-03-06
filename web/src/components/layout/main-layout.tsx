@@ -21,7 +21,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/s
 import { OrgSelector } from '@/components/common/org-selector';
 import { usePermissions } from '@/hooks/use-permissions';
 import { NavContent } from './nav-content';
-import { SETTINGS_ITEMS, PLAN_CODE_LABEL } from './nav-config';
+import { SETTINGS_ITEMS } from './nav-config';
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, organization, logout } = useAuth();
@@ -40,8 +40,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
     enabled: !!orgId,
   });
   const planLabel =
-    subscriptionStatus?.plan?.name ??
-    (organization?.plan ? (PLAN_CODE_LABEL[organization.plan] ?? organization.plan) : null);
+    subscriptionStatus?.plan?.name ?? null;
 
   const visibleSettingsItems = SETTINGS_ITEMS.filter(
     (item) => !item.permission || isSuperAdmin || hasPermission(item.permission)

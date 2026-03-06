@@ -68,7 +68,6 @@ export function createCustomRoleService(
           organization_id: orgId,
           name: d.name,
           description: d.description,
-          is_system: false,
         });
       }
 
@@ -82,7 +81,6 @@ export function createCustomRoleService(
         name: data.name,
         description: data.description,
         permissions: data.permissions,
-        is_system: false,
       });
     },
 
@@ -113,9 +111,6 @@ export function createCustomRoleService(
       const existing = await getRepo().findByIdAndOrg(id, orgId);
       if (!existing) {
         throw createAppError(404, NotFoundMessages.CUSTOM_ROLE);
-      }
-      if (existing.is_system) {
-        throw createAppError(400, '系统角色不可删除');
       }
       await getRepo().delete(id);
     },

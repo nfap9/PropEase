@@ -8,7 +8,6 @@ export interface Organization {
   id: string;
   name: string;
   slug: string;
-  plan: string;
   settings: Record<string, unknown>;
   is_personal: boolean;
   created_at: string;

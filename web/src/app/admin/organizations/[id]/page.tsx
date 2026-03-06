@@ -81,7 +81,7 @@ export default function AdminOrganizationDetailPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">套餐</span>
-              <span>{org.plan}</span>
+              <span className="text-muted-foreground">详见订阅管理</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">个人团队</span>

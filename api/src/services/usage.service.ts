@@ -1,6 +1,7 @@
-import type { UsageQuotaOrder } from '../generated/client/index.js';
+import type { UsageQuotaOrder, } from '../generated/client/index.js';
 import type { UsageRepository } from '../repositories/usage.repo.js';
 import { defaultUsageRepo } from '../repositories/usage.repo.js';
+import { prisma } from '../lib/prisma.js';
 import { createAppError } from '../utils/appError.js';
 import { ulid } from 'ulid';
 import { config } from '../config.js';
@@ -57,20 +58,13 @@ export function createUsageService(
 ): UsageService {
   return {
     getPricing: async () => {
-      const pricing = await getRepo().findActivePricing();
-      if (!pricing) {
-        return {
-          price_per_org: 0,
-          price_per_apartment: 0,
-          price_per_room: 0,
-          price_per_member: 0,
-        };
-      }
+      const platformConfig = await prisma.platformConfig.findUnique({ where: { id: 'default' } });
+      const pricing = (platformConfig?.usage_pricing as Record<string, unknown>) ?? {};
       return {
-        price_per_org: Number(pricing.price_per_org),
-        price_per_apartment: Number(pricing.price_per_apartment),
-        price_per_room: Number(pricing.price_per_room),
-        price_per_member: Number(pricing.price_per_member),
+        price_per_org: (pricing.price_per_org as number) ?? 0,
+        price_per_apartment: (pricing.price_per_apartment as number) ?? 0,
+        price_per_room: (pricing.price_per_room as number) ?? 0,
+        price_per_member: (pricing.price_per_member as number) ?? 0,
       };
     },
 
@@ -96,16 +90,22 @@ export function createUsageService(
         throw createAppError(400, '至少选择一种对象数量');
       }
 
-      const pricing = await getRepo().findActivePricing();
-      if (!pricing) {
+      const platformConfig = await prisma.platformConfig.findUnique({ where: { id: 'default' } });
+      const usagePricing = (platformConfig?.usage_pricing as Record<string, unknown>) ?? {};
+      if (
+        usagePricing.price_per_org == null &&
+        usagePricing.price_per_apartment == null &&
+        usagePricing.price_per_room == null &&
+        usagePricing.price_per_member == null
+      ) {
         throw createAppError(400, '按量定价未配置');
       }
 
       const amount =
-        Number(pricing.price_per_org) * orgs +
-        Number(pricing.price_per_apartment) * apartments +
-        Number(pricing.price_per_room) * rooms +
-        Number(pricing.price_per_member) * members;
+        Number(usagePricing.price_per_org ?? 0) * orgs +
+        Number(usagePricing.price_per_apartment ?? 0) * apartments +
+        Number(usagePricing.price_per_room ?? 0) * rooms +
+        Number(usagePricing.price_per_member ?? 0) * members;
 
       if (amount <= 0) {
         throw createAppError(400, '订单金额必须大于 0');

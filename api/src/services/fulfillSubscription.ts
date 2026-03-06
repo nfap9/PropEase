@@ -54,10 +54,6 @@ export async function fulfillSubscription(orderId: string): Promise<void> {
         next_plan_id: null,
       },
     });
-    await prisma.organization.update({
-      where: { id: orgId },
-      data: { plan: plan.code },
-    });
   } else if (subscription.plan_id === planId) {
     const baseDate =
       subscription.end_date && new Date(subscription.end_date) >= today
@@ -70,18 +66,10 @@ export async function fulfillSubscription(orderId: string): Promise<void> {
       where: { organization_id: orgId },
       data: { end_date: newEnd, next_plan_id: null },
     });
-    await prisma.organization.update({
-      where: { id: orgId },
-      data: { plan: plan.code },
-    });
   } else {
     await prisma.organizationSubscription.update({
       where: { organization_id: orgId },
       data: { plan_id: planId, billing_cycle: billingCycle, next_plan_id: null },
-    });
-    await prisma.organization.update({
-      where: { id: orgId },
-      data: { plan: plan.code },
     });
   }
 

@@ -26,26 +26,20 @@ function isSubscriptionActive(sub: { status: string; end_date: Date | null } | n
 }
 
 /**
- * 返回组织当前应使用的套餐（有有效订阅用订阅套餐，否则用 org.plan 对应的套餐）
+ * 返回组织当前应使用的套餐（有有效订阅用订阅套餐，否则用 free 套餐）
  */
 export async function getEffectivePlanForOrg(orgId: string): Promise<SubscriptionPlan | null> {
-  const org = await prisma.organization.findUnique({
-    where: { id: orgId },
-    select: { plan: true },
-  });
-  if (!org) return null;
-
   const sub = await prisma.organizationSubscription.findUnique({
     where: { organization_id: orgId },
     include: { plan: true },
   });
   if (sub && isSubscriptionActive(sub)) return sub.plan;
 
-  const planCode = org.plan || 'free';
-  const plan = await prisma.subscriptionPlan.findFirst({
-    where: { code: planCode },
+  // 无有效订阅时，返回 free 套餐
+  const freePlan = await prisma.subscriptionPlan.findFirst({
+    where: { code: 'free' },
   });
-  return plan;
+  return freePlan;
 }
 
 export interface PlanLimits {

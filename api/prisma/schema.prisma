@@ -30,15 +30,16 @@ model User {
 }
 
 model Organization {
-  id         String   @id @db.VarChar(26)
-  name       String   @db.VarChar(255)
-  slug       String   @unique @db.VarChar(100)
-  plan       String   @default("free") @db.VarChar(50)
-  settings   Json?
-  is_personal Boolean @default(false)
-  is_active  Boolean  @default(true)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id          String   @id @db.VarChar(26)
+  name        String   @db.VarChar(255)
+  slug        String   @unique @db.VarChar(100)
+  type        String   @default("individual") @db.VarChar(20)
+  notes       String?  @db.VarChar(1000)
+  settings    Json?
+  is_personal Boolean  @default(false)
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   members             OrganizationMember[]
   apartments          Apartment[]
@@ -54,27 +55,39 @@ model OrganizationMember {
   organization_id String   @db.VarChar(26)
   user_id         String   @db.VarChar(26)
   role            String   @default("member") @db.VarChar(20)
-  custom_role_id  String?  @db.VarChar(26)
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   user        User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@index([user_id])
   @@map("organization_members")
 }
 
 model Apartment {
-  id              String   @id @db.VarChar(26)
-  organization_id  String   @db.VarChar(26)
-  name            String   @db.VarChar(255)
-  address         String?  @db.VarChar(500)
-  description     String?  @db.VarChar(1000)
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  id               String    @id @db.VarChar(26)
+  organization_id  String    @db.VarChar(26)
+  name             String    @db.VarChar(255)
+  address          String?   @db.VarChar(500)
+  // 基本信息
+  floors           Int?
+  land_area        Decimal?  @db.Decimal(10, 2)
+  total_area       Decimal?  @db.Decimal(10, 2)
+  // 上游信息
+  landlord_name    String?   @db.VarChar(100)
+  landlord_contact String?   @db.VarChar(50)
+  contract_start   DateTime? @db.Date
+  contract_end     DateTime? @db.Date
+  landlord_rent    Decimal?  @db.Decimal(10, 2)
+  // 经营成本
+  operating_cost   Decimal?  @db.Decimal(10, 2)
+  description      String?   @db.VarChar(1000)
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
 
-  organization Organization  @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  rooms        Room[]
+  organization   Organization    @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  rooms          Room[]
   utility_config UtilityConfig?
 
   @@map("apartments")
@@ -88,6 +101,7 @@ model Room {
   status       String   @default("available") @db.VarChar(20)
   monthly_rent Decimal  @db.Decimal(10, 2)
   area         Decimal? @db.Decimal(10, 2)
+  facilities   Json?
   notes        String?  @db.VarChar(500)
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
@@ -96,6 +110,8 @@ model Room {
   leases           Lease[]
   utility_readings UtilityReading[]
 
+  @@index([status])
+  @@index([apartment_id])
   @@map("rooms")
 }
 
@@ -118,25 +134,28 @@ model Tenant {
 }
 
 model Lease {
-  id               String   @id @db.VarChar(26)
-  room_id          String   @db.VarChar(26)
-  tenant_id        String   @db.VarChar(26)
-  start_date       DateTime @db.Date
+  id               String    @id @db.VarChar(26)
+  room_id          String    @db.VarChar(26)
+  tenant_id        String    @db.VarChar(26)
+  start_date       DateTime  @db.Date
   end_date         DateTime? @db.Date
-  billing_day      Int      @default(1)
-  monthly_rent     Decimal  @db.Decimal(10, 2)
-  deposit          Decimal  @default(0) @db.Decimal(10, 2)
-  water_rate       Decimal  @default(0) @db.Decimal(10, 4)
-  electricity_rate Decimal  @default(0) @db.Decimal(10, 4)
-  is_active        Boolean  @default(true)
-  notes            String?  @db.VarChar(500)
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  rental_type      String    @default("monthly") @db.VarChar(20)
+  billing_day      Int       @default(1)
+  monthly_rent     Decimal   @db.Decimal(10, 2)
+  deposit          Decimal   @default(0) @db.Decimal(10, 2)
+  water_rate       Decimal   @default(0) @db.Decimal(10, 4)
+  electricity_rate Decimal   @default(0) @db.Decimal(10, 4)
+  is_active        Boolean   @default(true)
+  notes            String?   @db.VarChar(500)
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
 
   room   Room   @relation(fields: [room_id], references: [id], onDelete: Cascade)
   tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
   bills  Bill[]
 
+  @@index([room_id])
+  @@index([is_active])
   @@map("leases")
 }
 
@@ -156,6 +175,7 @@ model UtilityReading {
 
   room Room @relation(fields: [room_id], references: [id], onDelete: Cascade)
 
+  @@index([period_year, period_month])
   @@map("utility_readings")
 }
 
@@ -197,6 +217,7 @@ model Bill {
   lease    Lease    @relation(fields: [lease_id], references: [id], onDelete: Cascade)
   payments Payment[]
 
+  @@index([status])
   @@map("bills")
 }
 
@@ -278,7 +299,6 @@ model CustomRole {
   organization_id String   @db.VarChar(26)
   name            String   @db.VarChar(50)
   description     String?  @db.VarChar(255)
-  is_system       Boolean  @default(false)
   is_active       Boolean  @default(true)
   permissions     String?  @db.VarChar(2000)
   created_at      DateTime @default(now())
@@ -380,19 +400,6 @@ model SubscriptionOrder {
   @@map("subscription_orders")
 }
 
-model UsagePricing {
-  id                   String   @id @db.VarChar(26)
-  price_per_org        Decimal  @db.Decimal(10, 2)
-  price_per_apartment  Decimal  @db.Decimal(10, 2)
-  price_per_room       Decimal  @db.Decimal(10, 2)
-  price_per_member     Decimal  @db.Decimal(10, 2)
-  is_active            Boolean  @default(true)
-  created_at           DateTime @default(now())
-  updated_at           DateTime @updatedAt
-
-  @@map("usage_pricing")
-}
-
 model UsageQuota {
   id                   String   @id @db.VarChar(26)
   user_id              String   @db.VarChar(26)
@@ -483,9 +490,10 @@ model AdminUser {
 }
 
 model PlatformConfig {
-  id         String   @id @default("default") @db.VarChar(26)
-  brand      Json?    @db.Json
-  updated_at DateTime @updatedAt
+  id            String   @id @default("default") @db.VarChar(26)
+  brand         Json?    @db.Json
+  usage_pricing Json?    @db.Json
+  updated_at    DateTime @updatedAt
 
   @@map("platform_config")
 }

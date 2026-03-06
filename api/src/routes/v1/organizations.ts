@@ -25,7 +25,6 @@ function toOrgResponse(o: {
   id: string;
   name: string;
   slug: string;
-  plan: string;
   settings: unknown;
   is_personal: boolean;
   is_active: boolean;
@@ -36,7 +35,6 @@ function toOrgResponse(o: {
     id: o.id,
     name: o.name,
     slug: o.slug,
-    plan: o.plan,
     settings: o.settings,
     is_personal: o.is_personal,
     is_active: o.is_active,
@@ -324,7 +322,7 @@ router.get('/:orgId/usage', async (req: Request, res: Response, next: NextFuncti
       userOrganizationCount(user.id),
       getMaxOrganizationsForUser(user.id),
     ]);
-    const plan = planRecord?.code ?? org.plan ?? 'free';
+    const plan = planRecord?.code ?? 'free';
     const maxA = limits.max_apartments;
     const maxR = limits.max_rooms;
     const maxM = limits.max_members;

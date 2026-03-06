@@ -45,7 +45,6 @@ export async function createPersonalOrgWithFreePlan(userId: string): Promise<voi
         id: orgId,
         name: '个人',
         slug,
-        plan: FREE_PLAN_CODE,
         is_personal: true,
       },
     }),
