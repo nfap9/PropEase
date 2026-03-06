@@ -57,6 +57,23 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// 注意: 实际使用时从 testids 导入 BILLS 常量
+const BILLS = {
+  HEADING: 'bills-heading',
+  GENERATE_BUTTON: 'bills-generate-btn',
+  STATUS_FILTER: 'bills-status-filter',
+  EXPORT_BUTTON: 'bills-export-btn',
+  DETAIL_DIALOG: 'bills-detail-dialog',
+  PAYMENT_DIALOG: 'bills-payment-dialog',
+  GENERATE_DIALOG: 'bills-generate-dialog',
+  AMOUNT_INPUT: 'bills-amount-input',
+  PAYMENT_DATE_INPUT: 'bills-payment-date-input',
+  PAYMENT_METHOD_SELECT: 'bills-payment-method-select',
+  CONFIRM_PAYMENT_BUTTON: 'bills-confirm-payment-btn',
+  CANCEL_BUTTON: 'bills-cancel-btn',
+  LIST: 'bills-list',
+} as const;
+
 const paymentSchema = z.object({
   amount: z.number().min(0.01, '金额必须大于0'),
   payment_date: z.string().min(1, '请选择付款日期'),
@@ -359,7 +376,7 @@ function BillsContent() {
       <MainLayout>
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">账单管理</h1>
+            <h1 className="text-3xl font-bold" data-testid={BILLS.HEADING}>账单管理</h1>
           </div>
 
           {/* Stats Cards */}
@@ -407,13 +424,14 @@ function BillsContent() {
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button onClick={() => setIsGenerateOpen(true)}>
+              <Button onClick={() => setIsGenerateOpen(true)} data-testid={BILLS.GENERATE_BUTTON}>
                 <FilePlus className="mr-2 h-4 w-4" />
                 手动出账
               </Button>
               <Select
                 value={statusFilter}
                 onValueChange={(value) => setStatusFilter(value as BillStatus | 'all')}
+                data-testid={BILLS.STATUS_FILTER}
               >
                 <SelectTrigger className="w-[150px]">
                   <SelectValue placeholder="筛选状态" />
@@ -429,7 +447,7 @@ function BillsContent() {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={!bills || bills.length === 0}>
+                <Button variant="outline" disabled={!bills || bills.length === 0} data-testid={BILLS.EXPORT_BUTTON}>
                   <Download className="mr-2 h-4 w-4" />
                   批量导出
                   <ChevronDown className="ml-2 h-4 w-4" />
@@ -451,7 +469,7 @@ function BillsContent() {
           {billsLoading ? (
             <Skeleton className="h-96" />
           ) : (
-            <DataTable columns={columns} data={filteredBills || []} />
+            <DataTable columns={columns} data={filteredBills || []} data-testid={BILLS.LIST} />
           )}
         </div>
 
@@ -463,7 +481,7 @@ function BillsContent() {
             if (!open) setSelectedBillId(null);
           }}
         >
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg" data-testid={BILLS.DETAIL_DIALOG}>
             <DialogHeader>
               <DialogTitle>账单详情</DialogTitle>
               <DialogDescription>
@@ -585,7 +603,7 @@ function BillsContent() {
 
         {/* 手动出账弹窗 */}
         <Dialog open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md" data-testid={BILLS.GENERATE_DIALOG}>
             <DialogHeader>
               <DialogTitle>手动出账</DialogTitle>
               <DialogDescription>
@@ -641,7 +659,7 @@ function BillsContent() {
                 )}
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsGenerateOpen(false)}>
+                <Button type="button" variant="outline" onClick={() => setIsGenerateOpen(false)} data-testid={BILLS.CANCEL_BUTTON}>
                   取消
                 </Button>
                 <Button type="submit" disabled={generateMutation.isPending}>
@@ -654,7 +672,7 @@ function BillsContent() {
 
         {/* Payment Dialog */}
         <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md" data-testid={BILLS.PAYMENT_DIALOG}>
             <DialogHeader>
               <DialogTitle>登记付款</DialogTitle>
               <DialogDescription>
@@ -679,6 +697,7 @@ function BillsContent() {
                   type="number"
                   step="0.01"
                   {...paymentForm.register('amount', { valueAsNumber: true })}
+                  data-testid={BILLS.AMOUNT_INPUT}
                 />
                 {paymentForm.formState.errors.amount && (
                   <p className="text-sm text-destructive">
@@ -696,6 +715,7 @@ function BillsContent() {
                     type="date"
                     aria-required
                     {...paymentForm.register('payment_date')}
+                    data-testid={BILLS.PAYMENT_DATE_INPUT}
                   />
                 </div>
                 <div className="space-y-2">
@@ -707,6 +727,7 @@ function BillsContent() {
                     onValueChange={(value: PaymentMethod) =>
                       paymentForm.setValue('payment_method', value)
                     }
+                    data-testid={BILLS.PAYMENT_METHOD_SELECT}
                   >
                     <SelectTrigger id="payment_method" className="min-w-[140px]">
                       <SelectValue />
@@ -730,10 +751,10 @@ function BillsContent() {
                 <Input id="notes" {...paymentForm.register('notes')} />
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsPaymentOpen(false)}>
+                <Button type="button" variant="outline" onClick={() => setIsPaymentOpen(false)} data-testid={BILLS.CANCEL_BUTTON}>
                   取消
                 </Button>
-                <Button type="submit" disabled={paymentMutation.isPending}>
+                <Button type="submit" disabled={paymentMutation.isPending} data-testid={BILLS.CONFIRM_PAYMENT_BUTTON}>
                   {paymentMutation.isPending ? '处理中...' : '确认收款'}
                 </Button>
               </DialogFooter>

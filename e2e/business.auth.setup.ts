@@ -1,4 +1,5 @@
 import { test as setup, expect } from '@playwright/test';
+import { DASHBOARD, COMMON } from './testids';
 
 const businessAuthFile = '.auth/business.json';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
@@ -36,8 +37,14 @@ setup('业务端登录并保存登录态', async ({ page, request }) => {
 
   await page.goto('/dashboard');
   await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+
+  // 验证首页标题 - 支持"首页"或"仪表盘"两种文案
+  // TODO: 前端添加 data-testid 后改为 page.getByTestId(DASHBOARD.HEADING)
   await expect(
-    page.getByRole('heading', { name: '仪表盘' }).or(page.getByText('欢迎使用公寓管理系统'))
+    page.getByRole('heading', { name: '首页' })
+      .or(page.getByRole('heading', { name: '仪表盘' }))
+      .or(page.getByText('欢迎使用'))
   ).toBeVisible();
+
   await page.context().storageState({ path: businessAuthFile });
 });

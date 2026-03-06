@@ -28,6 +28,7 @@ function StatCard({
   icon: Icon,
   iconColor,
   valueBadgeVariant,
+  testid,
 }: {
   title: string;
   value: string | number;
@@ -35,9 +36,10 @@ function StatCard({
   icon: React.ElementType;
   iconColor?: string;
   valueBadgeVariant?: 'warning' | 'destructive';
+  testid?: string;
 }) {
   return (
-    <Card>
+    <Card data-testid={testid}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className={`h-4 w-4 ${iconColor || 'text-muted-foreground'}`} />
@@ -109,7 +111,7 @@ export function DashboardContent() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">首页</h1>
+      <h1 className="text-3xl font-bold" data-testid="dashboard-heading">首页</h1>
 
       {overviewLoading ? (
         <DashboardSkeleton />
@@ -121,12 +123,14 @@ export function DashboardContent() {
               value={overview?.total_apartments || 0}
               icon={Building2}
               iconColor="text-blue-500"
+              testid="dashboard-apartment-count"
             />
             <StatCard
               title="房间总数"
               value={overview?.total_rooms || 0}
               icon={Home}
               iconColor="text-green-500"
+              testid="dashboard-room-count"
             />
             <StatCard
               title="入住率"
@@ -134,12 +138,14 @@ export function DashboardContent() {
               description={`${overview?.occupied_rooms || 0} / ${overview?.total_rooms || 0} 间`}
               icon={Percent}
               iconColor="text-purple-500"
+              testid="dashboard-occupancy-rate"
             />
             <StatCard
               title="活跃租约"
               value={overview?.active_leases || 0}
               icon={FileText}
               iconColor="text-orange-500"
+              testid="dashboard-active-leases"
             />
           </div>
 
@@ -149,12 +155,14 @@ export function DashboardContent() {
               value={overview?.total_tenants || 0}
               icon={Users}
               iconColor="text-cyan-500"
+              testid="dashboard-tenant-count"
             />
             <StatCard
               title="本月收入"
               value={`¥${(overview?.monthly_revenue || 0).toLocaleString()}`}
               icon={DollarSign}
               iconColor="text-emerald-500"
+              testid="dashboard-monthly-revenue"
             />
             <StatCard
               title="待收账单"
@@ -162,6 +170,7 @@ export function DashboardContent() {
               icon={Clock}
               iconColor="text-amber-500"
               valueBadgeVariant="warning"
+              testid="dashboard-pending-bills"
             />
             <StatCard
               title="逾期账单"
@@ -170,6 +179,7 @@ export function DashboardContent() {
               icon={AlertCircle}
               iconColor="text-red-500"
               valueBadgeVariant="destructive"
+              testid="dashboard-overdue-bills"
             />
           </div>
 

@@ -23,6 +23,20 @@ import { subscriptionsApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 
+// 注意: 实际使用时从 testids 导入 SUBSCRIPTION 常量
+const SUBSCRIPTION = {
+  HEADING: 'subscription-heading',
+  BACK_BTN: 'subscription-back-btn',
+  MONTHLY_BTN: 'subscription-monthly-btn',
+  YEARLY_BTN: 'subscription-yearly-btn',
+  PLANS_GRID: 'subscription-plans-grid',
+  CONFIRM_DIALOG: 'subscription-confirm-dialog',
+  CANCEL_BTN: 'subscription-cancel-btn',
+  CONFIRM_BTN: 'subscription-confirm-btn',
+  PLAN_CARD: 'subscription-plan-card',
+  SUBSCRIBE_BTN: 'subscription-subscribe-btn',
+} as const;
+
 const PLAN_ICONS: Record<string, typeof Crown> = {
   free: Building2,
   pro: Zap,
@@ -130,7 +144,7 @@ export default function SubscriptionPage() {
             返回
           </Button>
           <div>
-            <h1 className="flex items-center gap-2 text-3xl font-bold">
+            <h1 className="flex items-center gap-2 text-3xl font-bold" data-testid={SUBSCRIPTION.HEADING}>
               <CreditCard className="h-8 w-8" />
               订阅管理
             </h1>

@@ -41,6 +41,26 @@ import { Tenant } from '@/types';
 import { Plus, Pencil, Trash2, Phone, User, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// 注意: 实际使用时从 testids 导入 TENANTS 常量
+const TENANTS = {
+  HEADING: 'tenants-heading',
+  NEW_BUTTON: 'tenants-new-btn',
+  LIST: 'tenants-list',
+  SEARCH_INPUT: 'tenants-search-input',
+  CREATE_DIALOG: 'tenants-create-dialog',
+  NAME_INPUT: 'tenants-name-input',
+  PHONE_INPUT: 'tenants-phone-input',
+  ID_CARD_INPUT: 'tenants-id-card-input',
+  EMERGENCY_CONTACT_INPUT: 'tenants-emergency-contact-input',
+  EMERGENCY_PHONE_INPUT: 'tenants-emergency-phone-input',
+  NOTES_INPUT: 'tenants-notes-input',
+  CANCEL_BUTTON: 'tenants-cancel-btn',
+  CONFIRM_BUTTON: 'tenants-confirm-btn',
+  EDIT_DIALOG: 'tenants-edit-dialog',
+  DELETE_DIALOG: 'tenants-delete-dialog',
+  CONFIRM_DELETE_BTN: 'tenants-confirm-delete-btn',
+} as const;
+
 const tenantSchema = z.object({
   name: z.string().min(1, '请输入租客姓名'),
   phone: z.string().min(1, '请输入联系电话'),
@@ -221,8 +241,8 @@ export default function TenantsPage() {
       <MainLayout>
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">租客管理</h1>
-            <Button onClick={() => setIsCreateOpen(true)}>
+            <h1 className="text-3xl font-bold" data-testid={TENANTS.HEADING}>租客管理</h1>
+            <Button onClick={() => setIsCreateOpen(true)} data-testid={TENANTS.NEW_BUTTON}>
               <Plus className="mr-2 h-4 w-4" />
               新增租客
             </Button>
@@ -231,13 +251,13 @@ export default function TenantsPage() {
           {tenantsLoading ? (
             <Skeleton className="h-96" />
           ) : (
-            <DataTable columns={columns} data={tenants || []} />
+            <DataTable columns={columns} data={tenants || []} data-testid={TENANTS.LIST} />
           )}
         </div>
 
         {/* Create Dialog */}
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg" data-testid={TENANTS.CREATE_DIALOG}>
             <DialogHeader>
               <DialogTitle>新增租客</DialogTitle>
               <DialogDescription>填写租客信息</DialogDescription>
@@ -251,7 +271,7 @@ export default function TenantsPage() {
                   <Label htmlFor="name">
                     姓名 <span aria-hidden="true">*</span>
                   </Label>
-                  <Input id="name" aria-required {...createForm.register('name')} />
+                  <Input id="name" aria-required {...createForm.register('name')} data-testid={TENANTS.NAME_INPUT} />
                   {createForm.formState.errors.name && (
                     <p className="text-sm text-destructive">
                       {createForm.formState.errors.name.message}
@@ -262,7 +282,7 @@ export default function TenantsPage() {
                   <Label htmlFor="phone">
                     联系电话 <span aria-hidden="true">*</span>
                   </Label>
-                  <Input id="phone" aria-required {...createForm.register('phone')} />
+                  <Input id="phone" aria-required {...createForm.register('phone')} data-testid={TENANTS.PHONE_INPUT} />
                   {createForm.formState.errors.phone && (
                     <p className="text-sm text-destructive">
                       {createForm.formState.errors.phone.message}
@@ -273,28 +293,28 @@ export default function TenantsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="id_card">身份证号</Label>
-                  <Input id="id_card" {...createForm.register('id_card')} />
+                  <Input id="id_card" {...createForm.register('id_card')} data-testid={TENANTS.ID_CARD_INPUT} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="emergency_contact">紧急联系人</Label>
-                  <Input id="emergency_contact" {...createForm.register('emergency_contact')} />
+                  <Input id="emergency_contact" {...createForm.register('emergency_contact')} data-testid={TENANTS.EMERGENCY_CONTACT_INPUT} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="emergency_phone">紧急联系电话</Label>
-                  <Input id="emergency_phone" {...createForm.register('emergency_phone')} />
+                  <Input id="emergency_phone" {...createForm.register('emergency_phone')} data-testid={TENANTS.EMERGENCY_PHONE_INPUT} />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="notes">备注</Label>
-                <Input id="notes" {...createForm.register('notes')} />
+                <Input id="notes" {...createForm.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)} data-testid={TENANTS.CANCEL_BUTTON}>
                   取消
                 </Button>
-                <Button type="submit" disabled={createMutation.isPending}>
+                <Button type="submit" disabled={createMutation.isPending} data-testid={TENANTS.CONFIRM_BUTTON}>
                   {createMutation.isPending ? '创建中...' : '创建'}
                 </Button>
               </DialogFooter>
@@ -304,7 +324,7 @@ export default function TenantsPage() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg" data-testid={TENANTS.EDIT_DIALOG}>
             <DialogHeader>
               <DialogTitle>编辑租客</DialogTitle>
               <DialogDescription>修改租客信息</DialogDescription>
@@ -320,40 +340,40 @@ export default function TenantsPage() {
                   <Label htmlFor="edit-name">
                     姓名 <span aria-hidden="true">*</span>
                   </Label>
-                  <Input id="edit-name" aria-required {...editForm.register('name')} />
+                  <Input id="edit-name" aria-required {...editForm.register('name')} data-testid={TENANTS.NAME_INPUT} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-phone">
                     联系电话 <span aria-hidden="true">*</span>
                   </Label>
-                  <Input id="edit-phone" aria-required {...editForm.register('phone')} />
+                  <Input id="edit-phone" aria-required {...editForm.register('phone')} data-testid={TENANTS.PHONE_INPUT} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-id_card">身份证号</Label>
-                  <Input id="edit-id_card" {...editForm.register('id_card')} />
+                  <Input id="edit-id_card" {...editForm.register('id_card')} data-testid={TENANTS.ID_CARD_INPUT} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-emergency_contact">紧急联系人</Label>
-                  <Input id="edit-emergency_contact" {...editForm.register('emergency_contact')} />
+                  <Input id="edit-emergency_contact" {...editForm.register('emergency_contact')} data-testid={TENANTS.EMERGENCY_CONTACT_INPUT} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-emergency_phone">紧急联系电话</Label>
-                  <Input id="edit-emergency_phone" {...editForm.register('emergency_phone')} />
+                  <Input id="edit-emergency_phone" {...editForm.register('emergency_phone')} data-testid={TENANTS.EMERGENCY_PHONE_INPUT} />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-notes">备注</Label>
-                <Input id="edit-notes" {...editForm.register('notes')} />
+                <Input id="edit-notes" {...editForm.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} data-testid={TENANTS.CANCEL_BUTTON}>
                   取消
                 </Button>
-                <Button type="submit" disabled={updateMutation.isPending}>
+                <Button type="submit" disabled={updateMutation.isPending} data-testid={TENANTS.CONFIRM_BUTTON}>
                   {updateMutation.isPending ? '保存中...' : '保存'}
                 </Button>
               </DialogFooter>
@@ -363,7 +383,7 @@ export default function TenantsPage() {
 
         {/* Delete Alert Dialog */}
         <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-          <AlertDialogContent>
+          <AlertDialogContent data-testid={TENANTS.DELETE_DIALOG}>
             <AlertDialogHeader>
               <AlertDialogTitle>确认删除</AlertDialogTitle>
               <AlertDialogDescription>
@@ -371,10 +391,11 @@ export default function TenantsPage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>取消</AlertDialogCancel>
+              <AlertDialogCancel data-testid={TENANTS.CANCEL_BUTTON}>取消</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => deleteMutation.mutate(selectedTenant!.id)}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                data-testid={TENANTS.CONFIRM_DELETE_BTN}
               >
                 {deleteMutation.isPending ? '删除中...' : '删除'}
               </AlertDialogAction>

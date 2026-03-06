@@ -179,7 +179,7 @@ export function LeaseFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg" data-testid="leases-create-dialog">
         <DialogHeader>
           <DialogTitle>{getDialogTitle()}</DialogTitle>
           <DialogDescription>{getDialogDescription()}</DialogDescription>
@@ -202,7 +202,7 @@ export function LeaseFormDialog({
                   value={selectedApartmentId || ''}
                   onValueChange={(value) => setSelectedApartmentId(value)}
                 >
-                  <SelectTrigger className="min-w-[140px]">
+                  <SelectTrigger className="min-w-[140px]" data-testid="leases-apartment-select">
                     <SelectValue placeholder="选择公寓" />
                   </SelectTrigger>
                   <SelectContent>
@@ -220,7 +220,7 @@ export function LeaseFormDialog({
                   value={form.watch('room_id') || ''}
                   onValueChange={(value) => form.setValue('room_id', value)}
                 >
-                  <SelectTrigger className="min-w-[140px]">
+                  <SelectTrigger className="min-w-[140px]" data-testid="leases-room-select">
                     <SelectValue placeholder="选择房间" />
                   </SelectTrigger>
                   <SelectContent>
@@ -245,19 +245,21 @@ export function LeaseFormDialog({
           {/* 租客选择 */}
           <div className="space-y-2">
             <Label htmlFor="tenant_id">选择租客 *</Label>
-            <TenantSelectWithCreate
-              orgId={orgId}
-              value={form.watch('tenant_id')}
-              onValueChange={(value) => form.setValue('tenant_id', value)}
-              error={form.formState.errors.tenant_id?.message}
-            />
+            <div data-testid="leases-tenant-select">
+              <TenantSelectWithCreate
+                orgId={orgId}
+                value={form.watch('tenant_id')}
+                onValueChange={(value) => form.setValue('tenant_id', value)}
+                error={form.formState.errors.tenant_id?.message}
+              />
+            </div>
           </div>
 
           {/* 日期 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="start_date">开始日期 *</Label>
-              <Input id="start_date" type="date" {...form.register('start_date')} />
+              <Input id="start_date" type="date" {...form.register('start_date')} data-testid="leases-start-date-input" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="end_date">结束日期</Label>
@@ -274,6 +276,7 @@ export function LeaseFormDialog({
                 type="number"
                 step="0.01"
                 {...form.register('monthly_rent', { valueAsNumber: true })}
+                data-testid="leases-monthly-rent-input"
               />
             </div>
             <div className="space-y-2">
@@ -283,6 +286,7 @@ export function LeaseFormDialog({
                 type="number"
                 step="0.01"
                 {...form.register('deposit', { valueAsNumber: true })}
+                data-testid="leases-deposit-input"
               />
             </div>
           </div>
@@ -316,10 +320,10 @@ export function LeaseFormDialog({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} data-testid="leases-cancel-btn">
               取消
             </Button>
-            <Button type="submit" disabled={createMutation.isPending}>
+            <Button type="submit" disabled={createMutation.isPending} data-testid="leases-confirm-btn">
               {createMutation.isPending ? '创建中...' : '确认签约'}
             </Button>
           </DialogFooter>

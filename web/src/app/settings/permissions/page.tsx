@@ -16,6 +16,15 @@ import { Shield } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
+// 注意: 实际使用时从 testids 导入 PERMISSIONS 常量
+const PERMISSIONS = {
+  HEADING: 'permissions-heading',
+  ROLE_LIST: 'permissions-role-list',
+  PERMISSION_PANEL: 'permissions-permission-panel',
+  SAVE_BUTTON: 'permissions-save-btn',
+  ROLE_TAB: 'permissions-role-tab',
+} as const;
+
 export default function PermissionsPage() {
   const { organization, user } = useAuth();
   const queryClient = useQueryClient();
@@ -137,7 +146,7 @@ export default function PermissionsPage() {
               <Shield className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">权限管理</h1>
+              <h1 className="text-2xl font-bold tracking-tight" data-testid={PERMISSIONS.HEADING}>权限管理</h1>
               <p className="text-sm text-muted-foreground">
                 为「{organization.name}」下的管理员、成员、查看者配置可执行的操作；仅所有者可修改。
               </p>

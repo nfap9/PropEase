@@ -60,6 +60,30 @@ import { LeaseFilters, LeaseFiltersState } from './components';
 import { Plus, Pencil, Trash2, Ban, Building2, Info } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// 注意: 实际使用时从 testids 导入 LEASES 常量
+const LEASES = {
+  HEADING: 'leases-heading',
+  NEW_BUTTON: 'leases-new-btn',
+  LIST: 'leases-list',
+  STATUS_FILTER: 'leases-status-filter',
+  CREATE_DIALOG: 'leases-create-dialog',
+  APARTMENT_SELECT: 'leases-apartment-select',
+  ROOM_SELECT: 'leases-room-select',
+  TENANT_SELECT: 'leases-tenant-select',
+  START_DATE_INPUT: 'leases-start-date-input',
+  MONTHLY_RENT_INPUT: 'leases-monthly-rent-input',
+  DEPOSIT_INPUT: 'leases-deposit-input',
+  CONFIRM_BUTTON: 'leases-confirm-btn',
+  EDIT_DIALOG: 'leases-edit-dialog',
+  END_DATE_INPUT: 'leases-end-date-input',
+  NOTES_INPUT: 'leases-notes-input',
+  CANCEL_BUTTON: 'leases-cancel-btn',
+  TERMINATE_DIALOG: 'leases-terminate-dialog',
+  CONFIRM_TERMINATE_BTN: 'leases-confirm-terminate-btn',
+  DELETE_DIALOG: 'leases-delete-dialog',
+  CONFIRM_DELETE_BTN: 'leases-confirm-delete-btn',
+} as const;
+
 const leaseSchema = z.object({
   room_id: z.string().min(1, '请选择房间'),
   tenant_id: z.string().min(1, '请选择租客'),
@@ -334,8 +358,8 @@ export default function LeasesPage() {
       <MainLayout>
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">租约管理</h1>
-            <Button onClick={() => setIsCreateOpen(true)}>
+            <h1 className="text-3xl font-bold" data-testid={LEASES.HEADING}>租约管理</h1>
+            <Button onClick={() => setIsCreateOpen(true)} data-testid={LEASES.NEW_BUTTON}>
               <Plus className="mr-2 h-4 w-4" />
               新增租约
             </Button>
@@ -351,7 +375,7 @@ export default function LeasesPage() {
           {leasesLoading ? (
             <Skeleton className="h-96" />
           ) : (
-            <DataTable columns={columns} data={filteredLeases} />
+            <DataTable columns={columns} data={filteredLeases} data-testid={LEASES.LIST} />
           )}
         </div>
 
@@ -376,7 +400,7 @@ export default function LeasesPage() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg" data-testid={LEASES.EDIT_DIALOG}>
             <DialogHeader>
               <DialogTitle>编辑租约</DialogTitle>
               <DialogDescription>修改租约信息</DialogDescription>
@@ -425,7 +449,7 @@ export default function LeasesPage() {
                       <FormItem>
                         <FormLabel>开始日期 *</FormLabel>
                         <FormControl>
-                          <Input id="edit-start_date" type="date" {...field} />
+                          <Input id="edit-start_date" type="date" {...field} data-testid={LEASES.START_DATE_INPUT} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -438,7 +462,7 @@ export default function LeasesPage() {
                       <FormItem>
                         <FormLabel>结束日期</FormLabel>
                         <FormControl>
-                          <Input id="edit-end_date" type="date" {...field} />
+                          <Input id="edit-end_date" type="date" {...field} data-testid={LEASES.END_DATE_INPUT} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -461,6 +485,7 @@ export default function LeasesPage() {
                               field.onChange(e.target.value === '' ? 0 : Number(e.target.value))
                             }
                             value={field.value ?? ''}
+                            data-testid={LEASES.MONTHLY_RENT_INPUT}
                           />
                         </FormControl>
                         <FormMessage />
@@ -482,6 +507,7 @@ export default function LeasesPage() {
                               field.onChange(e.target.value === '' ? 0 : Number(e.target.value))
                             }
                             value={field.value ?? ''}
+                            data-testid={LEASES.DEPOSIT_INPUT}
                           />
                         </FormControl>
                         <FormMessage />
@@ -496,17 +522,17 @@ export default function LeasesPage() {
                     <FormItem>
                       <FormLabel>备注</FormLabel>
                       <FormControl>
-                        <Input id="edit-notes" {...field} value={field.value ?? ''} />
+                        <Input id="edit-notes" {...field} value={field.value ?? ''} data-testid={LEASES.NOTES_INPUT} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                  <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} data-testid={LEASES.CANCEL_BUTTON}>
                     取消
                   </Button>
-                  <Button type="submit" disabled={updateMutation.isPending}>
+                  <Button type="submit" disabled={updateMutation.isPending} data-testid={LEASES.CONFIRM_BUTTON}>
                     {updateMutation.isPending ? '保存中...' : '保存'}
                   </Button>
                 </DialogFooter>
@@ -517,7 +543,7 @@ export default function LeasesPage() {
 
         {/* Terminate Alert Dialog */}
         <AlertDialog open={isTerminateOpen} onOpenChange={setIsTerminateOpen}>
-          <AlertDialogContent>
+          <AlertDialogContent data-testid={LEASES.TERMINATE_DIALOG}>
             <AlertDialogHeader>
               <AlertDialogTitle>确认终止租约</AlertDialogTitle>
               <AlertDialogDescription>
@@ -525,8 +551,8 @@ export default function LeasesPage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>取消</AlertDialogCancel>
-              <AlertDialogAction onClick={() => terminateMutation.mutate(selectedLease!.id)}>
+              <AlertDialogCancel data-testid={LEASES.CANCEL_BUTTON}>取消</AlertDialogCancel>
+              <AlertDialogAction onClick={() => terminateMutation.mutate(selectedLease!.id)} data-testid={LEASES.CONFIRM_TERMINATE_BTN}>
                 {terminateMutation.isPending ? '处理中...' : '确认终止'}
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -535,16 +561,17 @@ export default function LeasesPage() {
 
         {/* Delete Alert Dialog */}
         <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-          <AlertDialogContent>
+          <AlertDialogContent data-testid={LEASES.DELETE_DIALOG}>
             <AlertDialogHeader>
               <AlertDialogTitle>确认删除</AlertDialogTitle>
               <AlertDialogDescription>确定要删除此租约吗？此操作不可撤销。</AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>取消</AlertDialogCancel>
+              <AlertDialogCancel data-testid={LEASES.CANCEL_BUTTON}>取消</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => deleteMutation.mutate(selectedLease!.id)}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                data-testid={LEASES.CONFIRM_DELETE_BTN}
               >
                 {deleteMutation.isPending ? '删除中...' : '删除'}
               </AlertDialogAction>

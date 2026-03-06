@@ -5,6 +5,14 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, Building2, Settings as SettingsIcon, CreditCard } from 'lucide-react';
 
+// 注意: 实际使用时从 testids 导入 SETTINGS 常量
+const SETTINGS = {
+  HEADING: 'settings-heading',
+  TEAM_CARD: 'settings-team-card',
+  SUBSCRIPTION_CARD: 'settings-subscription-card',
+  ORG_CARD: 'settings-org-card',
+} as const;
+
 const SETTINGS_ITEMS = [
   {
     title: '团队设置',
@@ -33,15 +41,18 @@ export default function SettingsPage() {
         <div className="flex items-center gap-4">
           <SettingsIcon className="h-8 w-8" />
           <div>
-            <h1 className="text-3xl font-bold">设置</h1>
+            <h1 className="text-3xl font-bold" data-testid={SETTINGS.HEADING}>设置</h1>
             <p className="text-muted-foreground">管理您的账户和组织设置</p>
           </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {SETTINGS_ITEMS.map((item) => (
+          {SETTINGS_ITEMS.map((item, index) => (
             <Link key={item.title} href={item.href}>
-              <Card className="cursor-pointer transition-colors hover:border-primary">
+              <Card
+                className="cursor-pointer transition-colors hover:border-primary"
+                data-testid={index === 0 ? SETTINGS.TEAM_CARD : index === 1 ? SETTINGS.SUBSCRIPTION_CARD : SETTINGS.ORG_CARD}
+              >
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <item.icon className="h-5 w-5 text-muted-foreground" />

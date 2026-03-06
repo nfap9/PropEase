@@ -36,6 +36,15 @@ import {
   Cell,
 } from 'recharts';
 
+// 注意: 实际使用时从 testids 导入 REPORTS 常量
+const REPORTS = {
+  HEADING: 'reports-heading',
+  YEAR_SELECT: 'reports-year-select',
+  INCOME_TAB: 'reports-income-tab',
+  OCCUPANCY_TAB: 'reports-occupancy-tab',
+  OVERVIEW_TAB: 'reports-overview-tab',
+} as const;
+
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 export default function ReportsPage() {
@@ -91,10 +100,11 @@ export default function ReportsPage() {
       <MainLayout>
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">经营分析</h1>
+            <h1 className="text-3xl font-bold" data-testid={REPORTS.HEADING}>经营分析</h1>
             <Select
               value={selectedYear.toString()}
               onValueChange={(value) => setSelectedYear(Number(value))}
+              data-testid={REPORTS.YEAR_SELECT}
             >
               <SelectTrigger className="w-[120px]">
                 <SelectValue />
@@ -111,9 +121,9 @@ export default function ReportsPage() {
 
           <Tabs defaultValue="income" className="space-y-4">
             <TabsList>
-              <TabsTrigger value="income">收入分析</TabsTrigger>
-              <TabsTrigger value="occupancy">入住率</TabsTrigger>
-              <TabsTrigger value="overview">总览</TabsTrigger>
+              <TabsTrigger value="income" data-testid={REPORTS.INCOME_TAB}>收入分析</TabsTrigger>
+              <TabsTrigger value="occupancy" data-testid={REPORTS.OCCUPANCY_TAB}>入住率</TabsTrigger>
+              <TabsTrigger value="overview" data-testid={REPORTS.OVERVIEW_TAB}>总览</TabsTrigger>
             </TabsList>
 
             <TabsContent value="income" className="space-y-4">

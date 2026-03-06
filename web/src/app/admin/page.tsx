@@ -6,9 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
-function StatCard({ title, value }: { title: string; value: number }) {
+// 注意: 实际使用时从 testids 导入 ADMIN 常量
+const ADMIN = {
+  HEADING: 'admin-heading',
+  STATS_ORGS: 'admin-stats-orgs',
+  STATS_USERS: 'admin-stats-users',
+  STATS_APARTMENTS: 'admin-stats-apartments',
+  STATS_ROOMS: 'admin-stats-rooms',
+  STATS_SUBSCRIPTIONS: 'admin-stats-subscriptions',
+} as const;
+
+function StatCard({ title, value, testid }: { title: string; value: number; testid?: string }) {
   return (
-    <Card>
+    <Card data-testid={testid}>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
       </CardHeader>
@@ -53,13 +63,13 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <h2 className="mb-4 text-xl font-semibold">平台概览</h2>
+      <h2 className="mb-4 text-xl font-semibold" data-testid={ADMIN.HEADING}>平台概览</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <StatCard title="组织数" value={stats.organizations_count} />
-        <StatCard title="用户数" value={stats.users_count} />
-        <StatCard title="公寓数" value={stats.apartments_count} />
-        <StatCard title="房间数" value={stats.rooms_count} />
-        <StatCard title="活跃订阅数" value={stats.active_subscriptions_count} />
+        <StatCard title="组织数" value={stats.organizations_count} testid={ADMIN.STATS_ORGS} />
+        <StatCard title="用户数" value={stats.users_count} testid={ADMIN.STATS_USERS} />
+        <StatCard title="公寓数" value={stats.apartments_count} testid={ADMIN.STATS_APARTMENTS} />
+        <StatCard title="房间数" value={stats.rooms_count} testid={ADMIN.STATS_ROOMS} />
+        <StatCard title="活跃订阅数" value={stats.active_subscriptions_count} testid={ADMIN.STATS_SUBSCRIPTIONS} />
       </div>
       <p className="mt-6 text-sm text-muted-foreground">
         使用左侧导航管理运营账号、角色、组织、套餐与订阅。

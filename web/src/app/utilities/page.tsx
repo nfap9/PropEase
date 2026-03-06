@@ -20,6 +20,17 @@ import { CreateUtilityDialog, ExportTemplateDialog, BatchImportDialog } from './
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 import type { RoomMissingInitialReading } from '@/lib/api/utilities';
 
+// 注意: 实际使用时从 testids 导入 UTILITIES 常量
+const UTILITIES = {
+  HEADING: 'utilities-heading',
+  ENTRY_BUTTON: 'utilities-entry-button',
+  EXPORT_TEMPLATE_BUTTON: 'utilities-export-template-button',
+  IMPORT_BUTTON: 'utilities-import-button',
+  OVERVIEW_CARD: 'utilities-overview-card',
+  MISSING_LEASES_CARD: 'utilities-missing-leases-card',
+  MISSING_INITIAL_CARD: 'utilities-missing-initial-card',
+} as const;
+
 // 从签约日期提取出账日（每月几号出账）
 function getBillingDay(dateStr: string): number {
   return new Date(dateStr).getDate();
@@ -225,7 +236,7 @@ export default function UtilitiesPage() {
       <MainLayout>
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">水电记录</h1>
+            <h1 className="text-3xl font-bold" data-testid={UTILITIES.HEADING}>水电记录</h1>
             <div className="flex gap-2">
               <Button variant="outline" asChild>
                 <Link href="/utilities/history">
@@ -233,15 +244,23 @@ export default function UtilitiesPage() {
                   历史水电记录
                 </Link>
               </Button>
-              <Button variant="outline" onClick={() => setIsExportTemplateOpen(true)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsExportTemplateOpen(true)}
+                data-testid={UTILITIES.EXPORT_TEMPLATE_BUTTON}
+              >
                 <Download className="mr-2 h-4 w-4" />
                 导出模版
               </Button>
-              <Button variant="outline" onClick={() => setIsBatchImportOpen(true)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsBatchImportOpen(true)}
+                data-testid={UTILITIES.IMPORT_BUTTON}
+              >
                 <Upload className="mr-2 h-4 w-4" />
                 批量导入
               </Button>
-              <Button onClick={() => setIsCreateOpen(true)}>
+              <Button onClick={() => setIsCreateOpen(true)} data-testid={UTILITIES.ENTRY_BUTTON}>
                 <Plus className="mr-2 h-4 w-4" />
                 录入读数
               </Button>
@@ -249,7 +268,7 @@ export default function UtilitiesPage() {
           </div>
 
           {/* 本月水电录入概览 */}
-          <Card>
+          <Card data-testid={UTILITIES.OVERVIEW_CARD}>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">
                 {currentYear}年{currentMonth}月水电录入概览
@@ -284,7 +303,7 @@ export default function UtilitiesPage() {
 
           {/* 本月未录入水电的租约 */}
           {monthMissingLeases.length > 0 && (
-            <Card>
+            <Card data-testid={UTILITIES.MISSING_LEASES_CARD}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">本月未录入水电的租约</CardTitle>
                 <CardDescription>以下活跃租约本月尚未录入水电读数</CardDescription>
@@ -343,7 +362,10 @@ export default function UtilitiesPage() {
 
           {/* 未录入初始读数的房间 */}
           {roomsMissingInitial.length > 0 && (
-            <Card className="border-amber-500/50">
+            <Card
+              className="border-amber-500/50"
+              data-testid={UTILITIES.MISSING_INITIAL_CARD}
+            >
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <AlertCircle className="h-4 w-4 text-amber-600" />

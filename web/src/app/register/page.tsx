@@ -106,7 +106,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4" data-testid="auth-register-page">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">{brandConfig.app_name}</CardTitle>
@@ -127,7 +127,7 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>姓名</FormLabel>
                     <FormControl>
-                      <Input placeholder="请输入姓名" {...field} />
+                      <Input placeholder="请输入姓名" {...field} data-testid="auth-name-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -154,7 +154,7 @@ export default function RegisterPage() {
                     <FormLabel>验证码</FormLabel>
                     <div className="flex gap-2">
                       <FormControl>
-                        <Input type="text" maxLength={6} placeholder="请输入验证码" {...field} />
+                        <Input type="text" maxLength={6} placeholder="请输入验证码" {...field} data-testid="auth-verification-code-input" />
                       </FormControl>
                       <Button
                         type="button"
@@ -181,6 +181,7 @@ export default function RegisterPage() {
                         type="password"
                         placeholder="请输入密码（至少8位，包含字母和数字）"
                         {...field}
+                        data-testid="auth-password-input"
                       />
                     </FormControl>
                     <FormMessage />
@@ -194,13 +195,13 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>确认密码</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="请再次输入密码" {...field} />
+                      <Input type="password" placeholder="请再次输入密码" {...field} data-testid="auth-confirm-password-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading} data-testid="auth-register-button">
                 {isLoading ? '注册并登录中...' : '注册并登录'}
               </Button>
             </form>

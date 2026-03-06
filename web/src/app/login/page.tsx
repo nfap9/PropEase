@@ -122,7 +122,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-muted/40 p-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-muted/40 p-4" data-testid="auth-login-page">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">{brandConfig.app_name}</CardTitle>
@@ -150,7 +150,7 @@ export default function LoginPage() {
                       <FormItem>
                         <FormLabel>手机号</FormLabel>
                         <FormControl>
-                          <Input type="tel" placeholder="请输入手机号" {...field} />
+                          <Input type="tel" placeholder="请输入手机号" {...field} data-testid="auth-phone-input" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -163,13 +163,13 @@ export default function LoginPage() {
                       <FormItem>
                         <FormLabel>密码</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="请输入密码" {...field} />
+                          <Input type="password" placeholder="请输入密码" {...field} data-testid="auth-password-input" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full" disabled={isLoading} data-testid="auth-login-button">
                     {isLoading ? '登录中...' : '登录'}
                   </Button>
                 </form>
@@ -210,6 +210,7 @@ export default function LoginPage() {
                               maxLength={6}
                               placeholder="请输入验证码"
                               {...field}
+                              data-testid="auth-verification-code-input"
                             />
                           </FormControl>
                           <Button
@@ -226,7 +227,7 @@ export default function LoginPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full" disabled={isLoading} data-testid="auth-login-button">
                     {isLoading ? '登录中...' : '登录'}
                   </Button>
                 </form>
@@ -237,7 +238,7 @@ export default function LoginPage() {
         <CardFooter className="flex flex-col items-center gap-2 border-t pt-4">
           <p className="text-sm text-muted-foreground">
             还没有账户？{' '}
-            <Link href="/register" className="text-primary hover:underline">
+            <Link href="/register" className="text-primary hover:underline" data-testid="auth-register-link">
               注册
             </Link>
           </p>

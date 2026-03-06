@@ -27,8 +27,8 @@ export function NavContent({ onNavClick }: NavContentProps) {
 
   return (
     <>
-      <div className="flex h-16 items-center border-b px-4">
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+      <div className="flex h-16 items-center border-b px-4" data-testid="main-nav">
+        <Link href="/dashboard" className="flex items-center gap-2 font-semibold" data-testid="nav-dashboard">
           {brandConfig.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element -- Logo URL 来自运营配置，域名动态
             <img src={brandConfig.logo_url} alt="" className="h-6 w-6 object-contain" />
@@ -49,6 +49,7 @@ export function NavContent({ onNavClick }: NavContentProps) {
               key={item.href}
               href={item.href}
               onClick={onNavClick}
+              data-testid={`nav-${item.id}`}
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
                 isActive
                   ? 'bg-primary text-primary-foreground'

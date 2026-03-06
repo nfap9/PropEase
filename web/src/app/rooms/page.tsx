@@ -26,6 +26,33 @@ import {
   DeleteRoomDialog,
 } from './components';
 
+// 注意: 实际使用时从 testids 导入 ROOMS 常量
+const ROOMS = {
+  HEADING: 'rooms-heading',
+  SEARCH_INPUT: 'rooms-search-input',
+  LIST: 'rooms-list',
+  NEW_BUTTON: 'rooms-new-btn',
+  BATCH_BUTTON: 'rooms-batch-btn',
+  CREATE_DIALOG: 'rooms-create-dialog',
+  NUMBER_INPUT: 'rooms-number-input',
+  MONTHLY_RENT_INPUT: 'rooms-monthly-rent-input',
+  EDIT_DIALOG: 'rooms-edit-dialog',
+  LAYOUT_SELECT: 'rooms-layout-select',
+  AREA_INPUT: 'rooms-area-input',
+  STATUS_SELECT: 'rooms-status-select',
+  NOTES_INPUT: 'rooms-notes-input',
+  CANCEL_BUTTON: 'rooms-cancel-btn',
+  CONFIRM_BUTTON: 'rooms-confirm-btn',
+  TERMINATE_DIALOG: 'rooms-terminate-dialog',
+  CONFIRM_TERMINATE_BTN: 'rooms-confirm-terminate-btn',
+  DELETE_DIALOG: 'rooms-delete-dialog',
+  CONFIRM_DELETE_BTN: 'rooms-confirm-delete-btn',
+  APARTMENT_FILTER: 'rooms-apartment-filter',
+  STATUS_FILTER: 'rooms-status-filter',
+  LAYOUT_FILTER: 'rooms-layout-filter',
+  CLEAR_FILTERS_BTN: 'rooms-clear-filters-btn',
+} as const;
+
 interface RoomFormData {
   room_number: string;
   layout?: string;
@@ -259,7 +286,7 @@ export default function RoomsPage() {
       <MainLayout>
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold">全部房间</h1>
+            <h1 className="text-3xl font-bold" data-testid={ROOMS.HEADING}>全部房间</h1>
             <p className="mt-1 text-muted-foreground">查看和管理所有公寓的房间</p>
           </div>
 
@@ -268,6 +295,7 @@ export default function RoomsPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
+              data-testid={ROOMS.SEARCH_INPUT}
               placeholder="搜索房间号或备注..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -277,6 +305,7 @@ export default function RoomsPage() {
 
           {apartments && apartments.length > 0 && (
             <RoomFilters
+              testids={ROOMS}
               apartments={apartments}
               filters={filters}
               onFilterChange={handleFilterChange}
@@ -296,6 +325,7 @@ export default function RoomsPage() {
         </div>
 
         <EditRoomDialog
+          testids={ROOMS}
           open={isEditOpen}
           onOpenChange={setIsEditOpen}
           onSubmit={(data) => {
@@ -329,6 +359,7 @@ export default function RoomsPage() {
         )}
 
         <TerminateDialog
+          testids={ROOMS}
           open={isTerminateOpen}
           onOpenChange={setIsTerminateOpen}
           onConfirm={() => {
@@ -344,6 +375,7 @@ export default function RoomsPage() {
         />
 
         <DeleteRoomDialog
+          testids={ROOMS}
           open={isDeleteOpen}
           onOpenChange={setIsDeleteOpen}
           onConfirm={() => {

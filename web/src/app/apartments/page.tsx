@@ -180,11 +180,11 @@ export default function ApartmentsPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">公寓管理</h1>
+              <h1 className="text-3xl font-bold" data-testid="apartments-heading">公寓管理</h1>
               <p className="mt-1 text-muted-foreground">管理您的所有公寓和房间</p>
             </div>
             <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
-              <Button onClick={() => setIsCreateOpen(true)}>
+              <Button onClick={() => setIsCreateOpen(true)} data-testid="apartments-new-btn">
                 <Plus className="mr-2 h-4 w-4" />
                 新增公寓
               </Button>
@@ -198,7 +198,7 @@ export default function ApartmentsPage() {
               <Skeleton className="h-48" />
             </div>
           ) : apartments && apartments.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-testid="apartments-list">
               {apartments.map((apartment) => (
                 <Link key={apartment.id} href={`/apartments/${apartment.id}`}>
                   <Card className="h-full cursor-pointer transition-shadow hover:shadow-md">
@@ -221,6 +221,7 @@ export default function ApartmentsPage() {
                               size="icon"
                               className="h-8 w-8 flex-shrink-0"
                               aria-label="更多操作"
+                              data-testid={`apartments-more-menu-${apartment.id}`}
                             >
                               <MoreVertical className="h-4 w-4" />
                             </Button>
@@ -233,6 +234,7 @@ export default function ApartmentsPage() {
                                   e.stopPropagation();
                                   handleEdit(apartment);
                                 }}
+                                data-testid={`apartments-edit-btn-${apartment.id}`}
                               >
                                 <Pencil className="mr-2 h-4 w-4" />
                                 编辑
@@ -246,6 +248,7 @@ export default function ApartmentsPage() {
                                   e.stopPropagation();
                                   handleDelete(apartment);
                                 }}
+                                data-testid={`apartments-delete-btn-${apartment.id}`}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 删除
@@ -304,13 +307,13 @@ export default function ApartmentsPage() {
               ))}
             </div>
           ) : (
-            <Card className="border-dashed">
+            <Card className="border-dashed" data-testid="apartments-empty-state">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Building2 className="mb-4 h-12 w-12 text-muted-foreground" />
                 <h3 className="mb-2 text-lg font-medium">暂无公寓</h3>
                 <p className="mb-4 text-sm text-muted-foreground">点击下方按钮添加您的第一个公寓</p>
                 <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
-                  <Button onClick={() => setIsCreateOpen(true)} aria-label="新增公寓（空状态）">
+                  <Button onClick={() => setIsCreateOpen(true)} aria-label="新增公寓（空状态）" data-testid="apartments-new-btn">
                     <Plus className="mr-2 h-4 w-4" />
                     新增公寓
                   </Button>
@@ -322,7 +325,7 @@ export default function ApartmentsPage() {
 
         {/* Create Dialog */}
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogContent>
+          <DialogContent data-testid="apartments-create-dialog">
             <DialogHeader>
               <DialogTitle>新增公寓</DialogTitle>
               <DialogDescription>填写公寓信息创建新的公寓</DialogDescription>
@@ -333,7 +336,7 @@ export default function ApartmentsPage() {
             >
               <div className="space-y-2">
                 <Label htmlFor="name">公寓名称</Label>
-                <Input id="name" {...createForm.register('name')} placeholder="例如：阳光公寓A栋" />
+                <Input id="name" {...createForm.register('name')} placeholder="例如：阳光公寓A栋" data-testid="apartments-name-input" />
                 {createForm.formState.errors.name && (
                   <p className="text-sm text-destructive">
                     {createForm.formState.errors.name.message}
@@ -346,6 +349,7 @@ export default function ApartmentsPage() {
                   id="address"
                   {...createForm.register('address')}
                   placeholder="例如：北京市朝阳区xxx路xxx号"
+                  data-testid="apartments-address-input"
                 />
                 {createForm.formState.errors.address && (
                   <p className="text-sm text-destructive">
@@ -358,10 +362,10 @@ export default function ApartmentsPage() {
                 <Input id="description" {...createForm.register('description')} />
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)} data-testid="apartments-cancel-btn">
                   取消
                 </Button>
-                <Button type="submit" disabled={createMutation.isPending}>
+                <Button type="submit" disabled={createMutation.isPending} data-testid="apartments-confirm-btn">
                   {createMutation.isPending ? '创建中...' : '创建'}
                 </Button>
               </DialogFooter>
@@ -371,7 +375,7 @@ export default function ApartmentsPage() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent>
+          <DialogContent data-testid="apartments-edit-dialog">
             <DialogHeader>
               <DialogTitle>编辑公寓</DialogTitle>
               <DialogDescription>修改公寓信息</DialogDescription>
@@ -405,10 +409,10 @@ export default function ApartmentsPage() {
                 <Input id="edit-description" {...editForm.register('description')} />
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} data-testid="apartments-cancel-btn">
                   取消
                 </Button>
-                <Button type="submit" disabled={updateMutation.isPending}>
+                <Button type="submit" disabled={updateMutation.isPending} data-testid="apartments-confirm-btn">
                   {updateMutation.isPending ? '保存中...' : '保存'}
                 </Button>
               </DialogFooter>
@@ -418,7 +422,7 @@ export default function ApartmentsPage() {
 
         {/* Delete Alert Dialog */}
         <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-          <AlertDialogContent>
+          <AlertDialogContent data-testid="apartments-delete-confirm-dialog">
             <AlertDialogHeader>
               <AlertDialogTitle>确认删除</AlertDialogTitle>
               <AlertDialogDescription>
@@ -427,10 +431,11 @@ export default function ApartmentsPage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>取消</AlertDialogCancel>
+              <AlertDialogCancel data-testid="apartments-cancel-btn">取消</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => deleteMutation.mutate(selectedApartment!.id)}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                data-testid="apartments-confirm-delete-btn"
               >
                 {deleteMutation.isPending ? '删除中...' : '删除'}
               </AlertDialogAction>

@@ -36,6 +36,7 @@ export interface RoomFiltersState {
 }
 
 interface RoomFiltersProps {
+  testids?: Record<string, string>;
   apartments: ApartmentWithStats[];
   filters: RoomFiltersState;
   onFilterChange: (key: keyof RoomFiltersState, value: unknown) => void;
@@ -43,6 +44,7 @@ interface RoomFiltersProps {
 }
 
 export function RoomFilters({
+  testids,
   apartments,
   filters,
   onFilterChange,
@@ -59,6 +61,7 @@ export function RoomFilters({
         className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-muted/80"
         aria-expanded={expanded}
         aria-label={expanded ? '收起筛选' : '展开筛选'}
+        data-testid={testids?.APARTMENT_FILTER}
       >
         {expanded ? (
           <ChevronDown className="h-4 w-4 shrink-0" />
@@ -83,7 +86,7 @@ export function RoomFilters({
                 onFilterChange('apartmentId', value === 'all' ? null : value)
               }
             >
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="w-[160px]" data-testid={testids?.APARTMENT_FILTER}>
                 <SelectValue placeholder="全部公寓" />
               </SelectTrigger>
               <SelectContent>
@@ -106,7 +109,7 @@ export function RoomFilters({
                 onFilterChange('status', value === 'all' ? null : (value as RoomStatus))
               }
             >
-              <SelectTrigger className="w-[120px]">
+              <SelectTrigger className="w-[120px]" data-testid={testids?.STATUS_FILTER}>
                 <SelectValue placeholder="全部状态" />
               </SelectTrigger>
               <SelectContent>
@@ -125,7 +128,7 @@ export function RoomFilters({
               value={filters.layout || 'all'}
               onValueChange={(value) => onFilterChange('layout', value === 'all' ? null : value)}
             >
-              <SelectTrigger className="w-[120px]">
+              <SelectTrigger className="w-[120px]" data-testid={testids?.LAYOUT_FILTER}>
                 <SelectValue placeholder="全部户型" />
               </SelectTrigger>
               <SelectContent>
@@ -193,7 +196,13 @@ export function RoomFilters({
 
           {/* 清除筛选 */}
           {hasActiveFilters && (
-            <Button variant="ghost" size="sm" onClick={onClearFilters} className="h-9">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClearFilters}
+              className="h-9"
+              data-testid={testids?.CLEAR_FILTERS_BTN}
+            >
               <X className="mr-1 h-4 w-4" />
               清除筛选
             </Button>

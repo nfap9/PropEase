@@ -13,6 +13,7 @@ import {
 import { Room } from '@/types';
 
 interface TerminateDialogProps {
+  testids?: Record<string, string>;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
@@ -21,6 +22,7 @@ interface TerminateDialogProps {
 }
 
 export function TerminateDialog({
+  testids,
   open,
   onOpenChange,
   onConfirm,
@@ -29,7 +31,7 @@ export function TerminateDialog({
 }: TerminateDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent data-testid={testids?.TERMINATE_DIALOG}>
         <AlertDialogHeader>
           <AlertDialogTitle>确认退租</AlertDialogTitle>
           <AlertDialogDescription>
@@ -38,7 +40,7 @@ export function TerminateDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
+          <AlertDialogAction onClick={onConfirm} data-testid={testids?.CONFIRM_TERMINATE_BTN}>
             {isPending ? '处理中...' : '确认退租'}
           </AlertDialogAction>
         </AlertDialogFooter>

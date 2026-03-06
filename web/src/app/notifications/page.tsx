@@ -10,6 +10,15 @@ import { Bell, CheckCheck, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/lib/date-utils';
 
+// 注意: 实际使用时从 testids 导入 NOTIFICATIONS 常量
+const NOTIFICATIONS = {
+  HEADING: 'notifications-heading',
+  MARK_ALL_READ_BTN: 'notifications-mark-all-read-btn',
+  LIST: 'notifications-list',
+  EMPTY_STATE: 'notifications-empty-state',
+  MARK_READ_BTN: 'notifications-mark-read-btn',
+} as const;
+
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
 
@@ -45,7 +54,7 @@ export default function NotificationsPage() {
             <div className="flex items-center gap-2">
               <Bell className="h-8 w-8" />
               <div>
-                <h1 className="text-3xl font-bold">通知</h1>
+                <h1 className="text-3xl font-bold" data-testid={NOTIFICATIONS.HEADING}>通知</h1>
                 <p className="text-muted-foreground">查看系统通知与消息</p>
               </div>
             </div>
@@ -54,6 +63,7 @@ export default function NotificationsPage() {
                 variant="outline"
                 onClick={() => markAllReadMutation.mutate()}
                 disabled={markAllReadMutation.isPending}
+                data-testid={NOTIFICATIONS.MARK_ALL_READ_BTN}
               >
                 <CheckCheck className="mr-2 h-4 w-4" />
                 全部标已读
@@ -71,9 +81,9 @@ export default function NotificationsPage() {
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : list.length === 0 ? (
-                <p className="py-8 text-center text-muted-foreground">暂无通知</p>
+                <p className="py-8 text-center text-muted-foreground" data-testid={NOTIFICATIONS.EMPTY_STATE}>暂无通知</p>
               ) : (
-                <ul className="divide-y">
+                <ul className="divide-y" data-testid={NOTIFICATIONS.LIST}>
                   {list.map((item) => (
                     <NotificationItem
                       key={item.id}
@@ -82,6 +92,7 @@ export default function NotificationsPage() {
                       isMarking={
                         markReadMutation.isPending && markReadMutation.variables === item.id
                       }
+                      testids={NOTIFICATIONS}
                     />
                   ))}
                 </ul>
@@ -98,10 +109,12 @@ function NotificationItem({
   item,
   onMarkRead,
   isMarking,
+  testids,
 }: {
   item: Notification;
   onMarkRead: () => void;
   isMarking: boolean;
+  testids: Record<string, string>;
 }) {
   return (
     <li
@@ -116,7 +129,13 @@ function NotificationItem({
           <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(item.created_at)}</p>
         </div>
         {!item.is_read && (
-          <Button variant="ghost" size="sm" onClick={onMarkRead} disabled={isMarking}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onMarkRead}
+            disabled={isMarking}
+            data-testid={testids.MARK_READ_BTN}
+          >
             {isMarking ? '处理中…' : '标为已读'}
           </Button>
         )}

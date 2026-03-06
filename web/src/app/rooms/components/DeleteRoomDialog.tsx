@@ -13,6 +13,7 @@ import {
 import { Room } from '@/types';
 
 interface DeleteRoomDialogProps {
+  testids?: Record<string, string>;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
@@ -21,6 +22,7 @@ interface DeleteRoomDialogProps {
 }
 
 export function DeleteRoomDialog({
+  testids,
   open,
   onOpenChange,
   onConfirm,
@@ -29,7 +31,7 @@ export function DeleteRoomDialog({
 }: DeleteRoomDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent data-testid={testids?.DELETE_DIALOG}>
         <AlertDialogHeader>
           <AlertDialogTitle>确认删除</AlertDialogTitle>
           <AlertDialogDescription>
@@ -41,6 +43,7 @@ export function DeleteRoomDialog({
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            data-testid={testids?.CONFIRM_DELETE_BTN}
           >
             {isPending ? '删除中...' : '删除'}
           </AlertDialogAction>

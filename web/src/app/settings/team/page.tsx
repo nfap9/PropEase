@@ -57,6 +57,19 @@ import { Plus, MoreHorizontal, Pencil, Trash2, UserPlus, Building2, Users } from
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/lib/auth/context';
 
+// 注意: 实际使用时从 testids 导入 TEAM_SETTINGS 常量
+const TEAM_SETTINGS = {
+  HEADING: 'team-settings-heading',
+  CREATE_ORG_BTN: 'team-create-org-btn',
+  EDIT_ORG_BTN: 'team-edit-org-btn',
+  INVITE_BTN: 'team-invite-btn',
+  MEMBERS_LIST: 'team-members-list',
+  CREATE_ORG_DIALOG: 'team-create-org-dialog',
+  EDIT_ORG_DIALOG: 'team-edit-org-dialog',
+  INVITE_DIALOG: 'team-invite-dialog',
+  REMOVE_MEMBER_DIALOG: 'team-remove-member-dialog',
+} as const;
+
 const organizationSchema = z.object({
   name: z.string().min(1, '请输入组织名称'),
 });
@@ -270,7 +283,7 @@ export default function TeamSettingsPage() {
     <PermissionPageGuard>
       <MainLayout>
         <div className="space-y-6">
-          <h1 className="text-3xl font-bold">团队设置</h1>
+          <h1 className="text-3xl font-bold" data-testid={TEAM_SETTINGS.HEADING}>团队设置</h1>
 
           <Tabs defaultValue="organizations" className="space-y-4">
             <TabsList>
@@ -287,7 +300,7 @@ export default function TeamSettingsPage() {
             <TabsContent value="organizations" className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">当前组织</h2>
-                <Button onClick={() => setIsCreateOrgOpen(true)}>
+                <Button onClick={() => setIsCreateOrgOpen(true)} data-testid={TEAM_SETTINGS.CREATE_ORG_BTN}>
                   <Plus className="mr-2 h-4 w-4" />
                   创建组织
                 </Button>
@@ -299,7 +312,12 @@ export default function TeamSettingsPage() {
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">{organization.name}</CardTitle>
                       <PermissionGuard permission={PERMISSIONS.SETTINGS_EDIT}>
-                        <Button variant="outline" size="sm" onClick={handleEditOrg}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleEditOrg}
+                          data-testid={TEAM_SETTINGS.EDIT_ORG_BTN}
+                        >
                           <Pencil className="mr-2 h-4 w-4" />
                           编辑
                         </Button>
@@ -346,7 +364,7 @@ export default function TeamSettingsPage() {
                       <p className="text-sm text-muted-foreground">管理组织成员和权限</p>
                     </div>
                     {canManage && (
-                      <Button onClick={() => setIsInviteOpen(true)}>
+                      <Button onClick={() => setIsInviteOpen(true)} data-testid={TEAM_SETTINGS.INVITE_BTN}>
                         <UserPlus className="mr-2 h-4 w-4" />
                         邀请成员
                       </Button>
@@ -356,7 +374,7 @@ export default function TeamSettingsPage() {
                   {membersLoading ? (
                     <Skeleton className="h-64" />
                   ) : (
-                    <DataTable columns={memberColumns} data={members || []} />
+                    <DataTable columns={memberColumns} data={members || []} data-testid={TEAM_SETTINGS.MEMBERS_LIST} />
                   )}
                 </>
               )}
@@ -366,7 +384,7 @@ export default function TeamSettingsPage() {
 
         {/* Create Organization Dialog */}
         <Dialog open={isCreateOrgOpen} onOpenChange={setIsCreateOrgOpen}>
-          <DialogContent>
+          <DialogContent data-testid={TEAM_SETTINGS.CREATE_ORG_DIALOG}>
             <DialogHeader>
               <DialogTitle>创建组织</DialogTitle>
               <DialogDescription>创建一个新的组织来管理您的公寓</DialogDescription>
@@ -400,7 +418,7 @@ export default function TeamSettingsPage() {
 
         {/* Edit Organization Dialog */}
         <Dialog open={isEditOrgOpen} onOpenChange={setIsEditOrgOpen}>
-          <DialogContent>
+          <DialogContent data-testid={TEAM_SETTINGS.EDIT_ORG_DIALOG}>
             <DialogHeader>
               <DialogTitle>编辑组织</DialogTitle>
               <DialogDescription>修改组织信息</DialogDescription>
@@ -431,7 +449,7 @@ export default function TeamSettingsPage() {
 
         {/* Invite Member Dialog */}
         <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-          <DialogContent>
+          <DialogContent data-testid={TEAM_SETTINGS.INVITE_DIALOG}>
             <DialogHeader>
               <DialogTitle>邀请成员</DialogTitle>
               <DialogDescription>邀请新成员加入组织</DialogDescription>
@@ -489,7 +507,7 @@ export default function TeamSettingsPage() {
 
         {/* Remove Member Alert Dialog */}
         <AlertDialog open={isRemoveMemberOpen} onOpenChange={setIsRemoveMemberOpen}>
-          <AlertDialogContent>
+          <AlertDialogContent data-testid={TEAM_SETTINGS.REMOVE_MEMBER_DIALOG}>
             <AlertDialogHeader>
               <AlertDialogTitle>确认移除</AlertDialogTitle>
               <AlertDialogDescription>
