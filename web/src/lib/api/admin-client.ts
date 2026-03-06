@@ -4,6 +4,58 @@
  */
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { ApiError } from './client';
+import type {
+  AdminTokenResponse,
+  AdminPlatformStats,
+  AdminUser,
+  AdminUserCreate,
+  AdminUserUpdate,
+  AdminPasswordReset,
+  AdminRole,
+  AdminRoleCreate,
+  AdminRoleUpdate,
+  AdminOrganization,
+  AdminOrganizationSetActive,
+  AdminRegisteredUserOrg,
+  AdminRegisteredUser,
+  AdminRegisteredUserDetail,
+  AdminRegisteredUserSetActive,
+  AdminPlan,
+  AdminPlanCreate,
+  AdminPlanUpdate,
+  AdminSubscription,
+  AdminSubscriptionRenew,
+  AdminPlatformConfig,
+  AdminUsagePricing,
+  AdminUsagePricingUpdate,
+} from '@apartment-ultra/api-contract';
+
+// 重新导出类型，保持向后兼容
+export type {
+  AdminTokenResponse,
+  AdminPlatformStats,
+  AdminUser,
+  AdminUserCreate,
+  AdminUserUpdate,
+  AdminPasswordReset,
+  AdminRole,
+  AdminRoleCreate,
+  AdminRoleUpdate,
+  AdminOrganization,
+  AdminOrganizationSetActive,
+  AdminRegisteredUserOrg,
+  AdminRegisteredUser,
+  AdminRegisteredUserDetail,
+  AdminRegisteredUserSetActive,
+  AdminPlan,
+  AdminPlanCreate,
+  AdminPlanUpdate,
+  AdminSubscription,
+  AdminSubscriptionRenew,
+  AdminPlatformConfig,
+  AdminUsagePricing,
+  AdminUsagePricingUpdate,
+};
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
@@ -55,185 +107,6 @@ adminApi.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-/** 运营登录响应 */
-export interface AdminTokenResponse {
-  access_token: string;
-  token_type: string;
-}
-
-/** 平台统计 */
-export interface AdminPlatformStats {
-  organizations_count: number;
-  users_count: number;
-  apartments_count: number;
-  rooms_count: number;
-  active_subscriptions_count: number;
-}
-
-/** 运营账号 */
-export interface AdminUser {
-  id: string;
-  username: string;
-  name: string;
-  email: string | null;
-  role_id: string;
-  role_name: string | null;
-  is_active: boolean;
-  /** 系统预置账号不可删除，后端必返（默认 false） */
-  is_system: boolean;
-  last_login_at: string | null;
-  created_at: string;
-}
-
-export interface AdminUserCreate {
-  username: string;
-  password: string;
-  name: string;
-  email?: string | null;
-  role_id: string;
-}
-
-export interface AdminUserUpdate {
-  name?: string | null;
-  email?: string | null;
-  role_id?: string | null;
-  is_active?: boolean | null;
-}
-
-export interface AdminPasswordReset {
-  new_password: string;
-}
-
-/** 运营角色 */
-export interface AdminRole {
-  id: string;
-  name: string;
-  permissions: string[];
-  is_system: boolean;
-  created_at: string;
-}
-
-export interface AdminRoleCreate {
-  name: string;
-  permissions?: string[];
-}
-
-export interface AdminRoleUpdate {
-  name?: string | null;
-  permissions?: string[] | null;
-}
-
-/** 运营侧组织 */
-export interface AdminOrganization {
-  id: string;
-  name: string;
-  slug: string;
-  plan: string;
-  is_personal: boolean;
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface AdminOrganizationSetActive {
-  is_active: boolean;
-}
-
-/** 运营侧注册用户（业务侧账号） */
-export interface AdminRegisteredUserOrg {
-  id: string;
-  name: string;
-  slug: string;
-  role: string;
-}
-
-export interface AdminRegisteredUser {
-  id: string;
-  phone: string;
-  full_name: string;
-  is_active: boolean;
-  created_at: string;
-}
-
-export interface AdminRegisteredUserDetail extends AdminRegisteredUser {
-  organizations: AdminRegisteredUserOrg[];
-}
-
-export interface AdminRegisteredUserSetActive {
-  is_active: boolean;
-}
-
-/** 套餐（运营侧与业务侧结构一致） */
-export interface AdminPlan {
-  id: string;
-  name: string;
-  code: string;
-  description: string | null;
-  price_monthly: number;
-  price_yearly: number;
-  /** 用户最多可拥有的组织数，null 表示不限制 */
-  max_organizations: number | null;
-  max_apartments: number;
-  max_rooms: number;
-  max_members: number;
-  features: Record<string, unknown> | null;
-  is_active: boolean;
-  sort_order: number;
-  free_validity_days: number | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface AdminPlanCreate {
-  name: string;
-  code: string;
-  description?: string | null;
-  price_monthly: number;
-  price_yearly: number;
-  /** 用户最多可拥有的组织数，null 表示不限制 */
-  max_organizations?: number | null;
-  max_apartments: number;
-  max_rooms: number;
-  max_members: number;
-  features?: Record<string, unknown> | null;
-  sort_order?: number;
-  free_validity_days?: number | null;
-}
-
-export interface AdminPlanUpdate {
-  name?: string | null;
-  description?: string | null;
-  price_monthly?: number | null;
-  price_yearly?: number | null;
-  max_organizations?: number | null;
-  max_apartments?: number | null;
-  max_rooms?: number | null;
-  max_members?: number | null;
-  features?: Record<string, unknown> | null;
-  is_active?: boolean | null;
-  sort_order?: number | null;
-  free_validity_days?: number | null;
-}
-
-/** 订阅（运营侧） */
-export interface AdminSubscription {
-  id: string;
-  organization_id: string;
-  plan_id: string;
-  status: string;
-  billing_cycle: string;
-  start_date: string;
-  end_date: string | null;
-  auto_renew: boolean;
-  trial_ends_at: string | null;
-  created_at: string;
-  updated_at: string;
-  plan?: AdminPlan | null;
-}
-
-export interface AdminSubscriptionRenew {
-  extend_days: number;
-}
 
 export const adminApiEndpoints = {
   login: (username: string, password: string) =>

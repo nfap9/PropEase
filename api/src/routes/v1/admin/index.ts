@@ -5,6 +5,7 @@ import { requireAdmin } from '../../../middlewares/requireAdmin.js';
 import { getAdminUser } from '../../../utils/context.js';
 import { createAppError } from '../../../utils/appError.js';
 import { defaultAdminService } from '../../../services/admin.service.js';
+import { auditAdminAction } from '../../../utils/audit.js';
 import type { Request, Response, NextFunction } from 'express';
 
 const router: Router = Router();
@@ -48,6 +49,7 @@ router.post('/users', async (req: Request, res: Response, next: NextFunction) =>
     const parsed = AdminUserCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const user = await defaultAdminService.createAdminUser(parsed.data);
+    auditAdminAction(req, 'admin:user:create', user.id, { username: parsed.data.username });
     res.status(201).json(user);
   } catch (e) {
     next(e);
@@ -74,6 +76,7 @@ router.put('/users/:user_id', async (req: Request, res: Response, next: NextFunc
     const parsed = AdminUserUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const user = await defaultAdminService.updateAdminUser(req.params.user_id, parsed.data);
+    auditAdminAction(req, 'admin:user:update', req.params.user_id, parsed.data);
     res.json(user);
   } catch (e) {
     next(e);
@@ -83,6 +86,7 @@ router.put('/users/:user_id', async (req: Request, res: Response, next: NextFunc
 router.delete('/users/:user_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await defaultAdminService.deleteAdminUser(req.params.user_id);
+    auditAdminAction(req, 'admin:user:delete', req.params.user_id);
     res.status(204).send();
   } catch (e) {
     next(e);
@@ -106,6 +110,7 @@ router.post(
       const newPassword = parsed.data.new_password ?? parsed.data.password;
       if (!newPassword) return next(createAppError(422, '需要 password 或 new_password'));
       await defaultAdminService.resetAdminPassword(req.params.user_id, newPassword);
+      auditAdminAction(req, 'admin:user:reset_password', req.params.user_id);
       res.json({ message: 'ok' });
     } catch (e) {
       next(e);
@@ -146,6 +151,7 @@ router.post('/roles', async (req: Request, res: Response, next: NextFunction) =>
       permissions: parsed.data.permissions,
       is_system: parsed.data.is_system,
     });
+    auditAdminAction(req, 'admin:role:create', role.id, { name: parsed.data.name });
     res.status(201).json(role);
   } catch (e) {
     next(e);
@@ -164,6 +170,7 @@ router.put('/roles/:role_id', async (req: Request, res: Response, next: NextFunc
       name: parsed.data.name,
       permissions: parsed.data.permissions,
     });
+    auditAdminAction(req, 'admin:role:update', req.params.role_id, parsed.data);
     res.json(role);
   } catch (e) {
     next(e);
@@ -173,6 +180,7 @@ router.put('/roles/:role_id', async (req: Request, res: Response, next: NextFunc
 router.delete('/roles/:role_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await defaultAdminService.deleteAdminRole(req.params.role_id);
+    auditAdminAction(req, 'admin:role:delete', req.params.role_id);
     res.status(204).send();
   } catch (e) {
     next(e);
@@ -209,6 +217,7 @@ router.patch(
       const body = req.body as { active?: boolean };
       const active = body?.active ?? true;
       const org = await defaultAdminService.setOrganizationActive(req.params.org_id, active);
+      auditAdminAction(req, 'admin:organization:set_active', req.params.org_id, { active });
       res.json(org);
     } catch (e) {
       next(e);
@@ -262,6 +271,7 @@ router.patch(
       const body = req.body as { active?: boolean; is_active?: boolean };
       const active = body?.active ?? body?.is_active ?? true;
       const user = await defaultAdminService.setRegisteredUserActive(req.params.user_id, active);
+      auditAdminAction(req, 'admin:registered_user:set_active', req.params.user_id, { active });
       res.json(user);
     } catch (e) {
       next(e);
@@ -274,6 +284,7 @@ router.delete(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await defaultAdminService.deleteRegisteredUser(req.params.user_id);
+      auditAdminAction(req, 'admin:registered_user:delete', req.params.user_id);
       res.status(204).send();
     } catch (e) {
       next(e);
@@ -323,6 +334,7 @@ router.post('/plans', async (req: Request, res: Response, next: NextFunction) =>
     const parsed = PlanCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const plan = await defaultAdminService.createPlan(parsed.data);
+    auditAdminAction(req, 'admin:plan:create', plan.id, { name: parsed.data.name, code: parsed.data.code });
     res.status(201).json(plan);
   } catch (e) {
     next(e);
@@ -334,6 +346,7 @@ router.put('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
     const parsed = PlanUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const plan = await defaultAdminService.updatePlan(req.params.plan_id, parsed.data);
+    auditAdminAction(req, 'admin:plan:update', req.params.plan_id, parsed.data);
     res.json(plan);
   } catch (e) {
     next(e);
@@ -343,6 +356,7 @@ router.put('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
 router.delete('/plans/:plan_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await defaultAdminService.deletePlan(req.params.plan_id);
+    auditAdminAction(req, 'admin:plan:delete', req.params.plan_id);
     res.status(204).send();
   } catch (e) {
     next(e);
@@ -387,6 +401,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const updated = await defaultAdminService.renewSubscription(req.params.subscription_id);
+      auditAdminAction(req, 'admin:subscription:renew', req.params.subscription_id);
       res.json(updated);
     } catch (e) {
       next(e);
@@ -399,6 +414,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await defaultAdminService.cancelSubscription(req.params.subscription_id);
+      auditAdminAction(req, 'admin:subscription:cancel', req.params.subscription_id);
       res.json({ message: 'ok' });
     } catch (e) {
       next(e);
@@ -437,6 +453,7 @@ router.put('/usage-pricing', async (req: Request, res: Response, next: NextFunct
     const parsed = UsagePricingUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const pricing = await defaultAdminService.updateUsagePricing(parsed.data);
+    auditAdminAction(req, 'admin:usage_pricing:update', undefined, parsed.data);
     res.json(pricing);
   } catch (e) {
     next(e);
@@ -478,6 +495,7 @@ router.put('/platform-config', async (req: Request, res: Response, next: NextFun
     const parsed = PlatformBrandSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const brand = await defaultAdminService.updatePlatformConfig(parsed.data);
+    auditAdminAction(req, 'admin:platform_config:update', undefined, { app_name: parsed.data.app_name });
     res.json(brand);
   } catch (e) {
     next(e);

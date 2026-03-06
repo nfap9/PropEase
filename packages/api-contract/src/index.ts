@@ -86,3 +86,30 @@ export type {
   SystemRole,
   SystemRoleConfig,
 } from './permissions.js';
+
+/** 运营后台 */
+export type {
+  AdminTokenResponse,
+  AdminPlatformStats,
+  AdminUser,
+  AdminUserCreate,
+  AdminUserUpdate,
+  AdminPasswordReset,
+  AdminRole,
+  AdminRoleCreate,
+  AdminRoleUpdate,
+  AdminOrganization,
+  AdminOrganizationSetActive,
+  AdminRegisteredUserOrg,
+  AdminRegisteredUser,
+  AdminRegisteredUserDetail,
+  AdminRegisteredUserSetActive,
+  AdminPlan,
+  AdminPlanCreate,
+  AdminPlanUpdate,
+  AdminSubscription,
+  AdminSubscriptionRenew,
+  AdminPlatformConfig,
+  AdminUsagePricing,
+  AdminUsagePricingUpdate,
+} from './admin.js';
