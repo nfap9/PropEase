@@ -366,9 +366,11 @@ export const AUTH = {
   /** 登录按钮 */
   LOGIN_BUTTON: 'auth-login-button',
   /** 注册按钮 */
-  REGISTER_BUTTON: 'auth-register-btn',
+  REGISTER_BUTTON: 'auth-register-button',
   /** 忘记密码链接 */
   FORGOT_PASSWORD_LINK: 'auth-forgot-password-link',
+  /** 姓名输入框 */
+  NAME_INPUT: 'auth-name-input',
 } as const;
 
 // ==================== 通用 ====================

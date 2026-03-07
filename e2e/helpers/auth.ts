@@ -8,16 +8,16 @@ import { AUTH } from '../testids';
  */
 export const TEST_ACCOUNTS = {
   owner: {
-    phone: process.env.E2E_TEST_PHONE || '13800138001',
-    password: process.env.E2E_TEST_PASSWORD || 'Test@123456',
+    phone: process.env.E2E_TEST_PHONE || '13800138000',
+    password: process.env.E2E_TEST_PASSWORD || 'Test1234',
   },
   admin: {
     phone: process.env.E2E_ADMIN_PHONE || '13800138002',
-    password: process.env.E2E_ADMIN_PASSWORD || 'Test@123456',
+    password: process.env.E2E_ADMIN_PASSWORD || 'Test1234',
   },
   member: {
     phone: process.env.E2E_MEMBER_PHONE || '13800138003',
-    password: process.env.E2E_MEMBER_PASSWORD || 'Test@123456',
+    password: process.env.E2E_MEMBER_PASSWORD || 'Test1234',
   },
 };
 

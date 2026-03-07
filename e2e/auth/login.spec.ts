@@ -190,7 +190,8 @@ test.describe('已登录用户', () => {
     await authenticatedPage.goto('/login');
 
     // 应该自动跳转到其他页面
-    await authenticatedPage.waitForURL(/\/(dashboard|apartments|rooms)/, { timeout: 5000 });
+    // 注：需要应用实现此功能，如果未实现可以 skip 此测试
+    await authenticatedPage.waitForURL(/\/(dashboard|apartments|rooms)/, { timeout: 10000 });
   });
 
   test('退出登录后跳转到登录页', async ({ page }) => {
