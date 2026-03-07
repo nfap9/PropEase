@@ -72,6 +72,7 @@ const BILLS = {
   CONFIRM_PAYMENT_BUTTON: 'bills-confirm-payment-btn',
   CANCEL_BUTTON: 'bills-cancel-btn',
   LIST: 'bills-list',
+  PAY_BUTTON: 'bills-pay-btn',
 } as const;
 
 const paymentSchema = z.object({
@@ -583,7 +584,7 @@ function BillsContent() {
                   )}
                 <DialogFooter className="flex gap-2 sm:gap-0">
                   {billDetail.status !== 'paid' && (
-                    <Button onClick={handlePaymentFromDetail}>
+                    <Button onClick={handlePaymentFromDetail} data-testid={BILLS.PAY_BUTTON}>
                       <DollarSign className="mr-2 h-4 w-4" />
                       登记付款
                     </Button>

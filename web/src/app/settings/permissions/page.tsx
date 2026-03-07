@@ -23,6 +23,7 @@ const PERMISSIONS = {
   PERMISSION_PANEL: 'permissions-permission-panel',
   SAVE_BUTTON: 'permissions-save-btn',
   ROLE_TAB: 'permissions-role-tab',
+  CREATE_ROLE_BTN: 'permissions-create-role-btn',
 } as const;
 
 export default function PermissionsPage() {
@@ -154,7 +155,7 @@ export default function PermissionsPage() {
           </div>
 
           <div className="flex h-[calc(100vh-12rem)] min-h-[400px] rounded-lg border bg-card">
-            <aside className="w-56 shrink-0">
+            <aside className="w-56 shrink-0" data-testid={PERMISSIONS.ROLE_LIST}>
               <OrgRoleList selectedRole={selectedRole} onSelectRole={setSelectedRole} showOwner />
             </aside>
             <main className="flex min-w-0 flex-1 flex-col">

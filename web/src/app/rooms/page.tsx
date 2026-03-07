@@ -320,7 +320,7 @@ export default function RoomsPage() {
           {roomsLoading || apartmentsLoading ? (
             <Skeleton className="h-96" />
           ) : (
-            <DataTable columns={columns} data={filteredRooms} />
+            <DataTable columns={columns} data={filteredRooms} testid={ROOMS.LIST} />
           )}
         </div>
 

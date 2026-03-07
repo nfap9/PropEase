@@ -55,7 +55,7 @@ export function LeaseFilters({
             value={filters.apartmentId || 'all'}
             onValueChange={(value) => onFilterChange('apartmentId', value === 'all' ? null : value)}
           >
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[160px]" data-testid="leases-apartment-filter">
               <SelectValue placeholder="全部公寓" />
             </SelectTrigger>
             <SelectContent>

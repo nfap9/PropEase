@@ -131,8 +131,8 @@ export default function LoginPage() {
         <CardContent>
           <Tabs value={loginMode} onValueChange={(v) => setLoginMode(v as 'password' | 'code')}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="password">密码登录</TabsTrigger>
-              <TabsTrigger value="code">验证码登录</TabsTrigger>
+              <TabsTrigger value="password" data-testid="auth-tab-password">密码登录</TabsTrigger>
+              <TabsTrigger value="code" data-testid="auth-tab-code">验证码登录</TabsTrigger>
             </TabsList>
 
             <TabsContent value="password" className="mt-4">
@@ -191,7 +191,7 @@ export default function LoginPage() {
                       <FormItem>
                         <FormLabel>手机号</FormLabel>
                         <FormControl>
-                          <Input type="tel" placeholder="请输入手机号" {...field} />
+                          <Input type="tel" placeholder="请输入手机号" {...field} data-testid="auth-phone-input-code" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -219,6 +219,7 @@ export default function LoginPage() {
                             disabled={countdown > 0}
                             onClick={handleSendCode}
                             className="shrink-0"
+                            data-testid="auth-send-code-btn"
                           >
                             {countdown > 0 ? `${countdown}秒` : '获取验证码'}
                           </Button>

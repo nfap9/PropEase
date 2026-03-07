@@ -17,6 +17,7 @@ export interface TableAction {
   onClick: () => void;
   variant?: 'default' | 'destructive';
   show?: boolean;
+  testId?: string;
 }
 
 interface TableActionsProps {
@@ -50,6 +51,7 @@ export function TableActions({ actions, maxInline = 2 }: TableActionsProps) {
               key={i}
               onClick={action.onClick}
               className={action.variant === 'destructive' ? 'text-destructive' : ''}
+              data-testid={action.testId}
             >
               {action.icon && <action.icon className="mr-2 h-4 w-4" />}
               {action.label}
@@ -74,6 +76,7 @@ export function TableActions({ actions, maxInline = 2 }: TableActionsProps) {
                 className={
                   action.variant === 'destructive' ? 'text-destructive hover:text-destructive' : ''
                 }
+                data-testid={action.testId}
               >
                 {action.icon && <action.icon className="h-4 w-4" />}
                 <span className="ml-1 hidden lg:inline">{action.label}</span>
@@ -100,6 +103,7 @@ export function TableActions({ actions, maxInline = 2 }: TableActionsProps) {
                   key={i}
                   onClick={action.onClick}
                   className={action.variant === 'destructive' ? 'text-destructive' : ''}
+                  data-testid={action.testId}
                 >
                   {action.icon && <action.icon className="mr-2 h-4 w-4" />}
                   {action.label}

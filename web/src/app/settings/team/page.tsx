@@ -60,10 +60,10 @@ import { useAuth } from '@/lib/auth/context';
 // 注意: 实际使用时从 testids 导入 TEAM_SETTINGS 常量
 const TEAM_SETTINGS = {
   HEADING: 'team-settings-heading',
-  CREATE_ORG_BTN: 'team-create-org-btn',
+  CREATE_ORG_BTN: 'team-settings-create-org-btn',
   EDIT_ORG_BTN: 'team-edit-org-btn',
   INVITE_BTN: 'team-invite-btn',
-  MEMBERS_LIST: 'team-members-list',
+  MEMBER_LIST: 'team-settings-member-list',
   CREATE_ORG_DIALOG: 'team-create-org-dialog',
   EDIT_ORG_DIALOG: 'team-edit-org-dialog',
   INVITE_DIALOG: 'team-invite-dialog',
@@ -300,7 +300,7 @@ export default function TeamSettingsPage() {
             <TabsContent value="organizations" className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">当前组织</h2>
-                <Button onClick={() => setIsCreateOrgOpen(true)} data-testid={TEAM_SETTINGS.CREATE_ORG_BTN}>
+                <Button onClick={() => setIsCreateOrgOpen(true)} data-testid={TEAM_SETTINGS.CREATE_ORG_BTN} name="team-settings-create-org-btn">
                   <Plus className="mr-2 h-4 w-4" />
                   创建组织
                 </Button>
@@ -374,7 +374,7 @@ export default function TeamSettingsPage() {
                   {membersLoading ? (
                     <Skeleton className="h-64" />
                   ) : (
-                    <DataTable columns={memberColumns} data={members || []} data-testid={TEAM_SETTINGS.MEMBERS_LIST} />
+                    <DataTable columns={memberColumns} data={members || []} data-testid={TEAM_SETTINGS.MEMBER_LIST} />
                   )}
                 </>
               )}

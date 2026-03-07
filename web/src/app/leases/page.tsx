@@ -316,6 +316,7 @@ export default function LeasesPage() {
             icon: Ban,
             onClick: () => handleTerminate(lease),
             show: lease.is_active,
+            testId: 'leases-terminate-btn',
           },
           {
             label: '删除',

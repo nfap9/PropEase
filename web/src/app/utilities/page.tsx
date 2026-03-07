@@ -23,7 +23,8 @@ import type { RoomMissingInitialReading } from '@/lib/api/utilities';
 // 注意: 实际使用时从 testids 导入 UTILITIES 常量
 const UTILITIES = {
   HEADING: 'utilities-heading',
-  ENTRY_BUTTON: 'utilities-entry-button',
+  ENTRY_BUTTON: 'utilities-entry-btn',
+  LIST: 'utilities-list',
   EXPORT_TEMPLATE_BUTTON: 'utilities-export-template-button',
   IMPORT_BUTTON: 'utilities-import-button',
   OVERVIEW_CARD: 'utilities-overview-card',
@@ -309,7 +310,7 @@ export default function UtilitiesPage() {
                 <CardDescription>以下活跃租约本月尚未录入水电读数</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="rounded-md border">
+                <div className="rounded-md border" data-testid={UTILITIES.LIST}>
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b bg-muted/50">

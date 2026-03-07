@@ -123,7 +123,7 @@ export default function AdminRolesPage() {
 
   return (
     <div className="flex h-[calc(100vh-8rem)] min-h-[400px] rounded-lg border bg-card">
-      <aside className="w-56 shrink-0">
+      <aside className="w-56 shrink-0" data-testid="admin-roles-list">
         <AdminRoleList
           roles={roles}
           selectedRoleId={selectedRole?.id ?? null}

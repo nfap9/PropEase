@@ -29,12 +29,14 @@ export function AdminRoleList({
   return (
     <div className="flex h-full flex-col border-r bg-muted/30">
       <div className="border-b p-3">
+        <h2 className="mb-2 text-sm font-semibold" data-testid="admin-roles-heading">运营角色</h2>
         <Button
           variant="outline"
           size="sm"
           className="w-full justify-start"
           onClick={onAddRole}
           disabled={isLoading}
+          data-testid="admin-roles-create-btn"
         >
           <Plus className="mr-2 h-4 w-4" />
           新建角色

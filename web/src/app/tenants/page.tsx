@@ -59,6 +59,8 @@ const TENANTS = {
   EDIT_DIALOG: 'tenants-edit-dialog',
   DELETE_DIALOG: 'tenants-delete-dialog',
   CONFIRM_DELETE_BTN: 'tenants-confirm-delete-btn',
+  EDIT_BUTTON: 'tenants-edit-btn',
+  DELETE_BUTTON: 'tenants-delete-btn',
 } as const;
 
 const tenantSchema = z.object({
@@ -199,12 +201,14 @@ export default function TenantsPage() {
             label: '编辑',
             icon: Pencil,
             onClick: () => handleEdit(tenant),
+            testId: TENANTS.EDIT_BUTTON,
           },
           {
             label: '删除',
             icon: Trash2,
             onClick: () => handleDelete(tenant),
             variant: 'destructive',
+            testId: TENANTS.DELETE_BUTTON,
           },
         ];
         return <TableActions actions={actions} />;

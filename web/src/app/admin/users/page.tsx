@@ -267,14 +267,14 @@ export default function AdminUsersPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">运营账号</h2>
-        <Button onClick={() => setIsCreateOpen(true)}>
+        <h2 className="text-xl font-semibold" data-testid="admin-users-heading">运营账号</h2>
+        <Button onClick={() => setIsCreateOpen(true)} data-testid="admin-users-create-btn">
           <Plus className="mr-2 h-4 w-4" />
           新建账号
         </Button>
       </div>
 
-      <DataTable columns={columns} data={users ?? []} />
+      <DataTable columns={columns} data={users ?? []} data-testid="admin-users-list" />
 
       {/* 新建 */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>

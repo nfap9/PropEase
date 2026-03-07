@@ -247,14 +247,14 @@ export default function AdminPlansPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">套餐配置</h2>
-        <Button onClick={() => setIsCreateOpen(true)}>
+        <h2 className="text-xl font-semibold" data-testid="admin-plans-heading">套餐配置</h2>
+        <Button onClick={() => setIsCreateOpen(true)} data-testid="admin-plans-create-btn">
           <Plus className="mr-2 h-4 w-4" />
           新建套餐
         </Button>
       </div>
 
-      <DataTable columns={columns} data={plans ?? []} />
+      <DataTable columns={columns} data={plans ?? []} data-testid="admin-plans-list" />
 
       {/* 新建 */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>

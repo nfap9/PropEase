@@ -183,7 +183,7 @@ export default function AdminRegisteredUsersPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-        <h2 className="text-xl font-semibold">用户管理</h2>
+        <h2 className="text-xl font-semibold" data-testid="admin-registered-users-heading">用户管理</h2>
         <div className="flex flex-wrap items-center gap-2">
           <form onSubmit={handleSearchSubmit} className="flex gap-2">
             <Input
@@ -209,7 +209,7 @@ export default function AdminRegisteredUsersPage() {
         </div>
       </div>
 
-      <DataTable columns={columns} data={users ?? []} />
+      <DataTable columns={columns} data={users ?? []} data-testid="admin-registered-users-list" />
 
       <AlertDialog
         open={!!disableConfirmUserId}

@@ -268,23 +268,21 @@ export const TEAM_SETTINGS = {
   /** 页面标题 */
   HEADING: 'team-settings-heading',
   /** 创建组织按钮 */
-  CREATE_ORG_BUTTON: 'team-settings-create-org-btn',
-  /** 组织列表 */
-  ORG_LIST: 'team-settings-org-list',
-  /** 成员管理 Tab */
-  MEMBERS_TAB: 'team-settings-members-tab',
+  CREATE_ORG_BTN: 'team-settings-create-org-btn',
+  /** 编辑组织按钮 */
+  EDIT_ORG_BTN: 'team-edit-org-btn',
   /** 邀请成员按钮 */
-  INVITE_MEMBER_BUTTON: 'team-settings-invite-member-btn',
-  /** 邀请成员弹窗 */
-  INVITE_DIALOG: 'team-settings-invite-dialog',
-  /** 手机号输入框 */
-  PHONE_INPUT: 'team-settings-phone-input',
-  /** 角色选择器 */
-  ROLE_SELECT: 'team-settings-role-select',
-  /** 发送邀请按钮 */
-  SEND_BUTTON: 'team-settings-send-btn',
+  INVITE_BTN: 'team-invite-btn',
   /** 成员列表 */
   MEMBER_LIST: 'team-settings-member-list',
+  /** 创建组织弹窗 */
+  CREATE_ORG_DIALOG: 'team-create-org-dialog',
+  /** 编辑组织弹窗 */
+  EDIT_ORG_DIALOG: 'team-edit-org-dialog',
+  /** 邀请成员弹窗 */
+  INVITE_DIALOG: 'team-invite-dialog',
+  /** 移除成员确认弹窗 */
+  REMOVE_MEMBER_DIALOG: 'team-remove-member-dialog',
 } as const;
 
 /** 权限管理页面 */
@@ -339,14 +337,22 @@ export const AUTH = {
   LOGIN_PAGE: 'auth-login-page',
   /** 注册页 */
   REGISTER_PAGE: 'auth-register-page',
+  /** 密码登录 Tab */
+  PASSWORD_TAB: 'auth-tab-password',
+  /** 验证码登录 Tab */
+  CODE_TAB: 'auth-tab-code',
   /** 手机号输入框 */
   PHONE_INPUT: 'auth-phone-input',
+  /** 验证码登录时的手机号输入框 */
+  PHONE_INPUT_CODE: 'auth-phone-input-code',
   /** 密码输入框 */
   PASSWORD_INPUT: 'auth-password-input',
   /** 确认密码输入框 */
   CONFIRM_PASSWORD_INPUT: 'auth-confirm-password-input',
   /** 验证码输入框 */
   VERIFICATION_CODE_INPUT: 'auth-verification-code-input',
+  /** 发送验证码按钮 */
+  SEND_CODE_BUTTON: 'auth-send-code-btn',
   /** 登录按钮 */
   LOGIN_BUTTON: 'auth-login-btn',
   /** 注册按钮 */

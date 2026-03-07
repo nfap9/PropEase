@@ -149,7 +149,7 @@ export default function AdminOrganizationsPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">组织管理</h2>
+        <h2 className="text-xl font-semibold" data-testid="admin-organizations-heading">组织管理</h2>
         <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as FilterActive)}>
           <SelectTrigger className="w-36">
             <SelectValue placeholder="状态筛选" />
@@ -162,7 +162,7 @@ export default function AdminOrganizationsPage() {
         </Select>
       </div>
 
-      <DataTable columns={columns} data={organizations ?? []} />
+      <DataTable columns={columns} data={organizations ?? []} data-testid="admin-organizations-list" />
     </div>
   );
 }

@@ -140,7 +140,7 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>手机号</FormLabel>
                     <FormControl>
-                      <Input type="tel" placeholder="请输入手机号" {...field} />
+                      <Input type="tel" placeholder="请输入手机号" {...field} data-testid="auth-phone-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -162,6 +162,7 @@ export default function RegisterPage() {
                         disabled={countdown > 0}
                         onClick={handleSendCode}
                         className="shrink-0"
+                        data-testid="auth-send-code-btn"
                       >
                         {countdown > 0 ? `${countdown}秒` : '获取验证码'}
                       </Button>

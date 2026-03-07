@@ -7,29 +7,38 @@ description: E2E 测试编写规范。使用 Playwright 编写测试时必须遵
 
 ## 定位器优先级
 
-1. **角色 + 可访问名称**（首选）
+1. **data-testid**（首选，最稳定）
+   ```typescript
+   page.getByTestId('btn-create-apartment')
+   page.getByTestId('input-apartment-name')
+   page.getByTestId('dialog-create-apartment')
+   ```
+
+2. **角色 + 可访问名称**
    ```typescript
    page.getByRole('button', { name: '创建' })
    page.getByRole('link', { name: '公寓管理' })
    page.getByRole('heading', { name: '公寓管理' })
    ```
 
-2. **标签/占位符**
+3. **标签/占位符**
    ```typescript
    page.getByLabel('公寓名称')
    page.getByPlaceholder('搜索...')
    ```
 
-3. **文本**（辅助）
+4. **文本**（辅助）
    ```typescript
    page.getByText('暂无公寓')
    page.getByText(/E2E公寓_\d+/)
    ```
 
-4. **弹窗内限定**
+5. **弹窗内限定**
    ```typescript
+   const dialog = page.getByTestId('dialog-create-apartment')
+   // 或无 testid 时降级
    const dialog = page.getByRole('dialog').filter({ hasText: '新增公寓' })
-   await dialog.getByLabel('公寓名称').fill(name)
+   await dialog.getByTestId('input-apartment-name').fill(name)
    ```
 
 **禁止**：依赖 class、复杂 CSS、裸的 `locator('div.xxx')`
@@ -76,19 +85,19 @@ await alert.getByRole('button', { name: /^删除/ }).click()
 ```typescript
 test('可创建新公寓（APT-C-01）', async ({ page }) => {
   await page.goto('/apartments');
-  const newBtn = page.getByRole('button', { name: '新增公寓' }).first();
+  const newBtn = page.getByTestId('btn-new-apartment').first();
   if (!(await newBtn.isVisible())) return;
 
   await newBtn.click();
   const name = `E2E公寓_${Date.now()}`;
-  const dialog = page.getByRole('dialog').filter({ hasText: '新增公寓' });
+  const dialog = page.getByTestId('dialog-create-apartment');
 
-  await dialog.getByLabel('公寓名称').fill(name);
-  await dialog.getByLabel('地址').fill('E2E测试地址');
-  await dialog.getByRole('button', { name: '创建' }).click();
+  await dialog.getByTestId('input-apartment-name').fill(name);
+  await dialog.getByTestId('input-address').fill('E2E测试地址');
+  await dialog.getByTestId('btn-submit').click();
 
   await expect(dialog).toBeHidden({ timeout: 10000 });
-  await expect(page.getByRole('link', { name: new RegExp(name) })).toBeVisible();
+  await expect(page.getByTestId('apartment-link').filter({ hasText: name })).toBeVisible();
 });
 ```
 
