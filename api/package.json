@@ -16,7 +16,8 @@
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
     "db:push": "prisma db push",
-    "db:reset": "prisma db push --force-reset"
+    "db:reset": "prisma db push --force-reset",
+    "seed:e2e": "tsx src/startup/seedE2E.ts"
   },
   "dependencies": {
     "@apartment-ultra/api-contract": "workspace:*",

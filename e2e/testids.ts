@@ -364,7 +364,7 @@ export const AUTH = {
   /** 发送验证码按钮 */
   SEND_CODE_BUTTON: 'auth-send-code-btn',
   /** 登录按钮 */
-  LOGIN_BUTTON: 'auth-login-btn',
+  LOGIN_BUTTON: 'auth-login-button',
   /** 注册按钮 */
   REGISTER_BUTTON: 'auth-register-btn',
   /** 忘记密码链接 */

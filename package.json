@@ -11,9 +11,17 @@
     "format": "prettier --write \"api/src/**/*.ts\" \"web/src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"api/src/**/*.ts\" \"web/src/**/*.{ts,tsx}\"",
     "type-check": "pnpm --filter apartment-ultra-api run type-check && pnpm --filter frontend run type-check",
-    "test": "pnpm --filter apartment-ultra-api run test && pnpm --filter frontend run test:run"
+    "test": "pnpm --filter apartment-ultra-api run test && pnpm --filter frontend run test:run",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report e2e/report",
+    "seed:e2e": "pnpm --filter apartment-ultra-api run seed:e2e",
+    "seed:e2e:clean": "pnpm --filter apartment-ultra-api run seed:e2e -- --clean"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2"
   },
