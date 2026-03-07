@@ -50,12 +50,19 @@ const registerSchema = z
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-  const { register: registerUser, sendSmsCode } = useAuth();
+  const { register: registerUser, sendSmsCode, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const brandConfig = useBrandConfig();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
+
+  // 已登录用户自动跳转到仪表盘
+  useEffect(() => {
+    if (!isAuthLoading && isAuthenticated) {
+      router.replace('/dashboard');
+    }
+  }, [isAuthLoading, isAuthenticated, router]);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -104,6 +111,15 @@ export default function RegisterPage() {
       setIsLoading(false);
     }
   };
+
+  // 检查认证状态或已认证正在跳转时显示加载
+  if (isAuthLoading || isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted/40">
+        <div className="text-muted-foreground">加载中...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4" data-testid="auth-register-page">

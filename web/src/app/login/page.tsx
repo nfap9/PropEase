@@ -45,13 +45,20 @@ type PasswordLoginFormValues = z.infer<typeof passwordLoginSchema>;
 type CodeLoginFormValues = z.infer<typeof codeLoginSchema>;
 
 export default function LoginPage() {
-  const { login, sendSmsCode } = useAuth();
+  const { login, sendSmsCode, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const brandConfig = useBrandConfig();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [loginMode, setLoginMode] = useState<'password' | 'code'>('password');
+
+  // 已登录用户自动跳转到仪表盘
+  useEffect(() => {
+    if (!isAuthLoading && isAuthenticated) {
+      router.replace('/dashboard');
+    }
+  }, [isAuthLoading, isAuthenticated, router]);
 
   const passwordForm = useForm<PasswordLoginFormValues>({
     resolver: zodResolver(passwordLoginSchema),
@@ -120,6 +127,15 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  // 检查认证状态或已认证正在跳转时显示加载
+  if (isAuthLoading || isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted/40">
+        <div className="text-muted-foreground">加载中...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-muted/40 p-4" data-testid="auth-login-page">

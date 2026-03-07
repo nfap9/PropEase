@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -38,10 +38,21 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const brandConfig = useBrandConfig();
   const [error, setError] = useState<string | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { username: '', password: '' },
   });
+
+  // 已登录管理员自动跳转到管理后台
+  useEffect(() => {
+    const token = localStorage.getItem('admin_access_token');
+    if (token) {
+      router.replace('/admin');
+    } else {
+      setIsCheckingAuth(false);
+    }
+  }, [router]);
 
   const onSubmit = async (values: FormValues) => {
     setError(null);
@@ -75,6 +86,15 @@ export default function AdminLoginPage() {
       }
     }
   };
+
+  // 检查认证状态时显示加载
+  if (isCheckingAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted/30">
+        <div className="text-muted-foreground">加载中...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4">
