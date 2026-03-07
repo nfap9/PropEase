@@ -1,12 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { TENANTS, COMMON } from '../testids';
-import {
-  createUniqueName,
-  createUniquePhone,
-  waitForDialogOpen,
-  waitForDialogClosed,
-  isVisible,
-} from '../test-helpers';
+import { TENANTS } from '../testids';
+import { createUniqueName, createUniquePhone } from '../test-helpers';
 
 /**
  * 租客管理模块 E2E 测试
@@ -104,6 +98,51 @@ test.describe('租客创建 (TN-C)', () => {
     // 验证电话字段错误提示
     await expect(dialog.getByText(/请输入电话|请输入联系电话|电话.*必填/)).toBeVisible({ timeout: 5000 });
   });
+
+  test('完整租客信息 (TN-C-04)', async ({ page }) => {
+    const tenantName = createUniqueName('E2E完整租客');
+    const phone = createUniquePhone();
+
+    const newBtn = page.getByRole('button', { name: '新增租客' }).first();
+    if (!(await newBtn.isVisible())) return;
+
+    await newBtn.click();
+    const dialog = page.getByRole('dialog').filter({ hasText: /新增租客|添加租客/ });
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+
+    // 填写所有可用字段
+    await dialog.getByLabel(/姓名/).fill(tenantName);
+    await dialog.getByLabel(/联系电话|电话|手机/).fill(phone);
+
+    // 填写身份证号（如果有）
+    const idCardInput = dialog.getByLabel(/身份证/);
+    if (await idCardInput.isVisible()) {
+      await idCardInput.fill('110101199001011234');
+    }
+
+    // 填写备注（如果有）
+    const notesInput = dialog.getByLabel(/备注/);
+    if (await notesInput.isVisible()) {
+      await notesInput.fill('E2E测试完整信息');
+    }
+
+    // 填写紧急联系人（如果有）
+    const emergencyContactInput = dialog.getByLabel(/紧急联系人/);
+    if (await emergencyContactInput.isVisible()) {
+      await emergencyContactInput.fill('张三');
+    }
+
+    const emergencyPhoneInput = dialog.getByLabel(/紧急联系电话/);
+    if (await emergencyPhoneInput.isVisible()) {
+      await emergencyPhoneInput.fill('13800138000');
+    }
+
+    await dialog.getByRole('button', { name: '创建' }).click();
+    await expect(dialog).toBeHidden({ timeout: 10000 });
+
+    // 验证创建成功
+    await expect(page.getByText(tenantName)).toBeVisible({ timeout: 5000 });
+  });
 });
 
 test.describe('租客详情与编辑 (TN-R, TN-U)', () => {
@@ -180,6 +219,46 @@ test.describe('租客详情与编辑 (TN-R, TN-U)', () => {
 });
 
 test.describe('租客删除 (TN-D)', () => {
+  test('删除无租约租客 (TN-D-01)', async ({ page }) => {
+    // 先创建一个租客
+    await page.goto('/tenants');
+    const tenantName = createUniqueName('E2E待删租客');
+    const phone = createUniquePhone();
+
+    const newBtn = page.getByRole('button', { name: '新增租客' }).first();
+    if (await newBtn.isVisible()) {
+      await newBtn.click();
+      const dialog = page.getByRole('dialog').filter({ hasText: /新增租客|添加租客/ });
+      await dialog.getByLabel(/姓名/).fill(tenantName);
+      await dialog.getByLabel(/联系电话|电话|手机/).fill(phone);
+      await dialog.getByRole('button', { name: '创建' }).click();
+      await expect(dialog).toBeHidden({ timeout: 10000 });
+
+      // 刷新页面
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+
+      // 查找刚创建的租客（无租约状态）
+      const tenantRow = page.getByRole('row').filter({ hasText: tenantName }).first();
+      if (await tenantRow.isVisible()) {
+        const deleteBtn = tenantRow.getByRole('button', { name: /删除/ });
+        if (await deleteBtn.isVisible()) {
+          await deleteBtn.click();
+
+          // 确认删除弹窗
+          const confirmDialog = page.getByRole('dialog').filter({ hasText: /确认删除|删除租客/ });
+          if (await confirmDialog.isVisible()) {
+            await confirmDialog.getByRole('button', { name: /确认|删除/ }).click();
+            await expect(confirmDialog).toBeHidden({ timeout: 10000 });
+
+            // 验证删除成功
+            await expect(page.getByText(tenantName)).toBeHidden({ timeout: 5000 });
+          }
+        }
+      }
+    }
+  });
+
   test('删除有租约的租客 (TN-D-02)', async ({ page }) => {
     await page.goto('/tenants');
 

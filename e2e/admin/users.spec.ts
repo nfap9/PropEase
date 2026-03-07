@@ -261,6 +261,27 @@ test.describe('运营角色管理 (ADM-R)', () => {
     await expect(dialog).toBeHidden({ timeout: 10000 });
   });
 
+  test('角色名称重复 (ADM-R-C-02)', async ({ page }) => {
+    // 获取已存在的角色名称
+    const existingRole = page.getByRole('row').filter({ hasText: /管理员|角色/ }).first();
+    const existingName = await existingRole.getByRole('cell').first().textContent().catch(() => '管理员');
+
+    const createBtn = page.getByRole('button', { name: /新建角色|添加角色/ }).first();
+    if (!(await createBtn.isVisible())) return;
+
+    await createBtn.click();
+    const dialog = page.getByRole('dialog').filter({ hasText: /新建角色/ });
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+
+    // 使用已存在的角色名
+    await dialog.getByLabel(/角色名称|名称/).fill(existingName?.trim() || '管理员');
+    await dialog.getByRole('button', { name: '创建' }).click();
+
+    // 验证错误提示
+    await expect(page.getByText(/已存在|重复/)).toBeVisible({ timeout: 5000 });
+    await page.keyboard.press('Escape');
+  });
+
   test('编辑角色权限 (ADM-R-U-01)', async ({ page }) => {
     // 找到一个可编辑的角色
     const roleRow = page.getByRole('row').filter({ hasText: /角色/ }).first();
@@ -280,6 +301,37 @@ test.describe('运营角色管理 (ADM-R)', () => {
 
         await dialog.getByRole('button', { name: '保存' }).click();
         await expect(dialog).toBeHidden({ timeout: 10000 });
+      }
+    }
+  });
+
+  test('删除自定义角色 (ADM-R-D-01)', async ({ page }) => {
+    // 找到可删除的自定义角色
+    const customRoleRow = page.getByRole('row').filter({ hasText: /E2E|自定义|测试/ }).first();
+    if (await customRoleRow.isVisible()) {
+      const deleteBtn = customRoleRow.getByRole('button', { name: /删除/ });
+      if (await deleteBtn.isVisible() && !(await deleteBtn.isDisabled())) {
+        await deleteBtn.click();
+
+        const confirmDialog = page.getByRole('dialog').filter({ hasText: /确认删除/ });
+        if (await confirmDialog.isVisible()) {
+          await confirmDialog.getByRole('button', { name: /确认|删除/ }).click();
+          await expect(confirmDialog).toBeHidden({ timeout: 10000 });
+        }
+      }
+    }
+  });
+
+  test('删除使用中的角色 (ADM-R-D-02)', async ({ page }) => {
+    // 找到正在使用的角色
+    const inUseRoleRow = page.getByRole('row').filter({ hasText: /使用中/ }).first();
+    if (await inUseRoleRow.isVisible()) {
+      const deleteBtn = inUseRoleRow.getByRole('button', { name: /删除/ });
+      if (await deleteBtn.isVisible()) {
+        await deleteBtn.click();
+
+        // 应该显示无法删除的提示
+        await expect(page.getByText(/使用中|无法删除/)).toBeVisible({ timeout: 5000 });
       }
     }
   });
@@ -547,6 +599,104 @@ test.describe('运营端登录 (ADM-LOGIN)', () => {
       await logoutBtn.click();
       // 验证跳转到登录页
       await expect(page).toHaveURL(/\/admin\/login/, { timeout: 10000 });
+    }
+  });
+});
+
+test.describe('订阅管理/运营端 (ADM-SUB)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/admin/subscriptions');
+  });
+
+  test('查看订阅列表 (ADM-SUB-L-01)', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: /订阅|订阅管理/ })).toBeVisible({ timeout: 10000 });
+
+    // 验证表格存在
+    const table = page.getByRole('table');
+    const emptyState = page.getByText(/暂无订阅/);
+    const hasTable = await table.isVisible().catch(() => false);
+    const hasEmpty = await emptyState.isVisible().catch(() => false);
+    expect(hasTable || hasEmpty).toBe(true);
+  });
+
+  test('按状态筛选订阅 (ADM-SUB-F-01)', async ({ page }) => {
+    const statusFilter = page.getByRole('combobox', { name: /状态/ }).or(
+      page.getByTestId(ADMIN_SUBSCRIPTIONS.STATUS_FILTER)
+    );
+
+    if (await statusFilter.isVisible()) {
+      await statusFilter.click();
+      const option = page.getByRole('option', { name: /活跃|已取消|过期/ }).first();
+      if (await option.isVisible()) {
+        await option.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  });
+
+  test('按套餐筛选订阅 (ADM-SUB-F-02)', async ({ page }) => {
+    const planFilter = page.getByRole('combobox', { name: /套餐/ }).or(
+      page.getByTestId(ADMIN_SUBSCRIPTIONS.PLAN_FILTER)
+    );
+
+    if (await planFilter.isVisible()) {
+      await planFilter.click();
+      const option = page.getByRole('option').first();
+      if (await option.isVisible()) {
+        await option.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  });
+
+  test('查看订阅详情 (ADM-SUB-R-01)', async ({ page }) => {
+    const subRow = page.getByRole('row').filter({ hasText: /活跃|有效/ }).first();
+    if (await subRow.isVisible()) {
+      const detailBtn = subRow.getByRole('button', { name: /详情|查看/ });
+      if (await detailBtn.isVisible()) {
+        await detailBtn.click();
+
+        // 验证详情页
+        await expect(page.getByText(/订阅详情|订阅信息|订单/)).toBeVisible({ timeout: 5000 });
+      }
+    }
+  });
+
+  test('取消订阅 (ADM-SUB-CN-01)', async ({ page }) => {
+    const subRow = page.getByRole('row').filter({ hasText: /活跃/ }).first();
+    if (await subRow.isVisible()) {
+      const cancelBtn = subRow.getByRole('button', { name: /取消/ });
+      if (await cancelBtn.isVisible()) {
+        await cancelBtn.click();
+
+        const dialog = page.getByRole('dialog').filter({ hasText: /取消订阅|确认/ });
+        if (await dialog.isVisible()) {
+          await dialog.getByRole('button', { name: /确认/ }).click();
+          await expect(dialog).toBeHidden({ timeout: 10000 });
+        }
+      }
+    }
+  });
+
+  test('延长订阅 (ADM-SUB-EXT-01)', async ({ page }) => {
+    const subRow = page.getByRole('row').first();
+    if (await subRow.isVisible()) {
+      const extendBtn = subRow.getByRole('button', { name: /延长|续期/ });
+      if (await extendBtn.isVisible()) {
+        await extendBtn.click();
+
+        const dialog = page.getByRole('dialog').filter({ hasText: /延长|续期/ });
+        if (await dialog.isVisible()) {
+          // 填写延长时间
+          const durationInput = dialog.getByLabel(/时长|天数|月数/);
+          if (await durationInput.isVisible()) {
+            await durationInput.fill('30');
+          }
+
+          await dialog.getByRole('button', { name: /确认|保存/ }).click();
+          await expect(dialog).toBeHidden({ timeout: 10000 });
+        }
+      }
     }
   });
 });

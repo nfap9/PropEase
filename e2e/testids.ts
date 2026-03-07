@@ -115,6 +115,16 @@ export const ROOMS = {
   NUMBER_INPUT: 'rooms-number-input',
   /** 月租输入框 */
   MONTHLY_RENT_INPUT: 'rooms-monthly-rent-input',
+  /** 公寓筛选 */
+  APARTMENT_FILTER: 'rooms-apartment-filter',
+  /** 状态筛选 */
+  STATUS_FILTER: 'rooms-status-filter',
+  /** 批量添加弹窗 */
+  BATCH_DIALOG: 'rooms-batch-dialog',
+  /** 编辑房间弹窗 */
+  EDIT_DIALOG: 'rooms-edit-dialog',
+  /** 删除确认弹窗 */
+  DELETE_DIALOG: 'rooms-delete-dialog',
 } as const;
 
 // ==================== 租客管理 ====================

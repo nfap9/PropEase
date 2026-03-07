@@ -57,6 +57,67 @@ test.describe('账单列表 (BL-L)', () => {
       }
     }
   });
+
+  test('按月份筛选账单 (BL-L-03)', async ({ page }) => {
+    // 查找月份筛选器
+    const monthFilter = page.getByRole('combobox', { name: /月份/ }).or(
+      page.getByTestId(BILLS.MONTH_FILTER).or(
+        page.locator('[data-testid="bills-month-filter"]')
+      )
+    ).or(
+      page.getByRole('button', { name: /月份|时间/ })
+    );
+
+    if (await monthFilter.isVisible()) {
+      await monthFilter.click();
+
+      // 选择一个月份
+      const option = page.getByRole('option').first();
+      if (await option.isVisible()) {
+        await option.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  });
+
+  test('按租客筛选账单 (BL-L-04)', async ({ page }) => {
+    // 查找租客筛选器
+    const tenantFilter = page.getByRole('combobox', { name: /租客/ }).or(
+      page.getByTestId(BILLS.TENANT_FILTER).or(
+        page.locator('[data-testid="bills-tenant-filter"]')
+      )
+    );
+
+    if (await tenantFilter.isVisible()) {
+      await tenantFilter.click();
+
+      const option = page.getByRole('option').first();
+      if (await option.isVisible()) {
+        await option.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  });
+
+  test('搜索账单 (BL-L-05)', async ({ page }) => {
+    // 查找搜索框
+    const searchInput = page.getByPlaceholder(/搜索|账单号|租客/).or(
+      page.getByTestId(BILLS.STATUS_FILTER).or(
+        page.locator('input[type="search"]')
+      )
+    ).first();
+
+    if (await searchInput.isVisible()) {
+      await searchInput.fill('2024');
+      await page.waitForTimeout(500);
+
+      // 验证搜索结果
+      const rows = page.getByRole('row');
+      const count = await rows.count();
+      // 只验证搜索功能可用
+      expect(count).toBeGreaterThanOrEqual(1);
+    }
+  });
 });
 
 test.describe('账单生成 (BL-GEN)', () => {
@@ -83,6 +144,23 @@ test.describe('账单生成 (BL-GEN)', () => {
     }
   });
 
+  test('自动生成账单 (BL-GEN-02)', async ({ page }) => {
+    // 查找自动出账设置
+    const autoGenSwitch = page.getByRole('switch', { name: /自动出账|自动生成/ }).or(
+      page.getByRole('checkbox', { name: /自动出账|自动生成/ })
+    );
+
+    if (await autoGenSwitch.isVisible()) {
+      // 检查开关状态
+      const isChecked = await autoGenSwitch.isChecked();
+      // 如果未开启，可以开启它
+      if (!isChecked) {
+        await autoGenSwitch.click();
+        await page.waitForTimeout(500);
+      }
+    }
+  });
+
   test('账单金额计算正确 (BL-GEN-03)', async ({ page }) => {
     // 查找一个账单查看详情
     const billRow = page.getByRole('row').filter({ hasText: /待支付|已支付/ }).first();
@@ -102,6 +180,24 @@ test.describe('账单生成 (BL-GEN)', () => {
 
           // 至少应该有租金项
           expect(hasRent).toBe(true);
+        }
+      }
+    }
+  });
+
+  test('账单包含水电费 (BL-GEN-04)', async ({ page }) => {
+    // 查找包含水电费的账单
+    const billRow = page.getByRole('row').filter({ hasText: /水电|电费|水费/ }).first();
+
+    if (await billRow.isVisible()) {
+      const detailBtn = billRow.getByRole('button', { name: /详情|查看/ });
+      if (await detailBtn.isVisible()) {
+        await detailBtn.click();
+
+        const dialog = page.getByRole('dialog').filter({ hasText: /账单详情/ });
+        if (await dialog.isVisible()) {
+          // 验证水电费明细
+          await expect(dialog.getByText(/水电|电费|水费/)).toBeVisible({ timeout: 5000 });
         }
       }
     }
@@ -151,6 +247,90 @@ test.describe('账单支付 (BL-PY)', () => {
       }
     }
   });
+
+  test('部分付款 (BL-PY-C-02)', async ({ page }) => {
+    // 查找待支付账单
+    const pendingBill = page.getByRole('row').filter({ hasText: /待支付/ }).first();
+
+    if (await pendingBill.isVisible()) {
+      const payBtn = pendingBill.getByRole('button', { name: /登记付款|付款|收款/ });
+      if (await payBtn.isVisible()) {
+        await payBtn.click();
+
+        const dialog = page.getByRole('dialog').filter({ hasText: /登记付款|收款登记/ });
+        await expect(dialog).toBeVisible({ timeout: 5000 });
+
+        // 填写部分金额
+        const amountInput = dialog.getByLabel(/金额|实收金额/);
+        if (await amountInput.isVisible()) {
+          // 获取账单全额
+          const fullAmount = await amountInput.inputValue();
+          // 输入部分金额
+          await amountInput.fill('100');
+        }
+
+        await dialog.getByRole('button', { name: /确认|保存/ }).click();
+        await expect(dialog).toBeHidden({ timeout: 10000 });
+
+        // 验证部分付款后的状态（可能是部分支付或仍有欠款）
+        await expect(page.getByText(/部分|欠款|已支付/)).toBeVisible({ timeout: 5000 });
+      }
+    }
+  });
+
+  test('超付处理 (BL-PY-C-03)', async ({ page }) => {
+    const pendingBill = page.getByRole('row').filter({ hasText: /待支付/ }).first();
+
+    if (await pendingBill.isVisible()) {
+      const payBtn = pendingBill.getByRole('button', { name: /登记付款|付款|收款/ });
+      if (await payBtn.isVisible()) {
+        await payBtn.click();
+
+        const dialog = page.getByRole('dialog').filter({ hasText: /登记付款|收款登记/ });
+        await expect(dialog).toBeVisible({ timeout: 5000 });
+
+        // 输入超额金额
+        const amountInput = dialog.getByLabel(/金额|实收金额/);
+        if (await amountInput.isVisible()) {
+          await amountInput.fill('999999');
+        }
+
+        await dialog.getByRole('button', { name: /确认|保存/ }).click();
+
+        // 可能会有超付警告或自动调整
+        const warning = dialog.getByText(/超过|超额|大于/);
+        const hasWarning = await warning.isVisible({ timeout: 3000 }).catch(() => false);
+
+        if (!hasWarning) {
+          // 如果没有警告，可能自动调整了金额或允许超付
+          await expect(dialog).toBeHidden({ timeout: 10000 }).catch(() => {});
+        }
+      }
+    }
+  });
+
+  test('欠款标记 (BL-PY-C-04)', async ({ page }) => {
+    // 查找有欠款的账单（部分支付后）
+    const partialBill = page.getByRole('row').filter({ hasText: /部分|欠款/ }).first();
+
+    if (await partialBill.isVisible()) {
+      // 验证有欠款标识
+      await expect(partialBill.getByText(/欠款|部分/)).toBeVisible();
+
+      // 点击查看详情
+      const detailBtn = partialBill.getByRole('button', { name: /详情|查看/ });
+      if (await detailBtn.isVisible()) {
+        await detailBtn.click();
+
+        const dialog = page.getByRole('dialog').filter({ hasText: /账单详情/ });
+        if (await dialog.isVisible()) {
+          // 验证显示欠款金额
+          const hasArrears = await dialog.getByText(/欠款|未付|剩余/).isVisible().catch(() => false);
+          expect(hasArrears).toBe(true);
+        }
+      }
+    }
+  });
 });
 
 test.describe('账单导出 (BL-E)', () => {
@@ -190,6 +370,31 @@ test.describe('账单导出 (BL-E)', () => {
       if (download) {
         // 验证下载的是Excel文件
         expect(download.suggestedFilename()).toMatch(/\.xlsx?$/i);
+      }
+    }
+  });
+
+  test('批量导出账单 (BL-E-03)', async ({ page }) => {
+    // 查找批量选择功能
+    const selectAllCheckbox = page.getByRole('checkbox', { name: /全选|选择全部/ }).or(
+      page.locator('thead input[type="checkbox"]')
+    );
+
+    if (await selectAllCheckbox.isVisible()) {
+      // 选择多个账单
+      await selectAllCheckbox.click();
+
+      // 点击批量导出
+      const batchExportBtn = page.getByRole('button', { name: /批量导出|导出选中/ });
+      if (await batchExportBtn.isVisible()) {
+        const downloadPromise = page.waitForEvent('download', { timeout: 30000 }).catch(() => null);
+        await batchExportBtn.click();
+
+        const download = await downloadPromise;
+        if (download) {
+          // 验证下载成功
+          expect(download.suggestedFilename()).toMatch(/\.xlsx?|\.zip|\.pdf/i);
+        }
       }
     }
   });

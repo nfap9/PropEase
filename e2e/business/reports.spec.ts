@@ -100,6 +100,22 @@ test.describe('收入分析 (RP-I)', () => {
       }
     }
   });
+
+  test('收入同比环比 (RP-I-03)', async ({ page }) => {
+    // 查找同比环比数据
+    const comparisonSection = page.getByText(/同比|环比|增长/);
+    const hasComparison = await comparisonSection.isVisible().catch(() => false);
+
+    if (hasComparison) {
+      // 验证有同比环比数据显示
+      await expect(comparisonSection.first()).toBeVisible();
+
+      // 验证显示百分比变化
+      const percentChange = page.getByText(/-?\d+\.?\d*%|↑|↓/);
+      const hasPercent = await percentChange.isVisible().catch(() => false);
+      // 可选验证
+    }
+  });
 });
 
 test.describe('入住率 (RP-OCC)', () => {

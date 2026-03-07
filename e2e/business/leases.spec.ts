@@ -1,12 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { LEASES, COMMON } from '../testids';
-import {
-  createUniqueName,
-  createUniquePhone,
-  waitForDialogOpen,
-  waitForDialogClosed,
-  isVisible,
-} from '../test-helpers';
+import { LEASES } from '../testids';
+import { createUniqueName, createUniquePhone } from '../test-helpers';
 
 /**
  * 租约管理模块 E2E 测试
@@ -34,6 +28,56 @@ test.describe('租约列表 (LE-L)', () => {
     const hasTable = await table.isVisible().catch(() => false);
     const hasEmpty = await emptyState.isVisible().catch(() => false);
     expect(hasTable || hasEmpty).toBe(true);
+  });
+
+  test('按状态筛选租约 (LE-L-02)', async ({ page }) => {
+    // 查找状态筛选器
+    const statusFilter = page.getByRole('combobox', { name: /状态/ }).or(
+      page.getByTestId(LEASES.STATUS_FILTER)
+    ).first();
+
+    if (await statusFilter.isVisible()) {
+      await statusFilter.click();
+
+      // 选择"生效中"状态
+      const activeOption = page.getByRole('option', { name: /生效中|履行中/ });
+      if (await activeOption.isVisible()) {
+        await activeOption.click();
+        await page.waitForTimeout(1000);
+
+        // 验证筛选结果
+        const rows = page.getByRole('row');
+        for (let i = 1; i < Math.min(await rows.count(), 5); i++) {
+          const row = rows.nth(i);
+          const text = await row.textContent();
+          if (text && !text.includes('暂无')) {
+            expect(text).toMatch(/生效中|履行中/);
+          }
+        }
+      }
+    }
+  });
+
+  test('按公寓筛选租约 (LE-L-03)', async ({ page }) => {
+    // 查找公寓筛选器
+    const apartmentFilter = page.getByRole('combobox', { name: /公寓/ }).or(
+      page.getByTestId(LEASES.APARTMENT_FILTER)
+    ).first();
+
+    if (await apartmentFilter.isVisible()) {
+      await apartmentFilter.click();
+
+      // 选择第一个公寓
+      const option = page.getByRole('option').first();
+      if (await option.isVisible()) {
+        await option.click();
+        await page.waitForTimeout(1000);
+
+        // 验证筛选后的列表
+        const rows = page.getByRole('row');
+        expect(await rows.count()).toBeGreaterThanOrEqual(1);
+      }
+    }
   });
 });
 
@@ -290,3 +334,176 @@ async function prepareLeaseData(page: import('@playwright/test').Page) {
     }
   }
 }
+
+test.describe('租约类型与高级功能 (LE-C-02, LE-C-03, LE-C-07)', () => {
+  test('创建日租租约 (LE-C-02)', async ({ page }) => {
+    await prepareLeaseData(page);
+    await page.goto('/leases');
+
+    const newBtn = page.getByRole('button', { name: /新增租约|创建租约/ }).first();
+    if (!(await newBtn.isVisible())) return;
+
+    await newBtn.click();
+    const dialog = page.getByRole('dialog').filter({ hasText: /新增租约|创建租约/ });
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+
+    // 查找租约类型选择器
+    const typeSelect = dialog.getByLabel(/租约类型|收租方式/);
+    if (await typeSelect.isVisible()) {
+      await typeSelect.click();
+      const dailyOption = page.getByRole('option', { name: /日租/ });
+      if (await dailyOption.isVisible()) {
+        await dailyOption.click();
+
+        // 验证日租相关字段出现
+        const dailyRentInput = dialog.getByLabel(/日租|每日租金/);
+        if (await dailyRentInput.isVisible()) {
+          await dailyRentInput.fill('100');
+        }
+      }
+    }
+  });
+
+  test('创建年租租约 (LE-C-03)', async ({ page }) => {
+    await prepareLeaseData(page);
+    await page.goto('/leases');
+
+    const newBtn = page.getByRole('button', { name: /新增租约|创建租约/ }).first();
+    if (!(await newBtn.isVisible())) return;
+
+    await newBtn.click();
+    const dialog = page.getByRole('dialog').filter({ hasText: /新增租约|创建租约/ });
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+
+    // 查找租约类型选择器
+    const typeSelect = dialog.getByLabel(/租约类型|收租方式/);
+    if (await typeSelect.isVisible()) {
+      await typeSelect.click();
+      const yearlyOption = page.getByRole('option', { name: /年租/ });
+      if (await yearlyOption.isVisible()) {
+        await yearlyOption.click();
+
+        // 验证年租相关字段出现
+        const yearlyRentInput = dialog.getByLabel(/年租|每年租金/);
+        if (await yearlyRentInput.isVisible()) {
+          await yearlyRentInput.fill('24000');
+        }
+      }
+    }
+  });
+
+  test('租约自动带出水电单价 (LE-C-07)', async ({ page }) => {
+    await prepareLeaseData(page);
+    await page.goto('/leases');
+
+    const newBtn = page.getByRole('button', { name: /新增租约|创建租约/ }).first();
+    if (!(await newBtn.isVisible())) return;
+
+    await newBtn.click();
+    const dialog = page.getByRole('dialog').filter({ hasText: /新增租约|创建租约/ });
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+
+    // 选择公寓
+    const apartmentSelect = dialog.getByLabel(/公寓/);
+    if (await apartmentSelect.isVisible()) {
+      await apartmentSelect.click();
+      const option = page.getByRole('option').first();
+      if (await option.isVisible()) {
+        await option.click();
+      }
+    }
+
+    // 选择房间
+    await page.waitForTimeout(500);
+    const roomSelect = dialog.getByLabel(/房间/);
+    if (await roomSelect.isVisible()) {
+      await roomSelect.click();
+      const vacantOption = page.getByRole('option').filter({ hasText: /空置|可选/ }).first();
+      if (await vacantOption.isVisible()) {
+        await vacantOption.click();
+
+        // 等待水电单价自动填充
+        await page.waitForTimeout(500);
+
+        // 验证水电单价字段是否自动填充
+        const waterPriceInput = dialog.getByLabel(/水费单价|水价/);
+        const electricityPriceInput = dialog.getByLabel(/电费单价|电价/);
+
+        // 如果有这些字段，验证是否有值
+        if (await waterPriceInput.isVisible()) {
+          const value = await waterPriceInput.inputValue();
+          // 如果公寓已配置水电单价，这里应该有值
+          expect(value === '' || parseFloat(value) > 0).toBe(true);
+        }
+      }
+    }
+  });
+});
+
+test.describe('租约修改与删除 (LE-U, LE-RV, LE-D)', () => {
+  test('修改租约信息 (LE-U-01)', async ({ page }) => {
+    await page.goto('/leases');
+
+    // 查找生效中的租约
+    const activeLease = page.getByRole('row').filter({ hasText: /生效中/ }).first();
+    if (await activeLease.isVisible()) {
+      const editBtn = activeLease.getByRole('button', { name: /编辑|修改/ });
+      if (await editBtn.isVisible()) {
+        await editBtn.click();
+
+        const dialog = page.getByRole('dialog').filter({ hasText: /编辑租约|修改租约/ });
+        await expect(dialog).toBeVisible({ timeout: 5000 });
+
+        // 修改月租
+        const rentInput = dialog.getByLabel(/月租/);
+        if (await rentInput.isVisible()) {
+          await rentInput.fill('2500');
+        }
+
+        await dialog.getByRole('button', { name: '保存' }).click();
+        await expect(dialog).toBeHidden({ timeout: 10000 });
+      }
+    }
+  });
+
+  test('重新启用已终止租约 (LE-RV-01)', async ({ page }) => {
+    await page.goto('/leases');
+
+    // 查找已终止的租约
+    const terminatedLease = page.getByRole('row').filter({ hasText: /已终止|已结束/ }).first();
+    if (await terminatedLease.isVisible()) {
+      const reactivateBtn = terminatedLease.getByRole('button', { name: /重新启用|恢复|续签/ });
+      if (await reactivateBtn.isVisible()) {
+        await reactivateBtn.click();
+
+        const dialog = page.getByRole('dialog').filter({ hasText: /重新启用|恢复租约|续签/ });
+        if (await dialog.isVisible()) {
+          await dialog.getByRole('button', { name: /确认/ }).click();
+          await expect(dialog).toBeHidden({ timeout: 10000 });
+
+          // 验证租约状态变为生效中
+          await expect(page.getByText(/生效中/)).toBeVisible({ timeout: 5000 });
+        }
+      }
+    }
+  });
+
+  test('删除租约 (LE-D-01)', async ({ page }) => {
+    await page.goto('/leases');
+
+    // 查找已终止的租约（只能删除已终止的）
+    const terminatedLease = page.getByRole('row').filter({ hasText: /已终止|已结束/ }).first();
+    if (await terminatedLease.isVisible()) {
+      const deleteBtn = terminatedLease.getByRole('button', { name: /删除/ });
+      if (await deleteBtn.isVisible()) {
+        await deleteBtn.click();
+
+        const dialog = page.getByRole('dialog').filter({ hasText: /确认删除/ });
+        if (await dialog.isVisible()) {
+          await dialog.getByRole('button', { name: /确认|删除/ }).click();
+          await expect(dialog).toBeHidden({ timeout: 10000 });
+        }
+      }
+    }
+  });
+});

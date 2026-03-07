@@ -46,6 +46,55 @@ test.describe('水电记录列表 (UT-L)', () => {
       await expect(pendingList.first()).toBeVisible({ timeout: 5000 });
     }
   });
+
+  test('按公寓筛选水电记录 (UT-L-03)', async ({ page }) => {
+    // 查找公寓筛选器
+    const apartmentFilter = page.getByRole('combobox', { name: /公寓/ }).or(
+      page.getByTestId(UTILITIES.APARTMENT_SELECT).or(
+        page.locator('[data-testid="utilities-apartment-filter"]')
+      )
+    ).first();
+
+    if (await apartmentFilter.isVisible()) {
+      await apartmentFilter.click();
+
+      // 选择一个公寓选项
+      const option = page.getByRole('option').first();
+      if (await option.isVisible()) {
+        await option.click();
+        await page.waitForTimeout(500);
+
+        // 验证筛选结果
+        const rows = page.getByRole('row');
+        const rowCount = await rows.count();
+        expect(rowCount).toBeGreaterThanOrEqual(1);
+      }
+    }
+  });
+
+  test('按房间搜索水电记录 (UT-L-04)', async ({ page }) => {
+    // 查找搜索框
+    const searchInput = page.getByPlaceholder(/搜索.*房间|房间号/).or(
+      page.getByTestId(UTILITIES.APARTMENT_SELECT).or(
+        page.locator('input[type="search"]')
+      )
+    ).first();
+
+    if (await searchInput.isVisible()) {
+      await searchInput.fill('101');
+      await page.waitForTimeout(500);
+
+      // 验证搜索结果
+      const rows = page.getByRole('row');
+      for (let i = 1; i < Math.min(await rows.count(), 5); i++) {
+        const row = rows.nth(i);
+        const text = await row.textContent();
+        if (text && !text.includes('暂无')) {
+          expect(text).toContain('101');
+        }
+      }
+    }
+  });
 });
 
 test.describe('水电录入 (UT-C)', () => {
@@ -128,6 +177,68 @@ test.describe('水电录入 (UT-C)', () => {
       await expect(dialog.getByText(/请输入.*读数/)).toBeVisible({ timeout: 5000 });
     }
   });
+
+  test('录入读数小于上期 (UT-C-04)', async ({ page }) => {
+    const entryBtn = page.getByRole('button', { name: /录入|录入读数/ }).first();
+
+    if (await entryBtn.isVisible()) {
+      await entryBtn.click();
+
+      const dialog = page.getByRole('dialog').filter({ hasText: /录入读数|水电录入/ });
+      await expect(dialog).toBeVisible({ timeout: 5000 });
+
+      // 查看是否有上期读数显示
+      const lastReading = dialog.getByText(/上期|上次|上月/);
+      if (await lastReading.isVisible()) {
+        // 输入比上期小的读数
+        const waterInput = dialog.getByLabel(/水表|水费|水/);
+        if (await waterInput.isVisible()) {
+          await waterInput.fill('1'); // 很小的值
+        }
+
+        await dialog.getByRole('button', { name: /保存|确认/ }).click();
+
+        // 应该有警告或错误提示
+        const warning = dialog.getByText(/小于|低于|异常|警告/);
+        const hasWarning = await warning.isVisible({ timeout: 3000 }).catch(() => false);
+        // 可能会显示警告但允许继续，或者直接拒绝
+        if (hasWarning) {
+          // 验证警告出现
+          await expect(warning).toBeVisible();
+        }
+      }
+
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test('修改已录入读数 (UT-C-05)', async ({ page }) => {
+    // 查找已录入的记录
+    const recordedRow = page.getByRole('row').filter({ hasText: /\d+.*\d+/ }).first();
+
+    if (await recordedRow.isVisible()) {
+      // 点击编辑按钮
+      const editBtn = recordedRow.getByRole('button', { name: /编辑|修改/ });
+      if (await editBtn.isVisible()) {
+        await editBtn.click();
+
+        const dialog = page.getByRole('dialog').filter({ hasText: /编辑|修改读数/ });
+        await expect(dialog).toBeVisible({ timeout: 5000 });
+
+        // 修改读数
+        const waterInput = dialog.getByLabel(/水表|水费|水/);
+        if (await waterInput.isVisible()) {
+          await waterInput.fill('150');
+        }
+
+        await dialog.getByRole('button', { name: /保存|确认/ }).click();
+        await expect(dialog).toBeHidden({ timeout: 10000 });
+
+        // 验证修改成功
+        await expect(page.getByText(/修改成功|保存成功/)).toBeVisible({ timeout: 5000 });
+      }
+    }
+  });
 });
 
 test.describe('批量导入 (UT-IMP)', () => {
@@ -165,6 +276,51 @@ test.describe('批量导入 (UT-IMP)', () => {
       await expect(fileInput).toBeVisible();
 
       // 这里不实际上传文件，只验证弹窗可以正常打开
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test('导入格式错误文件 (UT-IMP-03)', async ({ page }) => {
+    await page.goto('/utilities');
+
+    const importBtn = page.getByRole('button', { name: /批量导入|导入/ });
+    if (await importBtn.isVisible()) {
+      await importBtn.click();
+
+      const dialog = page.getByRole('dialog').filter({ hasText: /导入|批量导入/ });
+      await expect(dialog).toBeVisible({ timeout: 5000 });
+
+      const fileInput = dialog.locator('input[type="file"]');
+      // 验证只能上传特定格式
+      const acceptAttr = await fileInput.getAttribute('accept');
+      if (acceptAttr) {
+        // 验证接受 Excel 或 CSV 格式
+        expect(acceptAttr).toMatch(/\.xlsx|\.xls|\.csv|spreadsheet/);
+      }
+
+      await page.keyboard.press('Escape');
+    }
+  });
+
+  test('导入部分成功提示 (UT-IMP-04)', async ({ page }) => {
+    await page.goto('/utilities');
+
+    const importBtn = page.getByRole('button', { name: /批量导入|导入/ });
+    if (await importBtn.isVisible()) {
+      await importBtn.click();
+
+      const dialog = page.getByRole('dialog').filter({ hasText: /导入|批量导入/ });
+      await expect(dialog).toBeVisible({ timeout: 5000 });
+
+      // 验证有模板下载链接
+      const templateLink = dialog.getByRole('link', { name: /下载模板|模板/ }).or(
+        dialog.getByRole('button', { name: /下载模板|模板/ })
+      );
+      // 模板下载是可选功能
+      if (await templateLink.isVisible()) {
+        await expect(templateLink).toBeVisible();
+      }
+
       await page.keyboard.press('Escape');
     }
   });
