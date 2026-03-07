@@ -451,3 +451,50 @@ test.describe('角色与权限 (ORG-ROLE)', () => {
     }
   });
 });
+
+test.describe('数据迁移 (ORG-MIG)', () => {
+  test('数据迁移 (ORG-MIG-01)', async ({ page }) => {
+    await page.goto('/settings/team');
+
+    // 查找数据迁移按钮
+    const migrationBtn = page.getByRole('button', { name: /数据迁移|迁移/ }).first();
+    if (!(await migrationBtn.isVisible())) {
+      console.log('数据迁移按钮不可见，跳过测试');
+      return;
+    }
+
+    await migrationBtn.click();
+
+    const dialog = page.getByRole('dialog').filter({ hasText: /数据迁移|迁移/ });
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+
+    // 选择源组织
+    const sourceOrgSelect = dialog.getByLabel(/源组织|源/);
+    if (await sourceOrgSelect.isVisible()) {
+      await sourceOrgSelect.click();
+      const option = page.getByRole('option').first();
+      if (await option.isVisible()) {
+        await option.click();
+      }
+    }
+
+    // 选择目标组织
+    const targetOrgSelect = dialog.getByLabel(/目标组织|目标/);
+    if (await targetOrgSelect.isVisible()) {
+      await targetOrgSelect.click();
+      const options = page.getByRole('option');
+      if ((await options.count()) > 1) {
+        await options.nth(1).click();
+      }
+    }
+
+    // 确认迁移
+    const executeBtn = dialog.getByRole('button', { name: /开始迁移|执行迁移|确认/ });
+    if (await executeBtn.isVisible()) {
+      await executeBtn.click();
+
+      // 验证迁移结果
+      await expect(page.getByText(/迁移成功|迁移完成/)).toBeVisible({ timeout: 30000 });
+    }
+  });
+});

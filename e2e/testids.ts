@@ -490,3 +490,25 @@ export const ADMIN_SUBSCRIPTIONS = {
   /** 套餐筛选 */
   PLAN_FILTER: 'admin-subscriptions-plan-filter',
 } as const;
+
+/** 运营端 - 品牌配置 */
+export const ADMIN_BRAND = {
+  /** 页面标题 */
+  HEADING: 'admin-brand-heading',
+  /** 品牌名称输入框 */
+  NAME_INPUT: 'admin-brand-name-input',
+  /** 品牌Logo */
+  LOGO_INPUT: 'admin-brand-logo-input',
+  /** 保存按钮 */
+  SAVE_BUTTON: 'admin-brand-save-btn',
+} as const;
+
+/** 运营端 - 额度定价配置 */
+export const ADMIN_PRICING = {
+  /** 页面标题 */
+  HEADING: 'admin-pricing-heading',
+  /** 价格输入框 */
+  PRICE_INPUT: 'admin-pricing-price-input',
+  /** 保存按钮 */
+  SAVE_BUTTON: 'admin-pricing-save-btn',
+} as const;

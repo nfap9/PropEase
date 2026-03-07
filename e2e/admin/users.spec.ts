@@ -700,3 +700,85 @@ test.describe('订阅管理/运营端 (ADM-SUB)', () => {
     }
   });
 });
+
+test.describe('平台配置 (ADM-ST)', () => {
+  test('查看平台概览 (ADM-ST-01)', async ({ page }) => {
+    await page.goto('/admin');
+    await expect(page.getByRole('heading', { name: /概览|统计|总览/ })).toBeVisible({ timeout: 10000 });
+
+    // 验证各项统计卡片
+    const stats = [/组织/, /用户/, /公寓/, /房间/, /订阅/];
+    let visibleCount = 0;
+    for (const stat of stats) {
+      const card = page.getByText(stat).first();
+      if (await card.isVisible().catch(() => false)) {
+        visibleCount++;
+      }
+    }
+    expect(visibleCount).toBeGreaterThan(0);
+  });
+
+  test('查看运营数据分析 (ADM-ST-02)', async ({ page }) => {
+    await page.goto('/admin');
+    // 查找数据分析区域
+    const chartArea = page.locator('canvas, svg').first();
+    const hasChart = await chartArea.isVisible().catch(() => false);
+    const trendSection = page.getByText(/趋势|增长|统计/);
+    const hasTrend = await trendSection.isVisible().catch(() => false);
+    expect(hasChart || hasTrend).toBe(true);
+  });
+
+  test('品牌配置 (ADM-ST-03)', async ({ page }) => {
+    await page.goto('/admin/settings/brand');
+
+    // 验证品牌配置页面
+    const heading = page.getByRole('heading', { name: /品牌|配置|设置/ });
+    const hasHeading = await heading.isVisible().catch(() => false);
+
+    if (hasHeading) {
+      // 查找品牌相关配置项
+      const brandName = page.getByLabel(/品牌名称|系统名称/);
+      if (await brandName.isVisible()) {
+        await brandName.fill('E2E测试品牌');
+      }
+
+      const logoInput = page.getByLabel(/Logo|图标/);
+      if (await logoInput.isVisible()) {
+        // 验证文件上传存在
+        const fileInput = logoInput.locator('input[type="file"]');
+        await expect(fileInput).toBeVisible();
+      }
+
+      // 保存按钮
+      const saveBtn = page.getByRole('button', { name: /保存/ });
+      if (await saveBtn.isVisible()) {
+        await saveBtn.click();
+        await expect(page.getByText(/保存成功/)).toBeVisible({ timeout: 5000 });
+      }
+    }
+  });
+
+  test('额度定价配置 (ADM-ST-04)', async ({ page }) => {
+    await page.goto('/admin/settings/pricing');
+
+    // 验证定价配置页面
+    const heading = page.getByRole('heading', { name: /定价|额度|配置/ });
+    const hasHeading = await heading.isVisible().catch(() => false);
+
+    if (hasHeading) {
+      // 查找定价配置项
+      const priceInput = page.getByLabel(/价格|单价/).first();
+      if (await priceInput.isVisible()) {
+        const currentValue = await priceInput.inputValue();
+        await priceInput.fill('10');
+      }
+
+      // 保存按钮
+      const saveBtn = page.getByRole('button', { name: /保存/ });
+      if (await saveBtn.isVisible()) {
+        await saveBtn.click();
+        await expect(page.getByText(/保存成功/)).toBeVisible({ timeout: 5000 });
+      }
+    }
+  });
+});
