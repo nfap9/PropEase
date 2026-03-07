@@ -42,12 +42,13 @@ pnpm dev:web
 ## 测试与质量实践
 
 - **单元/集成测试**：遵循 TDD（红 → 绿 → 重构）；后端（api）使用 Vitest；根目录 `pnpm run test` 运行测试。
-- **E2E 测试**：使用 Playwright，用例在 `e2e/` 下（业务端 `business.spec.ts`、运营端 `admin.spec.ts`）；编写或修改 E2E 前须阅读 [e2e/AGENTS.md](e2e/AGENTS.md) 与 [docs/e2e-writing-guide.md](docs/e2e-writing-guide.md)，并与 [docs/测试用例.md](docs/测试用例.md) 中的用例编号对应。运行前需先启动前后端，再执行 `pnpm test:e2e` 或 `pnpm exec playwright test business`。
+
+- **E2E 测试**：使用 Playwright，用例在 `e2e/`；编写测试用例使用playwright-e2e-testing技能；
+
 - **代码质量**：强制使用强类型，避免 `Any`/`any`，优先显式类型注解；编写自文档化代码，仅在需要解释意图时添加注释。
 
 ## 语言风格
 
-- **Python**: 在函数和属性上保持类型提示，实现相关的特殊方法（如 `__repr__`, `__str__`）
 - **TypeScript**: 使用严格配置，依赖 ESLint（优先使用 `pnpm lint:fix`）加上 `pnpm type-check`，避免 `any` 类型
 
 ## 通用实践
