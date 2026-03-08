@@ -159,32 +159,32 @@ echo ""
 
 # 构建 API
 print_task "构建 API 镜像"
-BUILD_LOG=$(mktemp)
-if docker buildx build --platform linux/amd64 --load -f api/Dockerfile -t apartment-ultra_api:latest . >"$BUILD_LOG" 2>&1; then
+echo ""
+if docker buildx build --platform linux/amd64 --load -f api/Dockerfile -t apartment-ultra_api:latest . 2>&1 | while IFS= read -r line; do
+    echo -e "  ${DIM}$line${NC}"
+done; then
+    echo ""
     print_done
 else
+    echo ""
     print_fail
-    echo -e "  ${RED}构建失败，错误日志:${NC}"
-    tail -50 "$BUILD_LOG" | sed 's/^/  /'
-    rm -f "$BUILD_LOG"
     exit 1
 fi
-rm -f "$BUILD_LOG"
 
 # 构建 Web
 print_task "构建 Web 镜像"
 API_URL=$(grep "^NEXT_PUBLIC_API_URL=" .env.production | cut -d'=' -f2-)
-BUILD_LOG=$(mktemp)
-if docker buildx build --platform linux/amd64 --load -f web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=${API_URL} -t apartment-ultra_web:latest . >"$BUILD_LOG" 2>&1; then
+echo ""
+if docker buildx build --platform linux/amd64 --load -f web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=${API_URL} -t apartment-ultra_web:latest . 2>&1 | while IFS= read -r line; do
+    echo -e "  ${DIM}$line${NC}"
+done; then
+    echo ""
     print_done
 else
+    echo ""
     print_fail
-    echo -e "  ${RED}构建失败，错误日志:${NC}"
-    tail -50 "$BUILD_LOG" | sed 's/^/  /'
-    rm -f "$BUILD_LOG"
     exit 1
 fi
-rm -f "$BUILD_LOG"
 
 # 保存镜像
 print_task "导出镜像文件"
