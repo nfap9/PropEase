@@ -41,9 +41,12 @@ SERVER_HOST="${DEPLOY_HOST:-}"
 
 log_info "开始构建 Docker 镜像..."
 
+# 构建参数：指定平台为 linux/amd64（适配云服务器）
+BUILD_ARGS="--platform linux/amd64"
+
 # 构建 API 镜像
 log_info "构建 API 镜像..."
-docker build -f api/Dockerfile -t ${IMAGE_API}:${TAG} .
+docker build ${BUILD_ARGS} -f api/Dockerfile -t ${IMAGE_API}:${TAG} .
 
 # 构建 Web 镜像（需要传入构建参数）
 log_info "构建 Web 镜像..."
@@ -62,7 +65,7 @@ else
     exit 1
 fi
 log_info "API URL: ${API_URL}"
-docker build -f web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=${API_URL} -t ${IMAGE_WEB}:${TAG} .
+docker build ${BUILD_ARGS} -f web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=${API_URL} -t ${IMAGE_WEB}:${TAG} .
 
 log_info "构建完成!"
 
