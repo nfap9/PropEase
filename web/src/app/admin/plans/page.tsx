@@ -254,7 +254,7 @@ export default function AdminPlansPage() {
         </Button>
       </div>
 
-      <DataTable columns={columns} data={plans ?? []} data-testid="admin-plans-list" />
+      <DataTable columns={columns} data={plans ?? []} testid="admin-plans-list" />
 
       {/* 新建 */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>

@@ -419,6 +419,18 @@ export const ADMIN = {
   LOGOUT_BUTTON: 'admin-logout-btn',
 } as const;
 
+/** 运营端 - 登录 */
+export const ADMIN_LOGIN = {
+  /** 登录页 */
+  PAGE: 'admin-login-page',
+  /** 用户名输入框 */
+  USERNAME_INPUT: 'admin-username-input',
+  /** 密码输入框 */
+  PASSWORD_INPUT: 'admin-password-input',
+  /** 登录按钮 */
+  LOGIN_BUTTON: 'admin-login-button',
+} as const;
+
 /** 运营端 - 运营角色 */
 export const ADMIN_ROLES = {
   /** 页面标题 */

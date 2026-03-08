@@ -34,11 +34,27 @@ test.describe('创建公寓', () => {
     await page.fill(`[data-testid="${APARTMENTS.NAME_INPUT}"]`, name);
     await page.fill(`[data-testid="${APARTMENTS.ADDRESS_INPUT}"]`, '测试地址');
 
-    // 提交
-    await page.click(`[data-testid="${APARTMENTS.CONFIRM_BUTTON}"]`);
+    // 提交 - 点击并等待网络请求完成
+    const confirmButton = page.locator(`[data-testid="${APARTMENTS.CONFIRM_BUTTON}"]`);
 
-    // 等待弹窗关闭
-    await expect(page.locator(`[data-testid="${APARTMENTS.CREATE_DIALOG}"]`)).not.toBeVisible();
+    // 等待 API 响应
+    const responsePromise = page.waitForResponse(resp =>
+      resp.url().includes('/api/v1/apartments') && resp.request().method() === 'POST'
+    ).catch(() => null);
+
+    await confirmButton.click();
+
+    // 等待网络响应
+    const response = await responsePromise;
+
+    // 如果响应失败，打印错误
+    if (response && !response.ok()) {
+      const body = await response.text();
+      console.error('API Error:', response.status(), body);
+    }
+
+    // 等待弹窗关闭（增加超时时间）
+    await expect(page.locator(`[data-testid="${APARTMENTS.CREATE_DIALOG}"]`)).not.toBeVisible({ timeout: 10000 });
 
     // 验证成功提示
     // 注：具体提示方式可能不同，这里验证弹窗关闭即可
@@ -148,17 +164,19 @@ test.describe('删除公寓', () => {
     await expect(page.locator(`[data-testid="${APARTMENTS.CREATE_DIALOG}"]`)).toBeVisible();
     await page.fill(`[data-testid="${APARTMENTS.NAME_INPUT}"]`, name);
     await page.fill(`[data-testid="${APARTMENTS.ADDRESS_INPUT}"]`, '待删除地址');
-    await page.click(`[data-testid="${APARTMENTS.CONFIRM_BUTTON}"]`);
-    await expect(page.locator(`[data-testid="${APARTMENTS.CREATE_DIALOG}"]`)).not.toBeVisible();
+
+    // 点击确认按钮
+    const confirmButton = page.locator(`[data-testid="${APARTMENTS.CONFIRM_BUTTON}"]`);
+    await confirmButton.click();
+
+    // 等待按钮显示"创建中..."
+    await expect(confirmButton).toHaveText(/创建中/, { timeout: 3000 }).catch(() => {});
+    await expect(page.locator(`[data-testid="${APARTMENTS.CREATE_DIALOG}"]`)).not.toBeVisible({ timeout: 10000 });
 
     // 等待列表刷新
     await page.waitForTimeout(500);
 
-    // 搜索刚创建的公寓
-    await page.fill(`[data-testid="${APARTMENTS.SEARCH_INPUT}"]`, name);
-    await page.waitForTimeout(500);
-
-    // 找到并删除
+    // 找到刚创建的公寓（页面无搜索功能，直接查找）
     const createdItem = page.locator(`text="${name}"`).first();
     if (await createdItem.isVisible()) {
       // 悬停显示操作

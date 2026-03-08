@@ -470,7 +470,7 @@ function BillsContent() {
           {billsLoading ? (
             <Skeleton className="h-96" />
           ) : (
-            <DataTable columns={columns} data={filteredBills || []} data-testid={BILLS.LIST} />
+            <DataTable columns={columns} data={filteredBills || []} testid={BILLS.LIST} />
           )}
         </div>
 

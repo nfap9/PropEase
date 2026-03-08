@@ -374,7 +374,7 @@ export default function TeamSettingsPage() {
                   {membersLoading ? (
                     <Skeleton className="h-64" />
                   ) : (
-                    <DataTable columns={memberColumns} data={members || []} data-testid={TEAM_SETTINGS.MEMBER_LIST} />
+                    <DataTable columns={memberColumns} data={members || []} testid={TEAM_SETTINGS.MEMBER_LIST} />
                   )}
                 </>
               )}

@@ -1,5 +1,5 @@
 import { Page, BrowserContext } from '@playwright/test';
-import { AUTH } from '../testids';
+import { AUTH, ADMIN_LOGIN } from '../testids';
 
 /**
  * 测试账号配置
@@ -22,12 +22,23 @@ export const TEST_ACCOUNTS = {
 };
 
 /**
+ * 运营后台测试账号配置
+ */
+export const ADMIN_TEST_ACCOUNTS = {
+  admin: {
+    username: process.env.E2E_ADMIN_USERNAME || 'admin',
+    password: process.env.E2E_ADMIN_PASSWORD || 'admin123',
+  },
+};
+
+/**
  * Token 存储的 localStorage key
  */
 export const AUTH_STORAGE_KEYS = {
   ACCESS_TOKEN: 'access_token',
   REFRESH_TOKEN: 'refresh_token',
   CURRENT_ORG_ID: 'current_organization_id',
+  ADMIN_ACCESS_TOKEN: 'admin_access_token',
 } as const;
 
 /**
@@ -189,4 +200,70 @@ export async function setCurrentOrgId(page: Page, orgId: string): Promise<void> 
     ({ key, value }) => localStorage.setItem(key, value),
     { key: AUTH_STORAGE_KEYS.CURRENT_ORG_ID, value: orgId }
   );
+}
+
+/**
+ * 运营后台登录
+ *
+ * @param page - Playwright Page 对象
+ * @param username - 用户名
+ * @param password - 密码
+ */
+export async function adminLogin(
+  page: Page,
+  username: string = ADMIN_TEST_ACCOUNTS.admin.username,
+  password: string = ADMIN_TEST_ACCOUNTS.admin.password
+): Promise<void> {
+  await page.goto('/admin/login');
+
+  // 等待登录页加载
+  await page.waitForSelector(`[data-testid="${ADMIN_LOGIN.PAGE}"]`, { timeout: 10000 });
+
+  // 填写用户名
+  await page.fill(`[data-testid="${ADMIN_LOGIN.USERNAME_INPUT}"]`, username);
+
+  // 填写密码
+  await page.fill(`[data-testid="${ADMIN_LOGIN.PASSWORD_INPUT}"]`, password);
+
+  // 点击登录按钮
+  await page.click(`[data-testid="${ADMIN_LOGIN.LOGIN_BUTTON}"]`);
+
+  // 等待跳转到管理后台首页
+  await page.waitForURL(/\/admin(?!\/login)/, { timeout: 15000 });
+
+  // 等待 token 存入 localStorage
+  await page.waitForFunction(
+    (key) => localStorage.getItem(key) !== null,
+    AUTH_STORAGE_KEYS.ADMIN_ACCESS_TOKEN,
+    { timeout: 5000 }
+  );
+}
+
+/**
+ * 检查是否已登录运营后台
+ *
+ * @param page - Playwright Page 对象
+ * @returns 是否已登录运营后台
+ */
+export async function isAdminAuthenticated(page: Page): Promise<boolean> {
+  const token = await page.evaluate(
+    (key) => localStorage.getItem(key),
+    AUTH_STORAGE_KEYS.ADMIN_ACCESS_TOKEN
+  );
+  return token !== null;
+}
+
+/**
+ * 运营后台退出登录
+ *
+ * @param page - Playwright Page 对象
+ */
+export async function adminLogout(page: Page): Promise<void> {
+  // 清除 localStorage 中的认证信息
+  await page.evaluate(() => {
+    localStorage.removeItem('admin_access_token');
+  });
+
+  // 跳转到运营后台登录页
+  await page.goto('/admin/login');
 }

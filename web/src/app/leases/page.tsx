@@ -376,7 +376,7 @@ export default function LeasesPage() {
           {leasesLoading ? (
             <Skeleton className="h-96" />
           ) : (
-            <DataTable columns={columns} data={filteredLeases} data-testid={LEASES.LIST} />
+            <DataTable columns={columns} data={filteredLeases} testid={LEASES.LIST} />
           )}
         </div>
 

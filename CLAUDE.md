@@ -40,6 +40,8 @@ pnpm dev:web
 - 阅读 `web/AGENTS.md` 了解详情
 
 ## 测试与质量实践
+ 
+以测试人员的视角运行试，记录发现的问题和改进点
 
 - **单元/集成测试**：遵循 TDD（红 → 绿 → 重构）；后端（api）使用 Vitest；根目录 `pnpm run test` 运行测试。
 

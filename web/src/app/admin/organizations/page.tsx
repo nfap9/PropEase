@@ -162,7 +162,7 @@ export default function AdminOrganizationsPage() {
         </Select>
       </div>
 
-      <DataTable columns={columns} data={organizations ?? []} data-testid="admin-organizations-list" />
+      <DataTable columns={columns} data={organizations ?? []} testid="admin-organizations-list" />
     </div>
   );
 }

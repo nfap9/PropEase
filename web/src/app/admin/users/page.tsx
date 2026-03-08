@@ -274,7 +274,7 @@ export default function AdminUsersPage() {
         </Button>
       </div>
 
-      <DataTable columns={columns} data={users ?? []} data-testid="admin-users-list" />
+      <DataTable columns={columns} data={users ?? []} testid="admin-users-list" />
 
       {/* 新建 */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>

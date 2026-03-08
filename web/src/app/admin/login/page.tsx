@@ -97,7 +97,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4" data-testid="admin-login-page">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>管理后台登录</CardTitle>
@@ -114,7 +114,7 @@ export default function AdminLoginPage() {
                   <FormItem>
                     <FormLabel>用户名</FormLabel>
                     <FormControl>
-                      <Input placeholder="请输入用户名" {...field} autoComplete="username" />
+                      <Input placeholder="请输入用户名" {...field} autoComplete="username" data-testid="admin-username-input" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -132,13 +132,14 @@ export default function AdminLoginPage() {
                         placeholder="请输入密码"
                         {...field}
                         autoComplete="current-password"
+                        data-testid="admin-password-input"
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" data-testid="admin-login-button">
                 登录
               </Button>
             </form>

@@ -53,6 +53,7 @@ import {
   Wrench,
   MoreVertical,
   MapPin,
+  Search,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -81,6 +82,7 @@ export default function ApartmentsPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedApartment, setSelectedApartment] = useState<ApartmentWithStats | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: apartments, isLoading: apartmentsLoading } = useQuery({
     queryKey: ['apartments', orgId],
@@ -146,6 +148,16 @@ export default function ApartmentsPage() {
     setIsDeleteOpen(true);
   };
 
+  // 过滤公寓列表
+  const filteredApartments = apartments?.filter((apartment) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      apartment.name.toLowerCase().includes(query) ||
+      (apartment.address?.toLowerCase().includes(query) ?? false)
+    );
+  });
+
   if (authLoading) {
     return (
       <MainLayout>
@@ -191,15 +203,27 @@ export default function ApartmentsPage() {
             </PermissionGuard>
           </div>
 
+          {/* 搜索栏 */}
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="搜索公寓名称或地址..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+              data-testid="apartments-search-input"
+            />
+          </div>
+
           {apartmentsLoading ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <Skeleton className="h-48" />
               <Skeleton className="h-48" />
               <Skeleton className="h-48" />
             </div>
-          ) : apartments && apartments.length > 0 ? (
+          ) : filteredApartments && filteredApartments.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-testid="apartments-list">
-              {apartments.map((apartment) => (
+              {filteredApartments.map((apartment) => (
                 <Link key={apartment.id} href={`/apartments/${apartment.id}`}>
                   <Card className="h-full cursor-pointer transition-shadow hover:shadow-md">
                     <CardHeader className="pb-3">
@@ -306,6 +330,14 @@ export default function ApartmentsPage() {
                 </Link>
               ))}
             </div>
+          ) : apartments && apartments.length > 0 ? (
+            <Card className="border-dashed" data-testid="apartments-empty-state">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Search className="mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="mb-2 text-lg font-medium">未找到匹配的公寓</h3>
+                <p className="text-sm text-muted-foreground">尝试使用其他关键词搜索</p>
+              </CardContent>
+            </Card>
           ) : (
             <Card className="border-dashed" data-testid="apartments-empty-state">
               <CardContent className="flex flex-col items-center justify-center py-12">
@@ -388,7 +420,7 @@ export default function ApartmentsPage() {
             >
               <div className="space-y-2">
                 <Label htmlFor="edit-name">公寓名称</Label>
-                <Input id="edit-name" {...editForm.register('name')} />
+                <Input id="edit-name" {...editForm.register('name')} data-testid="apartments-name-input" />
                 {editForm.formState.errors.name && (
                   <p className="text-sm text-destructive">
                     {editForm.formState.errors.name.message}
@@ -397,7 +429,7 @@ export default function ApartmentsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-address">地址</Label>
-                <Input id="edit-address" {...editForm.register('address')} />
+                <Input id="edit-address" {...editForm.register('address')} data-testid="apartments-address-input" />
                 {editForm.formState.errors.address && (
                   <p className="text-sm text-destructive">
                     {editForm.formState.errors.address.message}

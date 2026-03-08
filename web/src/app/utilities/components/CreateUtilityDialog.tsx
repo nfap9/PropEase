@@ -83,7 +83,7 @@ export function CreateUtilityDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg" data-testid="utilities-entry-dialog">
         <DialogHeader>
           <DialogTitle>录入水电读数</DialogTitle>
           <DialogDescription>录入房间的水电表读数</DialogDescription>

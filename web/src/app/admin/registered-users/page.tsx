@@ -209,7 +209,7 @@ export default function AdminRegisteredUsersPage() {
         </div>
       </div>
 
-      <DataTable columns={columns} data={users ?? []} data-testid="admin-registered-users-list" />
+      <DataTable columns={columns} data={users ?? []} testid="admin-registered-users-list" />
 
       <AlertDialog
         open={!!disableConfirmUserId}

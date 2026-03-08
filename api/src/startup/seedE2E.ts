@@ -6,6 +6,13 @@ import { hashPassword } from '../utils/security.js';
 
 /** E2E 测试用固定用户 */
 export const E2E_TEST_DATA = {
+  // 运营后台管理员
+  admin: {
+    username: 'admin',
+    password: 'admin123',
+    name: 'E2E测试管理员',
+    roleName: 'E2E超级管理员',
+  },
   // 用户配置
   user: {
     phone: '13800138000',
@@ -53,9 +60,74 @@ export const E2E_TEST_DATA = {
 // ==================== 种子函数 ====================
 
 /**
+ * 确保 E2E 测试套餐存在
+ */
+async function ensureE2ETestPlan(): Promise<string> {
+  let plan = await prisma.subscriptionPlan.findFirst({
+    where: { code: 'e2e-test-plan' },
+  });
+  if (!plan) {
+    plan = await prisma.subscriptionPlan.create({
+      data: {
+        id: ulid().toLowerCase(),
+        name: 'E2E 测试套餐',
+        code: 'e2e-test-plan',
+        description: 'E2E 自动化测试专用套餐，具有高额度限制',
+        price_monthly: 0,
+        price_yearly: 0,
+        max_organizations: 10,
+        max_apartments: 100,
+        max_rooms: 10000,
+        max_members: 50,
+        rooms_count_scope: 'organization',
+        members_count_scope: 'organization',
+        is_active: true,
+        sort_order: 999,
+      },
+    });
+    console.log('E2E seed: created test plan e2e-test-plan');
+  }
+  return plan.id;
+}
+
+/**
+ * 确保组织有订阅
+ */
+async function ensureOrgSubscription(orgId: string, planId: string): Promise<void> {
+  const existingSub = await prisma.organizationSubscription.findUnique({
+    where: { organization_id: orgId },
+  });
+  if (!existingSub) {
+    await prisma.organizationSubscription.create({
+      data: {
+        id: ulid().toLowerCase(),
+        organization_id: orgId,
+        plan_id: planId,
+        status: 'active',
+        billing_cycle: 'monthly',
+        start_date: new Date(),
+        end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1年后过期
+        auto_renew: true,
+      },
+    });
+    console.log('E2E seed: created subscription for org', orgId);
+  } else if (existingSub.plan_id !== planId) {
+    // 更新到 E2E 测试套餐
+    await prisma.organizationSubscription.update({
+      where: { id: existingSub.id },
+      data: { plan_id: planId },
+    });
+    console.log('E2E seed: updated subscription to e2e-test-plan for org', orgId);
+  }
+}
+
+/**
  * 创建 E2E 测试用户和组织
  */
 export async function seedE2EUser(): Promise<{ userId: string; orgId: string }> {
+  // 先确保 E2E 测试套餐存在
+  const planId = await ensureE2ETestPlan();
+
   const existing = await prisma.user.findUnique({ where: { phone: E2E_TEST_DATA.user.phone } });
   if (existing) {
     // 获取用户的组织
@@ -63,9 +135,17 @@ export async function seedE2EUser(): Promise<{ userId: string; orgId: string }> 
       where: { user_id: existing.id },
       include: { organization: true },
     });
+    const orgId = membership?.organization_id || '';
+
+    // 确保现有组织有 E2E 测试套餐订阅
+    if (orgId) {
+      await ensureOrgSubscription(orgId, planId);
+    }
+
+    console.log('E2E seed: user already exists', E2E_TEST_DATA.user.phone);
     return {
       userId: existing.id,
-      orgId: membership?.organization_id || '',
+      orgId,
     };
   }
 
@@ -100,8 +180,72 @@ export async function seedE2EUser(): Promise<{ userId: string; orgId: string }> 
     },
   });
 
+  // 为新组织创建订阅
+  await ensureOrgSubscription(orgId, planId);
+
   console.log('E2E seed: created test user', E2E_TEST_DATA.user.phone);
   return { userId, orgId };
+}
+
+/**
+ * 创建 E2E 测试管理员
+ */
+export async function seedE2EAdmin(): Promise<{ adminUserId: string }> {
+  // 创建管理员角色（如果不存在）
+  let role = await prisma.adminRole.findFirst({
+    where: { name: E2E_TEST_DATA.admin.roleName },
+  });
+
+  if (!role) {
+    role = await prisma.adminRole.create({
+      data: {
+        id: ulid().toLowerCase(),
+        name: E2E_TEST_DATA.admin.roleName,
+        permissions: ['*'], // 超级管理员拥有所有权限
+        is_system: true,
+      },
+    });
+    console.log('E2E seed: created admin role', E2E_TEST_DATA.admin.roleName);
+  }
+
+  // 检查管理员是否已存在
+  const existingAdmin = await prisma.adminUser.findUnique({
+    where: { username: E2E_TEST_DATA.admin.username },
+  });
+
+  const passwordHash = await hashPassword(E2E_TEST_DATA.admin.password);
+
+  if (existingAdmin) {
+    // 更新密码以确保测试可以登录
+    await prisma.adminUser.update({
+      where: { id: existingAdmin.id },
+      data: {
+        password_hash: passwordHash,
+        is_active: true,
+        role_id: role.id,
+      },
+    });
+    console.log('E2E seed: updated admin user password', E2E_TEST_DATA.admin.username);
+    return { adminUserId: existingAdmin.id };
+  }
+
+  // 创建管理员账号
+  const adminUserId = ulid().toLowerCase();
+
+  await prisma.adminUser.create({
+    data: {
+      id: adminUserId,
+      username: E2E_TEST_DATA.admin.username,
+      password_hash: passwordHash,
+      name: E2E_TEST_DATA.admin.name,
+      role_id: role.id,
+      is_active: true,
+      is_system: true,
+    },
+  });
+
+  console.log('E2E seed: created admin user', E2E_TEST_DATA.admin.username);
+  return { adminUserId };
 }
 
 /**
@@ -249,19 +393,22 @@ export async function seedE2EUtilityConfig(orgId: string): Promise<void> {
 export async function seedE2E(): Promise<{ userId: string; orgId: string }> {
   console.log('E2E seed: starting...');
 
-  // 1. 创建用户和组织
+  // 1. 创建管理员
+  await seedE2EAdmin();
+
+  // 2. 创建用户和组织
   const { userId, orgId } = await seedE2EUser();
 
-  // 2. 创建公寓和房间
+  // 3. 创建公寓和房间
   await seedE2EApartments(orgId);
 
-  // 3. 创建租客
+  // 4. 创建租客
   await seedE2ETenants(orgId);
 
-  // 4. 创建租约
+  // 5. 创建租约
   await seedE2ELeases(orgId);
 
-  // 5. 创建水电配置
+  // 6. 创建水电配置
   await seedE2EUtilityConfig(orgId);
 
   console.log('E2E seed: completed');
@@ -275,6 +422,24 @@ export async function seedE2E(): Promise<{ userId: string; orgId: string }> {
  */
 export async function cleanE2E(): Promise<void> {
   console.log('E2E clean: starting...');
+
+  // 删除管理员账号
+  const admin = await prisma.adminUser.findUnique({
+    where: { username: E2E_TEST_DATA.admin.username },
+  });
+  if (admin) {
+    await prisma.adminUser.delete({ where: { id: admin.id } });
+    console.log('E2E clean: deleted admin user');
+  }
+
+  // 删除管理员角色
+  const adminRole = await prisma.adminRole.findFirst({
+    where: { name: E2E_TEST_DATA.admin.roleName },
+  });
+  if (adminRole) {
+    await prisma.adminRole.delete({ where: { id: adminRole.id } });
+    console.log('E2E clean: deleted admin role');
+  }
 
   const user = await prisma.user.findUnique({
     where: { phone: E2E_TEST_DATA.user.phone },
