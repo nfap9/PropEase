@@ -51,6 +51,7 @@ scp dist/*.tar.gz ${SERVER_USER}@${SERVER_HOST}:/tmp/
 log_info "步骤 3/4: 上传配置文件..."
 ssh ${SERVER_USER}@${SERVER_HOST} "mkdir -p ${REMOTE_DIR}/docker ${REMOTE_DIR}/scripts"
 scp docker/docker-compose.prod.yaml ${SERVER_USER}@${SERVER_HOST}:${REMOTE_DIR}/docker/
+scp docker/nginx.conf.template ${SERVER_USER}@${SERVER_HOST}:${REMOTE_DIR}/docker/
 scp scripts/deploy-images.sh ${SERVER_USER}@${SERVER_HOST}:${REMOTE_DIR}/scripts/
 
 # 上传环境变量（如果本地有 .env.production）

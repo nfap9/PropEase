@@ -114,8 +114,8 @@ services:
     environment:
       NODE_ENV: production
       API_URL_SERVER: http://api:8000/api/v1
-    ports:
-      - "127.0.0.1:3000:3000"
+    expose:
+      - "3000"
     depends_on:
       api:
         condition: service_healthy
@@ -131,6 +131,27 @@ services:
       resources:
         limits:
           memory: 1G
+
+  nginx:
+    image: nginx:alpine
+    container_name: apartment_ultra_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    environment:
+      - SERVER_NAME=${SERVER_NAME:-localhost}
+    depends_on:
+      - api
+      - web
+    restart: unless-stopped
+    networks:
+      - apartment-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres_data:

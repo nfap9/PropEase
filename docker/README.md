@@ -41,6 +41,7 @@ docker compose -f docker-compose.prod.yaml --env-file .env.production up -d
 | `SECRET_KEY` | JWT 签名密钥 | `openssl rand -hex 64` |
 | `CORS_ORIGINS` | 允许的前端来源 | `["http://${DEPLOY_HOST}"]` |
 | `NEXT_PUBLIC_API_URL` | API 地址 | `http://${DEPLOY_HOST}/api/v1` |
+| `SERVER_NAME` | Nginx server_name | `${DEPLOY_HOST}` |
 | `ADMIN_INIT_PASSWORD` | 管理员初始密码 | 自定义强密码 |
 
 ---
@@ -82,7 +83,7 @@ docker --version
 cp docker/.env.production.example .env.production
 ```
 
-编辑 `.env.production`，配置以下内容：
+编辑 `.env.production`，配置以下内容（替换 `${DEPLOY_HOST}` 为服务器地址）：
 
 ```bash
 # 数据库
@@ -91,9 +92,12 @@ POSTGRES_PASSWORD=<生成的数据库密码>
 # 安全
 SECRET_KEY=<生成的JWT密钥>
 
-# 访问控制（替换 ${DEPLOY_HOST} 为你的服务器地址）
+# 访问控制
 CORS_ORIGINS=["http://${DEPLOY_HOST}"]
 NEXT_PUBLIC_API_URL=http://${DEPLOY_HOST}/api/v1
+
+# Nginx
+SERVER_NAME=${DEPLOY_HOST}
 
 # 管理员
 ADMIN_INIT_PASSWORD=<管理员初始密码>
@@ -106,77 +110,16 @@ ADMIN_INIT_PASSWORD=<管理员初始密码>
 DEPLOY_HOST=<服务器地址> ./scripts/deploy-from-local.sh
 ```
 
-该脚本会自动完成：构建镜像 → 上传镜像和配置文件 → 远程启动服务
+该脚本会自动完成：构建镜像 → 上传镜像和配置文件 → 远程启动服务（包含 Nginx）
 
-**4. 配置 Nginx 反向代理（服务器上执行）**
-
-```bash
-# 安装 Nginx
-sudo apt install -y nginx
-
-# 创建配置文件
-sudo vim /etc/nginx/sites-available/apartment-ultra
-```
-
-写入以下配置（将 `${SERVER_NAME}` 替换为服务器 IP 或域名）：
-
-```nginx
-upstream api_backend {
-    server 127.0.0.1:8000;
-}
-
-upstream web_backend {
-    server 127.0.0.1:3000;
-}
-
-server {
-    listen 80;
-    server_name ${SERVER_NAME};
-
-    location /api/ {
-        proxy_pass http://api_backend;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        client_max_body_size 10M;
-    }
-
-    location /health {
-        proxy_pass http://api_backend/api/v1/health;
-        access_log off;
-    }
-
-    location / {
-        proxy_pass http://web_backend;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
-}
-```
-
-启用配置：
-
-```bash
-sudo ln -s /etc/nginx/sites-available/apartment-ultra /etc/nginx/sites-enabled/
-sudo rm /etc/nginx/sites-enabled/default  # 可选
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-**5. 验证部署**
+**4. 验证部署**
 
 ```bash
 # 健康检查
-curl http://localhost:8000/api/v1/health
-
-# 通过 Nginx 访问（替换 ${DEPLOY_HOST}）
 curl http://${DEPLOY_HOST}/health
+
+# 浏览器访问
+http://${DEPLOY_HOST}
 ```
 
 ### 后续更新
@@ -193,9 +136,10 @@ DEPLOY_HOST=<服务器地址> ./scripts/deploy-from-local.sh
 # 1. 构建
 ./scripts/build-local.sh
 
-# 2. 上传文件（设置 DEPLOY_USER 和 DEPLOY_HOST）
+# 2. 上传文件
 scp dist/*.tar.gz ${DEPLOY_USER:-root}@${DEPLOY_HOST}:/tmp/
 scp docker/docker-compose.prod.yaml ${DEPLOY_USER:-root}@${DEPLOY_HOST}:/opt/apartment-ultra/docker/
+scp docker/nginx.conf.template ${DEPLOY_USER:-root}@${DEPLOY_HOST}:/opt/apartment-ultra/docker/
 scp scripts/deploy-images.sh ${DEPLOY_USER:-root}@${DEPLOY_HOST}:/opt/apartment-ultra/scripts/
 scp .env.production ${DEPLOY_USER:-root}@${DEPLOY_HOST}:/opt/apartment-ultra/
 
@@ -220,14 +164,17 @@ ssh ${DEPLOY_USER:-root}@${DEPLOY_HOST} "cd /opt/apartment-ultra && chmod +x scr
 
 ```
 ┌─────────────────────────────────────────┐
-│              Nginx (80/443)             │
+│           Nginx (Docker :80)            │
 ├──────────────────┬──────────────────────┤
 │   Web (Next.js)  │   API (Express)      │
 │      :3000       │       :8000          │
 ├──────────────────┴──────────────────────┤
 │            PostgreSQL :5432             │
+│              Redis :6379                │
 └─────────────────────────────────────────┘
 ```
+
+所有服务都在 Docker 网络中运行，Nginx 对外暴露 80 端口。
 
 ---
 
@@ -235,14 +182,13 @@ ssh ${DEPLOY_USER:-root}@${DEPLOY_HOST} "cd /opt/apartment-ultra && chmod +x scr
 
 ```bash
 # 查看日志
+docker compose -f docker/docker-compose.prod.yaml --env-file .env.production logs -f
+
+# 查看特定服务日志
 docker compose -f docker/docker-compose.prod.yaml --env-file .env.production logs -f api
-docker compose -f docker/docker-compose.prod.yaml --env-file .env.production logs -f web
 
 # 重启服务
-docker compose -f docker/docker-compose.prod.yaml --env-file .env.production restart api
-
-# 进入容器
-docker compose -f docker/docker-compose.prod.yaml --env-file .env.production exec api sh
+docker compose -f docker/docker-compose.prod.yaml --env-file .env.production restart
 
 # 查看状态
 docker compose -f docker/docker-compose.prod.yaml --env-file .env.production ps
@@ -298,4 +244,14 @@ sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 sudo systemctl start docker
 sudo systemctl enable docker
+```
+
+### 端口被占用
+
+如果服务器 80 端口被占用，修改 `docker-compose.prod.yaml` 中 nginx 的端口映射：
+
+```yaml
+nginx:
+  ports:
+    - "8080:80"  # 改为其他端口
 ```
