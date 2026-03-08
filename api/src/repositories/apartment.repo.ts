@@ -1,4 +1,4 @@
-import type { Prisma, Apartment, Room } from '../generated/client/index.js';
+import type { Prisma, Apartment, Room } from '@prisma/client';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 

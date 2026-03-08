@@ -159,20 +159,32 @@ echo ""
 
 # 构建 API
 print_task "构建 API 镜像"
-docker buildx build --platform linux/amd64 --load -f api/Dockerfile -t apartment-ultra_api:latest . >/dev/null 2>&1 &
-BUILD_PID=$!
-show_spinner $BUILD_PID "编译 TypeScript + 生成 Prisma 客户端"
-wait $BUILD_PID
-print_done
+BUILD_LOG=$(mktemp)
+if docker buildx build --platform linux/amd64 --load -f api/Dockerfile -t apartment-ultra_api:latest . >"$BUILD_LOG" 2>&1; then
+    print_done
+else
+    print_fail
+    echo -e "  ${RED}构建失败，错误日志:${NC}"
+    tail -50 "$BUILD_LOG" | sed 's/^/  /'
+    rm -f "$BUILD_LOG"
+    exit 1
+fi
+rm -f "$BUILD_LOG"
 
 # 构建 Web
 print_task "构建 Web 镜像"
 API_URL=$(grep "^NEXT_PUBLIC_API_URL=" .env.production | cut -d'=' -f2-)
-docker buildx build --platform linux/amd64 --load -f web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=${API_URL} -t apartment-ultra_web:latest . >/dev/null 2>&1 &
-BUILD_PID=$!
-show_spinner $BUILD_PID "编译 Next.js + 优化静态资源"
-wait $BUILD_PID
-print_done
+BUILD_LOG=$(mktemp)
+if docker buildx build --platform linux/amd64 --load -f web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=${API_URL} -t apartment-ultra_web:latest . >"$BUILD_LOG" 2>&1; then
+    print_done
+else
+    print_fail
+    echo -e "  ${RED}构建失败，错误日志:${NC}"
+    tail -50 "$BUILD_LOG" | sed 's/^/  /'
+    rm -f "$BUILD_LOG"
+    exit 1
+fi
+rm -f "$BUILD_LOG"
 
 # 保存镜像
 print_task "导出镜像文件"
@@ -222,16 +234,35 @@ print_done
 print_header "启动服务"
 
 print_task "加载镜像"
-ssh ${SSH_DEST} "docker load < /tmp/api.tar.gz && docker load < /tmp/web.tar.gz" 2>/dev/null
-print_done
+LOAD_LOG=$(mktemp)
+if ssh ${SSH_DEST} "docker load < /tmp/api.tar.gz && docker load < /tmp/web.tar.gz" >"$LOAD_LOG" 2>&1; then
+    print_done
+else
+    print_fail
+    echo -e "  ${RED}加载失败，错误日志:${NC}"
+    cat "$LOAD_LOG" | sed 's/^/  /'
+    rm -f "$LOAD_LOG"
+    exit 1
+fi
+rm -f "$LOAD_LOG"
 
 print_task "启动容器"
-ssh ${SSH_DEST} << 'REMOTE_SCRIPT' >/dev/null 2>&1
+DEPLOY_LOG=$(mktemp)
+if ssh ${SSH_DEST} << 'REMOTE_SCRIPT' >"$DEPLOY_LOG" 2>&1
 cd /opt/apartment-ultra
 chmod +x scripts/deploy-images.sh
 ./scripts/deploy-images.sh
 REMOTE_SCRIPT
-print_done
+then
+    print_done
+else
+    print_fail
+    echo -e "  ${RED}启动失败，错误日志:${NC}"
+    cat "$DEPLOY_LOG" | sed 's/^/  /'
+    rm -f "$DEPLOY_LOG"
+    exit 1
+fi
+rm -f "$DEPLOY_LOG"
 
 # ========================================
 # 步骤 5: 健康检查

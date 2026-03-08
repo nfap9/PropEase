@@ -2,7 +2,7 @@ import type {
   SubscriptionPlan,
   OrganizationSubscription,
   SubscriptionOrder,
-} from '../generated/client/index.js';
+} from '@prisma/client';
 import { ulid } from 'ulid';
 import {
   createSubscriptionRepository,

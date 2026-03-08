@@ -1,4 +1,4 @@
-import type { UtilityReading, Prisma } from '../generated/client/index.js';
+import type { UtilityReading, Prisma } from '@prisma/client';
 import { ulid } from 'ulid';
 import {
   createUtilityRepository,

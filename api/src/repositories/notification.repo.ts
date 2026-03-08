@@ -1,4 +1,4 @@
-import type { Notification } from '../generated/client/index.js';
+import type { Notification } from '@prisma/client';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 

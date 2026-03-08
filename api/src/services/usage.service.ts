@@ -1,4 +1,4 @@
-import type { UsageQuotaOrder, } from '../generated/client/index.js';
+import type { UsageQuotaOrder, } from '@prisma/client';
 import type { UsageRepository } from '../repositories/usage.repo.js';
 import { defaultUsageRepo } from '../repositories/usage.repo.js';
 import { prisma } from '../lib/prisma.js';

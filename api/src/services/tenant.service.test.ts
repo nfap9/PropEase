@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createTenantService, type TenantService } from './tenant.service.js';
 import type { TenantRepository } from '../repositories/tenant.repo.js';
-import type { Tenant } from '../generated/client/index.js';
+import type { Tenant } from '@prisma/client';
 
 describe('TenantService', () => {
   // Mock Repository

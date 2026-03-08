@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/layout/providers';
 
 export const dynamic = 'force-dynamic';
 
-const inter = Inter({ subsets: ['latin'] });
+// 使用系统字体栈，避免构建时网络请求 Google Fonts
+const fontFamily = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
 // 服务端使用内部网络地址（Docker 服务名），客户端使用 localhost
 const getServerApiUrl = () =>
@@ -48,7 +48,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body style={{ fontFamily }}>
         <Providers>{children}</Providers>
       </body>
     </html>

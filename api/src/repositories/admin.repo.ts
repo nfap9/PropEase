@@ -8,7 +8,7 @@ import type {
   UsageQuotaOrder,
   PlatformConfig,
   Prisma,
-} from '../generated/client/index.js';
+} from '@prisma/client';
 
 // 使用 Prisma.InputJsonValue 类型
 type InputJsonValue = Prisma.InputJsonValue;
