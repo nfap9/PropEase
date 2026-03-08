@@ -14,6 +14,8 @@ RUN corepack enable pnpm && pnpm install --frozen-lockfile
 COPY api/ api/
 # 先构建 api-contract（api 依赖其 dist），再生成 Prisma 并构建 api
 RUN pnpm --filter @apartment-ultra/api-contract run build
+# 设置构建时的 DATABASE_URL（prisma generate 不需要实际连接）
+ENV DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder"
 RUN pnpm --filter apartment-ultra-api exec prisma generate
 RUN pnpm --filter apartment-ultra-api run build
 
