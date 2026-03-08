@@ -4,10 +4,7 @@ import { config } from '../../config.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { createAppError } from '../../utils/appError.js';
-import { defaultAuthService } from '../../services/auth.service.js';
-
-/** 开发环境万能验证码，无需发送短信，输入此码即可通过 */
-const DEV_VERIFICATION_CODE = '123456';
+import { defaultAuthService, verificationCodeStore } from '../../services/auth.service.js';
 
 const router: Router = Router();
 
@@ -62,16 +59,14 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
       });
       return next(err);
     }
-    const { verification_code } = parsed.data;
+    const { phone, verification_code } = parsed.data;
 
     // 验证码校验
     if (!verification_code) {
       return next(createAppError(400, '验证码不能为空'));
     }
-    if (config.isDev) {
-      if (!defaultAuthService.validateVerificationCode(verification_code)) {
-        return next(createAppError(400, '验证码无效，开发环境请使用 123456'));
-      }
+    if (!defaultAuthService.validateVerificationCode(verification_code, phone)) {
+      return next(createAppError(400, '验证码无效或已过期'));
     }
 
     const user = await defaultAuthService.register(parsed.data);
@@ -118,7 +113,7 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
   }
 });
 
-// 发送短信验证码（stub：仅校验参数，不真实发送；开发环境使用固定码 123456）
+// 发送短信验证码（开发环境生成随机码并打印到控制台）
 router.post('/sms/send', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = SendSmsCodeSchema.safeParse(req.body);
@@ -131,11 +126,19 @@ router.post('/sms/send', async (req: Request, res: Response, next: NextFunction)
       );
     }
     const { phone, purpose } = parsed.data;
+
+    // 生成 6 位随机验证码
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 分钟有效期
+
+    // 存储验证码
+    verificationCodeStore.set(phone, { code, expiresAt, purpose });
+
+    // 开发环境打印验证码到控制台
     if (config.isDev) {
-      console.log(
-        `[开发] 短信验证码 phone=${phone} purpose=${purpose} => 请使用固定码 ${DEV_VERIFICATION_CODE}`
-      );
+      console.log(`[验证码] 手机号: ${phone}, 用途: ${purpose}, 验证码: ${code}`);
     }
+
     res.status(204).send();
   } catch (e) {
     next(e);

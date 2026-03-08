@@ -4,10 +4,16 @@ import { hashPassword, verifyPassword } from '../utils/security.js';
 import { createAccessToken, createRefreshToken, decodeToken } from '../utils/jwt.js';
 import { createAppError } from '../utils/appError.js';
 import { ulid } from 'ulid';
-import { config } from '../config.js';
 
-/** 开发环境万能验证码 */
-const DEV_VERIFICATION_CODE = '123456';
+/** 验证码存储结构 */
+interface VerificationCodeData {
+  code: string;
+  expiresAt: number;
+  purpose: 'login' | 'register';
+}
+
+/** 验证码存储（内存，开发环境使用） */
+export const verificationCodeStore = new Map<string, VerificationCodeData>();
 
 /**
  * 注册输入
@@ -56,7 +62,7 @@ export interface AuthService {
   login(data: LoginInput): Promise<LoginResult>;
   refreshToken(refreshToken: string): Promise<LoginResult>;
   getUserById(id: string): Promise<UserInfo | null>;
-  validateVerificationCode(code: string): boolean;
+  validateVerificationCode(code: string, phone?: string): boolean;
 }
 
 /**
@@ -122,9 +128,12 @@ export function createAuthService(
         if (!verification_code) {
           throw createAppError(401, '验证码无效或已过期');
         }
-        if (config.isDev && verification_code !== DEV_VERIFICATION_CODE) {
-          throw createAppError(401, '验证码无效或已过期，开发环境请使用 123456');
+        const stored = verificationCodeStore.get(phone);
+        if (!stored || stored.code !== verification_code || stored.expiresAt < Date.now()) {
+          throw createAppError(401, '验证码无效或已过期');
         }
+        // 验证成功后删除验证码
+        verificationCodeStore.delete(phone);
       }
 
       if (!user.is_active) {
@@ -175,12 +184,15 @@ export function createAuthService(
       };
     },
 
-    validateVerificationCode: (code: string) => {
-      if (config.isDev) {
-        return code === DEV_VERIFICATION_CODE;
+    validateVerificationCode: (code: string, phone?: string) => {
+      if (!phone) return false;
+      const stored = verificationCodeStore.get(phone);
+      if (!stored || stored.code !== code || stored.expiresAt < Date.now()) {
+        return false;
       }
-      // TODO: 生产环境校验 Redis 中的验证码
-      return false;
+      // 验证成功后删除验证码
+      verificationCodeStore.delete(phone);
+      return true;
     },
   };
 }
