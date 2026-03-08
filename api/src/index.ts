@@ -5,6 +5,7 @@ import { responseWrapper } from './middlewares/responseWrapper.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { healthHandler } from './routes/health.js';
 import { v1Router } from './routes/v1/index.js';
+import { waitForDatabase, verifyDatabaseSchema } from './startup/dbCheck.js';
 import { seedAdminSuper } from './startup/seedAdmin.js';
 import { seedE2EUser } from './startup/seedE2E.js';
 import { seedPermissions } from './startup/seedPermissions.js';
@@ -26,6 +27,23 @@ app.use(errorHandler);
 const port = Number(process.env.PORT) || 8000;
 
 async function start(): Promise<void> {
+  // 1. 等待数据库连接
+  const dbCheck = await waitForDatabase();
+  if (!dbCheck.connected) {
+    console.error('[启动失败] 无法连接数据库，退出...');
+    process.exit(1);
+  }
+
+  // 2. 验证数据库 schema（可选，生产环境可跳过）
+  if (config.isDev) {
+    const schemaValid = await verifyDatabaseSchema();
+    if (!schemaValid) {
+      console.error('[启动失败] 数据库 schema 不完整，请运行 prisma db push');
+      process.exit(1);
+    }
+  }
+
+  // 3. 执行种子数据
   try {
     await seedAdminSuper();
   } catch (e) {
