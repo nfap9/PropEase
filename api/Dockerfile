@@ -3,12 +3,15 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# 配置 pnpm 使用国内镜像
+RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.com
+
 # 复制 workspace 根与各包（含 api-contract），使用单一 lockfile 安装
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY api/package.json api/package.json
 COPY web/package.json web/package.json
 COPY packages/ packages/
-RUN corepack enable pnpm && pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # 复制 api 源码
 COPY api/ api/
