@@ -2,8 +2,9 @@
 
 ## 环境说明
 
-- **docker-compose.yaml** - 生产/联调环境
+- **docker-compose.yaml** - 生产/联调环境（本地开发）
 - **docker-compose.dev.yaml** - 开发环境（支持热重载）
+- **docker-compose.prod.yaml** - 云服务器生产环境
 
 ## 快速启动
 
@@ -11,9 +12,173 @@
 # 开发环境
 docker compose -f docker-compose.dev.yaml up
 
-# 生产环境
+# 生产环境（本地）
 docker compose -f docker-compose.yaml up -d
+
+# 云服务器生产环境
+docker compose -f docker-compose.prod.yaml --env-file .env.production up -d
 ```
+
+---
+
+## 云服务器部署
+
+### 1. 服务器环境准备（CentOS/RHEL）
+
+```bash
+# 更新系统
+sudo yum update -y
+
+# 安装 Docker
+sudo yum install -y yum-utils
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo systemctl start docker && sudo systemctl enable docker
+sudo usermod -aG docker $USER
+
+# 安装 Git 和 Nginx
+sudo yum install -y git epel-release nginx
+sudo systemctl start nginx && sudo systemctl enable nginx
+
+# 配置防火墙
+sudo firewall-cmd --permanent --add-port={22,80,443}/tcp
+sudo firewall-cmd --reload
+
+# 重新登录使 docker 组生效
+exit
+```
+
+### 2. 配置 Docker 镜像加速（国内服务器必选）
+
+```bash
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<EOF
+{
+  "registry-mirrors": [
+    "https://docker.1ms.run",
+    "https://docker.xuanyuan.me"
+  ]
+}
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+备用镜像源（如上述不可用）：
+- `https://dockerhub.icu`
+- `https://hub.rat.dev`
+- `https://docker.hlyun.org`
+
+### 3. 克隆代码并配置
+
+```bash
+# 配置 GitHub SSH 密钥
+ssh-keygen -t ed25519 -C "deploy@server"
+cat ~/.ssh/id_ed25519.pub  # 添加到 GitHub → Settings → SSH Keys
+
+# 克隆代码
+sudo mkdir -p /opt/apartment-ultra && sudo chown $USER:$USER /opt/apartment-ultra
+cd /opt && git clone git@github.com:<your-repo>/apartment-ultra.git apartment-ultra
+cd apartment-ultra
+
+# 配置环境变量
+cp docker/.env.production.example .env.production
+chmod 600 .env.production
+nano .env.production
+
+# 设置脚本权限
+chmod +x scripts/*.sh
+```
+
+### 4. 启动服务
+
+```bash
+./scripts/deploy.sh start
+```
+
+### 5. 配置 Nginx 反向代理
+
+```bash
+sudo nano /etc/nginx/conf.d/apartment-ultra.conf
+```
+
+写入以下配置：
+
+```nginx
+upstream api_backend {
+    server 127.0.0.1:8000;
+}
+
+upstream web_backend {
+    server 127.0.0.1:3000;
+}
+
+server {
+    listen 80;
+    server_name 120.79.41.29;  # 替换为你的 IP 或域名
+
+    location /api/ {
+        proxy_pass http://api_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        client_max_body_size 10M;
+    }
+
+    location /health {
+        proxy_pass http://api_backend/api/v1/health;
+        access_log off;
+    }
+
+    location / {
+        proxy_pass http://web_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+启动 Nginx：
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+### 6. 验证部署
+
+```bash
+# 健康检查
+curl http://localhost:8000/api/v1/health
+
+# 通过 Nginx 访问
+curl http://120.79.41.29/health
+```
+
+浏览器访问：`http://120.79.41.29`
+
+---
+
+## 部署脚本
+
+使用 `scripts/deploy.sh` 管理服务：
+
+```bash
+./scripts/deploy.sh start    # 首次部署
+./scripts/deploy.sh update   # 更新部署
+./scripts/deploy.sh stop     # 停止服务
+./scripts/deploy.sh logs     # 查看日志
+./scripts/deploy.sh status   # 查看状态
+```
+
+---
 
 ## 生产环境配置
 
