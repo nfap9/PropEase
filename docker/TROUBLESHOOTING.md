@@ -35,10 +35,10 @@ sudo systemctl restart docker
 
 ```bash
 # 1. 检查服务状态
-docker compose -f docker/docker-compose.server.yaml --env-file .env.production ps
+docker compose -f docker/docker-compose.yaml --env-file .env.production ps
 
 # 2. 查看 API 日志
-docker compose -f docker/docker-compose.server.yaml --env-file .env.production logs api --tail 50
+docker compose -f docker/docker-compose.yaml --env-file .env.production logs api --tail 50
 ```
 
 ---
@@ -111,7 +111,7 @@ docker restart apartment_ultra_api
 echo "IS_DEV=true" >> .env.production
 
 # 2. 重启 API
-docker compose -f docker/docker-compose.server.yaml --env-file .env.production up -d --force-recreate api
+docker compose -f docker/docker-compose.yaml --env-file .env.production up -d --force-recreate api
 
 # 3. 查看验证码
 docker logs -f apartment_ultra_api 2>&1 | grep 验证码

@@ -27,7 +27,7 @@ log_error() {
 }
 
 PROJECT_DIR="/opt/apartment-ultra"
-COMPOSE_FILE="docker/docker-compose.server.yaml"
+COMPOSE_FILE="docker/docker-compose.yaml"
 ENV_FILE=".env.production"
 
 cd $PROJECT_DIR

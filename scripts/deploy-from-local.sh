@@ -222,7 +222,7 @@ print_done
 
 # 上传配置
 print_task "上传配置文件"
-scp -q docker/docker-compose.server.yaml ${SSH_DEST}:${REMOTE_DIR}/docker/
+scp -q docker/docker-compose.yaml ${SSH_DEST}:${REMOTE_DIR}/docker/
 scp -q docker/nginx.conf.template ${SSH_DEST}:${REMOTE_DIR}/docker/
 scp -q scripts/deploy-images.sh ${SSH_DEST}:${REMOTE_DIR}/scripts/
 scp -q .env.production ${SSH_DEST}:${REMOTE_DIR}/

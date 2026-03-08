@@ -136,7 +136,7 @@ echo -e "${DIM}▶ 检查必要文件${NC}"
 REQUIRED_FILES=(
     "api/Dockerfile:API Dockerfile"
     "web/Dockerfile.prod:Web Dockerfile"
-    "docker/docker-compose.server.yaml:Docker Compose 配置"
+    "docker/docker-compose.yaml:Docker Compose 配置"
     "docker/nginx.conf.template:Nginx 配置"
     "api/prisma/schema.prisma:Prisma Schema"
 )

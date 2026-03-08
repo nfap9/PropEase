@@ -19,7 +19,7 @@
 
 | 文件 | 用途 |
 |------|------|
-| `docker-compose.server.yaml` | 服务器部署（含完整服务） |
+| `docker-compose.yaml` | 服务器部署（含完整服务） |
 | `docker-compose.middleware.yaml` | 本地开发中间件（仅 Postgres + Redis） |
 
 ---
@@ -71,13 +71,13 @@ cp docker/.env.production.example .env.production
 
 ```bash
 # 查看状态
-docker compose -f docker/docker-compose.server.yaml --env-file .env.production ps
+docker compose -f docker/docker-compose.yaml --env-file .env.production ps
 
 # 查看日志
-docker compose -f docker/docker-compose.server.yaml --env-file .env.production logs -f api
+docker compose -f docker/docker-compose.yaml --env-file .env.production logs -f api
 
 # 重启服务
-docker compose -f docker/docker-compose.server.yaml --env-file .env.production restart
+docker compose -f docker/docker-compose.yaml --env-file .env.production restart
 
 # 健康检查
 curl http://localhost:8000/health

@@ -27,7 +27,7 @@ echo -e "${CYAN}╚════════════════════�
 echo ""
 
 ENV_FILE=".env.production"
-COMPOSE_FILE="docker/docker-compose.server.yaml"
+COMPOSE_FILE="docker/docker-compose.yaml"
 
 # 清理函数
 cleanup() {
