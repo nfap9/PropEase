@@ -61,6 +61,7 @@ services:
     container_name: apartment_ultra_api
     environment:
       NODE_ENV: production
+      IS_DEV: ${IS_DEV:-false}
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-apartment_ultra}
       SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
       CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
