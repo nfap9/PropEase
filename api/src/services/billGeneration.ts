@@ -72,30 +72,108 @@ export async function generateBillsForOrg(
         electricityAmount = usage * rate;
       }
     }
+
+    // 查询公寓启用的费用配置
+    const currentDate = new Date();
+    const feeConfigs = await prisma.apartmentFeeConfig.findMany({
+      where: {
+        apartment_id: lease.room.apartment_id,
+        is_enabled: true,
+        effective_from: { lte: currentDate },
+        OR: [{ effective_to: null }, { effective_to: { gte: currentDate } }],
+      },
+      include: {
+        feeType: true,
+        specification: true,
+      },
+    });
+
+    // 计算费用明细
+    const isYearly = lease.rental_type === 'yearly';
+    const feeItemsData: Array<{
+      id: string;
+      fee_type_id: string;
+      specification_id: string | null;
+      fee_name: string;
+      specification_name: string | null;
+      quantity: number;
+      unit_price: number;
+      amount: number;
+    }> = [];
+
     let otherAmount = 0;
-    if (config) {
+
+    for (const feeConfig of feeConfigs) {
+      const spec = feeConfig.specification;
+      const price = isYearly && spec?.price_yearly != null
+        ? Number(spec.price_yearly) / 12
+        : spec?.price_monthly != null
+          ? Number(spec.price_monthly)
+          : 0;
+
+      const feeItem = {
+        id: ulid().toLowerCase(),
+        fee_type_id: feeConfig.fee_type_id,
+        specification_id: feeConfig.specification_id,
+        fee_name: feeConfig.feeType.name,
+        specification_name: spec?.name ?? null,
+        quantity: 1,
+        unit_price: price,
+        amount: price,
+      };
+
+      feeItemsData.push(feeItem);
+      otherAmount += price;
+    }
+
+    // 向后兼容：如果没有新的费用配置，使用旧的 UtilityConfig
+    if (feeConfigs.length === 0 && config) {
       if (config.internet_fee != null) otherAmount += Number(config.internet_fee);
       if (config.management_fee != null) otherAmount += Number(config.management_fee);
       if (config.service_fee != null) otherAmount += Number(config.service_fee);
     }
+
     const totalAmount = rentAmount + waterAmount + electricityAmount + otherAmount;
 
-    await prisma.bill.create({
-      data: {
-        id: ulid().toLowerCase(),
-        lease_id: lease.id,
-        bill_year: billYear,
-        bill_month: billMonth,
-        due_date: dueDate,
-        rent_amount: rentAmount,
-        water_amount: waterAmount,
-        electricity_amount: electricityAmount,
-        other_amount: otherAmount,
-        total_amount: totalAmount,
-        paid_amount: 0,
-        status: 'pending',
-      },
+    const billId = ulid().toLowerCase();
+
+    // 使用事务创建账单和费用明细
+    await prisma.$transaction(async (tx) => {
+      await tx.bill.create({
+        data: {
+          id: billId,
+          lease_id: lease.id,
+          bill_year: billYear,
+          bill_month: billMonth,
+          due_date: dueDate,
+          rent_amount: rentAmount,
+          water_amount: waterAmount,
+          electricity_amount: electricityAmount,
+          other_amount: otherAmount,
+          total_amount: totalAmount,
+          paid_amount: 0,
+          status: 'pending',
+        },
+      });
+
+      // 创建费用明细
+      if (feeItemsData.length > 0) {
+        await tx.billFeeItem.createMany({
+          data: feeItemsData.map((item) => ({
+            id: item.id,
+            bill_id: billId,
+            fee_type_id: item.fee_type_id,
+            specification_id: item.specification_id,
+            fee_name: item.fee_name,
+            specification_name: item.specification_name,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            amount: item.amount,
+          })),
+        });
+      }
     });
+
     created += 1;
   }
 

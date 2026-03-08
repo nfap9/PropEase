@@ -10,3 +10,4 @@ export { utilitiesApi } from './utilities';
 export { subscriptionsApi } from './subscriptions';
 export { usageApi } from './usage';
 export { notificationsApi } from './notifications';
+export { feeTypesApi, apartmentFeeConfigApi, billFeeItemsApi } from './feeTypes';

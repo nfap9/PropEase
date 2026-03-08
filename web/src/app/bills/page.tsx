@@ -38,13 +38,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
-import { billsApi } from '@/lib/api';
+import { billsApi, billFeeItemsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
 import { Bill, BillStatus, PaymentMethod, Payment } from '@/types';
 import { BILL_STATUS_CONFIG } from '@/lib/status-config';
+import type { BillFeeItem } from '@apartment-ultra/api-contract';
 import {
   Download,
   DollarSign,
@@ -150,6 +151,13 @@ function BillsContent() {
   const { data: billDetail, isLoading: billDetailLoading } = useQuery({
     queryKey: ['bills', orgId, selectedBillId],
     queryFn: () => billsApi.get(orgId!, selectedBillId!),
+    enabled: !!orgId && !!selectedBillId && isDetailOpen,
+  });
+
+  // 查询账单费用明细
+  const { data: billFeeItems, isLoading: feeItemsLoading } = useQuery({
+    queryKey: ['bills', orgId, selectedBillId, 'fee-items'],
+    queryFn: () => billFeeItemsApi.list(orgId!, selectedBillId!),
     enabled: !!orgId && !!selectedBillId && isDetailOpen,
   });
 
@@ -533,6 +541,36 @@ function BillsContent() {
                       <span>¥{Number(billDetail.other_amount).toLocaleString()}</span>
                     </div>
                   </div>
+
+                  {/* 费用明细 */}
+                  {feeItemsLoading ? (
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-full" />
+                    </div>
+                  ) : billFeeItems && billFeeItems.length > 0 ? (
+                    <div className="mt-4">
+                      <h4 className="mb-2 text-sm font-medium">费用明细</h4>
+                      <div className="rounded-md border">
+                        <div className="divide-y">
+                          {billFeeItems.map((item) => (
+                            <div key={item.id} className="flex justify-between px-3 py-2 text-sm">
+                              <span>
+                                {item.fee_name}
+                                {item.specification_name && (
+                                  <span className="text-muted-foreground ml-1">
+                                    ({item.specification_name})
+                                  </span>
+                                )}
+                              </span>
+                              <span>¥{Number(item.amount).toLocaleString()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
                   <div className="flex justify-between border-t pt-3 font-medium">
                     <span>账单合计</span>
                     <span>¥{Number(billDetail.total_amount).toLocaleString()}</span>

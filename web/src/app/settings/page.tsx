@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Building2, Settings as SettingsIcon, CreditCard, Shield } from 'lucide-react';
+import { Users, Building2, Settings as SettingsIcon, CreditCard, Shield, DollarSign } from 'lucide-react';
 
 // 注意: 实际使用时从 testids 导入 SETTINGS 常量
 const SETTINGS = {
@@ -32,6 +32,14 @@ const SETTINGS_ITEMS = [
     icon: Shield,
     testId: SETTINGS.PERMISSIONS_LINK,
     cardTestId: SETTINGS.PERMISSIONS_CARD,
+  },
+  {
+    title: '费用类型',
+    description: '管理自定义费用项目和规格',
+    href: '/settings/fee-types',
+    icon: DollarSign,
+    testId: 'settings-fee-types-link',
+    cardTestId: 'settings-fee-types-card',
   },
   {
     title: '订阅管理',

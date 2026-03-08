@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { NAV, DASHBOARD, APARTMENTS, ROOMS, TENANTS, LEASES, UTILITIES, BILLS, REPORTS, SETTINGS, NOTIFICATIONS } from '../testids';
+import { NAV, DASHBOARD, APARTMENTS, ROOMS, TENANTS, LEASES, UTILITIES, BILLS, REPORTS, SETTINGS, NOTIFICATIONS, FEE_TYPES } from '../testids';
 
 /**
  * 导航路径映射
@@ -113,4 +113,12 @@ export async function goToSettings(page: Page): Promise<void> {
 export async function goToNotifications(page: Page): Promise<void> {
   await page.goto('/notifications');
   await page.waitForSelector(`[data-testid="${NOTIFICATIONS.HEADING}"]`);
+}
+
+/**
+ * 导航到费用类型管理
+ */
+export async function goToFeeTypes(page: Page): Promise<void> {
+  await page.goto('/settings/fee-types');
+  await page.waitForSelector(`[data-testid="${FEE_TYPES.HEADING}"]`);
 }

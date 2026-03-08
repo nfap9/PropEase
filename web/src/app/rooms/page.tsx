@@ -14,7 +14,7 @@ import { roomsApi, apartmentsApi, leasesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
-import { Room, RoomStatus } from '@/types';
+import { Room, RoomStatus, RoomFacilities } from '@/types';
 import { Building2, Search } from 'lucide-react';
 import {
   RoomStatsCards,
@@ -58,8 +58,8 @@ interface RoomFormData {
   layout?: string;
   area?: number;
   monthly_rent: number;
-  status: RoomStatus;
   notes?: string;
+  facilities?: RoomFacilities | null;
   [key: string]: unknown;
 }
 

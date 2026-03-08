@@ -271,6 +271,64 @@ export const SETTINGS = {
   SUBSCRIPTION: 'settings-subscription-link',
   /** 权限管理链接 */
   PERMISSIONS: 'settings-permissions-link',
+  /** 费用类型链接 */
+  FEE_TYPES: 'settings-fee-types-link',
+} as const;
+
+/** 费用类型管理页面 */
+export const FEE_TYPES = {
+  /** 页面标题 */
+  HEADING: 'fee-types-heading',
+  /** 新增费用类型按钮 */
+  NEW_BUTTON: 'fee-types-new-btn',
+  /** 费用类型列表 */
+  LIST: 'fee-types-list',
+  /** 新增费用类型弹窗 */
+  CREATE_DIALOG: 'fee-types-create-dialog',
+  /** 编辑费用类型弹窗 */
+  EDIT_DIALOG: 'fee-types-edit-dialog',
+  /** 删除确认弹窗 */
+  DELETE_DIALOG: 'fee-types-delete-dialog',
+  /** 费用名称输入框 */
+  NAME_INPUT: 'fee-types-name-input',
+  /** 费用编码输入框 */
+  CODE_INPUT: 'fee-types-code-input',
+  /** 费用分类选择器 */
+  CATEGORY_SELECT: 'fee-types-category-select',
+  /** 描述输入框 */
+  DESCRIPTION_INPUT: 'fee-types-description-input',
+  /** 确认按钮 */
+  CONFIRM_BUTTON: 'fee-types-confirm-btn',
+  /** 取消按钮 */
+  CANCEL_BUTTON: 'fee-types-cancel-btn',
+  /** 编辑按钮 */
+  EDIT_BUTTON: 'fee-types-edit-btn',
+  /** 删除按钮 */
+  DELETE_BUTTON: 'fee-types-delete-btn',
+  /** 规格列表 */
+  SPECIFICATIONS_LIST: 'fee-types-specifications-list',
+} as const;
+
+/** 公寓费用配置 */
+export const APARTMENT_FEE_CONFIG = {
+  /** 费用配置弹窗 */
+  DIALOG: 'apartment-fee-config-dialog',
+  /** 添加费用按钮 */
+  ADD_BUTTON: 'apartment-fee-config-add-btn',
+  /** 费用类型选择器 */
+  FEE_TYPE_SELECT: 'apartment-fee-config-fee-type-select',
+  /** 规格选择器 */
+  SPECIFICATION_SELECT: 'apartment-fee-config-specification-select',
+  /** 生效日期输入框 */
+  EFFECTIVE_FROM_INPUT: 'apartment-fee-config-effective-from-input',
+  /** 确认添加按钮 */
+  CONFIRM_BUTTON: 'apartment-fee-config-confirm-btn',
+  /** 取消按钮 */
+  CANCEL_BUTTON: 'apartment-fee-config-cancel-btn',
+  /** 配置列表 */
+  LIST: 'apartment-fee-config-list',
+  /** 删除按钮 */
+  DELETE_BUTTON: 'apartment-fee-config-delete-btn',
 } as const;
 
 /** 团队设置页面 */

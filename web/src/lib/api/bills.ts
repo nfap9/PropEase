@@ -1,5 +1,6 @@
 import api from './client';
 import { Bill, Payment, BillStatus } from '@/types';
+import type { BillFeeItem } from '@apartment-ultra/api-contract';
 
 export const billsApi = {
   list: async (
@@ -75,6 +76,15 @@ export const billsApi = {
     const response = await api.get('/bills/export/excel', {
       params: { org_id: orgId, ...filters },
       responseType: 'blob',
+    });
+    return response.data;
+  },
+};
+
+export const billFeeItemsApi = {
+  list: async (orgId: string, billId: string): Promise<BillFeeItem[]> => {
+    const response = await api.get<BillFeeItem[]>(`/bills/${billId}/fee-items`, {
+      params: { org_id: orgId },
     });
     return response.data;
   },

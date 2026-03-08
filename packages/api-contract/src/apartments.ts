@@ -24,6 +24,27 @@ export interface ApartmentWithStats extends Apartment {
 /** 房间状态 */
 export type RoomStatus = 'available' | 'occupied' | 'maintenance';
 
+/** 家具家电设施项 */
+export interface FacilityItem {
+  code: string;
+  quantity: number;
+}
+
+/** 房间设施配置 */
+export interface RoomFacilities {
+  version: 1;
+  furniture: FacilityItem[];
+  appliances: FacilityItem[];
+}
+
+/** 预设设施定义 */
+export interface FacilityPreset {
+  code: string;
+  label: string;
+  category: 'furniture' | 'appliances';
+  default_quantity: number;
+}
+
 /** 房间 */
 export interface Room {
   id: string;
@@ -33,6 +54,7 @@ export interface Room {
   status: RoomStatus;
   monthly_rent: number;
   area: number | null;
+  facilities: RoomFacilities | null;
   notes: string | null;
   apartment?: Apartment;
   created_at: string;

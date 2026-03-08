@@ -49,6 +49,9 @@ export type {
   UtilityConfig,
   UtilityConfigCreate,
   UtilityConfigUpdate,
+  FacilityItem,
+  RoomFacilities,
+  FacilityPreset,
 } from './apartments.js';
 
 /** 租客 */
@@ -67,6 +70,21 @@ export type {
   Bill,
   Payment,
 } from './bills.js';
+
+/** 费用类型与配置 */
+export type {
+  FeeCategory,
+  FeeType,
+  FeeSpecification,
+  FeeTypeCreate,
+  FeeTypeUpdate,
+  FeeSpecificationCreate,
+  FeeSpecificationUpdate,
+  ApartmentFeeConfig,
+  ApartmentFeeConfigCreate,
+  ApartmentFeeConfigUpdate,
+  BillFeeItem,
+} from './feeTypes.js';
 
 /** 报表 */
 export type {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -22,14 +22,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Room, RoomStatus } from '@/types';
+import { Room, RoomFacilities } from '@/types';
+import { FacilitySelector } from '@/components/common/facility-selector';
 
 const roomSchema = z.object({
   room_number: z.string().min(1, '请输入房间号'),
   layout: z.string().optional(),
   area: z.number().min(0, '面积不能为负').optional(),
   monthly_rent: z.number().min(0, '租金不能为负'),
-  status: z.enum(['available', 'occupied', 'maintenance']),
   notes: z.string().optional(),
 });
 
@@ -50,7 +50,7 @@ interface EditRoomDialogProps {
   testids?: Record<string, string>;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: RoomFormData) => void;
+  onSubmit: (data: RoomFormData & { facilities?: RoomFacilities | null }) => void;
   isPending: boolean;
   room: Room | null;
 }
@@ -66,6 +66,7 @@ export function EditRoomDialog({
   const form = useForm<RoomFormData>({
     resolver: zodResolver(roomSchema),
   });
+  const [facilities, setFacilities] = useState<RoomFacilities | null>(null);
 
   useEffect(() => {
     if (room) {
@@ -74,20 +75,24 @@ export function EditRoomDialog({
         layout: room.layout || '',
         area: room.area || 0,
         monthly_rent: room.monthly_rent,
-        status: room.status,
         notes: room.notes || '',
       });
+      setFacilities(room.facilities);
     }
   }, [room, form]);
 
+  const handleSubmit = (data: RoomFormData) => {
+    onSubmit({ ...data, facilities });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md" data-testid={testids?.EDIT_DIALOG}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" data-testid={testids?.EDIT_DIALOG}>
         <DialogHeader>
           <DialogTitle>编辑房间</DialogTitle>
           <DialogDescription>修改房间信息</DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label>所属公寓</Label>
             <Input value={room?.apartment?.name || ''} disabled />
@@ -120,33 +125,15 @@ export function EditRoomDialog({
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-area">面积 (m²)</Label>
-              <Input
-                id="edit-area"
-                type="number"
-                step="0.01"
-                data-testid={testids?.AREA_INPUT}
-                {...form.register('area', { valueAsNumber: true })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-status">状态</Label>
-              <Select
-                value={form.watch('status')}
-                onValueChange={(value: RoomStatus) => form.setValue('status', value)}
-              >
-                <SelectTrigger className="min-w-[120px]" data-testid={testids?.STATUS_SELECT}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="available">空置</SelectItem>
-                  <SelectItem value="occupied">已租</SelectItem>
-                  <SelectItem value="maintenance">维修中</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-area">面积 (m²)</Label>
+            <Input
+              id="edit-area"
+              type="number"
+              step="0.01"
+              data-testid={testids?.AREA_INPUT}
+              {...form.register('area', { valueAsNumber: true })}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-monthly_rent">月租 (元)</Label>
@@ -162,6 +149,7 @@ export function EditRoomDialog({
             <Label htmlFor="edit-notes">备注</Label>
             <Input id="edit-notes" {...form.register('notes')} data-testid={testids?.NOTES_INPUT} />
           </div>
+          <FacilitySelector value={facilities} onChange={setFacilities} disabled={isPending} />
           <DialogFooter>
             <Button
               type="button"

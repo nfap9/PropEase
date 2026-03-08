@@ -164,6 +164,22 @@ router.get('/:id/payments', async (req: Request, res: Response, next: NextFuncti
   }
 });
 
+// GET /bills/:id/fee-items - 获取账单费用明细
+router.get('/:id/fee-items', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    // 验证账单归属
+    await defaultBillService.validateOwnership(orgId, req.params.id);
+    const feeItems = await prisma.billFeeItem.findMany({
+      where: { bill_id: req.params.id },
+      orderBy: { created_at: 'asc' },
+    });
+    res.json(feeItems);
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.get('/:id/pdf', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);

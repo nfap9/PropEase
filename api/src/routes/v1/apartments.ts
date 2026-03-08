@@ -10,6 +10,7 @@ import { Messages, NotFoundMessages } from '../../messages.js';
 import { getEffectivePlanLimits, getRoomsUsedForLimitCheck } from '../../utils/orgPlanLimits.js';
 import { defaultApartmentService } from '../../services/apartment.service.js';
 import { defaultRoomService } from '../../services/room.service.js';
+import { defaultApartmentFeeConfigService } from '../../services/apartmentFeeConfig.service.js';
 
 const router: Router = Router();
 
@@ -25,6 +26,15 @@ const ApartmentUpdateSchema = z.object({
   address: z.string().optional(),
   description: z.string().optional(),
 });
+const FacilityItemSchema = z.object({
+  code: z.string(),
+  quantity: z.number().int().min(1),
+});
+const RoomFacilitiesSchema = z.object({
+  version: z.literal(1),
+  furniture: z.array(FacilityItemSchema),
+  appliances: z.array(FacilityItemSchema),
+});
 const RoomCreateSchema = z.object({
   apartment_id: z.string(),
   room_number: z.string().min(1),
@@ -33,6 +43,7 @@ const RoomCreateSchema = z.object({
   area: z.number().optional(),
   notes: z.string().optional(),
   status: z.enum(['available', 'occupied', 'maintenance']).optional(),
+  facilities: RoomFacilitiesSchema.optional(),
 });
 const RoomBatchSchema = z.object({
   room_numbers: z.array(z.string()),
@@ -48,6 +59,7 @@ const RoomUpdateSchema = z.object({
   monthly_rent: z.number().optional(),
   area: z.number().optional(),
   notes: z.string().optional(),
+  facilities: RoomFacilitiesSchema.nullable().optional(),
 });
 const UtilityConfigSchema = z.object({
   water_price_per_unit: z.number().min(0).optional(),
@@ -106,9 +118,11 @@ router.put('/rooms/:roomId', async (req: Request, res: Response, next: NextFunct
     const orgId = await requireOrgMembership(req);
     const parsed = RoomUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { status: _status, ...restData } = parsed.data;
     const updated = await defaultRoomService.update(orgId, req.params.roomId, {
-      ...parsed.data,
-      status: parsed.data.status as 'available' | 'occupied' | 'maintenance' | undefined,
+      ...restData,
+      facilities: restData.facilities ?? undefined,
     });
     res.json(updated);
   } catch (e) {
@@ -283,6 +297,110 @@ router.delete(
       const orgId = await requireOrgMembership(req);
       await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
       await prisma.utilityConfig.deleteMany({ where: { apartment_id: req.params.apartmentId } });
+      res.status(204).send();
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+// 费用配置 Schemas
+const ApartmentFeeConfigCreateSchema = z.object({
+  fee_type_id: z.string().min(1),
+  specification_id: z.string().optional(),
+  is_enabled: z.boolean().optional(),
+  allow_lease_override: z.boolean().optional(),
+  effective_from: z.string().min(1),
+  effective_to: z.string().optional(),
+  notes: z.string().max(500).optional(),
+});
+const ApartmentFeeConfigUpdateSchema = ApartmentFeeConfigCreateSchema.partial().omit({ fee_type_id: true });
+
+// GET /apartments/:apartmentId/fee-configs - 获取公寓费用配置列表
+router.get(
+  '/:apartmentId/fee-configs',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = await requireOrgMembership(req);
+      await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
+      const configs = await defaultApartmentFeeConfigService.list(req.params.apartmentId);
+      res.json(configs);
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+// POST /apartments/:apartmentId/fee-configs - 启用费用类型
+router.post(
+  '/:apartmentId/fee-configs',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = await requireOrgMembership(req);
+      await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
+      const parsed = ApartmentFeeConfigCreateSchema.safeParse(req.body);
+      if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+      const config = await defaultApartmentFeeConfigService.create(
+        req.params.apartmentId,
+        parsed.data
+      );
+      res.status(201).json(config);
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+// GET /apartments/:apartmentId/fee-configs/:configId - 获取单个费用配置
+router.get(
+  '/:apartmentId/fee-configs/:configId',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = await requireOrgMembership(req);
+      await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
+      const config = await defaultApartmentFeeConfigService.getById(
+        req.params.apartmentId,
+        req.params.configId
+      );
+      res.json(config);
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+// PUT /apartments/:apartmentId/fee-configs/:configId - 更新费用配置
+router.put(
+  '/:apartmentId/fee-configs/:configId',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = await requireOrgMembership(req);
+      await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
+      const parsed = ApartmentFeeConfigUpdateSchema.safeParse(req.body);
+      if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+      const config = await defaultApartmentFeeConfigService.update(
+        req.params.apartmentId,
+        req.params.configId,
+        parsed.data
+      );
+      res.json(config);
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+// DELETE /apartments/:apartmentId/fee-configs/:configId - 禁用费用类型
+router.delete(
+  '/:apartmentId/fee-configs/:configId',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orgId = await requireOrgMembership(req);
+      await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
+      await defaultApartmentFeeConfigService.delete(
+        req.params.apartmentId,
+        req.params.configId
+      );
       res.status(204).send();
     } catch (e) {
       next(e);
