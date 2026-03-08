@@ -52,8 +52,8 @@ export async function waitForDatabase(
  */
 export async function verifyDatabaseSchema(): Promise<boolean> {
   try {
-    // 检查关键表是否存在
-    const tables = ['admin_user', 'admin_role', 'permission'];
+    // 检查关键表是否存在（使用实际的表名）
+    const tables = ['admin_users', 'admin_roles', 'permissions'];
     for (const table of tables) {
       const result = await prisma.$queryRaw<Array<{ exists: boolean }>>`
         SELECT EXISTS (
