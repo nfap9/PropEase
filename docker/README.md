@@ -86,6 +86,18 @@ vim .env.production
 | `deploy-images.sh` | 加载镜像并启动 | 服务器 |
 | `backup.sh` | 数据库备份 | 服务器 |
 
+### 构建优化
+
+构建时自动启用以下优化：
+- **BuildKit** - 并行构建层
+- **缓存基础镜像** - 首次拉取后复用
+- **指定平台** - `linux/amd64` 适配服务器
+
+强制完整重建（不使用缓存）：
+```bash
+NO_CACHE=1 ./scripts/build-local.sh
+```
+
 ---
 
 ## 架构说明

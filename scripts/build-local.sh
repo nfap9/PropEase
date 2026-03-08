@@ -10,6 +10,7 @@
 #   DEPLOY_USER      - 服务器用户名 (默认: root)
 #   DEPLOY_HOST      - 服务器 IP 或域名
 #   DEPLOY_API_URL   - API 地址 (默认从 .env.production 读取)
+#   NO_CACHE         - 禁用缓存 (用于完整重建)
 # =========================================
 
 set -e
@@ -39,14 +40,35 @@ TAG="${1:-latest}"
 SERVER_USER="${DEPLOY_USER:-root}"
 SERVER_HOST="${DEPLOY_HOST:-}"
 
-log_info "开始构建 Docker 镜像..."
+# 启用 BuildKit 加速构建
+export DOCKER_BUILDKIT=1
+export BUILDKIT_PROGRESS=plain
 
-# 构建参数：指定平台为 linux/amd64（适配云服务器）
-BUILD_ARGS="--platform linux/amd64"
+# 平台参数
+PLATFORM="linux/amd64"
+
+# 缓存参数
+CACHE_ARGS=""
+if [ -z "$NO_CACHE" ]; then
+    CACHE_ARGS="--cache-from type=local,src=/tmp/docker-cache"
+fi
+
+log_info "开始构建 Docker 镜像 (平台: ${PLATFORM})..."
+
+# 预拉取基础镜像（加速后续构建）
+log_info "预拉取基础镜像..."
+docker pull --platform ${PLATFORM} node:20-alpine &
+wait
 
 # 构建 API 镜像
 log_info "构建 API 镜像..."
-docker build ${BUILD_ARGS} -f api/Dockerfile -t ${IMAGE_API}:${TAG} .
+docker buildx build \
+    --platform ${PLATFORM} \
+    --load \
+    ${CACHE_ARGS} \
+    -f api/Dockerfile \
+    -t ${IMAGE_API}:${TAG} \
+    .
 
 # 构建 Web 镜像（需要传入构建参数）
 log_info "构建 Web 镜像..."
@@ -65,7 +87,15 @@ else
     exit 1
 fi
 log_info "API URL: ${API_URL}"
-docker build ${BUILD_ARGS} -f web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=${API_URL} -t ${IMAGE_WEB}:${TAG} .
+
+docker buildx build \
+    --platform ${PLATFORM} \
+    --load \
+    ${CACHE_ARGS} \
+    --build-arg NEXT_PUBLIC_API_URL=${API_URL} \
+    -f web/Dockerfile.prod \
+    -t ${IMAGE_WEB}:${TAG} \
+    .
 
 log_info "构建完成!"
 
