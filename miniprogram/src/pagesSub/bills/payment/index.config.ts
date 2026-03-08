@@ -1,0 +1,3 @@
+export default definePageConfig({
+  navigationBarTitleText: '登记收款',
+});

@@ -1,0 +1,30 @@
+{
+  "miniprogramRoot": "dist/",
+  "projectname": "apartment-ultra-miniprogram",
+  "description": "公寓管理系统",
+  "appid": "wx766c2ae2817c6473",
+  "setting": {
+    "urlCheck": false,
+    "es6": false,
+    "enhance": true,
+    "compileHotReLoad": true,
+    "postcss": false,
+    "preloadBackgroundData": false,
+    "minified": true,
+    "newFeature": false,
+    "autoAudits": false,
+    "showShadowRootInWxmlPanel": true,
+    "scopeDataCheck": false,
+    "checkInvalidKey": true,
+    "checkSiteMap": true,
+    "uploadWithSourceMap": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    },
+    "useCompilerModuleType": "miniprogram"
+  },
+  "compileType": "miniprogram",
+  "condition": {}
+}
