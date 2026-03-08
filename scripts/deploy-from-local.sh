@@ -34,7 +34,7 @@ trap cleanup EXIT
 # 配置
 SERVER_USER="${DEPLOY_USER:-root}"
 REMOTE_DIR="/opt/apartment-ultra"
-SSH_SOCKET="/tmp/ssh-deploy-$$"
+SSH_SOCKET="$HOME/.ssh/ssh-deploy-$$"
 
 # 从 .env.production 读取 SERVER_NAME 作为默认 DEPLOY_HOST
 if [ -z "$DEPLOY_HOST" ] && [ -f ".env.production" ]; then
