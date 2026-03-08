@@ -23,9 +23,18 @@ log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
+cleanup() {
+    # 关闭 SSH 连接
+    if [ -n "$SSH_MASTER_PID" ]; then
+        ssh -S "$SSH_SOCKET" -O exit ${SERVER_USER}@${SERVER_HOST} 2>/dev/null || true
+    fi
+}
+trap cleanup EXIT
+
 # 配置
 SERVER_USER="${DEPLOY_USER:-root}"
 REMOTE_DIR="/opt/apartment-ultra"
+SSH_SOCKET="/tmp/ssh-deploy-$$"
 
 # 从 .env.production 读取 SERVER_NAME 作为默认 DEPLOY_HOST
 if [ -z "$DEPLOY_HOST" ] && [ -f ".env.production" ]; then
@@ -50,12 +59,20 @@ fi
 
 log_info "目标服务器: ${SERVER_USER}@${SERVER_HOST}"
 
+# 建立 SSH 主连接（只需输入一次密码）
+log_info "建立 SSH 连接（请输入密码）..."
+ssh -M -S "$SSH_SOCKET" -o ControlPersist=600 -o StrictHostKeyChecking=accept-new -fN ${SERVER_USER}@${SERVER_HOST}
+SSH_MASTER_PID=$!
+
+# 后续所有 SSH/SCP 都复用这个连接
+SSH_OPTS="-S $SSH_SOCKET"
+
 # 检测服务器是否安装 Docker
 log_info "检查服务器环境..."
-if ! ssh ${SERVER_USER}@${SERVER_HOST} "command -v docker &> /dev/null"; then
+if ! ssh $SSH_OPTS ${SERVER_USER}@${SERVER_HOST} "command -v docker &> /dev/null"; then
     log_warn "服务器未安装 Docker，正在自动安装..."
 
-    ssh ${SERVER_USER}@${SERVER_HOST} << 'REMOTE_SCRIPT'
+    ssh $SSH_OPTS ${SERVER_USER}@${SERVER_HOST} << 'REMOTE_SCRIPT'
 set -e
 echo "[INFO] 更新系统..."
 apt update -qq
@@ -86,19 +103,19 @@ log_info "步骤 1/4: 构建 Docker 镜像..."
 
 # 步骤 2: 上传镜像
 log_info "步骤 2/4: 上传镜像到服务器..."
-ssh ${SERVER_USER}@${SERVER_HOST} "mkdir -p ${REMOTE_DIR}/docker ${REMOTE_DIR}/scripts"
-scp dist/*.tar.gz ${SERVER_USER}@${SERVER_HOST}:/tmp/
+ssh $SSH_OPTS ${SERVER_USER}@${SERVER_HOST} "mkdir -p ${REMOTE_DIR}/docker ${REMOTE_DIR}/scripts"
+scp $SSH_OPTS dist/*.tar.gz ${SERVER_USER}@${SERVER_HOST}:/tmp/
 
 # 步骤 3: 上传配置文件
 log_info "步骤 3/4: 上传配置文件..."
-scp docker/docker-compose.prod.yaml ${SERVER_USER}@${SERVER_HOST}:${REMOTE_DIR}/docker/
-scp docker/nginx.conf.template ${SERVER_USER}@${SERVER_HOST}:${REMOTE_DIR}/docker/
-scp scripts/deploy-images.sh ${SERVER_USER}@${SERVER_HOST}:${REMOTE_DIR}/scripts/
-scp .env.production ${SERVER_USER}@${SERVER_HOST}:${REMOTE_DIR}/
+scp $SSH_OPTS docker/docker-compose.prod.yaml ${SERVER_USER}@${SERVER_HOST}:${REMOTE_DIR}/docker/
+scp $SSH_OPTS docker/nginx.conf.template ${SERVER_USER}@${SERVER_HOST}:${REMOTE_DIR}/docker/
+scp $SSH_OPTS scripts/deploy-images.sh ${SERVER_USER}@${SERVER_HOST}:${REMOTE_DIR}/scripts/
+scp $SSH_OPTS .env.production ${SERVER_USER}@${SERVER_HOST}:${REMOTE_DIR}/
 
 # 步骤 4: 远程部署
 log_info "步骤 4/4: 在服务器上加载镜像并启动服务..."
-ssh ${SERVER_USER}@${SERVER_HOST} "cd ${REMOTE_DIR} && chmod +x scripts/deploy-images.sh && ./scripts/deploy-images.sh"
+ssh $SSH_OPTS ${SERVER_USER}@${SERVER_HOST} "cd ${REMOTE_DIR} && chmod +x scripts/deploy-images.sh && ./scripts/deploy-images.sh"
 
 # 步骤 5: 健康检查
 log_info "等待服务启动..."
