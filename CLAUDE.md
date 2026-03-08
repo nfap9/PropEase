@@ -3,6 +3,9 @@
 ## 项目概述
 
 Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是承包公寓进行运营收租的管理者（二房东）；支持公寓、房间、水电、租约、租客、账单管理；还有运营平台支持商业化运营；原始的需求描述在[功能描述](docs/功能描述.md)中。
+详细的功能设计在[功能设计文档](docs/功能设计文档.md)中
+
+所有功能变更都需要维护[功能设计文档](docs/功能设计文档.md)
 
 本仓库为 **pnpm workspaces monorepo**：根目录有 `pnpm-workspace.yaml` 与单一 `pnpm-lock.yaml`，依赖在根目录执行 `pnpm install` 安装。
 
@@ -10,6 +13,7 @@ Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是�
 
 - **后端 api** (`/api`): Node/Express/TypeScript 应用，**项目运行与调试均使用此后端**
 - **前端 Web** (`/web`): Next.js 应用，使用 TypeScript 和 React
+- **小程序** (`/miniprogram`):小程序，使用taro
 - **Docker 部署** (`/docker`): 容器化部署配置（构建上下文为仓库根，后端为 api）
 
 ## 开发工作流
@@ -34,6 +38,10 @@ pnpm dev:web
 - 后端详情：`api/AGENTS.md`
 - 前端详情：`web/AGENTS.md`
 - 代码质量：`pnpm lint` / `pnpm type-check` / `pnpm test`
+
+## 后端工作流
+
+- 阅读 `api/AGENTS.md` 了解详情
 
 ## 前端工作流
 
