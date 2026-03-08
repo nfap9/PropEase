@@ -116,7 +116,7 @@ upstream web_backend {
 
 server {
     listen 80;
-    server_name 120.79.41.29;  # 替换为你的 IP 或域名
+    server_name <your-server-ip>;  # 替换为你的服务器 IP 或域名
 
     location /api/ {
         proxy_pass http://api_backend;
@@ -159,10 +159,10 @@ sudo nginx -t && sudo systemctl reload nginx
 curl http://localhost:8000/api/v1/health
 
 # 通过 Nginx 访问
-curl http://120.79.41.29/health
+curl http://<your-server-ip>/health
 ```
 
-浏览器访问：`http://120.79.41.29`
+浏览器访问：`http://<your-server-ip>`
 
 ---
 
