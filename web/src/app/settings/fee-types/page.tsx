@@ -224,13 +224,13 @@ export default function FeeTypesPage() {
         )}
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogHeader>
-            <DialogTitle>{editingFeeType ? '编辑费用类型' : '新增费用类型'}</DialogTitle>
-            <DialogDescription>
-              {editingFeeType ? '修改费用类型信息' : '创建新的自定义费用类型'}
-            </DialogDescription>
-          </DialogHeader>
           <DialogContent className="space-y-4" data-testid={editingFeeType ? 'fee-types-edit-dialog' : 'fee-types-create-dialog'}>
+            <DialogHeader>
+              <DialogTitle>{editingFeeType ? '编辑费用类型' : '新增费用类型'}</DialogTitle>
+              <DialogDescription>
+                {editingFeeType ? '修改费用类型信息' : '创建新的自定义费用类型'}
+              </DialogDescription>
+            </DialogHeader>
             <div className="space-y-2">
               <Label htmlFor="name">费用名称</Label>
               <Input
@@ -276,15 +276,15 @@ export default function FeeTypesPage() {
                 placeholder="费用类型描述（可选）"
               />
             </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleCloseDialog} data-testid="fee-types-cancel-btn">
+                取消
+              </Button>
+              <Button onClick={handleSave} data-testid="fee-types-confirm-btn">
+                {editingFeeType ? '保存' : '创建'}
+              </Button>
+            </DialogFooter>
           </DialogContent>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseDialog} data-testid="fee-types-cancel-btn">
-              取消
-            </Button>
-            <Button onClick={handleSave} data-testid="fee-types-confirm-btn">
-              {editingFeeType ? '保存' : '创建'}
-            </Button>
-          </DialogFooter>
         </Dialog>
       </div>
     </MainLayout>

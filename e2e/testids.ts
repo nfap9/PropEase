@@ -241,6 +241,8 @@ export const BILLS = {
   PAYMENT_METHOD_SELECT: 'bills-payment-method-select',
   /** 确认按钮 */
   CONFIRM_BUTTON: 'bills-confirm-btn',
+  /** 生成账单弹窗 */
+  GENERATE_DIALOG: 'bills-generate-dialog',
 } as const;
 
 // ==================== 经营分析 ====================

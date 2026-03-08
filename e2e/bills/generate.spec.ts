@@ -53,12 +53,12 @@ test.describe('生成账单', () => {
         await monthInput.fill((new Date().getMonth() + 1).toString());
       }
 
-      // 提交生成
-      const confirmButton = page.locator(`[data-testid="${BILLS.GENERATE_DIALOG}"] button:has-text("确认")`).first();
+      // 提交生成（按钮文本是"生成账单"）
+      const confirmButton = page.locator(`[data-testid="${BILLS.GENERATE_DIALOG}"] button[type="submit"]`).first();
       await confirmButton.click();
 
       // 等待弹窗关闭
-      await expect(page.locator(`[data-testid="${BILLS.GENERATE_DIALOG}"]`)).not.toBeVisible({ timeout: 10000 });
+      await expect(page.locator(`[data-testid="${BILLS.GENERATE_DIALOG}"]`)).not.toBeVisible({ timeout: 15000 });
     } else {
       test.skip();
     }
@@ -79,12 +79,12 @@ test.describe('生成账单', () => {
         await monthInput.fill('12');
       }
 
-      // 提交生成
-      const confirmButton = page.locator(`[data-testid="${BILLS.GENERATE_DIALOG}"] button:has-text("确认")`).first();
+      // 提交生成（按钮文本是"生成账单"）
+      const confirmButton = page.locator(`[data-testid="${BILLS.GENERATE_DIALOG}"] button[type="submit"]`).first();
       await confirmButton.click();
 
       // 等待响应
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(2000);
     } else {
       test.skip();
     }

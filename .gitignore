@@ -9,7 +9,8 @@ package-lock.json
 
 # Testing
 coverage/
-# Playwright
+# Playwright - 统一放在 e2e/results/ 目录下
+e2e/results/
 test-results/
 playwright-report/
 blob-report/

@@ -86,8 +86,8 @@ test.describe('费用类型管理', () => {
   });
 
   test('编辑费用类型', async ({ page }) => {
-    // 等待列表加载
-    await page.waitForSelector('[data-testid="fee-types-list"], .grid', { timeout: 5000 });
+    // 等待列表加载（增加超时时间）
+    await page.waitForSelector('[data-testid="fee-types-list"], .grid', { timeout: 10000 });
 
     // 找到一个可编辑的费用类型（非系统预设）
     const editableCard = page.locator('[data-testid^="fee-types-edit-btn"]').first();

@@ -4,6 +4,7 @@ import { hashPassword, verifyPassword } from '../utils/security.js';
 import { createAccessToken, createRefreshToken, decodeToken } from '../utils/jwt.js';
 import { createAppError } from '../utils/appError.js';
 import { ulid } from 'ulid';
+import { config } from '../config.js';
 
 /** 验证码存储结构 */
 interface VerificationCodeData {
@@ -128,12 +129,16 @@ export function createAuthService(
         if (!verification_code) {
           throw createAppError(401, '验证码无效或已过期');
         }
-        const stored = verificationCodeStore.get(phone);
-        if (!stored || stored.code !== verification_code || stored.expiresAt < Date.now()) {
-          throw createAppError(401, '验证码无效或已过期');
+        // 开发环境允许测试验证码 '123456'
+        const isTestCode = config.isDev && verification_code === '123456';
+        if (!isTestCode) {
+          const stored = verificationCodeStore.get(phone);
+          if (!stored || stored.code !== verification_code || stored.expiresAt < Date.now()) {
+            throw createAppError(401, '验证码无效或已过期');
+          }
+          // 验证成功后删除验证码
+          verificationCodeStore.delete(phone);
         }
-        // 验证成功后删除验证码
-        verificationCodeStore.delete(phone);
       }
 
       if (!user.is_active) {

@@ -29,9 +29,12 @@ export default defineConfig({
 
   // Reporter 配置
   reporter: [
-    ['html', { outputFolder: 'e2e/report' }],
+    ['html', { outputFolder: 'e2e/results/report' }],
     ['list'],
   ],
+
+  // 测试输出目录（trace、截图、视频等）
+  outputDir: 'e2e/results/test-results',
 
   // 全局测试配置
   use: {
