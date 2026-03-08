@@ -55,13 +55,9 @@ pnpm dev:api
 pnpm dev:web
 ```
 
-### Docker 部署
+### 服务器部署
 
-```bash
-cd docker
-docker compose -f docker-compose.dev.yaml up   # 开发环境
-docker compose -f docker-compose.yaml up       # 生产环境
-```
+详见 [docker/README.md](docker/README.md)
 
 ## 访问地址
 

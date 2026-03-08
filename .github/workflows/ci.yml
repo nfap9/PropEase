@@ -215,7 +215,7 @@ jobs:
       - name: Build images with Compose
         run: |
           cd docker
-          docker compose -p apartment-ultra -f docker-compose.yaml build
+          docker compose -p apartment-ultra -f docker-compose.server.yaml build
 
       - name: Log in to GHCR
         uses: docker/login-action@v3

@@ -19,10 +19,8 @@
 
 | 文件 | 用途 |
 |------|------|
-| `docker-compose.yaml` | 本地生产/联调环境 |
-| `docker-compose.dev.yaml` | 开发环境（热重载） |
-| `docker-compose.server.yaml` | 云服务器生产环境 |
-| `docker-compose.middleware.yaml` | 本地中间件 |
+| `docker-compose.server.yaml` | 服务器部署（含完整服务） |
+| `docker-compose.middleware.yaml` | 本地开发中间件（仅 Postgres + Redis） |
 
 ---
 
