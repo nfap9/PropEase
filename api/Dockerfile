@@ -33,11 +33,8 @@ COPY --from=builder /app ./
 
 WORKDIR /app/api
 
-# 重新生成 Prisma 客户端（确保在运行时可用）
+# 重新生成 Prisma 客户端（确保在运行时可用，生成到 node_modules/.prisma/client）
 RUN npx prisma generate
-
-# 复制生成的 Prisma 客户端到 dist 目录
-RUN cp -r src/generated dist/generated
 
 EXPOSE 8000
 CMD ["node", "dist/index.js"]
