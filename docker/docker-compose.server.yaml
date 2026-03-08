@@ -1,7 +1,7 @@
 # Apartment Ultra 生产环境 Docker Compose 配置
 # ==================================================================
 # 使用方法:
-#   docker compose -f docker/docker-compose.prod.yaml --env-file .env.production up -d
+#   docker compose -f docker/docker-compose.server.yaml --env-file .env.production up -d
 # ==================================================================
 
 services:

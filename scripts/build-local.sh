@@ -128,5 +128,5 @@ fi
 echo "   cd /opt/apartment-ultra"
 echo "   docker load < /tmp/api.tar.gz"
 echo "   docker load < /tmp/web.tar.gz"
-echo "   docker compose -f docker/docker-compose.prod.yaml --env-file .env.production up -d"
+echo "   docker compose -f docker/docker-compose.server.yaml --env-file .env.production up -d"
 echo "=========================================="

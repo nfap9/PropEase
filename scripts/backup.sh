@@ -11,7 +11,7 @@ set -e
 
 # 配置
 PROJECT_DIR="/opt/apartment-ultra"
-COMPOSE_FILE="docker/docker-compose.prod.yaml"
+COMPOSE_FILE="docker/docker-compose.server.yaml"
 BACKUP_DIR="/opt/apartment-ultra/docker/backup"
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_FILE="${BACKUP_DIR}/apartment_ultra_${DATE}.sql"
