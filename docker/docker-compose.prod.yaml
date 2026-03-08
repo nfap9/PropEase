@@ -1,0 +1,141 @@
+# Apartment Ultra 生产环境 Docker Compose 配置
+# ==================================================================
+# 使用方法:
+#   docker compose -f docker/docker-compose.prod.yaml --env-file .env.production up -d
+# ==================================================================
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: apartment_ultra_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-apartment_ultra}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backup:/backup
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - apartment-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  redis:
+    image: redis:7-alpine
+    container_name: apartment_ultra_redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - apartment-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  api:
+    image: apartment-ultra_api:${API_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: api/Dockerfile
+    container_name: apartment_ultra_api
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-apartment_ultra}
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
+      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
+      DEBUG: "false"
+      APP_NAME: ${APP_NAME:-Apartment Ultra API}
+      ADMIN_INIT_PASSWORD: ${ADMIN_INIT_PASSWORD:?ADMIN_INIT_PASSWORD is required}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      # 微信支付配置（可选）
+      WECHAT_PAY_ENABLED: ${WECHAT_PAY_ENABLED:-false}
+      WECHAT_MCH_ID: ${WECHAT_MCH_ID:-}
+      WECHAT_APP_ID: ${WECHAT_APP_ID:-}
+      WECHAT_APIV3_KEY: ${WECHAT_APIV3_KEY:-}
+      WECHAT_CERT_SERIAL_NO: ${WECHAT_CERT_SERIAL_NO:-}
+      WECHAT_PAY_NOTIFY_URL_BASE: ${WECHAT_PAY_NOTIFY_URL_BASE:-}
+      WECHAT_PRIVATE_KEY: ${WECHAT_PRIVATE_KEY:-}
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - apartment-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  web:
+    image: apartment-ultra_web:${WEB_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: web/Dockerfile.prod
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}
+    container_name: apartment_ultra_web
+    environment:
+      NODE_ENV: production
+      API_URL_SERVER: http://api:8000/api/v1
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - apartment-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  apartment-network:
+    driver: bridge
