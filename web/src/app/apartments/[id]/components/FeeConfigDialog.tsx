@@ -17,10 +17,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Settings, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { apartmentFeeConfigApi, feeTypesApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
-import type { FeeType, FeeSpecification, ApartmentFeeConfig } from '@apartment-ultra/api-contract';
 
 const feeConfigSchema = z.object({
   fee_type_id: z.string().min(1),
@@ -99,9 +98,6 @@ export function FeeConfigDialog({ open, onOpenChange, orgId, apartmentId }: FeeC
   });
 
   const selectedFeeType = feeTypes?.find((ft) => ft.id === selectedFeeTypeId);
-  const selectedSpec = selectedFeeType?.specifications?.find(
-    (s) => s.id === form.watch('specification_id')
-  );
   const isLoading = feeTypesLoading || configsLoading;
   if (isLoading) {
     return <Loader2 className="animate-spin" />;

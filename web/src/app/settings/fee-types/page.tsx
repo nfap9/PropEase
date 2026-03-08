@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -42,13 +42,7 @@ export default function FeeTypesPage() {
     specifications: [],
   });
 
-  useEffect(() => {
-    if (orgId) {
-      loadFeeTypes();
-    }
-  }, [orgId]);
-
-  const loadFeeTypes = async () => {
+  const loadFeeTypes = useCallback(async () => {
     if (!orgId) return;
     try {
       setLoading(true);
@@ -59,7 +53,13 @@ export default function FeeTypesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId]);
+
+  useEffect(() => {
+    if (orgId) {
+      loadFeeTypes();
+    }
+  }, [orgId, loadFeeTypes]);
 
   const handleOpenDialog = (feeType?: FeeType) => {
     if (feeType) {
@@ -150,7 +150,7 @@ export default function FeeTypesPage() {
         ) : feeTypes.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              暂无费用类型，请点击"新增费用类型"创建
+              暂无费用类型，请点击&ldquo;新增费用类型&rdquo;创建
             </CardContent>
           </Card>
         ) : (
