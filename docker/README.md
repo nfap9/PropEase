@@ -21,7 +21,46 @@ docker compose -f docker-compose.prod.yaml --env-file .env.production up -d
 
 ---
 
-## 云服务器部署
+## 本地构建部署（推荐）
+
+适用于服务器内存较小无法在服务器端构建镜像的场景。在本地构建 Docker 镜像，导出为 tar 文件后上传到服务器加载运行。
+
+### 本地操作
+
+```bash
+# 1. 构建 Docker 镜像并保存到 dist/ 目录
+./scripts/build-local.sh
+
+# 2. 上传镜像到服务器
+scp dist/*.tar.gz ${DEPLOY_USER:-root}@${DEPLOY_HOST:-<your-server-ip>}:/tmp/
+
+# 3. 上传部署脚本（首次或脚本更新后）
+scp scripts/deploy-images.sh ${DEPLOY_USER:-root}@${DEPLOY_HOST:-<your-server-ip>}:/opt/apartment-ultra/scripts/
+```
+
+### 服务器操作
+
+```bash
+# 登录服务器
+ssh root@<your-server-ip>
+
+# 加载镜像并启动服务
+cd /opt/apartment-ultra
+chmod +x scripts/deploy-images.sh
+./scripts/deploy-images.sh
+```
+
+### 更新部署
+
+每次代码更新后：
+
+1. 本地执行 `./scripts/build-local.sh` 构建新镜像
+2. 上传新的 tar.gz 文件到服务器 `/tmp/`
+3. 服务器执行 `./scripts/deploy-images.sh` 加载并重启服务
+
+---
+
+## 云服务器部署（服务器端构建）
 
 ### 1. 服务器环境准备（CentOS/RHEL）
 
