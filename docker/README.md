@@ -25,38 +25,72 @@ docker compose -f docker-compose.prod.yaml --env-file .env.production up -d
 
 适用于服务器内存较小无法在服务器端构建镜像的场景。在本地构建 Docker 镜像，导出为 tar 文件后上传到服务器加载运行。
 
-### 本地操作
+### 首次部署
+
+**1. 服务器环境准备**
 
 ```bash
-# 1. 构建 Docker 镜像并保存到 dist/ 目录
+# 安装 Docker
+sudo yum install -y yum-utils
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo systemctl start docker && sudo systemctl enable docker
+
+# 配置 Docker 镜像加速（国内服务器必选）
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<EOF
+{
+  "registry-mirrors": ["https://docker.1ms.run", "https://docker.xuanyuan.me"]
+}
+EOF
+sudo systemctl daemon-reload && sudo systemctl restart docker
+
+# 创建目录
+sudo mkdir -p /opt/apartment-ultra && sudo chown $USER:$USER /opt/apartment-ultra
+```
+
+**2. 本地配置环境变量**
+
+```bash
+# 在项目根目录创建 .env.production
+cp docker/.env.production.example .env.production
+vim .env.production  # 配置必要的环境变量
+```
+
+**3. 一键部署**
+
+```bash
+# 设置服务器 IP 后执行
+DEPLOY_HOST=<your-server-ip> ./scripts/deploy-from-local.sh
+```
+
+该脚本会自动完成：构建镜像 → 上传镜像和配置文件 → 远程启动服务
+
+### 后续更新
+
+每次代码更新后，重新执行一键部署命令即可：
+
+```bash
+DEPLOY_HOST=<your-server-ip> ./scripts/deploy-from-local.sh
+```
+
+### 手动分步操作（可选）
+
+如需分步执行：
+
+```bash
+# 1. 构建
 ./scripts/build-local.sh
 
-# 2. 上传镜像到服务器
-scp dist/*.tar.gz ${DEPLOY_USER:-root}@${DEPLOY_HOST:-<your-server-ip>}:/tmp/
+# 2. 上传文件
+scp dist/*.tar.gz root@<your-server-ip>:/tmp/
+scp docker/docker-compose.prod.yaml root@<your-server-ip>:/opt/apartment-ultra/docker/
+scp scripts/deploy-images.sh root@<your-server-ip>:/opt/apartment-ultra/scripts/
+scp .env.production root@<your-server-ip>:/opt/apartment-ultra/
 
-# 3. 上传部署脚本（首次或脚本更新后）
-scp scripts/deploy-images.sh ${DEPLOY_USER:-root}@${DEPLOY_HOST:-<your-server-ip>}:/opt/apartment-ultra/scripts/
+# 3. 服务器执行
+ssh root@<your-server-ip> "cd /opt/apartment-ultra && chmod +x scripts/deploy-images.sh && ./scripts/deploy-images.sh"
 ```
-
-### 服务器操作
-
-```bash
-# 登录服务器
-ssh root@<your-server-ip>
-
-# 加载镜像并启动服务
-cd /opt/apartment-ultra
-chmod +x scripts/deploy-images.sh
-./scripts/deploy-images.sh
-```
-
-### 更新部署
-
-每次代码更新后：
-
-1. 本地执行 `./scripts/build-local.sh` 构建新镜像
-2. 上传新的 tar.gz 文件到服务器 `/tmp/`
-3. 服务器执行 `./scripts/deploy-images.sh` 加载并重启服务
 
 ---
 
