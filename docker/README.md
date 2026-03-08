@@ -27,14 +27,22 @@ docker compose -f docker-compose.prod.yaml --env-file .env.production up -d
 
 ### 首次部署
 
-**1. 服务器环境准备**
+**1. 服务器环境准备（Ubuntu 22.04）**
 
 ```bash
-# 安装 Docker
-sudo yum install -y yum-utils
-sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-sudo systemctl start docker && sudo systemctl enable docker
+# 更新系统
+sudo apt update && sudo apt upgrade -y
+
+# 安装 Docker（一键脚本）
+curl -fsSL https://get.docker.com | sudo sh
+
+# 启动并设置开机自启
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# 将当前用户加入 docker 组（可选，避免每次 sudo）
+sudo usermod -aG docker $USER
+# 执行后重新登录生效
 
 # 配置 Docker 镜像加速（国内服务器必选）
 sudo mkdir -p /etc/docker
@@ -45,8 +53,8 @@ sudo tee /etc/docker/daemon.json <<EOF
 EOF
 sudo systemctl daemon-reload && sudo systemctl restart docker
 
-# 创建目录
-sudo mkdir -p /opt/apartment-ultra && sudo chown $USER:$USER /opt/apartment-ultra
+# 验证安装
+docker --version
 ```
 
 **2. 本地配置环境变量**
@@ -54,8 +62,15 @@ sudo mkdir -p /opt/apartment-ultra && sudo chown $USER:$USER /opt/apartment-ultr
 ```bash
 # 在项目根目录创建 .env.production
 cp docker/.env.production.example .env.production
-vim .env.production  # 配置必要的环境变量
+vim .env.production
 ```
+
+必须配置的环境变量：
+- `POSTGRES_PASSWORD` - 数据库密码（生成：`openssl rand -base64 32`）
+- `SECRET_KEY` - JWT 密钥（生成：`openssl rand -hex 64`）
+- `CORS_ORIGINS` - 允许的前端来源，如 `["http://<your-server-ip>"]`
+- `NEXT_PUBLIC_API_URL` - API 地址，如 `http://<your-server-ip>/api/v1`
+- `ADMIN_INIT_PASSWORD` - 管理员初始密码
 
 **3. 一键部署**
 
@@ -66,114 +81,14 @@ DEPLOY_HOST=<your-server-ip> ./scripts/deploy-from-local.sh
 
 该脚本会自动完成：构建镜像 → 上传镜像和配置文件 → 远程启动服务
 
-### 后续更新
-
-每次代码更新后，重新执行一键部署命令即可：
+**4. 配置 Nginx 反向代理（服务器上执行）**
 
 ```bash
-DEPLOY_HOST=<your-server-ip> ./scripts/deploy-from-local.sh
-```
+# 安装 Nginx
+sudo apt install -y nginx
 
-### 手动分步操作（可选）
-
-如需分步执行：
-
-```bash
-# 1. 构建
-./scripts/build-local.sh
-
-# 2. 上传文件
-scp dist/*.tar.gz root@<your-server-ip>:/tmp/
-scp docker/docker-compose.prod.yaml root@<your-server-ip>:/opt/apartment-ultra/docker/
-scp scripts/deploy-images.sh root@<your-server-ip>:/opt/apartment-ultra/scripts/
-scp .env.production root@<your-server-ip>:/opt/apartment-ultra/
-
-# 3. 服务器执行
-ssh root@<your-server-ip> "cd /opt/apartment-ultra && chmod +x scripts/deploy-images.sh && ./scripts/deploy-images.sh"
-```
-
----
-
-## 云服务器部署（服务器端构建）
-
-### 1. 服务器环境准备（CentOS/RHEL）
-
-```bash
-# 更新系统
-sudo yum update -y
-
-# 安装 Docker
-sudo yum install -y yum-utils
-sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-sudo yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-sudo systemctl start docker && sudo systemctl enable docker
-sudo usermod -aG docker $USER
-
-# 安装 Git 和 Nginx
-sudo yum install -y git epel-release nginx
-sudo systemctl start nginx && sudo systemctl enable nginx
-
-# 配置防火墙
-sudo firewall-cmd --permanent --add-port={22,80,443}/tcp
-sudo firewall-cmd --reload
-
-# 重新登录使 docker 组生效
-exit
-```
-
-### 2. 配置 Docker 镜像加速（国内服务器必选）
-
-```bash
-sudo mkdir -p /etc/docker
-sudo tee /etc/docker/daemon.json <<EOF
-{
-  "registry-mirrors": [
-    "https://docker.1ms.run",
-    "https://docker.xuanyuan.me"
-  ]
-}
-EOF
-
-sudo systemctl daemon-reload
-sudo systemctl restart docker
-```
-
-备用镜像源（如上述不可用）：
-- `https://dockerhub.icu`
-- `https://hub.rat.dev`
-- `https://docker.hlyun.org`
-
-### 3. 克隆代码并配置
-
-```bash
-# 配置 GitHub SSH 密钥
-ssh-keygen -t ed25519 -C "deploy@server"
-cat ~/.ssh/id_ed25519.pub  # 添加到 GitHub → Settings → SSH Keys
-
-# 克隆代码
-sudo mkdir -p /opt/apartment-ultra && sudo chown $USER:$USER /opt/apartment-ultra
-cd /opt && git clone git@github.com:<your-repo>/apartment-ultra.git apartment-ultra
-cd apartment-ultra
-
-# 配置环境变量
-cp docker/.env.production.example .env.production
-chmod 600 .env.production
-vim .env.production
-
-# 设置脚本权限
-chmod +x scripts/*.sh
-```
-
-### 4. 启动服务
-
-```bash
-./scripts/deploy.sh start
-```
-
-### 5. 配置 Nginx 反向代理
-
-```bash
-sudo vim /etc/nginx/conf.d/apartment-ultra.conf
+# 创建配置文件
+sudo vim /etc/nginx/sites-available/apartment-ultra
 ```
 
 写入以下配置：
@@ -219,13 +134,20 @@ server {
 }
 ```
 
-启动 Nginx：
+启用配置并启动 Nginx：
 
 ```bash
+# 启用站点配置
+sudo ln -s /etc/nginx/sites-available/apartment-ultra /etc/nginx/sites-enabled/
+
+# 删除默认配置（可选）
+sudo rm /etc/nginx/sites-enabled/default
+
+# 测试并重载配置
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-### 6. 验证部署
+**5. 验证部署**
 
 ```bash
 # 健康检查
@@ -237,18 +159,30 @@ curl http://<your-server-ip>/health
 
 浏览器访问：`http://<your-server-ip>`
 
----
+### 后续更新
 
-## 部署脚本
-
-使用 `scripts/deploy.sh` 管理服务：
+每次代码更新后，重新执行一键部署命令即可：
 
 ```bash
-./scripts/deploy.sh start    # 首次部署
-./scripts/deploy.sh update   # 更新部署
-./scripts/deploy.sh stop     # 停止服务
-./scripts/deploy.sh logs     # 查看日志
-./scripts/deploy.sh status   # 查看状态
+DEPLOY_HOST=<your-server-ip> ./scripts/deploy-from-local.sh
+```
+
+### 手动分步操作（可选）
+
+如需分步执行：
+
+```bash
+# 1. 构建
+./scripts/build-local.sh
+
+# 2. 上传文件
+scp dist/*.tar.gz root@<your-server-ip>:/tmp/
+scp docker/docker-compose.prod.yaml root@<your-server-ip>:/opt/apartment-ultra/docker/
+scp scripts/deploy-images.sh root@<your-server-ip>:/opt/apartment-ultra/scripts/
+scp .env.production root@<your-server-ip>:/opt/apartment-ultra/
+
+# 3. 服务器执行
+ssh root@<your-server-ip> "cd /opt/apartment-ultra && chmod +x scripts/deploy-images.sh && ./scripts/deploy-images.sh"
 ```
 
 ---
@@ -280,6 +214,8 @@ curl http://<your-server-ip>/health
 
 详细配置见 [api/src/config.ts](../api/src/config.ts)。
 
+---
+
 ## 架构说明
 
 ```
@@ -293,19 +229,56 @@ curl http://<your-server-ip>/health
 └─────────────────────────────────────────┘
 ```
 
+---
+
 ## 常用命令
 
 ```bash
 # 查看日志
-docker compose -f docker-compose.yaml logs -f api
-docker compose -f docker-compose.yaml logs -f web
+docker compose -f docker/docker-compose.prod.yaml logs -f api
+docker compose -f docker/docker-compose.prod.yaml logs -f web
 
 # 重启服务
-docker compose -f docker-compose.yaml restart api
+docker compose -f docker/docker-compose.prod.yaml restart api
 
 # 进入容器
-docker compose -f docker-compose.yaml exec api sh
+docker compose -f docker/docker-compose.prod.yaml exec api sh
 
 # 停止并清理
-docker compose -f docker-compose.yaml down
+docker compose -f docker/docker-compose.prod.yaml down
+
+# 查看服务状态
+docker compose -f docker/docker-compose.prod.yaml ps
+```
+
+---
+
+## 常见问题
+
+### Docker 镜像拉取超时
+
+配置国内镜像加速，编辑 `/etc/docker/daemon.json`：
+
+```json
+{
+  "registry-mirrors": [
+    "https://docker.1ms.run",
+    "https://docker.xuanyuan.me"
+  ]
+}
+```
+
+备用镜像源：
+- `https://dockerhub.icu`
+- `https://hub.rat.dev`
+- `https://docker.hlyun.org`
+
+### 502 Bad Gateway
+
+检查服务是否正常运行：
+
+```bash
+docker compose -f docker/docker-compose.prod.yaml ps
+docker compose -f docker/docker-compose.prod.yaml logs api
+docker compose -f docker/docker-compose.prod.yaml logs web
 ```
