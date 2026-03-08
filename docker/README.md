@@ -85,7 +85,7 @@ cd apartment-ultra
 # 配置环境变量
 cp docker/.env.production.example .env.production
 chmod 600 .env.production
-nano .env.production
+vim .env.production
 
 # 设置脚本权限
 chmod +x scripts/*.sh
@@ -100,7 +100,7 @@ chmod +x scripts/*.sh
 ### 5. 配置 Nginx 反向代理
 
 ```bash
-sudo nano /etc/nginx/conf.d/apartment-ultra.conf
+sudo vim /etc/nginx/conf.d/apartment-ultra.conf
 ```
 
 写入以下配置：
