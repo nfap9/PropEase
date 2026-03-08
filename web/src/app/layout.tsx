@@ -32,7 +32,13 @@ async function getBrandConfig(): Promise<{ app_name: string; app_description: st
 
 export async function generateMetadata(): Promise<Metadata> {
   const { app_name, app_description } = await getBrandConfig();
-  return { title: app_name, description: app_description };
+  return {
+    title: app_name,
+    description: app_description,
+    icons: {
+      icon: '/favicon.svg',
+    },
+  };
 }
 
 export default function RootLayout({

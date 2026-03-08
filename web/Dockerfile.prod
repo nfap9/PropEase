@@ -37,13 +37,11 @@ COPY api/src api/src
 COPY api/prisma api/prisma
 COPY api/tsconfig.json api/
 COPY web/src web/src
+COPY web/public web/public
 COPY web/next.config.mjs web/
 COPY web/tsconfig.json web/
 COPY web/tailwind.config.ts web/
 COPY web/postcss.config.mjs web/
-
-# 创建 public 目录（如果不存在）
-RUN mkdir -p web/public
 
 # 构建 api-contract
 RUN corepack enable pnpm && pnpm --filter @apartment-ultra/api-contract run build
