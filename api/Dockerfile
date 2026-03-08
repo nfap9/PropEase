@@ -27,8 +27,14 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 ENV NODE_ENV=production
+
+# 复制构建产物
 COPY --from=builder /app ./
 
 WORKDIR /app/api
+
+# 重新生成 Prisma 客户端（确保在运行时可用）
+RUN npx prisma generate
+
 EXPOSE 8000
 CMD ["node", "dist/index.js"]
