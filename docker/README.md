@@ -2,9 +2,12 @@
 
 ## 环境说明
 
-- **docker-compose.yaml** - 生产/联调环境（本地开发）
-- **docker-compose.dev.yaml** - 开发环境（支持热重载）
-- **docker-compose.prod.yaml** - 云服务器生产环境
+| 文件 | 用途 |
+|------|------|
+| `docker-compose.yaml` | 本地生产/联调环境 |
+| `docker-compose.dev.yaml` | 开发环境（支持热重载） |
+| `docker-compose.prod.yaml` | 云服务器生产环境 |
+| `docker-compose.middleware.yaml` | 本地中间件（PostgreSQL、Redis） |
 
 ## 快速启动
 
@@ -21,9 +24,28 @@ docker compose -f docker-compose.prod.yaml --env-file .env.production up -d
 
 ---
 
-## 本地构建部署（推荐）
+## 环境变量配置
 
-适用于服务器内存较小无法在服务器端构建镜像的场景。在本地构建 Docker 镜像，导出为 tar 文件后上传到服务器加载运行。
+### 部署所需环境变量
+
+| 变量 | 说明 | 示例 |
+|------|------|------|
+| `DEPLOY_HOST` | 服务器 IP 或域名 | `192.168.1.1` |
+| `DEPLOY_USER` | SSH 用户名 | `root`（默认） |
+
+### 生产环境变量（.env.production）
+
+| 变量 | 说明 | 生成方式 |
+|------|------|---------|
+| `POSTGRES_PASSWORD` | 数据库密码 | `openssl rand -base64 32` |
+| `SECRET_KEY` | JWT 签名密钥 | `openssl rand -hex 64` |
+| `CORS_ORIGINS` | 允许的前端来源 | `["http://${DEPLOY_HOST}"]` |
+| `NEXT_PUBLIC_API_URL` | API 地址 | `http://${DEPLOY_HOST}/api/v1` |
+| `ADMIN_INIT_PASSWORD` | 管理员初始密码 | 自定义强密码 |
+
+---
+
+## 本地构建部署（推荐）
 
 ### 首次部署
 
@@ -33,16 +55,12 @@ docker compose -f docker-compose.prod.yaml --env-file .env.production up -d
 # 更新系统
 sudo apt update && sudo apt upgrade -y
 
-# 安装 Docker（一键脚本）
-curl -fsSL https://get.docker.com | sudo sh
+# 安装 Docker（国内服务器使用阿里云镜像）
+curl -fsSL https://get.docker.com | sudo sh -s -- --mirror Aliyun
 
 # 启动并设置开机自启
 sudo systemctl start docker
 sudo systemctl enable docker
-
-# 将当前用户加入 docker 组（可选，避免每次 sudo）
-sudo usermod -aG docker $USER
-# 执行后重新登录生效
 
 # 配置 Docker 镜像加速（国内服务器必选）
 sudo mkdir -p /etc/docker
@@ -62,21 +80,30 @@ docker --version
 ```bash
 # 在项目根目录创建 .env.production
 cp docker/.env.production.example .env.production
-vim .env.production
 ```
 
-必须配置的环境变量：
-- `POSTGRES_PASSWORD` - 数据库密码（生成：`openssl rand -base64 32`）
-- `SECRET_KEY` - JWT 密钥（生成：`openssl rand -hex 64`）
-- `CORS_ORIGINS` - 允许的前端来源，如 `["http://<your-server-ip>"]`
-- `NEXT_PUBLIC_API_URL` - API 地址，如 `http://<your-server-ip>/api/v1`
-- `ADMIN_INIT_PASSWORD` - 管理员初始密码
+编辑 `.env.production`，配置以下内容：
+
+```bash
+# 数据库
+POSTGRES_PASSWORD=<生成的数据库密码>
+
+# 安全
+SECRET_KEY=<生成的JWT密钥>
+
+# 访问控制（替换 ${DEPLOY_HOST} 为你的服务器地址）
+CORS_ORIGINS=["http://${DEPLOY_HOST}"]
+NEXT_PUBLIC_API_URL=http://${DEPLOY_HOST}/api/v1
+
+# 管理员
+ADMIN_INIT_PASSWORD=<管理员初始密码>
+```
 
 **3. 一键部署**
 
 ```bash
-# 设置服务器 IP 后执行
-DEPLOY_HOST=<your-server-ip> ./scripts/deploy-from-local.sh
+# 设置服务器地址后执行
+DEPLOY_HOST=<服务器地址> ./scripts/deploy-from-local.sh
 ```
 
 该脚本会自动完成：构建镜像 → 上传镜像和配置文件 → 远程启动服务
@@ -91,7 +118,7 @@ sudo apt install -y nginx
 sudo vim /etc/nginx/sites-available/apartment-ultra
 ```
 
-写入以下配置：
+写入以下配置（将 `${SERVER_NAME}` 替换为服务器 IP 或域名）：
 
 ```nginx
 upstream api_backend {
@@ -104,7 +131,7 @@ upstream web_backend {
 
 server {
     listen 80;
-    server_name <your-server-ip>;  # 替换为你的服务器 IP 或域名
+    server_name ${SERVER_NAME};
 
     location /api/ {
         proxy_pass http://api_backend;
@@ -134,16 +161,11 @@ server {
 }
 ```
 
-启用配置并启动 Nginx：
+启用配置：
 
 ```bash
-# 启用站点配置
 sudo ln -s /etc/nginx/sites-available/apartment-ultra /etc/nginx/sites-enabled/
-
-# 删除默认配置（可选）
-sudo rm /etc/nginx/sites-enabled/default
-
-# 测试并重载配置
+sudo rm /etc/nginx/sites-enabled/default  # 可选
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
@@ -153,66 +175,44 @@ sudo nginx -t && sudo systemctl reload nginx
 # 健康检查
 curl http://localhost:8000/api/v1/health
 
-# 通过 Nginx 访问
-curl http://<your-server-ip>/health
+# 通过 Nginx 访问（替换 ${DEPLOY_HOST}）
+curl http://${DEPLOY_HOST}/health
 ```
-
-浏览器访问：`http://<your-server-ip>`
 
 ### 后续更新
 
-每次代码更新后，重新执行一键部署命令即可：
+每次代码更新后，重新执行一键部署：
 
 ```bash
-DEPLOY_HOST=<your-server-ip> ./scripts/deploy-from-local.sh
+DEPLOY_HOST=<服务器地址> ./scripts/deploy-from-local.sh
 ```
 
-### 手动分步操作（可选）
-
-如需分步执行：
+### 手动分步操作
 
 ```bash
 # 1. 构建
 ./scripts/build-local.sh
 
-# 2. 上传文件
-scp dist/*.tar.gz root@<your-server-ip>:/tmp/
-scp docker/docker-compose.prod.yaml root@<your-server-ip>:/opt/apartment-ultra/docker/
-scp scripts/deploy-images.sh root@<your-server-ip>:/opt/apartment-ultra/scripts/
-scp .env.production root@<your-server-ip>:/opt/apartment-ultra/
+# 2. 上传文件（设置 DEPLOY_USER 和 DEPLOY_HOST）
+scp dist/*.tar.gz ${DEPLOY_USER:-root}@${DEPLOY_HOST}:/tmp/
+scp docker/docker-compose.prod.yaml ${DEPLOY_USER:-root}@${DEPLOY_HOST}:/opt/apartment-ultra/docker/
+scp scripts/deploy-images.sh ${DEPLOY_USER:-root}@${DEPLOY_HOST}:/opt/apartment-ultra/scripts/
+scp .env.production ${DEPLOY_USER:-root}@${DEPLOY_HOST}:/opt/apartment-ultra/
 
 # 3. 服务器执行
-ssh root@<your-server-ip> "cd /opt/apartment-ultra && chmod +x scripts/deploy-images.sh && ./scripts/deploy-images.sh"
+ssh ${DEPLOY_USER:-root}@${DEPLOY_HOST} "cd /opt/apartment-ultra && chmod +x scripts/deploy-images.sh && ./scripts/deploy-images.sh"
 ```
 
 ---
 
-## 生产环境配置
+## 脚本说明
 
-以下环境变量在生产环境中**必须覆盖默认值**：
-
-| 变量 | 说明 |
-|------|------|
-| `DATABASE_URL` | PostgreSQL 连接串 |
-| `SECRET_KEY` | JWT 签名密钥（强随机密钥） |
-| `ADMIN_INIT_PASSWORD` | 运营后台管理员初始密码（部署后立即修改） |
-| `CORS_ORIGINS` | 允许的前端来源（JSON 数组字符串） |
-
-### 微信支付配置
-
-如需启用微信支付，还需配置：
-
-| 变量 | 说明 |
-|------|------|
-| `WECHAT_PAY_ENABLED` | 启用微信支付 |
-| `WECHAT_MCH_ID` | 商户号 |
-| `WECHAT_APP_ID` | 应用 ID |
-| `WECHAT_APIV3_KEY` | API v3 密钥 |
-| `WECHAT_CERT_SERIAL_NO` | 证书序列号 |
-| `WECHAT_PAY_NOTIFY_URL_BASE` | 回调地址基础 URL |
-| `WECHAT_PRIVATE_KEY` 或 `WECHAT_PRIVATE_KEY_PATH` | 私钥 |
-
-详细配置见 [api/src/config.ts](../api/src/config.ts)。
+| 脚本 | 用途 | 执行位置 |
+|------|------|---------|
+| `build-local.sh` | 构建 Docker 镜像 | 本地 |
+| `deploy-from-local.sh` | 一键部署 | 本地 |
+| `deploy-images.sh` | 加载镜像并启动服务 | 服务器 |
+| `backup.sh` | 数据库备份 | 服务器 |
 
 ---
 
@@ -235,20 +235,20 @@ ssh root@<your-server-ip> "cd /opt/apartment-ultra && chmod +x scripts/deploy-im
 
 ```bash
 # 查看日志
-docker compose -f docker/docker-compose.prod.yaml logs -f api
-docker compose -f docker/docker-compose.prod.yaml logs -f web
+docker compose -f docker/docker-compose.prod.yaml --env-file .env.production logs -f api
+docker compose -f docker/docker-compose.prod.yaml --env-file .env.production logs -f web
 
 # 重启服务
-docker compose -f docker/docker-compose.prod.yaml restart api
+docker compose -f docker/docker-compose.prod.yaml --env-file .env.production restart api
 
 # 进入容器
-docker compose -f docker/docker-compose.prod.yaml exec api sh
+docker compose -f docker/docker-compose.prod.yaml --env-file .env.production exec api sh
 
-# 停止并清理
-docker compose -f docker/docker-compose.prod.yaml down
+# 查看状态
+docker compose -f docker/docker-compose.prod.yaml --env-file .env.production ps
 
-# 查看服务状态
-docker compose -f docker/docker-compose.prod.yaml ps
+# 停止服务
+docker compose -f docker/docker-compose.prod.yaml --env-file .env.production down
 ```
 
 ---
@@ -275,10 +275,27 @@ docker compose -f docker/docker-compose.prod.yaml ps
 
 ### 502 Bad Gateway
 
-检查服务是否正常运行：
+检查服务状态：
 
 ```bash
-docker compose -f docker/docker-compose.prod.yaml ps
-docker compose -f docker/docker-compose.prod.yaml logs api
-docker compose -f docker/docker-compose.prod.yaml logs web
+docker compose -f docker/docker-compose.prod.yaml --env-file .env.production ps
+docker compose -f docker/docker-compose.prod.yaml --env-file .env.production logs api
+docker compose -f docker/docker-compose.prod.yaml --env-file .env.production logs web
+```
+
+### Docker 安装失败（国内服务器）
+
+```bash
+# 使用阿里云镜像安装
+curl -fsSL https://get.docker.com | sudo sh -s -- --mirror Aliyun
+
+# 或手动安装
+sudo apt update
+sudo apt install -y apt-transport-https ca-certificates curl gnupg lsb-release
+curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo systemctl start docker
+sudo systemctl enable docker
 ```
