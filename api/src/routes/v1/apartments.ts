@@ -55,7 +55,7 @@ const RoomBatchSchema = z.object({
 const RoomUpdateSchema = z.object({
   room_number: z.string().optional(),
   layout: z.string().optional(),
-  status: z.string().optional(),
+  status: z.enum(['available', 'occupied', 'maintenance']).optional(),
   monthly_rent: z.number().optional(),
   area: z.number().optional(),
   notes: z.string().optional(),
@@ -117,11 +117,9 @@ router.put('/rooms/:roomId', async (req: Request, res: Response, next: NextFunct
     const orgId = await requireOrgMembership(req);
     const parsed = RoomUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { status: _status, ...restData } = parsed.data;
     const updated = await defaultRoomService.update(orgId, req.params.roomId, {
-      ...restData,
-      facilities: restData.facilities ?? undefined,
+      ...parsed.data,
+      facilities: parsed.data.facilities ?? undefined,
     });
     res.json(updated);
   } catch (e) {

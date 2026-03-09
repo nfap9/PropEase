@@ -10,15 +10,6 @@ const E2E_TEST_USER = {
 };
 
 /**
- * API 响应包装格式
- */
-interface ApiResponse<T> {
-  code: number;
-  data: T;
-  message?: string;
-}
-
-/**
  * 测试数据生成器
  *
  * 用于在测试中动态创建独立的测试数据
@@ -27,6 +18,8 @@ interface ApiResponse<T> {
 export interface TestDataOptions {
   /** 公寓名称前缀，默认使用时间戳 */
   prefix?: string;
+  /** 强制使用的组织 ID（优先级高于自动获取） */
+  orgId?: string;
 }
 
 export interface CreatedApartment {
@@ -69,6 +62,7 @@ export class TestDataGenerator {
   private api: ApiHelper;
   private request: APIRequestContext;
   private prefix: string;
+  private forcedOrgId: string | null = null;
   private orgId: string | null = null;
   private createdResources: {
     apartments: string[];
@@ -78,10 +72,11 @@ export class TestDataGenerator {
     bills: string[];
   };
 
-  constructor(request: APIRequestContext, prefix?: string) {
+  constructor(request: APIRequestContext, options?: TestDataOptions) {
     this.api = new ApiHelper(request);
     this.request = request;
-    this.prefix = prefix || generatePrefix();
+    this.prefix = options?.prefix || generatePrefix();
+    this.forcedOrgId = options?.orgId || null;
     this.createdResources = {
       apartments: [],
       tenants: [],
@@ -102,9 +97,28 @@ export class TestDataGenerator {
     );
     this.api.setToken(accessToken);
 
-    // 获取用户的组织 ID - 通过查询用户所属组织
+    // 如果已强制指定组织 ID，直接使用
+    if (this.forcedOrgId) {
+      this.orgId = this.forcedOrgId;
+      this.api.setOrgId(this.orgId);
+      return;
+    }
+
+    // 获取用户的组织 ID - 优先使用个人组织
+    try {
+      const personalOrg = await this.api.getRaw<{ code: number; data: { id: string } }>('/api/v1/organizations/personal');
+      if (personalOrg.code === 0 && personalOrg.data?.id) {
+        this.orgId = personalOrg.data.id;
+        this.api.setOrgId(this.orgId);
+        return;
+      }
+    } catch (e) {
+      console.log('Failed to get personal org:', e);
+    }
+
+    // 如果没有个人组织，尝试获取用户的第一个组织
     const orgs = await this.api.getRaw<{ code: number; data: { id: string }[] }>('/api/v1/organizations');
-    if (orgs.data && orgs.data.length > 0) {
+    if (orgs.code === 0 && orgs.data && orgs.data.length > 0) {
       this.orgId = orgs.data[0].id;
       this.api.setOrgId(this.orgId);
     }
@@ -125,6 +139,14 @@ export class TestDataGenerator {
   }
 
   /**
+   * 同步组织 ID（在测试中从页面 localStorage 获取后调用）
+   */
+  setOrgId(orgId: string): void {
+    this.orgId = orgId;
+    this.api.setOrgId(orgId);
+  }
+
+  /**
    * 创建公寓和房间
    */
   async createApartmentWithRooms(
@@ -139,11 +161,17 @@ export class TestDataGenerator {
       address: `${this.prefix}_测试地址`,
     });
 
+    // 创建公寓成功
+
     const rooms: CreatedRoom[] = [];
+
+    // 生成唯一后缀（时间戳后4位 + 随机字符）
+    const uniqueSuffix = Date.now().toString().slice(-4);
 
     // 创建房间
     for (let i = 1; i <= roomCount; i++) {
-      const roomNumber = `${i}01`;
+      // 使用唯一房间号格式：R + 后缀 + 序号，如 R7890_1
+      const roomNumber = `R${uniqueSuffix}_${i}`;
       const room = await this.api.post<{ id: string; room_number: string; status: string }>(
         `/api/v1/apartments/${apartment.id}/rooms`,
         {

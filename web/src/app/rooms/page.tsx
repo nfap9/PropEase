@@ -29,9 +29,15 @@ const ROOMS = {
   SEARCH_INPUT: 'rooms-search-input',
   LIST: 'rooms-list',
   TERMINATE_DIALOG: 'rooms-terminate-dialog',
+  CONFIRM_TERMINATE_BTN: 'rooms-confirm-terminate-btn',
+  FILTER_TOGGLE: 'rooms-filter-toggle',
   APARTMENT_FILTER: 'rooms-apartment-filter',
   STATUS_FILTER: 'rooms-status-filter',
   LAYOUT_FILTER: 'rooms-layout-filter',
+  RENT_MIN_INPUT: 'rooms-rent-min-input',
+  RENT_MAX_INPUT: 'rooms-rent-max-input',
+  AREA_MIN_INPUT: 'rooms-area-min-input',
+  AREA_MAX_INPUT: 'rooms-area-max-input',
   CLEAR_FILTERS_BTN: 'rooms-clear-filters-btn',
 } as const;
 

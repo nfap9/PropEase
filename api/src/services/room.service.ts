@@ -50,11 +50,11 @@ export interface BatchCreateRoomInput {
 
 /**
  * 更新房间输入
- * 注：房间状态不能直接编辑，只能通过签约/维护操作改变
  */
 export interface UpdateRoomInput {
   room_number?: string;
   layout?: string;
+  status?: 'available' | 'occupied' | 'maintenance';
   monthly_rent?: number;
   area?: number;
   notes?: string;
@@ -93,12 +93,12 @@ function buildCreateData(apartmentId: string, data: CreateRoomInput): Prisma.Roo
 
 /**
  * 构建房间更新数据
- * 注：不更新状态，状态由签约/维护操作控制
  */
 function buildUpdateData(existing: Room, data: UpdateRoomInput): Prisma.RoomUpdateInput {
   const result: Prisma.RoomUpdateInput = {
     room_number: data.room_number ?? existing.room_number,
     layout: data.layout ?? existing.layout,
+    status: data.status ?? existing.status,
     monthly_rent: data.monthly_rent ?? Number(existing.monthly_rent),
     area:
       data.area !== undefined

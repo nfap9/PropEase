@@ -61,7 +61,7 @@ export function RoomFilters({
         className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium transition-colors hover:bg-muted/80"
         aria-expanded={expanded}
         aria-label={expanded ? '收起筛选' : '展开筛选'}
-        data-testid={testids?.APARTMENT_FILTER}
+        data-testid={testids?.FILTER_TOGGLE}
       >
         {expanded ? (
           <ChevronDown className="h-4 w-4 shrink-0" />
@@ -154,6 +154,7 @@ export function RoomFilters({
                 onChange={(e) =>
                   onFilterChange('rentMin', e.target.value ? Number(e.target.value) : null)
                 }
+                data-testid={testids?.RENT_MIN_INPUT}
               />
               <span className="text-muted-foreground">-</span>
               <Input
@@ -164,6 +165,7 @@ export function RoomFilters({
                 onChange={(e) =>
                   onFilterChange('rentMax', e.target.value ? Number(e.target.value) : null)
                 }
+                data-testid={testids?.RENT_MAX_INPUT}
               />
             </div>
           </div>
@@ -180,6 +182,7 @@ export function RoomFilters({
                 onChange={(e) =>
                   onFilterChange('areaMin', e.target.value ? Number(e.target.value) : null)
                 }
+                data-testid={testids?.AREA_MIN_INPUT}
               />
               <span className="text-muted-foreground">-</span>
               <Input
@@ -190,6 +193,7 @@ export function RoomFilters({
                 onChange={(e) =>
                   onFilterChange('areaMax', e.target.value ? Number(e.target.value) : null)
                 }
+                data-testid={testids?.AREA_MAX_INPUT}
               />
             </div>
           </div>
