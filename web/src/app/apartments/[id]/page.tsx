@@ -43,7 +43,10 @@ import { apartmentsApi, roomsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
-import { Room, RoomStatus } from '@/types';
+import { Room, RoomStatus, RoomFacilities } from '@/types';
+import { EditRoomDialog } from '@/app/rooms/components/EditRoomDialog';
+import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
+import { getFacilityLabel } from '@/lib/constants/facilities';
 import {
   ArrowLeft,
   Building2,
@@ -64,6 +67,7 @@ import {
   CheckCircle,
   X,
   Settings,
+  Settings2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -147,6 +151,9 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   const [selectedRooms, setSelectedRooms] = useState<Set<string>>(new Set());
   const [isEditRoomOpen, setIsEditRoomOpen] = useState(false);
   const [isDeleteRoomOpen, setIsDeleteRoomOpen] = useState(false);
+  // 新增房间的设施配置
+  const [newRoomFacilities, setNewRoomFacilities] = useState<RoomFacilities | null>(null);
+  const [facilityDialogOpen, setFacilityDialogOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   // 批量操作状态
   const [isBatchEditMode, setIsBatchEditMode] = useState(false);
@@ -306,11 +313,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     }
   };
 
-  // 房间编辑表单
-  const editRoomForm = useForm<RoomFormData>({
-    resolver: zodResolver(roomSchema),
-  });
-
   // 批量编辑表单
   const batchEditForm = useForm<BatchEditFormData>({
     resolver: zodResolver(batchEditSchema),
@@ -336,12 +338,13 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
 
   // 创建房间
   const createRoomMutation = useMutation({
-    mutationFn: (data: RoomFormData) =>
+    mutationFn: (data: RoomFormData & { facilities?: RoomFacilities | null }) =>
       roomsApi.create(orgId!, apartmentId, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
       setIsCreateRoomOpen(false);
       createRoomForm.reset();
+      setNewRoomFacilities(null);
       toast.success('房间创建成功');
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
@@ -373,8 +376,13 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
 
   // 更新房间
   const updateRoomMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: RoomFormData }) =>
-      roomsApi.update(orgId!, id, filterEmptyStrings({ ...data, apartment_id: apartmentId })),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { room_number: string; layout?: string; area?: number; monthly_rent: number; notes?: string; facilities?: RoomFacilities | null };
+    }) => roomsApi.update(orgId!, id, filterEmptyStrings({ ...data, apartment_id: apartmentId })),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
       setIsEditRoomOpen(false);
@@ -533,14 +541,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   // 房间卡片点击处理
   const handleRoomClick = (room: Room) => {
     setSelectedRoom(room);
-    editRoomForm.reset({
-      room_number: room.room_number,
-      layout: room.layout || '',
-      area: room.area || 0,
-      monthly_rent: room.monthly_rent,
-      status: room.status,
-      notes: room.notes || '',
-    });
     setIsEditRoomOpen(true);
   };
 
@@ -923,14 +923,24 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
         </Dialog>
 
         {/* 新增房间对话框 */}
-        <Dialog open={isCreateRoomOpen} onOpenChange={setIsCreateRoomOpen}>
+        <Dialog
+          open={isCreateRoomOpen}
+          onOpenChange={(open) => {
+            setIsCreateRoomOpen(open);
+            if (!open) {
+              setNewRoomFacilities(null);
+            }
+          }}
+        >
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>新增房间</DialogTitle>
               <DialogDescription>在 {apartment.name} 添加新房间</DialogDescription>
             </DialogHeader>
             <form
-              onSubmit={createRoomForm.handleSubmit((data) => createRoomMutation.mutate(data))}
+              onSubmit={createRoomForm.handleSubmit((data) =>
+                createRoomMutation.mutate({ ...data, facilities: newRoomFacilities })
+              )}
               className="space-y-4"
             >
               <div className="grid grid-cols-2 gap-4">
@@ -1009,6 +1019,39 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                 <Label htmlFor="notes">备注</Label>
                 <Input id="notes" {...createRoomForm.register('notes')} />
               </div>
+
+              {/* 家具家电配置 */}
+              <div className="space-y-2">
+                <Label>家具家电</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full justify-between"
+                  onClick={() => setFacilityDialogOpen(true)}
+                >
+                  <span className="text-muted-foreground">
+                    {(() => {
+                      if (
+                        !newRoomFacilities ||
+                        (newRoomFacilities.furniture.length === 0 &&
+                          newRoomFacilities.appliances.length === 0)
+                      ) {
+                        return '未配置';
+                      }
+                      const allItems = [...newRoomFacilities.furniture, ...newRoomFacilities.appliances];
+                      const count = allItems.reduce((sum, item) => sum + item.quantity, 0);
+                      const names = allItems.slice(0, 4).map((item) => {
+                        const label = getFacilityLabel(item.code);
+                        return item.quantity > 1 ? `${label}×${item.quantity}` : label;
+                      });
+                      const remaining = allItems.length - 4;
+                      return remaining > 0 ? `${names.join('、')} 等${count}件` : `${names.join('、')} 共${count}件`;
+                    })()}
+                  </span>
+                  <Settings2 className="h-4 w-4" />
+                </Button>
+              </div>
+
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsCreateRoomOpen(false)}>
                   取消
@@ -1020,6 +1063,14 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* 家具家电配置二级弹窗 */}
+        <FacilitySelectorDialog
+          value={newRoomFacilities}
+          onChange={setNewRoomFacilities}
+          open={facilityDialogOpen}
+          onOpenChange={setFacilityDialogOpen}
+        />
 
         {/* 批量创建房间对话框 */}
         <Dialog
@@ -1285,95 +1336,15 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
         </Dialog>
 
         {/* 编辑房间对话框 */}
-        <Dialog open={isEditRoomOpen} onOpenChange={setIsEditRoomOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>编辑房间</DialogTitle>
-              <DialogDescription>修改房间信息</DialogDescription>
-            </DialogHeader>
-            <form
-              onSubmit={editRoomForm.handleSubmit((data) =>
-                updateRoomMutation.mutate({ id: selectedRoom!.id, data })
-              )}
-              className="space-y-4"
-            >
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-room_number">房间号 *</Label>
-                  <Input id="edit-room_number" {...editRoomForm.register('room_number')} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-layout">户型</Label>
-                  <Select
-                    value={editRoomForm.watch('layout') || ''}
-                    onValueChange={(value) => editRoomForm.setValue('layout', value)}
-                  >
-                    <SelectTrigger className="min-w-[120px]">
-                      <SelectValue placeholder="选择户型" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LAYOUT_OPTIONS.map((layout) => (
-                        <SelectItem key={layout} value={layout}>
-                          {layout}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-area">面积 (m²)</Label>
-                  <Input
-                    id="edit-area"
-                    type="number"
-                    step="0.01"
-                    {...editRoomForm.register('area', { valueAsNumber: true })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-monthly_rent">月租 (元) *</Label>
-                  <Input
-                    id="edit-monthly_rent"
-                    type="number"
-                    step="0.01"
-                    {...editRoomForm.register('monthly_rent', { valueAsNumber: true })}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-status">状态</Label>
-                  <Select
-                    value={editRoomForm.watch('status')}
-                    onValueChange={(value: RoomStatus) => editRoomForm.setValue('status', value)}
-                  >
-                    <SelectTrigger className="min-w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="available">空置</SelectItem>
-                      <SelectItem value="occupied">已租</SelectItem>
-                      <SelectItem value="maintenance">维修中</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-notes">备注</Label>
-                <Input id="edit-notes" {...editRoomForm.register('notes')} />
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsEditRoomOpen(false)}>
-                  取消
-                </Button>
-                <Button type="submit" disabled={updateRoomMutation.isPending}>
-                  {updateRoomMutation.isPending ? '保存中...' : '保存'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <EditRoomDialog
+          open={isEditRoomOpen}
+          onOpenChange={setIsEditRoomOpen}
+          onSubmit={(data) => {
+            updateRoomMutation.mutate({ id: selectedRoom!.id, data });
+          }}
+          isPending={updateRoomMutation.isPending}
+          room={selectedRoom}
+        />
 
         {/* 删除房间确认对话框 */}
         <AlertDialog open={isDeleteRoomOpen} onOpenChange={setIsDeleteRoomOpen}>

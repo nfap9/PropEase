@@ -4,17 +4,27 @@ import { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { ChevronDown, ChevronRight, Minus, Plus } from 'lucide-react';
 import type { RoomFacilities, FacilityItem, FacilityPreset } from '@/types';
 import { FURNITURE_PRESETS, APPLIANCE_PRESETS } from '@/lib/constants/facilities';
 
-export interface FacilitySelectorProps {
+export interface FacilitySelectorDialogProps {
   /** 当前设施配置 */
   value: RoomFacilities | null;
   /** 配置变更回调 */
   onChange: (value: RoomFacilities | null) => void;
-  /** 是否禁用 */
-  disabled?: boolean;
+  /** 是否打开 */
+  open: boolean;
+  /** 打开状态变更 */
+  onOpenChange: (open: boolean) => void;
 }
 
 interface FacilityGroupProps {
@@ -23,7 +33,6 @@ interface FacilityGroupProps {
   items: FacilityItem[];
   onToggle: (code: string, checked: boolean) => void;
   onQuantityChange: (code: string, quantity: number) => void;
-  disabled?: boolean;
 }
 
 function FacilityGroup({
@@ -32,7 +41,6 @@ function FacilityGroup({
   items,
   onToggle,
   onQuantityChange,
-  disabled,
 }: FacilityGroupProps) {
   const [expanded, setExpanded] = useState(true);
   const itemCount = items.length;
@@ -70,7 +78,6 @@ function FacilityGroup({
                     id={`facility-${preset.code}`}
                     checked={isChecked}
                     onCheckedChange={(checked) => onToggle(preset.code, checked === true)}
-                    disabled={disabled}
                   />
                   <Label
                     htmlFor={`facility-${preset.code}`}
@@ -88,7 +95,7 @@ function FacilityGroup({
                       size="icon"
                       className="h-6 w-6"
                       onClick={() => onQuantityChange(preset.code, Math.max(1, quantity - 1))}
-                      disabled={disabled || quantity <= 1}
+                      disabled={quantity <= 1}
                     >
                       <Minus className="h-3 w-3" />
                     </Button>
@@ -99,7 +106,6 @@ function FacilityGroup({
                       size="icon"
                       className="h-6 w-6"
                       onClick={() => onQuantityChange(preset.code, quantity + 1)}
-                      disabled={disabled}
                     >
                       <Plus className="h-3 w-3" />
                     </Button>
@@ -114,7 +120,12 @@ function FacilityGroup({
   );
 }
 
-export function FacilitySelector({ value, onChange, disabled = false }: FacilitySelectorProps) {
+export function FacilitySelectorDialog({
+  value,
+  onChange,
+  open,
+  onOpenChange,
+}: FacilitySelectorDialogProps) {
   const furniture = value?.furniture ?? [];
   const appliances = value?.appliances ?? [];
 
@@ -140,7 +151,6 @@ export function FacilitySelector({ value, onChange, disabled = false }: Facility
       appliances: category === 'appliances' ? newList : appliances,
     };
 
-    // 如果两个列表都为空，则清空
     if (newValue.furniture.length === 0 && newValue.appliances.length === 0) {
       onChange(null);
     } else {
@@ -170,45 +180,51 @@ export function FacilitySelector({ value, onChange, disabled = false }: Facility
   const totalItems = furniture.length + appliances.length;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Label className="text-base">家具家电配置</Label>
-        {totalItems > 0 && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleClear}
-            disabled={disabled}
-          >
-            清空
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>家具家电配置</DialogTitle>
+          <DialogDescription>选择房间配备的家具家电</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              已选择 {totalItems} 项设施
+            </span>
+            {totalItems > 0 && (
+              <Button type="button" variant="ghost" size="sm" onClick={handleClear}>
+                清空
+              </Button>
+            )}
+          </div>
+
+          <FacilityGroup
+            title="家具"
+            presets={FURNITURE_PRESETS}
+            items={furniture}
+            onToggle={(code, checked) => handleToggle('furniture', code, checked)}
+            onQuantityChange={(code, qty) => handleQuantityChange('furniture', code, qty)}
+          />
+
+          <FacilityGroup
+            title="家电"
+            presets={APPLIANCE_PRESETS}
+            items={appliances}
+            onToggle={(code, checked) => handleToggle('appliances', code, checked)}
+            onQuantityChange={(code, qty) => handleQuantityChange('appliances', code, qty)}
+          />
+        </div>
+
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            取消
           </Button>
-        )}
-      </div>
-
-      <div className="space-y-4">
-        <FacilityGroup
-          title="家具"
-          presets={FURNITURE_PRESETS}
-          items={furniture}
-          onToggle={(code, checked) => handleToggle('furniture', code, checked)}
-          onQuantityChange={(code, qty) => handleQuantityChange('furniture', code, qty)}
-          disabled={disabled}
-        />
-
-        <FacilityGroup
-          title="家电"
-          presets={APPLIANCE_PRESETS}
-          items={appliances}
-          onToggle={(code, checked) => handleToggle('appliances', code, checked)}
-          onQuantityChange={(code, qty) => handleQuantityChange('appliances', code, qty)}
-          disabled={disabled}
-        />
-      </div>
-
-      {totalItems > 0 && (
-        <div className="text-sm text-muted-foreground">已选择 {totalItems} 项设施</div>
-      )}
-    </div>
+          <Button type="button" onClick={() => onOpenChange(false)}>
+            确定
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
