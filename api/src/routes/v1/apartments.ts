@@ -43,7 +43,7 @@ const RoomCreateSchema = z.object({
   area: z.number().optional(),
   notes: z.string().optional(),
   status: z.enum(['available', 'occupied', 'maintenance']).optional(),
-  facilities: RoomFacilitiesSchema.optional(),
+  facilities: RoomFacilitiesSchema.nullable().optional(),
 });
 const RoomBatchSchema = z.object({
   room_numbers: z.array(z.string()),
