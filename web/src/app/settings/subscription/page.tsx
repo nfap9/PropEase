@@ -35,6 +35,10 @@ const SUBSCRIPTION = {
   CONFIRM_BTN: 'subscription-confirm-btn',
   PLAN_CARD: 'subscription-plan-card',
   SUBSCRIBE_BTN: 'subscription-subscribe-btn',
+  // 测试需要用到的
+  PLAN_LIST: 'subscription-plan-list',
+  CURRENT_SUBSCRIPTION: 'subscription-current',
+  UPGRADE_BUTTON: 'subscription-upgrade-btn',
 } as const;
 
 const PLAN_ICONS: Record<string, typeof Crown> = {
@@ -154,7 +158,7 @@ export default function SubscriptionPage() {
 
         {/* Current Plan */}
         {subscriptionStatus && (
-          <Card>
+          <Card data-testid={SUBSCRIPTION.CURRENT_SUBSCRIPTION}>
             <CardHeader>
               <CardTitle className="text-lg">当前套餐</CardTitle>
             </CardHeader>
@@ -221,7 +225,7 @@ export default function SubscriptionPage() {
             ))}
           </div>
         ) : plans && plans.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-3" data-testid={SUBSCRIPTION.PLAN_LIST}>
             {plans.map((plan) => {
               const Icon = PLAN_ICONS[plan.code] || Building2;
               const price = billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly;
@@ -284,6 +288,7 @@ export default function SubscriptionPage() {
                         (price > 0 && createOrderMutation.isPending)
                       }
                       onClick={() => handleSubscribe(plan.id)}
+                      data-testid={SUBSCRIPTION.UPGRADE_BUTTON}
                     >
                       {(subscribeMutation.isPending || createOrderMutation.isPending) &&
                       selectedPlan === plan.id ? (

@@ -107,11 +107,21 @@ async function validateSpecificationOwnership(specificationId: string, orgId: st
 export function createFeeTypeService(): FeeTypeService {
   return {
     list: async (orgId: string) => {
-      return prisma.feeType.findMany({
-        where: { organization_id: orgId, is_active: true },
-        include: { specifications: { where: { is_active: true }, orderBy: { sort_order: 'asc' } } },
-        orderBy: { sort_order: 'asc' },
-      });
+      // 查询系统类型(organization_id为null)和组织自定义类型
+      const [systemTypes, orgTypes] = await Promise.all([
+        prisma.feeType.findMany({
+          where: { organization_id: null, is_active: true },
+          include: { specifications: { where: { is_active: true }, orderBy: { sort_order: 'asc' } } },
+          orderBy: { sort_order: 'asc' },
+        }),
+        prisma.feeType.findMany({
+          where: { organization_id: orgId, is_active: true },
+          include: { specifications: { where: { is_active: true }, orderBy: { sort_order: 'asc' } } },
+          orderBy: { sort_order: 'asc' },
+        }),
+      ]);
+      // 系统类型在前，组织类型在后
+      return [...systemTypes, ...orgTypes];
     },
 
     getById: async (orgId: string, id: string) => {
