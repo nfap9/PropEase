@@ -68,31 +68,10 @@ export interface FeeTypeService {
   create(orgId: string, data: CreateFeeTypeInput): Promise<FeeTypeWithSpecifications>;
   update(orgId: string, id: string, data: UpdateFeeTypeInput): Promise<FeeType>;
   delete(orgId: string, id: string): Promise<void>;
+  getSpecificationById(orgId: string, specificationId: string): Promise<FeeSpecification>;
   addSpecification(orgId: string, feeTypeId: string, data: CreateFeeSpecificationInput): Promise<FeeSpecification>;
   updateSpecification(orgId: string, specificationId: string, data: UpdateFeeSpecificationInput): Promise<FeeSpecification>;
   deleteSpecification(orgId: string, specificationId: string): Promise<void>;
-}
-
-/**
- * 获取系统预设费用类型
- */
-async function getSystemFeeTypes(): Promise<FeeTypeWithSpecifications[]> {
-  return prisma.feeType.findMany({
-    where: { organization_id: null, is_active: true },
-    include: { specifications: { where: { is_active: true }, orderBy: { sort_order: 'asc' } } },
-    orderBy: { sort_order: 'asc' },
-  });
-}
-
-/**
- * 获取组织自定义费用类型
- */
-async function getOrgFeeTypes(orgId: string): Promise<FeeTypeWithSpecifications[]> {
-  return prisma.feeType.findMany({
-    where: { organization_id: orgId, is_active: true },
-    include: { specifications: { where: { is_active: true }, orderBy: { sort_order: 'asc' } } },
-    orderBy: { sort_order: 'asc' },
-  });
 }
 
 /**
@@ -128,20 +107,16 @@ async function validateSpecificationOwnership(specificationId: string, orgId: st
 export function createFeeTypeService(): FeeTypeService {
   return {
     list: async (orgId: string) => {
-      const [systemTypes, orgTypes] = await Promise.all([
-        getSystemFeeTypes(),
-        getOrgFeeTypes(orgId),
-      ]);
-      return [...systemTypes, ...orgTypes];
+      return prisma.feeType.findMany({
+        where: { organization_id: orgId, is_active: true },
+        include: { specifications: { where: { is_active: true }, orderBy: { sort_order: 'asc' } } },
+        orderBy: { sort_order: 'asc' },
+      });
     },
 
     getById: async (orgId: string, id: string) => {
       const feeType = await prisma.feeType.findFirst({
-        where: {
-          id,
-          OR: [{ organization_id: null }, { organization_id: orgId }],
-          is_active: true,
-        },
+        where: { id, organization_id: orgId, is_active: true },
         include: { specifications: { where: { is_active: true }, orderBy: { sort_order: 'asc' } } },
       });
       if (!feeType) {
@@ -216,6 +191,10 @@ export function createFeeTypeService(): FeeTypeService {
         where: { id },
         data: { is_active: false },
       });
+    },
+
+    getSpecificationById: async (orgId: string, specificationId: string) => {
+      return validateSpecificationOwnership(specificationId, orgId);
     },
 
     addSpecification: async (orgId: string, feeTypeId: string, data: CreateFeeSpecificationInput) => {

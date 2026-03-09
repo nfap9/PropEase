@@ -67,7 +67,6 @@ const UtilityConfigSchema = z.object({
   internet_fee: z.number().min(0).optional(),
   management_fee: z.number().min(0).optional(),
   service_fee: z.number().min(0).optional(),
-  effective_from: z.string(),
   notes: z.string().max(500).optional(),
 });
 
@@ -227,7 +226,7 @@ router.get(
   }
 );
 
-// POST /apartments/:apartmentId/utility-config - 创建水电配置
+// POST /apartments/:apartmentId/utility-config - 创建或更新水电配置 (upsert)
 router.post(
   '/:apartmentId/utility-config',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -236,9 +235,17 @@ router.post(
       await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
       const parsed = UtilityConfigSchema.safeParse(req.body);
       if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-      const effectiveFrom = new Date(parsed.data.effective_from);
-      const config = await prisma.utilityConfig.create({
-        data: {
+      const config = await prisma.utilityConfig.upsert({
+        where: { apartment_id: req.params.apartmentId },
+        update: {
+          water_price_per_unit: parsed.data.water_price_per_unit ?? undefined,
+          electricity_price_per_unit: parsed.data.electricity_price_per_unit ?? undefined,
+          internet_fee: parsed.data.internet_fee ?? undefined,
+          management_fee: parsed.data.management_fee ?? undefined,
+          service_fee: parsed.data.service_fee ?? undefined,
+          notes: parsed.data.notes ?? undefined,
+        },
+        create: {
           id: ulid().toLowerCase(),
           apartment_id: req.params.apartmentId,
           water_price_per_unit: parsed.data.water_price_per_unit ?? undefined,
@@ -246,11 +253,10 @@ router.post(
           internet_fee: parsed.data.internet_fee ?? undefined,
           management_fee: parsed.data.management_fee ?? undefined,
           service_fee: parsed.data.service_fee ?? undefined,
-          effective_from: effectiveFrom,
           notes: parsed.data.notes ?? undefined,
         },
       });
-      res.status(201).json(config);
+      res.status(200).json(config);
     } catch (e) {
       next(e);
     }
@@ -278,8 +284,6 @@ router.put(
       if (parsed.data.internet_fee != null) data.internet_fee = parsed.data.internet_fee;
       if (parsed.data.management_fee != null) data.management_fee = parsed.data.management_fee;
       if (parsed.data.service_fee != null) data.service_fee = parsed.data.service_fee;
-      if (parsed.data.effective_from != null)
-        data.effective_from = new Date(parsed.data.effective_from);
       if (parsed.data.notes !== undefined) data.notes = parsed.data.notes;
       const config = await prisma.utilityConfig.update({ where: { id: existing.id }, data });
       res.json(config);

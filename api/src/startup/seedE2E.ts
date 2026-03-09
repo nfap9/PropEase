@@ -379,7 +379,6 @@ export async function seedE2EUtilityConfig(orgId: string): Promise<void> {
         apartment_id: apartment.id,
         water_price_per_unit: 5,
         electricity_price_per_unit: 1,
-        effective_from: new Date(),
       },
     });
   }

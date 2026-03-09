@@ -17,18 +17,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Settings } from 'lucide-react';
+import { Loader2, Zap } from 'lucide-react';
 import { utilityConfigApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
 
 const utilityConfigSchema = z.object({
-  water_price_per_unit: z.number().min(0, '单价不能为负').optional(),
-  electricity_price_per_unit: z.number().min(0, '单价不能为负').optional(),
-  internet_fee: z.number().min(0, '费用不能为负').optional(),
-  management_fee: z.number().min(0, '费用不能为负').optional(),
-  service_fee: z.number().min(0, '费用不能为负').optional(),
-  effective_from: z.string().min(1, '请选择生效日期'),
-  notes: z.string().optional(),
+  water_price_per_unit: z.number().min(0, '单价不能为负'),
+  electricity_price_per_unit: z.number().min(0, '单价不能为负'),
 });
 
 type UtilityConfigFormData = z.infer<typeof utilityConfigSchema>;
@@ -62,13 +57,8 @@ export function UtilityConfigDialog({
   const form = useForm<UtilityConfigFormData>({
     resolver: zodResolver(utilityConfigSchema),
     defaultValues: {
-      water_price_per_unit: undefined,
-      electricity_price_per_unit: undefined,
-      internet_fee: undefined,
-      management_fee: undefined,
-      service_fee: undefined,
-      effective_from: new Date().toISOString().split('T')[0],
-      notes: '',
+      water_price_per_unit: 0,
+      electricity_price_per_unit: 0,
     },
   });
 
@@ -76,23 +66,13 @@ export function UtilityConfigDialog({
   useEffect(() => {
     if (config) {
       form.reset({
-        water_price_per_unit: config.water_price_per_unit ?? undefined,
-        electricity_price_per_unit: config.electricity_price_per_unit ?? undefined,
-        internet_fee: config.internet_fee ?? undefined,
-        management_fee: config.management_fee ?? undefined,
-        service_fee: config.service_fee ?? undefined,
-        effective_from: config.effective_from,
-        notes: config.notes ?? '',
+        water_price_per_unit: config.water_price_per_unit ?? 0,
+        electricity_price_per_unit: config.electricity_price_per_unit ?? 0,
       });
     } else {
       form.reset({
-        water_price_per_unit: undefined,
-        electricity_price_per_unit: undefined,
-        internet_fee: undefined,
-        management_fee: undefined,
-        service_fee: undefined,
-        effective_from: new Date().toISOString().split('T')[0],
-        notes: '',
+        water_price_per_unit: 0,
+        electricity_price_per_unit: 0,
       });
     }
   }, [config, form]);
@@ -101,11 +81,11 @@ export function UtilityConfigDialog({
   const saveMutation = useMutation({
     mutationFn: (data: UtilityConfigFormData) =>
       utilityConfigApi.createOrUpdate(orgId, apartmentId, {
-        ...data,
-        effective_from: data.effective_from,
+        water_price_per_unit: data.water_price_per_unit,
+        electricity_price_per_unit: data.electricity_price_per_unit,
       }),
     onSuccess: () => {
-      toast.success('费用配置已保存');
+      toast.success('水电单价已保存');
       queryClient.invalidateQueries({ queryKey: ['utility-config', orgId, apartmentId] });
       onOpenChange(false);
     },
@@ -120,13 +100,13 @@ export function UtilityConfigDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            费用配置
+            <Zap className="h-5 w-5" />
+            水电配置
           </DialogTitle>
-          <DialogDescription>配置 {apartmentName} 的公用费用，将在生成账单时使用</DialogDescription>
+          <DialogDescription>配置 {apartmentName} 的水电单价</DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
@@ -135,89 +115,36 @@ export function UtilityConfigDialog({
           </div>
         ) : (
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* 水电单价 */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="water_price">水费单价（元/吨）</Label>
-                <Input
-                  id="water_price"
-                  type="number"
-                  step="0.01"
-                  placeholder="如: 5.00"
-                  {...form.register('water_price_per_unit', { valueAsNumber: true })}
-                />
-                {form.formState.errors.water_price_per_unit && (
-                  <p className="text-sm text-destructive">
-                    {form.formState.errors.water_price_per_unit.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="electricity_price">电费单价（元/度）</Label>
-                <Input
-                  id="electricity_price"
-                  type="number"
-                  step="0.01"
-                  placeholder="如: 1.00"
-                  {...form.register('electricity_price_per_unit', { valueAsNumber: true })}
-                />
-                {form.formState.errors.electricity_price_per_unit && (
-                  <p className="text-sm text-destructive">
-                    {form.formState.errors.electricity_price_per_unit.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* 固定费用 */}
             <div className="space-y-2">
-              <Label>固定月费（元/月）</Label>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="网费"
-                    {...form.register('internet_fee', { valueAsNumber: true })}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">网费</p>
-                </div>
-                <div>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="管理费"
-                    {...form.register('management_fee', { valueAsNumber: true })}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">管理费</p>
-                </div>
-                <div>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="服务费"
-                    {...form.register('service_fee', { valueAsNumber: true })}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">服务费</p>
-                </div>
-              </div>
-            </div>
-
-            {/* 生效日期 */}
-            <div className="space-y-2">
-              <Label htmlFor="effective_from">生效日期</Label>
-              <Input id="effective_from" type="date" {...form.register('effective_from')} />
-              {form.formState.errors.effective_from && (
+              <Label htmlFor="water_price">水费单价（元/吨）</Label>
+              <Input
+                id="water_price"
+                type="number"
+                step="0.01"
+                placeholder="如: 5.00"
+                {...form.register('water_price_per_unit', { valueAsNumber: true })}
+              />
+              {form.formState.errors.water_price_per_unit && (
                 <p className="text-sm text-destructive">
-                  {form.formState.errors.effective_from.message}
+                  {form.formState.errors.water_price_per_unit.message}
                 </p>
               )}
             </div>
 
-            {/* 备注 */}
             <div className="space-y-2">
-              <Label htmlFor="notes">备注</Label>
-              <Input id="notes" placeholder="可选备注信息" {...form.register('notes')} />
+              <Label htmlFor="electricity_price">电费单价（元/度）</Label>
+              <Input
+                id="electricity_price"
+                type="number"
+                step="0.01"
+                placeholder="如: 1.00"
+                {...form.register('electricity_price_per_unit', { valueAsNumber: true })}
+              />
+              {form.formState.errors.electricity_price_per_unit && (
+                <p className="text-sm text-destructive">
+                  {form.formState.errors.electricity_price_per_unit.message}
+                </p>
+              )}
             </div>
 
             <DialogFooter>
@@ -226,7 +153,7 @@ export function UtilityConfigDialog({
               </Button>
               <Button type="submit" disabled={saveMutation.isPending}>
                 {saveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                保存配置
+                保存
               </Button>
             </DialogFooter>
           </form>

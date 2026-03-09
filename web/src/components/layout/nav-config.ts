@@ -11,6 +11,7 @@ import {
   Shield,
   CreditCard,
   History,
+  DollarSign,
 } from 'lucide-react';
 import { PERMISSIONS } from '@/hooks/use-permissions';
 
@@ -53,6 +54,7 @@ export const NAV_ITEMS: NavItem[] = [
     id: 'utilities-history',
   },
   { href: '/bills', label: '账单管理', icon: Receipt, permission: PERMISSIONS.BILL_VIEW, id: 'bills' },
+  { href: '/fee-configs', label: '费用配置', icon: DollarSign, permission: null, id: 'fee-configs' },
   { href: '/reports', label: '经营分析', icon: BarChart3, permission: PERMISSIONS.REPORT_VIEW, id: 'reports' },
 ];
 

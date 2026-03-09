@@ -50,6 +50,18 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+// GET /fee-types/specifications/:specId - 获取单个费用规格
+// 注意：此路由必须在 /:id 之前定义，否则会被 :id 匹配
+router.get('/specifications/:specId', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    const spec = await defaultFeeTypeService.getSpecificationById(orgId, req.params.specId);
+    res.json(spec);
+  } catch (e) {
+    next(e);
+  }
+});
+
 // GET /fee-types/:id - 获取费用类型详情
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {

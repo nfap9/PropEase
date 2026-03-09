@@ -79,7 +79,6 @@ const roomSchema = z.object({
   layout: z.string().optional(),
   area: z.number().min(0, '面积不能为负').optional(),
   monthly_rent: z.number().min(0, '租金不能为负'),
-  status: z.enum(['available', 'occupied', 'maintenance']),
   notes: z.string().optional(),
 });
 
@@ -210,7 +209,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       layout: '',
       area: 0,
       monthly_rent: 0,
-      status: 'available',
       notes: '',
     },
   });
@@ -338,7 +336,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
 
   // 创建房间
   const createRoomMutation = useMutation({
-    mutationFn: (data: RoomFormData & { facilities?: RoomFacilities | null }) =>
+    mutationFn: (data: RoomFormData & { status: RoomStatus; facilities?: RoomFacilities | null }) =>
       roomsApi.create(orgId!, apartmentId, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
@@ -657,7 +655,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                 </Button>
                 <Button variant="outline" onClick={() => setIsUtilityConfigOpen(true)}>
                   <Settings className="mr-2 h-4 w-4" />
-                  费用配置
+                  水电配置
                 </Button>
               </div>
             </CardContent>
@@ -939,7 +937,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
             </DialogHeader>
             <form
               onSubmit={createRoomForm.handleSubmit((data) =>
-                createRoomMutation.mutate({ ...data, facilities: newRoomFacilities })
+                createRoomMutation.mutate({ ...data, status: 'available', facilities: newRoomFacilities })
               )}
               className="space-y-4"
             >
@@ -995,24 +993,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                       {createRoomForm.formState.errors.monthly_rent.message}
                     </p>
                   )}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="status">状态</Label>
-                  <Select
-                    value={createRoomForm.watch('status')}
-                    onValueChange={(value: RoomStatus) => createRoomForm.setValue('status', value)}
-                  >
-                    <SelectTrigger className="min-w-[120px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="available">空置</SelectItem>
-                      <SelectItem value="occupied">已租</SelectItem>
-                      <SelectItem value="maintenance">维修中</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
               <div className="space-y-2">
@@ -1468,7 +1448,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
           </DialogContent>
         </Dialog>
 
-        {/* 费用配置对话框 */}
+        {/* 水电配置对话框 */}
         <UtilityConfigDialog
           open={isUtilityConfigOpen}
           onOpenChange={setIsUtilityConfigOpen}

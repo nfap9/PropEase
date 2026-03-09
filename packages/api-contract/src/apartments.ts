@@ -78,7 +78,6 @@ export interface UtilityConfig {
   internet_fee: number | null;
   management_fee: number | null;
   service_fee: number | null;
-  effective_from: string;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -91,7 +90,6 @@ export interface UtilityConfigCreate {
   internet_fee?: number;
   management_fee?: number;
   service_fee?: number;
-  effective_from: string;
   notes?: string;
 }
 
@@ -102,6 +100,5 @@ export interface UtilityConfigUpdate {
   internet_fee?: number;
   management_fee?: number;
   service_fee?: number;
-  effective_from?: string;
   notes?: string;
 }

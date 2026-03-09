@@ -187,7 +187,6 @@ model UtilityConfig {
   internet_fee            Decimal? @db.Decimal(10, 2)
   management_fee          Decimal? @db.Decimal(10, 2)
   service_fee             Decimal? @db.Decimal(10, 2)
-  effective_from          DateTime @db.Date
   notes                   String?  @db.VarChar(500)
   created_at              DateTime @default(now())
   updated_at              DateTime @updatedAt
