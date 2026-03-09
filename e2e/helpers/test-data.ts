@@ -54,9 +54,12 @@ export interface TestDataContext {
 
 /**
  * 生成唯一标识符
+ * 使用时间戳 + 随机数确保并行测试时的唯一性
  */
 function generatePrefix(): string {
-  return `E2E_${Date.now()}`;
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 8);
+  return `E2E_${timestamp}_${random}`;
 }
 
 /**
@@ -71,6 +74,8 @@ export class TestDataGenerator {
     apartments: string[];
     tenants: string[];
     leases: string[];
+    feeTypes: string[];
+    bills: string[];
   };
 
   constructor(request: APIRequestContext, prefix?: string) {
@@ -81,6 +86,8 @@ export class TestDataGenerator {
       apartments: [],
       tenants: [],
       leases: [],
+      feeTypes: [],
+      bills: [],
     };
   }
 
@@ -166,12 +173,13 @@ export class TestDataGenerator {
    */
   async createTenant(name?: string): Promise<CreatedTenant> {
     const tenantName = name || `${this.prefix}_租客`;
-    const timestamp = Date.now();
+    // 使用更长的随机数确保唯一性
+    const uniqueSuffix = Date.now().toString().slice(-8) + Math.random().toString(36).substring(2, 4);
 
     const tenant = await this.api.post<{ id: string; name: string }>('/api/v1/tenants', {
       name: tenantName,
-      phone: `139${timestamp.toString().slice(-8)}`,
-      id_card: `1101011990${timestamp.toString().slice(-6)}`,
+      phone: `139${uniqueSuffix}`,
+      id_card: `1101011990${uniqueSuffix.slice(0, 6)}`,
     });
 
     this.createdResources.tenants.push(tenant.id);
@@ -218,10 +226,94 @@ export class TestDataGenerator {
   }
 
   /**
+   * 创建费用类型
+   */
+  async createFeeType(name?: string): Promise<{ id: string; name: string }> {
+    const feeTypeName = name || `${this.prefix}_费用类型`;
+    const randomSuffix = Math.random().toString(36).substring(2, 6);
+    const code = `${this.prefix}_${randomSuffix}`;
+
+    const feeType = await this.api.post<{ id: string; name: string }>('/api/v1/fee-types', {
+      name: feeTypeName,
+      code: code,
+    });
+
+    this.createdResources.feeTypes.push(feeType.id);
+
+    return feeType;
+  }
+
+  /**
+   * 创建账单（需要先有租约）
+   */
+  async createBill(
+    leaseId: string,
+    options?: {
+      rent_amount?: number;
+      water_amount?: number;
+      electricity_amount?: number;
+      other_amount?: number;
+      total_amount?: number;
+      bill_year?: number;
+      bill_month?: number;
+      due_date?: string;
+      notes?: string;
+    }
+  ): Promise<{ id: string }> {
+    const now = new Date();
+    const billYear = options?.bill_year || now.getFullYear();
+    const billMonth = options?.bill_month || now.getMonth() + 1;
+    const rentAmount = options?.rent_amount ?? 1500;
+    const totalAmount = options?.total_amount ?? rentAmount;
+
+    const bill = await this.api.post<{ id: string }>('/api/v1/bills', {
+      lease_id: leaseId,
+      bill_year: billYear,
+      bill_month: billMonth,
+      rent_amount: rentAmount,
+      water_amount: options?.water_amount ?? 0,
+      electricity_amount: options?.electricity_amount ?? 0,
+      other_amount: options?.other_amount ?? 0,
+      total_amount: totalAmount,
+      due_date: options?.due_date || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      notes: options?.notes,
+    });
+
+    this.createdResources.bills.push(bill.id);
+
+    return bill;
+  }
+
+  /**
+   * 创建完整的测试环境（公寓、房间、租客、租约）
+   * 用于需要账单、付款等依赖租约的测试
+   */
+  async createFullTestEnvironment(): Promise<{
+    apartment: CreatedApartment;
+    tenant: CreatedTenant;
+    lease: { id: string };
+  }> {
+    const apartment = await this.createApartmentWithRooms(1);
+    const tenant = await this.createTenant();
+    const lease = await this.createLease(apartment.rooms[0].id, tenant.id);
+
+    return { apartment, tenant, lease };
+  }
+
+  /**
    * 清理所有创建的资源
    */
   async cleanup(): Promise<void> {
-    // 先删除租约
+    // 先删除账单
+    for (const billId of this.createdResources.bills) {
+      try {
+        await this.api.delete(`/api/v1/bills/${billId}`);
+      } catch {
+        // 忽略删除错误
+      }
+    }
+
+    // 删除租约
     for (const leaseId of this.createdResources.leases) {
       try {
         await this.api.delete(`/api/v1/leases/${leaseId}`);
@@ -248,10 +340,21 @@ export class TestDataGenerator {
       }
     }
 
+    // 删除费用类型
+    for (const feeTypeId of this.createdResources.feeTypes) {
+      try {
+        await this.api.delete(`/api/v1/fee-types/${feeTypeId}`);
+      } catch {
+        // 忽略删除错误
+      }
+    }
+
     this.createdResources = {
       apartments: [],
       tenants: [],
       leases: [],
+      feeTypes: [],
+      bills: [],
     };
   }
 }

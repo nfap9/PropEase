@@ -73,7 +73,16 @@ test.describe('租约列表页面', () => {
         expect(count).toBeGreaterThanOrEqual(0);
       }
     } else {
-      test.skip();
+      // 筛选器不存在时，验证列表可见且搜索功能正常
+      const listLocator = page.locator(`[data-testid="${LEASES.LIST}"]`);
+      await expect(listLocator).toBeVisible();
+
+      // 验证搜索功能可用
+      const searchInput = page.locator(`[data-testid="${LEASES.SEARCH_INPUT}"]`);
+      if (await searchInput.isVisible()) {
+        await searchInput.fill('测试');
+        await page.waitForTimeout(500);
+      }
     }
   });
 });
