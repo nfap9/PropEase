@@ -13,7 +13,7 @@ Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是�
 
 - **后端 api** (`/api`): Node/Express/TypeScript 应用，**项目运行与调试均使用此后端**
 - **前端 Web** (`/web`): Next.js 应用，使用 TypeScript 和 React
-- **小程序** (`/miniprogram`):小程序，使用taro
+- **小程序** (`/miniprogram`):小程序，使用taro框架
 - **Docker 部署** (`/docker`): 容器化部署配置（构建上下文为仓库根，后端为 api）
 
 ## 开发工作流
@@ -53,7 +53,7 @@ pnpm dev:web
 
 - **单元/集成测试**：遵循 TDD（红 → 绿 → 重构）；后端（api）使用 Vitest；根目录 `pnpm run test` 运行测试。
 
-- **E2E 测试**：使用 Playwright，用例在 `e2e/`；编写测试用例使用playwright-e2e-testing技能；
+- **E2E 测试**：使用 Playwright，进行编写e2e测试前请阅读 `e2e/AGENTS.md`
 
 - **代码质量**：强制使用强类型，避免 `Any`/`any`，优先显式类型注解；编写自文档化代码，仅在需要解释意图时添加注释。
 
