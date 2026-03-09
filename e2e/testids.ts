@@ -105,26 +105,12 @@ export const ROOMS = {
   SEARCH_INPUT: 'rooms-search-input',
   /** 房间列表 */
   LIST: 'rooms-list',
-  /** 新增房间按钮 */
-  NEW_BUTTON: 'rooms-new-btn',
-  /** 批量添加按钮 */
-  BATCH_BUTTON: 'rooms-batch-btn',
-  /** 新增房间弹窗 */
-  CREATE_DIALOG: 'rooms-create-dialog',
-  /** 房间号输入框 */
-  NUMBER_INPUT: 'rooms-number-input',
-  /** 月租输入框 */
-  MONTHLY_RENT_INPUT: 'rooms-monthly-rent-input',
   /** 公寓筛选 */
   APARTMENT_FILTER: 'rooms-apartment-filter',
   /** 状态筛选 */
   STATUS_FILTER: 'rooms-status-filter',
-  /** 批量添加弹窗 */
-  BATCH_DIALOG: 'rooms-batch-dialog',
-  /** 编辑房间弹窗 */
-  EDIT_DIALOG: 'rooms-edit-dialog',
-  /** 删除确认弹窗 */
-  DELETE_DIALOG: 'rooms-delete-dialog',
+  /** 退租确认弹窗 */
+  TERMINATE_DIALOG: 'rooms-terminate-dialog',
 } as const;
 
 // ==================== 租客管理 ====================

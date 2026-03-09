@@ -11,19 +11,16 @@ import { InitialReadingDialog } from '@/components/common/initial-reading-dialog
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { roomsApi, apartmentsApi, leasesApi } from '@/lib/api';
-import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
-import { Room, RoomStatus, RoomFacilities } from '@/types';
+import { Room, RoomStatus } from '@/types';
 import { Building2, Search } from 'lucide-react';
 import {
   RoomStatsCards,
   RoomFilters,
   RoomFiltersState,
   useColumns,
-  EditRoomDialog,
   TerminateDialog,
-  DeleteRoomDialog,
 } from './components';
 
 // 注意: 实际使用时从 testids 导入 ROOMS 常量
@@ -31,37 +28,12 @@ const ROOMS = {
   HEADING: 'rooms-heading',
   SEARCH_INPUT: 'rooms-search-input',
   LIST: 'rooms-list',
-  NEW_BUTTON: 'rooms-new-btn',
-  BATCH_BUTTON: 'rooms-batch-btn',
-  CREATE_DIALOG: 'rooms-create-dialog',
-  NUMBER_INPUT: 'rooms-number-input',
-  MONTHLY_RENT_INPUT: 'rooms-monthly-rent-input',
-  EDIT_DIALOG: 'rooms-edit-dialog',
-  LAYOUT_SELECT: 'rooms-layout-select',
-  AREA_INPUT: 'rooms-area-input',
-  STATUS_SELECT: 'rooms-status-select',
-  NOTES_INPUT: 'rooms-notes-input',
-  CANCEL_BUTTON: 'rooms-cancel-btn',
-  CONFIRM_BUTTON: 'rooms-confirm-btn',
   TERMINATE_DIALOG: 'rooms-terminate-dialog',
-  CONFIRM_TERMINATE_BTN: 'rooms-confirm-terminate-btn',
-  DELETE_DIALOG: 'rooms-delete-dialog',
-  CONFIRM_DELETE_BTN: 'rooms-confirm-delete-btn',
   APARTMENT_FILTER: 'rooms-apartment-filter',
   STATUS_FILTER: 'rooms-status-filter',
   LAYOUT_FILTER: 'rooms-layout-filter',
   CLEAR_FILTERS_BTN: 'rooms-clear-filters-btn',
 } as const;
-
-interface RoomFormData {
-  room_number: string;
-  layout?: string;
-  area?: number;
-  monthly_rent: number;
-  notes?: string;
-  facilities?: RoomFacilities | null;
-  [key: string]: unknown;
-}
 
 export default function RoomsPage() {
   const queryClient = useQueryClient();
@@ -78,8 +50,6 @@ export default function RoomsPage() {
     areaMax: null,
   });
   const [searchQuery, setSearchQuery] = useState('');
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isLeaseOpen, setIsLeaseOpen] = useState(false);
   const [pendingInitialReading, setPendingInitialReading] = useState<LeaseCreatedParams | null>(
     null
@@ -173,31 +143,6 @@ export default function RoomsPage() {
     setSearchQuery('');
   };
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: RoomFormData }) =>
-      roomsApi.update(orgId!, id, filterEmptyStrings(data)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
-      setIsEditOpen(false);
-      setSelectedRoom(null);
-      toast.success('房间更新成功');
-    },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => roomsApi.delete(orgId!, id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
-      setIsDeleteOpen(false);
-      setSelectedRoom(null);
-      toast.success('房间删除成功');
-    },
-    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
-  });
-
   const terminateLeaseMutation = useMutation({
     mutationFn: (leaseId: string) => leasesApi.terminate(orgId!, leaseId),
     onSuccess: () => {
@@ -222,16 +167,6 @@ export default function RoomsPage() {
     onError: (error) => toast.error(getErrorMessage(error, '状态更新失败，请重试')),
   });
 
-  const handleEdit = (room: Room) => {
-    setSelectedRoom(room);
-    setIsEditOpen(true);
-  };
-
-  const handleDelete = (room: Room) => {
-    setSelectedRoom(room);
-    setIsDeleteOpen(true);
-  };
-
   const handleLease = (room: Room) => {
     setSelectedRoom(room);
     setIsLeaseOpen(true);
@@ -251,8 +186,6 @@ export default function RoomsPage() {
   };
 
   const columns = useColumns({
-    onEdit: handleEdit,
-    onDelete: handleDelete,
     onLease: handleLease,
     onTerminate: handleTerminate,
     onStatusChange: handleStatusChange,
@@ -324,19 +257,6 @@ export default function RoomsPage() {
           )}
         </div>
 
-        <EditRoomDialog
-          testids={ROOMS}
-          open={isEditOpen}
-          onOpenChange={setIsEditOpen}
-          onSubmit={(data) => {
-            if (selectedRoom) {
-              updateMutation.mutate({ id: selectedRoom.id, data });
-            }
-          }}
-          isPending={updateMutation.isPending}
-          room={selectedRoom}
-        />
-
         <LeaseFormDialog
           orgId={orgId!}
           open={isLeaseOpen}
@@ -374,18 +294,6 @@ export default function RoomsPage() {
           room={selectedRoom}
         />
 
-        <DeleteRoomDialog
-          testids={ROOMS}
-          open={isDeleteOpen}
-          onOpenChange={setIsDeleteOpen}
-          onConfirm={() => {
-            if (selectedRoom) {
-              deleteMutation.mutate(selectedRoom.id);
-            }
-          }}
-          isPending={deleteMutation.isPending}
-          room={selectedRoom}
-        />
       </MainLayout>
     </PermissionPageGuard>
   );

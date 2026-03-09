@@ -21,9 +21,6 @@ test.describe('房间列表页面', () => {
   test('应该显示房间列表页面', async ({ page }) => {
     // 验证页面标题
     await expect(page.locator(`[data-testid="${ROOMS.HEADING}"]`)).toBeVisible();
-
-    // 验证新增按钮存在
-    await expect(page.locator(`[data-testid="${ROOMS.NEW_BUTTON}"]`)).toBeVisible();
   });
 
   test('应该显示已有的测试房间', async ({ page }) => {

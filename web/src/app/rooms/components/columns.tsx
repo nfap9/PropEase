@@ -6,19 +6,15 @@ import { Badge } from '@/components/ui/badge';
 import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Room, RoomStatus } from '@/types';
 import { ROOM_STATUS_CONFIG } from '@/lib/status-config';
-import { Pencil, Trash2, FileText, Ban, Wrench, CheckCircle } from 'lucide-react';
+import { FileText, Ban, Wrench, CheckCircle } from 'lucide-react';
 
 export interface UseColumnsOptions {
-  onEdit: (room: Room) => void;
-  onDelete: (room: Room) => void;
   onLease: (room: Room) => void;
   onTerminate: (room: Room) => void;
   onStatusChange: (room: Room, status: RoomStatus) => void;
 }
 
 export function useColumns({
-  onEdit,
-  onDelete,
   onLease,
   onTerminate,
   onStatusChange,
@@ -86,11 +82,6 @@ export function useColumns({
 
         const actions: TableAction[] = [
           {
-            label: '编辑',
-            icon: Pencil,
-            onClick: () => onEdit(room),
-          },
-          {
             label: '签约',
             icon: FileText,
             onClick: () => onLease(room),
@@ -113,12 +104,6 @@ export function useColumns({
             icon: CheckCircle,
             onClick: () => onStatusChange(room, 'available'),
             show: isMaintenance,
-          },
-          {
-            label: '删除',
-            icon: Trash2,
-            onClick: () => onDelete(room),
-            variant: 'destructive',
           },
         ];
         return <TableActions actions={actions} maxInline={2} />;
