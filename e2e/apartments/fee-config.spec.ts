@@ -93,12 +93,6 @@ test.describe('公寓费用配置', () => {
               }
             }
 
-            // 填写生效日期
-            const dateInput = dialog.locator('input[type="date"]').first();
-            if (await dateInput.isVisible()) {
-              await dateInput.fill(new Date().toISOString().split('T')[0]);
-            }
-
             // 提交
             const confirmButton = dialog.locator('button:has-text("确认")').last();
             await confirmButton.click();

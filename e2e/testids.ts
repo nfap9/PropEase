@@ -321,8 +321,6 @@ export const APARTMENT_FEE_CONFIG = {
   FEE_TYPE_SELECT: 'apartment-fee-config-fee-type-select',
   /** 规格选择器 */
   SPECIFICATION_SELECT: 'apartment-fee-config-specification-select',
-  /** 生效日期输入框 */
-  EFFECTIVE_FROM_INPUT: 'apartment-fee-config-effective-from-input',
   /** 确认添加按钮 */
   CONFIRM_BUTTON: 'apartment-fee-config-confirm-btn',
   /** 取消按钮 */

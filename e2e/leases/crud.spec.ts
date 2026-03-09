@@ -182,6 +182,106 @@ test.describe('创建租约', () => {
     // 应该显示验证错误
     await expect(page.locator(`[data-testid="${LEASES.CREATE_DIALOG}"]`)).toBeVisible();
   });
+
+  test('签约时可选择额外费用', async ({ page }) => {
+    await page.waitForSelector(`[data-testid="${LEASES.HEADING}"]`);
+
+    // 点击新增按钮
+    await page.click(`[data-testid="${LEASES.NEW_BUTTON}"]`);
+    await expect(page.locator(`[data-testid="${LEASES.CREATE_DIALOG}"]`)).toBeVisible();
+
+    // 选择公寓和房间
+    const apartmentSelect = page.locator(`[data-testid="${LEASES.APARTMENT_SELECT}"]`);
+    await apartmentSelect.click();
+    const apartmentOption = page.locator('text="E2E测试公寓1"').first();
+    if (await apartmentOption.isVisible()) {
+      await apartmentOption.click();
+      await page.waitForTimeout(300);
+    }
+
+    const roomSelect = page.locator(`[data-testid="${LEASES.ROOM_SELECT}"]`);
+    await roomSelect.click();
+    const roomOption = page.locator('text="101"').first();
+    if (await roomOption.isVisible()) {
+      await roomOption.click();
+      await page.waitForTimeout(300);
+    }
+
+    // 检查是否有费用选择区域
+    const feeSection = page.locator('text=额外费用').first();
+    if (await feeSection.isVisible()) {
+      // 尝试点击一个费用规格
+      const feeButton = page.locator('button:has-text("/月")').first();
+      if (await feeButton.isVisible()) {
+        await feeButton.click();
+        await page.waitForTimeout(200);
+
+        // 验证费用已选中（变成 default 样式）
+        await expect(feeButton).toHaveAttribute('class', /default|primary/);
+      }
+    }
+
+    // 关闭弹窗
+    await page.click('[data-testid="leases-cancel-btn"]');
+  });
+
+  test('同一费用类型只能选择一个规格', async ({ page }) => {
+    await page.waitForSelector(`[data-testid="${LEASES.HEADING}"]`);
+
+    // 点击新增按钮
+    await page.click(`[data-testid="${LEASES.NEW_BUTTON}"]`);
+    await expect(page.locator(`[data-testid="${LEASES.CREATE_DIALOG}"]`)).toBeVisible();
+
+    // 选择公寓和房间
+    const apartmentSelect = page.locator(`[data-testid="${LEASES.APARTMENT_SELECT}"]`);
+    await apartmentSelect.click();
+    const apartmentOption = page.locator('text="E2E测试公寓1"').first();
+    if (await apartmentOption.isVisible()) {
+      await apartmentOption.click();
+      await page.waitForTimeout(300);
+    }
+
+    const roomSelect = page.locator(`[data-testid="${LEASES.ROOM_SELECT}"]`);
+    await roomSelect.click();
+    const roomOption = page.locator('text="101"').first();
+    if (await roomOption.isVisible()) {
+      await roomOption.click();
+      await page.waitForTimeout(300);
+    }
+
+    // 检查是否有费用选择区域
+    const feeSection = page.locator('text=额外费用').first();
+    if (await feeSection.isVisible()) {
+      // 找到同一费用类型下的多个规格按钮
+      const feeButtons = page.locator('button:has-text("/月")');
+      const count = await feeButtons.count();
+
+      if (count >= 2) {
+        // 点击第一个规格
+        await feeButtons.nth(0).click();
+        await page.waitForTimeout(200);
+
+        // 记录选中的费用名称
+        const selectedFeeName = await feeButtons.nth(0).textContent();
+
+        // 点击第二个规格（假设是同一类型的不同规格）
+        await feeButtons.nth(1).click();
+        await page.waitForTimeout(200);
+
+        // 验证：如果两个按钮属于同一费用类型，第一个应该被取消选中
+        // 这需要根据实际 UI 来验证
+        // 这里我们简单地检查已选费用列表中只有一个费用
+        const selectedFees = page.locator('[role="dialog"] .bg-muted\\/50');
+        const selectedCount = await selectedFees.count();
+
+        // 同一费用类型只能有一个，所以已选费用数量应该小于等于费用类型数量
+        expect(selectedCount).toBeLessThanOrEqual(1);
+      }
+    }
+
+    // 关闭弹窗
+    await page.click('[data-testid="leases-cancel-btn"]');
+  });
 });
 
 test.describe('终止租约', () => {

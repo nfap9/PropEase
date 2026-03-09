@@ -171,11 +171,11 @@ export default function FeeConfigPage() {
           <div className="flex items-center gap-4">
             <DollarSign className="h-8 w-8" />
             <div>
-              <h1 className="text-3xl font-bold">费用配置</h1>
+              <h1 className="text-3xl font-bold" data-testid="fee-types-heading">费用配置</h1>
               <p className="text-muted-foreground">管理费用类型和规格定价</p>
             </div>
           </div>
-          <Button onClick={() => openTypeDialog()}>
+          <Button onClick={() => openTypeDialog()} data-testid="fee-types-new-btn">
             <Plus className="mr-2 h-4 w-4" />
             添加费用类型
           </Button>
@@ -192,7 +192,7 @@ export default function FeeConfigPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4" data-testid="fee-types-list">
             {feeTypes.map((type) => {
               const isExpanded = expandedTypes.has(type.id);
               const specs = type.specifications || [];
@@ -288,7 +288,7 @@ export default function FeeConfigPage() {
 
         {/* 费用类型对话框 */}
         <Dialog open={typeDialogOpen} onOpenChange={setTypeDialogOpen}>
-          <DialogContent className="max-w-sm">
+          <DialogContent className="max-w-sm" data-testid={editingType ? 'fee-types-edit-dialog' : 'fee-types-create-dialog'}>
             <DialogHeader>
               <DialogTitle>{editingType ? '编辑费用类型' : '添加费用类型'}</DialogTitle>
             </DialogHeader>
@@ -299,14 +299,15 @@ export default function FeeConfigPage() {
                   placeholder="如：网费、物业费"
                   value={typeName}
                   onChange={(e) => setTypeName(e.target.value)}
+                  data-testid="fee-types-name-input"
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setTypeDialogOpen(false)}>
+              <Button variant="outline" onClick={() => setTypeDialogOpen(false)} data-testid="fee-types-cancel-btn">
                 取消
               </Button>
-              <Button onClick={saveType} disabled={!typeName.trim()}>
+              <Button onClick={saveType} disabled={!typeName.trim()} data-testid="fee-types-confirm-btn">
                 {editingType ? '保存' : '添加'}
               </Button>
             </DialogFooter>
