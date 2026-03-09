@@ -8,8 +8,9 @@ import { hashPassword } from '../utils/security.js';
 export const E2E_TEST_DATA = {
   // 运营后台管理员
   admin: {
-    username: 'admin',
-    password: 'admin123',
+    // 注意：不要使用系统默认账号 admin，避免覆盖默认管理员密码
+    username: process.env.E2E_PLATFORM_ADMIN_USERNAME || 'e2e_admin',
+    password: process.env.E2E_PLATFORM_ADMIN_PASSWORD || 'admin123',
     name: 'E2E测试管理员',
     roleName: 'E2E超级管理员',
   },
@@ -216,6 +217,10 @@ export async function seedE2EAdmin(): Promise<{ adminUserId: string }> {
   const passwordHash = await hashPassword(E2E_TEST_DATA.admin.password);
 
   if (existingAdmin) {
+    // 防呆：严禁在 E2E 种子里修改系统默认管理员 admin
+    if (existingAdmin.username === 'admin') {
+      throw new Error('E2E seed: refusing to update system admin password (username=admin)');
+    }
     // 更新密码以确保测试可以登录
     await prisma.adminUser.update({
       where: { id: existingAdmin.id },

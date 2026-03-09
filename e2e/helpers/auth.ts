@@ -1,6 +1,10 @@
 import { Page, BrowserContext } from '@playwright/test';
 import { AUTH, ADMIN_LOGIN } from '../testids';
 
+declare const process: {
+  env: Record<string, string | undefined>;
+};
+
 /**
  * 测试账号配置
  *
@@ -26,8 +30,10 @@ export const TEST_ACCOUNTS = {
  */
 export const ADMIN_TEST_ACCOUNTS = {
   admin: {
-    username: process.env.E2E_ADMIN_USERNAME || 'admin',
-    password: process.env.E2E_ADMIN_PASSWORD || 'admin123',
+    // 运营后台管理员（避免与系统默认 admin 混用）
+    // 仅使用 E2E_PLATFORM_ADMIN_*（不兼容旧环境变量），避免行为不确定
+    username: process.env.E2E_PLATFORM_ADMIN_USERNAME || 'e2e_admin',
+    password: process.env.E2E_PLATFORM_ADMIN_PASSWORD || 'admin123',
   },
 };
 
