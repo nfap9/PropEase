@@ -1,0 +1,133 @@
+.rooms-page {
+  min-height: 100vh;
+  background: #F8FAFC;
+  padding-bottom: 80px;
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: #64748B;
+}
+
+// 筛选标签
+.filter-bar {
+  background: #FFFFFF;
+  padding: 12px 16px;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.filter-tag {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #64748B;
+  background: #F1F5F9;
+  margin-right: 8px;
+
+  &--active {
+    background: #2563EB;
+    color: #FFFFFF;
+  }
+
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+// 房间列表
+.room-list {
+  padding: 16px;
+  height: calc(100vh - 140px);
+}
+
+.room-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  &:active {
+    background: #F8FAFC;
+  }
+}
+
+.room-info {
+  flex: 1;
+}
+
+.room-number {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1E293B;
+  margin-bottom: 4px;
+}
+
+.room-apartment {
+  display: block;
+  font-size: 13px;
+  color: #64748B;
+}
+
+.room-right {
+  display: flex;
+  align-items: center;
+}
+
+.tag {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-right: 8px;
+
+  &--empty {
+    background: #D1FAE5;
+    color: #065F46;
+  }
+
+  &--rented {
+    background: #DBEAFE;
+    color: #1E40AF;
+  }
+
+  &--maintenance {
+    background: #FEF3C7;
+    color: #92400E;
+  }
+}
+
+.room-arrow {
+  font-size: 20px;
+  color: #94A3B8;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-text {
+  font-size: 14px;
+  color: #64748B;
+}

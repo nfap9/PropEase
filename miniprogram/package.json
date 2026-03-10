@@ -1,0 +1,46 @@
+{
+  "name": "miniprogram",
+  "version": "1.0.0",
+  "description": "公寓管理系统移动端",
+  "private": true,
+  "scripts": {
+    "dev:h5": "taro build --type h5 --watch",
+    "dev:weapp": "taro build --type weapp --watch",
+    "build:h5": "taro build --type h5",
+    "build:weapp": "taro build --type weapp",
+    "build:rn": "taro build --type rn",
+    "lint": "eslint --ext .ts,.tsx",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@apartment-ultra/api-contract": "workspace:*",
+    "@tanstack/react-query": "^5.90.21",
+    "@tarojs/components": "3.6.31",
+    "@tarojs/mini-runner": "3.6.31",
+    "@tarojs/plugin-framework-react": "3.6.31",
+    "@tarojs/plugin-platform-h5": "3.6.31",
+    "@tarojs/plugin-platform-weapp": "3.6.31",
+    "@tarojs/react": "3.6.31",
+    "@tarojs/runtime": "3.6.31",
+    "@tarojs/shared": "3.6.31",
+    "@tarojs/taro": "3.6.31",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.10",
+    "@pmmmwh/react-refresh-webpack-plugin": "0.5.5",
+    "@tarojs/cli": "3.6.31",
+    "@tarojs/webpack-runner": "3.6.31",
+    "@types/node": "^22.13.1",
+    "@types/react": "^18.3.18",
+    "eslint": "^8.57.1",
+    "eslint-config-taro": "3.6.31",
+    "eslint-plugin-react": "^7.37.4",
+    "react-refresh": "0.11.0",
+    "sass": "^1.85.0",
+    "typescript": "^5.7.3",
+    "webpack": "4.46.0"
+  }
+}

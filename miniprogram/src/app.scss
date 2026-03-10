@@ -1,0 +1,146 @@
+// 颜色变量
+$primary: #2563EB;
+$primary-dark: #1D4ED8;
+$primary-light: #DBEAFE;
+
+$success: #10B981;
+$warning: #F59E0B;
+$danger: #EF4444;
+
+$bg: #F8FAFC;
+$card-bg: #FFFFFF;
+$border: #E2E8F0;
+$text-primary: #1E293B;
+$text-secondary: #64748B;
+$text-disabled: #94A3B8;
+
+// 字号
+$font-title: 20px;
+$font-card-title: 16px;
+$font-body: 14px;
+$font-small: 12px;
+
+// 组件尺寸
+$button-height: 44px;
+$input-height: 44px;
+$tabbar-height: 50px;
+
+// 全局样式
+.app-container {
+  min-height: 100vh;
+  background-color: $bg;
+  font-family: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: $font-body;
+  color: $text-primary;
+}
+
+// 通用样式类
+.page {
+  min-height: 100vh;
+  padding-bottom: calc($tabbar-height + 20px);
+}
+
+.page-header {
+  background-color: $card-bg;
+  padding: 16px;
+  border-bottom: 1px solid $border;
+}
+
+.page-title {
+  font-size: $font-title;
+  font-weight: 700;
+  color: $text-primary;
+}
+
+.card {
+  background-color: $card-bg;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.btn {
+  height: $button-height;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-body;
+  font-weight: 600;
+
+  &--primary {
+    background-color: $primary;
+    color: #FFFFFF;
+
+    &[disabled] {
+      opacity: 0.5;
+    }
+  }
+
+  &--secondary {
+    background-color: $card-bg;
+    border: 1px solid $border;
+    color: $text-primary;
+  }
+
+  &--danger {
+    background-color: $danger;
+    color: #FFFFFF;
+  }
+}
+
+.input {
+  height: $input-height;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: $font-body;
+
+  &:focus {
+    border-color: $primary;
+    outline: none;
+  }
+
+  &::placeholder {
+    color: $text-disabled;
+  }
+}
+
+.text-primary { color: $text-primary; }
+.text-secondary { color: $text-secondary; }
+.text-disabled { color: $text-disabled; }
+.text-success { color: $success; }
+.text-warning { color: $warning; }
+.text-danger { color: $danger; }
+.text-blue { color: $primary; }
+
+.bg-primary { background-color: $primary; }
+.bg-success { background-color: $success; }
+.bg-warning { background-color: $warning; }
+.bg-danger { background-color: $danger; }
+
+// 状态标签
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: $font-small;
+  font-weight: 500;
+
+  &--empty {
+    background-color: #D1FAE5;
+    color: #065F46;
+  }
+
+  &--rented {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+  }
+
+  &--maintenance {
+    background-color: #FEF3C7;
+    color: #92400E;
+  }
+}
