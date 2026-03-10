@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>租客管理 - 公寓管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #F8FAFC; min-height: 100vh; padding: 24px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+        .page-title h1 { font-size: 28px; font-weight: 700; color: #1E293B; margin-bottom: 8px; }
+        .page-title p { font-size: 14px; color: #64748B; }
+        .header-actions { display: flex; gap: 12px; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; }
+        .btn-primary { background: #2563EB; color: white; }
+        .btn-primary:hover { background: #1D4ED8; }
+        .btn-outline { background: white; border: 1px solid #E2E8F0; color: #475569; }
+        .btn-outline:hover { background: #F8FAFC; border-color: #CBD5E1; }
+        .filter-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+        .filter-left { display: flex; gap: 12px; flex-wrap: wrap; }
+        .filter-group { display: flex; background: white; border: 1px solid #E2E8F0; border-radius: 10px; overflow: hidden; }
+        .filter-btn { padding: 10px 16px; border: none; background: transparent; font-size: 13px; color: #64748B; cursor: pointer; transition: all 0.2s; }
+        .filter-btn:hover { background: #F8FAFC; }
+        .filter-btn.active { background: #2563EB; color: white; }
+        .search-box { position: relative; width: 280px; }
+        .search-box input { width: 100%; padding: 10px 16px 10px 40px; border: 1px solid #E2E8F0; border-radius: 10px; font-size: 14px; background: white; }
+        .search-box input:focus { outline: none; border-color: #2563EB; }
+        .search-box::before { content: "🔍"; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; }
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: white; padding: 20px; border-radius: 14px; display: flex; align-items: center; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .stat-card.blue .stat-icon { background: #DBEAFE; }
+        .stat-card.green .stat-icon { background: #D1FAE5; }
+        .stat-card.orange .stat-icon { background: #FEF3C7; }
+        .stat-card.gray .stat-icon { background: #F1F5F9; }
+        .stat-value { font-size: 28px; font-weight: 700; color: #1E293B; }
+        .stat-label { font-size: 13px; color: #64748B; }
+        .table-container { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; }
+        th { padding: 16px 20px; text-align: left; font-size: 13px; font-weight: 600; color: #64748B; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; }
+        td { padding: 16px 20px; font-size: 14px; color: #1E293B; border-bottom: 1px solid #F1F5F9; vertical-align: middle; }
+        tr:hover { background: #F8FAFC; }
+        .tenant-info { display: flex; align-items: center; gap: 12px; }
+        .tenant-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; font-weight: 600; }
+        .tenant-name { font-weight: 600; color: #1E293B; }
+        .tenant-phone { font-size: 13px; color: #94A3B8; }
+        .apartment-tag { font-size: 12px; color: #64748B; background: #F1F5F9; padding: 4px 10px; border-radius: 6px; }
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-badge.active { background: #D1FAE5; color: #059669; }
+        .status-badge.inactive { background: #F1F5F9; color: #64748B; }
+        .actions { display: flex; gap: 8px; }
+        .action-btn { padding: 6px 12px; border: 1px solid #E2E8F0; background: white; border-radius: 6px; font-size: 12px; color: #475569; cursor: pointer; transition: all 0.2s; }
+        .action-btn:hover { background: #F8FAFC; border-color: #CBD5E1; }
+        .pagination { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #F8FAFC; border-top: 1px solid #E2E8F0; }
+        .pagination-info { font-size: 13px; color: #64748B; }
+        .page-btn { padding: 8px 14px; border: 1px solid #E2E8F0; background: white; border-radius: 8px; font-size: 13px; color: #475569; cursor: pointer; margin-left: 4px; }
+        .page-btn.active { background: #2563EB; color: white; border-color: #2563EB; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <div class="page-title">
+                <h1>租客管理</h1>
+                <p>管理所有租客信息</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-outline">📥 导出</button>
+                <button class="btn btn-primary">+ 新增租客</button>
+            </div>
+        </div>
+        <div class="filter-bar">
+            <div class="filter-left">
+                <div class="filter-group">
+                    <button class="filter-btn active">全部</button>
+                    <button class="filter-btn">租房中</button>
+                    <button class="filter-btn">已退租</button>
+                </div>
+            </div>
+            <div class="search-box">
+                <input type="text" placeholder="搜索租客姓名、手机号...">
+            </div>
+        </div>
+        <div class="stats-row">
+            <div class="stat-card blue">
+                <div class="stat-icon">👥</div>
+                <div>
+                    <div class="stat-value">128</div>
+                    <div class="stat-label">总租客数</div>
+                </div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-icon">✓</div>
+                <div>
+                    <div class="stat-value">86</div>
+                    <div class="stat-label">租房中</div>
+                </div>
+            </div>
+            <div class="stat-card orange">
+                <div class="stat-icon">⏰</div>
+                <div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">即将到期</div>
+                </div>
+            </div>
+            <div class="stat-card gray">
+                <div class="stat-icon">📋</div>
+                <div>
+                    <div class="stat-value">30</div>
+                    <div class="stat-label">历史租客</div>
+                </div>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>租客</th>
+                        <th>联系电话</th>
+                        <th>当前房间</th>
+                        <th>公寓</th>
+                        <th>状态</th>
+                        <th>入住日期</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="tenant-info">
+                                <div class="tenant-avatar">张</div>
+                                <div>
+                                    <div class="tenant-name">张明</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>138****8888</td>
+                        <td>101室</td>
+                        <td><span class="apartment-tag">阳光公寓A栋</span></td>
+                        <td><span class="status-badge active">● 租房中</span></td>
+                        <td>2025-01-01</td>
+                        <td>
+                            <div class="actions">
+                                <button class="action-btn">查看</button>
+                                <button class="action-btn">编辑</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="tenant-info">
+                                <div class="tenant-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c100%);">李</div>
+                                <div>
+                                    <div class="tenant-name">李华</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>139****9999</td>
+                        <td>205室</td>
+                        <td><span class="apartment-tag">星光花园B座</span></td>
+                        <td><span class="status-badge active">● 租房中</span></td>
+                        <td>2025-06-15</td>
+                        <td>
+                            <div class="actions">
+                                <button class="action-btn">查看</button>
+                                <button class="action-btn">编辑</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="tenant-info">
+                                <div class="tenant-avatar" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe100%);">王</div>
+                                <div>
+                                    <div class="tenant-name">王芳</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>137****7777</td>
+                        <td>302室</td>
+                        <td><span class="apartment-tag">绿城公寓C区</span></td>
+                        <td><span class="status-badge active">● 租房中</span></td>
+                        <td>2025-09-01</td>
+                        <td>
+                            <div class="actions">
+                                <button class="action-btn">查看</button>
+                                <button class="action-btn">编辑</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="tenant-info">
+                                <div class="tenant-avatar" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">赵</div>
+                                <div>
+                                    <div class="tenant-name">赵强</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>136****6666</td>
+                        <td>-</td>
+                        <td><span class="apartment-tag">已退租</span></td>
+                        <td><span class="status-badge inactive">● 已退租</span></td>
+                        <td>2024-01-01</td>
+                        <td>
+                            <div class="actions">
+                                <button class="action-btn">查看</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="pagination">
+                <div class="pagination-info">共 128 条记录，第 1/13 页</div>
+                <div>
+                    <button class="page-btn">上一页</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">...</button>
+                    <button class="page-btn">13</button>
+                    <button class="page-btn">下一页</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

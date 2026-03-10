@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房间管理 - 专业仪表盘设计</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #F8FAFC;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            padding: 24px;
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            border-radius: 16px;
+            color: white;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .page-title p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-white {
+            background: white;
+            color: #2563EB;
+        }
+
+        .btn-white:hover {
+            background: #F1F5F9;
+        }
+
+        .btn-outline {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #2563EB;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            background: white;
+            padding: 6px;
+            border-radius: 10px;
+            border: 1px solid #E2E8F0;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #64748B;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #F1F5F9;
+        }
+
+        .filter-btn.active {
+            background: #2563EB;
+            color: white;
+        }
+
+        /* Table */
+        .table-container {
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748B;
+            background: #F8FAFC;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        td {
+            padding: 16px 20px;
+            font-size: 14px;
+            color: #1E293B;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        tr:hover {
+            background: #F8FAFC;
+        }
+
+        .room-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .room-number {
+            font-weight: 600;
+            color: #1E293B;
+        }
+
+        .apartment-tag {
+            font-size: 12px;
+            color: #64748B;
+            background: #F1F5F9;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.occupied {
+            background: #DBEAFE;
+            color: #2563EB;
+        }
+
+        .status-badge.available {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .status-badge.maintenance {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .price-cell {
+            font-weight: 600;
+            color: #1E293B;
+        }
+
+        .price-cell span {
+            font-weight: 400;
+            font-size: 12px;
+            color: #64748B;
+        }
+
+        .tenant-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tenant-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #E0E7FF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #4F46E5;
+            font-weight: 600;
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: 1px solid #E2E8F0;
+            background: white;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #F8FAFC;
+            border-color: #CBD5E1;
+        }
+
+        .action-btn.primary {
+            background: #2563EB;
+            color: white;
+            border-color: #2563EB;
+        }
+
+        .action-btn.primary:hover {
+            background: #1D4ED8;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: #F8FAFC;
+            border-top: 1px solid #E2E8F0;
+        }
+
+        .pagination-info {
+            font-size: 13px;
+            color: #64748B;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .page-btn {
+            padding: 8px 14px;
+            border: 1px solid #E2E8F0;
+            background: white;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: #F8FAFC;
+            border-color: #CBD5E1;
+        }
+
+        .page-btn.active {
+            background: #2563EB;
+            color: white;
+            border-color: #2563EB;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: #64748B;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="page-title">
+                <h1>房间管理</h1>
+                <p>管理所有公寓的房间</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-outline">批量导入</button>
+                <button class="btn btn-white">+ 新增房间</button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar">
+            <div class="search-box">
+                <input type="text" placeholder="搜索房间号、租客姓名...">
+            </div>
+            <div class="filter-group">
+                <button class="filter-btn active">全部</button>
+                <button class="filter-btn">已出租</button>
+                <button class="filter-btn">空房</button>
+                <button class="filter-btn">维修中</button>
+            </div>
+            <div class="filter-group">
+                <button class="filter-btn">全部公寓</button>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>房间</th>
+                        <th>公寓</th>
+                        <th>状态</th>
+                        <th>月租</th>
+                        <th>当前租客</th>
+                        <th>租约到期</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="room-cell">
+                                <span class="room-number">101</span>
+                            </div>
+                        </td>
+                        <td><span class="apartment-tag">阳光公寓A栋</span></td>
+                        <td><span class="status-badge occupied">● 已出租</span></td>
+                        <td class="price-cell">¥2,500<span>/月</span></td>
+                        <td>
+                            <div class="tenant-cell">
+                                <div class="tenant-avatar">张</div>
+                                <span>张明</span>
+                            </div>
+                        </td>
+                        <td>2026-06-30</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn">查看</button>
+                                <button class="action-btn">续租</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="room-cell">
+                                <span class="room-number">102</span>
+                            </div>
+                        </td>
+                        <td><span class="apartment-tag">阳光公寓A栋</span></td>
+                        <td><span class="status-badge available">● 空房</span></td>
+                        <td class="price-cell">¥2,800<span>/月</span></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn">编辑</button>
+                                <button class="action-btn primary">出租</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="room-cell">
+                                <span class="room-number">103</span>
+                            </div>
+                        </td>
+                        <td><span class="apartment-tag">阳光公寓A栋</span></td>
+                        <td><span class="status-badge occupied">● 已出租</span></td>
+                        <td class="price-cell">¥2,600<span>/月</span></td>
+                        <td>
+                            <div class="tenant-cell">
+                                <div class="tenant-avatar">李</div>
+                                <span>李华</span>
+                            </div>
+                        </td>
+                        <td>2026-08-15</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn">查看</button>
+                                <button class="action-btn">续租</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="room-cell">
+                                <span class="room-number">104</span>
+                            </div>
+                        </td>
+                        <td><span class="apartment-tag">阳光公寓A栋</span></td>
+                        <td><span class="status-badge maintenance">● 维修中</span></td>
+                        <td class="price-cell">¥2,500<span>/月</span></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn">编辑</button>
+                                <button class="action-btn">完成维修</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="room-cell">
+                                <span class="room-number">201</span>
+                            </div>
+                        </td>
+                        <td><span class="apartment-tag">星光花园B座</span></td>
+                        <td><span class="status-badge occupied">● 已出租</span></td>
+                        <td class="price-cell">¥3,000<span>/月</span></td>
+                        <td>
+                            <div class="tenant-cell">
+                                <div class="tenant-avatar">王</div>
+                                <span>王芳</span>
+                            </div>
+                        </td>
+                        <td>2026-09-01</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn">查看</button>
+                                <button class="action-btn">续租</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="room-cell">
+                                <span class="room-number">202</span>
+                            </div>
+                        </td>
+                        <td><span class="apartment-tag">星光花园B座</span></td>
+                        <td><span class="status-badge available">● 空房</span></td>
+                        <td class="price-cell">¥3,200<span>/月</span></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn">编辑</button>
+                                <button class="action-btn primary">出租</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="room-cell">
+                                <span class="room-number">301</span>
+                            </div>
+                        </td>
+                        <td><span class="apartment-tag">绿城公寓C区</span></td>
+                        <td><span class="status-badge occupied">● 已出租</span></td>
+                        <td class="price-cell">¥2,200<span>/月</span></td>
+                        <td>
+                            <div class="tenant-cell">
+                                <div class="tenant-avatar">赵</div>
+                                <span>赵强</span>
+                            </div>
+                        </td>
+                        <td>2026-05-20</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn">查看</button>
+                                <button class="action-btn">续租</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="room-cell">
+                                <span class="room-number">302</span>
+                            </div>
+                        </td>
+                        <td><span class="apartment-tag">绿城公寓C区</span></td>
+                        <td><span class="status-badge available">● 空房</span></td>
+                        <td class="price-cell">¥2,300<span>/月</span></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn">编辑</button>
+                                <button class="action-btn primary">出租</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <div class="pagination-info">
+                    共 128 条记录，第 1/16 页
+                </div>
+                <div class="pagination-buttons">
+                    <button class="page-btn" disabled>上一页</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">...</button>
+                    <button class="page-btn">16</button>
+                    <button class="page-btn">下一页</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

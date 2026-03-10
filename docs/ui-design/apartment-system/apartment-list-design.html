@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公寓管理 - 专业仪表盘设计</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #F8FAFC;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            padding: 24px;
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            border-radius: 16px;
+            color: white;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .page-title p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: white;
+            color: #2563EB;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* Search */
+        .search-bar {
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .search-input {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-input input {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            font-size: 14px;
+            background: white;
+            transition: all 0.2s ease;
+        }
+
+        .search-input input:focus {
+            outline: none;
+            border-color: #2563EB;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-input::before {
+            content: "🔍";
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+        }
+
+        /* Stats Overview */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.total { background: #F1F5F9; }
+        .stat-icon.available { background: #D1FAE5; }
+        .stat-icon.occupied { background: #DBEAFE; }
+        .stat-icon.maintenance { background: #FEF3C7; }
+
+        .stat-content h3 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1E293B;
+        }
+
+        .stat-content p {
+            font-size: 13px;
+            color: #64748B;
+        }
+
+        /* Apartment Grid */
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 16px;
+        }
+
+        .apartment-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .apartment-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: all 0.25s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .apartment-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+        }
+
+        .apartment-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2563EB, #3B82F6);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title .icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2563EB, #3B82F6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .card-title h3 {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+
+        .card-menu {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .card-menu:hover {
+            background: #F1F5F9;
+        }
+
+        .card-address {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #64748B;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .card-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .mini-stat {
+            text-align: center;
+            padding: 12px 8px;
+            border-radius: 10px;
+            background: #F8FAFC;
+        }
+
+        .mini-stat.available {
+            background: #D1FAE5;
+        }
+
+        .mini-stat.occupied {
+            background: #DBEAFE;
+        }
+
+        .mini-stat.maintenance {
+            background: #FEF3C7;
+        }
+
+        .mini-stat .value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1E293B;
+        }
+
+        .mini-stat.available .value { color: #059669; }
+        .mini-stat.occupied .value { color: #2563EB; }
+        .mini-stat.maintenance .value { color: #D97706; }
+
+        .mini-stat .label {
+            font-size: 11px;
+            color: #64748B;
+            margin-top: 4px;
+        }
+
+        .occupancy-bar {
+            margin-top: 8px;
+        }
+
+        .occupancy-bar .label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #64748B;
+            margin-bottom: 6px;
+        }
+
+        .occupancy-bar .bar {
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .occupancy-bar .fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #2563EB, #3B82F6);
+        }
+
+        .occupancy-bar.high .fill {
+            background: linear-gradient(90deg, #10B981, #34D399);
+        }
+
+        /* Add Card */
+        .add-card {
+            background: white;
+            border: 2px dashed #CBD5E1;
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 280px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .add-card:hover {
+            border-color: #2563EB;
+            background: #F8FAFC;
+        }
+
+        .add-card .icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #F1F5F9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+        }
+
+        .add-card:hover .icon {
+            background: #DBEAFE;
+            transform: scale(1.1);
+        }
+
+        .add-card p {
+            font-size: 14px;
+            color: #64748B;
+            font-weight: 500;
+        }
+
+        /* Tags */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .tag.warning {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #2563EB, #3B82F6);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+            transition: all 0.2s;
+            display: none;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="page-title">
+                <h1>公寓管理</h1>
+                <p>管理您的所有公寓和房间</p>
+            </div>
+            <button class="btn-primary">
+                <span>+</span> 新增公寓
+            </button>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-icon total">🏠</div>
+                <div class="stat-content">
+                    <h3>128</h3>
+                    <p>总房间数</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon available">✓</div>
+                <div class="stat-content">
+                    <h3>42</h3>
+                    <p>空房数</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon occupied">👤</div>
+                <div class="stat-content">
+                    <h3>78</h3>
+                    <p>已租房</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon maintenance">🔧</div>
+                <div class="stat-content">
+                    <h3>8</h3>
+                    <p>维修中</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="search-bar">
+            <div class="search-input">
+                <input type="text" placeholder="搜索公寓名称或地址...">
+            </div>
+        </div>
+
+        <!-- Apartment Grid -->
+        <h2 class="section-title">全部公寓 (4)</h2>
+        <div class="apartment-grid">
+            <!-- Card 1 -->
+            <div class="apartment-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="icon">🏢</div>
+                        <h3>阳光公寓A栋</h3>
+                    </div>
+                    <div class="card-menu">⋮</div>
+                </div>
+                <div class="card-address">
+                    📍 北京市朝阳区建国路88号
+                </div>
+                <div class="card-stats">
+                    <div class="mini-stat">
+                        <div class="value">50</div>
+                        <div class="label">总房间</div>
+                    </div>
+                    <div class="mini-stat available">
+                        <div class="value">12</div>
+                        <div class="label">空房</div>
+                    </div>
+                    <div class="mini-stat occupied">
+                        <div class="value">35</div>
+                        <div class="label">已租</div>
+                    </div>
+                </div>
+                <div class="occupancy-bar">
+                    <div class="label">
+                        <span>入住率</span>
+                        <span>70%</span>
+                    </div>
+                    <div class="bar">
+                        <div class="fill" style="width: 70%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="apartment-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="icon">🏘️</div>
+                        <h3>星光花园B座</h3>
+                    </div>
+                    <div class="card-menu">⋮</div>
+                </div>
+                <div class="card-address">
+                    📍 上海市浦东新区世纪大道100号
+                </div>
+                <div class="card-stats">
+                    <div class="mini-stat">
+                        <div class="value">36</div>
+                        <div class="label">总房间</div>
+                    </div>
+                    <div class="mini-stat available">
+                        <div class="value">8</div>
+                        <div class="label">空房</div>
+                    </div>
+                    <div class="mini-stat occupied">
+                        <div class="value">26</div>
+                        <div class="label">已租</div>
+                    </div>
+                </div>
+                <div class="occupancy-bar">
+                    <div class="label">
+                        <span>入住率</span>
+                        <span>72%</span>
+                    </div>
+                    <div class="bar">
+                        <div class="fill" style="width: 72%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="apartment-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="icon">🏬</div>
+                        <h3>绿城公寓C区</h3>
+                    </div>
+                    <div class="card-menu">⋮</div>
+                </div>
+                <div class="card-address">
+                    📍 杭州市西湖区文二路188号
+                </div>
+                <div class="card-stats">
+                    <div class="mini-stat">
+                        <div class="value">24</div>
+                        <div class="label">总房间</div>
+                    </div>
+                    <div class="mini-stat available">
+                        <div class="value">15</div>
+                        <div class="label">空房</div>
+                    </div>
+                    <div class="mini-stat occupied">
+                        <div class="value">9</div>
+                        <div class="label">已租</div>
+                    </div>
+                </div>
+                <div class="occupancy-bar high">
+                    <div class="label">
+                        <span>入住率</span>
+                        <span>38%</span>
+                    </div>
+                    <div class="bar">
+                        <div class="fill" style="width: 38%; background: linear-gradient(90deg, #10B981, #34D399)"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4 - Maintenance -->
+            <div class="apartment-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="icon">🏪</div>
+                        <h3>青年公寓D栋</h3>
+                    </div>
+                    <div class="card-menu">⋮</div>
+                </div>
+                <div class="card-address">
+                    📍 深圳市南山区科技园北区
+                </div>
+                <div class="card-stats">
+                    <div class="mini-stat">
+                        <div class="value">18</div>
+                        <div class="label">总房间</div>
+                    </div>
+                    <div class="mini-stat maintenance">
+                        <div class="value">7</div>
+                        <div class="label">空房</div>
+                    </div>
+                    <div class="mini-stat occupied">
+                        <div class="value">8</div>
+                        <div class="label">已租</div>
+                    </div>
+                </div>
+                <div class="occupancy-bar">
+                    <div class="label">
+                        <span>入住率</span>
+                        <span>44%</span>
+                    </div>
+                    <div class="bar">
+                        <div class="fill" style="width: 44%"></div>
+                    </div>
+                </div>
+                <div style="margin-top: 12px;">
+                    <span class="tag warning">🔧 3间维修中</span>
+                </div>
+            </div>
+
+            <!-- Add Card -->
+            <div class="add-card">
+                <div class="icon">+</div>
+                <p>新增公寓</p>
+            </div>
+        </div>
+    </div>
+
+    <button class="fab">+</button>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色管理 - 运营后台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #F8FAFC; min-height: 100vh; padding: 24px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+        .page-title h1 { font-size: 28px; font-weight: 700; color: #1E293B; margin-bottom: 8px; }
+        .page-title p { font-size: 14px; color: #64748B; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; }
+        .btn-primary { background: #2563EB; color: white; }
+        .role-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .role-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .role-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+        .role-name { font-size: 18px; font-weight: 600; color: #1E293B; margin-bottom: 4px; }
+        .role-desc { font-size: 13px; color: #64748B; }
+        .role-count { padding: 4px 10px; background: #F1F5F9; border-radius: 20px; font-size: 12px; color: #64748B; }
+        .permission-list { margin-top: 16px; }
+        .permission-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; font-size: 13px; color: #475569; }
+        .permission-check { width: 18px; height: 18px; border-radius: 4px; background: #D1FAE5; display: flex; align-items: center; justify-content: center; color: #059669; font-size: 12px; }
+        .role-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #F1F5F9; }
+        .action-btn { flex: 1; padding: 10px; border: 1px solid #E2E8F0; background: white; border-radius: 8px; font-size: 13px; color: #475569; cursor: pointer; text-align: center; }
+        .action-btn:hover { background: #F8FAFC; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <div class="page-title">
+                <h1>角色管理</h1>
+                <p>管理平台角色和权限配置</p>
+            </div>
+            <button class="btn btn-primary">+ 创建角色</button>
+        </div>
+        <div class="role-grid">
+            <div class="role-card">
+                <div class="role-header">
+                    <div>
+                        <div class="role-name">超级管理员</div>
+                        <div class="role-desc">拥有平台所有权限</div>
+                    </div>
+                    <span class="role-count">1人</span>
+                </div>
+                <div class="permission-list">
+                    <div class="permission-item"><span class="permission-check">✓</span> 用户管理</div>
+                    <div class="permission-item"><span class="permission-check">✓</span> 角色管理</div>
+                    <div class="permission-item"><span class="permission-check">✓</span> 组织管理</div>
+                    <div class="permission-item"><span class="permission-check">✓</span> 套餐配置</div>
+                    <div class="permission-item"><span class="permission-check">✓</span> 数据统计</div>
+                    <div class="permission-item"><span class="permission-check">✓</span> 系统设置</div>
+                </div>
+                <div class="role-actions">
+                    <button class="action-btn">编辑</button>
+                </div>
+            </div>
+            <div class="role-card">
+                <div class="role-header">
+                    <div>
+                        <div class="role-name">运营经理</div>
+                        <div class="role-desc">日常运营管理</div>
+                    </div>
+                    <span class="role-count">3人</span>
+                </div>
+                <div class="permission-list">
+                    <div class="permission-item"><span class="permission-check">✓</span> 用户管理</div>
+                    <div class="permission-item"><span class="permission-check">✓</span> 组织管理</div>
+                    <div class="permission-item"><span class="permission-check">✓</span> 数据统计</div>
+                    <div class="permission-item"><span style="color: #94A3B8;">—</span> 角色管理</div>
+                    <div class="permission-item"><span style="color: #94A3B8;">—</span> 套餐配置</div>
+                    <div class="permission-item"><span style="color: #94A3B8;">—</span> 系统设置</div>
+                </div>
+                <div class="role-actions">
+                    <button class="action-btn">编辑</button>
+                    <button class="action-btn">删除</button>
+                </div>
+            </div>
+            <div class="role-card">
+                <div class="role-header">
+                    <div>
+                        <div class="role-name">客服</div>
+                        <div class="role-desc">用户支持与答疑</div>
+                    </div>
+                    <span class="role-count">5人</span>
+                </div>
+                <div class="permission-list">
+                    <div class="permission-item"><span class="permission-check">✓</span> 用户管理</div>
+                    <div class="permission-item"><span class="permission-check">✓</span> 组织管理</div>
+                    <div class="permission-item"><span style="color: #94A3B8;">—</span> 角色管理</div>
+                    <div class="permission-item"><span style="color: #94A3B8;">—</span> 套餐配置</div>
+                    <div class="permission-item"><span style="color: #94A3B8;">—</span> 数据统计</div>
+                    <div class="permission-item"><span style="color: #94A3B8;">—</span> 系统设置</div>
+                </div>
+                <div class="role-actions">
+                    <button class="action-btn">编辑</button>
+                    <button class="action-btn">删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
