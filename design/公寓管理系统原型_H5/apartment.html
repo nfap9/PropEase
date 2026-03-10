@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>寓管家 - 房源管理</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+<style>
+        body { background-color: #f1f5f9; }
+        .app-container { width: 375px; height: 812px; margin: 0 auto; position: relative; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 8px solid #333; border-radius: 40px; background: #f8fafc; }
+        .app-container::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+<div class="app-container pb-24">
+<!-- Sticky Top Bar -->
+<div class="sticky top-0 bg-white/90 backdrop-blur-md z-30 px-6 pt-12 pb-4 flex justify-between items-center border-b border-gray-100">
+<div>
+<h1 class="text-2xl font-black text-gray-800 tracking-tight">房源管理</h1>
+<p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">32 间房 · 锦绣花园 A栋</p>
+</div>
+<div class="flex space-x-2">
+<button class="p-2 bg-gray-50 rounded-xl text-gray-500 hover:bg-gray-100 transition-colors" onclick="toggleSearch()">
+<span class="iconify text-xl" data-icon="material-symbols:search-rounded"></span>
+</button>
+<button class="p-2 bg-gray-50 rounded-xl text-gray-500 hover:bg-gray-100 transition-colors" id="batch-btn" onclick="toggleBatchMode()">
+<span class="iconify text-xl" data-icon="material-symbols:checklist-rtl-rounded"></span>
+</button>
+<button class="p-2 bg-blue-600 rounded-xl text-white shadow-lg shadow-blue-200">
+<span class="iconify text-xl" data-icon="material-symbols:add-box-rounded"></span>
+</button>
+</div>
+</div>
+<!-- Search Bar (Hidden by default) -->
+<div class="hidden px-4 py-2 bg-white border-b border-gray-100 transition-all" id="search-bar">
+<input class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-all" placeholder="输入房号、租客姓名或手机号..." type="text"/>
+</div>
+<!-- Filter Chips -->
+<div class="px-4 py-4 flex space-x-2 overflow-x-auto no-scrollbar bg-white/50">
+<button class="whitespace-nowrap px-5 py-2 bg-blue-600 text-white rounded-2xl text-[11px] font-bold shadow-md shadow-blue-100">全部房间</button>
+<button class="whitespace-nowrap px-5 py-2 bg-white text-gray-400 border border-gray-100 rounded-2xl text-[11px] font-bold">空置 (12)</button>
+<button class="whitespace-nowrap px-5 py-2 bg-white text-gray-400 border border-gray-100 rounded-2xl text-[11px] font-bold">今天到期 (2)</button>
+<button class="whitespace-nowrap px-5 py-2 bg-white text-gray-400 border border-gray-100 rounded-2xl text-[11px] font-bold">宽带欠费</button>
+</div>
+<!-- Apartment Selection -->
+<div class="px-4 mb-6">
+<div class="bg-gradient-to-r from-blue-50 to-white rounded-[24px] p-4 flex items-center justify-between border border-blue-100 shadow-sm">
+<div class="flex items-center space-x-4">
+<div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-blue-600 shadow-sm">
+<span class="iconify text-2xl" data-icon="material-symbols:apartment"></span>
+</div>
+<div>
+<p class="text-[10px] text-blue-600 font-black tracking-widest uppercase">当前所选</p>
+<p class="text-base font-black text-gray-800">锦绣花园 A栋</p>
+</div>
+</div>
+<div class="p-2 bg-white rounded-full shadow-sm text-gray-400 hover:text-blue-600 cursor-pointer">
+<span class="iconify" data-icon="material-symbols:sync-alt-rounded"></span>
+</div>
+</div>
+</div>
+<!-- Batch Action Bar (Hidden) -->
+<div class="hidden px-6 py-3 bg-blue-700 text-white flex justify-between items-center sticky top-[100px] z-20 shadow-lg mx-4 rounded-2xl mb-4" id="batch-actions">
+<span class="text-xs font-bold"><span id="selected-count">1</span> 间房已选</span>
+<div class="flex space-x-4">
+<button class="text-[10px] font-bold uppercase tracking-widest border-b-2 border-white">下架</button>
+<button class="text-[10px] font-bold uppercase tracking-widest border-b-2 border-white">调价</button>
+<button class="text-white/60" onclick="toggleBatchMode()">取消</button>
+</div>
+</div>
+<!-- Room Grid -->
+<div class="px-4 grid grid-cols-2 gap-4 pb-12">
+<!-- Room Item: Occupied (Today Expiry) -->
+<div class="bg-white p-5 rounded-[32px] border border-orange-100 shadow-sm relative overflow-hidden group hover:ring-2 hover:ring-blue-500 transition-all">
+<div class="absolute top-0 right-0 p-3">
+<div class="w-2.5 h-2.5 bg-orange-500 rounded-full animate-ping"></div>
+</div>
+<!-- Selection Overlay -->
+<div class="selection-box hidden absolute top-4 left-4">
+<div class="w-5 h-5 rounded-full border-2 border-blue-600 flex items-center justify-center bg-blue-600 text-white">
+<span class="iconify text-xs" data-icon="material-symbols:check-small-rounded"></span>
+</div>
+</div>
+<p class="text-[10px] text-orange-500 font-bold uppercase mb-1">今日到期</p>
+<h3 class="text-lg font-black text-gray-800">1001</h3>
+<div class="mt-4 flex items-center justify-between">
+<p class="text-xs font-bold text-gray-600">李雷</p>
+<span class="p-1 px-2 bg-red-50 text-red-600 rounded-lg text-[9px] font-black">待续约</span>
+</div>
+</div>
+<!-- Room Item: Regular Occupied -->
+<div class="bg-white p-5 rounded-[32px] border border-gray-50 shadow-sm relative group transition-all">
+<div class="absolute top-0 right-0 p-3 text-green-500">
+<span class="iconify" data-icon="material-symbols:check-circle-rounded"></span>
+</div>
+<p class="text-[10px] text-gray-400 font-bold uppercase mb-1 tracking-widest">正常租住</p>
+<h3 class="text-lg font-black text-gray-800">801</h3>
+<div class="mt-4 flex items-center justify-between">
+<p class="text-xs font-bold text-gray-600">张大千</p>
+<span class="text-[9px] text-gray-400 font-medium">05-12 到期</span>
+</div>
+</div>
+<!-- Room Item: Vacant -->
+<div class="bg-blue-50/30 p-5 rounded-[32px] border-2 border-dashed border-blue-100 flex flex-col items-center justify-center group">
+<h3 class="text-lg font-black text-blue-600">802</h3>
+<p class="text-[10px] font-bold text-blue-400 mt-1">空置中 (已发布)</p>
+<div class="mt-4 w-full flex justify-between items-center text-blue-600">
+<span class="text-xs font-black">¥ 3,500</span>
+<button class="p-1.5 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-100">
+<span class="iconify" data-icon="material-symbols:ios-share-rounded"></span>
+</button>
+</div>
+</div>
+<!-- Room Item: Maintenance -->
+<div class="bg-gray-50 p-5 rounded-[32px] border border-gray-200 opacity-60">
+<h3 class="text-xl font-black text-gray-400">803</h3>
+<p class="text-[10px] font-bold text-gray-300 mt-1 uppercase">待保洁/维修</p>
+<div class="mt-4 flex items-center justify-between">
+<span class="iconify text-gray-300 text-lg" data-icon="material-symbols:cleaning-services-rounded"></span>
+<button class="px-2 py-1 border border-gray-200 text-gray-400 rounded-lg text-[9px] font-bold">指派</button>
+</div>
+</div>
+</div>
+<!-- Floating Action Button -->
+<div class="fixed bottom-24 right-6 z-30" id="fab">
+<button class="bg-blue-600 w-16 h-16 rounded-[22px] flex items-center justify-center text-white shadow-2xl shadow-blue-500/40 active:scale-95 transition-transform">
+<span class="iconify text-3xl font-bold" data-icon="material-symbols:add-rounded"></span>
+</button>
+</div>
+<script>
+        function toggleSearch() {
+            const bar = document.getElementById('search-bar');
+            bar.classList.toggle('hidden');
+        }
+
+        let isBatchMode = false;
+        function toggleBatchMode() {
+            isBatchMode = !isBatchMode;
+            const bar = document.getElementById('batch-actions');
+            const selectors = document.querySelectorAll('.selection-box');
+            const fab = document.getElementById('fab');
+            const batchBtn = document.getElementById('batch-btn');
+
+            if(isBatchMode) {
+                bar.classList.remove('hidden');
+                selectors.forEach(s => s.classList.remove('hidden'));
+                fab.classList.add('hidden');
+                batchBtn.classList.add('bg-blue-600', 'text-white');
+            } else {
+                bar.classList.add('hidden');
+                selectors.forEach(s => s.classList.add('hidden'));
+                fab.classList.remove('hidden');
+                batchBtn.classList.remove('bg-blue-600', 'text-white');
+            }
+        }
+    </script>
+<!-- Bottom Navigation -->
+<div class="fixed bottom-0 w-[359px] h-16 bg-white border-t border-gray-100 flex items-center justify-around rounded-b-[32px] z-50">
+<a class="flex flex-col items-center text-gray-400" href="dashboard.html">
+<span class="iconify text-xl" data-icon="material-symbols:dashboard-rounded"></span>
+<span class="text-[10px] mt-0.5">工作台</span>
+</a>
+<a class="flex flex-col items-center text-blue-600" href="apartment.html">
+<span class="iconify text-xl" data-icon="material-symbols:home-work"></span>
+<span class="text-[10px] mt-0.5">房源</span>
+</a>
+<a class="flex flex-col items-center text-gray-400" href="lease.html">
+<span class="iconify text-xl" data-icon="material-symbols:receipt-long-outline"></span>
+<span class="text-[10px] mt-0.5">租务</span>
+</a>
+<a class="flex flex-col items-center text-gray-400" href="settings.html">
+<span class="iconify text-xl" data-icon="material-symbols:manage-accounts-outline"></span>
+<span class="text-[10px] mt-0.5">设置</span>
+</a>
+</div>
+</div>
+</body>
+</html>

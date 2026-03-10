@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>寓管家 - 租务管理</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+<style>
+        body { background-color: #f1f5f9; }
+        .app-container { width: 375px; height: 812px; margin: 0 auto; position: relative; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 8px solid #333; border-radius: 40px; background: #f8fafc; }
+        .app-container::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+<div class="app-container pb-20">
+<!-- Header Section -->
+<div class="bg-white px-6 pt-12 pb-4 border-b border-gray-100 sticky top-0 z-30">
+<h1 class="text-2xl font-black text-gray-800 tracking-tight">租务与账单</h1>
+<div class="flex mt-4 p-1 bg-gray-100 rounded-[18px]">
+<button class="flex-1 py-2 bg-white shadow-sm rounded-[14px] text-[11px] font-black text-blue-600 transition-all" id="tab-meter" onclick="switchTab('meter')">水电录入</button>
+<button class="flex-1 py-2 text-[11px] font-bold text-gray-400 transition-all" id="tab-contract" onclick="switchTab('contract')">租约管理</button>
+<button class="flex-1 py-2 text-[11px] font-bold text-gray-400 transition-all" id="tab-bill" onclick="switchTab('bill')">账单导出</button>
+</div>
+</div>
+<!-- content area -->
+<div class="p-5" id="content-area">
+<!-- Meter Reading Section -->
+<div class="space-y-6" id="section-meter">
+<!-- Select Room -->
+<div class="flex items-center justify-between mb-2">
+<h2 class="text-sm font-black text-gray-800 uppercase tracking-widest">待抄表房源 (12)</h2>
+<span class="iconify text-gray-400" data-icon="material-symbols:filter-list-rounded"></span>
+</div>
+<div class="bg-white rounded-[32px] p-6 shadow-xl shadow-blue-900/5 border border-gray-50">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center space-x-3">
+<div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
+<span class="iconify text-2xl" data-icon="material-symbols:door-front-rounded"></span>
+</div>
+<div>
+<p class="text-lg font-black text-gray-800">802房</p>
+<p class="text-[10px] text-gray-400 font-bold uppercase">租客：王晓波</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">上次抄表</p>
+<p class="text-xs font-black text-gray-800">2026-02-10</p>
+</div>
+</div>
+<div class="space-y-6">
+<!-- Electricity -->
+<div class="space-y-3">
+<div class="flex justify-between items-center px-1">
+<label class="text-xs font-black text-gray-500 flex items-center">
+<span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                                    电费读数 (度)
+                                </label>
+<span class="text-[10px] bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full font-bold">¥1.2/度</span>
+</div>
+<div class="flex space-x-3">
+<div class="flex-1 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+<p class="text-[9px] text-gray-400 font-bold">上月</p>
+<p class="text-sm font-black text-gray-400">12450.5</p>
+</div>
+<div class="flex-1 bg-white p-4 rounded-2xl border-2 border-orange-500/20 shadow-sm focus-within:border-orange-500 transition-all">
+<p class="text-[9px] text-orange-500 font-bold">本次</p>
+<input class="bg-transparent w-full text-base font-black outline-none text-orange-600" type="number" value="12680.2"/>
+</div>
+</div>
+</div>
+<!-- Water -->
+<div class="space-y-3">
+<div class="flex justify-between items-center px-1">
+<label class="text-xs font-black text-gray-500 flex items-center">
+<span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                    水费读数 (吨)
+                                </label>
+<span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold">¥5.0/吨</span>
+</div>
+<div class="flex space-x-3">
+<div class="flex-1 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+<p class="text-[9px] text-gray-400 font-bold">上月</p>
+<p class="text-sm font-black text-gray-400">842.0</p>
+</div>
+<div class="flex-1 bg-white p-4 rounded-2xl border-2 border-blue-500/20 shadow-sm focus-within:border-blue-500 transition-all">
+<p class="text-[9px] text-blue-500 font-bold">本次</p>
+<input class="bg-transparent w-full text-base font-black outline-none text-blue-600" placeholder="输入..." type="number"/>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-gray-50 flex justify-between items-end">
+<div class="space-y-1">
+<p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">账单合计 (预估)</p>
+<p class="text-3xl font-black text-gray-800 tracking-tighter">¥ 275.64</p>
+</div>
+<button class="bg-blue-600 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-500/20 active:scale-95 transition-all" onclick="confirmBill()">
+                            生成账单并推送
+                        </button>
+</div>
+</div>
+</div>
+<!-- Contract Management (Hidden initially) -->
+<div class="hidden space-y-6" id="section-contract">
+<div class="flex items-center justify-between">
+<h2 class="text-sm font-black text-gray-800 uppercase tracking-widest">新建租约</h2>
+<span class="text-[10px] bg-green-100 text-green-600 px-2 py-1 rounded-lg font-bold">今日: 2026.03.10</span>
+</div>
+<div class="bg-white rounded-[32px] p-6 space-y-5 border border-gray-100 shadow-sm">
+<div class="space-y-4">
+<p class="text-[10px] text-gray-400 font-black uppercase tracking-widest px-1">租客身份信息</p>
+<div class="grid grid-cols-2 gap-4">
+<input class="bg-gray-50 p-4 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-blue-500 transition-all" placeholder="姓名" type="text"/>
+<input class="bg-gray-50 p-4 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-blue-500 transition-all" placeholder="联系电话" type="tel"/>
+</div>
+<input class="w-full bg-gray-50 p-4 rounded-2xl text-sm font-bold outline-none border border-transparent focus:border-blue-500 transition-all" placeholder="身份证号码" type="text"/>
+</div>
+<div class="space-y-4 pt-4">
+<p class="text-[10px] text-gray-400 font-black uppercase tracking-widest px-1">租赁条款</p>
+<div class="flex space-x-4">
+<div class="flex-1 bg-gray-50 p-4 rounded-2xl">
+<p class="text-[9px] text-gray-400 font-bold">起租日期</p>
+<p class="text-sm font-bold">2026-03-10</p>
+</div>
+<div class="flex-1 bg-gray-50 p-4 rounded-2xl relative">
+<p class="text-[9px] text-gray-400 font-bold">租赁周期</p>
+<p class="text-sm font-bold">12个月</p>
+<span class="iconify absolute right-2 top-1/2 -translate-y-1/2 text-gray-300" data-icon="material-symbols:arrow-drop-down-rounded"></span>
+</div>
+</div>
+<div class="flex items-center justify-between p-4 bg-blue-50 rounded-2xl">
+<div>
+<p class="text-[9px] text-blue-600 font-bold">月租金</p>
+<p class="text-base font-black text-blue-700">¥ 3,800.00</p>
+</div>
+<div class="text-right">
+<p class="text-[9px] text-blue-600 font-bold">支付方式</p>
+<p class="text-sm font-black text-blue-700">押一付三</p>
+</div>
+</div>
+</div>
+<button class="w-full py-5 bg-gray-800 text-white rounded-[24px] font-black text-sm uppercase tracking-widest shadow-xl shadow-gray-200 mt-4 active:scale-95 transition-all">
+                        确认签署并发送合同
+                    </button>
+</div>
+</div>
+<!-- Bills Management (Hidden initially) -->
+<div class="hidden space-y-6" id="section-bill">
+<div class="flex items-center justify-between bg-white p-4 rounded-3xl border border-gray-100 mb-6">
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center text-white">
+<span class="iconify text-2xl" data-icon="material-symbols:download-for-offline-rounded"></span>
+</div>
+<p class="text-sm font-black text-gray-800 uppercase tracking-tighter">本月财务报表导出</p>
+</div>
+<span class="iconify text-gray-300" data-icon="material-symbols:chevron-right-rounded"></span>
+</div>
+<div class="space-y-4">
+<h3 class="text-xs font-black text-gray-400 uppercase tracking-widest px-2">账单详情 (2026年3月)</h3>
+<!-- Bill Card -->
+<div class="bg-white p-5 rounded-[28px] border-l-[6px] border-emerald-500 shadow-sm flex justify-between items-center transition-all active:scale-95">
+<div class="space-y-1">
+<p class="text-base font-black text-gray-800 uppercase">302 房-赵敏</p>
+<p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">租金 + 水电 · 已付</p>
+</div>
+<div class="text-right">
+<p class="text-base font-black text-emerald-600 tracking-tighter">¥ 4,560.00</p>
+<p class="text-[9px] text-gray-300">昨天 18:32</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+        function switchTab(tabId) {
+            const tabs = ['meter', 'contract', 'bill'];
+            tabs.forEach(t => {
+                const btn = document.getElementById('tab-' + t);
+                const section = document.getElementById('section-' + t);
+                if(t === tabId) {
+                    btn.classList.add('bg-white', 'shadow-sm', 'text-blue-600');
+                    btn.classList.remove('text-gray-500');
+                    section.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600');
+                    btn.classList.add('text-gray-500');
+                    section.classList.add('hidden');
+                }
+            });
+        }
+
+        function confirmBill() {
+            alert('账单已生成并成功推送至租客端微信！');
+        }
+    </script>
+<!-- Bottom Navigation -->
+<div class="fixed bottom-0 w-[359px] h-16 bg-white border-t border-gray-100 flex items-center justify-around rounded-b-[32px] z-50">
+<a class="flex flex-col items-center text-gray-400" href="dashboard.html">
+<span class="iconify text-xl" data-icon="material-symbols:dashboard-rounded"></span>
+<span class="text-[10px] mt-0.5">工作台</span>
+</a>
+<a class="flex flex-col items-center text-gray-400" href="apartment.html">
+<span class="iconify text-xl" data-icon="material-symbols:home-work-outline"></span>
+<span class="text-[10px] mt-0.5">房源</span>
+</a>
+<a class="flex flex-col items-center text-blue-600" href="lease.html">
+<span class="iconify text-xl" data-icon="material-symbols:receipt-long"></span>
+<span class="text-[10px] mt-0.5">租务</span>
+</a>
+<a class="flex flex-col items-center text-gray-400" href="settings.html">
+<span class="iconify text-xl" data-icon="material-symbols:manage-accounts-outline"></span>
+<span class="text-[10px] mt-0.5">设置</span>
+</a>
+</div>
+</div>
+</body>
+</html>

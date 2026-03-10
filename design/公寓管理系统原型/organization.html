@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>组织管理 - 云寓 CloudApart</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+</head>
+<body class="bg-[#f8fafc] min-h-screen">
+<div class="flex">
+<!-- 侧边栏 -->
+<aside class="w-64 bg-slate-900 h-screen fixed">
+<div class="p-6 flex items-center gap-2 text-white">
+<span class="iconify text-3xl text-indigo-400" data-icon="solar:home-smile-bold-duotone"></span>
+<span class="text-xl font-bold tracking-tight">云寓管理</span>
+</div>
+<nav class="mt-6 px-4 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl transition-all" href="dashboard.html">
+<span class="iconify text-xl" data-icon="solar:widget-bold"></span>
+<span>控制台首页</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-indigo-600 text-white rounded-xl transition-all" href="organization.html">
+<span class="iconify text-xl" data-icon="solar:users-group-rounded-bold"></span>
+<span>组织管理</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl transition-all" href="apartment.html">
+<span class="iconify text-xl" data-icon="solar:buildings-bold"></span>
+<span>公寓管理</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl transition-all" href="room.html">
+<span class="iconify text-xl" data-icon="solar:bed-bold"></span>
+<span>房间管理</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl transition-all" href="lease.html">
+<span class="iconify text-xl" data-icon="solar:document-add-bold"></span>
+<span>租约管理</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl transition-all" href="billing.html">
+<span class="iconify text-xl" data-icon="solar:bill-list-bold"></span>
+<span>水电账单</span>
+</a>
+</nav>
+<div class="absolute bottom-10 px-8 w-full">
+<a class="flex items-center gap-3 text-slate-500 hover:text-red-400 transition-colors" href="index.html">
+<span class="iconify text-xl" data-icon="solar:logout-bold"></span>
+<span>安全退出</span>
+</a>
+</div>
+</aside>
+<!-- 主内容区 -->
+<main class="ml-64 flex-1 p-8">
+<!-- 头部 -->
+<header class="flex justify-between items-center mb-10">
+<div>
+<h1 class="text-2xl font-bold text-slate-800">组织架构管理</h1>
+<p class="text-slate-500 mt-1">管理您的多品牌运营实体与团队成员，当前日期：2026年3月10日</p>
+</div>
+<button class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium shadow-lg hover:bg-indigo-700 flex items-center gap-2">
+<span class="iconify" data-icon="solar:add-circle-bold"></span>
+                    创建新组织
+                </button>
+</header>
+<!-- 统计概览 -->
+<section class="grid grid-cols-4 gap-6 mb-8">
+<div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
+<div class="text-slate-500 text-sm mb-2 flex items-center gap-1">
+<span class="iconify text-indigo-500" data-icon="solar:users-group-two-rounded-bold"></span>
+                        总组织数
+                    </div>
+<div class="text-3xl font-bold text-slate-800">12 个</div>
+<div class="mt-2 text-green-500 text-sm flex items-center gap-1">
+<span class="iconify" data-icon="solar:arrow-up-linear"></span>
+                        20% 同比增长
+                    </div>
+</div>
+<div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
+<div class="text-slate-500 text-sm mb-2 flex items-center gap-1">
+<span class="iconify text-blue-500" data-icon="solar:shield-user-bold"></span>
+                        管理员
+                    </div>
+<div class="text-3xl font-bold text-slate-800">45 位</div>
+<div class="mt-2 text-slate-400 text-sm">各级组织负责人</div>
+</div>
+<div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
+<div class="text-slate-500 text-sm mb-2 flex items-center gap-1">
+<span class="iconify text-orange-500" data-icon="solar:shield-check-bold"></span>
+                        企业实名
+                    </div>
+<div class="text-3xl font-bold text-slate-800">8 个</div>
+<div class="mt-2 text-blue-500 text-sm">已认证主体</div>
+</div>
+<div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md">
+<div class="text-slate-500 text-sm mb-2 flex items-center gap-1">
+<span class="iconify text-purple-500" data-icon="solar:folder-favourite-bold"></span>
+                        关联资产
+                    </div>
+<div class="text-3xl font-bold text-slate-800">￥4.2M</div>
+<div class="mt-2 text-slate-400 text-sm">估算月度流水</div>
+</div>
+</section>
+<!-- 组织卡片列表 -->
+<section>
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-xl font-bold text-slate-800">组织列表</h2>
+<div class="flex gap-4">
+<input class="px-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 w-64" placeholder="搜索组织名称..." type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- 组织卡片 1 -->
+<div class="bg-white rounded-3xl p-6 border border-slate-200 hover:border-indigo-400 transition-all group shadow-sm">
+<div class="flex justify-between mb-6">
+<div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+<span class="iconify text-3xl" data-icon="solar:buildings-2-bold"></span>
+</div>
+<div class="flex gap-2">
+<button class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
+<span class="iconify text-xl" data-icon="solar:pen-new-square-bold"></span>
+</button>
+<button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+<span class="iconify text-xl" data-icon="solar:trash-bin-trash-bold"></span>
+</button>
+</div>
+</div>
+<h3 class="text-xl font-bold text-slate-800 mb-1">悦居公寓集团</h3>
+<p class="text-slate-500 text-sm mb-6">上海市静安区区域运营中心</p>
+<div class="space-y-4 mb-8">
+<div class="flex justify-between text-sm">
+<span class="text-slate-400">负责人</span>
+<span class="text-slate-700 font-medium">张明远</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-slate-400">管理房间数</span>
+<span class="text-slate-700 font-medium">420 间</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-slate-400">团队人数</span>
+<div class="flex -space-x-2">
+<img alt="Avatar" class="w-6 h-6 rounded-full ring-2 ring-white" src="https://modao.cc/agent-py/media/generated_images/2026-03-10/ea00547d16574caeaf8bdbde6e87efe1.jpg"/>
+<img alt="Avatar" class="w-6 h-6 rounded-full ring-2 ring-white" src="https://modao.cc/agent-py/media/generated_images/2026-03-10/ea00547d16574caeaf8bdbde6e87efe1.jpg"/>
+<img alt="Avatar" class="w-6 h-6 rounded-full ring-2 ring-white" src="https://modao.cc/agent-py/media/generated_images/2026-03-10/ea00547d16574caeaf8bdbde6e87efe1.jpg"/>
+<div class="w-6 h-6 rounded-full bg-slate-100 ring-2 ring-white flex items-center justify-center text-[10px] font-bold text-slate-400">+5</div>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-slate-50 flex justify-between items-center">
+<span class="px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded-full uppercase">已认证</span>
+<button class="text-indigo-600 text-sm font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
+                                查看详情 <span class="iconify" data-icon="solar:alt-arrow-right-bold"></span>
+</button>
+</div>
+</div>
+<!-- 组织卡片 2 -->
+<div class="bg-white rounded-3xl p-6 border border-slate-200 hover:border-indigo-400 transition-all group shadow-sm">
+<div class="flex justify-between mb-6">
+<div class="w-14 h-14 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600">
+<span class="iconify text-3xl" data-icon="solar:home-bold"></span>
+</div>
+<div class="flex gap-2">
+<button class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
+<span class="iconify text-xl" data-icon="solar:pen-new-square-bold"></span>
+</button>
+<button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+<span class="iconify text-xl" data-icon="solar:trash-bin-trash-bold"></span>
+</button>
+</div>
+</div>
+<h3 class="text-xl font-bold text-slate-800 mb-1">蓝领青年之家</h3>
+<p class="text-slate-500 text-sm mb-6">苏州市工业园区蓝领公寓</p>
+<div class="space-y-4 mb-8">
+<div class="flex justify-between text-sm">
+<span class="text-slate-400">负责人</span>
+<span class="text-slate-700 font-medium">李建国</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-slate-400">管理房间数</span>
+<span class="text-slate-700 font-medium">1200 间</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-slate-400">团队人数</span>
+<div class="flex -space-x-2">
+<img alt="Avatar" class="w-6 h-6 rounded-full ring-2 ring-white" src="https://modao.cc/agent-py/media/generated_images/2026-03-10/ea00547d16574caeaf8bdbde6e87efe1.jpg"/>
+<img alt="Avatar" class="w-6 h-6 rounded-full ring-2 ring-white" src="https://modao.cc/agent-py/media/generated_images/2026-03-10/ea00547d16574caeaf8bdbde6e87efe1.jpg"/>
+<div class="w-6 h-6 rounded-full bg-slate-100 ring-2 ring-white flex items-center justify-center text-[10px] font-bold text-slate-400">+12</div>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-slate-50 flex justify-between items-center">
+<span class="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-full uppercase">审核中</span>
+<button class="text-indigo-600 text-sm font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
+                                查看详情 <span class="iconify" data-icon="solar:alt-arrow-right-bold"></span>
+</button>
+</div>
+</div>
+<!-- 组织卡片 3 -->
+<div class="bg-white rounded-3xl p-6 border border-slate-200 hover:border-indigo-400 transition-all group shadow-sm">
+<div class="flex justify-between mb-6">
+<div class="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600">
+<span class="iconify text-3xl" data-icon="solar:safe-2-bold"></span>
+</div>
+<div class="flex gap-2">
+<button class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
+<span class="iconify text-xl" data-icon="solar:pen-new-square-bold"></span>
+</button>
+<button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+<span class="iconify text-xl" data-icon="solar:trash-bin-trash-bold"></span>
+</button>
+</div>
+</div>
+<h3 class="text-xl font-bold text-slate-800 mb-1">星空高端租赁</h3>
+<p class="text-slate-500 text-sm mb-6">浦东新区精品私宅物业</p>
+<div class="space-y-4 mb-8">
+<div class="flex justify-between text-sm">
+<span class="text-slate-400">负责人</span>
+<span class="text-slate-700 font-medium">索菲亚 · 王</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-slate-400">管理房间数</span>
+<span class="text-slate-700 font-medium">85 间</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-slate-400">团队人数</span>
+<div class="flex -space-x-2">
+<img alt="Avatar" class="w-6 h-6 rounded-full ring-2 ring-white" src="https://modao.cc/agent-py/media/generated_images/2026-03-10/ea00547d16574caeaf8bdbde6e87efe1.jpg"/>
+<img alt="Avatar" class="w-6 h-6 rounded-full ring-2 ring-white" src="https://modao.cc/agent-py/media/generated_images/2026-03-10/ea00547d16574caeaf8bdbde6e87efe1.jpg"/>
+<img alt="Avatar" class="w-6 h-6 rounded-full ring-2 ring-white" src="https://modao.cc/agent-py/media/generated_images/2026-03-10/ea00547d16574caeaf8bdbde6e87efe1.jpg"/>
+<img alt="Avatar" class="w-6 h-6 rounded-full ring-2 ring-white" src="https://modao.cc/agent-py/media/generated_images/2026-03-10/ea00547d16574caeaf8bdbde6e87efe1.jpg"/>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-slate-50 flex justify-between items-center">
+<span class="px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded-full uppercase">已认证</span>
+<button class="text-indigo-600 text-sm font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
+                                查看详情 <span class="iconify" data-icon="solar:alt-arrow-right-bold"></span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- 详细维护区域 -->
+<section class="mt-12 bg-white rounded-3xl p-8 border border-slate-100">
+<div class="flex items-center gap-2 mb-8">
+<span class="w-2 h-8 bg-indigo-600 rounded-full"></span>
+<h2 class="text-xl font-bold text-slate-800">当前组织资产概览</h2>
+</div>
+<table class="w-full text-left">
+<thead class="bg-slate-50 text-slate-500 text-sm">
+<tr>
+<th class="px-6 py-4 font-semibold rounded-l-xl uppercase tracking-wider">组织名称</th>
+<th class="px-6 py-4 font-semibold uppercase tracking-wider">创建时间</th>
+<th class="px-6 py-4 font-semibold uppercase tracking-wider">业务类型</th>
+<th class="px-6 py-4 font-semibold uppercase tracking-wider">当前租出率</th>
+<th class="px-6 py-4 font-semibold uppercase tracking-wider text-right rounded-r-xl">更多操作</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-5 font-medium text-slate-800">悦居公寓集团</td>
+<td class="px-6 py-5 text-slate-500 text-sm">2023-11-15</td>
+<td class="px-6 py-5">
+<span class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-medium">品牌直营</span>
+</td>
+<td class="px-6 py-5">
+<div class="w-32 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-indigo-600 h-full w-[85%]"></div>
+</div>
+<span class="text-xs text-slate-400 ml-1">85%</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-slate-400 hover:text-indigo-600 font-bold text-sm">管理成员</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-5 font-medium text-slate-800">蓝领青年之家</td>
+<td class="px-6 py-5 text-slate-500 text-sm">2024-02-01</td>
+<td class="px-6 py-5">
+<span class="bg-orange-50 text-orange-600 px-3 py-1 rounded-full text-xs font-medium">委托管理</span>
+</td>
+<td class="px-6 py-5">
+<div class="w-32 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-indigo-600 h-full w-[62%]"></div>
+</div>
+<span class="text-xs text-slate-400 ml-1">62%</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-slate-400 hover:text-indigo-600 font-bold text-sm">管理成员</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-6 py-5 font-medium text-slate-800">星空高端租赁</td>
+<td class="px-6 py-5 text-slate-500 text-sm">2025-05-12</td>
+<td class="px-6 py-5">
+<span class="bg-purple-50 text-purple-600 px-3 py-1 rounded-full text-xs font-medium">分散式公寓</span>
+</td>
+<td class="px-6 py-5">
+<div class="w-32 bg-slate-100 h-2 rounded-full overflow-hidden">
+<div class="bg-indigo-600 h-full w-[94%]"></div>
+</div>
+<span class="text-xs text-slate-400 ml-1">94%</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-slate-400 hover:text-indigo-600 font-bold text-sm">管理成员</button>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+</main>
+</div>
+</body>
+</html>
