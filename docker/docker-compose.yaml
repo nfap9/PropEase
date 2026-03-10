@@ -133,6 +133,35 @@ services:
         limits:
           memory: 1G
 
+  admin-web:
+    image: apartment-ultra_admin:${ADMIN_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: admin-web/Dockerfile.prod
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}
+    container_name: apartment_ultra_admin
+    environment:
+      NODE_ENV: production
+      API_URL_SERVER: http://api:8000/api/v1
+    expose:
+      - "3001"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - apartment-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
   nginx:
     image: nginx:alpine
     container_name: apartment_ultra_nginx

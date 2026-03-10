@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 function envStr(key: string, defaultValue: string): string {
   const v = process.env[key];
   return v !== undefined && v !== '' ? v : defaultValue;

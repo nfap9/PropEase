@@ -25,7 +25,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useBrandConfig } from '@/lib/brand-config-context';
 
 const schema = z.object({
   username: z.string().min(1, '请输入用户名'),
@@ -34,9 +33,10 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+const APP_NAME = '公寓管理系统';
+
 export default function AdminLoginPage() {
   const router = useRouter();
-  const brandConfig = useBrandConfig();
   const [error, setError] = useState<string | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const form = useForm<FormValues>({
@@ -101,7 +101,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>管理后台登录</CardTitle>
-          <CardDescription>仅限运营账号登录，普通用户请前往{brandConfig.app_name}</CardDescription>
+          <CardDescription>仅限运营账号登录，普通用户请前往{APP_NAME}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -147,7 +147,7 @@ export default function AdminLoginPage() {
         </CardContent>
         <CardFooter className="flex justify-center border-t pt-4">
           <Link href="/login" className="text-sm text-muted-foreground hover:underline">
-            普通用户？返回{brandConfig.app_name}
+            普通用户？返回{APP_NAME}
           </Link>
         </CardFooter>
       </Card>
