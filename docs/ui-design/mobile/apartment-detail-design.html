@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>公寓详情 - 移动端设计</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #F8FAFC;
+            min-height: 100vh;
+            padding-bottom: 84px;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .simulator {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #F8FAFC;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* 顶部导航 */
+        .top-nav {
+            height: 56px;
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            display: flex;
+            align-items: center;
+            padding: 0 4px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .top-nav .back {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .top-nav .title {
+            flex: 1;
+            font-size: 17px;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            padding-right: 44px;
+        }
+
+        /* 基本信息区 */
+        .apartment-info {
+            background: white;
+            padding: 20px 16px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .apartment-info .name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1E293B;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .apartment-info .address {
+            font-size: 14px;
+            color: #64748B;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .apartment-info .desc {
+            font-size: 13px;
+            color: #64748B;
+            line-height: 1.5;
+        }
+
+        /* 统计卡片 */
+        .stats-row {
+            background: white;
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            border-bottom: 8px solid #F8FAFC;
+        }
+
+        .stats-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 70px;
+            background: #F8FAFC;
+            border-radius: 10px;
+            padding: 12px 8px;
+            text-align: center;
+        }
+
+        .stat-card .value {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .stat-card .label {
+            font-size: 11px;
+            color: #64748B;
+            margin-top: 2px;
+        }
+
+        .stat-card.total .value { color: #64748B; }
+        .stat-card.empty .value { color: #10B981; }
+        .stat-card.rented .value { color: #2563EB; }
+        .stat-card.repair .value { color: #F59E0B; }
+
+        .occupancy {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .occupancy .info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .occupancy .info .label { color: #64748B; }
+        .occupancy .info .value { color: #2563EB; font-weight: 600; }
+
+        .occupancy .progress {
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .occupancy .progress .fill {
+            height: 100%;
+            background: #2563EB;
+            border-radius: 4px;
+        }
+
+        /* Tab 切换 */
+        .tabs {
+            background: white;
+            display: flex;
+            border-bottom: 1px solid #E2E8F0;
+            position: sticky;
+            top: 56px;
+            z-index: 50;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 14px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #64748B;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            color: #2563EB;
+            font-weight: 600;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 3px;
+            background: #2563EB;
+            border-radius: 2px;
+        }
+
+        /* 房间列表 */
+        .room-list {
+            padding: 12px 16px;
+        }
+
+        .room-card {
+            background: white;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .room-card:active {
+            background: #F8FAFC;
+        }
+
+        .room-card .room-num {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+            width: 50px;
+        }
+
+        .room-card .room-info {
+            flex: 1;
+        }
+
+        .room-card .room-info .rent {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+
+        .room-card .room-info .tenant {
+            font-size: 12px;
+            color: #64748B;
+            margin-top: 2px;
+        }
+
+        .room-card .status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .room-card .status.empty {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .room-card .status.rented {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .room-card .status.repair {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .room-card .actions {
+            margin-left: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .room-card .action-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .room-card .action-btn:active {
+            background: #F1F5F9;
+        }
+
+        /* 费用配置 */
+        .config-section {
+            padding: 16px;
+        }
+
+        .config-card {
+            background: white;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .config-card .icon {
+            width: 40px;
+            height: 40px;
+            background: #DBEAFE;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-right: 12px;
+        }
+
+        .config-card .info {
+            flex: 1;
+        }
+
+        .config-card .info .name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1E293B;
+        }
+
+        .config-card .info .value {
+            font-size: 13px;
+            color: #64748B;
+            margin-top: 2px;
+        }
+
+        .config-card .edit {
+            color: #2563EB;
+            font-size: 14px;
+        }
+
+        /* 水电配置 */
+        .utility-config {
+            background: white;
+            margin: 16px;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .utility-config .title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 16px;
+        }
+
+        .utility-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .utility-item:last-child {
+            border-bottom: none;
+        }
+
+        .utility-item .label {
+            font-size: 14px;
+            color: #64748B;
+        }
+
+        .utility-item .value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+
+        /* 新增按钮 */
+        .add-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: #2563EB;
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            z-index: 90;
+            max-width: 414px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .add-btn:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #FFFFFF;
+            display: flex;
+            border-top: 1px solid #E2E8F0;
+            z-index: 100;
+            max-width: 414px;
+            margin: 0 auto;
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #94A3B8;
+            font-size: 10px;
+            gap: 2px;
+        }
+
+        .bottom-nav-item.active {
+            color: #2563EB;
+        }
+
+        .bottom-nav-item .icon {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        /* Demo 标签 */
+        .demo-badge {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #F59E0B;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-badge">公寓详情页</div>
+
+    <div class="simulator">
+        <!-- 顶部导航 -->
+        <div class="top-nav">
+            <div class="back">←</div>
+            <div class="title">阳光公寓A栋</div>
+            <div class="back" style="font-size: 16px;">✏️</div>
+        </div>
+
+        <!-- 公寓信息 -->
+        <div class="apartment-info">
+            <div class="name">🏢 阳光公寓A栋</div>
+            <div class="address">📍 朝阳区建国路88号SOHO小区</div>
+            <div class="desc">位于CBD核心区，交通便利，周边配套齐全。适合年轻白领租住。</div>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-row">
+            <div class="stat-card total">
+                <div class="value">50</div>
+                <div class="label">总房间</div>
+            </div>
+            <div class="stat-card empty">
+                <div class="value">12</div>
+                <div class="label">空房</div>
+            </div>
+            <div class="stat-card rented">
+                <div class="value">35</div>
+                <div class="label">已租</div>
+            </div>
+            <div class="stat-card repair">
+                <div class="value">3</div>
+                <div class="label">维修</div>
+            </div>
+            <div class="occupancy">
+                <div class="info">
+                    <span class="label">入住率</span>
+                    <span class="value">70%</span>
+                </div>
+                <div class="progress">
+                    <div class="fill" style="width: 70%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 切换 -->
+        <div class="tabs">
+            <div class="tab active">房间列表</div>
+            <div class="tab">费用配置</div>
+            <div class="tab">水电配置</div>
+        </div>
+
+        <!-- 房间列表 -->
+        <div class="room-list">
+            <!-- 房间卡片 - 已租 -->
+            <div class="room-card">
+                <div class="room-num">101</div>
+                <div class="room-info">
+                    <div class="rent">¥2500/月</div>
+                    <div class="tenant">张三</div>
+                </div>
+                <div class="status rented">已租</div>
+                <div class="actions">
+                    <div class="action-btn">✏️</div>
+                </div>
+            </div>
+
+            <!-- 房间卡片 - 空房 -->
+            <div class="room-card">
+                <div class="room-num">102</div>
+                <div class="room-info">
+                    <div class="rent">¥2800/月</div>
+                    <div class="tenant">暂无租客</div>
+                </div>
+                <div class="status empty">空房</div>
+                <div class="actions">
+                    <div class="action-btn">🔑</div>
+                    <div class="action-btn">✏️</div>
+                </div>
+            </div>
+
+            <!-- 房间卡片 - 维修中 -->
+            <div class="room-card">
+                <div class="room-num">103</div>
+                <div class="room-info">
+                    <div class="rent">¥2500/月</div>
+                    <div class="tenant">维修中</div>
+                </div>
+                <div class="status repair">维修中</div>
+                <div class="actions">
+                    <div class="action-btn">✏️</div>
+                </div>
+            </div>
+
+            <!-- 房间卡片 - 已租 -->
+            <div class="room-card">
+                <div class="room-num">104</div>
+                <div class="room-info">
+                    <div class="rent">¥2600/月</div>
+                    <div class="tenant">李四</div>
+                </div>
+                <div class="status rented">已租</div>
+                <div class="actions">
+                    <div class="action-btn">✏️</div>
+                </div>
+            </div>
+
+            <!-- 房间卡片 - 空房 -->
+            <div class="room-card">
+                <div class="room-num">105</div>
+                <div class="room-info">
+                    <div class="rent">¥2700/月</div>
+                    <div class="tenant">暂无租客</div>
+                </div>
+                <div class="status empty">空房</div>
+                <div class="actions">
+                    <div class="action-btn">🔑</div>
+                    <div class="action-btn">✏️</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 新增按钮 -->
+        <div class="add-btn">+</div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <a href="layout-design.html" class="bottom-nav-item">
+                <span class="icon">🏠</span>
+                <span>首页</span>
+            </a>
+            <a href="apartment-list-design.html" class="bottom-nav-item active">
+                <span class="icon">🏢</span>
+                <span>房源</span>
+            </a>
+            <a href="tenants-design.html" class="bottom-nav-item">
+                <span class="icon">👥</span>
+                <span>客户</span>
+            </a>
+            <a href="notifications-design.html" class="bottom-nav-item">
+                <span class="icon">🔔</span>
+                <span>消息</span>
+            </a>
+            <a href="#" class="bottom-nav-item">
+                <span class="icon">⚙️</span>
+                <span>我的</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

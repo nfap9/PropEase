@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>租客管理 - 移动端设计</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #F8FAFC;
+            min-height: 100vh;
+            padding-bottom: 84px;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .simulator {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #F8FAFC;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* 顶部搜索区 */
+        .search-header {
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .search-title {
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 10px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+        }
+
+        .search-box .icon {
+            font-size: 16px;
+            margin-right: 8px;
+            opacity: 0.5;
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            color: #1E293B;
+            background: transparent;
+        }
+
+        .search-box input::placeholder {
+            color: #94A3B8;
+        }
+
+        /* 统计 */
+        .stats-row {
+            background: white;
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .stat-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-item .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1E293B;
+        }
+
+        .stat-item .label {
+            font-size: 11px;
+            color: #64748B;
+            margin-top: 2px;
+        }
+
+        .stat-item.total .value { color: #64748B; }
+        .stat-item.active .value { color: #10B981; }
+        .stat-item.expiring .value { color: #F59E0B; }
+
+        /* 租客列表 */
+        .tenant-list {
+            padding: 12px 16px;
+        }
+
+        .tenant-card {
+            background: white;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .tenant-card:active {
+            background: #F8FAFC;
+        }
+
+        .tenant-card .avatar {
+            width: 48px;
+            height: 48px;
+            background: #DBEAFE;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .tenant-card .info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tenant-card .name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1E293B;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tenant-card .name .gender {
+            font-size: 12px;
+            color: #64748B;
+            font-weight: 400;
+        }
+
+        .tenant-card .detail {
+            font-size: 13px;
+            color: #64748B;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tenant-card .status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .tenant-card .status.active {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .tenant-card .status.expiring {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .tenant-card .status.expired {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        /* 新增按钮 */
+        .add-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: #2563EB;
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            z-index: 90;
+            max-width: 414px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #FFFFFF;
+            display: flex;
+            border-top: 1px solid #E2E8F0;
+            z-index: 100;
+            max-width: 414px;
+            margin: 0 auto;
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #94A3B8;
+            font-size: 10px;
+            gap: 2px;
+        }
+
+        .bottom-nav-item.active {
+            color: #2563EB;
+        }
+
+        .bottom-nav-item .icon {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        /* Demo 标签 */
+        .demo-badge {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #F59E0B;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-badge">租客管理</div>
+
+    <div class="simulator">
+        <!-- 搜索区 -->
+        <div class="search-header">
+            <div class="search-title">租客管理</div>
+            <div class="search-box">
+                <span class="icon">🔍</span>
+                <input type="text" placeholder="搜索租客姓名或手机号">
+            </div>
+        </div>
+
+        <!-- 统计 -->
+        <div class="stats-row">
+            <div class="stat-item total">
+                <span class="value">156</span>
+                <span class="label">全部租客</span>
+            </div>
+            <div class="stat-item active">
+                <span class="value">142</span>
+                <span class="label">在租</span>
+            </div>
+            <div class="stat-item expiring">
+                <span class="value">14</span>
+                <span class="label">即将到期</span>
+            </div>
+        </div>
+
+        <!-- 租客列表 -->
+        <div class="tenant-list">
+            <!-- 租客 1 -->
+            <div class="tenant-card">
+                <div class="avatar">张</div>
+                <div class="info">
+                    <div class="name">
+                        张三
+                        <span class="gender">男</span>
+                    </div>
+                    <div class="detail">阳光公寓A栋 · 101室 · 138****8888</div>
+                </div>
+                <div class="status active">在租</div>
+            </div>
+
+            <!-- 租客 2 -->
+            <div class="tenant-card">
+                <div class="avatar" style="background: #D1FAE5;">李</div>
+                <div class="info">
+                    <div class="name">
+                        李四
+                        <span class="gender">女</span>
+                    </div>
+                    <div class="detail">望京SOHO公寓 · 201室 · 139****9999</div>
+                </div>
+                <div class="status active">在租</div>
+            </div>
+
+            <!-- 租客 3 - 即将到期 -->
+            <div class="tenant-card">
+                <div class="avatar" style="background: #FEF3C7;">王</div>
+                <div class="info">
+                    <div class="name">
+                        王五
+                        <span class="gender">男</span>
+                    </div>
+                    <div class="detail">通州果园小区 · 301室 · 137****7777</div>
+                </div>
+                <div class="status expiring">即将到期</div>
+            </div>
+
+            <!-- 租客 4 -->
+            <div class="tenant-card">
+                <div class="avatar" style="background: #E0E7FF;">赵</div>
+                <div class="info">
+                    <div class="name">
+                        赵六
+                        <span class="gender">女</span>
+                    </div>
+                    <div class="detail">阳光公寓A栋 · 105室 · 136****6666</div>
+                </div>
+                <div class="status active">在租</div>
+            </div>
+
+            <!-- 租客 5 -->
+            <div class="tenant-card">
+                <div class="avatar" style="background: #FEE2E2;">钱</div>
+                <div class="info">
+                    <div class="name">
+                        钱七
+                        <span class="gender">男</span>
+                    </div>
+                    <div class="detail">望京SOHO公寓 · 205室 · 135****5555</div>
+                </div>
+                <div class="status active">在租</div>
+            </div>
+
+            <!-- 租客 6 -->
+            <div class="tenant-card">
+                <div class="avatar" style="background: #D1FAE5;">孙</div>
+                <div class="info">
+                    <div class="name">
+                        孙八
+                        <span class="gender">女</span>
+                    </div>
+                    <div class="detail">通州果园小区 · 302室 · 134****4444</div>
+                </div>
+                <div class="status active">在租</div>
+            </div>
+
+            <!-- 租客 7 - 已过期 -->
+            <div class="tenant-card">
+                <div class="avatar" style="background: #F1F5F9;">周</div>
+                <div class="info">
+                    <div class="name">
+                        周九
+                        <span class="gender">男</span>
+                    </div>
+                    <div class="detail">阳光公寓A栋 · 201室 · 133****3333</div>
+                </div>
+                <div class="status expired">已过期</div>
+            </div>
+
+            <!-- 租客 8 -->
+            <div class="tenant-card">
+                <div class="avatar" style="background: #DBEAFE;">吴</div>
+                <div class="info">
+                    <div class="name">
+                        吴十
+                        <span class="gender">女</span>
+                    </div>
+                    <div class="detail">望京SOHO公寓 · 301室 · 132****2222</div>
+                </div>
+                <div class="status active">在租</div>
+            </div>
+        </div>
+
+        <!-- 快捷入口 -->
+        <a href="leases-design.html" style="position: fixed; bottom: 100px; left: 20px; width: 56px; height: 56px; background: white; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #64748B; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 90; max-width: 414px; left: 50%; transform: translateX(-180px);">
+            📄
+        </a>
+
+        <!-- 新增按钮 -->
+        <div class="add-btn">+</div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <a href="layout-design.html" class="bottom-nav-item">
+                <span class="icon">🏠</span>
+                <span>首页</span>
+            </a>
+            <a href="apartment-list-design.html" class="bottom-nav-item">
+                <span class="icon">🏢</span>
+                <span>房源</span>
+            </a>
+            <a href="tenants-design.html" class="bottom-nav-item active">
+                <span class="icon">👥</span>
+                <span>客户</span>
+            </a>
+            <a href="notifications-design.html" class="bottom-nav-item">
+                <span class="icon">🔔</span>
+                <span>消息</span>
+            </a>
+            <a href="#" class="bottom-nav-item">
+                <span class="icon">⚙️</span>
+                <span>我的</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

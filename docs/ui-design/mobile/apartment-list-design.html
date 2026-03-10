@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>公寓列表 - 移动端设计</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #F8FAFC;
+            min-height: 100vh;
+            padding-bottom: 84px;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .simulator {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #F8FAFC;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* 顶部搜索区 */
+        .search-header {
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .search-title {
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 10px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+        }
+
+        .search-box .icon {
+            font-size: 16px;
+            margin-right: 8px;
+            opacity: 0.5;
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            color: #1E293B;
+            background: transparent;
+        }
+
+        .search-box input::placeholder {
+            color: #94A3B8;
+        }
+
+        /* 统计概览 */
+        .stats-bar {
+            background: white;
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .stats-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            min-width: 70px;
+        }
+
+        .stat-item .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1E293B;
+        }
+
+        .stat-item .label {
+            font-size: 11px;
+            color: #64748B;
+        }
+
+        .stat-item.total .value { color: #64748B; }
+        .stat-item.empty .value { color: #10B981; }
+        .stat-item.rented .value { color: #2563EB; }
+        .stat-item.repair .value { color: #F59E0B; }
+
+        /* 公寓列表 */
+        .apartment-list {
+            padding: 16px;
+        }
+
+        .apartment-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+
+        .apartment-card:active {
+            background: #F8FAFC;
+        }
+
+        .apartment-card .header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .apartment-card .name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .apartment-card .name .icon {
+            font-size: 18px;
+        }
+
+        .apartment-card .more-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94A3B8;
+            font-size: 18px;
+            border-radius: 6px;
+        }
+
+        .apartment-card .more-btn:active {
+            background: #F1F5F9;
+        }
+
+        .apartment-card .address {
+            font-size: 13px;
+            color: #64748B;
+            margin-top: 4px;
+            padding-left: 26px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .apartment-card .stats {
+            display: flex;
+            padding: 0 16px 16px;
+            gap: 12px;
+        }
+
+        .apartment-card .stat-item {
+            flex: 1;
+            background: #F8FAFC;
+            border-radius: 8px;
+            padding: 10px 0;
+            text-align: center;
+            min-width: auto;
+        }
+
+        .apartment-card .stat-item .value {
+            font-size: 18px;
+        }
+
+        .apartment-card .stat-item .label {
+            font-size: 10px;
+        }
+
+        .apartment-card .stat-item.empty { background: #D1FAE5; }
+        .apartment-card .stat-item.rented { background: #DBEAFE; }
+        .apartment-card .stat-item.repair { background: #FEF3C7; }
+
+        /* 入住率进度条 */
+        .occupancy-bar {
+            padding: 0 16px 16px;
+        }
+
+        .occupancy-bar .info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .occupancy-bar .info .label {
+            color: #64748B;
+        }
+
+        .occupancy-bar .info .value {
+            color: #2563EB;
+            font-weight: 600;
+        }
+
+        .occupancy-bar .progress {
+            height: 6px;
+            background: #E2E8F0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .occupancy-bar .progress .fill {
+            height: 100%;
+            background: #2563EB;
+            border-radius: 3px;
+        }
+
+        /* 新增按钮 */
+        .add-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: #2563EB;
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            z-index: 90;
+            max-width: 414px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .add-btn:active {
+            transform: translateX(-50%) scale(0.95);
+            background: #1D4ED8;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #FFFFFF;
+            display: flex;
+            border-top: 1px solid #E2E8F0;
+            z-index: 100;
+            max-width: 414px;
+            margin: 0 auto;
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #94A3B8;
+            font-size: 10px;
+            gap: 2px;
+        }
+
+        .bottom-nav-item.active {
+            color: #2563EB;
+        }
+
+        .bottom-nav-item .icon {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 16px;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: #64748B;
+            margin-bottom: 20px;
+        }
+
+        .empty-state .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: #2563EB;
+            color: white;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* 操作菜单 */
+        .action-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            display: none;
+        }
+
+        .action-menu.show {
+            display: block;
+        }
+
+        .action-sheet {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 16px 16px 0 0;
+            padding-bottom: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .action-menu.show .action-sheet {
+            transform: translateY(0);
+        }
+
+        .action-sheet .handle {
+            width: 36px;
+            height: 4px;
+            background: #E2E8F0;
+            border-radius: 2px;
+            margin: 12px auto;
+        }
+
+        .action-sheet .title {
+            font-size: 14px;
+            color: #64748B;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .action-sheet .item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            font-size: 16px;
+            color: #1E293B;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .action-sheet .item:active {
+            background: #F8FAFC;
+        }
+
+        .action-sheet .item .icon {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .action-sheet .item.danger {
+            color: #EF4444;
+        }
+
+        .action-sheet .cancel {
+            margin-top: 8px;
+            padding: 16px;
+            text-align: center;
+            font-size: 16px;
+            color: #64748B;
+            background: #F8FAFC;
+            border-radius: 12px;
+            margin: 8px 16px;
+        }
+
+        .action-sheet .cancel:active {
+            background: #F1F5F9;
+        }
+
+        /* Demo 标签 */
+        .demo-badge {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #F59E0B;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-badge">公寓列表页</div>
+
+    <div class="simulator">
+        <!-- 搜索区 -->
+        <div class="search-header">
+            <div class="search-title">公寓管理</div>
+            <div class="search-box">
+                <span class="icon">🔍</span>
+                <input type="text" placeholder="搜索公寓名称或地址">
+            </div>
+        </div>
+
+        <!-- 统计栏 -->
+        <div class="stats-bar">
+            <div class="stat-item total">
+                <span class="value">12</span>
+                <span class="label">公寓</span>
+            </div>
+            <div class="stat-item">
+                <span class="value">286</span>
+                <span class="label">总房间</span>
+            </div>
+            <div class="stat-item empty">
+                <span class="value">68</span>
+                <span class="label">空房</span>
+            </div>
+            <div class="stat-item rented">
+                <span class="value">198</span>
+                <span class="label">已租</span>
+            </div>
+            <div class="stat-item repair">
+                <span class="value">20</span>
+                <span class="label">维修</span>
+            </div>
+        </div>
+
+        <!-- 公寓列表 -->
+        <div class="apartment-list">
+            <!-- 公寓卡片 1 -->
+            <a href="apartment-detail-design.html" class="apartment-card">
+                <div class="header">
+                    <div>
+                        <div class="name">
+                            <span class="icon">🏢</span>
+                            阳光公寓A栋
+                        </div>
+                        <div class="address">📍 朝阳区建国路88号</div>
+                    </div>
+                    <div class="more-btn" onclick="toggleMenu(); event.preventDefault();">⋮</div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="value">50</span>
+                        <span class="label">总房间</span>
+                    </div>
+                    <div class="stat-item empty">
+                        <span class="value">12</span>
+                        <span class="label">空房</span>
+                    </div>
+                    <div class="stat-item rented">
+                        <span class="value">35</span>
+                        <span class="label">已租</span>
+                    </div>
+                    <div class="stat-item repair">
+                        <span class="value">3</span>
+                        <span class="label">维修</span>
+                    </div>
+                </div>
+                <div class="occupancy-bar">
+                    <div class="info">
+                        <span class="label">入住率</span>
+                        <span class="value">70%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="fill" style="width: 70%;"></div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 公寓卡片 2 -->
+            <a href="apartment-detail-design.html" class="apartment-card">
+                <div class="header">
+                    <div>
+                        <div class="name">
+                            <span class="icon">🏢</span>
+                            望京SOHO公寓
+                        </div>
+                        <div class="address">📍 朝阳区望京街10号</div>
+                    </div>
+                    <div class="more-btn" onclick="event.preventDefault();">⋮</div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="value">36</span>
+                        <span class="label">总房间</span>
+                    </div>
+                    <div class="stat-item empty">
+                        <span class="value">8</span>
+                        <span class="label">空房</span>
+                    </div>
+                    <div class="stat-item rented">
+                        <span class="value">26</span>
+                        <span class="label">已租</span>
+                    </div>
+                    <div class="stat-item repair">
+                        <span class="value">2</span>
+                        <span class="label">维修</span>
+                    </div>
+                </div>
+                <div class="occupancy-bar">
+                    <div class="info">
+                        <span class="label">入住率</span>
+                        <span class="value">72%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="fill" style="width: 72%;"></div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- 公寓卡片 3 -->
+            <a href="apartment-detail-design.html" class="apartment-card">
+                <div class="header">
+                    <div>
+                        <div class="name">
+                            <span class="icon">🏢</span>
+                            通州果园小区
+                        </div>
+                        <div class="address">📍 通州区新华南路25号</div>
+                    </div>
+                    <div class="more-btn" onclick="event.preventDefault();">⋮</div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="value">24</span>
+                        <span class="label">总房间</span>
+                    </div>
+                    <div class="stat-item empty">
+                        <span class="value">15</span>
+                        <span class="label">空房</span>
+                    </div>
+                    <div class="stat-item rented">
+                        <span class="value">9</span>
+                        <span class="label">已租</span>
+                    </div>
+                    <div class="stat-item repair">
+                        <span class="value">0</span>
+                        <span class="label">维修</span>
+                    </div>
+                </div>
+                <div class="occupancy-bar">
+                    <div class="info">
+                        <span class="label">入住率</span>
+                        <span class="value">38%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="fill" style="width: 38%; background: #10B981;"></div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 快捷入口 -->
+        <a href="rooms-design.html" style="position: fixed; bottom: 100px; left: 20px; width: 56px; height: 56px; background: white; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #64748B; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 90; max-width: 414px; left: 50%; transform: translateX(-180px);">
+            🚪
+        </a>
+
+        <!-- 新增按钮 -->
+        <div class="add-btn">+</div>
+
+        <!-- 操作菜单 -->
+        <div class="action-menu" id="actionMenu" onclick="toggleMenu()">
+            <div class="action-sheet" onclick="event.stopPropagation()">
+                <div class="handle"></div>
+                <div class="title">阳光公寓A栋</div>
+                <div class="item">
+                    <span class="icon">✏️</span>
+                    编辑公寓
+                </div>
+                <div class="item">
+                    <span class="icon">➕</span>
+                    添加房间
+                </div>
+                <div class="item danger">
+                    <span class="icon">🗑️</span>
+                    删除公寓
+                </div>
+                <div class="cancel" onclick="toggleMenu()">取消</div>
+            </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <a href="layout-design.html" class="bottom-nav-item">
+                <span class="icon">🏠</span>
+                <span>首页</span>
+            </a>
+            <a href="apartment-list-design.html" class="bottom-nav-item active">
+                <span class="icon">🏢</span>
+                <span>房源</span>
+            </a>
+            <a href="tenants-design.html" class="bottom-nav-item">
+                <span class="icon">👥</span>
+                <span>客户</span>
+            </a>
+            <a href="notifications-design.html" class="bottom-nav-item">
+                <span class="icon">🔔</span>
+                <span>消息</span>
+            </a>
+            <a href="#" class="bottom-nav-item">
+                <span class="icon">⚙️</span>
+                <span>我的</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            const menu = document.getElementById('actionMenu');
+            menu.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>

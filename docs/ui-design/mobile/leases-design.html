@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>租约管理 - 移动端设计</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #F8FAFC;
+            min-height: 100vh;
+            padding-bottom: 84px;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .simulator {
+            max-width: 414px;
+            margin: 0 auto;
+            background: #F8FAFC;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* 顶部搜索区 */
+        .search-header {
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .search-title {
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 10px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+        }
+
+        .search-box .icon {
+            font-size: 16px;
+            margin-right: 8px;
+            opacity: 0.5;
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            color: #1E293B;
+            background: transparent;
+        }
+
+        /* Tab 切换 */
+        .tabs {
+            background: white;
+            display: flex;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 14px 0;
+            text-align: center;
+            font-size: 14px;
+            color: #64748B;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            color: #2563EB;
+            font-weight: 600;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 3px;
+            background: #2563EB;
+            border-radius: 2px;
+        }
+
+        /* 统计 */
+        .stats-row {
+            background: white;
+            padding: 12px 16px;
+            display: flex;
+            gap: 12px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .stat-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-item .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1E293B;
+        }
+
+        .stat-item .label {
+            font-size: 11px;
+            color: #64748B;
+        }
+
+        .stat-item.total .value { color: #64748B; }
+        .stat-item.active .value { color: #10B981; }
+        .stat-item.expiring .value { color: #F59E0B; }
+
+        /* 租约列表 */
+        .lease-list {
+            padding: 12px 16px;
+        }
+
+        .lease-card {
+            background: white;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .lease-card:active {
+            background: #F8FAFC;
+        }
+
+        .lease-card .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .lease-card .header .title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+
+        .lease-card .header .status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .lease-card .header .status.active {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .lease-card .header .status.expiring {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .lease-card .header .status.expired {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .lease-card .info-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+
+        .lease-card .info-row .label {
+            font-size: 13px;
+            color: #64748B;
+            width: 60px;
+            flex-shrink: 0;
+        }
+
+        .lease-card .info-row .value {
+            font-size: 13px;
+            color: #1E293B;
+        }
+
+        .lease-card .info-row .value .highlight {
+            color: #2563EB;
+            font-weight: 500;
+        }
+
+        .lease-card .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid #F1F5F9;
+            margin-top: 8px;
+        }
+
+        .lease-card .footer .date {
+            font-size: 12px;
+            color: #64748B;
+        }
+
+        .lease-card .footer .action {
+            font-size: 13px;
+            color: #2563EB;
+            font-weight: 500;
+        }
+
+        /* 新增按钮 */
+        .add-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: #2563EB;
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            z-index: 90;
+            max-width: 414px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #FFFFFF;
+            display: flex;
+            border-top: 1px solid #E2E8F0;
+            z-index: 100;
+            max-width: 414px;
+            margin: 0 auto;
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #94A3B8;
+            font-size: 10px;
+            gap: 2px;
+        }
+
+        .bottom-nav-item.active {
+            color: #2563EB;
+        }
+
+        .bottom-nav-item .icon {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        /* Demo 标签 */
+        .demo-badge {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #F59E0B;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-badge">租约管理</div>
+
+    <div class="simulator">
+        <!-- 搜索区 -->
+        <div class="search-header">
+            <div class="search-title">租约管理</div>
+            <div class="search-box">
+                <span class="icon">🔍</span>
+                <input type="text" placeholder="搜索租客或房间号">
+            </div>
+        </div>
+
+        <!-- Tab 切换 -->
+        <div class="tabs">
+            <div class="tab active">全部</div>
+            <div class="tab">在租</div>
+            <div class="tab">即将到期</div>
+            <div class="tab">已过期</div>
+        </div>
+
+        <!-- 统计 -->
+        <div class="stats-row">
+            <div class="stat-item total">
+                <span class="value">142</span>
+                <span class="label">全部租约</span>
+            </div>
+            <div class="stat-item active">
+                <span class="value">128</span>
+                <span class="label">在租</span>
+            </div>
+            <div class="stat-item expiring">
+                <span class="value">14</span>
+                <span class="label">即将到期</span>
+            </div>
+        </div>
+
+        <!-- 租约列表 -->
+        <div class="lease-list">
+            <!-- 租约 1 -->
+            <div class="lease-card">
+                <div class="header">
+                    <div class="title">张三 - 阳光公寓A栋101</div>
+                    <div class="status active">在租</div>
+                </div>
+                <div class="info-row">
+                    <span class="label">租期</span>
+                    <span class="value">2024-01-01 至 2025-01-01</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">租金</span>
+                    <span class="value">¥2500/月</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">押金</span>
+                    <span class="value">¥5000</span>
+                </div>
+                <div class="footer">
+                    <span class="date">剩余 30 天</span>
+                    <span class="action">查看详情 ›</span>
+                </div>
+            </div>
+
+            <!-- 租约 2 - 即将到期 -->
+            <div class="lease-card">
+                <div class="header">
+                    <div class="title">李四 - 望京SOHO公寓201</div>
+                    <div class="status expiring">即将到期</div>
+                </div>
+                <div class="info-row">
+                    <span class="label">租期</span>
+                    <span class="value">2024-03-01 至 2025-03-01</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">租金</span>
+                    <span class="value">¥3500/月</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">押金</span>
+                    <span class="value">¥7000</span>
+                </div>
+                <div class="footer">
+                    <span class="date">还有 7 天到期</span>
+                    <span class="action">续租 ›</span>
+                </div>
+            </div>
+
+            <!-- 租约 3 -->
+            <div class="lease-card">
+                <div class="header">
+                    <div class="title">王五 - 通州果园小区301</div>
+                    <div class="status active">在租</div>
+                </div>
+                <div class="info-row">
+                    <span class="label">租期</span>
+                    <span class="value">2024-06-01 至 2025-06-01</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">租金</span>
+                    <span class="value">¥1800/月</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">押金</span>
+                    <span class="value">¥3600</span>
+                </div>
+                <div class="footer">
+                    <span class="date">剩余 88 天</span>
+                    <span class="action">查看详情 ›</span>
+                </div>
+            </div>
+
+            <!-- 租约 4 - 已过期 -->
+            <div class="lease-card">
+                <div class="header">
+                    <div class="title">赵六 - 阳光公寓A栋105</div>
+                    <div class="status expired">已过期</div>
+                </div>
+                <div class="info-row">
+                    <span class="label">租期</span>
+                    <span class="value">2023-12-01 至 2024-12-01</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">租金</span>
+                    <span class="value">¥2600/月</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">押金</span>
+                    <span class="value">¥5200</span>
+                </div>
+                <div class="footer">
+                    <span class="date">已过期 68 天</span>
+                    <span class="action">重新签约 ›</span>
+                </div>
+            </div>
+
+            <!-- 租约 5 -->
+            <div class="lease-card">
+                <div class="header">
+                    <div class="title">钱七 - 望京SOHO公寓205</div>
+                    <div class="status active">在租</div>
+                </div>
+                <div class="info-row">
+                    <span class="label">租期</span>
+                    <span class="value">2024-09-01 至 2025-09-01</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">租金</span>
+                    <span class="value">¥3200/月</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">押金</span>
+                    <span class="value">¥6400</span>
+                </div>
+                <div class="footer">
+                    <span class="date">剩余 150 天</span>
+                    <span class="action">查看详情 ›</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 快捷入口 -->
+        <a href="tenants-design.html" style="position: fixed; bottom: 100px; left: 20px; width: 56px; height: 56px; background: white; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #64748B; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 90; max-width: 414px; left: 50%; transform: translateX(-180px);">
+            👤
+        </a>
+
+        <!-- 新增按钮 -->
+        <div class="add-btn">+</div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <a href="layout-design.html" class="bottom-nav-item">
+                <span class="icon">🏠</span>
+                <span>首页</span>
+            </a>
+            <a href="apartment-list-design.html" class="bottom-nav-item">
+                <span class="icon">🏢</span>
+                <span>房源</span>
+            </a>
+            <a href="tenants-design.html" class="bottom-nav-item active">
+                <span class="icon">👥</span>
+                <span>客户</span>
+            </a>
+            <a href="notifications-design.html" class="bottom-nav-item">
+                <span class="icon">🔔</span>
+                <span>消息</span>
+            </a>
+            <a href="#" class="bottom-nav-item">
+                <span class="icon">⚙️</span>
+                <span>我的</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
