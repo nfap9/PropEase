@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>寓管家 - 登录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+    <style>
+        body { background-color: #f1f5f9; }
+        .app-container { width: 375px; height: 812px; margin: 0 auto; position: relative; overflow-y: auto; overflow-x: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 8px solid #333; border-radius: 40px; background: #f8fafc; }
+        .app-container::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="app-container">
+        <!-- 状态栏 -->
+        <div class="px-6 py-4 flex justify-between items-center text-xs font-medium bg-white/80 backdrop-blur-md">
+            <span id="current-time">09:41</span>
+            <div class="flex space-x-1">
+                <span class="iconify text-lg" data-icon="material-symbols:signal-cellular-4-bar"></span>
+                <span class="iconify text-lg" data-icon="material-symbols:wifi-rounded"></span>
+                <span class="iconify text-lg" data-icon="material-symbols:battery-5-bar"></span>
+            </div>
+        </div>
+
+        <!-- 登录内容 -->
+        <div class="px-8 pt-16">
+            <!-- Logo -->
+            <div class="text-center mb-12">
+                <div class="w-20 h-20 bg-gradient-to-tr from-blue-700 to-blue-500 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-200 mb-4 mx-auto transform rotate-3">
+                    <span class="iconify text-white text-5xl" data-icon="material-symbols:domain-rounded"></span>
+                </div>
+                <h1 class="text-3xl font-black text-gray-800 tracking-tight">寓管家</h1>
+                <p class="text-gray-400 text-xs mt-2 font-medium tracking-wide">AI 驱动的智能化公寓租赁管理系统</p>
+                <div class="mt-3 px-3 py-1 bg-blue-50 text-blue-600 text-[10px] rounded-full font-bold inline-block">2026.03.10 版本</div>
+            </div>
+
+            <!-- Tab 切换 -->
+            <div class="flex p-1 bg-gray-100 rounded-xl mb-6">
+                <button class="flex-1 py-2.5 text-sm font-bold rounded-lg transition-all bg-white text-blue-600 shadow-sm" id="tab-login" onclick="switchMode('login')">登录</button>
+                <button class="flex-1 py-2.5 text-sm font-bold rounded-lg transition-all text-gray-500" id="tab-register" onclick="switchMode('register')">注册</button>
+            </div>
+
+            <!-- 表单 -->
+            <div class="space-y-4" id="form-container">
+                <!-- 手机号 -->
+                <div class="relative group">
+                    <span class="iconify absolute left-4 top-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" data-icon="material-symbols:smartphone-rounded"></span>
+                    <input class="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all outline-none text-sm" id="phone" placeholder="请输入手机号" type="tel" value="13800138000"/>
+                </div>
+
+                <!-- 密码 -->
+                <div class="relative group" id="pwd-field">
+                    <span class="iconify absolute left-4 top-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" data-icon="material-symbols:lock-outline-rounded"></span>
+                    <input class="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all outline-none text-sm" id="password" placeholder="请输入密码" type="password" value="123456"/>
+                </div>
+
+                <!-- 验证码 -->
+                <div class="relative group hidden" id="code-field">
+                    <span class="iconify absolute left-4 top-4 text-gray-400" data-icon="material-symbols:shield-outline"></span>
+                    <input class="w-full pl-12 pr-28 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:border-blue-500 transition-all outline-none text-sm" placeholder="短信验证码" type="text"/>
+                    <button class="absolute right-3 top-2.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold">获取验证码</button>
+                </div>
+            </div>
+
+            <!-- 记住登录 -->
+            <div class="flex justify-between items-center text-xs px-1 mt-4">
+                <label class="flex items-center text-gray-400 font-medium">
+                    <input checked class="mr-2 w-4 h-4 rounded-md border-gray-200 text-blue-600 focus:ring-blue-500" type="checkbox"/> 自动登录
+                </label>
+                <a class="text-blue-600 font-bold" href="#">忘记密码？</a>
+            </div>
+
+            <!-- 登录按钮 -->
+            <button class="w-full py-4 bg-blue-600 text-white text-center rounded-2xl font-bold text-base shadow-xl shadow-blue-200 hover:shadow-blue-300 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 mt-6" onclick="handleAuth()">
+                <span id="btn-text">立即登录</span>
+                <span class="iconify" data-icon="material-symbols:arrow-forward-rounded"></span>
+            </button>
+
+            <!-- 第三方登录 -->
+            <div class="mt-12">
+                <div class="flex items-center space-x-4 mb-6">
+                    <div class="flex-1 h-px bg-gray-100"></div>
+                    <span class="text-gray-300 text-[10px] uppercase font-bold tracking-widest">快捷登录方式</span>
+                    <div class="flex-1 h-px bg-gray-100"></div>
+                </div>
+                <div class="flex justify-center space-x-8">
+                    <button class="w-14 h-14 bg-white border border-gray-100 rounded-2xl flex items-center justify-center text-[#07C160] shadow-sm hover:shadow-md transition-shadow">
+                        <span class="iconify text-3xl" data-icon="ri:wechat-fill"></span>
+                    </button>
+                    <button class="w-14 h-14 bg-white border border-gray-100 rounded-2xl flex items-center justify-center text-gray-900 shadow-sm hover:shadow-md transition-shadow">
+                        <span class="iconify text-2xl" data-icon="logos:apple"></span>
+                    </button>
+                    <button class="w-14 h-14 bg-white border border-gray-100 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm hover:shadow-md transition-shadow">
+                        <span class="iconify text-3xl" data-icon="logos:google-icon"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 协议 -->
+            <div class="py-8 text-center">
+                <p class="text-[10px] text-gray-400 leading-relaxed max-w-xs mx-auto">
+                    登录即代表您同意 <span class="text-blue-500 font-bold underline">服务协议</span> 与 <span class="text-blue-500 font-bold underline">隐私政策</span><br/>
+                    © 2026 寓管家 Pro. 保留所有权利
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('current-time').innerText = timeStr;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        let currentMode = 'login';
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const tabLogin = document.getElementById('tab-login');
+            const tabRegister = document.getElementById('tab-register');
+            const btnText = document.getElementById('btn-text');
+            const pwdField = document.getElementById('pwd-field');
+            const codeField = document.getElementById('code-field');
+
+            if(mode === 'login') {
+                tabLogin.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                tabLogin.classList.remove('text-gray-500');
+                tabRegister.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                tabRegister.classList.add('text-gray-500');
+                btnText.innerText = '立即登录';
+                pwdField.classList.remove('hidden');
+                codeField.classList.add('hidden');
+            } else {
+                tabRegister.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                tabRegister.classList.remove('text-gray-500');
+                tabLogin.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                tabLogin.classList.add('text-gray-500');
+                btnText.innerText = '完成注册';
+            }
+        }
+
+        function handleAuth() {
+            window.location.href = 'layout-design.html';
+        }
+    </script>
+</body>
+</html>

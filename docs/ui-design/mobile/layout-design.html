@@ -3,448 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>移动端布局与导航 - 公寓管理系统</title>
+    <title>寓管家 - 首页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #F8FAFC;
-            min-height: 100vh;
-            padding-bottom: 84px;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        /* 模拟器外壳 */
-        .simulator {
-            max-width: 414px;
-            margin: 0 auto;
-            background: #F8FAFC;
-            min-height: 100vh;
-            position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-
-        /* 状态栏 */
-        .status-bar {
-            height: 44px;
-            background: #FFFFFF;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            font-size: 14px;
-            color: #1E293B;
-            border-bottom: 1px solid #E2E8F0;
-        }
-
-        .status-bar .time {
-            font-weight: 600;
-        }
-
-        .status-bar .icons {
-            display: flex;
-            gap: 6px;
-        }
-
-        .status-bar .icon {
-            width: 18px;
-            height: 18px;
-            background: #1E293B;
-            border-radius: 2px;
-        }
-
-        /* 顶部导航 */
-        .top-nav {
-            height: 56px;
-            background: #FFFFFF;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 8px 0 4px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid #E2E8F0;
-        }
-
-        .top-nav .back {
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            color: #2563EB;
-        }
-
-        .top-nav .title {
-            font-size: 17px;
-            font-weight: 600;
-            color: #1E293B;
-            flex: 1;
-            text-align: center;
-        }
-
-        .top-nav .action {
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            color: #2563EB;
-            font-weight: 500;
-        }
-
-        /* 页面标题区 */
-        .page-header {
-            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-            color: white;
-            padding: 20px 16px;
-        }
-
-        .page-header h1 {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .page-header p {
-            font-size: 13px;
-            opacity: 0.9;
-        }
-
-        /* 内容区域 */
-        .content {
-            padding: 16px;
-        }
-
-        /* 统计卡片 */
-        .stats-scroll {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            padding-bottom: 8px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .stats-scroll::-webkit-scrollbar {
-            display: none;
-        }
-
-        .stat-card {
-            min-width: 80px;
-            background: white;
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .stat-card .value {
-            font-size: 22px;
-            font-weight: 700;
-            color: #1E293B;
-        }
-
-        .stat-card .label {
-            font-size: 11px;
-            color: #64748B;
-            margin-top: 2px;
-        }
-
-        .stat-card.total .value { color: #64748B; }
-        .stat-card.available .value { color: #10B981; }
-        .stat-card.occupied .value { color: #2563EB; }
-        .stat-card.maintenance .value { color: #F59E0B; }
-
-        /* 底部导航 */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 50px;
-            background: #FFFFFF;
-            display: flex;
-            border-top: 1px solid #E2E8F0;
-            z-index: 100;
-            max-width: 414px;
-            margin: 0 auto;
-        }
-
-        .bottom-nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 6px 0;
-            text-decoration: none;
-            color: #94A3B8;
-            font-size: 10px;
-            gap: 2px;
-        }
-
-        .bottom-nav-item.active {
-            color: #2563EB;
-        }
-
-        .bottom-nav-item .icon {
-            font-size: 22px;
-            line-height: 1;
-        }
-
-        /* 列表项 */
-        .list-item {
-            background: white;
-            padding: 14px 16px;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #F1F5F9;
-            cursor: pointer;
-        }
-
-        .list-item:active {
-            background: #F8FAFC;
-        }
-
-        .list-item .icon {
-            width: 40px;
-            height: 40px;
-            background: #DBEAFE;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            margin-right: 12px;
-        }
-
-        .list-item .info {
-            flex: 1;
-        }
-
-        .list-item .info .title {
-            font-size: 15px;
-            font-weight: 500;
-            color: #1E293B;
-        }
-
-        .list-item .info .desc {
-            font-size: 12px;
-            color: #64748B;
-            margin-top: 2px;
-        }
-
-        .list-item .arrow {
-            color: #CBD5E1;
-            font-size: 16px;
-        }
-
-        /* 卡片列表 */
-        .card-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        }
-
-        /* Section 标题 */
-        .section-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #1E293B;
-            margin-bottom: 12px;
-            padding-left: 4px;
-        }
-
-        /* 功能区 */
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            background: white;
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 16px;
-        }
-
-        .feature-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .feature-item .icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-        }
-
-        .feature-item .icon.apartment { background: #DBEAFE; }
-        .feature-item .icon.room { background: #D1FAE5; }
-        .feature-item .icon.tenant { background: #FEF3C7; }
-        .feature-item .icon.lease { background: #E0E7FF; }
-
-        .feature-item .label {
-            font-size: 12px;
-            color: #64748B;
-        }
-
-        /* Demo 标签 */
-        .demo-badge {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: #F59E0B;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            z-index: 1000;
-        }
+        body { background-color: #f1f5f9; }
+        .app-container { width: 375px; height: 812px; margin: 0 auto; position: relative; overflow-y: auto; overflow-x: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 8px solid #333; border-radius: 40px; background: #f8fafc; }
+        .app-container::-webkit-scrollbar { display: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .nav-active { color: #2563eb; }
     </style>
 </head>
-<body>
-    <div class="demo-badge">移动端原型 - 布局演示</div>
-
-    <div class="simulator">
+<body class="flex items-center justify-center min-h-screen">
+    <div class="app-container pb-20">
         <!-- 状态栏 -->
-        <div class="status-bar">
-            <span class="time">9:41</span>
-            <div class="icons">
-                <div class="icon" style="background: transparent; border: 1.5px solid #1E293B;"></div>
-                <div class="icon" style="background: transparent; border: 1.5px solid #1E293B; width: 16px;"></div>
-                <div class="icon" style="background: #1E293B; width: 14px; height: 10px;"></div>
+        <div class="px-6 py-4 flex justify-between items-center text-xs font-medium bg-white/80 backdrop-blur-md">
+            <span id="current-time">09:41</span>
+            <div class="flex space-x-1">
+                <span class="iconify text-lg" data-icon="material-symbols:signal-cellular-4-bar"></span>
+                <span class="iconify text-lg" data-icon="material-symbols:wifi-rounded"></span>
+                <span class="iconify text-lg" data-icon="material-symbols:battery-5-bar"></span>
             </div>
         </div>
 
-        <!-- 首页布局示例 -->
-        <div class="page-header">
-            <h1>公寓管理</h1>
-            <p>管理您的房源和租客</p>
+        <!-- 顶部导航 -->
+        <div class="bg-white px-5 py-4 flex items-center justify-between sticky top-0 z-50 border-b border-gray-100">
+            <div class="flex items-center space-x-2">
+                <span class="iconify text-blue-600 text-xl" data-icon="material-symbols:menu-rounded"></span>
+            </div>
+            <h1 class="text-lg font-black text-gray-800 tracking-tight">公寓管理</h1>
+            <div class="flex items-center space-x-2">
+                <span class="iconify text-gray-400 text-xl" data-icon="material-symbols:search-rounded"></span>
+            </div>
         </div>
 
-        <div class="content">
-            <!-- 统计卡片 -->
-            <div class="stats-scroll">
-                <div class="stat-card total">
-                    <div class="value">12</div>
-                    <div class="label">公寓</div>
+        <!-- 头部信息区 -->
+        <div class="bg-gradient-to-br from-blue-700 to-blue-500 pt-8 pb-16 px-6 rounded-b-[45px] shadow-lg">
+            <div class="flex items-baseline space-x-2 text-white mb-2">
+                <span class="text-4xl font-black">12</span>
+                <span class="text-xs text-white/70 font-medium">个公寓</span>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/10">
+                    <p class="text-white/60 text-[10px] font-bold uppercase tracking-wider">总房间</p>
+                    <h3 class="text-xl font-black mt-1 text-white">286</h3>
                 </div>
-                <div class="stat-card">
-                    <div class="value">286</div>
-                    <div class="label">总房间</div>
-                </div>
-                <div class="stat-card available">
-                    <div class="value">68</div>
-                    <div class="label">空房</div>
-                </div>
-                <div class="stat-card occupied">
-                    <div class="value">198</div>
-                    <div class="label">已租</div>
-                </div>
-                <div class="stat-card maintenance">
-                    <div class="value">20</div>
-                    <div class="label">维修中</div>
+                <div class="bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/10">
+                    <p class="text-white/60 text-[10px] font-bold uppercase tracking-wider">本月收入</p>
+                    <h3 class="text-xl font-black mt-1 text-white">¥12.4w</h3>
                 </div>
             </div>
+        </div>
 
-            <!-- 功能快捷入口 -->
-            <div class="section-title" style="margin-top: 20px;">快捷功能</div>
-            <div class="feature-grid">
-                <div class="feature-item">
-                    <div class="icon apartment">🏢</div>
-                    <span class="label">公寓</span>
-                </div>
-                <div class="feature-item">
-                    <div class="icon room">🚪</div>
-                    <span class="label">房间</span>
-                </div>
-                <div class="feature-item">
-                    <div class="icon tenant">👤</div>
-                    <span class="label">租客</span>
-                </div>
-                <div class="feature-item">
-                    <div class="icon lease">📄</div>
-                    <span class="label">租约</span>
+        <!-- 统计卡片悬浮区 -->
+        <div class="px-5 -mt-10">
+            <div class="bg-white rounded-3xl p-5 shadow-xl shadow-blue-900/5 border border-gray-50">
+                <div class="grid grid-cols-4 gap-2">
+                    <div class="text-center">
+                        <div class="w-10 h-10 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-600 mb-2 mx-auto">
+                            <span class="iconify text-xl" data-icon="material-symbols:home-work-outline"></span>
+                        </div>
+                        <span class="text-[10px] font-bold text-gray-500">公寓</span>
+                        <div class="text-xs font-black text-gray-800">12</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-10 h-10 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-2 mx-auto">
+                            <span class="iconify text-xl" data-icon="material-symbols:door-open"></span>
+                        </div>
+                        <span class="text-[10px] font-bold text-gray-500">空房</span>
+                        <div class="text-xs font-black text-blue-600">68</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-10 h-10 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mb-2 mx-auto">
+                            <span class="iconify text-xl" data-icon="material-symbols:person-outline"></span>
+                        </div>
+                        <span class="text-[10px] font-bold text-gray-500">已租</span>
+                        <div class="text-xs font-black text-emerald-600">198</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-10 h-10 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 mb-2 mx-auto">
+                            <span class="iconify text-xl" data-icon="material-symbols:construction-rounded"></span>
+                        </div>
+                        <span class="text-[10px] font-bold text-gray-500">维修</span>
+                        <div class="text-xs font-black text-orange-600">20</div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- 列表示例 -->
-            <div class="section-title">最近操作</div>
-            <div class="card" style="padding: 0;">
-                <div class="list-item">
-                    <div class="icon">📝</div>
-                    <div class="info">
-                        <div class="title">新增公寓 - 阳光公寓A栋</div>
-                        <div class="desc">刚刚</div>
+        <!-- 内容区域 -->
+        <div class="px-5 mt-6">
+            <!-- 快捷功能 -->
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-black text-lg text-gray-800 tracking-tight">快捷功能</h2>
+                <span class="text-xs text-blue-600 font-bold">更多</span>
+            </div>
+            <div class="grid grid-cols-4 gap-3 bg-white p-4 rounded-3xl shadow-sm border border-gray-100">
+                <a class="flex flex-col items-center group" href="apartment-list-design.html">
+                    <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-2 group-active:scale-95 transition-transform">
+                        <span class="iconify text-2xl" data-icon="material-symbols:add-home-rounded"></span>
                     </div>
-                    <div class="arrow">›</div>
+                    <span class="text-[10px] font-bold text-gray-500">公寓</span>
+                </a>
+                <a class="flex flex-col items-center group" href="rooms-design.html">
+                    <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 mb-2 group-active:scale-95 transition-transform">
+                        <span class="iconify text-2xl" data-icon="material-symbols:meeting-room-rounded"></span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-500">房间</span>
+                </a>
+                <a class="flex flex-col items-center group" href="tenants-design.html">
+                    <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mb-2 group-active:scale-95 transition-transform">
+                        <span class="iconify text-2xl" data-icon="material-symbols:group-rounded"></span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-500">租客</span>
+                </a>
+                <a class="flex flex-col items-center group" href="leases-design.html">
+                    <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 mb-2 group-active:scale-95 transition-transform">
+                        <span class="iconify text-2xl" data-icon="material-symbols:description-rounded"></span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-500">租约</span>
+                </a>
+            </div>
+
+            <!-- 第二行快捷功能 -->
+            <div class="grid grid-cols-4 gap-3 bg-white p-4 rounded-3xl shadow-sm border border-gray-100 mt-3">
+                <a class="flex flex-col items-center group" href="bills-design.html">
+                    <div class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 mb-2 group-active:scale-95 transition-transform">
+                        <span class="iconify text-2xl" data-icon="material-symbols:receipt-long-rounded"></span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-500">账单</span>
+                </a>
+                <a class="flex flex-col items-center group" href="utilities-design.html">
+                    <div class="w-12 h-12 bg-cyan-50 rounded-2xl flex items-center justify-center text-cyan-600 mb-2 group-active:scale-95 transition-transform">
+                        <span class="iconify text-2xl" data-icon="material-symbols:water-drop-rounded"></span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-500">水电</span>
+                </a>
+                <a class="flex flex-col items-center group" href="reports-design.html">
+                    <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 mb-2 group-active:scale-95 transition-transform">
+                        <span class="iconify text-2xl" data-icon="material-symbols:analytics-rounded"></span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-500">报表</span>
+                </a>
+                <a class="flex flex-col items-center group" href="profile-design.html">
+                    <div class="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-600 mb-2 group-active:scale-95 transition-transform">
+                        <span class="iconify text-2xl" data-icon="material-symbols:settings-rounded"></span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-500">设置</span>
+                </a>
+            </div>
+                    <div class="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 mb-2 group-active:scale-95 transition-transform">
+                        <span class="iconify text-2xl" data-icon="material-symbols:meeting-room-rounded"></span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-500">房间</span>
+                </a>
+                <a class="flex flex-col items-center group" href="tenants-design.html">
+                    <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 mb-2 group-active:scale-95 transition-transform">
+                        <span class="iconify text-2xl" data-icon="material-symbols:group-rounded"></span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-500">租客</span>
+                </a>
+                <a class="flex flex-col items-center group" href="leases-design.html">
+                    <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 mb-2 group-active:scale-95 transition-transform">
+                        <span class="iconify text-2xl" data-icon="material-symbols:description-rounded"></span>
+                    </div>
+                    <span class="text-[10px] font-bold text-gray-500">租约</span>
+                </a>
+            </div>
+
+            <!-- 最近操作 -->
+            <div class="flex justify-between items-center mt-6 mb-4">
+                <h2 class="font-black text-lg text-gray-800 tracking-tight">最近动态</h2>
+                <span class="text-xs text-blue-600 font-bold">查看全部</span>
+            </div>
+            <div class="space-y-3">
+                <div class="bg-white p-4 rounded-[24px] shadow-sm border border-gray-100 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-12 h-12 bg-blue-50 -mr-2 -mt-2 rotate-45"></div>
+                    <div class="flex items-center space-x-4 relative z-10">
+                        <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                            <span class="iconify text-xl" data-icon="material-symbols:add-home-rounded"></span>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-800 text-sm">新增公寓 - 阳光公寓A栋</h4>
+                            <p class="text-[11px] text-gray-400 mt-0.5 font-medium">刚刚</p>
+                        </div>
+                        <span class="iconify text-gray-300" data-icon="material-symbols:arrow-forward-ios-rounded"></span>
+                    </div>
                 </div>
-                <div class="list-item">
-                    <div class="icon">🔑</div>
-                    <div class="info">
-                        <div class="title">房间 101 出租给张三</div>
-                        <div class="desc">10分钟前</div>
+
+                <div class="bg-white p-4 rounded-[24px] shadow-sm border border-gray-100 group">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
+                            <span class="iconify text-xl" data-icon="material-symbols:key-rounded"></span>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-800 text-sm">房间 101 出租给张三</h4>
+                            <p class="text-[11px] text-gray-400 mt-0.5 font-medium">10分钟前</p>
+                        </div>
+                        <span class="iconify text-gray-300" data-icon="material-symbols:arrow-forward-ios-rounded"></span>
                     </div>
-                    <div class="arrow">›</div>
                 </div>
-                <div class="list-item">
-                    <div class="icon">📊</div>
-                    <div class="info">
-                        <div class="title">2月账单已生成</div>
-                        <div class="desc">1小时前</div>
-                    </div>
-                    <div class="arrow">›</div>
+
+                <div class="bg-white p-4 rounded-[24px] shadow-sm border border-gray-100 group">
+                    <a href="bills-design.html" class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600">
+                            <span class="iconify text-xl" data-icon="material-symbols:receipt-long-rounded"></span>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-800 text-sm">2月账单已生成</h4>
+                            <p class="text-[11px] text-gray-400 mt-0.5 font-medium">1小时前</p>
+                        </div>
+                        <span class="iconify text-gray-300" data-icon="material-symbols:arrow-forward-ios-rounded"></span>
+                    </a>
                 </div>
             </div>
         </div>
 
         <!-- 底部导航 -->
-        <div class="bottom-nav">
-            <a href="layout-design.html" class="bottom-nav-item active">
-                <span class="icon">🏠</span>
-                <span>首页</span>
+        <div class="fixed bottom-0 w-[359px] h-16 bg-white border-t border-gray-100 flex items-center justify-around rounded-b-[32px] z-50">
+            <a class="flex flex-col items-center text-blue-600" href="layout-design.html">
+                <span class="iconify text-xl" data-icon="material-symbols:home-rounded"></span>
+                <span class="text-[10px] mt-0.5 font-bold">首页</span>
             </a>
-            <a href="apartment-list-design.html" class="bottom-nav-item">
-                <span class="icon">🏢</span>
-                <span>房源</span>
+            <a class="flex flex-col items-center text-gray-400" href="apartment-list-design.html">
+                <span class="iconify text-xl" data-icon="material-symbols:home-work-outline"></span>
+                <span class="text-[10px] mt-0.5 font-bold">房源</span>
             </a>
-            <a href="tenants-design.html" class="bottom-nav-item">
-                <span class="icon">👥</span>
-                <span>客户</span>
+            <a class="flex flex-col items-center text-gray-400" href="tenants-design.html">
+                <span class="iconify text-xl" data-icon="material-symbols:group-outline"></span>
+                <span class="text-[10px] mt-0.5 font-bold">客户</span>
             </a>
-            <a href="notifications-design.html" class="bottom-nav-item">
-                <span class="icon">🔔</span>
-                <span>消息</span>
+            <a class="flex flex-col items-center text-gray-400 relative" href="bills-design.html">
+                <span class="iconify text-xl" data-icon="material-symbols:receipt-long-outline"></span>
+                <span class="text-[10px] mt-0.5 font-bold">账单</span>
+                <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">5</span>
             </a>
-            <a href="#" class="bottom-nav-item">
-                <span class="icon">⚙️</span>
-                <span>我的</span>
+            <a class="flex flex-col items-center text-gray-400" href="profile-design.html">
+                <span class="iconify text-xl" data-icon="material-symbols:person-outline"></span>
+                <span class="text-[10px] mt-0.5 font-bold">我的</span>
             </a>
         </div>
     </div>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('current-time').innerText = timeStr;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+    </script>
 </body>
 </html>
