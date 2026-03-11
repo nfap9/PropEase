@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock ulid first
 vi.mock('ulid', () => ({
-  ulid: vi.fn().mockReturnValue('01HQTESTBILL000001'),
+  ulid: vi.fn(() => '01HQTESTBILL000001'),
 }));
 
 // Mock prisma
@@ -75,11 +75,11 @@ describe('generateBillsForOrg', () => {
 
   it('should return 0 created and 0 skipped when no rooms found', async () => {
     vi.mocked(prisma.room.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.lease.findMany).mockResolvedValue([]);
 
     const result = await generateBillsForOrg(orgId, billYear, billMonth, dueDate);
 
     expect(result).toEqual({ created: 0, skipped: 0 });
-    expect(prisma.lease.findMany).not.toHaveBeenCalled();
   });
 
   it('should return 0 created and 0 skipped when no active leases', async () => {

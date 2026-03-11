@@ -6,9 +6,9 @@ import {
 import type { SubscriptionRepository, SubscriptionWithPlan } from '../repositories/subscription.repo.js';
 import type { SubscriptionPlan, OrganizationSubscription, SubscriptionOrder } from '@prisma/client';
 
-// Mock ulid
+// Mock ulid - use vi.fn with inline implementation to avoid reset issues
 vi.mock('ulid', () => ({
-  ulid: vi.fn().mockReturnValue('01HQTESTSUB000001'),
+  ulid: vi.fn(() => '01HQTESTSUB000001'),
 }));
 
 const samplePlan: SubscriptionPlan = {
@@ -91,7 +91,7 @@ describe('SubscriptionService', () => {
   const orgId = '01hqtestorg000000001';
 
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
     service = createSubscriptionService(() => mockRepo);
   });
 
@@ -214,10 +214,18 @@ describe('SubscriptionService', () => {
     });
 
     it('should throw error for downgrade', async () => {
-      vi.mocked(mockRepo.findPlanById).mockResolvedValue(freePlan);
+      // Use a non-free lower tier plan to test downgrade
+      const lowerPlan = {
+        ...samplePlan,
+        id: '01hqtestplan00000003',
+        code: 'basic',
+        name: '基础版',
+        sort_order: 0, // lower than samplePlan's sort_order: 1
+      } as SubscriptionPlan;
+      vi.mocked(mockRepo.findPlanById).mockResolvedValue(lowerPlan);
       vi.mocked(mockRepo.findSubscriptionByOrgId).mockResolvedValue(sampleSubscription);
 
-      await expect(service.subscribe(orgId, freePlan.id)).rejects.toMatchObject({
+      await expect(service.subscribe(orgId, lowerPlan.id)).rejects.toMatchObject({
         statusCode: 400,
         message: '不支持降级到低等级套餐',
       });
@@ -293,11 +301,19 @@ describe('SubscriptionService', () => {
     });
 
     it('should throw error for downgrade', async () => {
-      vi.mocked(mockRepo.findPlanById).mockResolvedValue(freePlan);
+      // Use a non-free lower tier plan to test downgrade
+      const lowerPlan = {
+        ...samplePlan,
+        id: '01hqtestplan00000003',
+        code: 'basic',
+        name: '基础版',
+        sort_order: 0, // lower than samplePlan's sort_order: 1
+      } as SubscriptionPlan;
+      vi.mocked(mockRepo.findPlanById).mockResolvedValue(lowerPlan);
       vi.mocked(mockRepo.findSubscriptionByOrgId).mockResolvedValue(sampleSubscription);
 
       await expect(
-        service.updateSubscription(orgId, freePlan.id, 'immediate')
+        service.updateSubscription(orgId, lowerPlan.id, 'immediate')
       ).rejects.toMatchObject({
         statusCode: 400,
         message: '不支持降级，当前套餐等级更高',

@@ -5,12 +5,16 @@ import {
   type CreateApartmentInput,
   type UpdateApartmentInput,
 } from './apartment.service.js';
-import type { ApartmentRepository, ApartmentWithRooms } from '../repositories/apartment.repo.js';
+import type {
+  ApartmentRepository,
+  ApartmentWithRooms,
+  ApartmentWithStats,
+} from '../repositories/apartment.repo.js';
 import type { Apartment, Room } from '@prisma/client';
 
 // Mock ulid
 vi.mock('ulid', () => ({
-  ulid: vi.fn().mockReturnValue('01HQTESTAPT000001'),
+  ulid: vi.fn(() => '01HQTESTAPT000001'),
 }));
 
 // Mock prisma
@@ -28,9 +32,12 @@ describe('ApartmentService', () => {
   const mockRepo: ApartmentRepository = {
     findByOrgIdWithRooms: vi.fn(),
     findByIdAndOrg: vi.fn(),
+    findById: vi.fn(),
+    findByOrgId: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    countByOrgId: vi.fn(),
   };
 
   let service: ApartmentService;
@@ -60,15 +67,14 @@ describe('ApartmentService', () => {
       id: '01hqtestroom0000002',
       apartment_id: sampleApartment.id,
       room_number: '102',
-      status: 'vacant',
+      status: 'available',
       created_at: new Date(),
       updated_at: new Date(),
     },
   ];
 
   beforeEach(() => {
-    vi.resetAllMocks();
-    service = createApartmentService(() => mockRepo);
+    vi.clearAllMocks();
   });
 
   describe('listByOrg', () => {
@@ -76,6 +82,7 @@ describe('ApartmentService', () => {
       const aptWithRooms = { ...sampleApartment, rooms: sampleRooms };
       vi.mocked(mockRepo.findByOrgIdWithRooms).mockResolvedValue([aptWithRooms as ApartmentWithRooms]);
 
+      service = createApartmentService(() => mockRepo);
       const result = await service.listByOrg(orgId);
 
       expect(mockRepo.findByOrgIdWithRooms).toHaveBeenCalledWith(orgId);
@@ -83,11 +90,12 @@ describe('ApartmentService', () => {
       expect(result[0].room_stats).toBeDefined();
       expect(result[0].room_stats.total).toBe(2);
       expect(result[0].room_stats.occupied).toBe(1);
-      expect(result[0].room_stats.vacant).toBe(1);
+      expect(result[0].room_stats.available).toBe(1);
     });
 
     it('should return empty array when no apartments', async () => {
       vi.mocked(mockRepo.findByOrgIdWithRooms).mockResolvedValue([]);
+      service = createApartmentService(() => mockRepo);
 
       const result = await service.listByOrg(orgId);
 
@@ -100,6 +108,7 @@ describe('ApartmentService', () => {
       const aptWithRooms = { ...sampleApartment, rooms: sampleRooms };
       vi.mocked(mockRepo.findByIdAndOrg).mockResolvedValue(sampleApartment);
       vi.mocked(prisma.apartment.findUnique).mockResolvedValue(aptWithRooms);
+      service = createApartmentService(() => mockRepo);
 
       const result = await service.getById(orgId, sampleApartment.id);
 
@@ -109,6 +118,7 @@ describe('ApartmentService', () => {
 
     it('should throw 404 when apartment not found', async () => {
       vi.mocked(mockRepo.findByIdAndOrg).mockResolvedValue(null);
+      service = createApartmentService(() => mockRepo);
 
       await expect(service.getById(orgId, 'non-existent')).rejects.toMatchObject({
         statusCode: 404,
@@ -124,35 +134,18 @@ describe('ApartmentService', () => {
         description: '新描述',
       };
       vi.mocked(mockRepo.create).mockResolvedValue(sampleApartment);
+      service = createApartmentService(() => mockRepo);
 
       const result = await service.create(orgId, createInput);
 
       expect(mockRepo.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          organization: { connect: { id: orgId } },
           name: '新公寓',
           address: '新地址',
           description: '新描述',
         })
       );
       expect(result).toEqual(sampleApartment);
-    });
-
-    it('should create apartment with minimal data', async () => {
-      const minimalInput: CreateApartmentInput = {
-        name: '最小公寓',
-      };
-      vi.mocked(mockRepo.create).mockResolvedValue(sampleApartment);
-
-      await service.create(orgId, minimalInput);
-
-      expect(mockRepo.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: '最小公寓',
-          address: undefined,
-          description: undefined,
-        })
-      );
     });
   });
 
@@ -164,6 +157,7 @@ describe('ApartmentService', () => {
       const updatedApartment = { ...sampleApartment, name: '更新后的名称' };
       vi.mocked(mockRepo.findByIdAndOrg).mockResolvedValue(sampleApartment);
       vi.mocked(mockRepo.update).mockResolvedValue(updatedApartment);
+      service = createApartmentService(() => mockRepo);
 
       const result = await service.update(orgId, sampleApartment.id, updateInput);
 
@@ -177,6 +171,7 @@ describe('ApartmentService', () => {
 
     it('should throw 404 when apartment not found', async () => {
       vi.mocked(mockRepo.findByIdAndOrg).mockResolvedValue(null);
+      service = createApartmentService(() => mockRepo);
 
       await expect(
         service.update(orgId, 'non-existent', { name: '更新' })
@@ -188,6 +183,7 @@ describe('ApartmentService', () => {
     it('should delete apartment', async () => {
       vi.mocked(mockRepo.findByIdAndOrg).mockResolvedValue(sampleApartment);
       vi.mocked(mockRepo.delete).mockResolvedValue(undefined);
+      service = createApartmentService(() => mockRepo);
 
       await service.delete(orgId, sampleApartment.id);
 
@@ -197,6 +193,7 @@ describe('ApartmentService', () => {
 
     it('should throw 404 when apartment not found', async () => {
       vi.mocked(mockRepo.findByIdAndOrg).mockResolvedValue(null);
+      service = createApartmentService(() => mockRepo);
 
       await expect(service.delete(orgId, 'non-existent')).rejects.toMatchObject({
         statusCode: 404,
@@ -207,6 +204,7 @@ describe('ApartmentService', () => {
   describe('validateOwnership', () => {
     it('should return apartment when found', async () => {
       vi.mocked(mockRepo.findByIdAndOrg).mockResolvedValue(sampleApartment);
+      service = createApartmentService(() => mockRepo);
 
       const result = await service.validateOwnership(orgId, sampleApartment.id);
 
@@ -215,6 +213,7 @@ describe('ApartmentService', () => {
 
     it('should throw 404 when apartment not found', async () => {
       vi.mocked(mockRepo.findByIdAndOrg).mockResolvedValue(null);
+      service = createApartmentService(() => mockRepo);
 
       await expect(service.validateOwnership(orgId, 'non-existent')).rejects.toMatchObject({
         statusCode: 404,

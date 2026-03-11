@@ -11,16 +11,16 @@ import type { AdminUser, AdminRole, User, Organization, SubscriptionPlan } from 
 
 // Mock dependencies
 vi.mock('ulid', () => ({
-  ulid: vi.fn().mockReturnValue('01HQTESTID00000001'),
+  ulid: vi.fn(() => '01HQTESTID00000001'),
 }));
 
 vi.mock('../utils/security.js', () => ({
-  hashPassword: vi.fn().mockResolvedValue('hashed_password_123'),
+  hashPassword: vi.fn(() => Promise.resolve('hashed_password_123')),
   verifyPassword: vi.fn(),
 }));
 
 vi.mock('../utils/jwt.js', () => ({
-  createAdminAccessToken: vi.fn().mockReturnValue('admin_token_123'),
+  createAdminAccessToken: vi.fn(() => 'admin_token_123'),
 }));
 
 import { hashPassword, verifyPassword } from '../utils/security.js';
@@ -135,7 +135,7 @@ describe('AdminService', () => {
   };
 
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
     service = createAdminService(() => mockRepo);
   });
 
@@ -260,6 +260,7 @@ describe('AdminService', () => {
     it('should throw error when role is system role', async () => {
       vi.mocked(mockRepo.findAdminRoleWithUsers).mockResolvedValue({
         ...sampleRole,
+        is_system: true,
         users: [],
       });
 
