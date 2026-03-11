@@ -1,5 +1,6 @@
 import express, { type Express } from 'express';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
 import { config } from './config.js';
 import { responseWrapper } from './middlewares/responseWrapper.js';
 import { errorHandler } from './middlewares/errorHandler.js';
@@ -12,6 +13,7 @@ import { seedPermissions } from './startup/seedPermissions.js';
 import { seedPlans } from './startup/seedPlans.js';
 import { seedPlatformConfig } from './startup/seedPlatformConfig.js';
 import { startScheduler } from './scheduler/index.js';
+import { swaggerSpec } from './swagger.js';
 
 const app: Express = express();
 
@@ -20,6 +22,19 @@ app.use(express.json());
 app.use(responseWrapper);
 
 app.get('/health', healthHandler);
+
+// Swagger UI - API 文档
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Apartment Ultra API Docs',
+}));
+
+// OpenAPI JSON - 用于导入到 Apifox
+app.get('/openapi.json', (_req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+
 app.use(config.apiV1Prefix, v1Router);
 
 app.use(errorHandler);

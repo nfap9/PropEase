@@ -7,6 +7,24 @@ const router: Router = Router();
 
 router.use(requireConsoleAuth);
 
+/**
+ * @openapi
+ * /reports:
+ *   get:
+ *     summary: 获取报表列表
+ *     tags: [报表]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 报表列表（暂为空）
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ */
 router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     res.json([]);
@@ -15,6 +33,39 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /reports/overview:
+ *   get:
+ *     summary: 获取概览统计
+ *     tags: [报表]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 概览统计数据
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total_apartments:
+ *                   type: integer
+ *                 total_rooms:
+ *                   type: integer
+ *                 occupied_rooms:
+ *                   type: integer
+ *                 total_tenants:
+ *                   type: integer
+ *                 active_leases:
+ *                   type: integer
+ *                 pending_bills:
+ *                   type: integer
+ *                 overdue_bills:
+ *                   type: integer
+ *                 total_income:
+ *                   type: number
+ */
 router.get('/overview', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -25,6 +76,52 @@ router.get('/overview', async (req: Request, res: Response, next: NextFunction) 
   }
 });
 
+/**
+ * @openapi
+ * /reports/income:
+ *   get:
+ *     summary: 获取收入统计
+ *     tags: [报表]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: year
+ *         schema:
+ *           type: integer
+ *         description: 年份，默认为当前年
+ *       - in: query
+ *         name: start_month
+ *         schema:
+ *           type: integer
+ *         description: 起始月份
+ *       - in: query
+ *         name: end_month
+ *         schema:
+ *           type: integer
+ *         description: 结束月份
+ *     responses:
+ *       200:
+ *         description: 收入统计数据
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 year:
+ *                   type: integer
+ *                 monthly_data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       month:
+ *                         type: integer
+ *                       income:
+ *                         type: number
+ *                 total:
+ *                   type: number
+ */
 router.get('/income', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -38,6 +135,46 @@ router.get('/income', async (req: Request, res: Response, next: NextFunction) =>
   }
 });
 
+/**
+ * @openapi
+ * /reports/occupancy:
+ *   get:
+ *     summary: 获取入住率统计
+ *     tags: [报表]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: year
+ *         schema:
+ *           type: integer
+ *         description: 年份，默认为当前年
+ *     responses:
+ *       200:
+ *         description: 入住率统计数据
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 year:
+ *                   type: integer
+ *                 monthly_data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       month:
+ *                         type: integer
+ *                       occupancy_rate:
+ *                         type: number
+ *                       total_rooms:
+ *                         type: integer
+ *                       occupied_rooms:
+ *                         type: integer
+ *                 avg_occupancy_rate:
+ *                   type: number
+ */
 router.get('/occupancy', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);

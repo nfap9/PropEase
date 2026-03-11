@@ -28,6 +28,24 @@ const RevokeSystemRoleSchema = z.object({
 
 router.use(requireConsoleAuth);
 
+/**
+ * @openapi
+ * /permissions:
+ *   get:
+ *     summary: 获取所有权限列表
+ *     tags: [权限管理]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 权限列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Permission'
+ */
 router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const list = await defaultPermissionService.listAll();
@@ -37,6 +55,26 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /permissions/grouped:
+ *   get:
+ *     summary: 获取分组权限列表
+ *     tags: [权限管理]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 按模块分组的权限列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               additionalProperties:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/Permission'
+ */
 router.get('/grouped', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const grouped = await defaultPermissionService.listGrouped();
@@ -46,6 +84,41 @@ router.get('/grouped', async (_req: Request, res: Response, next: NextFunction) 
   }
 });
 
+/**
+ * @openapi
+ * /permissions/organization/{org_id}/roles/{role}:
+ *   get:
+ *     summary: 获取组织角色的权限
+ *     tags: [权限管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: org_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: role
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [owner, admin, member]
+ *     responses:
+ *       200:
+ *         description: 角色权限列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 role:
+ *                   type: string
+ *                 permissions:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Permission'
+ */
 router.get(
   '/organization/:org_id/roles/:role',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -60,6 +133,42 @@ router.get(
   }
 );
 
+/**
+ * @openapi
+ * /permissions/organization/{org_id}/roles/{role}:
+ *   put:
+ *     summary: 更新组织角色的权限
+ *     tags: [权限管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: org_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: role
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [owner, admin, member]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [permission_codes]
+ *             properties:
+ *               permission_codes:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: 更新成功
+ */
 router.put(
   '/organization/:org_id/roles/:role',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -89,6 +198,24 @@ router.put(
   }
 );
 
+/**
+ * @openapi
+ * /permissions/me:
+ *   get:
+ *     summary: 获取当前用户的权限
+ *     tags: [权限管理]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 当前用户的权限列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ */
 router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
@@ -100,6 +227,33 @@ router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /permissions/system-roles:
+ *   get:
+ *     summary: 获取系统角色配置列表
+ *     tags: [权限管理]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 系统角色配置列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   role:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   permissions:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ */
 router.get('/system-roles', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const list = await defaultPermissionService.listSystemRoleConfigs();
@@ -109,6 +263,33 @@ router.get('/system-roles', async (_req: Request, res: Response, next: NextFunct
   }
 });
 
+/**
+ * @openapi
+ * /permissions/system-roles/grant:
+ *   post:
+ *     summary: 授予系统角色
+ *     tags: [权限管理]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [user_id, role]
+ *             properties:
+ *               user_id:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [super_admin, platform_admin]
+ *     responses:
+ *       200:
+ *         description: 授予成功
+ *       403:
+ *         description: 需要超级管理员权限
+ */
 router.post('/system-roles/grant', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
@@ -129,6 +310,33 @@ router.post('/system-roles/grant', async (req: Request, res: Response, next: Nex
   }
 });
 
+/**
+ * @openapi
+ * /permissions/system-roles/revoke:
+ *   post:
+ *     summary: 撤销系统角色
+ *     tags: [权限管理]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [user_id, role]
+ *             properties:
+ *               user_id:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [super_admin, platform_admin]
+ *     responses:
+ *       200:
+ *         description: 撤销成功
+ *       403:
+ *         description: 需要超级管理员权限
+ */
 router.post('/system-roles/revoke', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
@@ -148,6 +356,24 @@ router.post('/system-roles/revoke', async (req: Request, res: Response, next: Ne
   }
 });
 
+/**
+ * @openapi
+ * /permissions/system-roles/me:
+ *   get:
+ *     summary: 获取当前用户的系统角色
+ *     tags: [权限管理]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 系统角色列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ */
 router.get('/system-roles/me', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);

@@ -39,7 +39,24 @@ const FeeTypeUpdateSchema = z.object({
 const SpecificationCreateSchema = FeeSpecificationSchema;
 const SpecificationUpdateSchema = FeeSpecificationSchema.partial();
 
-// GET /fee-types - 获取费用类型列表
+/**
+ * @openapi
+ * /fee-types:
+ *   get:
+ *     summary: 获取费用类型列表
+ *     tags: [费用类型]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 费用类型列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/FeeType'
+ */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -50,8 +67,30 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// GET /fee-types/specifications/:specId - 获取单个费用规格
-// 注意：此路由必须在 /:id 之前定义，否则会被 :id 匹配
+/**
+ * @openapi
+ * /fee-types/specifications/{specId}:
+ *   get:
+ *     summary: 获取单个费用规格
+ *     tags: [费用类型]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: specId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 费用规格信息
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FeeSpecification'
+ *       404:
+ *         description: 规格不存在
+ */
 router.get('/specifications/:specId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -62,7 +101,30 @@ router.get('/specifications/:specId', async (req: Request, res: Response, next: 
   }
 });
 
-// GET /fee-types/:id - 获取费用类型详情
+/**
+ * @openapi
+ * /fee-types/{id}:
+ *   get:
+ *     summary: 获取费用类型详情
+ *     tags: [费用类型]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 费用类型详情
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FeeType'
+ *       404:
+ *         description: 费用类型不存在
+ */
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -73,7 +135,60 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// POST /fee-types - 创建费用类型
+/**
+ * @openapi
+ * /fee-types:
+ *   post:
+ *     summary: 创建费用类型
+ *     tags: [费用类型]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, code]
+ *             properties:
+ *               name:
+ *                 type: string
+ *               code:
+ *                 type: string
+ *                 maxLength: 50
+ *               description:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *                 enum: [fixed, utility, optional]
+ *               specifications:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required: [name, price_monthly]
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     description:
+ *                       type: string
+ *                     price_monthly:
+ *                       type: number
+ *                     price_yearly:
+ *                       type: number
+ *                     unit:
+ *                       type: string
+ *                     is_default:
+ *                       type: boolean
+ *                     sort_order:
+ *                       type: number
+ *     responses:
+ *       201:
+ *         description: 创建成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FeeType'
+ */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -86,7 +201,48 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// PUT /fee-types/:id - 更新费用类型
+/**
+ * @openapi
+ * /fee-types/{id}:
+ *   put:
+ *     summary: 更新费用类型
+ *     tags: [费用类型]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *                 enum: [fixed, utility, optional]
+ *               is_active:
+ *                 type: boolean
+ *               sort_order:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: 更新成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FeeType'
+ *       404:
+ *         description: 费用类型不存在
+ */
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -99,7 +255,26 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// DELETE /fee-types/:id - 删除费用类型
+/**
+ * @openapi
+ * /fee-types/{id}:
+ *   delete:
+ *     summary: 删除费用类型
+ *     tags: [费用类型]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: 删除成功
+ *       404:
+ *         description: 费用类型不存在
+ */
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -110,7 +285,32 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
   }
 });
 
-// GET /fee-types/:id/specifications - 获取费用类型的规格列表
+/**
+ * @openapi
+ * /fee-types/{id}/specifications:
+ *   get:
+ *     summary: 获取费用类型的规格列表
+ *     tags: [费用类型]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 规格列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/FeeSpecification'
+ *       404:
+ *         description: 费用类型不存在
+ */
 router.get('/:id/specifications', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -121,7 +321,52 @@ router.get('/:id/specifications', async (req: Request, res: Response, next: Next
   }
 });
 
-// POST /fee-types/:id/specifications - 添加规格
+/**
+ * @openapi
+ * /fee-types/{id}/specifications:
+ *   post:
+ *     summary: 添加费用规格
+ *     tags: [费用类型]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, price_monthly]
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               price_monthly:
+ *                 type: number
+ *               price_yearly:
+ *                 type: number
+ *               unit:
+ *                 type: string
+ *               is_default:
+ *                 type: boolean
+ *               sort_order:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: 添加成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FeeSpecification'
+ *       404:
+ *         description: 费用类型不存在
+ */
 router.post('/:id/specifications', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -134,7 +379,51 @@ router.post('/:id/specifications', async (req: Request, res: Response, next: Nex
   }
 });
 
-// PUT /fee-types/specifications/:specId - 更新规格
+/**
+ * @openapi
+ * /fee-types/specifications/{specId}:
+ *   put:
+ *     summary: 更新费用规格
+ *     tags: [费用类型]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: specId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               price_monthly:
+ *                 type: number
+ *               price_yearly:
+ *                 type: number
+ *               unit:
+ *                 type: string
+ *               is_default:
+ *                 type: boolean
+ *               sort_order:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: 更新成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FeeSpecification'
+ *       404:
+ *         description: 规格不存在
+ */
 router.put('/specifications/:specId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -147,7 +436,26 @@ router.put('/specifications/:specId', async (req: Request, res: Response, next: 
   }
 });
 
-// DELETE /fee-types/specifications/:specId - 删除规格
+/**
+ * @openapi
+ * /fee-types/specifications/{specId}:
+ *   delete:
+ *     summary: 删除费用规格
+ *     tags: [费用类型]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: specId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: 删除成功
+ *       404:
+ *         description: 规格不存在
+ */
 router.delete('/specifications/:specId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
