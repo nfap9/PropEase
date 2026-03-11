@@ -61,6 +61,7 @@ model OrganizationMember {
   user        User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
+  @@index([organization_id])
   @@map("organization_members")
 }
 
@@ -90,6 +91,7 @@ model Apartment {
   utility_config UtilityConfig?
   fee_configs    ApartmentFeeConfig[]
 
+  @@index([organization_id])
   @@map("apartments")
 }
 
@@ -130,6 +132,7 @@ model Tenant {
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   leases       Lease[]
 
+  @@index([organization_id])
   @@map("tenants")
 }
 
@@ -155,6 +158,8 @@ model Lease {
   bills  Bill[]
 
   @@index([room_id])
+  @@index([room_id, is_active])
+  @@index([tenant_id])
   @@index([is_active])
   @@map("leases")
 }
@@ -175,6 +180,8 @@ model UtilityReading {
 
   room Room @relation(fields: [room_id], references: [id], onDelete: Cascade)
 
+  @@index([room_id])
+  @@unique([room_id, period_year, period_month])
   @@index([period_year, period_month])
   @@map("utility_readings")
 }
@@ -217,6 +224,8 @@ model Bill {
   payments Payment[]
   fee_items BillFeeItem[]
 
+  @@index([lease_id])
+  @@unique([lease_id, bill_year, bill_month])
   @@index([status])
   @@map("bills")
 }
@@ -411,6 +420,8 @@ model Notification {
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@index([user_id])
+  @@index([user_id, is_read])
   @@map("notifications")
 }
 
@@ -486,6 +497,7 @@ model SubscriptionOrder {
   plan          SubscriptionPlan @relation(fields: [plan_id], references: [id])
   org_subscription OrganizationSubscription? @relation(fields: [organization_subscription_id], references: [id], onDelete: SetNull)
 
+  @@index([organization_id])
   @@map("subscription_orders")
 }
 
@@ -505,6 +517,8 @@ model UsageQuota {
   user   User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
   order  UsageQuotaOrder? @relation(fields: [usage_quota_order_id], references: [id], onDelete: SetNull)
 
+  @@index([user_id])
+  @@index([user_id, valid_from, valid_to])
   @@map("usage_quotas")
 }
 
