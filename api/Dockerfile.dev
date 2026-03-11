@@ -1,21 +1,29 @@
-# 开发用：构建上下文为 monorepo 根目录，安装依赖；源码通过 compose volume 挂载
+# 开发用：仅构建 API 服务，安装依赖；源码通过 compose volume 挂载
 FROM node:20-alpine
 
 WORKDIR /app
 
 RUN corepack enable pnpm
+
+# 复制根目录配置
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# 复制 API 和 api-contract 的 package.json
 COPY api/package.json api/package.json
-COPY web/package.json web/package.json
-# 复制 packages 目录（包含 api-contract）
-COPY packages/ packages/
+COPY packages/api-contract/package.json packages/api-contract/package.json
+
+# 安装依赖
 RUN pnpm install --frozen-lockfile
 
-# 复制 Prisma schema 并生成客户端（构建时预生成，运行时如有变更会重新生成）
+# 复制 api-contract 源码并构建
+COPY packages/api-contract/ packages/api-contract/
+RUN pnpm --filter @apartment-ultra/api-contract run build
+
+# 复制 Prisma schema 并生成客户端
 COPY api/prisma api/prisma
 RUN pnpm --filter apartment-ultra-api exec prisma generate
 
 EXPOSE 8000
 ENV PORT=8000
-# 挂载 api 后执行 prisma generate 与 dev（由 compose 覆盖 command 时可省略 generate）
+# 挂载 api 后执行 prisma generate 与 dev
 CMD ["sh", "-c", "pnpm --filter apartment-ultra-api exec prisma generate && pnpm --filter apartment-ultra-api dev"]
