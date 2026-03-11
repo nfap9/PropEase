@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { adminAuthRouter } from './auth.js';
+import { adminPromotionsRouter } from './promotions.js';
 import { requireAdmin } from '../../../middlewares/requireAdmin.js';
 import { getAdminUser } from '../../../utils/context.js';
 import { createAppError } from '../../../utils/appError.js';
@@ -13,6 +14,9 @@ const router: Router = Router();
 router.use('/auth', adminAuthRouter);
 
 router.use(requireAdmin);
+
+// 优惠活动和套餐定价管理
+router.use(adminPromotionsRouter);
 
 // --- users (admin 后台管理员) ---
 router.get('/users/me', async (req: Request, res: Response, next: NextFunction) => {

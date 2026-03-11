@@ -22,6 +22,14 @@ export type OrderWithPlan = SubscriptionOrder & {
 };
 
 /**
+ * 订单包含套餐和优惠信息
+ */
+export type OrderWithPlanAndPromotion = SubscriptionOrder & {
+  plan: SubscriptionPlan | null;
+  promotion: { id: string; name: string; type: string } | null;
+};
+
+/**
  * Subscription Repository 接口
  */
 export interface SubscriptionRepository {

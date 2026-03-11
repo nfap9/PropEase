@@ -1,73 +1,37 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SUBSCRIPTION_STATUS_CONFIG } from '@/lib/status-config';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Check, Crown, Zap, Building2, ArrowLeft, Loader2, CreditCard } from 'lucide-react';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  ArrowLeft,
+  CreditCard,
+  Package,
+  Building2,
+  Home,
+  Users,
+  Calendar,
+  ShoppingCart,
+} from 'lucide-react';
 import { subscriptionsApi } from '@/lib/api';
-import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 
-// 注意: 实际使用时从 testids 导入 SUBSCRIPTION 常量
 const SUBSCRIPTION = {
   HEADING: 'subscription-heading',
-  BACK_BTN: 'subscription-back-btn',
-  MONTHLY_BTN: 'subscription-monthly-btn',
-  YEARLY_BTN: 'subscription-yearly-btn',
-  PLANS_GRID: 'subscription-plans-grid',
-  CONFIRM_DIALOG: 'subscription-confirm-dialog',
-  CANCEL_BTN: 'subscription-cancel-btn',
-  CONFIRM_BTN: 'subscription-confirm-btn',
-  PLAN_CARD: 'subscription-plan-card',
-  SUBSCRIBE_BTN: 'subscription-subscribe-btn',
-  // 测试需要用到的
-  PLAN_LIST: 'subscription-plan-list',
   CURRENT_SUBSCRIPTION: 'subscription-current',
+  USAGE_CARD: 'subscription-usage-card',
   UPGRADE_BUTTON: 'subscription-upgrade-btn',
 } as const;
 
-const PLAN_ICONS: Record<string, typeof Crown> = {
-  free: Building2,
-  pro: Zap,
-  enterprise: Crown,
-};
-
-const PLAN_COLORS: Record<string, string> = {
-  free: 'border-muted',
-  pro: 'border-primary',
-  enterprise: 'border-yellow-500',
-};
-
 export default function SubscriptionPage() {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { organization } = useAuth();
   const orgId = organization?.id;
-
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-
-  // 获取套餐列表
-  const { data: plans, isLoading: plansLoading } = useQuery({
-    queryKey: ['subscription-plans'],
-    queryFn: () => subscriptionsApi.listPlans(true),
-    enabled: !!orgId,
-  });
 
   // 获取当前订阅状态
   const { data: subscriptionStatus, isLoading: statusLoading } = useQuery({
@@ -76,67 +40,24 @@ export default function SubscriptionPage() {
     enabled: !!orgId,
   });
 
-  // 免费套餐直接订阅
-  const subscribeMutation = useMutation({
-    mutationFn: (planId: string) =>
-      subscriptionsApi.subscribe(orgId!, {
-        plan_id: planId,
-        billing_cycle: billingCycle,
-        auto_renew: true,
-      }),
-    onSuccess: () => {
-      toast.success('订阅成功！');
-      queryClient.invalidateQueries({ queryKey: ['subscription-status', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['organization-usage', orgId] });
-      setSelectedPlan(null);
-    },
-    onError: (error) => toast.error(getErrorMessage(error, '订阅失败，请重试')),
+  // 获取使用量统计
+  const { data: usage, isLoading: usageLoading } = useQuery({
+    queryKey: ['organization-usage', orgId],
+    queryFn: () => subscriptionsApi.getUsage(orgId!),
+    enabled: !!orgId,
   });
 
-  // 付费套餐：创建订单后跳转支付页
-  const createOrderMutation = useMutation({
-    mutationFn: (planId: string) =>
-      subscriptionsApi.createOrder(orgId!, {
-        plan_id: planId,
-        billing_cycle: billingCycle,
-      }),
-    onSuccess: (order) => {
-      setSelectedPlan(null);
-      router.push(`/settings/subscription/pay?order_id=${order.id}`);
-    },
-    onError: (error) => toast.error(getErrorMessage(error, '创建订单失败，请重试')),
-  });
+  const isLoading = statusLoading || usageLoading;
 
-  const handleSubscribe = (planId: string) => {
-    const plan = plans?.find((p) => p.id === planId);
-    const price = plan ? (billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly) : 0;
-    if (price <= 0) {
-      subscribeMutation.mutate(planId);
-    } else {
-      setSelectedPlan(planId);
-    }
+  const getUsagePercent = (used: number, max: number) => {
+    if (max <= 0) return 0;
+    return Math.min(100, Math.round((used / max) * 100));
   };
 
-  const handleConfirmSubscribe = () => {
-    if (!selectedPlan) return;
-    const plan = plans?.find((p) => p.id === selectedPlan);
-    const price = plan ? (billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly) : 0;
-    if (price <= 0) {
-      subscribeMutation.mutate(selectedPlan);
-    } else {
-      createOrderMutation.mutate(selectedPlan);
-    }
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('zh-CN');
   };
-
-  const formatPrice = (price: number) => {
-    return price === 0 ? '免费' : `¥${price}`;
-  };
-
-  const getLimitText = (limit: number | null) => {
-    return limit == null || limit === -1 ? '无限制' : limit.toString();
-  };
-
-  const isLoading = plansLoading || statusLoading;
 
   return (
     <MainLayout>
@@ -147,201 +68,183 @@ export default function SubscriptionPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             返回
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="flex items-center gap-2 text-3xl font-bold" data-testid={SUBSCRIPTION.HEADING}>
               <CreditCard className="h-8 w-8" />
-              订阅管理
+              我的订阅
             </h1>
-            <p className="text-muted-foreground">选择适合您的订阅套餐</p>
+            <p className="text-muted-foreground">查看订阅状态与使用量</p>
           </div>
-        </div>
-
-        {/* Current Plan */}
-        {subscriptionStatus && (
-          <Card data-testid={SUBSCRIPTION.CURRENT_SUBSCRIPTION}>
-            <CardHeader>
-              <CardTitle className="text-lg">当前套餐</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{subscriptionStatus.plan?.name || '免费版'}</p>
-                  <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                    状态:
-                    <Badge
-                      variant={
-                        SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus.status]?.variant ??
-                        'secondary'
-                      }
-                    >
-                      {SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus.status]?.label ??
-                        subscriptionStatus.status}
-                    </Badge>
-                  </p>
-                  {subscriptionStatus.days_remaining !== null &&
-                    subscriptionStatus.days_remaining > 0 && (
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        剩余 {subscriptionStatus.days_remaining} 天
-                      </p>
-                    )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Billing Cycle Toggle */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant={billingCycle === 'monthly' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setBillingCycle('monthly')}
-          >
-            月付
-          </Button>
-          <Button
-            variant={billingCycle === 'yearly' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setBillingCycle('yearly')}
-          >
-            年付 (省2个月)
+          <Button onClick={() => router.push('/settings/subscription/purchase')} data-testid={SUBSCRIPTION.UPGRADE_BUTTON}>
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            购买套餐
           </Button>
         </div>
 
-        {/* Plans Grid */}
         {isLoading ? (
-          <div className="grid gap-6 md:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="relative">
-                <CardHeader>
-                  <Skeleton className="h-6 w-24" />
-                  <Skeleton className="mt-2 h-4 w-full" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-20 w-full" />
-                </CardContent>
-              </Card>
-            ))}
+          <div className="space-y-6">
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-48 w-full" />
           </div>
-        ) : plans && plans.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-3" data-testid={SUBSCRIPTION.PLAN_LIST}>
-            {plans.map((plan) => {
-              const Icon = PLAN_ICONS[plan.code] || Building2;
-              const price = billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly;
-              const isCurrentPlan = subscriptionStatus?.plan?.code === plan.code;
-
-              return (
-                <Card
-                  key={plan.id}
-                  className={`relative ${PLAN_COLORS[plan.code] || ''} ${
-                    isCurrentPlan ? 'ring-2 ring-primary' : ''
-                  }`}
-                >
-                  {isCurrentPlan && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge>当前套餐</Badge>
-                    </div>
-                  )}
-                  <CardHeader>
+        ) : (
+          <>
+            {/* 当前订阅卡片 */}
+            <Card data-testid={SUBSCRIPTION.CURRENT_SUBSCRIPTION}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  当前套餐
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <p className="text-2xl font-bold">{subscriptionStatus?.plan?.name || '免费版'}</p>
                     <div className="flex items-center gap-2">
-                      <Icon className="h-6 w-6" />
-                      <CardTitle>{plan.name}</CardTitle>
+                      <span className="text-sm text-muted-foreground">状态:</span>
+                      <Badge
+                        variant={
+                          SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus?.status ?? 'none']?.variant ??
+                          'secondary'
+                        }
+                      >
+                        {SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus?.status ?? 'none']?.label ??
+                          subscriptionStatus?.status ??
+                          '未订阅'}
+                      </Badge>
                     </div>
-                    <CardDescription>{plan.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="text-3xl font-bold">
-                      {formatPrice(price)}
-                      {price > 0 && (
-                        <span className="text-sm font-normal text-muted-foreground">
-                          /{billingCycle === 'monthly' ? '月' : '年'}
+                    {subscriptionStatus?.is_active && subscriptionStatus.end_date && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        到期日期: {formatDate(subscriptionStatus.end_date)}
+                        {subscriptionStatus.days_remaining !== null && subscriptionStatus.days_remaining > 0 && (
+                          <span className="ml-2 text-amber-600">
+                            (剩余 {subscriptionStatus.days_remaining} 天)
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 配额使用卡片 */}
+            <Card data-testid={SUBSCRIPTION.USAGE_CARD}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  配额使用
+                </CardTitle>
+                <CardDescription>当前组织的资源使用情况</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {usage ? (
+                  <div className="grid gap-6 md:grid-cols-3">
+                    {/* 公寓 */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">公寓</span>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {usage.apartments_used} / {usage.max_apartments === -1 ? '∞' : usage.max_apartments}
                         </span>
+                      </div>
+                      {usage.max_apartments > 0 && (
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all"
+                            style={{ width: `${getUsagePercent(usage.apartments_used, usage.max_apartments)}%` }}
+                          />
+                        </div>
+                      )}
+                      {usage.apartments_remaining !== null && usage.apartments_remaining >= 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          剩余 {usage.apartments_remaining} 个
+                        </p>
                       )}
                     </div>
 
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-500" />
-                        <span>组织: {getLimitText(plan.max_organizations)} 个</span>
+                    {/* 房间 */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Home className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">房间</span>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {usage.rooms_used} / {usage.max_rooms === -1 ? '∞' : usage.max_rooms}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-500" />
-                        <span>公寓: {getLimitText(plan.max_apartments)} 个</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-500" />
-                        <span>房间: {getLimitText(plan.max_rooms)} 间</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-green-500" />
-                        <span>成员: {getLimitText(plan.max_members)} 人</span>
-                      </div>
+                      {usage.max_rooms > 0 && (
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all"
+                            style={{ width: `${getUsagePercent(usage.rooms_used, usage.max_rooms)}%` }}
+                          />
+                        </div>
+                      )}
+                      {usage.rooms_remaining !== null && usage.rooms_remaining >= 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          剩余 {usage.rooms_remaining} 间
+                        </p>
+                      )}
                     </div>
 
-                    <Button
-                      className="w-full"
-                      variant={isCurrentPlan ? 'outline' : 'default'}
-                      disabled={
-                        statusLoading ||
-                        isCurrentPlan ||
-                        subscribeMutation.isPending ||
-                        (price > 0 && createOrderMutation.isPending)
-                      }
-                      onClick={() => handleSubscribe(plan.id)}
-                      data-testid={SUBSCRIPTION.UPGRADE_BUTTON}
-                    >
-                      {(subscribeMutation.isPending || createOrderMutation.isPending) &&
-                      selectedPlan === plan.id ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : null}
-                      {isCurrentPlan
-                        ? '当前套餐'
-                        : (billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly) <= 0
-                          ? '立即开通'
-                          : '立即订阅'}
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-center text-muted-foreground">
-                暂无可订阅的付费套餐，免费套餐已在注册时自动开通。请联系运营方配置更多套餐。
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* 付费套餐确认弹窗：跳转微信扫码支付 */}
-        <Dialog open={!!selectedPlan} onOpenChange={(open) => !open && setSelectedPlan(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>确认订阅</DialogTitle>
-              <DialogDescription>
-                确认订阅 {plans?.find((p) => p.id === selectedPlan)?.name}
-                ？确认后将跳转至微信扫码支付。
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setSelectedPlan(null)}>
-                取消
-              </Button>
-              <Button
-                onClick={handleConfirmSubscribe}
-                disabled={subscribeMutation.isPending || createOrderMutation.isPending}
-              >
-                {(subscribeMutation.isPending || createOrderMutation.isPending) && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {/* 成员 */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">成员</span>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {usage.members_used} / {usage.max_members === -1 ? '∞' : usage.max_members}
+                        </span>
+                      </div>
+                      {usage.max_members > 0 && (
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all"
+                            style={{ width: `${getUsagePercent(usage.members_used, usage.max_members)}%` }}
+                          />
+                        </div>
+                      )}
+                      {usage.members_remaining !== null && usage.members_remaining >= 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          剩余 {usage.members_remaining} 人
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">暂无使用数据</p>
                 )}
-                确认并去支付
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              </CardContent>
+            </Card>
+
+            {/* 续费/升级提示 */}
+            {subscriptionStatus?.plan?.code === 'free' && (
+              <Card className="border-primary/50 bg-primary/5">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">升级获取更多功能</p>
+                      <p className="text-sm text-muted-foreground">
+                        解锁更多公寓、房间和成员配额
+                      </p>
+                    </div>
+                    <Button onClick={() => router.push('/settings/subscription/purchase')}>
+                      查看套餐
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        )}
       </div>
     </MainLayout>
   );

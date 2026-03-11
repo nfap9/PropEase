@@ -6,6 +6,7 @@ import {
   SubscriptionPlan,
   SubscribeRequest,
   SubscriptionStatus,
+  OrganizationUsage,
 } from '@/types';
 
 export const subscriptionsApi = {
@@ -33,6 +34,13 @@ export const subscriptionsApi = {
   getSubscriptionStatus: async (orgId: string): Promise<SubscriptionStatus> => {
     const response = await api.get<SubscriptionStatus>(
       `/subscriptions/organizations/${orgId}/subscription/status`
+    );
+    return response.data;
+  },
+
+  getUsage: async (orgId: string): Promise<OrganizationUsage> => {
+    const response = await api.get<OrganizationUsage>(
+      `/organizations/${orgId}/usage`
     );
     return response.data;
   },
@@ -65,10 +73,14 @@ export const subscriptionsApi = {
   },
 
   // 订阅支付订单（付费套餐）
-  createOrder: async (orgId: string, data: SubscriptionOrderCreate): Promise<SubscriptionOrder> => {
+  createOrder: async (orgId: string, data: SubscriptionOrderCreate & { billing_months?: number }): Promise<SubscriptionOrder> => {
     const response = await api.post<SubscriptionOrder>(
       `/subscriptions/organizations/${orgId}/orders`,
-      { plan_id: data.plan_id, billing_cycle: data.billing_cycle ?? 'monthly' }
+      {
+        plan_id: data.plan_id,
+        billing_cycle: data.billing_cycle ?? 'monthly',
+        billing_months: data.billing_months,
+      }
     );
     return response.data;
   },

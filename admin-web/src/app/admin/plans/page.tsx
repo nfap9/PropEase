@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
@@ -38,12 +38,22 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ColumnDef } from '@tanstack/react-table';
-import { adminApiEndpoints, AdminPlan, AdminPlanUpdate } from '@/lib/api/admin-client';
+import { adminApiEndpoints, AdminPlan, AdminPlanUpdate, type AdminPlanPricingCreate } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, DollarSign, Settings } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+
+// 周期定价项 Schema
+const pricingItemSchema = z.object({
+  months: z.number().min(1, '月数最小为1'),
+  price: z.number().min(0, '价格不能为负'),
+  is_active: z.boolean(),
+  sort_order: z.number(),
+});
 
 const planCreateSchema = z.object({
   name: z.string().min(1, '请输入套餐名称'),
@@ -56,7 +66,8 @@ const planCreateSchema = z.object({
   max_rooms: z.coerce.number().min(-1, '-1 表示无限制'),
   max_members: z.coerce.number().min(-1, '-1 表示无限制'),
   sort_order: z.coerce.number().min(0),
-  free_validity_days: z.coerce.number().nullable().optional(),
+  // 周期定价
+  pricing: z.array(pricingItemSchema).optional(),
 });
 
 const planUpdateSchema = planCreateSchema.extend({
@@ -65,6 +76,7 @@ const planUpdateSchema = planCreateSchema.extend({
 
 type PlanCreateForm = z.infer<typeof planCreateSchema>;
 type PlanUpdateForm = z.infer<typeof planUpdateSchema>;
+type PricingItem = z.infer<typeof pricingItemSchema>;
 
 export default function AdminPlansPage() {
   const queryClient = useQueryClient();
@@ -72,6 +84,7 @@ export default function AdminPlansPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<AdminPlan | null>(null);
+  const [editTab, setEditTab] = useState<string>('pricing');
 
   const { data: plans, isLoading } = useQuery({
     queryKey: ['admin', 'plans'],
@@ -94,12 +107,17 @@ export default function AdminPlansPage() {
       max_rooms: 100,
       max_members: 1,
       sort_order: 0,
-      free_validity_days: null,
+      pricing: [],
     },
   });
 
   const editForm = useForm<PlanUpdateForm>({
     resolver: zodResolver(planUpdateSchema),
+  });
+
+  const { fields: editPricingFields, append: editAppendPricing, remove: editRemovePricing } = useFieldArray<PlanUpdateForm>({
+    control: editForm.control,
+    name: 'pricing',
   });
 
   const createMutation = useMutation({
@@ -115,7 +133,7 @@ export default function AdminPlansPage() {
         max_rooms: data.max_rooms,
         max_members: data.max_members,
         sort_order: data.sort_order,
-        free_validity_days: data.free_validity_days ?? undefined,
+        pricing: data.pricing && data.pricing.length > 0 ? data.pricing : undefined,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'plans'] });
@@ -138,6 +156,16 @@ export default function AdminPlansPage() {
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
+  const updatePricingMutation = useMutation({
+    mutationFn: ({ planId, pricing }: { planId: string; pricing: AdminPlanPricingCreate[] }) =>
+      adminApiEndpoints.updatePlanPricing(planId, pricing),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'plans'] });
+      toast.success('周期定价已更新');
+    },
+    onError: (error) => toast.error(getErrorMessage(error, '更新定价失败，请重试')),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminApiEndpoints.deletePlan(id),
     onSuccess: () => {
@@ -151,6 +179,7 @@ export default function AdminPlansPage() {
 
   const handleEdit = (plan: AdminPlan) => {
     setSelectedPlan(plan);
+    setEditTab('pricing');
     editForm.reset({
       name: plan.name,
       code: plan.code,
@@ -163,7 +192,7 @@ export default function AdminPlansPage() {
       max_members: plan.max_members,
       sort_order: plan.sort_order,
       is_active: plan.is_active,
-      free_validity_days: plan.free_validity_days ?? null,
+      pricing: plan.pricing ?? [{ months: 1, price: plan.price_monthly, is_active: true, sort_order: 0 }],
     });
     setIsEditOpen(true);
   };
@@ -205,14 +234,6 @@ export default function AdminPlansPage() {
       },
     },
     { accessorKey: 'sort_order', header: '排序' },
-    {
-      id: 'free_validity_days',
-      header: '免费有效期',
-      cell: ({ row }) => {
-        const v = row.original.free_validity_days;
-        return v != null ? `${v}天` : row.original.code === 'free' ? '无限期' : '-';
-      },
-    },
     {
       id: 'actions',
       header: '操作',
@@ -307,88 +328,109 @@ export default function AdminPlansPage() {
                   </FormItem>
                 )}
               />
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={createForm.control}
-                  name="price_monthly"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>月价</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.01" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={createForm.control}
-                  name="price_yearly"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>年价</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.01" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <FormField
-                  control={createForm.control}
-                  name="max_organizations"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>最大组织数</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="-1 表示不限制" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={createForm.control}
-                  name="max_apartments"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>最大公寓数</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={createForm.control}
-                  name="max_rooms"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>最大房间数</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={createForm.control}
-                  name="max_members"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>最大成员数</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+
+              <Tabs defaultValue="pricing" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="pricing" className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    价格配置
+                  </TabsTrigger>
+                  <TabsTrigger value="limits" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    用量配置
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="pricing" className="space-y-4 pt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={createForm.control}
+                      name="price_monthly"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>默认月价</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" {...field} />
+                          </FormControl>
+                          <FormDescription>用于无周期定价时的默认价格</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="price_yearly"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>默认年价</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="limits" className="space-y-4 pt-4">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    <FormField
+                      control={createForm.control}
+                      name="max_organizations"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>最大组织数</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="-1 表示不限制" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="max_apartments"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>最大公寓数</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="max_rooms"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>最大房间数</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={createForm.control}
+                      name="max_members"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>最大成员数</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+
               <FormField
                 control={createForm.control}
                 name="sort_order"
@@ -417,35 +459,40 @@ export default function AdminPlansPage() {
 
       {/* 编辑 */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl">
           <DialogHeader>
             <DialogTitle>编辑套餐</DialogTitle>
             <DialogDescription>{selectedPlan?.name}</DialogDescription>
           </DialogHeader>
           <Form {...editForm}>
             <form
-              onSubmit={editForm.handleSubmit((d) =>
-                selectedPlan
-                  ? updateMutation.mutate({
-                      id: selectedPlan.id,
-                      data: {
-                        name: d.name,
-                        description: d.description || null,
-                        ...(selectedPlan?.code !== 'free' && {
-                          price_monthly: d.price_monthly,
-                          price_yearly: d.price_yearly,
-                        }),
-                        max_organizations: d.max_organizations === -1 ? null : d.max_organizations,
-                        max_apartments: d.max_apartments,
-                        max_rooms: d.max_rooms,
-                        max_members: d.max_members,
-                        is_active: d.is_active,
-                        sort_order: d.sort_order,
-                        free_validity_days: d.free_validity_days ?? null,
-                      },
-                    })
-                  : undefined
-              )}
+              onSubmit={editForm.handleSubmit((d) => {
+                if (!selectedPlan) return;
+                // 根据当前 Tab 决定更新哪些内容
+                if (editTab === 'pricing') {
+                  // 更新周期定价
+                  const pricing = d.pricing ?? [];
+                  updatePricingMutation.mutate({ planId: selectedPlan.id, pricing });
+                }
+                // 始终更新基本信息
+                updateMutation.mutate({
+                  id: selectedPlan.id,
+                  data: {
+                    name: d.name,
+                    description: d.description || null,
+                    ...(selectedPlan?.code !== 'free' && {
+                      price_monthly: d.price_monthly,
+                      price_yearly: d.price_yearly,
+                    }),
+                    max_organizations: d.max_organizations === -1 ? null : d.max_organizations,
+                    max_apartments: d.max_apartments,
+                    max_rooms: d.max_rooms,
+                    max_members: d.max_members,
+                    is_active: d.is_active,
+                    sort_order: d.sort_order,
+                  },
+                });
+              })}
               className="space-y-4"
             >
               <FormField
@@ -487,122 +534,188 @@ export default function AdminPlansPage() {
                   </FormItem>
                 )}
               />
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="price_monthly"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>月价</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          {...field}
-                          disabled={selectedPlan?.code === 'free'}
-                          placeholder={
-                            selectedPlan?.code === 'free' ? '免费套餐不可修改' : undefined
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={editForm.control}
-                  name="price_yearly"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>年价</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          {...field}
-                          disabled={selectedPlan?.code === 'free'}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <FormField
-                control={editForm.control}
-                name="free_validity_days"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>免费有效期（天数，空=无限期，仅免费套餐）</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="空为无限期"
-                        {...field}
-                        value={field.value ?? ''}
-                        onChange={(e) =>
-                          field.onChange(e.target.value === '' ? null : Number(e.target.value))
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                <FormField
-                  control={editForm.control}
-                  name="max_organizations"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>最大组织数</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="-1 表示不限制" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={editForm.control}
-                  name="max_apartments"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>最大公寓数</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={editForm.control}
-                  name="max_rooms"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>最大房间数</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={editForm.control}
-                  name="max_members"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>最大成员数</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+
+              <Tabs value={editTab} onValueChange={setEditTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="pricing" className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    价格配置
+                  </TabsTrigger>
+                  <TabsTrigger value="limits" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    用量配置
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="pricing" className="space-y-4 pt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={editForm.control}
+                      name="price_monthly"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>默认月价</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              {...field}
+                              disabled={selectedPlan?.code === 'free'}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editForm.control}
+                      name="price_yearly"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>默认年价</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              {...field}
+                              disabled={selectedPlan?.code === 'free'}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* 周期定价列表 */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <FormLabel>周期定价</FormLabel>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => editAppendPricing({ months: 1, price: 0, is_active: true, sort_order: 0 })}
+                      >
+                        <Plus className="mr-1 h-3 w-3" />
+                        添加周期
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {editPricingFields.map((field, index) => (
+                        <div key={field.id} className="flex items-end gap-2 rounded border p-2">
+                          <FormField
+                            control={editForm.control}
+                            name={`pricing.${index}.months`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel className="text-xs">月数</FormLabel>
+                                <FormControl>
+                                  <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={editForm.control}
+                            name={`pricing.${index}.price`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormLabel className="text-xs">价格</FormLabel>
+                                <FormControl>
+                                  <Input type="number" step="0.01" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={editForm.control}
+                            name={`pricing.${index}.is_active`}
+                            render={({ field }) => (
+                              <FormItem className="flex items-center gap-1">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-xs">启用</FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => editRemovePricing(index)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="limits" className="space-y-4 pt-4">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    <FormField
+                      control={editForm.control}
+                      name="max_organizations"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>最大组织数</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="-1 表示不限制" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editForm.control}
+                      name="max_apartments"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>最大公寓数</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editForm.control}
+                      name="max_rooms"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>最大房间数</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={editForm.control}
+                      name="max_members"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>最大成员数</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+
               <FormField
                 control={editForm.control}
                 name="sort_order"
@@ -635,8 +748,8 @@ export default function AdminPlansPage() {
                 <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
                   取消
                 </Button>
-                <Button type="submit" disabled={updateMutation.isPending}>
-                  {updateMutation.isPending ? '保存中…' : '保存'}
+                <Button type="submit" disabled={updateMutation.isPending || updatePricingMutation.isPending}>
+                  {updateMutation.isPending || updatePricingMutation.isPending ? '保存中…' : '保存'}
                 </Button>
               </DialogFooter>
             </form>

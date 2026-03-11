@@ -36,7 +36,21 @@ export type {
   SubscriptionOrderStatus,
   SubscriptionOrder,
   SubscriptionOrderCreate,
+  UsageQuotaItem,
+  OrganizationUsageStats,
 } from './subscriptions.js';
+
+/** 优惠活动 */
+export type {
+  PromotionType,
+  PlanPricing,
+  PromotionPlan,
+  Promotion,
+  PromotionCreate,
+  PromotionUpdate,
+  PromotionListParams,
+  PromotionCalculation,
+} from './promotion.js';
 
 /** 公寓与房间 */
 export type {
@@ -122,9 +136,11 @@ export type {
   AdminRegisteredUser,
   AdminRegisteredUserDetail,
   AdminRegisteredUserSetActive,
+  AdminPlanPricingCreate,
   AdminPlan,
   AdminPlanCreate,
   AdminPlanUpdate,
+  AdminPlanPricingUpdate,
   AdminSubscription,
   AdminSubscriptionRenew,
   AdminPlatformConfig,

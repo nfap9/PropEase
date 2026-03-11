@@ -14,6 +14,7 @@ import {
   Menu,
   LogOut,
   Palette,
+  Tag,
 } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
@@ -27,6 +28,7 @@ const ADMIN_NAV = [
   { href: '/admin/roles', label: '运营角色', icon: Shield },
   { href: '/admin/organizations', label: '组织管理', icon: Building2 },
   { href: '/admin/plans', label: '套餐配置', icon: Package },
+  { href: '/admin/promotions', label: '优惠活动', icon: Tag },
   { href: '/admin/usage-pricing', label: '按量定价', icon: Package },
   { href: '/admin/subscriptions', label: '订阅管理', icon: CreditCard },
 ];

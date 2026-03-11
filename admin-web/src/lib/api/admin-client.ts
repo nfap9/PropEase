@@ -23,11 +23,15 @@ import type {
   AdminPlan,
   AdminPlanCreate,
   AdminPlanUpdate,
+  AdminPlanPricingCreate,
   AdminSubscription,
   AdminSubscriptionRenew,
   AdminPlatformConfig,
   AdminUsagePricing,
   AdminUsagePricingUpdate,
+  Promotion,
+  PromotionCreate,
+  PromotionUpdate,
 } from '@apartment-ultra/api-contract';
 
 // 重新导出类型，保持向后兼容
@@ -50,11 +54,15 @@ export type {
   AdminPlan,
   AdminPlanCreate,
   AdminPlanUpdate,
+  AdminPlanPricingCreate,
   AdminSubscription,
   AdminSubscriptionRenew,
   AdminPlatformConfig,
   AdminUsagePricing,
   AdminUsagePricingUpdate,
+  Promotion,
+  PromotionCreate,
+  PromotionUpdate,
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
@@ -173,6 +181,8 @@ export const adminApiEndpoints = {
   updatePlan: (id: string, data: AdminPlanUpdate) =>
     adminApi.put<AdminPlan>(`/admin/plans/${id}`, data),
   deletePlan: (id: string) => adminApi.delete(`/admin/plans/${id}`),
+  updatePlanPricing: (planId: string, pricing: AdminPlanPricingCreate[]) =>
+    adminApi.put(`/admin/plans/${planId}/pricing`, { pricing }),
 
   // 订阅
   listSubscriptions: (params?: {
@@ -221,4 +231,20 @@ export const adminApiEndpoints = {
     price_per_room?: number;
     price_per_member?: number;
   }) => adminApi.put<unknown>('/admin/usage-pricing', data),
+
+  // 优惠活动
+  listPromotions: (params?: { is_active?: boolean; plan_id?: string }) =>
+    adminApi.get<Promotion[]>('/admin/promotions', { params }),
+  getPromotion: (id: string) =>
+    adminApi.get<Promotion>(`/admin/promotions/${id}`),
+  createPromotion: (data: PromotionCreate) =>
+    adminApi.post<Promotion>('/admin/promotions', data),
+  updatePromotion: (id: string, data: PromotionUpdate) =>
+    adminApi.put<Promotion>(`/admin/promotions/${id}`, data),
+  deletePromotion: (id: string) =>
+    adminApi.delete(`/admin/promotions/${id}`),
+  addPlanToPromotion: (promotionId: string, planId: string) =>
+    adminApi.post(`/admin/promotions/${promotionId}/plans`, { plan_id: planId }),
+  removePlanFromPromotion: (promotionId: string, planId: string) =>
+    adminApi.delete(`/admin/promotions/${promotionId}/plans/${planId}`),
 };

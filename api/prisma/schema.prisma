@@ -441,15 +441,71 @@ model SubscriptionPlan {
   features            Json?
   is_active           Boolean  @default(true)
   sort_order          Int      @default(0)
-  free_validity_days  Int?     @db.Integer
+  free_validity_days  Int?     @db.Integer // 已废弃，保留向后兼容
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
 
-  subscriptions        OrganizationSubscription[]
-  subscription_orders   SubscriptionOrder[]
+  subscriptions          OrganizationSubscription[]
+  subscription_orders    SubscriptionOrder[]
   next_plan_subscriptions OrganizationSubscription[] @relation("NextPlan")
+  pricing                PlanPricing[]
+  promotion_plans        PromotionPlan[]
 
   @@map("subscription_plans")
+}
+
+// 套餐周期定价（支持任意月数周期）
+model PlanPricing {
+  id         String   @id @db.VarChar(26)
+  plan_id    String   @db.VarChar(26)
+  months     Int              // 周期月数 (1, 3, 6, 12, 24 等)
+  price      Decimal  @db.Decimal(10, 2)
+  is_active  Boolean  @default(true)
+  sort_order Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  plan SubscriptionPlan @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+
+  @@unique([plan_id, months])
+  @@index([plan_id])
+  @@map("plan_pricing")
+}
+
+// 优惠活动
+model Promotion {
+  id             String    @id @db.VarChar(26)
+  name           String    @db.VarChar(100)
+  code           String    @unique @db.VarChar(50)
+  description    String?   @db.VarChar(500)
+  type           String    @db.VarChar(20)      // 'discount' | 'gift' | 'mixed'
+  discount_value Decimal?  @db.Decimal(10, 2)   // 折扣率(如0.8表示8折)或减免金额
+  gift_months    Int?                           // 赠送月数
+  start_date     DateTime  @db.Date
+  end_date       DateTime? @db.Date
+  is_active      Boolean   @default(true)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  plans  PromotionPlan[]
+  orders SubscriptionOrder[]
+
+  @@index([is_active, start_date, end_date])
+  @@map("promotions")
+}
+
+// 优惠活动关联套餐
+model PromotionPlan {
+  id           String   @id @db.VarChar(26)
+  promotion_id String   @db.VarChar(26)
+  plan_id      String   @db.VarChar(26)
+  created_at   DateTime @default(now())
+
+  promotion Promotion      @relation(fields: [promotion_id], references: [id], onDelete: Cascade)
+  plan      SubscriptionPlan @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+
+  @@unique([promotion_id, plan_id])
+  @@map("promotion_plans")
 }
 
 model OrganizationSubscription {
@@ -458,6 +514,7 @@ model OrganizationSubscription {
   plan_id         String    @db.VarChar(26)
   status          String    @default("active") @db.VarChar(20)
   billing_cycle   String    @default("monthly") @db.VarChar(20)
+  billing_months  Int       @default(1)             // 订阅月数
   start_date      DateTime  @db.Date
   end_date        DateTime? @db.Date
   auto_renew      Boolean   @default(true)
@@ -481,7 +538,9 @@ model SubscriptionOrder {
   organization_id             String    @db.VarChar(26)
   plan_id                    String    @db.VarChar(26)
   billing_cycle              String    @default("monthly") @db.VarChar(20)
+  billing_months             Int       @default(1)             // 购买的月数
   amount                     Decimal   @db.Decimal(10, 2)
+  original_amount            Decimal?  @db.Decimal(10, 2)      // 原价（优惠前）
   currency                   String    @default("CNY") @db.VarChar(10)
   status                     String    @default("pending") @db.VarChar(32)
   payment_method             String    @default("wechat_native") @db.VarChar(32)
@@ -489,15 +548,18 @@ model SubscriptionOrder {
   wechat_transaction_id      String?   @db.VarChar(64)
   paid_at                    DateTime?
   expires_at                 DateTime
+  promotion_id               String?   @db.VarChar(26)
   organization_subscription_id String?  @db.VarChar(26)
   created_at                 DateTime  @default(now())
   updated_at                 DateTime  @updatedAt
 
-  organization  Organization  @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  plan          SubscriptionPlan @relation(fields: [plan_id], references: [id])
-  org_subscription OrganizationSubscription? @relation(fields: [organization_subscription_id], references: [id], onDelete: SetNull)
+  organization      Organization       @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  plan              SubscriptionPlan   @relation(fields: [plan_id], references: [id])
+  org_subscription  OrganizationSubscription? @relation(fields: [organization_subscription_id], references: [id], onDelete: SetNull)
+  promotion         Promotion?         @relation(fields: [promotion_id], references: [id], onDelete: SetNull)
 
   @@index([organization_id])
+  @@index([promotion_id])
   @@map("subscription_orders")
 }
 
