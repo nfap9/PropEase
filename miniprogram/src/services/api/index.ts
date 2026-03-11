@@ -1,7 +1,0 @@
-export { default as api } from './client'
-export { authApi } from './auth'
-export { apartmentApi } from './apartments'
-export { roomApi } from './rooms'
-export { tenantApi } from './tenants'
-export { billApi } from './bills'
-export { reportApi } from './reports'
