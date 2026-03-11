@@ -1,6 +1,6 @@
 packages:
   - 'api'
-  - 'web'
+  - 'tenant-web'
   - 'admin-web'
   - 'packages/api-contract'
   - 'packages/shared-ui'
