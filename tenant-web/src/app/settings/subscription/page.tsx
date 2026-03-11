@@ -283,6 +283,7 @@ export default function SubscriptionPage() {
                       className="w-full"
                       variant={isCurrentPlan ? 'outline' : 'default'}
                       disabled={
+                        statusLoading ||
                         isCurrentPlan ||
                         subscribeMutation.isPending ||
                         (price > 0 && createOrderMutation.isPending)

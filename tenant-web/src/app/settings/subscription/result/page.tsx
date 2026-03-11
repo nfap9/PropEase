@@ -1,20 +1,33 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/lib/auth/context';
 
 function SubscriptionResultContent() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
+  const { organization } = useAuth();
+  const orgId = organization?.id;
   const status = searchParams.get('status'); // success | fail
   const orderId = searchParams.get('order_id');
 
   const isSuccess = status === 'success';
+
+  // 支付成功后预刷新订阅状态，确保返回订阅页面时显示最新数据
+  useEffect(() => {
+    if (isSuccess && orgId) {
+      queryClient.invalidateQueries({ queryKey: ['subscription-status', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['organization-usage', orgId] });
+    }
+  }, [isSuccess, orgId, queryClient]);
 
   const handleBack = () => {
     router.push('/settings/subscription');
