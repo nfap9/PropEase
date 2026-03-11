@@ -1,32 +1,31 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
-import * as SecureStore from 'expo-secure-store'
+import { Platform } from 'react-native'
 import { router } from 'expo-router'
 import type { User, Organization } from '@apartment-ultra/api-contract'
-import { authApi, organizationsApi } from '@/services/api'
+import { authApi, organizationsApi, secureStorage } from '@/services/api'
 
-// SecureStore 适配器
-const secureStorage = {
+// 跨平台安全存储适配器
+const crossPlatformStorage = {
   getItem: async (name: string): Promise<string | null> => {
-    try {
-      return await SecureStore.getItemAsync(name)
-    } catch {
-      return null
+    if (Platform.OS === 'web') {
+      return localStorage.getItem(name)
     }
+    return await secureStorage.getItem(name)
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    try {
-      await SecureStore.setItemAsync(name, value)
-    } catch {
-      // ignore
+    if (Platform.OS === 'web') {
+      localStorage.setItem(name, value)
+      return
     }
+    await secureStorage.setItem(name, value)
   },
   removeItem: async (name: string): Promise<void> => {
-    try {
-      await SecureStore.deleteItemAsync(name)
-    } catch {
-      // ignore
+    if (Platform.OS === 'web') {
+      localStorage.removeItem(name)
+      return
     }
+    await secureStorage.deleteItem(name)
   },
 }
 
@@ -63,8 +62,8 @@ export const useAuthStore = create<AuthState>()(
           verification_code: verificationCode,
         })
 
-        await SecureStore.setItemAsync('access_token', response.access_token)
-        await SecureStore.setItemAsync('refresh_token', response.refresh_token)
+        await crossPlatformStorage.setItem('access_token', response.access_token)
+        await crossPlatformStorage.setItem('refresh_token', response.refresh_token)
 
         const user = await authApi.getMe()
         set({ user, isAuthenticated: true })
@@ -81,8 +80,8 @@ export const useAuthStore = create<AuthState>()(
           verification_code: verificationCode,
         })
 
-        await SecureStore.setItemAsync('access_token', response.access_token)
-        await SecureStore.setItemAsync('refresh_token', response.refresh_token)
+        await crossPlatformStorage.setItem('access_token', response.access_token)
+        await crossPlatformStorage.setItem('refresh_token', response.refresh_token)
 
         const user = await authApi.getMe()
         set({ user, isAuthenticated: true })
@@ -93,9 +92,9 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         try {
-          await SecureStore.deleteItemAsync('access_token')
-          await SecureStore.deleteItemAsync('refresh_token')
-          await SecureStore.deleteItemAsync('current_organization_id')
+          await crossPlatformStorage.removeItem('access_token')
+          await crossPlatformStorage.removeItem('refresh_token')
+          await crossPlatformStorage.removeItem('current_organization_id')
         } catch {
           // ignore
         }
@@ -113,7 +112,7 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user) => set({ user }),
 
       setOrganization: async (org) => {
-        await SecureStore.setItemAsync('current_organization_id', org.id)
+        await crossPlatformStorage.setItem('current_organization_id', org.id)
         set({ organization: org })
       },
 
@@ -123,7 +122,7 @@ export const useAuthStore = create<AuthState>()(
           set({ organizations: orgs || [] })
 
           if (orgs && orgs.length > 0) {
-            const savedOrgId = await SecureStore.getItemAsync('current_organization_id')
+            const savedOrgId = await crossPlatformStorage.getItem('current_organization_id')
             const org = savedOrgId
               ? orgs.find((o) => o.id === savedOrgId) || orgs[0]
               : orgs[0]
@@ -137,7 +136,7 @@ export const useAuthStore = create<AuthState>()(
 
       initialize: async () => {
         try {
-          const token = await SecureStore.getItemAsync('access_token')
+          const token = await crossPlatformStorage.getItem('access_token')
           if (token) {
             const user = await authApi.getMe()
             set({ user, isAuthenticated: true })
@@ -146,8 +145,8 @@ export const useAuthStore = create<AuthState>()(
         } catch {
           // Token 无效或过期，清除状态
           try {
-            await SecureStore.deleteItemAsync('access_token')
-            await SecureStore.deleteItemAsync('refresh_token')
+            await crossPlatformStorage.removeItem('access_token')
+            await crossPlatformStorage.removeItem('refresh_token')
           } catch {
             // ignore
           }
@@ -157,7 +156,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      storage: createJSONStorage(() => secureStorage),
+      storage: createJSONStorage(() => crossPlatformStorage),
       partialize: (state) => ({
         user: state.user,
         organization: state.organization,

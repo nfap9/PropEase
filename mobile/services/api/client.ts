@@ -1,5 +1,5 @@
-import * as SecureStore from 'expo-secure-store'
 import { router } from 'expo-router'
+import { Platform } from 'react-native'
 import {
   type SuccessBody,
   type ErrorResponseBody,
@@ -14,6 +14,51 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api/v1
 export type ApiResponse<T = unknown> = SuccessBody<T>
 
 export type { FieldError }
+
+/**
+ * 跨平台安全存储适配器
+ * - Web: 使用 localStorage
+ * - Native: 使用 expo-secure-store
+ */
+const secureStorage = {
+  async getItem(key: string): Promise<string | null> {
+    if (Platform.OS === 'web') {
+      return localStorage.getItem(key)
+    }
+    try {
+      const SecureStore = require('expo-secure-store')
+      return await SecureStore.getItemAsync(key)
+    } catch {
+      return null
+    }
+  },
+
+  async setItem(key: string, value: string): Promise<void> {
+    if (Platform.OS === 'web') {
+      localStorage.setItem(key, value)
+      return
+    }
+    try {
+      const SecureStore = require('expo-secure-store')
+      await SecureStore.setItemAsync(key, value)
+    } catch {
+      // ignore
+    }
+  },
+
+  async deleteItem(key: string): Promise<void> {
+    if (Platform.OS === 'web') {
+      localStorage.removeItem(key)
+      return
+    }
+    try {
+      const SecureStore = require('expo-secure-store')
+      await SecureStore.deleteItemAsync(key)
+    } catch {
+      // ignore
+    }
+  },
+}
 
 /**
  * API 错误类
@@ -61,22 +106,14 @@ interface RequestOptions {
  * 获取存储的 token
  */
 async function getToken(): Promise<string | null> {
-  try {
-    return await SecureStore.getItemAsync('access_token')
-  } catch {
-    return null
-  }
+  return secureStorage.getItem('access_token')
 }
 
 /**
  * 获取存储的组织 ID
  */
 async function getOrgId(): Promise<string | null> {
-  try {
-    return await SecureStore.getItemAsync('current_organization_id')
-  } catch {
-    return null
-  }
+  return secureStorage.getItem('current_organization_id')
 }
 
 /**
@@ -84,7 +121,7 @@ async function getOrgId(): Promise<string | null> {
  */
 async function handleUnauthorized(): Promise<boolean> {
   try {
-    const refreshToken = await SecureStore.getItemAsync('refresh_token')
+    const refreshToken = await secureStorage.getItem('refresh_token')
     if (!refreshToken) {
       return false
     }
@@ -106,8 +143,8 @@ async function handleUnauthorized(): Promise<boolean> {
         : responseData
 
     const { access_token, refresh_token } = tokenData
-    await SecureStore.setItemAsync('access_token', access_token)
-    await SecureStore.setItemAsync('refresh_token', refresh_token)
+    await secureStorage.setItem('access_token', access_token)
+    await secureStorage.setItem('refresh_token', refresh_token)
 
     return true
   } catch {
@@ -120,10 +157,10 @@ async function handleUnauthorized(): Promise<boolean> {
  */
 async function clearAuthAndRedirect(): Promise<void> {
   try {
-    await SecureStore.deleteItemAsync('access_token')
-    await SecureStore.deleteItemAsync('refresh_token')
-    await SecureStore.deleteItemAsync('user')
-    await SecureStore.deleteItemAsync('current_organization_id')
+    await secureStorage.deleteItem('access_token')
+    await secureStorage.deleteItem('refresh_token')
+    await secureStorage.deleteItem('user')
+    await secureStorage.deleteItem('current_organization_id')
   } catch {
     // ignore
   }
@@ -231,5 +268,8 @@ export const api = {
   delete: <T>(url: string, data?: unknown, options?: RequestOptions) =>
     request<T>(url, { ...options, method: 'DELETE', data }),
 }
+
+// 导出存储适配器供其他模块使用
+export { secureStorage }
 
 export default api
