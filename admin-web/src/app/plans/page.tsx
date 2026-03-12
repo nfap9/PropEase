@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import {
   Dialog,
@@ -590,7 +591,7 @@ export default function AdminPlansPage() {
                   {/* 周期定价列表 */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <FormLabel>周期定价</FormLabel>
+                      <Label>周期定价</Label>
                       <Button
                         type="button"
                         variant="outline"
