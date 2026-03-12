@@ -11,6 +11,20 @@ jobs:
   api:
     name: api
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -46,7 +60,7 @@ jobs:
       - name: Prisma generate
         run: pnpm --filter apartment-ultra-api exec prisma generate
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/apartment_ultra
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
 
       - name: Run ESLint
         run: pnpm --filter apartment-ultra-api run lint
@@ -56,6 +70,8 @@ jobs:
 
       - name: Test
         run: pnpm --filter apartment-ultra-api run test
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
 
   # 前端构建检查
   frontend:
