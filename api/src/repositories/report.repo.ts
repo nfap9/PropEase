@@ -1,4 +1,4 @@
-import type { Prisma } from '../generated/client/index.js';
+import type { Prisma } from '@prisma/client';
 
 // 使用 Prisma.Decimal 类型
 type Decimal = Prisma.Decimal;

@@ -36,5 +36,14 @@ WORKDIR /app/api
 # 重新生成 Prisma 客户端（确保在运行时可用，生成到 node_modules/.prisma/client）
 RUN npx prisma generate
 
+# 创建启动脚本
+RUN echo '#!/bin/sh' > /app/api/docker-entrypoint.sh && \
+    echo 'set -e' >> /app/api/docker-entrypoint.sh && \
+    echo 'echo "[启动] 运行数据库迁移..."' >> /app/api/docker-entrypoint.sh && \
+    echo 'npx prisma db push --skip-generate 2>/dev/null || echo "[警告] 数据库迁移失败，继续启动..."' >> /app/api/docker-entrypoint.sh && \
+    echo 'echo "[启动] 启动应用..."' >> /app/api/docker-entrypoint.sh && \
+    echo 'exec node dist/index.js' >> /app/api/docker-entrypoint.sh && \
+    chmod +x /app/api/docker-entrypoint.sh
+
 EXPOSE 8000
-CMD ["node", "dist/index.js"]
+CMD ["/app/api/docker-entrypoint.sh"]

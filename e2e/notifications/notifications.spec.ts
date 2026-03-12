@@ -63,7 +63,9 @@ test.describe('通知操作', () => {
         }
       }
     } else {
-      test.skip();
+      // 列表不可见时，断言空状态可见
+      const emptyState = page.locator(`[data-testid="${NOTIFICATIONS.EMPTY_STATE}"]`);
+      await expect(emptyState).toBeVisible();
     }
   });
 
@@ -97,7 +99,9 @@ test.describe('通知操作', () => {
         }
       }
     } else {
-      test.skip();
+      // 列表不可见时，断言空状态可见
+      const emptyState = page.locator(`[data-testid="${NOTIFICATIONS.EMPTY_STATE}"]`);
+      await expect(emptyState).toBeVisible();
     }
   });
 });

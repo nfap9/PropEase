@@ -24,6 +24,30 @@ const LeaseCreateSchema = z.object({
 });
 const LeaseUpdateSchema = LeaseCreateSchema.partial();
 
+/**
+ * @openapi
+ * /leases:
+ *   get:
+ *     summary: 获取租约列表
+ *     tags: [租约管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: is_active
+ *         schema:
+ *           type: boolean
+ *         description: 是否仅显示活跃租约
+ *     responses:
+ *       200:
+ *         description: 租约列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Lease'
+ */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -36,6 +60,54 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /leases:
+ *   post:
+ *     summary: 创建租约
+ *     tags: [租约管理]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [room_id, tenant_id, start_date, monthly_rent]
+ *             properties:
+ *               room_id:
+ *                 type: string
+ *               tenant_id:
+ *                 type: string
+ *               start_date:
+ *                 type: string
+ *                 format: date
+ *               end_date:
+ *                 type: string
+ *                 format: date
+ *               billing_day:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 28
+ *               monthly_rent:
+ *                 type: number
+ *               deposit:
+ *                 type: number
+ *               water_rate:
+ *                 type: number
+ *               electricity_rate:
+ *                 type: number
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: 创建成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Lease'
+ */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -48,6 +120,30 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /leases/{id}:
+ *   get:
+ *     summary: 获取单个租约
+ *     tags: [租约管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 租约信息
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Lease'
+ *       404:
+ *         description: 租约不存在
+ */
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -58,6 +154,61 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /leases/{id}:
+ *   put:
+ *     summary: 更新租约
+ *     tags: [租约管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               room_id:
+ *                 type: string
+ *               tenant_id:
+ *                 type: string
+ *               start_date:
+ *                 type: string
+ *                 format: date
+ *               end_date:
+ *                 type: string
+ *                 format: date
+ *               billing_day:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 28
+ *               monthly_rent:
+ *                 type: number
+ *               deposit:
+ *                 type: number
+ *               water_rate:
+ *                 type: number
+ *               electricity_rate:
+ *                 type: number
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 更新成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Lease'
+ *       404:
+ *         description: 租约不存在
+ */
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -70,6 +221,26 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /leases/{id}/terminate:
+ *   post:
+ *     summary: 终止租约
+ *     tags: [租约管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 终止成功
+ *       404:
+ *         description: 租约不存在
+ */
 router.post('/:id/terminate', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -81,6 +252,26 @@ router.post('/:id/terminate', async (req: Request, res: Response, next: NextFunc
   }
 });
 
+/**
+ * @openapi
+ * /leases/{id}:
+ *   delete:
+ *     summary: 删除租约
+ *     tags: [租约管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: 删除成功
+ *       404:
+ *         description: 租约不存在
+ */
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);

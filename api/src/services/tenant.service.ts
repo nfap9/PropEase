@@ -1,4 +1,4 @@
-import type { Tenant, Prisma } from '../generated/client/index.js';
+import type { Tenant, Prisma } from '@prisma/client';
 import { ulid } from 'ulid';
 import { createTenantRepository, type TenantRepository } from '../repositories/tenant.repo.js';
 import { createAppError } from '../utils/appError.js';

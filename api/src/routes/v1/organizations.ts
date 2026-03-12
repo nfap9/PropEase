@@ -43,6 +43,24 @@ function toOrgResponse(o: {
   };
 }
 
+/**
+ * @openapi
+ * /organizations:
+ *   get:
+ *     summary: 获取用户的组织列表
+ *     tags: [组织管理]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 组织列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Organization'
+ */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
@@ -55,6 +73,37 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 const CreateOrgSchema = z.object({ name: z.string().min(1), slug: z.string().optional() });
+
+/**
+ * @openapi
+ * /organizations:
+ *   post:
+ *     summary: 创建组织
+ *     tags: [组织管理]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name]
+ *             properties:
+ *               name:
+ *                 type: string
+ *               slug:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: 创建成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Organization'
+ *       403:
+ *         description: 已达到组织数量上限
+ */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
@@ -80,6 +129,22 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /organizations/personal:
+ *   get:
+ *     summary: 获取用户的个人组织
+ *     tags: [组织管理]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 个人组织信息
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Organization'
+ */
 router.get('/personal', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
@@ -92,6 +157,46 @@ router.get('/personal', async (req: Request, res: Response, next: NextFunction) 
 });
 
 const MigrateSchema = z.object({ target_org_id: z.string().min(1) });
+
+/**
+ * @openapi
+ * /organizations/personal/migrate:
+ *   post:
+ *     summary: 迁移个人组织数据到目标组织
+ *     tags: [组织管理]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [target_org_id]
+ *             properties:
+ *               target_org_id:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 迁移成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 apartments:
+ *                   type: integer
+ *                 rooms:
+ *                   type: integer
+ *                 tenants:
+ *                   type: integer
+ *                 leases:
+ *                   type: integer
+ *                 bills:
+ *                   type: integer
+ *                 utility_readings:
+ *                   type: integer
+ */
 router.post('/personal/migrate', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
@@ -140,6 +245,30 @@ router.post('/personal/migrate', async (req: Request, res: Response, next: NextF
   }
 });
 
+/**
+ * @openapi
+ * /organizations/{orgId}:
+ *   get:
+ *     summary: 获取单个组织
+ *     tags: [组织管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orgId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 组织信息
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Organization'
+ *       404:
+ *         description: 组织不存在
+ */
 router.get('/:orgId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
@@ -154,6 +283,42 @@ const UpdateOrgSchema = z.object({
   name: z.string().min(1).optional(),
   settings: z.record(z.unknown()).optional(),
 });
+
+/**
+ * @openapi
+ * /organizations/{orgId}:
+ *   put:
+ *     summary: 更新组织
+ *     tags: [组织管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orgId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               settings:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: 更新成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Organization'
+ *       404:
+ *         description: 组织不存在
+ */
 router.put('/:orgId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await requireOrgMembership(req, 'orgId');
@@ -171,6 +336,52 @@ router.put('/:orgId', async (req: Request, res: Response, next: NextFunction) =>
   }
 });
 
+/**
+ * @openapi
+ * /organizations/{orgId}/deletion-preview:
+ *   get:
+ *     summary: 预览组织删除信息
+ *     tags: [组织管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orgId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 删除预览信息
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 can_delete:
+ *                   type: boolean
+ *                 blockers:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     apartments:
+ *                       type: integer
+ *                     rooms:
+ *                       type: integer
+ *                     tenants:
+ *                       type: integer
+ *                     leases:
+ *                       type: integer
+ *                     bills:
+ *                       type: integer
+ *                 org_name:
+ *                   type: string
+ *                 is_personal:
+ *                   type: boolean
+ */
 router.get('/:orgId/deletion-preview', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await requireOrgMembership(req, 'orgId');
@@ -200,6 +411,40 @@ router.get('/:orgId/deletion-preview', async (req: Request, res: Response, next:
 });
 
 const ConfirmDeleteSchema = z.object({ confirmed_name: z.string().min(1) });
+
+/**
+ * @openapi
+ * /organizations/{orgId}:
+ *   delete:
+ *     summary: 删除组织
+ *     tags: [组织管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orgId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [confirmed_name]
+ *             properties:
+ *               confirmed_name:
+ *                 type: string
+ *                 description: 确认删除的组织名称
+ *     responses:
+ *       200:
+ *         description: 删除成功
+ *       403:
+ *         description: 有有效订阅，需先取消
+ *       404:
+ *         description: 组织不存在
+ */
 router.delete('/:orgId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
@@ -217,6 +462,30 @@ router.delete('/:orgId', async (req: Request, res: Response, next: NextFunction)
   }
 });
 
+/**
+ * @openapi
+ * /organizations/{orgId}/members:
+ *   get:
+ *     summary: 获取组织成员列表
+ *     tags: [组织管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orgId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 成员列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/OrganizationMember'
+ */
 router.get('/:orgId/members', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await requireOrgMembership(req, 'orgId');
@@ -237,6 +506,43 @@ router.get('/:orgId/members', async (req: Request, res: Response, next: NextFunc
   }
 });
 
+/**
+ * @openapi
+ * /organizations/{orgId}/members:
+ *   post:
+ *     summary: 添加组织成员
+ *     tags: [组织管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orgId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [phone]
+ *             properties:
+ *               phone:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [owner, admin, member]
+ *     responses:
+ *       201:
+ *         description: 添加成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrganizationMember'
+ *       403:
+ *         description: 已达到成员数量上限
+ */
 router.post('/:orgId/members', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await requireOrgMembership(req, 'orgId');
@@ -265,6 +571,44 @@ router.post('/:orgId/members', async (req: Request, res: Response, next: NextFun
   }
 });
 
+/**
+ * @openapi
+ * /organizations/{orgId}/members/{userId}:
+ *   put:
+ *     summary: 更新成员角色
+ *     tags: [组织管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orgId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [role]
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: [owner, admin, member]
+ *     responses:
+ *       200:
+ *         description: 更新成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrganizationMember'
+ */
 router.put('/:orgId/members/:userId', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = req.params.orgId;
@@ -289,6 +633,31 @@ router.put('/:orgId/members/:userId', async (req: Request, res: Response, next: 
   }
 });
 
+/**
+ * @openapi
+ * /organizations/{orgId}/members/{userId}:
+ *   delete:
+ *     summary: 移除组织成员
+ *     tags: [组织管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orgId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 移除成功
+ *       404:
+ *         description: 成员不存在
+ */
 router.delete(
   '/:orgId/members/:userId',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -305,6 +674,59 @@ router.delete(
   }
 );
 
+/**
+ * @openapi
+ * /organizations/{orgId}/usage:
+ *   get:
+ *     summary: 获取组织用量统计
+ *     tags: [组织管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: orgId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 用量统计信息
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 plan:
+ *                   type: string
+ *                 apartments_used:
+ *                   type: integer
+ *                 rooms_used:
+ *                   type: integer
+ *                 members_used:
+ *                   type: integer
+ *                 max_organizations:
+ *                   type: integer
+ *                 max_apartments:
+ *                   type: integer
+ *                 max_rooms:
+ *                   type: integer
+ *                 max_members:
+ *                   type: integer
+ *                 apartments_remaining:
+ *                   type: integer
+ *                 rooms_remaining:
+ *                   type: integer
+ *                 members_remaining:
+ *                   type: integer
+ *                 organizations_used:
+ *                   type: integer
+ *                 organizations_remaining:
+ *                   type: integer
+ *                 can_invite_members:
+ *                   type: boolean
+ *                 can_create_team:
+ *                   type: boolean
+ */
 router.get('/:orgId/usage', async (req: Request, res: Response, next: NextFunction) => {
   try {
     await requireOrgMembership(req, 'orgId');

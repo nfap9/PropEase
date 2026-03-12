@@ -32,6 +32,7 @@ export const NotFoundMessages = {
   PLAN: '套餐不存在',
   ROLE: '角色不存在',
   UTILITY_CONFIG: '水电配置不存在',
+  PROMOTION: '优惠活动不存在',
   /** 难以归类的 fallback */
   DEFAULT: '资源不存在',
 } as const;

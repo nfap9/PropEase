@@ -1,3 +1,5 @@
+import type { PlanPricing } from './promotion.js';
+
 /**
  * 运营后台 API 契约类型
  * 与业务端类型分离，独立维护
@@ -111,6 +113,14 @@ export interface AdminRegisteredUserSetActive {
   is_active: boolean;
 }
 
+/** 周期定价 */
+export interface AdminPlanPricingCreate {
+  months: number;
+  price: number;
+  is_active?: boolean;
+  sort_order?: number;
+}
+
 /** 套餐（运营侧） */
 export interface AdminPlan {
   id: string;
@@ -127,9 +137,12 @@ export interface AdminPlan {
   features: Record<string, unknown> | null;
   is_active: boolean;
   sort_order: number;
+  /** 已废弃，保留向后兼容 */
   free_validity_days: number | null;
   created_at: string;
   updated_at: string;
+  /** 周期定价列表 */
+  pricing?: PlanPricing[];
 }
 
 export interface AdminPlanCreate {
@@ -144,7 +157,10 @@ export interface AdminPlanCreate {
   max_members: number;
   features?: Record<string, unknown> | null;
   sort_order?: number;
+  /** 已废弃 */
   free_validity_days?: number | null;
+  /** 周期定价列表 */
+  pricing?: AdminPlanPricingCreate[];
 }
 
 export interface AdminPlanUpdate {
@@ -159,7 +175,13 @@ export interface AdminPlanUpdate {
   features?: Record<string, unknown> | null;
   is_active?: boolean | null;
   sort_order?: number | null;
+  /** 已废弃 */
   free_validity_days?: number | null;
+}
+
+/** 批量更新套餐定价 */
+export interface AdminPlanPricingUpdate {
+  pricing: AdminPlanPricingCreate[];
 }
 
 /** 订阅（运营侧） */
@@ -169,6 +191,8 @@ export interface AdminSubscription {
   plan_id: string;
   status: string;
   billing_cycle: string;
+  /** 订阅月数 */
+  billing_months: number;
   start_date: string;
   end_date: string | null;
   auto_renew: boolean;

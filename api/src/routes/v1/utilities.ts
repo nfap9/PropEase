@@ -36,6 +36,41 @@ const BatchReadingSchema = z.object({
   ),
 });
 
+/**
+ * @openapi
+ * /utilities:
+ *   get:
+ *     summary: 获取水电读数列表
+ *     tags: [水电管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: room_id
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: apartment_id
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: period_year
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: period_month
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: 水电读数列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/UtilityReading'
+ */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -52,6 +87,31 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /utilities/rooms-missing-initial:
+ *   get:
+ *     summary: 获取缺少初始读数的房间
+ *     tags: [水电管理]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 缺少初始读数的房间列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   room_id:
+ *                     type: string
+ *                   room_number:
+ *                     type: string
+ *                   apartment_name:
+ *                     type: string
+ */
 router.get('/rooms-missing-initial', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -62,6 +122,38 @@ router.get('/rooms-missing-initial', async (req: Request, res: Response, next: N
   }
 });
 
+/**
+ * @openapi
+ * /utilities/export:
+ *   get:
+ *     summary: 获取水电导出列表
+ *     tags: [水电管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period_year
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: period_month
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: days_range
+ *         schema:
+ *           type: integer
+ *         description: 最近N天内未录入读数的筛选
+ *     responses:
+ *       200:
+ *         description: 导出数据列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ */
 router.get('/export', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -81,6 +173,49 @@ router.get('/export', async (req: Request, res: Response, next: NextFunction) =>
   }
 });
 
+/**
+ * @openapi
+ * /utilities:
+ *   post:
+ *     summary: 创建水电读数
+ *     tags: [水电管理]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [room_id, period_year, period_month, reading_date]
+ *             properties:
+ *               room_id:
+ *                 type: string
+ *               period_year:
+ *                 type: integer
+ *               period_month:
+ *                 type: integer
+ *               reading_date:
+ *                 type: string
+ *                 format: date
+ *               water_reading:
+ *                 type: number
+ *               electricity_reading:
+ *                 type: number
+ *               water_previous:
+ *                 type: number
+ *               electricity_previous:
+ *                 type: number
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: 创建成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UtilityReading'
+ */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -93,6 +228,53 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /utilities/batch:
+ *   post:
+ *     summary: 批量创建水电读数
+ *     tags: [水电管理]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [period_year, period_month, reading_date, readings]
+ *             properties:
+ *               period_year:
+ *                 type: integer
+ *               period_month:
+ *                 type: integer
+ *               reading_date:
+ *                 type: string
+ *                 format: date
+ *               readings:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required: [room_id]
+ *                   properties:
+ *                     room_id:
+ *                       type: string
+ *                     water_reading:
+ *                       type: number
+ *                     electricity_reading:
+ *                       type: number
+ *                     notes:
+ *                       type: string
+ *     responses:
+ *       201:
+ *         description: 创建成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/UtilityReading'
+ */
 router.post('/batch', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -105,6 +287,30 @@ router.post('/batch', async (req: Request, res: Response, next: NextFunction) =>
   }
 });
 
+/**
+ * @openapi
+ * /utilities/{id}:
+ *   get:
+ *     summary: 获取单个水电读数
+ *     tags: [水电管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 水电读数信息
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UtilityReading'
+ *       404:
+ *         description: 读数不存在
+ */
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -115,6 +321,56 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /utilities/{id}:
+ *   put:
+ *     summary: 更新水电读数
+ *     tags: [水电管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               room_id:
+ *                 type: string
+ *               period_year:
+ *                 type: integer
+ *               period_month:
+ *                 type: integer
+ *               reading_date:
+ *                 type: string
+ *                 format: date
+ *               water_reading:
+ *                 type: number
+ *               electricity_reading:
+ *                 type: number
+ *               water_previous:
+ *                 type: number
+ *               electricity_previous:
+ *                 type: number
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 更新成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UtilityReading'
+ *       404:
+ *         description: 读数不存在
+ */
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -127,6 +383,26 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /utilities/{id}:
+ *   delete:
+ *     summary: 删除水电读数
+ *     tags: [水电管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: 删除成功
+ *       404:
+ *         description: 读数不存在
+ */
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);

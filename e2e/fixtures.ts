@@ -24,6 +24,10 @@ export interface TestFixtures {
    * 认证状态
    */
   authState: AuthState;
+  /**
+   * 当前组织 ID（在登录后自动设置）
+   */
+  orgId: string | undefined;
 }
 
 /**
@@ -90,6 +94,20 @@ export const test = base.extend<TestFixtures>({
       refreshToken: refreshToken || '',
       organizationId: organizationId || undefined,
     });
+  },
+
+  // 组织 ID fixture - 在登录后自动获取当前组织 ID
+  orgId: async ({ page }, use) => {
+    // 执行登录（如果还没有登录）
+    await login(page);
+
+    // 获取当前组织 ID
+    const organizationId = await page.evaluate(
+      (key) => localStorage.getItem(key),
+      AUTH_STORAGE_KEYS.CURRENT_ORG_ID
+    );
+
+    await use(organizationId || undefined);
   },
 });
 

@@ -1,4 +1,5 @@
-import type { Room, Prisma } from '../generated/client/index.js';
+import type { Room } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { ulid } from 'ulid';
 import {
   createRoomRepository,
@@ -8,6 +9,19 @@ import {
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
+
+/** 设施项 */
+interface FacilityItem {
+  code: string;
+  quantity: number;
+}
+
+/** 房间设施配置 */
+interface RoomFacilities {
+  version: 1;
+  furniture: FacilityItem[];
+  appliances: FacilityItem[];
+}
 
 /**
  * 创建房间输入
@@ -20,6 +34,7 @@ export interface CreateRoomInput {
   area?: number;
   notes?: string;
   status?: 'available' | 'occupied' | 'maintenance';
+  facilities?: RoomFacilities;
 }
 
 /**
@@ -43,6 +58,7 @@ export interface UpdateRoomInput {
   monthly_rent?: number;
   area?: number;
   notes?: string;
+  facilities?: RoomFacilities | null;
 }
 
 /**
@@ -71,6 +87,7 @@ function buildCreateData(apartmentId: string, data: CreateRoomInput): Prisma.Roo
     area: data.area,
     notes: data.notes,
     status: data.status ?? 'available',
+    facilities: data.facilities ? (data.facilities as unknown as Prisma.InputJsonValue) : undefined,
   };
 }
 
@@ -78,7 +95,7 @@ function buildCreateData(apartmentId: string, data: CreateRoomInput): Prisma.Roo
  * 构建房间更新数据
  */
 function buildUpdateData(existing: Room, data: UpdateRoomInput): Prisma.RoomUpdateInput {
-  return {
+  const result: Prisma.RoomUpdateInput = {
     room_number: data.room_number ?? existing.room_number,
     layout: data.layout ?? existing.layout,
     status: data.status ?? existing.status,
@@ -91,6 +108,16 @@ function buildUpdateData(existing: Room, data: UpdateRoomInput): Prisma.RoomUpda
           : undefined,
     notes: data.notes ?? existing.notes,
   };
+
+  if (data.facilities !== undefined) {
+    if (data.facilities === null) {
+      result.facilities = Prisma.JsonNull;
+    } else {
+      result.facilities = data.facilities as unknown as Prisma.InputJsonValue;
+    }
+  }
+
+  return result;
 }
 
 /**

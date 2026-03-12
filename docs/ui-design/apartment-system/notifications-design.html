@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通知消息 - 公寓管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #F8FAFC; min-height: 100vh; padding: 24px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .page-title h1 { font-size: 28px; font-weight: 700; color: #1E293B; margin-bottom: 8px; }
+        .page-title p { font-size: 14px; color: #64748B; }
+        .btn { padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; }
+        .btn-primary { background: #2563EB; color: white; }
+        .filter-tabs { display: flex; gap: 8px; margin-bottom: 20px; background: white; padding: 8px; border-radius: 12px; }
+        .tab { padding: 10px 20px; border: none; background: transparent; border-radius: 8px; font-size: 14px; color: #64748B; cursor: pointer; }
+        .tab.active { background: #2563EB; color: white; }
+        .notification-list { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .notification-item { display: flex; gap: 16px; padding: 20px; border-bottom: 1px solid #F1F5F9; cursor: pointer; transition: background 0.2s; }
+        .notification-item:hover { background: #F8FAFC; }
+        .notification-item:last-child { border-bottom: none; }
+        .notification-item.unread { background: #F0F9FF; }
+        .notification-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .notification-icon.bill { background: #DBEAFE; }
+        .notification-icon.lease { background: #D1FAE5; }
+        .notification-icon.warning { background: #FEF3C7; }
+        .notification-icon.system { background: #F1F5F9; }
+        .notification-content { flex: 1; }
+        .notification-title { font-size: 15px; font-weight: 600; color: #1E293B; margin-bottom: 4px; }
+        .notification-desc { font-size: 14px; color: #64748B; line-height: 1.5; }
+        .notification-time { font-size: 12px; color: #94A3B8; margin-top: 8px; }
+        .notification-tag { display: inline-block; padding: 2px 8px; background: #E2E8F0; border-radius: 4px; font-size: 11px; color: #64748B; margin-left: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <div class="page-title">
+                <h1>通知消息</h1>
+                <p>查看系统通知和提醒</p>
+            </div>
+            <button class="btn btn-primary">全部已读</button>
+        </div>
+        <div class="filter-tabs">
+            <button class="tab active">全部</button>
+            <button class="tab">账单</button>
+            <button class="tab">租约</button>
+            <button class="tab">系统</button>
+        </div>
+        <div class="notification-list">
+            <div class="notification-item unread">
+                <div class="notification-icon bill">💰</div>
+                <div class="notification-content">
+                    <div class="notification-title">账单待支付提醒 <span class="notification-tag">账单</span></div>
+                    <div class="notification-desc">租客李华的房间（星光花园B座205室）2026年3月房租 ¥3,200 已逾期3天，请及时催缴。</div>
+                    <div class="notification-time">2026-03-10 10:30</div>
+                </div>
+            </div>
+            <div class="notification-item unread">
+                <div class="notification-icon lease">📋</div>
+                <div class="notification-content">
+                    <div class="notification-title">租约即将到期 <span class="notification-tag">租约</span></div>
+                    <div class="notification-desc">租客张明的房间（阳光公寓A栋101室）租约将于30天后到期，请及时处理续租事宜。</div>
+                    <div class="notification-time">2026-03-10 09:00</div>
+                </div>
+            </div>
+            <div class="notification-item">
+                <div class="notification-icon system">✅</div>
+                <div class="notification-content">
+                    <div class="notification-title">支付成功 <span class="notification-tag">系统</span></div>
+                    <div class="notification-desc">租客王芳已成功支付2026年3月房租 ¥2,800，账单已结清。</div>
+                    <div class="notification-time">2026-03-09 15:20</div>
+                </div>
+            </div>
+            <div class="notification-item">
+                <div class="notification-icon warning">⚠️</div>
+                <div class="notification-content">
+                    <div class="notification-title">房间报修提醒 <span class="notification-tag">租约</span></div>
+                    <div class="notification-desc">租客赵强报修，青年公寓D栋108室卫生间水龙头损坏，请及时安排维修。</div>
+                    <div class="notification-time">2026-03-08 14:10</div>
+                </div>
+            </div>
+            <div class="notification-item">
+                <div class="notification-icon system">📝</div>
+                <div class="notification-content">
+                    <div class="notification-title">新租客登记 <span class="notification-tag">系统</span></div>
+                    <div class="notification-desc">新租客"钱静"已完成实名认证，可创建新的租赁合同。</div>
+                    <div class="notification-time">2026-03-07 11:30</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

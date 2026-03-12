@@ -105,26 +105,28 @@ export const ROOMS = {
   SEARCH_INPUT: 'rooms-search-input',
   /** 房间列表 */
   LIST: 'rooms-list',
-  /** 新增房间按钮 */
-  NEW_BUTTON: 'rooms-new-btn',
-  /** 批量添加按钮 */
-  BATCH_BUTTON: 'rooms-batch-btn',
-  /** 新增房间弹窗 */
-  CREATE_DIALOG: 'rooms-create-dialog',
-  /** 房间号输入框 */
-  NUMBER_INPUT: 'rooms-number-input',
-  /** 月租输入框 */
-  MONTHLY_RENT_INPUT: 'rooms-monthly-rent-input',
+  /** 筛选开关按钮 */
+  FILTER_TOGGLE: 'rooms-filter-toggle',
   /** 公寓筛选 */
   APARTMENT_FILTER: 'rooms-apartment-filter',
   /** 状态筛选 */
   STATUS_FILTER: 'rooms-status-filter',
-  /** 批量添加弹窗 */
-  BATCH_DIALOG: 'rooms-batch-dialog',
-  /** 编辑房间弹窗 */
-  EDIT_DIALOG: 'rooms-edit-dialog',
-  /** 删除确认弹窗 */
-  DELETE_DIALOG: 'rooms-delete-dialog',
+  /** 户型筛选 */
+  LAYOUT_FILTER: 'rooms-layout-filter',
+  /** 最低月租输入框 */
+  RENT_MIN_INPUT: 'rooms-rent-min-input',
+  /** 最高月租输入框 */
+  RENT_MAX_INPUT: 'rooms-rent-max-input',
+  /** 最小面积输入框 */
+  AREA_MIN_INPUT: 'rooms-area-min-input',
+  /** 最大面积输入框 */
+  AREA_MAX_INPUT: 'rooms-area-max-input',
+  /** 清除筛选按钮 */
+  CLEAR_FILTERS_BTN: 'rooms-clear-filters-btn',
+  /** 退租确认弹窗 */
+  TERMINATE_DIALOG: 'rooms-terminate-dialog',
+  /** 确认退租按钮 */
+  CONFIRM_TERMINATE_BTN: 'rooms-confirm-terminate-btn',
 } as const;
 
 // ==================== 租客管理 ====================
@@ -147,6 +149,26 @@ export const TENANTS = {
   PHONE_INPUT: 'tenants-phone-input',
   /** 身份证号输入框 */
   ID_CARD_INPUT: 'tenants-id-card-input',
+  /** 紧急联系人输入框 */
+  EMERGENCY_CONTACT_INPUT: 'tenants-emergency-contact-input',
+  /** 紧急联系电话输入框 */
+  EMERGENCY_PHONE_INPUT: 'tenants-emergency-phone-input',
+  /** 备注输入框 */
+  NOTES_INPUT: 'tenants-notes-input',
+  /** 取消按钮 */
+  CANCEL_BUTTON: 'tenants-cancel-btn',
+  /** 确认按钮 */
+  CONFIRM_BUTTON: 'tenants-confirm-btn',
+  /** 编辑租客弹窗 */
+  EDIT_DIALOG: 'tenants-edit-dialog',
+  /** 删除确认弹窗 */
+  DELETE_DIALOG: 'tenants-delete-dialog',
+  /** 确认删除按钮 */
+  CONFIRM_DELETE_BTN: 'tenants-confirm-delete-btn',
+  /** 编辑按钮 */
+  EDIT_BUTTON: 'tenants-edit-btn',
+  /** 删除按钮 */
+  DELETE_BUTTON: 'tenants-delete-btn',
 } as const;
 
 // ==================== 租约管理 ====================
@@ -179,10 +201,24 @@ export const LEASES = {
   DEPOSIT_INPUT: 'leases-deposit-input',
   /** 确认签约按钮 */
   CONFIRM_BUTTON: 'leases-confirm-btn',
+  /** 编辑租约弹窗 */
+  EDIT_DIALOG: 'leases-edit-dialog',
+  /** 结束日期选择器 */
+  END_DATE_INPUT: 'leases-end-date-input',
+  /** 备注输入框 */
+  NOTES_INPUT: 'leases-notes-input',
+  /** 取消按钮 */
+  CANCEL_BUTTON: 'leases-cancel-btn',
   /** 终止按钮 */
   TERMINATE_BUTTON: 'leases-terminate-btn',
   /** 终止确认弹窗 */
   TERMINATE_DIALOG: 'leases-terminate-dialog',
+  /** 确认终止按钮 */
+  CONFIRM_TERMINATE_BTN: 'leases-confirm-terminate-btn',
+  /** 删除确认弹窗 */
+  DELETE_DIALOG: 'leases-delete-dialog',
+  /** 确认删除按钮 */
+  CONFIRM_DELETE_BTN: 'leases-confirm-delete-btn',
 } as const;
 
 // ==================== 水电录入 ====================
@@ -193,24 +229,18 @@ export const UTILITIES = {
   HEADING: 'utilities-heading',
   /** 录入读数按钮 */
   ENTRY_BUTTON: 'utilities-entry-btn',
-  /** 批量导入按钮 */
-  BATCH_BUTTON: 'utilities-batch-btn',
+  /** 导出模板按钮 */
+  EXPORT_TEMPLATE_BUTTON: 'utilities-export-template-button',
+  /** 导入按钮 */
+  IMPORT_BUTTON: 'utilities-import-button',
+  /** 总览卡片 */
+  OVERVIEW_CARD: 'utilities-overview-card',
+  /** 待录入租约卡片 */
+  MISSING_LEASES_CARD: 'utilities-missing-leases-card',
+  /** 缺少初始读数卡片 */
+  MISSING_INITIAL_CARD: 'utilities-missing-initial-card',
   /** 水电记录列表 */
   LIST: 'utilities-list',
-  /** 待录入提醒列表 */
-  PENDING_LIST: 'utilities-pending-list',
-  /** 录入读数弹窗 */
-  ENTRY_DIALOG: 'utilities-entry-dialog',
-  /** 公寓选择器 */
-  APARTMENT_SELECT: 'utilities-apartment-select',
-  /** 房间选择器 */
-  ROOM_SELECT: 'utilities-room-select',
-  /** 水表读数输入框 */
-  WATER_READING_INPUT: 'utilities-water-reading-input',
-  /** 电表读数输入框 */
-  ELECTRICITY_READING_INPUT: 'utilities-electricity-reading-input',
-  /** 保存按钮 */
-  SAVE_BUTTON: 'utilities-save-btn',
 } as const;
 
 // ==================== 账单管理 ====================
@@ -219,28 +249,40 @@ export const UTILITIES = {
 export const BILLS = {
   /** 页面标题 */
   HEADING: 'bills-heading',
-  /** 账单列表 */
-  LIST: 'bills-list',
+  /** 生成账单按钮 */
+  GENERATE_BUTTON: 'bills-generate-btn',
   /** 状态筛选 */
   STATUS_FILTER: 'bills-status-filter',
   /** 月份筛选 */
   MONTH_FILTER: 'bills-month-filter',
   /** 租客筛选 */
   TENANT_FILTER: 'bills-tenant-filter',
-  /** 登记付款按钮 */
-  PAY_BUTTON: 'bills-pay-btn',
-  /** 导出 PDF 按钮 */
-  EXPORT_PDF_BUTTON: 'bills-export-pdf-btn',
-  /** 导出 Excel 按钮 */
-  EXPORT_EXCEL_BUTTON: 'bills-export-excel-btn',
-  /** 登记付款弹窗 */
-  PAY_DIALOG: 'bills-pay-dialog',
+  /** 导出按钮 */
+  EXPORT_BUTTON: 'bills-export-btn',
+  /** 账单详情弹窗 */
+  DETAIL_DIALOG: 'bills-detail-dialog',
+  /** 付款弹窗 */
+  PAYMENT_DIALOG: 'bills-payment-dialog',
+  /** 生成账单弹窗 */
+  GENERATE_DIALOG: 'bills-generate-dialog',
+  /** 年份输入框 */
+  YEAR_INPUT: 'bills-year-input',
+  /** 月份输入框 */
+  MONTH_INPUT: 'bills-month-input',
   /** 付款金额输入框 */
   AMOUNT_INPUT: 'bills-amount-input',
+  /** 付款日期输入框 */
+  PAYMENT_DATE_INPUT: 'bills-payment-date-input',
   /** 付款方式选择器 */
   PAYMENT_METHOD_SELECT: 'bills-payment-method-select',
-  /** 确认按钮 */
-  CONFIRM_BUTTON: 'bills-confirm-btn',
+  /** 确认付款按钮 */
+  CONFIRM_PAYMENT_BUTTON: 'bills-confirm-payment-btn',
+  /** 取消按钮 */
+  CANCEL_BUTTON: 'bills-cancel-btn',
+  /** 账单列表 */
+  LIST: 'bills-list',
+  /** 登记付款按钮 */
+  PAY_BUTTON: 'bills-pay-btn',
 } as const;
 
 // ==================== 经营分析 ====================
@@ -249,12 +291,18 @@ export const BILLS = {
 export const REPORTS = {
   /** 页面标题 */
   HEADING: 'reports-heading',
+  /** 年份选择器 */
+  YEAR_SELECT: 'reports-year-select',
   /** 总览 Tab */
   OVERVIEW_TAB: 'reports-overview-tab',
   /** 收入分析 Tab */
   INCOME_TAB: 'reports-income-tab',
   /** 入住率 Tab */
   OCCUPANCY_TAB: 'reports-occupancy-tab',
+  /** 收入图表 */
+  INCOME_CHART: 'reports-income-chart',
+  /** 入住率图表 */
+  OCCUPANCY_CHART: 'reports-occupancy-chart',
   /** 导出报表按钮 */
   EXPORT_BUTTON: 'reports-export-btn',
 } as const;
@@ -267,10 +315,76 @@ export const SETTINGS = {
   HEADING: 'settings-heading',
   /** 团队设置链接 */
   TEAM: 'settings-team-link',
+  /** 团队设置卡片 */
+  TEAM_CARD: 'settings-team-card',
+  /** 组织管理卡片 */
+  ORG_CARD: 'settings-org-card',
+  /** 组织管理链接 */
+  ORG_LINK: 'settings-org-link',
   /** 订阅管理链接 */
   SUBSCRIPTION: 'settings-subscription-link',
+  /** 订阅管理卡片 */
+  SUBSCRIPTION_CARD: 'settings-subscription-card',
   /** 权限管理链接 */
   PERMISSIONS: 'settings-permissions-link',
+  /** 权限管理卡片 */
+  PERMISSIONS_CARD: 'settings-permissions-card',
+  /** 费用类型链接 */
+  FEE_TYPES: 'settings-fee-types-link',
+} as const;
+
+/** 费用类型管理页面 */
+export const FEE_TYPES = {
+  /** 页面标题 */
+  HEADING: 'fee-types-heading',
+  /** 新增费用类型按钮 */
+  NEW_BUTTON: 'fee-types-new-btn',
+  /** 费用类型列表 */
+  LIST: 'fee-types-list',
+  /** 新增费用类型弹窗 */
+  CREATE_DIALOG: 'fee-types-create-dialog',
+  /** 编辑费用类型弹窗 */
+  EDIT_DIALOG: 'fee-types-edit-dialog',
+  /** 删除确认弹窗 */
+  DELETE_DIALOG: 'fee-types-delete-dialog',
+  /** 费用名称输入框 */
+  NAME_INPUT: 'fee-types-name-input',
+  /** 费用编码输入框 */
+  CODE_INPUT: 'fee-types-code-input',
+  /** 费用分类选择器 */
+  CATEGORY_SELECT: 'fee-types-category-select',
+  /** 描述输入框 */
+  DESCRIPTION_INPUT: 'fee-types-description-input',
+  /** 确认按钮 */
+  CONFIRM_BUTTON: 'fee-types-confirm-btn',
+  /** 取消按钮 */
+  CANCEL_BUTTON: 'fee-types-cancel-btn',
+  /** 编辑按钮 */
+  EDIT_BUTTON: 'fee-types-edit-btn',
+  /** 删除按钮 */
+  DELETE_BUTTON: 'fee-types-delete-btn',
+  /** 规格列表 */
+  SPECIFICATIONS_LIST: 'fee-types-specifications-list',
+} as const;
+
+/** 公寓费用配置 */
+export const APARTMENT_FEE_CONFIG = {
+  /** 费用配置弹窗 */
+  DIALOG: 'apartment-fee-config-dialog',
+  /** 添加费用按钮 */
+  ADD_BUTTON: 'apartment-fee-config-add-btn',
+  /** 费用类型选择器 */
+  FEE_TYPE_SELECT: 'apartment-fee-config-fee-type-select',
+  /** 规格选择器 */
+  SPECIFICATION_SELECT: 'apartment-fee-config-specification-select',
+  /** 确认添加按钮 */
+  CONFIRM_BUTTON: 'apartment-fee-config-confirm-btn',
+  /** 取消按钮 */
+  CANCEL_BUTTON: 'apartment-fee-config-cancel-btn',
+  /** 配置列表 */
+  LIST: 'apartment-fee-config-list',
+  /** 删除按钮 */
+  DELETE_BUTTON: 'apartment-fee-config-delete-btn',
 } as const;
 
 /** 团队设置页面 */
@@ -328,9 +442,9 @@ export const NOTIFICATIONS = {
   /** 通知列表 */
   LIST: 'notifications-list',
   /** 全部标已读按钮 */
-  MARK_ALL_READ_BUTTON: 'notifications-mark-all-read-btn',
+  MARK_ALL_READ_BTN: 'notifications-mark-all-read-btn',
   /** 标为已读按钮 */
-  MARK_READ_BUTTON: 'notifications-mark-read-btn',
+  MARK_READ_BTN: 'notifications-mark-read-btn',
   /** 删除按钮 */
   DELETE_BUTTON: 'notifications-delete-btn',
   /** 空状态 */

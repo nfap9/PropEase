@@ -50,6 +50,42 @@ const PaymentCreateSchema = z.object({
   notes: z.string().optional(),
 });
 
+/**
+ * @openapi
+ * /bills:
+ *   get:
+ *     summary: 获取账单列表
+ *     tags: [账单管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: lease_id
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: year
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: month
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [pending, paid, overdue, cancelled]
+ *     responses:
+ *       200:
+ *         description: 账单列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Bill'
+ */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -66,6 +102,50 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /bills/generate:
+ *   post:
+ *     summary: 批量生成账单
+ *     tags: [账单管理]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [bill_year, bill_month, due_date]
+ *             properties:
+ *               bill_year:
+ *                 type: integer
+ *               bill_month:
+ *                 type: integer
+ *               due_date:
+ *                 type: string
+ *                 format: date
+ *               lease_ids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: 生成结果
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 created:
+ *                   type: integer
+ *                 skipped:
+ *                   type: integer
+ *                 bills:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Bill'
+ */
 router.post('/generate', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -81,6 +161,51 @@ router.post('/generate', async (req: Request, res: Response, next: NextFunction)
   }
 });
 
+/**
+ * @openapi
+ * /bills:
+ *   post:
+ *     summary: 创建账单
+ *     tags: [账单管理]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [lease_id, bill_year, bill_month, due_date, total_amount]
+ *             properties:
+ *               lease_id:
+ *                 type: string
+ *               bill_year:
+ *                 type: integer
+ *               bill_month:
+ *                 type: integer
+ *               due_date:
+ *                 type: string
+ *                 format: date
+ *               rent_amount:
+ *                 type: number
+ *               water_amount:
+ *                 type: number
+ *               electricity_amount:
+ *                 type: number
+ *               other_amount:
+ *                 type: number
+ *               total_amount:
+ *                 type: number
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: 创建成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Bill'
+ */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -93,6 +218,45 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /bills/export/excel:
+ *   get:
+ *     summary: 导出账单Excel
+ *     tags: [账单管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [pending, paid, overdue, cancelled]
+ *       - in: query
+ *         name: year
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: month
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: exportType
+ *         schema:
+ *           type: string
+ *           enum: [unfinished]
+ *         description: 导出类型，unfinished表示导出未完成账单
+ *     responses:
+ *       200:
+ *         description: Excel文件
+ *         content:
+ *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: 没有可导出的账单
+ */
 router.get('/export/excel', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -154,6 +318,32 @@ router.get('/export/excel', async (req: Request, res: Response, next: NextFuncti
   }
 });
 
+/**
+ * @openapi
+ * /bills/{id}/payments:
+ *   get:
+ *     summary: 获取账单的支付记录
+ *     tags: [账单管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 支付记录列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Payment'
+ *       404:
+ *         description: 账单不存在
+ */
 router.get('/:id/payments', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -164,6 +354,72 @@ router.get('/:id/payments', async (req: Request, res: Response, next: NextFuncti
   }
 });
 
+/**
+ * @openapi
+ * /bills/{id}/fee-items:
+ *   get:
+ *     summary: 获取账单费用明细
+ *     tags: [账单管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 费用明细列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/BillFeeItem'
+ *       404:
+ *         description: 账单不存在
+ */
+router.get('/:id/fee-items', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    // 验证账单归属
+    await defaultBillService.validateOwnership(orgId, req.params.id);
+    const feeItems = await prisma.billFeeItem.findMany({
+      where: { bill_id: req.params.id },
+      orderBy: { created_at: 'asc' },
+    });
+    res.json(feeItems);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * @openapi
+ * /bills/{id}/pdf:
+ *   get:
+ *     summary: 导出账单PDF
+ *     tags: [账单管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: PDF文件
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: 账单不存在
+ */
 router.get('/:id/pdf', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -204,6 +460,30 @@ router.get('/:id/pdf', async (req: Request, res: Response, next: NextFunction) =
   }
 });
 
+/**
+ * @openapi
+ * /bills/{id}:
+ *   get:
+ *     summary: 获取单个账单
+ *     tags: [账单管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 账单信息
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Bill'
+ *       404:
+ *         description: 账单不存在
+ */
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -214,6 +494,51 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /bills/{id}:
+ *   put:
+ *     summary: 更新账单
+ *     tags: [账单管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               rent_amount:
+ *                 type: number
+ *               water_amount:
+ *                 type: number
+ *               electricity_amount:
+ *                 type: number
+ *               other_amount:
+ *                 type: number
+ *               total_amount:
+ *                 type: number
+ *               status:
+ *                 type: string
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 更新成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Bill'
+ *       404:
+ *         description: 账单不存在
+ */
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -226,6 +551,26 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * @openapi
+ * /bills/{id}:
+ *   delete:
+ *     summary: 删除账单
+ *     tags: [账单管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: 删除成功
+ *       404:
+ *         description: 账单不存在
+ */
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
@@ -236,6 +581,49 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
   }
 });
 
+/**
+ * @openapi
+ * /bills/{id}/payments:
+ *   post:
+ *     summary: 添加支付记录
+ *     tags: [账单管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [amount, payment_date]
+ *             properties:
+ *               amount:
+ *                 type: number
+ *               payment_date:
+ *                 type: string
+ *                 format: date
+ *               payment_method:
+ *                 type: string
+ *               reference:
+ *                 type: string
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: 添加成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Payment'
+ *       404:
+ *         description: 账单不存在
+ */
 router.post('/:id/payments', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);

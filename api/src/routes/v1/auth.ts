@@ -48,7 +48,32 @@ function zodToFieldErrors(e: z.ZodError): Array<{ field: string; message: string
   }));
 }
 
-// 注册
+/**
+ * @openapi
+ * /auth/register:
+ *   post:
+ *     summary: 用户注册
+ *     tags: [认证]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RegisterData'
+ *     responses:
+ *       201:
+ *         description: 注册成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       422:
+ *         description: 参数校验失败
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = RegisterSchema.safeParse(req.body);
@@ -76,7 +101,28 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
   }
 });
 
-// 登录
+/**
+ * @openapi
+ * /auth/login:
+ *   post:
+ *     summary: 用户登录
+ *     tags: [认证]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginCredentials'
+ *     responses:
+ *       200:
+ *         description: 登录成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TokenResponse'
+ *       401:
+ *         description: 认证失败
+ */
 router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = LoginSchema.safeParse(req.body);
@@ -94,7 +140,30 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
   }
 });
 
-// 刷新令牌
+/**
+ * @openapi
+ * /auth/refresh:
+ *   post:
+ *     summary: 刷新令牌
+ *     tags: [认证]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [refresh_token]
+ *             properties:
+ *               refresh_token:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 刷新成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TokenResponse'
+ */
 router.post('/refresh', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = RefreshSchema.safeParse(req.body);
@@ -113,7 +182,22 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
   }
 });
 
-// 发送短信验证码（开发环境生成随机码并打印到控制台）
+/**
+ * @openapi
+ * /auth/sms/send:
+ *   post:
+ *     summary: 发送短信验证码
+ *     tags: [认证]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SendSmsCodeData'
+ *     responses:
+ *       204:
+ *         description: 发送成功
+ */
 router.post('/sms/send', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = SendSmsCodeSchema.safeParse(req.body);
@@ -145,7 +229,24 @@ router.post('/sms/send', async (req: Request, res: Response, next: NextFunction)
   }
 });
 
-// 当前用户信息
+/**
+ * @openapi
+ * /auth/me:
+ *   get:
+ *     summary: 获取当前用户信息
+ *     tags: [认证]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 用户信息
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: 未认证
+ */
 router.get('/me', requireConsoleAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);

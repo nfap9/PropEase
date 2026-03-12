@@ -36,7 +36,21 @@ export type {
   SubscriptionOrderStatus,
   SubscriptionOrder,
   SubscriptionOrderCreate,
+  UsageQuotaItem,
+  OrganizationUsageStats,
 } from './subscriptions.js';
+
+/** 优惠活动 */
+export type {
+  PromotionType,
+  PlanPricing,
+  PromotionPlan,
+  Promotion,
+  PromotionCreate,
+  PromotionUpdate,
+  PromotionListParams,
+  PromotionCalculation,
+} from './promotion.js';
 
 /** 公寓与房间 */
 export type {
@@ -49,6 +63,9 @@ export type {
   UtilityConfig,
   UtilityConfigCreate,
   UtilityConfigUpdate,
+  FacilityItem,
+  RoomFacilities,
+  FacilityPreset,
 } from './apartments.js';
 
 /** 租客 */
@@ -67,6 +84,21 @@ export type {
   Bill,
   Payment,
 } from './bills.js';
+
+/** 费用类型与配置 */
+export type {
+  FeeCategory,
+  FeeType,
+  FeeSpecification,
+  FeeTypeCreate,
+  FeeTypeUpdate,
+  FeeSpecificationCreate,
+  FeeSpecificationUpdate,
+  ApartmentFeeConfig,
+  ApartmentFeeConfigCreate,
+  ApartmentFeeConfigUpdate,
+  BillFeeItem,
+} from './feeTypes.js';
 
 /** 报表 */
 export type {
@@ -104,9 +136,11 @@ export type {
   AdminRegisteredUser,
   AdminRegisteredUserDetail,
   AdminRegisteredUserSetActive,
+  AdminPlanPricingCreate,
   AdminPlan,
   AdminPlanCreate,
   AdminPlanUpdate,
+  AdminPlanPricingUpdate,
   AdminSubscription,
   AdminSubscriptionRenew,
   AdminPlatformConfig,

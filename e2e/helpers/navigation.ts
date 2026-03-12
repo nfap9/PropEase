@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { NAV, DASHBOARD, APARTMENTS, ROOMS, TENANTS, LEASES, UTILITIES, BILLS, REPORTS, SETTINGS, NOTIFICATIONS } from '../testids';
+import { NAV, DASHBOARD, APARTMENTS, ROOMS, TENANTS, LEASES, UTILITIES, BILLS, REPORTS, SETTINGS, NOTIFICATIONS, FEE_TYPES } from '../testids';
 
 /**
  * 导航路径映射
@@ -53,10 +53,26 @@ export async function goToApartments(page: Page): Promise<void> {
 
 /**
  * 导航到房间管理
+ * @param options.reload - 是否强制刷新页面（绕过 React Query 缓存）
  */
-export async function goToRooms(page: Page): Promise<void> {
+export async function goToRooms(page: Page, options?: { reload?: boolean }): Promise<void> {
   await page.goto('/rooms');
   await page.waitForSelector(`[data-testid="${ROOMS.HEADING}"]`);
+  // 如果需要刷新页面以获取最新数据（绕过 React Query 缓存）
+  if (options?.reload) {
+    await page.reload();
+    await page.waitForSelector(`[data-testid="${ROOMS.HEADING}"]`);
+  }
+}
+
+/**
+ * 在房间列表中搜索房间号（这会触发 API 重新获取数据， 绕过 React Query 缓存）
+ */
+export async function searchRoomInList(page: Page, roomNumber: string): Promise<void> {
+  const searchInput = page.locator(`[data-testid="${ROOMS.SEARCH_INPUT}"]`);
+  await searchInput.fill(roomNumber);
+  // 等待搜索结果显示
+  await page.waitForSelector(`[data-testid="${ROOMS.LIST}"]`);
 }
 
 /**
@@ -113,4 +129,12 @@ export async function goToSettings(page: Page): Promise<void> {
 export async function goToNotifications(page: Page): Promise<void> {
   await page.goto('/notifications');
   await page.waitForSelector(`[data-testid="${NOTIFICATIONS.HEADING}"]`);
+}
+
+/**
+ * 导航到费用类型管理
+ */
+export async function goToFeeTypes(page: Page): Promise<void> {
+  await page.goto('/settings/fee-types');
+  await page.waitForSelector(`[data-testid="${FEE_TYPES.HEADING}"]`);
 }

@@ -2,7 +2,10 @@
 
 ## 项目概述
 
-Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是承包公寓进行运营收租的管理者（二房东）；支持公寓、房间、水电、租约、租客、账单管理；还有运营平台支持商业化运营；原始的需求描述在[功能描述](docs/功能描述.md)中。
+Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是承包公寓进行运营收租的管理者（二房东）；支持公寓、房间、水电、租约、租客、账单管理；还有运营平台支持商业化运营；原始的需求描述在[原始需求](docs/原始需求.md)中。
+
+
+采用测试驱动开发，所有功能变更都需要维护在 docs/测试用例 中
 
 本仓库为 **pnpm workspaces monorepo**：根目录有 `pnpm-workspace.yaml` 与单一 `pnpm-lock.yaml`，依赖在根目录执行 `pnpm install` 安装。
 
@@ -10,6 +13,7 @@ Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是�
 
 - **后端 api** (`/api`): Node/Express/TypeScript 应用，**项目运行与调试均使用此后端**
 - **前端 Web** (`/web`): Next.js 应用，使用 TypeScript 和 React
+- **小程序** (`/miniprogram`):小程序，使用taro框架
 - **Docker 部署** (`/docker`): 容器化部署配置（构建上下文为仓库根，后端为 api）
 
 ## 开发工作流
@@ -35,6 +39,10 @@ pnpm dev:web
 - 前端详情：`web/AGENTS.md`
 - 代码质量：`pnpm lint` / `pnpm type-check` / `pnpm test`
 
+## 后端工作流
+
+- 阅读 `api/AGENTS.md` 了解详情
+
 ## 前端工作流
 
 - 阅读 `web/AGENTS.md` 了解详情
@@ -45,9 +53,13 @@ pnpm dev:web
 
 - **单元/集成测试**：遵循 TDD（红 → 绿 → 重构）；后端（api）使用 Vitest；根目录 `pnpm run test` 运行测试。
 
-- **E2E 测试**：使用 Playwright，用例在 `e2e/`；编写测试用例使用playwright-e2e-testing技能；
+- **E2E 测试**：使用 Playwright，进行编写e2e测试前请阅读 `e2e/AGENTS.md`
 
 - **代码质量**：强制使用强类型，避免 `Any`/`any`，优先显式类型注解；编写自文档化代码，仅在需要解释意图时添加注释。
+
+## 文档维护
+
+设计到功能变化的修改需要补充测试用例 `docs/测试用例/`
 
 ## 语言风格
 

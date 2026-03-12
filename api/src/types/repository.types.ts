@@ -1,4 +1,4 @@
-import type { PrismaClient } from '../generated/client/index.js';
+import type { PrismaClient } from '@prisma/client';
 
 /**
  * 数据库客户端类型 - 支持 PrismaClient 或事务对象

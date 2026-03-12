@@ -1,8 +1,10 @@
 packages:
   - 'api'
-  - 'web'
+  - 'tenant-web'
+  - 'admin-web'
   - 'packages/api-contract'
-  - 'miniprogram'
+  - 'packages/shared-ui'
+  - 'mobile'
 
 # pnpm 10+ 默认跳过部分依赖的构建脚本；允许 Prisma 等运行以便 prisma generate 可用
 onlyBuiltDependencies:

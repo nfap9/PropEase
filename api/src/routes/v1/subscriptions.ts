@@ -17,6 +17,24 @@ const router: Router = Router();
 
 router.use(requireConsoleAuth);
 
+/**
+ * @openapi
+ * /subscriptions/plans:
+ *   get:
+ *     summary: 获取套餐列表
+ *     tags: [订阅管理]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 套餐列表
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/SubscriptionPlan'
+ */
 router.get('/plans', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const list = await defaultSubscriptionService.listPlans();
@@ -26,6 +44,30 @@ router.get('/plans', async (_req: Request, res: Response, next: NextFunction) =>
   }
 });
 
+/**
+ * @openapi
+ * /subscriptions/plans/{plan_id}:
+ *   get:
+ *     summary: 获取套餐详情
+ *     tags: [订阅管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: plan_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 套餐信息
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SubscriptionPlan'
+ *       404:
+ *         description: 套餐不存在
+ */
 router.get('/plans/:plan_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const plan = await defaultSubscriptionService.getPlanById(req.params.plan_id);
@@ -35,6 +77,28 @@ router.get('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
   }
 });
 
+/**
+ * @openapi
+ * /subscriptions/organizations/{org_id}/subscription:
+ *   get:
+ *     summary: 获取组织的订阅信息
+ *     tags: [订阅管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: org_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 订阅信息
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrganizationSubscription'
+ */
 router.get(
   '/organizations/:org_id/subscription',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -48,6 +112,36 @@ router.get(
   }
 );
 
+/**
+ * @openapi
+ * /subscriptions/organizations/{org_id}/subscription/status:
+ *   get:
+ *     summary: 获取组织的订阅状态
+ *     tags: [订阅管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: org_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 订阅状态
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 is_active:
+ *                   type: boolean
+ *                 plan_code:
+ *                   type: string
+ *                 end_date:
+ *                   type: string
+ *                   format: date
+ */
 router.get(
   '/organizations/:org_id/subscription/status',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -65,6 +159,42 @@ const SubscribeSchema = z.object({
   plan_id: z.string(),
   billing_cycle: z.enum(['monthly', 'yearly']).optional(),
 });
+
+/**
+ * @openapi
+ * /subscriptions/organizations/{org_id}/subscription:
+ *   post:
+ *     summary: 订阅套餐
+ *     tags: [订阅管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: org_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [plan_id]
+ *             properties:
+ *               plan_id:
+ *                 type: string
+ *               billing_cycle:
+ *                 type: string
+ *                 enum: [monthly, yearly]
+ *     responses:
+ *       201:
+ *         description: 订阅成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrganizationSubscription'
+ */
 router.post(
   '/organizations/:org_id/subscription',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -83,6 +213,41 @@ router.post(
   }
 );
 
+/**
+ * @openapi
+ * /subscriptions/organizations/{org_id}/subscription:
+ *   put:
+ *     summary: 更新订阅套餐
+ *     tags: [订阅管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: org_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [plan_id]
+ *             properties:
+ *               plan_id:
+ *                 type: string
+ *               effective:
+ *                 type: string
+ *                 enum: [immediate, next_cycle]
+ *     responses:
+ *       200:
+ *         description: 更新成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrganizationSubscription'
+ */
 router.put(
   '/organizations/:org_id/subscription',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -103,6 +268,24 @@ router.put(
   }
 );
 
+/**
+ * @openapi
+ * /subscriptions/organizations/{org_id}/subscription/cancel:
+ *   post:
+ *     summary: 取消订阅
+ *     tags: [订阅管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: org_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 取消成功
+ */
 router.post(
   '/organizations/:org_id/subscription/cancel',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -116,6 +299,41 @@ router.post(
   }
 );
 
+/**
+ * @openapi
+ * /subscriptions/organizations/{org_id}/orders:
+ *   post:
+ *     summary: 创建订阅订单
+ *     tags: [订阅管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: org_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [plan_id]
+ *             properties:
+ *               plan_id:
+ *                 type: string
+ *               billing_cycle:
+ *                 type: string
+ *                 enum: [monthly, yearly]
+ *     responses:
+ *       201:
+ *         description: 订单创建成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SubscriptionOrder'
+ */
 router.post(
   '/organizations/:org_id/orders',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -203,6 +421,35 @@ router.post(
   }
 );
 
+/**
+ * @openapi
+ * /subscriptions/organizations/{org_id}/orders/{order_id}:
+ *   get:
+ *     summary: 获取订单详情
+ *     tags: [订阅管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: org_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: order_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 订单信息
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SubscriptionOrder'
+ *       404:
+ *         description: 订单不存在
+ */
 router.get(
   '/organizations/:org_id/orders/:order_id',
   async (req: Request, res: Response, next: NextFunction) => {
@@ -223,6 +470,35 @@ router.get(
   }
 );
 
+/**
+ * @openapi
+ * /subscriptions/organizations/{org_id}/orders/{order_id}/simulate-pay:
+ *   post:
+ *     summary: 模拟支付（仅开发环境）
+ *     tags: [订阅管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: org_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: order_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 模拟支付成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SubscriptionOrder'
+ *       403:
+ *         description: 非开发环境
+ */
 router.post(
   '/organizations/:org_id/orders/:order_id/simulate-pay',
   async (req: Request, res: Response, next: NextFunction) => {

@@ -12,6 +12,7 @@ export class ApiHelper {
   private request: APIRequestContext;
   private baseUrl: string;
   private token?: string;
+  private orgId?: string;
 
   constructor(request: APIRequestContext, baseUrl: string = API_BASE_URL) {
     this.request = request;
@@ -26,6 +27,13 @@ export class ApiHelper {
   }
 
   /**
+   * 设置组织 ID
+   */
+  setOrgId(orgId: string): void {
+    this.orgId = orgId;
+  }
+
+  /**
    * 获取请求头
    */
   private getHeaders(): Record<string, string> {
@@ -35,13 +43,39 @@ export class ApiHelper {
     if (this.token) {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
+    if (this.orgId) {
+      headers['x-org-id'] = this.orgId;
+    }
     return headers;
+  }
+
+  /**
+   * 解包 API 响应
+   * API 使用 responseWrapper 中间件，返回格式为 { code: 0, data: T, message?: string }
+   */
+  private unwrapResponse<T>(response: { code: number; data: T; message?: string }): T {
+    if (response.code !== 0) {
+      throw new Error(`API error: ${response.message || 'Unknown error'}`);
+    }
+    return response.data;
   }
 
   /**
    * GET 请求
    */
   async get<T>(path: string, params?: Record<string, string | number>): Promise<T> {
+    const response = await this.request.get(`${this.baseUrl}${path}`, {
+      headers: this.getHeaders(),
+      params,
+    });
+    const json = await response.json();
+    return this.unwrapResponse<T>(json);
+  }
+
+  /**
+   * GET 请求（不解包，返回原始响应）
+   */
+  async getRaw<T>(path: string, params?: Record<string, string | number>): Promise<T> {
     const response = await this.request.get(`${this.baseUrl}${path}`, {
       headers: this.getHeaders(),
       params,
@@ -57,6 +91,18 @@ export class ApiHelper {
       headers: this.getHeaders(),
       data: body,
     });
+    const json = await response.json();
+    return this.unwrapResponse<T>(json);
+  }
+
+  /**
+   * POST 请求（不解包，返回原始响应）
+   */
+  async postRaw<T>(path: string, body?: unknown): Promise<T> {
+    const response = await this.request.post(`${this.baseUrl}${path}`, {
+      headers: this.getHeaders(),
+      data: body,
+    });
     return response.json();
   }
 
@@ -68,7 +114,8 @@ export class ApiHelper {
       headers: this.getHeaders(),
       data: body,
     });
-    return response.json();
+    const json = await response.json();
+    return this.unwrapResponse<T>(json);
   }
 
   /**
@@ -78,7 +125,8 @@ export class ApiHelper {
     const response = await this.request.delete(`${this.baseUrl}${path}`, {
       headers: this.getHeaders(),
     });
-    return response.json();
+    const json = await response.json();
+    return this.unwrapResponse<T>(json);
   }
 
   /**
@@ -89,7 +137,8 @@ export class ApiHelper {
       headers: this.getHeaders(),
       data: body,
     });
-    return response.json();
+    const json = await response.json();
+    return this.unwrapResponse<T>(json);
   }
 }
 
@@ -108,7 +157,7 @@ export async function apiLogin(
   phone: string,
   password: string
 ): Promise<{ accessToken: string; refreshToken: string }> {
-  const response = await request.post(`${API_BASE_URL}/api/auth/login`, {
+  const response = await request.post(`${API_BASE_URL}/api/v1/auth/login`, {
     data: { phone, password },
   });
 
@@ -116,7 +165,9 @@ export async function apiLogin(
     throw new Error(`Login failed: ${response.status()}`);
   }
 
-  const data = await response.json();
+  const responseData = await response.json();
+  // 处理包装后的响应格式
+  const data = responseData.data || responseData;
   return {
     accessToken: data.access_token,
     refreshToken: data.refresh_token,

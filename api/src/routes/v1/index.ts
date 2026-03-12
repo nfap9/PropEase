@@ -13,6 +13,7 @@ import { subscriptionsRouter } from './subscriptions.js';
 import { usageRouter } from './usage.js';
 import { notificationsRouter } from './notifications.js';
 import { customRolesRouter } from './customRoles.js';
+import { feeTypesRouter } from './fee-types.js';
 import { adminRouter } from './admin/index.js';
 import { webhooksRouter } from './webhooks/index.js';
 import { configRouter } from './config.js';
@@ -33,6 +34,7 @@ router.use('/subscriptions', subscriptionsRouter);
 router.use('/usage', usageRouter);
 router.use('/notifications', notificationsRouter);
 router.use('/custom-roles', customRolesRouter);
+router.use('/fee-types', feeTypesRouter);
 router.use('/admin', adminRouter);
 router.use('/webhooks', webhooksRouter);
 

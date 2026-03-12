@@ -4,12 +4,14 @@
  * 覆盖场景：
  * - 列表显示
  * - 筛选
+ * - 查看详情
  */
 
 import { test, expect } from '../fixtures';
 import { goToBills } from '../helpers/navigation';
 import { login } from '../helpers/auth';
 import { BILLS } from '../testids';
+import { createTestDataGenerator } from '../helpers/test-data';
 
 test.describe('账单列表页面', () => {
   test.beforeEach(async ({ page }) => {
@@ -80,24 +82,42 @@ test.describe('账单列表页面', () => {
 });
 
 test.describe('账单详情', () => {
-  test.beforeEach(async ({ page }) => {
+  test('查看账单详情', async ({ page, request }) => {
     await login(page);
-    await goToBills(page);
-  });
 
-  test('查看账单详情', async ({ page }) => {
-    // 等待列表加载
-    await page.waitForSelector(`[data-testid="${BILLS.LIST}"]`, { timeout: 5000 });
+    // 创建完整的测试环境（公寓、房间、租客、租约、账单）
+    const generator = await createTestDataGenerator(request);
 
-    // 点击第一条账单查看详情
-    const firstBill = page.locator(`[data-testid="${BILLS.LIST}"] > *`).first();
-    if (await firstBill.isVisible()) {
+    try {
+      // 创建测试数据
+      const { tenant, lease } = await generator.createFullTestEnvironment();
+
+      // 创建账单
+      await generator.createBill(lease.id, { amount: 1500 });
+
+      // 导航到账单页面
+      await goToBills(page);
+
+      // 等待列表加载
+      await page.waitForSelector(`[data-testid="${BILLS.LIST}"]`, { timeout: 5000 });
+
+      // 刷新页面确保数据加载
+      await page.reload();
+      await page.waitForSelector(`[data-testid="${BILLS.LIST}"]`, { timeout: 5000 });
+
+      // 点击第一条账单查看详情
+      const firstBill = page.locator(`[data-testid="${BILLS.LIST}"] > *`).first();
+      await expect(firstBill).toBeVisible({ timeout: 5000 });
       await firstBill.click();
 
-      // 等待详情弹窗
+      // 等待详情显示（可能是弹窗或侧边栏）
       await page.waitForTimeout(500);
-    } else {
-      test.skip();
+
+      // 验证详情内容包含租客名称
+      const detailContent = page.locator(`text=${tenant.name}`);
+      await expect(detailContent).toBeVisible({ timeout: 3000 });
+    } finally {
+      await generator.cleanup();
     }
   });
 });

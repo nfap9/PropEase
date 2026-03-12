@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 function envStr(key: string, defaultValue: string): string {
   const v = process.env[key];
   return v !== undefined && v !== '' ? v : defaultValue;
@@ -45,8 +47,6 @@ export const config = {
   refreshTokenExpireDays: envInt('REFRESH_TOKEN_EXPIRE_DAYS', 7),
   adminAccessTokenExpireMinutes: envInt('ADMIN_ACCESS_TOKEN_EXPIRE_MINUTES', 30),
   corsOrigins: envCorsOrigins(),
-  adminInitUsername: envStr('ADMIN_INIT_USERNAME', 'admin'),
-  adminInitPassword: envStr('ADMIN_INIT_PASSWORD', 'Admin@123456'),
   wechatPayEnabled: envBool('WECHAT_PAY_ENABLED', false),
   wechatMchId: envStr('WECHAT_MCH_ID', ''),
   wechatApiv3Key: envStr('WECHAT_APIV3_KEY', ''),

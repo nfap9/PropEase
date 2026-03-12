@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>费用配置 - 公寓管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background: #F8FAFC; min-height: 100vh; padding: 24px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+        .page-title h1 { font-size: 28px; font-weight: 700; color: #1E293B; margin-bottom: 8px; }
+        .page-title p { font-size: 14px; color: #64748B; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; }
+        .btn-primary { background: #2563EB; color: white; }
+        .filter-bar { display: flex; gap: 12px; margin-bottom: 24px; }
+        .filter-btn { padding: 10px 16px; border: 1px solid #E2E8F0; background: white; border-radius: 10px; font-size: 13px; color: #64748B; cursor: pointer; }
+        .filter-btn.active { background: #2563EB; color: white; border-color: #2563EB; }
+        .fee-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .fee-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .fee-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #F1F5F9; }
+        .fee-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .fee-icon.rent { background: #DBEAFE; }
+        .fee-icon.deposit { background: #FEF3C7; }
+        .fee-icon.service { background: #D1FAE5; }
+        .fee-icon.parking { background: #EDE9FE; }
+        .fee-info h3 { font-size: 16px; font-weight: 600; color: #1E293B; margin-bottom: 4px; }
+        .fee-info p { font-size: 13px; color: #64748B; }
+        .fee-toggle { width: 48px; height: 26px; background: #E2E8F0; border-radius: 13px; position: relative; cursor: pointer; }
+        .fee-toggle.active { background: #10B981; }
+        .fee-toggle::after { content: ""; position: absolute; width: 22px; height: 22px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: all 0.2s; }
+        .fee-toggle.active::after { left: 24px; }
+        .fee-rules { margin-top: 16px; }
+        .rule-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #F8FAFC; border-radius: 8px; margin-bottom: 8px; }
+        .rule-item label { font-size: 14px; color: #374151; }
+        .rule-item .value { font-weight: 600; color: #2563EB; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <div class="page-title">
+                <h1>费用配置</h1>
+                <p>配置公寓各项费用的收取规则</p>
+            </div>
+            <button class="btn btn-primary">+ 添加费用类型</button>
+        </div>
+        <div class="filter-bar">
+            <button class="filter-btn active">全部</button>
+            <button class="filter-btn">租金相关</button>
+            <button class="filter-btn">押金</button>
+            <button class="filter-btn">服务费</button>
+        </div>
+        <div class="fee-grid">
+            <div class="fee-card">
+                <div class="fee-header">
+                    <div class="fee-icon rent">🏠</div>
+                    <div class="fee-info">
+                        <h3>月租金</h3>
+                        <p>每月固定收取的房租</p>
+                    </div>
+                    <div class="fee-toggle active"></div>
+                </div>
+                <div class="fee-rules">
+                    <div class="rule-item">
+                        <label>计费方式</label>
+                        <span class="value">按月固定</span>
+                    </div>
+                    <div class="rule-item">
+                        <label>默认金额</label>
+                        <span class="value">取房间定价</span>
+                    </div>
+                </div>
+            </div>
+            <div class="fee-card">
+                <div class="fee-header">
+                    <div class="fee-icon deposit">💰</div>
+                    <div class="fee-info">
+                        <h3>押金</h3>
+                        <p>租房时收取的押金</p>
+                    </div>
+                    <div class="fee-toggle active"></div>
+                </div>
+                <div class="fee-rules">
+                    <div class="rule-item">
+                        <label>计费方式</label>
+                        <span class="value">按月租金倍数</span>
+                    </div>
+                    <div class="rule-item">
+                        <label>默认倍数</label>
+                        <span class="value">1个月</span>
+                    </div>
+                </div>
+            </div>
+            <div class="fee-card">
+                <div class="fee-header">
+                    <div class="fee-icon service">🧹</div>
+                    <div class="fee-info">
+                        <h3>物业费</h3>
+                        <p>每月收取的物业管理费</p>
+                    </div>
+                    <div class="fee-toggle active"></div>
+                </div>
+                <div class="fee-rules">
+                    <div class="rule-item">
+                        <label>计费方式</label>
+                        <span class="value">固定金额</span>
+                    </div>
+                    <div class="rule-item">
+                        <label>默认金额</label>
+                        <span class="value">¥100/月</span>
+                    </div>
+                </div>
+            </div>
+            <div class="fee-card">
+                <div class="fee-header">
+                    <div class="fee-icon parking">🚗</div>
+                    <div class="fee-info">
+                        <h3>停车费</h3>
+                        <p>车位租赁费用（可选）</p>
+                    </div>
+                    <div class="fee-toggle"></div>
+                </div>
+                <div class="fee-rules">
+                    <div class="rule-item">
+                        <label>计费方式</label>
+                        <span class="value">按月固定</span>
+                    </div>
+                    <div class="rule-item">
+                        <label>默认金额</label>
+                        <span class="value">¥200/月</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

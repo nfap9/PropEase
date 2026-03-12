@@ -6,6 +6,10 @@ upstream web_backend {
     server web:3000;
 }
 
+upstream admin_backend {
+    server admin-web:3001;
+}
+
 server {
     listen 80;
     server_name ${SERVER_NAME};
@@ -28,8 +32,20 @@ server {
 
     # 健康检查
     location /health {
-        proxy_pass http://api_backend/api/v1/health;
+        proxy_pass http://api_backend/health;
         access_log off;
+    }
+
+    # 运营后台代理
+    location /admin {
+        proxy_pass http://admin_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
     }
 
     # 前端代理

@@ -61,6 +61,7 @@ model OrganizationMember {
   user        User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
+  @@index([organization_id])
   @@map("organization_members")
 }
 
@@ -88,7 +89,9 @@ model Apartment {
   organization   Organization    @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   rooms          Room[]
   utility_config UtilityConfig?
+  fee_configs    ApartmentFeeConfig[]
 
+  @@index([organization_id])
   @@map("apartments")
 }
 
@@ -129,6 +132,7 @@ model Tenant {
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   leases       Lease[]
 
+  @@index([organization_id])
   @@map("tenants")
 }
 
@@ -154,6 +158,8 @@ model Lease {
   bills  Bill[]
 
   @@index([room_id])
+  @@index([room_id, is_active])
+  @@index([tenant_id])
   @@index([is_active])
   @@map("leases")
 }
@@ -174,6 +180,8 @@ model UtilityReading {
 
   room Room @relation(fields: [room_id], references: [id], onDelete: Cascade)
 
+  @@index([room_id])
+  @@unique([room_id, period_year, period_month])
   @@index([period_year, period_month])
   @@map("utility_readings")
 }
@@ -186,7 +194,6 @@ model UtilityConfig {
   internet_fee            Decimal? @db.Decimal(10, 2)
   management_fee          Decimal? @db.Decimal(10, 2)
   service_fee             Decimal? @db.Decimal(10, 2)
-  effective_from          DateTime @db.Date
   notes                   String?  @db.VarChar(500)
   created_at              DateTime @default(now())
   updated_at              DateTime @updatedAt
@@ -215,7 +222,10 @@ model Bill {
 
   lease    Lease    @relation(fields: [lease_id], references: [id], onDelete: Cascade)
   payments Payment[]
+  fee_items BillFeeItem[]
 
+  @@index([lease_id])
+  @@unique([lease_id, bill_year, bill_month])
   @@index([status])
   @@map("bills")
 }
@@ -234,6 +244,95 @@ model Payment {
   bill Bill @relation(fields: [bill_id], references: [id], onDelete: Cascade)
 
   @@map("payments")
+}
+
+// 费用类型（全局模板，可用于组织或系统预设）
+model FeeType {
+  id              String   @id @db.VarChar(26)
+  organization_id String?  @db.VarChar(26) // null 表示系统预设类型
+  name            String   @db.VarChar(100) // 费用名称
+  code            String   @db.VarChar(50) // 唯一标识码（如 internet, management）
+  description     String?  @db.VarChar(500)
+  category        String   @default("fixed") @db.VarChar(20) // fixed 固定费用 / utility 计量费用 / optional 可选费用
+  is_active       Boolean  @default(true)
+  sort_order      Int      @default(0)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  specifications     FeeSpecification[]
+  apartment_fee_configs ApartmentFeeConfig[]
+  bill_fee_items     BillFeeItem[]
+
+  @@unique([organization_id, code])
+  @@map("fee_types")
+}
+
+// 费用规格（一个费用类型可以有多个规格选项）
+model FeeSpecification {
+  id            String    @id @db.VarChar(26)
+  fee_type_id   String    @db.VarChar(26)
+  name          String    @db.VarChar(100) // 规格名称（如 "50兆套餐"、"100兆套餐"）
+  description   String?   @db.VarChar(500)
+  price_monthly Decimal   @db.Decimal(10, 2) // 月付价格
+  price_yearly  Decimal?  @db.Decimal(10, 2) // 年付价格（可选）
+  unit          String?   @db.VarChar(20) // 单位（如 "月"、"年"、"次"）
+  is_default    Boolean   @default(false)
+  is_active     Boolean   @default(true)
+  sort_order    Int       @default(0)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  feeType FeeType @relation(fields: [fee_type_id], references: [id], onDelete: Cascade)
+
+  apartment_fee_configs ApartmentFeeConfig[]
+  bill_fee_items        BillFeeItem[]
+
+  @@unique([fee_type_id, name])
+  @@map("fee_specifications")
+}
+
+// 公寓费用配置（公寓启用哪些费用，选择哪个规格）
+model ApartmentFeeConfig {
+  id                  String    @id @db.VarChar(26)
+  apartment_id        String    @db.VarChar(26)
+  fee_type_id         String    @db.VarChar(26)
+  specification_id    String?   @db.VarChar(26) // 选择的规格，null 表示使用租约级别选择
+  is_enabled          Boolean   @default(true)
+  allow_lease_override Boolean  @default(false) // 是否允许租约级别覆盖规格
+  effective_from      DateTime  @db.Date
+  effective_to        DateTime? @db.Date
+  notes               String?   @db.VarChar(500)
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+
+  apartment     Apartment         @relation(fields: [apartment_id], references: [id], onDelete: Cascade)
+  feeType       FeeType           @relation(fields: [fee_type_id], references: [id], onDelete: Cascade)
+  specification FeeSpecification? @relation(fields: [specification_id], references: [id], onDelete: SetNull)
+
+  @@unique([apartment_id, fee_type_id])
+  @@map("apartment_fee_configs")
+}
+
+// 账单费用明细（替代原来的 other_amount）
+model BillFeeItem {
+  id                 String    @id @db.VarChar(26)
+  bill_id            String    @db.VarChar(26)
+  fee_type_id        String    @db.VarChar(26)
+  specification_id   String?   @db.VarChar(26)
+  fee_name           String    @db.VarChar(100) // 冗余存储，避免关联丢失
+  specification_name String?   @db.VarChar(100)
+  quantity           Decimal   @default(1) @db.Decimal(10, 2) // 数量（如停车费可能是2个车位）
+  unit_price         Decimal   @db.Decimal(10, 2) // 单价
+  amount             Decimal   @db.Decimal(10, 2) // 总金额
+  notes              String?   @db.VarChar(500)
+  created_at         DateTime  @default(now())
+
+  bill          Bill              @relation(fields: [bill_id], references: [id], onDelete: Cascade)
+  feeType       FeeType           @relation(fields: [fee_type_id], references: [id])
+  specification FeeSpecification? @relation(fields: [specification_id], references: [id], onDelete: SetNull)
+
+  @@index([bill_id])
+  @@map("bill_fee_items")
 }
 
 model Permission {
@@ -321,6 +420,8 @@ model Notification {
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@index([user_id])
+  @@index([user_id, is_read])
   @@map("notifications")
 }
 
@@ -340,15 +441,71 @@ model SubscriptionPlan {
   features            Json?
   is_active           Boolean  @default(true)
   sort_order          Int      @default(0)
-  free_validity_days  Int?     @db.Integer
+  free_validity_days  Int?     @db.Integer // 已废弃，保留向后兼容
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
 
-  subscriptions        OrganizationSubscription[]
-  subscription_orders   SubscriptionOrder[]
+  subscriptions          OrganizationSubscription[]
+  subscription_orders    SubscriptionOrder[]
   next_plan_subscriptions OrganizationSubscription[] @relation("NextPlan")
+  pricing                PlanPricing[]
+  promotion_plans        PromotionPlan[]
 
   @@map("subscription_plans")
+}
+
+// 套餐周期定价（支持任意月数周期）
+model PlanPricing {
+  id         String   @id @db.VarChar(26)
+  plan_id    String   @db.VarChar(26)
+  months     Int              // 周期月数 (1, 3, 6, 12, 24 等)
+  price      Decimal  @db.Decimal(10, 2)
+  is_active  Boolean  @default(true)
+  sort_order Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  plan SubscriptionPlan @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+
+  @@unique([plan_id, months])
+  @@index([plan_id])
+  @@map("plan_pricing")
+}
+
+// 优惠活动
+model Promotion {
+  id             String    @id @db.VarChar(26)
+  name           String    @db.VarChar(100)
+  code           String    @unique @db.VarChar(50)
+  description    String?   @db.VarChar(500)
+  type           String    @db.VarChar(20)      // 'discount' | 'gift' | 'mixed'
+  discount_value Decimal?  @db.Decimal(10, 2)   // 折扣率(如0.8表示8折)或减免金额
+  gift_months    Int?                           // 赠送月数
+  start_date     DateTime  @db.Date
+  end_date       DateTime? @db.Date
+  is_active      Boolean   @default(true)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  plans  PromotionPlan[]
+  orders SubscriptionOrder[]
+
+  @@index([is_active, start_date, end_date])
+  @@map("promotions")
+}
+
+// 优惠活动关联套餐
+model PromotionPlan {
+  id           String   @id @db.VarChar(26)
+  promotion_id String   @db.VarChar(26)
+  plan_id      String   @db.VarChar(26)
+  created_at   DateTime @default(now())
+
+  promotion Promotion      @relation(fields: [promotion_id], references: [id], onDelete: Cascade)
+  plan      SubscriptionPlan @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+
+  @@unique([promotion_id, plan_id])
+  @@map("promotion_plans")
 }
 
 model OrganizationSubscription {
@@ -357,6 +514,7 @@ model OrganizationSubscription {
   plan_id         String    @db.VarChar(26)
   status          String    @default("active") @db.VarChar(20)
   billing_cycle   String    @default("monthly") @db.VarChar(20)
+  billing_months  Int       @default(1)             // 订阅月数
   start_date      DateTime  @db.Date
   end_date        DateTime? @db.Date
   auto_renew      Boolean   @default(true)
@@ -380,7 +538,9 @@ model SubscriptionOrder {
   organization_id             String    @db.VarChar(26)
   plan_id                    String    @db.VarChar(26)
   billing_cycle              String    @default("monthly") @db.VarChar(20)
+  billing_months             Int       @default(1)             // 购买的月数
   amount                     Decimal   @db.Decimal(10, 2)
+  original_amount            Decimal?  @db.Decimal(10, 2)      // 原价（优惠前）
   currency                   String    @default("CNY") @db.VarChar(10)
   status                     String    @default("pending") @db.VarChar(32)
   payment_method             String    @default("wechat_native") @db.VarChar(32)
@@ -388,14 +548,18 @@ model SubscriptionOrder {
   wechat_transaction_id      String?   @db.VarChar(64)
   paid_at                    DateTime?
   expires_at                 DateTime
+  promotion_id               String?   @db.VarChar(26)
   organization_subscription_id String?  @db.VarChar(26)
   created_at                 DateTime  @default(now())
   updated_at                 DateTime  @updatedAt
 
-  organization  Organization  @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  plan          SubscriptionPlan @relation(fields: [plan_id], references: [id])
-  org_subscription OrganizationSubscription? @relation(fields: [organization_subscription_id], references: [id], onDelete: SetNull)
+  organization      Organization       @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  plan              SubscriptionPlan   @relation(fields: [plan_id], references: [id])
+  org_subscription  OrganizationSubscription? @relation(fields: [organization_subscription_id], references: [id], onDelete: SetNull)
+  promotion         Promotion?         @relation(fields: [promotion_id], references: [id], onDelete: SetNull)
 
+  @@index([organization_id])
+  @@index([promotion_id])
   @@map("subscription_orders")
 }
 
@@ -415,6 +579,8 @@ model UsageQuota {
   user   User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
   order  UsageQuotaOrder? @relation(fields: [usage_quota_order_id], references: [id], onDelete: SetNull)
 
+  @@index([user_id])
+  @@index([user_id, valid_from, valid_to])
   @@map("usage_quotas")
 }
 

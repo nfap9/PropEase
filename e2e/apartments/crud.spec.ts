@@ -11,6 +11,7 @@ import { test, expect } from '../fixtures';
 import { goToApartments } from '../helpers/navigation';
 import { login } from '../helpers/auth';
 import { APARTMENTS, COMMON } from '../testids';
+import { createTestDataGenerator } from '../helpers/test-data';
 
 // 生成唯一的测试数据名称
 const uniqueName = () => `测试公寓_${Date.now()}`;
@@ -104,58 +105,85 @@ test.describe('创建公寓', () => {
 });
 
 test.describe('编辑公寓', () => {
-  test.beforeEach(async ({ page }) => {
+  test('成功编辑公寓信息', async ({ page, request }) => {
     await login(page);
-    await goToApartments(page);
-  });
 
-  test('成功编辑公寓信息', async ({ page }) => {
-    // 等待列表加载
-    await page.waitForSelector(`[data-testid="${APARTMENTS.LIST}"]`);
+    // 创建独立的测试数据
+    const generator = await createTestDataGenerator(request);
+    const apartment = await generator.createApartmentWithRooms(0);
 
-    // 找到第一个公寓的更多操作菜单
-    const firstItem = page.locator(`[data-testid="${APARTMENTS.LIST}"] > *`).first();
+    try {
+      await goToApartments(page);
+      await page.waitForSelector(`[data-testid="${APARTMENTS.LIST}"]`);
 
-    // 悬停或点击显示操作菜单
-    await firstItem.hover();
-    await page.waitForTimeout(300);
+      // 搜索刚创建的公寓
+      await page.locator('[data-testid="apartments-search-input"]').fill(apartment.name);
+      await page.waitForTimeout(500);
 
-    // 尝试点击更多操作按钮（可能需要根据实际 UI 调整）
-    const moreButton = page.locator('[data-testid^="apartments-more-menu"]').first();
-    if (await moreButton.isVisible()) {
-      await moreButton.click();
+      // 找到刚创建的公寓
+      const testApartment = page.locator(`text="${apartment.name}"`).first();
+      await expect(testApartment).toBeVisible({ timeout: 5000 });
 
-      // 点击编辑按钮
-      const editButton = page.locator('[data-testid^="apartments-edit-btn"]').first();
-      if (await editButton.isVisible()) {
-        await editButton.click();
+      // 悬停显示操作菜单
+      await testApartment.hover();
+      await page.waitForTimeout(300);
 
-        // 等待编辑弹窗
-        await expect(page.locator(`[data-testid="${APARTMENTS.EDIT_DIALOG}"]`)).toBeVisible();
+      // 尝试点击更多操作按钮
+      const moreButton = page.locator('[data-testid^="apartments-more-menu"]').first();
+      if (await moreButton.isVisible()) {
+        await moreButton.click();
 
-        // 修改地址
-        await page.fill(`[data-testid="${APARTMENTS.ADDRESS_INPUT}"]`, `更新地址_${Date.now()}`);
+        // 点击编辑按钮
+        const editButton = page.locator('[data-testid^="apartments-edit-btn"]').first();
+        if (await editButton.isVisible()) {
+          await editButton.click();
 
-        // 保存
-        await page.click(`[data-testid="${APARTMENTS.CONFIRM_BUTTON}"]`);
+          // 等待编辑弹窗
+          await expect(page.locator(`[data-testid="${APARTMENTS.EDIT_DIALOG}"]`)).toBeVisible();
 
-        // 验证弹窗关闭
-        await expect(page.locator(`[data-testid="${APARTMENTS.EDIT_DIALOG}"]`)).not.toBeVisible();
+          // 修改地址
+          await page.fill(`[data-testid="${APARTMENTS.ADDRESS_INPUT}"]`, `更新地址_${Date.now()}`);
+
+          // 保存
+          await page.click(`[data-testid="${APARTMENTS.CONFIRM_BUTTON}"]`);
+
+          // 验证弹窗关闭
+          await expect(page.locator(`[data-testid="${APARTMENTS.EDIT_DIALOG}"]`)).not.toBeVisible();
+        }
+      } else {
+        // 直接点击公寓卡片进入详情页编辑
+        await testApartment.click();
+        await page.waitForTimeout(300);
+
+        // 在详情页找编辑按钮
+        const editButton = page.locator('button:has-text("编辑")').first();
+        if (await editButton.isVisible()) {
+          await editButton.click();
+
+          // 等待编辑弹窗
+          await expect(page.locator(`[data-testid="${APARTMENTS.EDIT_DIALOG}"]`)).toBeVisible();
+
+          // 修改地址
+          await page.fill(`[data-testid="${APARTMENTS.ADDRESS_INPUT}"]`, `更新地址_${Date.now()}`);
+
+          // 保存
+          await page.click(`[data-testid="${APARTMENTS.CONFIRM_BUTTON}"]`);
+
+          // 验证弹窗关闭
+          await expect(page.locator(`[data-testid="${APARTMENTS.EDIT_DIALOG}"]`)).not.toBeVisible();
+        }
       }
-    } else {
-      // 如果没有更多操作按钮，可能需要直接点击公寓卡片进入详情页编辑
-      test.skip();
+    } finally {
+      await generator.cleanup();
     }
   });
 });
 
 test.describe('删除公寓', () => {
-  test.beforeEach(async ({ page }) => {
+  test('删除空公寓', async ({ page }) => {
     await login(page);
     await goToApartments(page);
-  });
 
-  test('删除空公寓', async ({ page }) => {
     // 先创建一个公寓用于删除
     const name = uniqueName();
 
@@ -211,13 +239,26 @@ test.describe('删除公寓', () => {
     }
   });
 
-  test('删除有房间的公寓应该失败', async ({ page }) => {
-    // 等待列表加载
-    await page.waitForSelector(`[data-testid="${APARTMENTS.LIST}"]`);
+  test('删除有房间的公寓应该失败', async ({ page, request }) => {
+    await login(page);
 
-    // 找到有房间的测试公寓（E2E测试公寓）
-    const testApartment = page.locator('text="E2E测试公寓"').first();
-    if (await testApartment.isVisible()) {
+    // 创建独立的测试数据：有房间的公寓
+    const generator = await createTestDataGenerator(request);
+    const apartment = await generator.createApartmentWithRooms(1);
+
+    try {
+      await goToApartments(page);
+      await page.waitForSelector(`[data-testid="${APARTMENTS.LIST}"]`);
+
+      // 搜索刚创建的公寓
+      await page.locator('[data-testid="apartments-search-input"]').fill(apartment.name);
+      await page.waitForTimeout(500);
+
+      // 找到有房间的公寓
+      const testApartment = page.locator(`text="${apartment.name}"`).first();
+      await expect(testApartment).toBeVisible({ timeout: 5000 });
+
+      // 悬停显示操作菜单
       await testApartment.hover();
       await page.waitForTimeout(300);
 
@@ -233,10 +274,21 @@ test.describe('删除公寓', () => {
           // 应该显示错误提示或确认弹窗
           // 具体行为取决于实现
         }
+      } else {
+        // 直接点击公寓卡片
+        await testApartment.click();
+        await page.waitForTimeout(300);
+
+        // 在详情页找删除按钮
+        const deleteButton = page.locator('button:has-text("删除")').first();
+        if (await deleteButton.isVisible()) {
+          await deleteButton.click();
+          // 应该显示错误提示
+          await page.waitForTimeout(500);
+        }
       }
-    } else {
-      // 如果没有测试公寓，跳过
-      test.skip();
+    } finally {
+      await generator.cleanup();
     }
   });
 });

@@ -2,7 +2,7 @@ import type {
   SubscriptionPlan,
   OrganizationSubscription,
   SubscriptionOrder,
-} from '../generated/client/index.js';
+} from '@prisma/client';
 import { ulid } from 'ulid';
 import {
   createSubscriptionRepository,
@@ -11,6 +11,11 @@ import {
   type OrderWithPlan,
   isSubscriptionActive,
 } from '../repositories/subscription.repo.js';
+import {
+  createPromotionRepository,
+  calculatePromotionPrice,
+  type PromotionRepository,
+} from '../repositories/promotion.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
@@ -29,6 +34,16 @@ export interface SubscriptionStatus {
 }
 
 /**
+ * 创建订单参数
+ */
+export interface CreateOrderParams {
+  planId: string;
+  billingCycle?: 'monthly' | 'yearly';
+  billingMonths?: number;
+  promotionId?: string;
+}
+
+/**
  * Subscription Service 接口
  */
 export interface SubscriptionService {
@@ -43,11 +58,7 @@ export interface SubscriptionService {
     effective: 'immediate' | 'next_cycle'
   ): Promise<OrganizationSubscription>;
   cancelSubscription(orgId: string): Promise<void>;
-  createOrder(
-    orgId: string,
-    planId: string,
-    billingCycle: 'monthly' | 'yearly'
-  ): Promise<SubscriptionOrder>;
+  createOrder(orgId: string, params: CreateOrderParams): Promise<SubscriptionOrder>;
   getOrder(orgId: string, orderId: string): Promise<OrderWithPlan>;
 }
 
@@ -55,19 +66,38 @@ export interface SubscriptionService {
  * 创建 Subscription Service 实例
  */
 export function createSubscriptionService(
-  getRepo: () => SubscriptionRepository = () => createSubscriptionRepository(prisma)
+  getRepo: () => SubscriptionRepository = () => createSubscriptionRepository(prisma),
+  getPromotionRepo: () => PromotionRepository = () => createPromotionRepository(prisma)
 ): SubscriptionService {
   return {
     listPlans: async () => {
-      return getRepo().findActivePlans();
+      // 返回套餐时包含定价信息
+      return prisma.subscriptionPlan.findMany({
+        where: { is_active: true, code: { not: 'free' } },
+        orderBy: { sort_order: 'asc' },
+        include: {
+          pricing: {
+            where: { is_active: true },
+            orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
+          },
+        },
+      }) as Promise<SubscriptionPlan[]>;
     },
 
     getPlanById: async (id: string) => {
-      const plan = await getRepo().findPlanById(id);
+      const plan = await prisma.subscriptionPlan.findFirst({
+        where: { id },
+        include: {
+          pricing: {
+            where: { is_active: true },
+            orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
+          },
+        },
+      });
       if (!plan) {
         throw createAppError(404, NotFoundMessages.PLAN);
       }
-      return plan;
+      return plan as SubscriptionPlan;
     },
 
     getSubscription: async (orgId: string) => {
@@ -199,7 +229,9 @@ export function createSubscriptionService(
       await getRepo().updateSubscription(orgId, { status: 'cancelled' });
     },
 
-    createOrder: async (orgId: string, planId: string, billingCycle: 'monthly' | 'yearly') => {
+    createOrder: async (orgId: string, params: CreateOrderParams) => {
+      const { planId, billingMonths = 1, promotionId } = params;
+
       const plan = await getRepo().findPlanById(planId);
       if (!plan) {
         throw createAppError(404, NotFoundMessages.PLAN);
@@ -208,28 +240,63 @@ export function createSubscriptionService(
         throw createAppError(400, '免费套餐无需购买，注册时已自动开通');
       }
 
+      // 查找周期定价
+      const pricing = await getPromotionRepo().findPricingByPlanAndMonths(planId, billingMonths);
+
+      let originalPrice: number;
+      if (pricing) {
+        originalPrice = Number(pricing.price);
+      } else {
+        // 如果没有找到对应周期的定价，使用月价 * 月数
+        originalPrice = Number(plan.price_monthly) * billingMonths;
+      }
+
+      // 获取并计算优惠
+      let promotion = null;
+      if (promotionId) {
+        promotion = await prisma.promotion.findUnique({ where: { id: promotionId } });
+      } else {
+        promotion = await getPromotionRepo().findActiveForPlan(planId);
+      }
+
+      const { finalPrice, giftMonths } = calculatePromotionPrice(originalPrice, promotion);
+
       const orderNo = `SUB${Date.now()}`;
       const expires = new Date();
       expires.setHours(expires.getHours() + 2);
+
+      // 注意：giftMonths 将在订单履约时使用（见 fulfillSubscription.ts）
+      void giftMonths;
 
       return getRepo().createOrder({
         id: ulid().toLowerCase(),
         order_no: orderNo,
         organization: { connect: { id: orgId } },
         plan: { connect: { id: plan.id } },
-        billing_cycle: billingCycle,
-        amount: billingCycle === 'yearly' ? Number(plan.price_yearly) : Number(plan.price_monthly),
+        billing_cycle: billingMonths === 12 ? 'yearly' : 'monthly',
+        billing_months: billingMonths,
+        amount: finalPrice,
+        original_amount: originalPrice,
         status: 'pending',
         expires_at: expires,
+        promotion: promotion ? { connect: { id: promotion.id } } : undefined,
       });
     },
 
     getOrder: async (orgId: string, orderId: string) => {
-      const order = await getRepo().findOrderById(orderId, orgId);
+      const order = await prisma.subscriptionOrder.findFirst({
+        where: { id: orderId, organization_id: orgId },
+        include: {
+          plan: true,
+          promotion: {
+            select: { id: true, name: true, type: true },
+          },
+        },
+      });
       if (!order) {
         throw createAppError(404, NotFoundMessages.ORDER);
       }
-      return order;
+      return order as OrderWithPlan;
     },
   };
 }

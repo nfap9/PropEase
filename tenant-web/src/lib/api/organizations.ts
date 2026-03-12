@@ -1,0 +1,95 @@
+import api from './client';
+import {
+  Organization,
+  OrganizationMember,
+  OrganizationUsage,
+  MemberRole,
+  MigrationStats,
+  DeletionPreview,
+} from '@/types';
+
+export const organizationsApi = {
+  list: async (): Promise<Organization[]> => {
+    const response = await api.get<Organization[]>('/organizations');
+    return response.data;
+  },
+
+  get: async (id: string): Promise<Organization> => {
+    const response = await api.get<Organization>(`/organizations/${id}`);
+    return response.data;
+  },
+
+  create: async (data: { name: string; slug?: string }): Promise<Organization> => {
+    const response = await api.post<Organization>('/organizations', data);
+    return response.data;
+  },
+
+  update: async (id: string, data: Partial<Organization>): Promise<Organization> => {
+    const response = await api.put<Organization>(`/organizations/${id}`, data);
+    return response.data;
+  },
+
+  getDeletionPreview: async (id: string): Promise<DeletionPreview> => {
+    const response = await api.get<DeletionPreview>(`/organizations/${id}/deletion-preview`);
+    return response.data;
+  },
+
+  delete: async (id: string, confirmedName: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/organizations/${id}`, {
+      data: { confirmed_name: confirmedName },
+    });
+    return response.data;
+  },
+
+  getUsage: async (orgId: string): Promise<OrganizationUsage> => {
+    const response = await api.get<OrganizationUsage>(`/organizations/${orgId}/usage`);
+    return response.data;
+  },
+
+  getMembers: async (orgId: string): Promise<OrganizationMember[]> => {
+    const response = await api.get<OrganizationMember[]>(`/organizations/${orgId}/members`);
+    return response.data;
+  },
+
+  addMember: async (
+    orgId: string,
+    data: { user_phone: string; role: MemberRole }
+  ): Promise<OrganizationMember> => {
+    const params = new URLSearchParams({ phone: data.user_phone, role: data.role });
+    const response = await api.post<OrganizationMember>(
+      `/organizations/${orgId}/members?${params}`
+    );
+    return response.data;
+  },
+
+  updateMember: async (
+    orgId: string,
+    memberId: string,
+    data: { role: MemberRole }
+  ): Promise<OrganizationMember> => {
+    const params = new URLSearchParams({ role: data.role });
+    const response = await api.put<OrganizationMember>(
+      `/organizations/${orgId}/members/${memberId}?${params}`
+    );
+    return response.data;
+  },
+
+  removeMember: async (orgId: string, memberId: string): Promise<void> => {
+    await api.delete(`/organizations/${orgId}/members/${memberId}`);
+  },
+
+  // Personal team
+  getPersonalTeam: async (): Promise<Organization> => {
+    const response = await api.get<Organization>('/organizations/personal');
+    return response.data;
+  },
+
+  migratePersonalTeam: async (targetOrgId: string): Promise<MigrationStats> => {
+    const response = await api.post<MigrationStats>('/organizations/personal/migrate', {
+      target_org_id: targetOrgId,
+    });
+    return response.data;
+  },
+};
+
+export default organizationsApi;

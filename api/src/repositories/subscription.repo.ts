@@ -3,7 +3,7 @@ import type {
   SubscriptionPlan,
   OrganizationSubscription,
   SubscriptionOrder,
-} from '../generated/client/index.js';
+} from '@prisma/client';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -19,6 +19,14 @@ export type SubscriptionWithPlan = OrganizationSubscription & {
  */
 export type OrderWithPlan = SubscriptionOrder & {
   plan: SubscriptionPlan | null;
+};
+
+/**
+ * 订单包含套餐和优惠信息
+ */
+export type OrderWithPlanAndPromotion = SubscriptionOrder & {
+  plan: SubscriptionPlan | null;
+  promotion: { id: string; name: string; type: string } | null;
 };
 
 /**

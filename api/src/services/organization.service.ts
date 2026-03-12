@@ -1,4 +1,4 @@
-import type { Organization, OrganizationMember, Prisma } from '../generated/client/index.js';
+import type { Organization, OrganizationMember, Prisma } from '@prisma/client';
 import { ulid } from 'ulid';
 import {
   createOrganizationRepository,

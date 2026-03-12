@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma.js';
-import type { SubscriptionPlan } from '../generated/client/index.js';
+import type { SubscriptionPlan } from '@prisma/client';
 
 const DEFAULT_FREE_LIMITS = {
   max_organizations: 1,

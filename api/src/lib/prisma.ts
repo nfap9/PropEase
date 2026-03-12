@@ -18,10 +18,14 @@ export const prisma =
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
+let cleanedUp = false;
 const cleanup = async () => {
-  await prisma.$disconnect();
-  await pool.end();
+  if (cleanedUp) return;
+  cleanedUp = true;
+  await prisma.$disconnect().catch(() => undefined);
+  await pool.end().catch(() => undefined);
 };
 
 process.on('beforeExit', cleanup);
-process.on('exit', cleanup);
+process.on('SIGINT', () => void cleanup());
+process.on('SIGTERM', () => void cleanup());

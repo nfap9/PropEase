@@ -70,12 +70,25 @@ test.describe('公寓列表页面', () => {
 });
 
 test.describe('公寓列表空状态', () => {
-  // 注：这个测试需要在一个没有公寓的组织中运行
-  // 在实际场景中可能需要创建一个临时组织
+  test.beforeEach(async ({ page }) => {
+    await login(page);
+    await goToApartments(page);
+  });
 
-  test('无公寓时显示空状态', async ({ page }) => {
-    // 这个测试用例需要特定的测试数据准备
-    // 暂时跳过，在完整测试套件中实现
-    test.skip();
+  test('搜索不存在的内容显示空结果', async ({ page }) => {
+    // 等待列表加载
+    await page.waitForSelector(`[data-testid="${APARTMENTS.LIST}"]`);
+
+    // 搜索一个不存在的内容
+    const uniqueSearchTerm = `不存在的公寓_${Date.now()}`;
+    await page.fill(`[data-testid="${APARTMENTS.SEARCH_INPUT}"]`, uniqueSearchTerm);
+
+    // 等待搜索结果
+    await page.waitForTimeout(500);
+
+    // 验证搜索结果为空
+    const listItems = page.locator(`[data-testid="${APARTMENTS.LIST}"] > *`);
+    const count = await listItems.count();
+    expect(count).toBe(0);
   });
 });

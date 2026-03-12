@@ -5,12 +5,15 @@
  * - 创建租客
  * - 编辑租客
  * - 删除租客
+ *
+ * 每个测试都会创建独立的测试数据，确保测试隔离性
  */
 
-import { test, expect } from '../fixtures';
+import { test, expect, APIRequestContext } from '@playwright/test';
 import { goToTenants } from '../helpers/navigation';
 import { login } from '../helpers/auth';
 import { TENANTS } from '../testids';
+import { createTestDataGenerator } from '../helpers/test-data';
 
 // 生成唯一的测试数据
 const uniquePhone = () => `13900${Date.now().toString().slice(-6)}`;
@@ -142,18 +145,24 @@ test.describe('创建租客', () => {
 });
 
 test.describe('编辑租客', () => {
-  test.beforeEach(async ({ page }) => {
+  test('成功编辑租客信息', async ({ page, request }) => {
     await login(page);
-    await goToTenants(page);
-  });
 
-  test('成功编辑租客信息', async ({ page }) => {
-    // 等待列表加载
-    await page.waitForSelector(`[data-testid="${TENANTS.LIST}"]`);
+    // 创建独立的测试数据
+    const generator = await createTestDataGenerator(request);
+    const tenant = await generator.createTenant();
 
-    // 找到测试租客
-    const testTenant = page.locator('text="张三"').first();
-    if (await testTenant.isVisible()) {
+    try {
+      await goToTenants(page);
+      await page.waitForSelector(`[data-testid="${TENANTS.LIST}"]`);
+
+      // 搜索刚创建的租客
+      await page.fill(`[data-testid="${TENANTS.SEARCH_INPUT}"]`, tenant.name);
+      await page.waitForTimeout(500);
+
+      // 找到租客
+      const testTenant = page.locator(`text="${tenant.name}"`).first();
+      await expect(testTenant).toBeVisible({ timeout: 5000 });
       await testTenant.hover();
       await page.waitForTimeout(300);
 
@@ -181,29 +190,23 @@ test.describe('编辑租客', () => {
       } else {
         // 尝试通过更多菜单
         const moreButton = page.locator('button[aria-label="更多"]').first();
-        if (await moreButton.isVisible()) {
-          await moreButton.click();
-          const editOption = page.locator('button:has-text("编辑")').first();
-          if (await editOption.isVisible()) {
-            await editOption.click();
-          }
-        } else {
-          test.skip();
-        }
+        await expect(moreButton).toBeVisible({ timeout: 3000 });
+        await moreButton.click();
+        const editOption = page.locator('button:has-text("编辑")').first();
+        await expect(editOption).toBeVisible({ timeout: 3000 });
+        await editOption.click();
       }
-    } else {
-      test.skip();
+    } finally {
+      await generator.cleanup();
     }
   });
 });
 
 test.describe('删除租客', () => {
-  test.beforeEach(async ({ page }) => {
+  test('删除无租约的租客', async ({ page }) => {
     await login(page);
     await goToTenants(page);
-  });
 
-  test('删除无租约的租客', async ({ page }) => {
     // 先创建一个租客用于删除
     await page.waitForSelector(`[data-testid="${TENANTS.HEADING}"]`);
 
@@ -226,46 +229,58 @@ test.describe('删除租客', () => {
 
     // 找到并删除
     const createdTenant = page.locator(`text="${name}"`).first();
-    if (await createdTenant.isVisible()) {
-      await createdTenant.hover();
-      await page.waitForTimeout(300);
+    await expect(createdTenant).toBeVisible({ timeout: 5000 });
+    await createdTenant.hover();
+    await page.waitForTimeout(300);
 
-      // 点击删除按钮
-      const deleteButton = page.locator('button:has-text("删除")').first();
-      if (await deleteButton.isVisible()) {
-        await deleteButton.click();
+    // 点击删除按钮
+    const deleteButton = page.locator('button:has-text("删除")').first();
+    if (await deleteButton.isVisible()) {
+      await deleteButton.click();
 
-        // 等待确认弹窗
-        const deleteDialog = page.locator('[data-testid="tenants-delete-dialog"]');
-        await expect(deleteDialog).toBeVisible({ timeout: 3000 });
+      // 等待确认弹窗
+      const deleteDialog = page.locator('[data-testid="tenants-delete-dialog"]');
+      await expect(deleteDialog).toBeVisible({ timeout: 3000 });
 
-        // 确认删除
-        const confirmDeleteBtn = deleteDialog.locator('button:has-text("确认")').last();
-        await confirmDeleteBtn.click();
+      // 确认删除
+      const confirmDeleteBtn = deleteDialog.locator('button:has-text("确认")').last();
+      await confirmDeleteBtn.click();
 
-        // 验证弹窗关闭
-        await expect(deleteDialog).not.toBeVisible({ timeout: 5000 });
-      } else {
-        // 尝试通过更多菜单
-        const moreButton = page.locator('button[aria-label="更多"]').first();
-        if (await moreButton.isVisible()) {
-          await moreButton.click();
-          const delBtn = page.locator('button:has-text("删除")').first();
-          if (await delBtn.isVisible()) {
-            await delBtn.click();
-          }
-        }
-      }
+      // 验证弹窗关闭
+      await expect(deleteDialog).not.toBeVisible({ timeout: 5000 });
+    } else {
+      // 尝试通过更多菜单
+      const moreButton = page.locator('button[aria-label="更多"]').first();
+      await expect(moreButton).toBeVisible({ timeout: 3000 });
+      await moreButton.click();
+      const delBtn = page.locator('button:has-text("删除")').first();
+      await expect(delBtn).toBeVisible({ timeout: 3000 });
+      await delBtn.click();
     }
   });
 
-  test('删除有关联租约的租客应该失败', async ({ page }) => {
-    // 等待列表加载
-    await page.waitForSelector(`[data-testid="${TENANTS.LIST}"]`);
+  test('删除有关联租约的租客应该失败', async ({ page, request }) => {
+    await login(page);
 
-    // 找到有租约的测试租客（张三有租约）
-    const tenantWithLease = page.locator('text="张三"').first();
-    if (await tenantWithLease.isVisible()) {
+    // 创建独立的测试数据：公寓、房间、租客、租约
+    const generator = await createTestDataGenerator(request);
+    const apartment = await generator.createApartmentWithRooms(1);
+    const tenant = await generator.createTenant();
+
+    // 创建租约，使租客有关联
+    await generator.createLease(apartment.rooms[0].id, tenant.id);
+
+    try {
+      await goToTenants(page);
+      await page.waitForSelector(`[data-testid="${TENANTS.LIST}"]`);
+
+      // 搜索刚创建的租客
+      await page.fill(`[data-testid="${TENANTS.SEARCH_INPUT}"]`, tenant.name);
+      await page.waitForTimeout(500);
+
+      // 找到有租约的租客
+      const tenantWithLease = page.locator(`text="${tenant.name}"`).first();
+      await expect(tenantWithLease).toBeVisible({ timeout: 5000 });
       await tenantWithLease.hover();
       await page.waitForTimeout(300);
 
@@ -273,14 +288,23 @@ test.describe('删除租客', () => {
       const deleteButton = page.locator('button:has-text("删除")').first();
       if (await deleteButton.isVisible()) {
         await deleteButton.click();
-
-        // 应该显示错误提示
+        // 应该显示错误提示或阻止删除
         await page.waitForTimeout(500);
       } else {
-        test.skip();
+        // 尝试通过更多菜单
+        const moreButton = page.locator('button[aria-label="更多"]').first();
+        await expect(moreButton).toBeVisible({ timeout: 3000 });
+        await moreButton.click();
+        const delBtn = page.locator('button:has-text("删除")').first();
+        // 有租约的租客，删除按钮可能是禁用的或不显示
+        if (await delBtn.isVisible()) {
+          await delBtn.click();
+          // 应该显示错误提示
+          await page.waitForTimeout(500);
+        }
       }
-    } else {
-      test.skip();
+    } finally {
+      await generator.cleanup();
     }
   });
 });
