@@ -6,7 +6,6 @@ import type {
   User,
   Organization,
   SubscriptionPlan,
-  OrganizationSubscription,
 } from '@prisma/client';
 
 describe('AdminRepository', () => {
@@ -397,6 +396,7 @@ describe('AdminRepository', () => {
     describe('getPlatformConfig', () => {
       it('should return platform config', async () => {
         const config = { id: 'default', brand: {}, usage_pricing: {} };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mockPlatformConfig.findUnique.mockResolvedValue(config as any);
 
         const result = await repo.getPlatformConfig();
@@ -410,6 +410,7 @@ describe('AdminRepository', () => {
       it('should upsert platform config', async () => {
         const brand = { name: 'Test' };
         const config = { id: 'default', brand, usage_pricing: {} };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mockPlatformConfig.upsert.mockResolvedValue(config as any);
 
         await repo.upsertPlatformConfig(brand);

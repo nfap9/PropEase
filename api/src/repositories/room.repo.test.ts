@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createRoomRepository } from './room.repo.js';
 
 describe('RoomRepository', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockDb: any;
   let repository: ReturnType<typeof createRoomRepository>;
 
@@ -69,6 +70,7 @@ describe('RoomRepository', () => {
       const result = await repository.findByIdWithApartment(roomId);
 
       expect(result).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((result as any).apartment).toBeDefined();
     });
   });
