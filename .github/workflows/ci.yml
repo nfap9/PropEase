@@ -181,6 +181,8 @@ jobs:
 
       - name: Prisma generate
         run: pnpm --filter apartment-ultra-api exec prisma generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/apartment_ultra
 
       - name: Push database schema
         run: pnpm --filter apartment-ultra-api exec prisma db push
