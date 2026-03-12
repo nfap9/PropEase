@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Request, Response, NextFunction } from 'express';
 import { BusinessCode } from '@apartment-ultra/api-contract';
-import { createErrorResponse, errorHandler, type AppError } from './errorHandler.js';
+import {
+  createErrorResponse,
+  errorHandler,
+  type LegacyAppError,
+} from './errorHandler.js';
 
 describe('createErrorResponse', () => {
   it('returns body with code and message only when no data', () => {
@@ -51,7 +55,7 @@ describe('errorHandler', () => {
 
   it('sends statusCode and createErrorResponse body for 4xx error', () => {
     const { res, statusSpy, jsonSpy } = createMockRes();
-    const err = new Error('未找到') as AppError;
+    const err = new Error('未找到') as LegacyAppError;
     err.statusCode = 404;
     err.businessCode = BusinessCode.NOT_FOUND;
 
@@ -66,7 +70,7 @@ describe('errorHandler', () => {
 
   it('uses "参数校验失败" and data.errors when err.fieldErrors is set', () => {
     const { res, jsonSpy } = createMockRes();
-    const err = new Error('validation') as AppError;
+    const err = new Error('validation') as LegacyAppError;
     err.statusCode = 422;
     err.businessCode = BusinessCode.VALIDATION_ERROR;
     err.fieldErrors = [{ field: 'body.name', message: '必填' }];
@@ -82,7 +86,7 @@ describe('errorHandler', () => {
 
   it('sends 500 and INTERNAL_ERROR when statusCode is missing', () => {
     const { res, statusSpy, jsonSpy } = createMockRes();
-    const err = new Error('boom') as AppError;
+    const err = new Error('boom') as LegacyAppError;
 
     errorHandler(err, {} as Request, res, vi.fn() as unknown as NextFunction);
 
@@ -95,7 +99,7 @@ describe('errorHandler', () => {
 
   it('logs to console.error for 500', () => {
     const { res } = createMockRes();
-    const err = new Error('server error') as AppError;
+    const err = new Error('server error') as LegacyAppError;
     err.statusCode = 500;
 
     errorHandler(err, {} as Request, res, vi.fn() as unknown as NextFunction);
