@@ -8,7 +8,6 @@
  */
 
 import { test, expect } from '../fixtures';
-import { isAuthenticated } from '../helpers/auth';
 import { AUTH } from '../testids';
 
 test.describe('注册页面', () => {
@@ -95,26 +94,12 @@ test.describe('注册表单验证', () => {
     await expect(page.locator(`[data-testid="${AUTH.REGISTER_PAGE}"]`)).toBeVisible();
   });
 
-  test('空验证码显示验证错误', async ({ page }) => {
-    // 填写必填信息（不填验证码）
-    await page.fill(`[data-testid="${AUTH.PHONE_INPUT}"]`, '13900139999');
-    await page.fill(`[data-testid="${AUTH.NAME_INPUT}"]`, '测试用户');
-    await page.fill(`[data-testid="${AUTH.PASSWORD_INPUT}"]`, 'Test1234');
-
-    // 点击注册
-    await page.click(`[data-testid="${AUTH.REGISTER_BUTTON}"]`);
-
-    // 应该显示验证错误（页面不跳转）
-    await expect(page.locator(`[data-testid="${AUTH.REGISTER_PAGE}"]`)).toBeVisible();
-  });
-
   test('密码和确认密码不一致显示验证错误', async ({ page }) => {
     // 填写必填信息，密码和确认密码不一致
     await page.fill(`[data-testid="${AUTH.PHONE_INPUT}"]`, '13900139999');
     await page.fill(`[data-testid="${AUTH.NAME_INPUT}"]`, '测试用户');
     await page.fill(`[data-testid="${AUTH.PASSWORD_INPUT}"]`, 'Test1234');
     await page.fill(`[data-testid="${AUTH.CONFIRM_PASSWORD_INPUT}"]`, 'Test5678');
-    await page.fill(`[data-testid="${AUTH.VERIFICATION_CODE_INPUT}"]`, '123456');
 
     // 点击注册
     await page.click(`[data-testid="${AUTH.REGISTER_BUTTON}"]`);
@@ -134,7 +119,6 @@ test.describe('已注册手机号', () => {
     await page.fill(`[data-testid="${AUTH.NAME_INPUT}"]`, '测试用户');
     await page.fill(`[data-testid="${AUTH.PASSWORD_INPUT}"]`, 'Test1234');
     await page.fill(`[data-testid="${AUTH.CONFIRM_PASSWORD_INPUT}"]`, 'Test1234');
-    await page.fill(`[data-testid="${AUTH.VERIFICATION_CODE_INPUT}"]`, '123456');
 
     // 点击注册
     await page.click(`[data-testid="${AUTH.REGISTER_BUTTON}"]`);
@@ -144,32 +128,5 @@ test.describe('已注册手机号', () => {
 
     // 应该显示错误（页面不跳转）
     expect(page.url()).toContain('/register');
-  });
-});
-
-test.describe('发送验证码', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/register');
-    await page.waitForSelector(`[data-testid="${AUTH.REGISTER_PAGE}"]`);
-  });
-
-  test('点击发送验证码按钮', async ({ page }) => {
-    // 填写手机号
-    await page.fill(`[data-testid="${AUTH.PHONE_INPUT}"]`, '13900139999');
-
-    // 点击发送验证码
-    await page.click(`[data-testid="${AUTH.SEND_CODE_BUTTON}"]`);
-
-    // 按钮应该进入倒计时状态（文本变化或禁用）
-    // 注：具体实现可能不同，这里验证按钮仍然存在
-    await expect(page.locator(`[data-testid="${AUTH.SEND_CODE_BUTTON}"]`)).toBeVisible();
-  });
-
-  test('未填写手机号时发送验证码', async ({ page }) => {
-    // 不填写手机号直接点击发送
-    await page.click(`[data-testid="${AUTH.SEND_CODE_BUTTON}"]`);
-
-    // 应该显示验证错误
-    await expect(page.locator(`[data-testid="${AUTH.REGISTER_PAGE}"]`)).toBeVisible();
   });
 });

@@ -461,22 +461,12 @@ export const AUTH = {
   LOGIN_PAGE: 'auth-login-page',
   /** 注册页 */
   REGISTER_PAGE: 'auth-register-page',
-  /** 密码登录 Tab */
-  PASSWORD_TAB: 'auth-tab-password',
-  /** 验证码登录 Tab */
-  CODE_TAB: 'auth-tab-code',
   /** 手机号输入框 */
   PHONE_INPUT: 'auth-phone-input',
-  /** 验证码登录时的手机号输入框 */
-  PHONE_INPUT_CODE: 'auth-phone-input-code',
   /** 密码输入框 */
   PASSWORD_INPUT: 'auth-password-input',
   /** 确认密码输入框 */
   CONFIRM_PASSWORD_INPUT: 'auth-confirm-password-input',
-  /** 验证码输入框 */
-  VERIFICATION_CODE_INPUT: 'auth-verification-code-input',
-  /** 发送验证码按钮 */
-  SEND_CODE_BUTTON: 'auth-send-code-btn',
   /** 登录按钮 */
   LOGIN_BUTTON: 'auth-login-button',
   /** 注册按钮 */

@@ -4,35 +4,22 @@ import { hashPassword, verifyPassword } from '../utils/security.js';
 import { createAccessToken, createRefreshToken, decodeToken } from '../utils/jwt.js';
 import { createAppError } from '../utils/appError.js';
 import { ulid } from 'ulid';
-import { config } from '../config.js';
-
-/** 验证码存储结构 */
-interface VerificationCodeData {
-  code: string;
-  expiresAt: number;
-  purpose: 'login' | 'register';
-}
-
-/** 验证码存储（内存，开发环境使用） */
-export const verificationCodeStore = new Map<string, VerificationCodeData>();
 
 /**
- * 注册输入
+ * 注册输入（无需短信验证）
  */
 export interface RegisterInput {
   phone: string;
   full_name: string;
   password: string;
-  verification_code: string;
 }
 
 /**
- * 登录输入
+ * 登录输入（仅支持密码登录）
  */
 export interface LoginInput {
   phone: string;
-  password?: string;
-  verification_code?: string;
+  password: string;
 }
 
 /**
@@ -63,7 +50,6 @@ export interface AuthService {
   login(data: LoginInput): Promise<LoginResult>;
   refreshToken(refreshToken: string): Promise<LoginResult>;
   getUserById(id: string): Promise<UserInfo | null>;
-  validateVerificationCode(code: string, phone?: string): boolean;
 }
 
 /**
@@ -74,12 +60,7 @@ export function createAuthService(
 ): AuthService {
   return {
     register: async (data: RegisterInput) => {
-      const { phone, full_name, password, verification_code } = data;
-
-      // 验证码校验
-      if (!verification_code) {
-        throw createAppError(400, '验证码不能为空');
-      }
+      const { phone, full_name, password } = data;
 
       // 检查手机号是否已注册
       const existing = await getRepo().findUserByPhone(phone);
@@ -112,33 +93,17 @@ export function createAuthService(
     },
 
     login: async (data: LoginInput) => {
-      const { phone, password, verification_code } = data;
+      const { phone, password } = data;
 
       const user = await getRepo().findUserByPhone(phone);
       if (!user) {
         throw createAppError(401, '手机号或密码错误');
       }
 
-      if (password) {
-        const ok = await verifyPassword(password, user.password_hash);
-        if (!ok) {
-          throw createAppError(401, '手机号或密码错误');
-        }
-      } else {
-        // 验证码登录
-        if (!verification_code) {
-          throw createAppError(401, '验证码无效或已过期');
-        }
-        // 开发环境允许测试验证码 '123456'
-        const isTestCode = config.isDev && verification_code === '123456';
-        if (!isTestCode) {
-          const stored = verificationCodeStore.get(phone);
-          if (!stored || stored.code !== verification_code || stored.expiresAt < Date.now()) {
-            throw createAppError(401, '验证码无效或已过期');
-          }
-          // 验证成功后删除验证码
-          verificationCodeStore.delete(phone);
-        }
+      // 仅支持密码登录
+      const ok = await verifyPassword(password, user.password_hash);
+      if (!ok) {
+        throw createAppError(401, '手机号或密码错误');
       }
 
       if (!user.is_active) {
@@ -187,17 +152,6 @@ export function createAuthService(
         is_active: user.is_active,
         created_at: user.created_at,
       };
-    },
-
-    validateVerificationCode: (code: string, phone?: string) => {
-      if (!phone) return false;
-      const stored = verificationCodeStore.get(phone);
-      if (!stored || stored.code !== code || stored.expiresAt < Date.now()) {
-        return false;
-      }
-      // 验证成功后删除验证码
-      verificationCodeStore.delete(phone);
-      return true;
     },
   };
 }
