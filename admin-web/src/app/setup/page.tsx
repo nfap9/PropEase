@@ -86,7 +86,7 @@ export default function AdminSetupPage() {
         const res = await adminApiEndpoints.checkInitStatus();
         if (res.data?.initialized) {
           // 已初始化，跳转到登录页
-          router.replace('/admin/login');
+          router.replace('/login');
         } else {
           setIsChecking(false);
         }
@@ -117,7 +117,7 @@ export default function AdminSetupPage() {
       const data = res.data as AdminTokenResponse;
       if (data?.access_token) {
         localStorage.setItem('admin_access_token', data.access_token);
-        router.replace('/admin');
+        router.replace('/');
         return;
       }
       setError('初始化失败');

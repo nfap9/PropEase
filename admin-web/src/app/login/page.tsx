@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
       // 1. 检查是否已登录
       const token = localStorage.getItem('admin_access_token');
       if (token) {
-        router.replace('/admin');
+        router.replace('/');
         return;
       }
 
@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
         const res = await adminApiEndpoints.checkInitStatus();
         if (!res.data?.initialized) {
           // 未初始化，跳转到初始化页面
-          router.replace('/admin/setup');
+          router.replace('/setup');
           return;
         }
       } catch {
@@ -78,7 +78,7 @@ export default function AdminLoginPage() {
       const data = res.data as AdminTokenResponse;
       if (data?.access_token) {
         localStorage.setItem('admin_access_token', data.access_token);
-        router.replace('/admin');
+        router.replace('/');
         return;
       }
       setError('登录失败');

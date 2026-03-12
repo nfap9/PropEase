@@ -1,7 +1,14 @@
-# Apartment Ultra 生产环境 Docker Compose 配置
+# Apartment Ultra Docker Compose 配置
 # ==================================================================
 # 使用方法:
-#   docker compose -f docker/docker-compose.yaml --env-file .env.production up -d
+#   本地开发（推荐只启动中间件）:
+#     docker compose -f docker/docker-compose.middleware.yaml up -d
+#
+#   完整部署:
+#     docker compose -f docker/docker-compose.yaml --env-file .env.production up -d
+#
+#   本地完整部署（测试用）:
+#     docker compose -f docker/docker-compose.yaml --env-file docker/.env.docker up -d
 # ==================================================================
 
 services:
@@ -12,6 +19,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-apartment_ultra}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backup:/backup
@@ -31,12 +40,14 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: ${POSTGRES_MEMORY:-1G}
 
   redis:
     image: redis:7-alpine
     container_name: apartment_ultra_redis
     command: redis-server --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -79,7 +90,7 @@ services:
       WECHAT_PAY_NOTIFY_URL_BASE: ${WECHAT_PAY_NOTIFY_URL_BASE:-}
       WECHAT_PRIVATE_KEY: ${WECHAT_PRIVATE_KEY:-}
     ports:
-      - "127.0.0.1:8000:8000"
+      - "${API_PORT:-8000}:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -102,21 +113,21 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: ${API_MEMORY:-1G}
 
-  web:
-    image: apartment-ultra_web:${WEB_TAG:-latest}
+  tenant-web:
+    image: apartment-ultra_tenant-web:${TENANT_WEB_TAG:-latest}
     build:
       context: ..
-      dockerfile: web/Dockerfile.prod
+      dockerfile: tenant-web/Dockerfile.prod
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}
-    container_name: apartment_ultra_web
+    container_name: apartment_ultra_tenant_web
     environment:
       NODE_ENV: production
       API_URL_SERVER: http://api:8000/api/v1
-    expose:
-      - "3000"
+    ports:
+      - "${TENANT_WEB_PORT:-3000}:3000"
     depends_on:
       api:
         condition: service_healthy
@@ -131,7 +142,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: ${TENANT_WEB_MEMORY:-1G}
 
   admin-web:
     image: apartment-ultra_admin:${ADMIN_TAG:-latest}
@@ -160,20 +171,21 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: ${ADMIN_MEMORY:-1G}
 
   nginx:
     image: nginx:alpine
     container_name: apartment_ultra_nginx
     ports:
-      - "80:80"
+      - "${NGINX_PORT:-80}:80"
     volumes:
       - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
     environment:
       - SERVER_NAME=${SERVER_NAME:-localhost}
     depends_on:
       - api
-      - web
+      - tenant-web
+      - admin-web
     restart: unless-stopped
     networks:
       - apartment-network
