@@ -39,13 +39,6 @@ if [ -z "$SERVER_ADDR" ]; then
     exit 1
 fi
 
-# 获取管理员密码
-read -p "请输入管理员初始密码 (留空自动生成): " ADMIN_PWD
-if [ -z "$ADMIN_PWD" ]; then
-    ADMIN_PWD=$(openssl rand -base64 12 | tr -d '/+=')
-    log_info "已自动生成管理员密码: $ADMIN_PWD"
-fi
-
 # 生成密钥
 log_info "生成密钥..."
 POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -d '/+=')
@@ -66,7 +59,6 @@ POSTGRES_DB=apartment_ultra
 # ---- API 配置 ----
 APP_NAME=Apartment Ultra API
 SECRET_KEY=${SECRET_KEY}
-ADMIN_INIT_PASSWORD=${ADMIN_PWD}
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 REFRESH_TOKEN_EXPIRE_DAYS=7
 
@@ -93,7 +85,6 @@ log_info "配置文件已生成: $ENV_FILE"
 echo ""
 echo "=========================================="
 echo "重要信息请保存:"
-echo "  管理员密码: $ADMIN_PWD"
 echo "  数据库密码: $POSTGRES_PASSWORD"
 echo "=========================================="
 echo ""

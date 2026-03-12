@@ -11,11 +11,6 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import { healthHandler } from './routes/health.js';
 import { v1Router } from './routes/v1/index.js';
 import { waitForDatabase, verifyDatabaseSchema } from './startup/dbCheck.js';
-import { seedAdminRole } from './startup/seedAdmin.js';
-import { seedE2EUser } from './startup/seedE2E.js';
-import { seedPermissions } from './startup/seedPermissions.js';
-import { seedPlans } from './startup/seedPlans.js';
-import { seedPlatformConfig } from './startup/seedPlatformConfig.js';
 import { startScheduler } from './scheduler/index.js';
 import { swaggerSpec } from './swagger.js';
 
@@ -62,34 +57,7 @@ async function start(): Promise<void> {
     }
   }
 
-  // 3. 执行种子数据
-  try {
-    await seedAdminRole();
-  } catch (e) {
-    console.error('Startup seed failed:', e);
-  }
-  try {
-    await seedPermissions();
-  } catch (e) {
-    console.error('Permission seed failed:', e);
-  }
-  try {
-    await seedPlans();
-  } catch (e) {
-    console.error('Plan seed failed:', e);
-  }
-  try {
-    await seedPlatformConfig();
-  } catch (e) {
-    console.error('Platform config seed failed:', e);
-  }
-  if (process.env.SEED_E2E_USER === 'true') {
-    try {
-      await seedE2EUser();
-    } catch (e) {
-      console.error('E2E seed failed:', e);
-    }
-  }
+  // 3. 启动定时任务
   startScheduler();
 
   app.listen(port, '0.0.0.0', () => {

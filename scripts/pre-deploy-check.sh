@@ -72,7 +72,6 @@ REQUIRED_VARS=(
     "SECRET_KEY:JWT密钥"
     "CORS_ORIGINS:跨域配置"
     "NEXT_PUBLIC_API_URL:API地址"
-    "ADMIN_INIT_PASSWORD:管理员密码"
 )
 
 for var_def in "${REQUIRED_VARS[@]}"; do
@@ -84,13 +83,6 @@ for var_def in "${REQUIRED_VARS[@]}"; do
             "SECRET_KEY")
                 if [ "${!var_name}" = "dev-secret-key-do-not-use-in-production" ]; then
                     check_fail "$var_desc 使用了开发默认值"
-                else
-                    check_pass "$var_desc 已配置"
-                fi
-                ;;
-            "ADMIN_INIT_PASSWORD")
-                if [ "${!var_name}" = "Admin@123456" ]; then
-                    check_warn "$var_desc 使用了示例密码"
                 else
                     check_pass "$var_desc 已配置"
                 fi
