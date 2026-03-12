@@ -45,6 +45,8 @@ jobs:
 
       - name: Prisma generate
         run: pnpm --filter apartment-ultra-api exec prisma generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/apartment_ultra
 
       - name: Run ESLint
         run: pnpm --filter apartment-ultra-api run lint
