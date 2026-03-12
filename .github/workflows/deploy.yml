@@ -1,0 +1,53 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+      image_tag:
+        description: 'Image tag to deploy (default: main)'
+        required: false
+        default: 'main'
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            cd /opt/apartment-ultra
+
+            # 拉取最新镜像
+            echo "Pulling latest images..."
+            docker compose -f docker/docker-compose.yaml pull
+
+            # 重启服务
+            echo "Restarting services..."
+            docker compose -f docker/docker-compose.yaml --env-file .env.production up -d
+
+            # 等待服务启动
+            echo "Waiting for services to start..."
+            sleep 10
+
+            # 健康检查
+            echo "Health check..."
+            curl -f http://localhost/health || exit 1
+
+            echo "Deployment completed successfully!"

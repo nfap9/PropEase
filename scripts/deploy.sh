@@ -2,6 +2,14 @@
 # =========================================
 # Apartment Ultra 一键部署脚本
 # =========================================
+# 使用方法: DEPLOY_HOST=<ip> ./scripts/deploy.sh
+#
+# 环境变量:
+#   DEPLOY_HOST      - 服务器 IP 或域名 (必需)
+#   DEPLOY_USER      - 服务器用户名 (默认: root)
+#   DEPLOY_DIR       - 部署目录 (默认: /opt/apartment-ultra)
+#   SKIP_BUILD       - 跳过构建，使用现有 dist/ 中的镜像
+# =========================================
 
 set -e
 
@@ -17,7 +25,12 @@ NC='\033[0m'
 
 # 配置
 SERVER_USER="${DEPLOY_USER:-root}"
-REMOTE_DIR="/opt/apartment-ultra"
+REMOTE_DIR="${DEPLOY_DIR:-/opt/apartment-ultra}"
+
+# 镜像文件名
+API_IMAGE="api.tar.gz"
+TENANT_WEB_IMAGE="tenant-web.tar.gz"
+ADMIN_WEB_IMAGE="admin-web.tar.gz"
 
 # 计时器
 START_TIME=0
@@ -88,7 +101,7 @@ show_spinner() {
     echo -ne "\r"
 }
 
-# 从 .env.production 读取 SERVER_NAME
+# 检查服务器地址
 if [ -z "$DEPLOY_HOST" ] && [ -f ".env.production" ]; then
     DEPLOY_HOST=$(grep "^SERVER_NAME=" .env.production | cut -d'=' -f2-)
 fi
@@ -97,7 +110,7 @@ if [ -z "$DEPLOY_HOST" ]; then
     print_banner
     echo -e "  ${RED}✗ 请设置服务器地址${NC}"
     echo ""
-    echo -e "  用法: ${BOLD}DEPLOY_HOST=<ip> ./scripts/deploy-from-local.sh${NC}"
+    echo -e "  用法: ${BOLD}DEPLOY_HOST=<ip> ./scripts/deploy.sh${NC}"
     exit 1
 fi
 
@@ -152,51 +165,70 @@ fi
 # ========================================
 # 步骤 2: 构建镜像
 # ========================================
-print_header "构建 Docker 镜像"
+if [ "$SKIP_BUILD" != "true" ]; then
+    print_header "构建 Docker 镜像"
 
-echo -e "  ${DIM}构建平台: linux/amd64${NC}"
-echo ""
-
-# 构建 API
-print_task "构建 API 镜像"
-echo ""
-if docker buildx build --platform linux/amd64 --load -f api/Dockerfile -t apartment-ultra_api:latest . 2>&1 | while IFS= read -r line; do
-    echo -e "  ${DIM}$line${NC}"
-done; then
+    echo -e "  ${DIM}构建平台: linux/amd64${NC}"
     echo ""
+
+    API_URL=$(grep "^NEXT_PUBLIC_API_URL=" .env.production | cut -d'=' -f2-)
+
+    # 构建 API
+    print_task "构建 API 镜像"
+    echo ""
+    if docker buildx build --platform linux/amd64 --load -f api/Dockerfile -t apartment-ultra-api:latest . 2>&1 | while IFS= read -r line; do
+        echo -e "  ${DIM}$line${NC}"
+    done; then
+        echo ""
+        print_done
+    else
+        echo ""
+        print_fail
+        exit 1
+    fi
+
+    # 构建租客端前端
+    print_task "构建租客端前端镜像"
+    echo ""
+    if docker buildx build --platform linux/amd64 --load -f tenant-web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=${API_URL} -t apartment-ultra-tenant-web:latest . 2>&1 | while IFS= read -r line; do
+        echo -e "  ${DIM}$line${NC}"
+    done; then
+        echo ""
+        print_done
+    else
+        echo ""
+        print_fail
+        exit 1
+    fi
+
+    # 构建运营后台前端
+    print_task "构建运营后台前端镜像"
+    echo ""
+    if docker buildx build --platform linux/amd64 --load -f admin-web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=${API_URL} -t apartment-ultra-admin-web:latest . 2>&1 | while IFS= read -r line; do
+        echo -e "  ${DIM}$line${NC}"
+    done; then
+        echo ""
+        print_done
+    else
+        echo ""
+        print_fail
+        exit 1
+    fi
+
+    # 保存镜像
+    print_task "导出镜像文件"
+    mkdir -p dist
+    docker save apartment-ultra-api:latest | gzip > dist/${API_IMAGE} &
+    docker save apartment-ultra-tenant-web:latest | gzip > dist/${TENANT_WEB_IMAGE} &
+    docker save apartment-ultra-admin-web:latest | gzip > dist/${ADMIN_WEB_IMAGE} &
+    wait
     print_done
-else
-    echo ""
-    print_fail
-    exit 1
+
+    API_SIZE=$(ls -lh dist/${API_IMAGE} | awk '{print $5}')
+    TENANT_SIZE=$(ls -lh dist/${TENANT_WEB_IMAGE} | awk '{print $5}')
+    ADMIN_SIZE=$(ls -lh dist/${ADMIN_WEB_IMAGE} | awk '{print $5}')
+    print_sub "api: ${API_SIZE}, tenant-web: ${TENANT_SIZE}, admin-web: ${ADMIN_SIZE}"
 fi
-
-# 构建 Web
-print_task "构建 Web 镜像"
-API_URL=$(grep "^NEXT_PUBLIC_API_URL=" .env.production | cut -d'=' -f2-)
-echo ""
-if docker buildx build --platform linux/amd64 --load -f web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=${API_URL} -t apartment-ultra_web:latest . 2>&1 | while IFS= read -r line; do
-    echo -e "  ${DIM}$line${NC}"
-done; then
-    echo ""
-    print_done
-else
-    echo ""
-    print_fail
-    exit 1
-fi
-
-# 保存镜像
-print_task "导出镜像文件"
-mkdir -p dist
-docker save apartment-ultra_api:latest | gzip > dist/api.tar.gz &
-docker save apartment-ultra_web:latest | gzip > dist/web.tar.gz &
-wait
-print_done
-
-API_SIZE=$(ls -lh dist/api.tar.gz | awk '{print $5}')
-WEB_SIZE=$(ls -lh dist/web.tar.gz | awk '{print $5}')
-print_sub "api.tar.gz: ${API_SIZE}, web.tar.gz: ${WEB_SIZE}"
 
 # ========================================
 # 步骤 3: 上传文件
@@ -205,16 +237,28 @@ print_header "上传文件到服务器"
 
 ssh ${SSH_DEST} "mkdir -p ${REMOTE_DIR}/docker ${REMOTE_DIR}/scripts" 2>/dev/null
 
+# 获取文件大小
+API_SIZE=$(ls -lh dist/${API_IMAGE} 2>/dev/null | awk '{print $5}' || echo "?")
+TENANT_SIZE=$(ls -lh dist/${TENANT_WEB_IMAGE} 2>/dev/null | awk '{print $5}' || echo "?")
+ADMIN_SIZE=$(ls -lh dist/${ADMIN_WEB_IMAGE} 2>/dev/null | awk '{print $5}' || echo "?")
+
 # 上传镜像
 print_task "上传 API 镜像 (${API_SIZE})"
-scp -o ConnectTimeout=30 dist/api.tar.gz ${SSH_DEST}:/tmp/ &
+scp -o ConnectTimeout=30 dist/${API_IMAGE} ${SSH_DEST}:/tmp/ &
 UPLOAD_PID=$!
 show_spinner $UPLOAD_PID "上传中"
 wait $UPLOAD_PID
 print_done
 
-print_task "上传 Web 镜像 (${WEB_SIZE})"
-scp -o ConnectTimeout=30 dist/web.tar.gz ${SSH_DEST}:/tmp/ &
+print_task "上传租客端前端镜像 (${TENANT_SIZE})"
+scp -o ConnectTimeout=30 dist/${TENANT_WEB_IMAGE} ${SSH_DEST}:/tmp/ &
+UPLOAD_PID=$!
+show_spinner $UPLOAD_PID "上传中"
+wait $UPLOAD_PID
+print_done
+
+print_task "上传运营后台前端镜像 (${ADMIN_SIZE})"
+scp -o ConnectTimeout=30 dist/${ADMIN_WEB_IMAGE} ${SSH_DEST}:/tmp/ &
 UPLOAD_PID=$!
 show_spinner $UPLOAD_PID "上传中"
 wait $UPLOAD_PID
@@ -224,7 +268,6 @@ print_done
 print_task "上传配置文件"
 scp -q docker/docker-compose.yaml ${SSH_DEST}:${REMOTE_DIR}/docker/
 scp -q docker/nginx.conf.template ${SSH_DEST}:${REMOTE_DIR}/docker/
-scp -q scripts/deploy-images.sh ${SSH_DEST}:${REMOTE_DIR}/scripts/
 scp -q .env.production ${SSH_DEST}:${REMOTE_DIR}/
 print_done
 
@@ -235,7 +278,7 @@ print_header "启动服务"
 
 print_task "加载镜像"
 LOAD_LOG=$(mktemp)
-if ssh ${SSH_DEST} "docker load < /tmp/api.tar.gz && docker load < /tmp/web.tar.gz" >"$LOAD_LOG" 2>&1; then
+if ssh ${SSH_DEST} "docker load < /tmp/${API_IMAGE} && docker load < /tmp/${TENANT_WEB_IMAGE} && docker load < /tmp/${ADMIN_WEB_IMAGE}" >"$LOAD_LOG" 2>&1; then
     print_done
 else
     print_fail
@@ -250,8 +293,8 @@ print_task "启动容器"
 DEPLOY_LOG=$(mktemp)
 if ssh ${SSH_DEST} << 'REMOTE_SCRIPT' >"$DEPLOY_LOG" 2>&1
 cd /opt/apartment-ultra
-chmod +x scripts/deploy-images.sh
-./scripts/deploy-images.sh
+docker compose -f docker/docker-compose.yaml --env-file .env.production pull postgres redis nginx 2>/dev/null || true
+docker compose -f docker/docker-compose.yaml --env-file .env.production up -d
 REMOTE_SCRIPT
 then
     print_done
@@ -304,6 +347,7 @@ end_timer
 echo ""
 echo -e "  ${BOLD}访问地址:${NC}"
 echo -e "  ${CYAN}→${NC} http://${SERVER_HOST}"
+echo -e "  ${CYAN}→${NC} http://${SERVER_HOST}/admin"
 echo -e "  ${CYAN}→${NC} http://${SERVER_HOST}/health"
 echo ""
 echo -e "  ${BOLD}查看日志:${NC}"

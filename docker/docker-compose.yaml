@@ -65,7 +65,7 @@ services:
         max-file: "3"
 
   api:
-    image: apartment-ultra_api:${API_TAG:-latest}
+    image: apartment-ultra-api:${API_IMAGE_TAG:-latest}
     build:
       context: ..
       dockerfile: api/Dockerfile
@@ -115,7 +115,7 @@ services:
           memory: ${API_MEMORY:-1G}
 
   tenant-web:
-    image: apartment-ultra_tenant-web:${TENANT_WEB_TAG:-latest}
+    image: apartment-ultra-tenant-web:${TENANT_WEB_IMAGE_TAG:-latest}
     build:
       context: ..
       dockerfile: tenant-web/Dockerfile.prod
@@ -144,7 +144,7 @@ services:
           memory: ${TENANT_WEB_MEMORY:-1G}
 
   admin-web:
-    image: apartment-ultra_admin:${ADMIN_TAG:-latest}
+    image: apartment-ultra-admin-web:${ADMIN_WEB_IMAGE_TAG:-latest}
     build:
       context: ..
       dockerfile: admin-web/Dockerfile.prod

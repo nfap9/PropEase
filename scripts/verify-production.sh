@@ -73,8 +73,11 @@ echo ""
 echo -e "${DIM}▶ 构建 Docker 镜像${NC}"
 echo -e "  ${DIM}(这可能需要几分钟...)${NC}"
 
+API_URL=$(grep "^NEXT_PUBLIC_API_URL=" "$ENV_FILE" | cut -d'=' -f2-)
+
+# 构建 API 镜像
 BUILD_LOG=$(mktemp)
-if docker buildx build --load -f api/Dockerfile -t apartment-ultra_api:latest . >"$BUILD_LOG" 2>&1; then
+if docker buildx build --load -f api/Dockerfile -t apartment-ultra-api:latest . >"$BUILD_LOG" 2>&1; then
     echo -e "  ${GREEN}✓${NC} API 镜像构建成功"
 else
     echo -e "  ${RED}✗${NC} API 镜像构建失败"
@@ -85,12 +88,25 @@ else
 fi
 rm -f "$BUILD_LOG"
 
+# 构建租客端前端镜像
 BUILD_LOG=$(mktemp)
-API_URL=$(grep "^NEXT_PUBLIC_API_URL=" "$ENV_FILE" | cut -d'=' -f2-)
-if docker buildx build --load -f web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL="${API_URL}" -t apartment-ultra_web:latest . >"$BUILD_LOG" 2>&1; then
-    echo -e "  ${GREEN}✓${NC} Web 镜像构建成功"
+if docker buildx build --load -f tenant-web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL="${API_URL}" -t apartment-ultra-tenant-web:latest . >"$BUILD_LOG" 2>&1; then
+    echo -e "  ${GREEN}✓${NC} 租客端前端镜像构建成功"
 else
-    echo -e "  ${RED}✗${NC} Web 镜像构建失败"
+    echo -e "  ${RED}✗${NC} 租客端前端镜像构建失败"
+    echo -e "  ${DIM}错误日志:${NC}"
+    tail -30 "$BUILD_LOG" | sed 's/^/    /'
+    rm -f "$BUILD_LOG"
+    exit 1
+fi
+rm -f "$BUILD_LOG"
+
+# 构建运营后台前端镜像
+BUILD_LOG=$(mktemp)
+if docker buildx build --load -f admin-web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL="${API_URL}" -t apartment-ultra-admin-web:latest . >"$BUILD_LOG" 2>&1; then
+    echo -e "  ${GREEN}✓${NC} 运营后台前端镜像构建成功"
+else
+    echo -e "  ${RED}✗${NC} 运营后台前端镜像构建失败"
     echo -e "  ${DIM}错误日志:${NC}"
     tail -30 "$BUILD_LOG" | sed 's/^/    /'
     rm -f "$BUILD_LOG"
@@ -146,12 +162,20 @@ else
     echo -e "  ${DIM}响应: $API_HEALTH${NC}"
 fi
 
-# 检查 Web
-WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null || echo "000")
-if [ "$WEB_STATUS" = "200" ]; then
-    echo -e "  ${GREEN}✓${NC} Web 服务响应正常"
+# 检查租客端前端
+TENANT_WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null || echo "000")
+if [ "$TENANT_WEB_STATUS" = "200" ]; then
+    echo -e "  ${GREEN}✓${NC} 租客端前端服务响应正常"
 else
-    echo -e "  ${YELLOW}!${NC} Web 服务状态码: $WEB_STATUS"
+    echo -e "  ${YELLOW}!${NC} 租客端前端服务状态码: $TENANT_WEB_STATUS"
+fi
+
+# 检查运营后台
+ADMIN_WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/admin 2>/dev/null || echo "000")
+if [ "$ADMIN_WEB_STATUS" = "200" ] || [ "$ADMIN_WEB_STATUS" = "302" ]; then
+    echo -e "  ${GREEN}✓${NC} 运营后台服务响应正常"
+else
+    echo -e "  ${YELLOW}!${NC} 运营后台服务状态码: $ADMIN_WEB_STATUS"
 fi
 
 # 检查 Nginx
@@ -189,7 +213,8 @@ echo ""
 echo -e "${GREEN}本地验证完成！${NC}"
 echo ""
 echo -e "访问地址:"
-echo -e "  ${CYAN}→${NC} 前端: ${DIM}http://localhost:3000${NC}"
+echo -e "  ${CYAN}→${NC} 租客端: ${DIM}http://localhost:3000${NC}"
+echo -e "  ${CYAN}→${NC} 运营后台: ${DIM}http://localhost:80/admin${NC}"
 echo -e "  ${CYAN}→${NC} API:  ${DIM}http://localhost:8000/api/v1${NC}"
 echo -e "  ${CYAN}→${NC} 健康检查: ${DIM}http://localhost:8000/health${NC}"
 echo ""
