@@ -15,6 +15,7 @@ RUN pnpm install --frozen-lockfile
 # 复制 api 源码（排除测试文件）
 COPY api/src api/src
 COPY api/prisma api/prisma
+COPY api/prisma.config.ts api/
 COPY api/tsconfig.json api/
 COPY api/package.json api/
 # 先构建 api-contract（api 依赖其 dist），再生成 Prisma 并构建 api
@@ -34,6 +35,9 @@ ENV NODE_ENV=production
 COPY --from=builder /app ./
 
 WORKDIR /app/api
+
+# 设置 DATABASE_URL（prisma generate 需要解析配置文件，但不需要实际连接）
+ENV DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder"
 
 # 重新生成 Prisma 客户端（确保在运行时可用，生成到 node_modules/.prisma/client）
 RUN npx prisma generate
