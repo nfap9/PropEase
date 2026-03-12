@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createApartmentRepository, calculateRoomStats } from './apartment.repo.js';
 
 describe('ApartmentRepository', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockDb: any;
   let repository: ReturnType<typeof createApartmentRepository>;
 
@@ -163,6 +164,7 @@ describe('calculateRoomStats', () => {
       { id: '3', status: 'occupied' },
       { id: '4', status: 'occupied' },
       { id: '5', status: 'maintenance' },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ] as any;
 
     const stats = calculateRoomStats(rooms);

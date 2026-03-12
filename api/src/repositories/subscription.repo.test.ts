@@ -47,16 +47,6 @@ describe('SubscriptionRepository', () => {
     updated_at: new Date(),
   };
 
-  const freePlan: SubscriptionPlan = {
-    ...samplePlan,
-    id: '01hqtestplan00000000',
-    code: 'free',
-    name: '免费版',
-    price_monthly: 0,
-    price_yearly: 0,
-    sort_order: 0,
-  };
-
   const sampleSubscription: OrganizationSubscription = {
     organization_id: '01hqtestorg000000001',
     plan_id: samplePlan.id,
