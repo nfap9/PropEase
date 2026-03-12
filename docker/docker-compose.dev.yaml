@@ -15,7 +15,7 @@ services:
       IS_DEV: "true"
       DATABASE_URL: postgresql://postgres:postgres@host.docker.internal:5432/apartment_ultra
       SECRET_KEY: dev-secret-key-for-local-development-only
-      CORS_ORIGINS: '["http://localhost:3000","http://127.0.0.1:3000"]'
+      CORS_ORIGINS: '["http://localhost:3000","http://127.0.0.1:3000","http://localhost:3001","http://127.0.0.1:3001"]'
       DEBUG: "true"
       APP_NAME: Apartment Ultra API (Dev)
       ADMIN_INIT_PASSWORD: Admin@123

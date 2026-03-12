@@ -122,6 +122,12 @@ adminApi.interceptors.response.use(
 );
 
 export const adminApiEndpoints = {
+  // 系统初始化
+  checkInitStatus: () =>
+    adminApi.get<{ initialized: boolean }>('/admin/init/status'),
+  setupSystem: (data: { username: string; password: string; name?: string }) =>
+    adminApi.post<AdminTokenResponse>('/admin/init/setup', data),
+
   login: (username: string, password: string) =>
     adminApi.post<AdminTokenResponse>('/admin/auth/login', {
       username,

@@ -4,10 +4,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { AdminLayout } from '@/components/layout/admin-layout';
 
-const ADMIN_LOGIN_PATH = '/admin/login';
+const PUBLIC_PATHS = ['/admin/login', '/admin/setup'];
 
 /**
- * 运营后台布局：未登录时重定向到 /admin/login（登录页除外）；
+ * 运营后台布局：未登录时重定向到 /admin/login（公开页面除外）；
  * 已登录时使用侧栏 + 主内容区布局。
  */
 export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
@@ -15,14 +15,18 @@ export default function AdminRootLayout({ children }: { children: React.ReactNod
   const router = useRouter();
 
   useEffect(() => {
-    if (pathname === ADMIN_LOGIN_PATH) return;
+    // 公开页面不需要认证
+    if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
+      return;
+    }
     const token = typeof window !== 'undefined' ? localStorage.getItem('admin_access_token') : null;
     if (!token) {
-      router.replace(ADMIN_LOGIN_PATH);
+      router.replace('/admin/login');
     }
   }, [pathname, router]);
 
-  if (pathname === ADMIN_LOGIN_PATH) {
+  // 公开页面直接渲染
+  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'))) {
     return <>{children}</>;
   }
 

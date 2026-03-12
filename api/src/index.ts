@@ -7,7 +7,7 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import { healthHandler } from './routes/health.js';
 import { v1Router } from './routes/v1/index.js';
 import { waitForDatabase, verifyDatabaseSchema } from './startup/dbCheck.js';
-import { seedAdminSuper } from './startup/seedAdmin.js';
+import { seedAdminRole } from './startup/seedAdmin.js';
 import { seedE2EUser } from './startup/seedE2E.js';
 import { seedPermissions } from './startup/seedPermissions.js';
 import { seedPlans } from './startup/seedPlans.js';
@@ -60,7 +60,7 @@ async function start(): Promise<void> {
 
   // 3. 执行种子数据
   try {
-    await seedAdminSuper();
+    await seedAdminRole();
   } catch (e) {
     console.error('Startup seed failed:', e);
   }

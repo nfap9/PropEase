@@ -44,14 +44,31 @@ export default function AdminLoginPage() {
     defaultValues: { username: '', password: '' },
   });
 
-  // 已登录管理员自动跳转到管理后台
+  // 检查认证状态和初始化状态
   useEffect(() => {
-    const token = localStorage.getItem('admin_access_token');
-    if (token) {
-      router.replace('/admin');
-    } else {
+    const checkAuth = async () => {
+      // 1. 检查是否已登录
+      const token = localStorage.getItem('admin_access_token');
+      if (token) {
+        router.replace('/admin');
+        return;
+      }
+
+      // 2. 检查系统是否已初始化
+      try {
+        const res = await adminApiEndpoints.checkInitStatus();
+        if (!res.data?.initialized) {
+          // 未初始化，跳转到初始化页面
+          router.replace('/admin/setup');
+          return;
+        }
+      } catch {
+        // 检查失败，继续显示登录页
+      }
+
       setIsCheckingAuth(false);
-    }
+    };
+    checkAuth();
   }, [router]);
 
   const onSubmit = async (values: FormValues) => {

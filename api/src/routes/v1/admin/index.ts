@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { adminAuthRouter } from './auth.js';
+import { adminInitRouter } from './init.js';
 import { adminPromotionsRouter } from './promotions.js';
 import { requireAdmin } from '../../../middlewares/requireAdmin.js';
+import { requireSystemInitialized } from '../../../middlewares/requireSystemInitialized.js';
 import { getAdminUser } from '../../../utils/context.js';
 import { createAppError } from '../../../utils/appError.js';
 import { defaultAdminService } from '../../../services/admin.service.js';
@@ -11,8 +13,14 @@ import type { Request, Response, NextFunction } from 'express';
 
 const router: Router = Router();
 
-router.use('/auth', adminAuthRouter);
+// 初始化路由无需任何认证
+router.use('/init', adminInitRouter);
 
+// 认证路由需要系统已初始化
+router.use('/auth', requireSystemInitialized, adminAuthRouter);
+
+// 其他路由需要系统已初始化 + 管理员认证
+router.use(requireSystemInitialized);
 router.use(requireAdmin);
 
 // 优惠活动和套餐定价管理
