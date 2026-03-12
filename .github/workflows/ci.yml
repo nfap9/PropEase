@@ -69,7 +69,7 @@ jobs:
         run: pnpm --filter apartment-ultra-api run type-check
 
       - name: Prisma db push
-        run: pnpm --filter apartment-ultra-api exec prisma db push --skip-generate
+        run: pnpm --filter apartment-ultra-api exec prisma db push
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test
 
