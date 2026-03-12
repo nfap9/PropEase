@@ -21,16 +21,16 @@ import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 const ADMIN_NAV = [
-  { href: '/admin', label: '概览', icon: LayoutDashboard },
-  { href: '/admin/brand', label: '品牌配置', icon: Palette },
-  { href: '/admin/users', label: '运营账号', icon: Users },
-  { href: '/admin/registered-users', label: '用户管理', icon: UserCircle },
-  { href: '/admin/roles', label: '运营角色', icon: Shield },
-  { href: '/admin/organizations', label: '组织管理', icon: Building2 },
-  { href: '/admin/plans', label: '套餐配置', icon: Package },
-  { href: '/admin/promotions', label: '优惠活动', icon: Tag },
-  { href: '/admin/usage-pricing', label: '按量定价', icon: Package },
-  { href: '/admin/subscriptions', label: '订阅管理', icon: CreditCard },
+  { href: '/', label: '概览', icon: LayoutDashboard },
+  { href: '/brand', label: '品牌配置', icon: Palette },
+  { href: '/users', label: '运营账号', icon: Users },
+  { href: '/registered-users', label: '用户管理', icon: UserCircle },
+  { href: '/roles', label: '运营角色', icon: Shield },
+  { href: '/organizations', label: '组织管理', icon: Building2 },
+  { href: '/plans', label: '套餐配置', icon: Package },
+  { href: '/promotions', label: '优惠活动', icon: Tag },
+  { href: '/usage-pricing', label: '按量定价', icon: Package },
+  { href: '/subscriptions', label: '订阅管理', icon: CreditCard },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -39,7 +39,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
   const handleLogout = () => {
     localStorage.removeItem('admin_access_token');
-    window.location.href = '/admin/login';
+    window.location.href = '/login';
   };
 
   const NavContent = () => (
@@ -51,7 +51,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         {ADMIN_NAV.map((item) => {
           const Icon = item.icon;
           const isActive =
-            pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+            pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}

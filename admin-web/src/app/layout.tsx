@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/layout/providers";
+import { AdminAuthLayout } from "@/components/layout/admin-auth-layout";
 
 export const metadata: Metadata = {
   title: "运营后台 - Apartment Ultra",
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <AdminAuthLayout>{children}</AdminAuthLayout>
+        </Providers>
       </body>
     </html>
   );

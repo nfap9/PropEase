@@ -51,7 +51,7 @@ export default function AdminOrganizationDetailPage() {
     <div className="mx-auto max-w-2xl">
       <div className="mb-4 flex items-center gap-2">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/admin/organizations">
+          <Link href="/organizations">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>

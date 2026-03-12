@@ -4,13 +4,13 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { AdminLayout } from '@/components/layout/admin-layout';
 
-const PUBLIC_PATHS = ['/admin/login', '/admin/setup'];
+const PUBLIC_PATHS = ['/login', '/setup'];
 
 /**
- * 运营后台布局：未登录时重定向到 /admin/login（公开页面除外）；
+ * 运营后台布局：未登录时重定向到 /login（公开页面除外）；
  * 已登录时使用侧栏 + 主内容区布局。
  */
-export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
+export function AdminAuthLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -21,7 +21,7 @@ export default function AdminRootLayout({ children }: { children: React.ReactNod
     }
     const token = typeof window !== 'undefined' ? localStorage.getItem('admin_access_token') : null;
     if (!token) {
-      router.replace('/admin/login');
+      router.replace('/login');
     }
   }, [pathname, router]);
 

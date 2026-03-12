@@ -125,7 +125,7 @@ export default function AdminSubscriptionsPage() {
       header: '组织 ID',
       cell: ({ row }) => (
         <Link
-          href={`/admin/organizations/${row.original.organization_id}`}
+          href={`/organizations/${row.original.organization_id}`}
           className="text-primary hover:underline"
         >
           {row.original.organization_id}

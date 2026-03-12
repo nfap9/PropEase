@@ -59,7 +59,7 @@ export default function AdminOrganizationsPage() {
       header: '组织名称',
       cell: ({ row }) => (
         <Link
-          href={`/admin/organizations/${row.original.id}`}
+          href={`/organizations/${row.original.id}`}
           className="font-medium text-primary hover:underline"
         >
           {row.original.name}
@@ -104,7 +104,7 @@ export default function AdminOrganizationsPage() {
               {
                 icon: Eye,
                 label: '详情',
-                onClick: () => router.push(`/admin/organizations/${org.id}`),
+                onClick: () => router.push(`/organizations/${org.id}`),
               },
               ...(org.is_active
                 ? [
