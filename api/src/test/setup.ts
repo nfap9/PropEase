@@ -26,5 +26,11 @@ vi.useFakeTimers();
 vi.setSystemTime(now);
 
 // Global test utilities
+declare global {
+  // eslint-disable-next-line no-var
+  var testOrgId: string;
+  // eslint-disable-next-line no-var
+  var testUserId: string;
+}
 global.testOrgId = '01HQTESTORG000000001';
 global.testUserId = '01HQTESTUSER0000001';

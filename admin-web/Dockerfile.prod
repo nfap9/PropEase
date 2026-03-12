@@ -13,7 +13,6 @@ RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.
 # 复制 workspace 配置
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY api/package.json api/package.json
-COPY web/package.json web/package.json
 COPY admin-web/package.json admin-web/package.json
 COPY packages/ packages/
 
@@ -32,21 +31,18 @@ RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.
 # 复制依赖
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/api/node_modules ./api/node_modules
-COPY --from=deps /app/web/node_modules ./web/node_modules
 COPY --from=deps /app/admin-web/node_modules ./admin-web/node_modules
 COPY --from=deps /app/packages ./packages
 
 # 复制源代码
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY api/package.json api/package.json
-COPY web/package.json web/package.json
 COPY admin-web/package.json admin-web/package.json
 COPY packages/ packages/
 COPY api/src api/src
 COPY api/prisma api/prisma
 COPY api/tsconfig.json api/
 COPY admin-web/src admin-web/src
-COPY admin-web/public admin-web/public
 COPY admin-web/next.config.mjs admin-web/
 COPY admin-web/tsconfig.json admin-web/
 COPY admin-web/tailwind.config.ts admin-web/
@@ -76,7 +72,6 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # 复制构建产物
-COPY --from=builder /app/admin-web/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/admin-web/.next/standalone/ ./
 COPY --from=builder --chown=nextjs:nodejs /app/admin-web/.next/static ./admin-web/.next/static
 

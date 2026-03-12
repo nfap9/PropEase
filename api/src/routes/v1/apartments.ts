@@ -364,7 +364,12 @@ router.post('/:apartmentId/rooms', async (req: Request, res: Response, next: Nex
       apartment_id: req.params.apartmentId,
     });
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const room = await defaultRoomService.create(orgId, req.params.apartmentId, parsed.data);
+    // 将 null 转换为 undefined 以满足类型要求
+    const createData = {
+      ...parsed.data,
+      facilities: parsed.data.facilities ?? undefined,
+    };
+    const room = await defaultRoomService.create(orgId, req.params.apartmentId, createData);
     res.status(201).json(room);
   } catch (e) {
     next(e);

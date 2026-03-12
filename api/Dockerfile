@@ -9,12 +9,14 @@ RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.
 # 复制 workspace 根与各包（含 api-contract），使用单一 lockfile 安装
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY api/package.json api/package.json
-COPY web/package.json web/package.json
 COPY packages/ packages/
 RUN pnpm install --frozen-lockfile
 
-# 复制 api 源码
-COPY api/ api/
+# 复制 api 源码（排除测试文件）
+COPY api/src api/src
+COPY api/prisma api/prisma
+COPY api/tsconfig.json api/
+COPY api/package.json api/
 # 先构建 api-contract（api 依赖其 dist），再生成 Prisma 并构建 api
 RUN pnpm --filter @apartment-ultra/api-contract run build
 # 设置构建时的 DATABASE_URL（prisma generate 不需要实际连接）

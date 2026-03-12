@@ -1,4 +1,4 @@
-# Apartment Ultra 前端生产环境 Dockerfile
+# Apartment Ultra 租客端前端生产环境 Dockerfile
 # 构建上下文为 monorepo 根目录
 
 # ============================================
@@ -13,7 +13,7 @@ RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.
 # 复制 workspace 配置
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY api/package.json api/package.json
-COPY web/package.json web/package.json
+COPY tenant-web/package.json tenant-web/package.json
 COPY packages/ packages/
 
 # 安装依赖
@@ -31,29 +31,29 @@ RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.
 # 复制依赖
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/api/node_modules ./api/node_modules
-COPY --from=deps /app/web/node_modules ./web/node_modules
+COPY --from=deps /app/tenant-web/node_modules ./tenant-web/node_modules
 COPY --from=deps /app/packages ./packages
 
 # 复制源代码
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY api/package.json api/package.json
-COPY web/package.json web/package.json
+COPY tenant-web/package.json tenant-web/package.json
 COPY packages/ packages/
 COPY api/src api/src
 COPY api/prisma api/prisma
 COPY api/tsconfig.json api/
-COPY web/src web/src
-COPY web/public web/public
-COPY web/next.config.mjs web/
-COPY web/tsconfig.json web/
-COPY web/tailwind.config.ts web/
-COPY web/postcss.config.mjs web/
+COPY tenant-web/src tenant-web/src
+COPY tenant-web/public tenant-web/public
+COPY tenant-web/next.config.mjs tenant-web/
+COPY tenant-web/tsconfig.json tenant-web/
+COPY tenant-web/tailwind.config.ts tenant-web/
+COPY tenant-web/postcss.config.mjs tenant-web/
 
 # 构建 api-contract
 RUN corepack enable pnpm && pnpm --filter @apartment-ultra/api-contract run build
 
 # 构建前端（环境变量在构建时注入）
-WORKDIR /app/web
+WORKDIR /app/tenant-web
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -72,10 +72,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# 复制构建产物 (monorepo 结构下 standalone 包含 web/ 和 node_modules/)
-COPY --from=builder /app/web/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/web/.next/standalone/ ./
-COPY --from=builder --chown=nextjs:nodejs /app/web/.next/static ./web/.next/static
+# 复制构建产物 (monorepo 结构下 standalone 包含 tenant-web/ 和 node_modules/)
+COPY --from=builder /app/tenant-web/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/tenant-web/.next/standalone/ ./
+COPY --from=builder --chown=nextjs:nodejs /app/tenant-web/.next/static ./tenant-web/.next/static
 
 USER nextjs
 
@@ -84,4 +84,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "web/server.js"]
+CMD ["node", "tenant-web/server.js"]

@@ -9,7 +9,7 @@ function loadPrivateKey(): string {
   if (config.wechatPrivateKeyPath) {
     return fs.readFileSync(config.wechatPrivateKeyPath, 'utf8');
   }
-  return config.wechatPrivateKey;
+  return config.wechatPrivateKey ?? '';
 }
 
 /**
