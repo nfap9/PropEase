@@ -23,6 +23,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -551,13 +559,13 @@ export default function AdminPlansPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 编辑 */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>编辑套餐</DialogTitle>
-            <DialogDescription>{selectedPlan?.name}</DialogDescription>
-          </DialogHeader>
+      {/* 编辑 - 使用抽屉组件 */}
+      <Sheet open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <SheetContent className="w-full sm:max-w-xl overflow-y-auto max-h-screen">
+          <SheetHeader>
+            <SheetTitle>编辑套餐</SheetTitle>
+            <SheetDescription>{selectedPlan?.name}</SheetDescription>
+          </SheetHeader>
           <Form {...editForm}>
             <form
               onSubmit={editForm.handleSubmit((d) => {
@@ -584,7 +592,7 @@ export default function AdminPlansPage() {
                   },
                 });
               })}
-              className="space-y-4"
+              className="space-y-4 mt-4"
             >
               <FormField
                 control={editForm.control}
@@ -658,7 +666,7 @@ export default function AdminPlansPage() {
                 </TabsContent>
 
                 <TabsContent value="limits" className="space-y-4 pt-4">
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-2">
                     <FormField
                       control={editForm.control}
                       name="max_organizations"
@@ -743,18 +751,18 @@ export default function AdminPlansPage() {
                   </FormItem>
                 )}
               />
-              <DialogFooter>
+              <SheetFooter className="mt-6">
                 <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
                   取消
                 </Button>
                 <Button type="submit" disabled={updateMutation.isPending || updatePricingMutation.isPending}>
                   {updateMutation.isPending || updatePricingMutation.isPending ? '保存中…' : '保存'}
                 </Button>
-              </DialogFooter>
+              </SheetFooter>
             </form>
           </Form>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
       {/* 删除确认 */}
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
