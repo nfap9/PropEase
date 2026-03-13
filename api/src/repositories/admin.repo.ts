@@ -259,6 +259,11 @@ export function createAdminRepository(db: DbClient): AdminRepository {
       return db.subscriptionPlan.findMany({
         where: activeOnly ? { is_active: true } : undefined,
         orderBy: { sort_order: 'asc' },
+        include: {
+          pricing: {
+            orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
+          },
+        },
       });
     },
 

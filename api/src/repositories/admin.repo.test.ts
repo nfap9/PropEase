@@ -341,6 +341,11 @@ describe('AdminRepository', () => {
         expect(mockSubscriptionPlan.findMany).toHaveBeenCalledWith({
           where: undefined,
           orderBy: { sort_order: 'asc' },
+          include: {
+            pricing: {
+              orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
+            },
+          },
         });
         expect(result).toHaveLength(1);
       });
@@ -353,6 +358,11 @@ describe('AdminRepository', () => {
         expect(mockSubscriptionPlan.findMany).toHaveBeenCalledWith({
           where: { is_active: true },
           orderBy: { sort_order: 'asc' },
+          include: {
+            pricing: {
+              orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
+            },
+          },
         });
       });
     });
