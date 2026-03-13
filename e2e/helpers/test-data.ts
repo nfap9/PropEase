@@ -2,7 +2,7 @@ import { APIRequestContext } from '@playwright/test';
 import { ApiHelper, apiLogin } from './api';
 
 /**
- * E2E 测试用户配置（与 seedE2E.ts 保持同步）
+ * E2E 测试用户配置
  */
 const E2E_TEST_USER = {
   phone: '13800138000',

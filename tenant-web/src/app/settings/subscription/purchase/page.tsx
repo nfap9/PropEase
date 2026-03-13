@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -9,7 +9,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Check, Crown, Zap, Building2, ArrowLeft, Loader2, ShoppingCart, Tag } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import {
+  Check,
+  Crown,
+  Zap,
+  Building2,
+  ArrowLeft,
+  Loader2,
+  ShoppingCart,
+  Tag,
+  Gift,
+  Wallet,
+  Users,
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -22,6 +37,7 @@ import { subscriptionsApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import type { SubscriptionPlan, PlanPricing } from '@/types';
+import type { PriceCalculationResult } from '@/lib/api/subscriptions';
 
 const SUBSCRIPTION = {
   HEADING: 'subscription-purchase-heading',
@@ -53,6 +69,13 @@ export default function SubscriptionPurchasePage() {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [selectedPricing, setSelectedPricing] = useState<PlanPricing | null>(null);
 
+  // 优惠相关状态
+  const [couponCode, setCouponCode] = useState('');
+  const [referralCode, setReferralCode] = useState('');
+  const [useBalance, setUseBalance] = useState(false);
+  const [priceDetails, setPriceDetails] = useState<PriceCalculationResult | null>(null);
+  const [isCalculatingPrice, setIsCalculatingPrice] = useState(false);
+
   // 获取套餐列表
   const { data: plans, isLoading: plansLoading } = useQuery({
     queryKey: ['subscription-plans'],
@@ -66,6 +89,42 @@ export default function SubscriptionPurchasePage() {
     queryFn: () => subscriptionsApi.getSubscriptionStatus(orgId!),
     enabled: !!orgId,
   });
+
+  // 获取余额
+  const { data: balanceData } = useQuery({
+    queryKey: ['subscription-balance', orgId],
+    queryFn: () => subscriptionsApi.getBalance(orgId!),
+    enabled: !!orgId,
+  });
+
+  // 计算价格（当选择套餐、优惠码或余额开关变化时）
+  useEffect(() => {
+    if (!selectedPlan || !orgId) return;
+
+    const calculatePrice = async () => {
+      setIsCalculatingPrice(true);
+      try {
+        const billingMonths = selectedPricing?.months ?? 1;
+        const result = await subscriptionsApi.calculatePrice({
+          plan_id: selectedPlan.id,
+          billing_months: billingMonths,
+          organization_id: orgId,
+          coupon_code: couponCode || undefined,
+          use_balance: useBalance,
+          referral_code: referralCode || undefined,
+        });
+        setPriceDetails(result);
+      } catch {
+        // 计算失败时忽略
+      } finally {
+        setIsCalculatingPrice(false);
+      }
+    };
+
+    // 延迟计算，避免频繁请求
+    const timer = setTimeout(calculatePrice, 300);
+    return () => clearTimeout(timer);
+  }, [selectedPlan, selectedPricing, couponCode, useBalance, referralCode, orgId]);
 
   // 免费套餐直接订阅
   const subscribeMutation = useMutation({
@@ -87,14 +146,27 @@ export default function SubscriptionPurchasePage() {
 
   // 付费套餐：创建订单后跳转支付页
   const createOrderMutation = useMutation({
-    mutationFn: (params: { planId: string; billingMonths: number }) =>
-      subscriptionsApi.createOrder(orgId!, {
+    mutationFn: (params: {
+      planId: string;
+      billingMonths: number;
+      couponCode?: string;
+      useReferralCode?: string;
+      useBalanceDeduction?: boolean;
+    }) =>
+      subscriptionsApi.createOrderWithPromotions(orgId!, {
         plan_id: params.planId,
         billing_cycle: params.billingMonths === 12 ? 'yearly' : 'monthly',
         billing_months: params.billingMonths,
+        coupon_code: params.couponCode || undefined,
+        use_balance: params.useBalanceDeduction,
+        referral_code: params.useReferralCode || undefined,
       }),
     onSuccess: (order) => {
       setSelectedPlan(null);
+      // 如果有优惠信息，显示一下
+      if (order.promotion_details) {
+        toast.success(`订单创建成功！已享受优惠 ¥${order.promotion_details.total_discount}`);
+      }
       router.push(`/settings/subscription/pay?order_id=${order.id}`);
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建订单失败，请重试')),
@@ -103,6 +175,11 @@ export default function SubscriptionPurchasePage() {
   const handleSubscribe = (plan: SubscriptionPlan, pricing?: PlanPricing) => {
     setSelectedPlan(plan);
     setSelectedPricing(pricing ?? null);
+    // 重置优惠状态
+    setCouponCode('');
+    setReferralCode('');
+    setUseBalance(false);
+    setPriceDetails(null);
   };
 
   const handleConfirmSubscribe = () => {
@@ -114,12 +191,18 @@ export default function SubscriptionPurchasePage() {
     if (price <= 0) {
       subscribeMutation.mutate({ planId: selectedPlan.id, billingMonths });
     } else {
-      createOrderMutation.mutate({ planId: selectedPlan.id, billingMonths });
+      createOrderMutation.mutate({
+        planId: selectedPlan.id,
+        billingMonths,
+        couponCode: couponCode || undefined,
+        useReferralCode: referralCode || undefined,
+        useBalanceDeduction: useBalance,
+      });
     }
   };
 
   const formatPrice = (price: number) => {
-    return price === 0 ? '免费' : `¥${price}`;
+    return price === 0 ? '免费' : `¥${price.toFixed(2)}`;
   };
 
   const getLimitText = (limit: number | null) => {
@@ -127,6 +210,9 @@ export default function SubscriptionPurchasePage() {
   };
 
   const isPending = subscribeMutation.isPending || createOrderMutation.isPending;
+
+  // 是否是首次购买
+  const isFirstPurchase = !subscriptionStatus?.has_subscription;
 
   return (
     <MainLayout>
@@ -269,34 +355,141 @@ export default function SubscriptionPurchasePage() {
           <Card>
             <CardContent className="pt-6">
               <p className="text-center text-muted-foreground">
-                暂无可订阅的付费套餐，免费套餐已在注册时自动开通。请联系运营方配置更多套餐。
+                暂无可订阅的付费套餐。免费套餐已在注册时自动开通。请联系运营方配置更多套餐。
               </p>
             </CardContent>
           </Card>
         )}
 
-        {/* 付费套餐确认弹窗 */}
+        {/* 付费套餐确认弹窗（含优惠功能） */}
         <Dialog open={!!selectedPlan} onOpenChange={(open) => !open && setSelectedPlan(null)}>
-          <DialogContent data-testid={SUBSCRIPTION.CONFIRM_DIALOG}>
+          <DialogContent className="max-w-lg" data-testid={SUBSCRIPTION.CONFIRM_DIALOG}>
             <DialogHeader>
               <DialogTitle>确认订阅</DialogTitle>
               <DialogDescription>
                 确认订阅 {selectedPlan?.name}
                 {selectedPricing && ` (${selectedPricing.months} 个月)`}？
-                {selectedPricing && selectedPricing.price > 0 && (
-                  <span className="block mt-2 font-medium text-foreground">
-                    支付金额: ¥{selectedPricing.price}
-                  </span>
-                )}
               </DialogDescription>
             </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              {/* 价格明细 */}
+              {isCalculatingPrice ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-muted-foreground">计算价格中...</span>
+                </div>
+              ) : priceDetails ? (
+                <div className="space-y-3 rounded-lg border p-4">
+                  <div className="flex justify-between">
+                    <span>原价</span>
+                    <span>¥{priceDetails.original_price.toFixed(2)}</span>
+                  </div>
+                  {priceDetails.total_discount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>
+                        <Tag className="mr-1 inline h-4 w-4" />
+                        优惠减免
+                      </span>
+                      <span>-¥{priceDetails.total_discount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {priceDetails.balance_deduction > 0 && (
+                    <div className="flex justify-between text-blue-600">
+                      <span>
+                        <Wallet className="mr-1 inline h-4 w-4" />
+                        余额抵扣
+                      </span>
+                      <span>-¥{priceDetails.balance_deduction.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {priceDetails.total_gift_months > 0 && (
+                    <div className="flex justify-between text-purple-600">
+                      <span>
+                        <Gift className="mr-1 inline h-4 w-4" />
+                        赠送时长
+                      </span>
+                      <span>+{priceDetails.total_gift_months} 个月</span>
+                    </div>
+                  )}
+                  <div className="border-t flex justify-between pt-2 font-bold">
+                    <span>实付金额</span>
+                    <span className="text-xl">¥{priceDetails.final_price.toFixed(2)}</span>
+                  </div>
+                </div>
+              ) : selectedPricing && selectedPricing.price > 0 ? (
+                <div className="text-center font-medium text-foreground">
+                  支付金额: ¥{selectedPricing.price}
+                </div>
+              ) : null}
+
+              {/* 优惠码输入 */}
+              <div className="space-y-2">
+                <Label htmlFor="coupon-code" className="flex items-center gap-2">
+                  <Tag className="h-4 w-4" />
+                  优惠码
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="coupon-code"
+                    placeholder="输入优惠码"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    className="flex-1"
+                  />
+                </div>
+                {priceDetails && !priceDetails.coupon_valid && couponCode && (
+                  <p className="text-sm text-destruct">{priceDetails.coupon_message}</p>
+                )}
+              </div>
+
+              {/* 余额抵扣 */}
+              {balanceData && balanceData.balance > 0 && (
+                <div className="flex items-center justify-between rounded-lg border p-3">
+                  <div className="flex items-center gap-2">
+                    <Wallet className="h-4 w-4 text-blue-500" />
+                    <div>
+                      <p className="font-medium">使用余额抵扣</p>
+                      <p className="text-sm text-muted-foreground">
+                        可用余额: ¥{balanceData.balance.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={useBalance}
+                    onCheckedChange={setUseBalance}
+                  />
+                </div>
+              )}
+
+              {/* 推荐码输入（仅首次购买） */}
+              {isFirstPurchase && (
+                <div className="space-y-2">
+                  <Label htmlFor="referral-code" className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    推荐码（可选）
+                  </Label>
+                  <Input
+                    id="referral-code"
+                    placeholder="输入好友的推荐码"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  />
+                  {priceDetails && !priceDetails.referral_valid && referralCode && (
+                    <p className="text-sm text-destruct">{priceDetails.referral_message}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
             <DialogFooter>
               <Button variant="outline" onClick={() => setSelectedPlan(null)}>
                 取消
               </Button>
-              <Button onClick={handleConfirmSubscribe} disabled={isPending}>
+              <Button onClick={handleConfirmSubscribe} disabled={isPending || isCalculatingPrice}>
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                确认{selectedPricing?.price && selectedPricing.price > 0 ? '并去支付' : '订阅'}
+                确认
+                {selectedPricing?.price && selectedPricing.price > 0 ? '并去支付' : '订阅'}
               </Button>
             </DialogFooter>
           </DialogContent>

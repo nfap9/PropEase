@@ -97,35 +97,45 @@ export default function SubscriptionPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <p className="text-2xl font-bold">{subscriptionStatus?.plan?.name || '免费版'}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">状态:</span>
-                      <Badge
-                        variant={
-                          SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus?.status ?? 'none']?.variant ??
-                          'secondary'
-                        }
-                      >
-                        {SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus?.status ?? 'none']?.label ??
-                          subscriptionStatus?.status ??
-                          '未订阅'}
-                      </Badge>
-                    </div>
-                    {subscriptionStatus?.is_active && subscriptionStatus.end_date && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        到期日期: {formatDate(subscriptionStatus.end_date)}
-                        {subscriptionStatus.days_remaining !== null && subscriptionStatus.days_remaining > 0 && (
-                          <span className="ml-2 text-amber-600">
-                            (剩余 {subscriptionStatus.days_remaining} 天)
-                          </span>
-                        )}
+                {subscriptionStatus?.has_subscription && subscriptionStatus.plan ? (
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <p className="text-2xl font-bold">{subscriptionStatus.plan.name}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">状态:</span>
+                        <Badge
+                          variant={
+                            SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus.status ?? 'none']?.variant ??
+                            'secondary'
+                          }
+                        >
+                          {SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus.status ?? 'none']?.label ??
+                            subscriptionStatus.status ??
+                            '未订阅'}
+                        </Badge>
                       </div>
-                    )}
+                      {subscriptionStatus.is_active && subscriptionStatus.end_date && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          有效期至: {formatDate(subscriptionStatus.end_date)}
+                          {subscriptionStatus.days_remaining !== null && subscriptionStatus.days_remaining > 0 && (
+                            <span className="ml-2 text-amber-600">
+                              (剩余 {subscriptionStatus.days_remaining} 天)
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-4 py-4">
+                    <p className="text-muted-foreground">您未购买任何套餐</p>
+                    <Button onClick={() => router.push('/settings/subscription/purchase')}>
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      购买套餐
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
