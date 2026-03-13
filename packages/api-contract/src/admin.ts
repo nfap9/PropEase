@@ -136,6 +136,8 @@ export interface AdminPlan {
   max_members: number;
   features: Record<string, unknown> | null;
   is_active: boolean;
+  /** 是否允许在客户端购买 */
+  is_purchasable: boolean;
   sort_order: number;
   /** 已废弃，保留向后兼容 */
   free_validity_days: number | null;
@@ -149,13 +151,14 @@ export interface AdminPlanCreate {
   name: string;
   code: string;
   description?: string | null;
-  price_monthly: number;
-  price_yearly: number;
+  price_monthly?: number;
+  price_yearly?: number;
   max_organizations?: number | null;
   max_apartments: number;
   max_rooms: number;
   max_members: number;
   features?: Record<string, unknown> | null;
+  is_purchasable?: boolean;
   sort_order?: number;
   /** 已废弃 */
   free_validity_days?: number | null;
@@ -174,6 +177,7 @@ export interface AdminPlanUpdate {
   max_members?: number | null;
   features?: Record<string, unknown> | null;
   is_active?: boolean | null;
+  is_purchasable?: boolean | null;
   sort_order?: number | null;
   /** 已废弃 */
   free_validity_days?: number | null;

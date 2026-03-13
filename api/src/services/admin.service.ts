@@ -22,6 +22,7 @@ import { NotFoundMessages } from '../messages.js';
 import { hashPassword, verifyPassword } from '../utils/security.js';
 import { createAdminAccessToken } from '../utils/jwt.js';
 import { ulid } from 'ulid';
+import { prisma } from '../lib/prisma.js';
 
 /**
  * 登录结果
@@ -75,7 +76,7 @@ export interface UpdateAdminRoleInput {
 export interface CreatePlanInput {
   name: string;
   code: string;
-  price_monthly: number;
+  price_monthly?: number;
   price_yearly?: number;
   max_organizations?: number | null;
   max_apartments?: number;
@@ -84,8 +85,10 @@ export interface CreatePlanInput {
   rooms_count_scope?: 'organization' | 'user';
   members_count_scope?: 'organization' | 'user';
   is_active?: boolean;
+  is_purchasable?: boolean;
   sort_order?: number;
   free_validity_days?: number | null;
+  pricing?: Array<{ months: number; price: number; is_active?: boolean; sort_order?: number }>;
 }
 
 /**
@@ -467,12 +470,12 @@ export function createAdminService(
     },
 
     createPlan: async (data: CreatePlanInput) => {
-      return getRepo().createPlan({
+      const plan = await getRepo().createPlan({
         id: ulid().toLowerCase(),
         name: data.name,
         code: data.code,
-        price_monthly: data.price_monthly,
-        price_yearly: data.price_yearly ?? data.price_monthly,
+        price_monthly: data.price_monthly ?? 0,
+        price_yearly: data.price_yearly ?? data.price_monthly ?? 0,
         max_organizations: data.max_organizations,
         max_apartments: data.max_apartments ?? 1,
         max_rooms: data.max_rooms ?? 100,
@@ -480,9 +483,28 @@ export function createAdminService(
         rooms_count_scope: data.rooms_count_scope ?? 'organization',
         members_count_scope: data.members_count_scope ?? 'organization',
         is_active: data.is_active ?? true,
+        is_purchasable: data.is_purchasable ?? true,
         sort_order: data.sort_order ?? 0,
         free_validity_days: data.free_validity_days,
       });
+
+      // 创建周期定价
+      if (data.pricing && data.pricing.length > 0) {
+        for (const p of data.pricing) {
+          await prisma.planPricing.create({
+            data: {
+              id: ulid().toLowerCase(),
+              plan_id: plan.id,
+              months: p.months,
+              price: p.price,
+              is_active: p.is_active ?? true,
+              sort_order: p.sort_order ?? 0,
+            },
+          });
+        }
+      }
+
+      return plan;
     },
 
     updatePlan: async (planId: string, data: UpdatePlanInput) => {
@@ -507,6 +529,7 @@ export function createAdminService(
       if (data.members_count_scope != null)
         updateData.members_count_scope = data.members_count_scope;
       if (data.is_active !== undefined) updateData.is_active = data.is_active;
+      if (data.is_purchasable !== undefined) updateData.is_purchasable = data.is_purchasable;
       if (data.sort_order != null) updateData.sort_order = data.sort_order;
       if (data.free_validity_days !== undefined)
         updateData.free_validity_days = data.free_validity_days;

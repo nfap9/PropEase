@@ -440,6 +440,7 @@ model SubscriptionPlan {
   members_count_scope String   @default("organization") @db.VarChar(20)
   features            Json?
   is_active           Boolean  @default(true)
+  is_purchasable      Boolean  @default(true) // 是否允许在客户端购买
   sort_order          Int      @default(0)
   free_validity_days  Int?     @db.Integer // 已废弃，保留向后兼容
   created_at          DateTime @default(now())

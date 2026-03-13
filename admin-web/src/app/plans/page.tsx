@@ -45,7 +45,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ColumnDef } from '@tanstack/react-table';
 import { adminApiEndpoints, AdminPlan, AdminPlanUpdate, type AdminPlanPricingCreate } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
-import { Plus, Pencil, Trash2, DollarSign, Settings } from 'lucide-react';
+import { Plus, Pencil, Trash2, DollarSign, Settings, ShoppingCart } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // 周期定价项 Schema
@@ -60,15 +60,14 @@ const planCreateSchema = z.object({
   name: z.string().min(1, '请输入套餐名称'),
   code: z.string().min(1, '请输入套餐代码'),
   description: z.string().optional(),
-  price_monthly: z.coerce.number().min(0, '月费不能为负'),
-  price_yearly: z.coerce.number().min(0, '年费不能为负'),
   max_organizations: z.coerce.number().min(-1, '-1 表示无限制'),
   max_apartments: z.coerce.number().min(-1, '-1 表示无限制'),
   max_rooms: z.coerce.number().min(-1, '-1 表示无限制'),
   max_members: z.coerce.number().min(-1, '-1 表示无限制'),
+  is_purchasable: z.boolean(),
   sort_order: z.coerce.number().min(0),
   // 周期定价
-  pricing: z.array(pricingItemSchema).optional(),
+  pricing: z.array(pricingItemSchema).min(1, '至少需要一个周期定价'),
 });
 
 const planUpdateSchema = planCreateSchema.extend({
@@ -101,15 +100,19 @@ export default function AdminPlansPage() {
       name: '',
       code: '',
       description: '',
-      price_monthly: 0,
-      price_yearly: 0,
       max_organizations: 1,
       max_apartments: 1,
       max_rooms: 100,
       max_members: 1,
+      is_purchasable: true,
       sort_order: 0,
-      pricing: [],
+      pricing: [{ months: 1, price: 0, is_active: true, sort_order: 0 }],
     },
+  });
+
+  const { fields: createPricingFields, append: createAppendPricing, remove: createRemovePricing } = useFieldArray<PlanCreateForm>({
+    control: createForm.control,
+    name: 'pricing',
   });
 
   const editForm = useForm<PlanUpdateForm>({
@@ -127,14 +130,13 @@ export default function AdminPlansPage() {
         name: data.name,
         code: data.code,
         description: data.description || undefined,
-        price_monthly: data.price_monthly,
-        price_yearly: data.price_yearly,
         max_organizations: data.max_organizations === -1 ? null : data.max_organizations,
         max_apartments: data.max_apartments,
         max_rooms: data.max_rooms,
         max_members: data.max_members,
+        is_purchasable: data.is_purchasable,
         sort_order: data.sort_order,
-        pricing: data.pricing && data.pricing.length > 0 ? data.pricing : undefined,
+        pricing: data.pricing,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'plans'] });
@@ -185,15 +187,21 @@ export default function AdminPlansPage() {
       name: plan.name,
       code: plan.code,
       description: plan.description ?? '',
-      price_monthly: plan.price_monthly,
-      price_yearly: plan.price_yearly,
       max_organizations: plan.max_organizations ?? -1,
       max_apartments: plan.max_apartments,
       max_rooms: plan.max_rooms,
       max_members: plan.max_members,
+      is_purchasable: plan.is_purchasable ?? true,
       sort_order: plan.sort_order,
       is_active: plan.is_active,
-      pricing: plan.pricing ?? [{ months: 1, price: plan.price_monthly, is_active: true, sort_order: 0 }],
+      pricing: plan.pricing && plan.pricing.length > 0
+        ? plan.pricing.map(p => ({
+            months: p.months,
+            price: Number(p.price),
+            is_active: p.is_active,
+            sort_order: p.sort_order,
+          }))
+        : [{ months: 1, price: 0, is_active: true, sort_order: 0 }],
     });
     setIsEditOpen(true);
   };
@@ -202,14 +210,18 @@ export default function AdminPlansPage() {
     { accessorKey: 'name', header: '名称' },
     { accessorKey: 'code', header: '代码' },
     {
-      accessorKey: 'price_monthly',
-      header: '月价',
-      cell: ({ row }) => `¥${row.original.price_monthly}`,
-    },
-    {
-      accessorKey: 'price_yearly',
-      header: '年价',
-      cell: ({ row }) => `¥${row.original.price_yearly}`,
+      id: 'pricing',
+      header: '价格',
+      cell: ({ row }) => {
+        const p = row.original;
+        if (p.pricing && p.pricing.length > 0) {
+          const activePricing = p.pricing.filter(pr => pr.is_active);
+          if (activePricing.length > 0) {
+            return activePricing.map(pr => `${pr.months}月¥${pr.price}`).join(' / ');
+          }
+        }
+        return '-';
+      },
     },
     {
       id: 'limits',
@@ -222,6 +234,16 @@ export default function AdminPlansPage() {
         const rooms = p.max_rooms < 0 ? '∞' : p.max_rooms;
         const members = p.max_members < 0 ? '∞' : p.max_members;
         return `组织${orgs} / 公寓${apt} / 房间${rooms} / 成员${members}`;
+      },
+    },
+    {
+      accessorKey: 'is_purchasable',
+      header: '可购买',
+      cell: ({ row }) => {
+        const config = row.original.is_purchasable
+          ? BOOLEAN_YES_NO_CONFIG.yes
+          : BOOLEAN_YES_NO_CONFIG.no;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
       },
     },
     {
@@ -257,6 +279,90 @@ export default function AdminPlansPage() {
     },
   ];
 
+  // 渲染周期定价表单
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderPricingFields = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fields: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    form: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    append: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    remove: any
+  ) => (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <Label>周期定价</Label>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => append({ months: 1, price: 0, is_active: true, sort_order: 0 })}
+        >
+          <Plus className="mr-1 h-3 w-3" />
+          添加周期
+        </Button>
+      </div>
+      <div className="space-y-2">
+        {fields.map((field: { id: string }, index: number) => (
+          <div key={field.id} className="flex items-end gap-2 rounded border p-2">
+            <FormField
+              control={form.control}
+              name={`pricing.${index}.months`}
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel className="text-xs">月数</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name={`pricing.${index}.price`}
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormLabel className="text-xs">价格</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name={`pricing.${index}.is_active`}
+              render={({ field }) => (
+                <FormItem className="flex items-center gap-1">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel className="text-xs">启用</FormLabel>
+                </FormItem>
+              )}
+            />
+            {fields.length > 1 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => remove(index)}
+                className="text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   if (isLoading) {
     return (
       <div className="mx-auto max-w-6xl">
@@ -280,7 +386,7 @@ export default function AdminPlansPage() {
 
       {/* 新建 */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl">
           <DialogHeader>
             <DialogTitle>新建套餐</DialogTitle>
             <DialogDescription>创建新的订阅套餐</DialogDescription>
@@ -343,35 +449,22 @@ export default function AdminPlansPage() {
                 </TabsList>
 
                 <TabsContent value="pricing" className="space-y-4 pt-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={createForm.control}
-                      name="price_monthly"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>默认月价</FormLabel>
-                          <FormControl>
-                            <Input type="number" step="0.01" {...field} />
-                          </FormControl>
-                          <FormDescription>用于无周期定价时的默认价格</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={createForm.control}
-                      name="price_yearly"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>默认年价</FormLabel>
-                          <FormControl>
-                            <Input type="number" step="0.01" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  {renderPricingFields(createPricingFields, createForm, createAppendPricing, createRemovePricing)}
+                  <FormField
+                    control={createForm.control}
+                    name="is_purchasable"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center gap-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="!mt-0">允许在客户端购买</FormLabel>
+                      </FormItem>
+                    )}
+                  />
                 </TabsContent>
 
                 <TabsContent value="limits" className="space-y-4 pt-4">
@@ -481,15 +574,12 @@ export default function AdminPlansPage() {
                   data: {
                     name: d.name,
                     description: d.description || null,
-                    ...(selectedPlan?.code !== 'free' && {
-                      price_monthly: d.price_monthly,
-                      price_yearly: d.price_yearly,
-                    }),
                     max_organizations: d.max_organizations === -1 ? null : d.max_organizations,
                     max_apartments: d.max_apartments,
                     max_rooms: d.max_rooms,
                     max_members: d.max_members,
                     is_active: d.is_active,
+                    is_purchasable: d.is_purchasable,
                     sort_order: d.sort_order,
                   },
                 });
@@ -549,114 +639,22 @@ export default function AdminPlansPage() {
                 </TabsList>
 
                 <TabsContent value="pricing" className="space-y-4 pt-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={editForm.control}
-                      name="price_monthly"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>默认月价</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              {...field}
-                              disabled={selectedPlan?.code === 'free'}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={editForm.control}
-                      name="price_yearly"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>默认年价</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              {...field}
-                              disabled={selectedPlan?.code === 'free'}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {/* 周期定价列表 */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label>周期定价</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => editAppendPricing({ months: 1, price: 0, is_active: true, sort_order: 0 })}
-                      >
-                        <Plus className="mr-1 h-3 w-3" />
-                        添加周期
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      {editPricingFields.map((field, index) => (
-                        <div key={field.id} className="flex items-end gap-2 rounded border p-2">
-                          <FormField
-                            control={editForm.control}
-                            name={`pricing.${index}.months`}
-                            render={({ field }) => (
-                              <FormItem className="flex-1">
-                                <FormLabel className="text-xs">月数</FormLabel>
-                                <FormControl>
-                                  <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                                </FormControl>
-                              </FormItem>
-                            )}
+                  {renderPricingFields(editPricingFields, editForm, editAppendPricing, editRemovePricing)}
+                  <FormField
+                    control={editForm.control}
+                    name="is_purchasable"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center gap-2">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
                           />
-                          <FormField
-                            control={editForm.control}
-                            name={`pricing.${index}.price`}
-                            render={({ field }) => (
-                              <FormItem className="flex-1">
-                                <FormLabel className="text-xs">价格</FormLabel>
-                                <FormControl>
-                                  <Input type="number" step="0.01" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={editForm.control}
-                            name={`pricing.${index}.is_active`}
-                            render={({ field }) => (
-                              <FormItem className="flex items-center gap-1">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="text-xs">启用</FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => editRemovePricing(index)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                        </FormControl>
+                        <FormLabel className="!mt-0">允许在客户端购买</FormLabel>
+                      </FormItem>
+                    )}
+                  />
                 </TabsContent>
 
                 <TabsContent value="limits" className="space-y-4 pt-4">

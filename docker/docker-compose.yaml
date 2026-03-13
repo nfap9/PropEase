@@ -154,8 +154,8 @@ services:
     environment:
       NODE_ENV: production
       API_URL_SERVER: http://api:8000/api/v1
-    expose:
-      - "3001"
+    ports:
+      - "${ADMIN_WEB_PORT:-8080}:3001"
     depends_on:
       api:
         condition: service_healthy
