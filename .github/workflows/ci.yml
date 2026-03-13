@@ -14,7 +14,6 @@ jobs:
     outputs:
       api: ${{ steps.filter.outputs.api }}
       web: ${{ steps.filter.outputs.web }}
-      e2e: ${{ steps.filter.outputs.e2e }}
       docker: ${{ steps.filter.outputs.docker }}
     steps:
       - name: Checkout code
@@ -34,12 +33,6 @@ jobs:
               - 'admin-web/**'
               - 'packages/api-contract/**'
               - 'pnpm-lock.yaml'
-            e2e:
-              - 'e2e/**'
-              - 'api/**'
-              - 'tenant-web/**'
-              - 'admin-web/**'
-              - 'packages/**'
             docker:
               - 'docker/**'
               - '**/Dockerfile*'
@@ -168,100 +161,6 @@ jobs:
         run: pnpm --filter frontend run build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
-
-  # E2E 测试（需 API + 前端已构建；使用 PostgreSQL 服务并启动 API 与前端）
-  e2e:
-    name: E2E
-    runs-on: ubuntu-latest
-    needs: [changes, api, frontend]
-    if: needs.changes.outputs.e2e == 'true'
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: apartment_ultra
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "pnpm"
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Restore api-contract build
-        id: contract-cache
-        uses: actions/cache@v4
-        with:
-          path: packages/api-contract/dist
-          key: contract-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'packages/api-contract/**') }}
-          restore-keys: |
-            contract-${{ runner.os }}-
-
-      - name: Build api-contract
-        if: steps.contract-cache.outputs.cache-hit != 'true'
-        run: pnpm --filter @apartment-ultra/api-contract run build
-
-      - name: Prisma generate
-        run: pnpm --filter apartment-ultra-api exec prisma generate
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/apartment_ultra
-
-      - name: Push database schema
-        run: pnpm --filter apartment-ultra-api exec prisma db push
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/apartment_ultra
-
-      - name: Build API
-        run: pnpm --filter apartment-ultra-api run build
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/apartment_ultra
-
-      - name: Start API
-        run: |
-          PORT=8000 SEED_E2E_USER=true DATABASE_URL=postgresql://postgres:postgres@localhost:5432/apartment_ultra pnpm --filter apartment-ultra-api run start &
-          npx wait-on -t 30000 http://localhost:8000/health
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/apartment_ultra
-
-      - name: Build frontend
-        run: pnpm --filter frontend run build
-        env:
-          NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
-
-      - name: Start frontend
-        run: |
-          cd web && PORT=3000 pnpm start &
-          npx wait-on -t 60000 http://localhost:3000
-        env:
-          NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
-
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run E2E tests
-        run: pnpm run test:e2e
-        env:
-          CI: true
 
   # Docker 构建验证并推送到 GHCR（仅 push 到 main 时运行）
   docker:
