@@ -75,8 +75,9 @@ SERVER_NAME=${SERVER_ADDR}
 WECHAT_PAY_ENABLED=false
 
 # ---- 镜像标签 ----
-API_TAG=latest
-WEB_TAG=latest
+API_IMAGE_TAG=latest
+TENANT_WEB_IMAGE_TAG=latest
+ADMIN_WEB_IMAGE_TAG=latest
 EOF
 
 chmod 600 $ENV_FILE
@@ -89,4 +90,4 @@ echo "  数据库密码: $POSTGRES_PASSWORD"
 echo "=========================================="
 echo ""
 log_info "现在可以执行部署:"
-echo "  DEPLOY_HOST=${SERVER_ADDR} ./scripts/deploy-from-local.sh"
+echo "  DEPLOY_HOST=${SERVER_ADDR} ./scripts/deploy.sh"

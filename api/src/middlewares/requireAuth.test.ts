@@ -73,6 +73,7 @@ describe('requireConsoleAuth', () => {
 
   it('should call next with 401 when token type is not access', async () => {
     mockReq.headers = { authorization: 'Bearer token123' };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(decodeToken).mockReturnValue({ sub: 'user123', type: 'refresh' } as any);
 
     await requireConsoleAuth(mockReq as Request, mockRes as Response, mockNext);
@@ -84,6 +85,7 @@ describe('requireConsoleAuth', () => {
 
   it('should call next with 401 when user not found', async () => {
     mockReq.headers = { authorization: 'Bearer token123' };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(decodeToken).mockReturnValue({ sub: 'user123', type: 'access' } as any);
     vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
 
@@ -96,7 +98,9 @@ describe('requireConsoleAuth', () => {
 
   it('should call next with 401 when user is inactive', async () => {
     mockReq.headers = { authorization: 'Bearer token123' };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(decodeToken).mockReturnValue({ sub: 'user123', type: 'access' } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ ...mockUser, is_active: false } as any);
 
     await requireConsoleAuth(mockReq as Request, mockRes as Response, mockNext);
@@ -108,7 +112,9 @@ describe('requireConsoleAuth', () => {
 
   it('should set consoleUser and call next when authenticated', async () => {
     mockReq.headers = { authorization: 'Bearer token123' };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(decodeToken).mockReturnValue({ sub: mockUser.id, type: 'access' } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
 
     await requireConsoleAuth(mockReq as Request, mockRes as Response, mockNext);

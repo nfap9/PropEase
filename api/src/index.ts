@@ -1,3 +1,7 @@
+// 可观测性初始化必须在最顶部
+import { initObservability } from './observability/index.js';
+initObservability();
+
 import express, { type Express } from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';

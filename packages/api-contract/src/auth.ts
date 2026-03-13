@@ -7,25 +7,17 @@ export interface User {
   created_at: string;
 }
 
-/** 登录凭证 */
+/** 登录凭证（仅支持密码登录） */
 export interface LoginCredentials {
   phone: string;
-  password?: string;
-  verification_code?: string;
+  password: string;
 }
 
-/** 注册数据 */
+/** 注册数据（无需短信验证） */
 export interface RegisterData {
   phone: string;
   password: string;
   full_name: string;
-  verification_code: string;
-}
-
-/** 发送短信验证码 */
-export interface SendSmsCodeData {
-  phone: string;
-  purpose: 'login' | 'register';
 }
 
 /** 令牌响应 */

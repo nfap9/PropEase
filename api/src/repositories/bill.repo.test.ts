@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createBillRepository, createPaymentRepository } from './bill.repo.js';
 
 describe('BillRepository', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockDb: any;
   let repository: ReturnType<typeof createBillRepository>;
 
@@ -120,6 +121,7 @@ describe('BillRepository', () => {
 });
 
 describe('PaymentRepository', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockDb: any;
   let repository: ReturnType<typeof createPaymentRepository>;
 

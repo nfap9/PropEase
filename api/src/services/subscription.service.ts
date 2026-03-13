@@ -71,9 +71,9 @@ export function createSubscriptionService(
 ): SubscriptionService {
   return {
     listPlans: async () => {
-      // 返回套餐时包含定价信息
+      // 返回套餐时包含定价信息，只返回可购买的套餐
       return prisma.subscriptionPlan.findMany({
-        where: { is_active: true, code: { not: 'free' } },
+        where: { is_active: true, is_purchasable: true, code: { not: 'free' } },
         orderBy: { sort_order: 'asc' },
         include: {
           pricing: {

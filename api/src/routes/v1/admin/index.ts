@@ -325,10 +325,16 @@ router.get('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
 });
 
 const CountScopeSchema = z.enum(['organization', 'user']);
+const PlanPricingItemSchema = z.object({
+  months: z.number().int().min(1),
+  price: z.number().min(0),
+  is_active: z.boolean().optional(),
+  sort_order: z.number().int().optional(),
+});
 const PlanCreateSchema = z.object({
   name: z.string(),
   code: z.string(),
-  price_monthly: z.number(),
+  price_monthly: z.number().optional(),
   price_yearly: z.number().optional(),
   max_organizations: z.number().nullable().optional(),
   max_apartments: z.number().optional(),
@@ -337,8 +343,10 @@ const PlanCreateSchema = z.object({
   rooms_count_scope: CountScopeSchema.optional(),
   members_count_scope: CountScopeSchema.optional(),
   is_active: z.boolean().optional(),
+  is_purchasable: z.boolean().optional(),
   sort_order: z.number().optional(),
   free_validity_days: z.number().nullable().optional(),
+  pricing: z.array(PlanPricingItemSchema).optional(),
 });
 const PlanUpdateSchema = PlanCreateSchema.partial();
 router.post('/plans', async (req: Request, res: Response, next: NextFunction) => {

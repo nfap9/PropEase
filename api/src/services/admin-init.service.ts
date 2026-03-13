@@ -49,7 +49,7 @@ export function validatePasswordStrength(password: string): { valid: boolean; me
   if (!/[0-9]/.test(password)) {
     return { valid: false, message: '密码必须包含数字' };
   }
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
     return { valid: false, message: '密码必须包含特殊字符' };
   }
   return { valid: true };

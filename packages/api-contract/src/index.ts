@@ -13,7 +13,6 @@ export type {
   User,
   LoginCredentials,
   RegisterData,
-  SendSmsCodeData,
   TokenResponse,
 } from './auth.js';
 

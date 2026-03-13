@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createLeaseRepository } from './lease.repo.js';
 
 describe('LeaseRepository', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockDb: any;
   let repository: ReturnType<typeof createLeaseRepository>;
 

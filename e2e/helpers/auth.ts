@@ -64,9 +64,6 @@ export async function login(
   // 等待登录页加载
   await page.waitForSelector(`[data-testid="${AUTH.LOGIN_PAGE}"]`);
 
-  // 确保在密码登录 Tab
-  await page.click(`[data-testid="${AUTH.PASSWORD_TAB}"]`);
-
   // 填写手机号
   await page.fill(`[data-testid="${AUTH.PHONE_INPUT}"]`, phone);
 
@@ -85,36 +82,6 @@ export async function login(
     AUTH_STORAGE_KEYS.ACCESS_TOKEN,
     { timeout: 5000 }
   );
-}
-
-/**
- * 验证码登录
- *
- * @param page - Playwright Page 对象
- * @param phone - 手机号
- * @param code - 验证码（默认 6 位测试验证码）
- */
-export async function loginWithCode(
-  page: Page,
-  phone: string = TEST_ACCOUNTS.owner.phone,
-  code: string = '123456'
-): Promise<void> {
-  await page.goto('/login');
-
-  // 切换到验证码登录 Tab
-  await page.click(`[data-testid="${AUTH.CODE_TAB}"]`);
-
-  // 填写手机号
-  await page.fill(`[data-testid="${AUTH.PHONE_INPUT_CODE}"]`, phone);
-
-  // 填写验证码
-  await page.fill(`[data-testid="${AUTH.VERIFICATION_CODE_INPUT}"]`, code);
-
-  // 点击登录按钮
-  await page.click(`[data-testid="${AUTH.LOGIN_BUTTON}"]`);
-
-  // 等待跳转
-  await page.waitForURL(/\/(dashboard|apartments|rooms)/, { timeout: 15000 });
 }
 
 /**

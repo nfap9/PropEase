@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -33,7 +33,6 @@ const phoneRegex = /^1[3-9]\d{9}$/;
 const registerSchema = z
   .object({
     phone: z.string().regex(phoneRegex, '请输入有效的手机号'),
-    verification_code: z.string().length(6, '验证码必须是6位数字'),
     password: z
       .string()
       .min(8, '密码至少8个字符')
@@ -50,12 +49,11 @@ const registerSchema = z
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-  const { register: registerUser, sendSmsCode, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { register: registerUser, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const brandConfig = useBrandConfig();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [countdown, setCountdown] = useState(0);
 
   // 已登录用户自动跳转到仪表盘
   useEffect(() => {
@@ -68,45 +66,20 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       phone: '',
-      verification_code: '',
       password: '',
       full_name: '',
       confirm_password: '',
     },
   });
 
-  // 倒计时效果
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [countdown]);
-
-  // 发送验证码
-  const handleSendCode = useCallback(async () => {
-    const phone = form.getValues('phone');
-    if (!phoneRegex.test(phone)) {
-      form.setError('phone', { message: '请输入有效的手机号' });
-      return;
-    }
-
-    try {
-      await sendSmsCode({ phone, purpose: 'register' });
-      setCountdown(60);
-    } catch {
-      setError('发送验证码失败，请稍后重试');
-    }
-  }, [form, sendSmsCode]);
-
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     setError(null);
     try {
-      await registerUser(data.phone, data.password, data.full_name, data.verification_code);
+      await registerUser(data.phone, data.password, data.full_name);
       router.push('/dashboard');
     } catch {
-      setError('注册失败，手机号可能已被使用或验证码无效');
+      setError('注册失败，手机号可能已被使用');
     } finally {
       setIsLoading(false);
     }
@@ -158,31 +131,6 @@ export default function RegisterPage() {
                     <FormControl>
                       <Input type="tel" placeholder="请输入手机号" {...field} data-testid="auth-phone-input" />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="verification_code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>验证码</FormLabel>
-                    <div className="flex gap-2">
-                      <FormControl>
-                        <Input type="text" maxLength={6} placeholder="请输入验证码" {...field} data-testid="auth-verification-code-input" />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={countdown > 0}
-                        onClick={handleSendCode}
-                        className="shrink-0"
-                        data-testid="auth-send-code-btn"
-                      >
-                        {countdown > 0 ? `${countdown}秒` : '获取验证码'}
-                      </Button>
-                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
