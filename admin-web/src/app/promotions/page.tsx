@@ -284,7 +284,8 @@ export default function AdminPromotionsPage() {
     );
   }
 
-  const renderFormFields = (form: typeof createForm | typeof editForm, isEdit: boolean) => (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const renderFormFields = (form: any, isEdit: boolean) => (
     <>
       <div className="grid grid-cols-2 gap-4">
         <FormField
