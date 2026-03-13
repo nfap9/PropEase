@@ -143,6 +143,7 @@ services:
         limits:
           memory: ${TENANT_WEB_MEMORY:-1G}
 
+  # 运营端 (admin-web) - 8080 端口独立访问
   admin-web:
     image: apartment-ultra-admin-web:${ADMIN_WEB_IMAGE_TAG:-latest}
     build:
