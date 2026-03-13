@@ -11,6 +11,11 @@ import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
 
 /**
+ * 折扣类型
+ */
+export type DiscountType = 'percent' | 'fixed';
+
+/**
  * 创建优惠活动参数
  */
 export interface CreatePromotionParams {
@@ -18,6 +23,7 @@ export interface CreatePromotionParams {
   code: string;
   description?: string | null;
   type: 'discount' | 'gift' | 'mixed';
+  discount_type?: DiscountType | null;
   discount_value?: number | null;
   gift_months?: number | null;
   start_date: Date;
@@ -33,6 +39,7 @@ export interface UpdatePromotionParams {
   name?: string;
   description?: string | null;
   type?: 'discount' | 'gift' | 'mixed';
+  discount_type?: DiscountType | null;
   discount_value?: number | null;
   gift_months?: number | null;
   start_date?: Date;
@@ -47,6 +54,7 @@ export interface CreatePlanPricingParams {
   months: number;
   price: number;
   is_active?: boolean;
+  is_purchasable?: boolean;
   sort_order?: number;
 }
 
@@ -129,6 +137,7 @@ export function createPromotionService(
         code: params.code,
         description: params.description,
         type: params.type,
+        discount_type: params.discount_type ?? null,
         discount_value: params.discount_value,
         gift_months: params.gift_months,
         start_date: params.start_date,
@@ -157,6 +166,7 @@ export function createPromotionService(
       if (params.name !== undefined) updateData.name = params.name;
       if (params.description !== undefined) updateData.description = params.description;
       if (params.type !== undefined) updateData.type = params.type;
+      if (params.discount_type !== undefined) updateData.discount_type = params.discount_type;
       if (params.discount_value !== undefined) updateData.discount_value = params.discount_value;
       if (params.gift_months !== undefined) updateData.gift_months = params.gift_months;
       if (params.start_date !== undefined) updateData.start_date = params.start_date;
@@ -202,6 +212,7 @@ export function createPromotionService(
       return getRepo().upsertPricing(planId, params.months, {
         price: params.price,
         is_active: params.is_active,
+        is_purchasable: params.is_purchasable,
         sort_order: params.sort_order,
       });
     },
@@ -215,6 +226,7 @@ export function createPromotionService(
         const result = await getRepo().upsertPricing(planId, pricing.months, {
           price: pricing.price,
           is_active: pricing.is_active,
+          is_purchasable: pricing.is_purchasable,
           sort_order: pricing.sort_order,
         });
         results.push(result);

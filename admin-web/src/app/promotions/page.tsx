@@ -58,12 +58,21 @@ const promotionSchema = z.object({
   code: z.string().min(1, '请输入活动代码'),
   description: z.string().optional(),
   type: z.enum(['discount', 'gift', 'mixed'], { required_error: '请选择活动类型' }),
-  discount_value: z.coerce.number().min(0).max(1, '折扣率需在0-1之间，如0.8表示8折').optional().nullable(),
+  discount_type: z.enum(['percent', 'fixed']).optional().nullable(),
+  discount_value: z.coerce.number().min(0).optional().nullable(),
   gift_months: z.coerce.number().int().min(0).optional().nullable(),
   start_date: z.string().min(1, '请选择开始日期'),
   end_date: z.string().optional().nullable(),
   is_active: z.boolean(),
   plan_ids: z.array(z.string()).optional(),
+}).refine({
+  // 折扣类型验证：percent 时 discount_value 应该在 0-1 之间
+  discount_value: z.custom().refine((data) => {
+    if (data.discount_type === 'percent') {
+      return data.discount_value !== null && data.discount_value >= 0 && data.discount_value <= 1;
+    }
+    return true;
+  }),
 });
 
 type PromotionForm = z.infer<typeof promotionSchema>;
@@ -104,6 +113,7 @@ export default function AdminPromotionsPage() {
       code: '',
       description: '',
       type: 'discount',
+      discount_type: 'percent',
       discount_value: null,
       gift_months: null,
       start_date: new Date().toISOString().slice(0, 10),
@@ -124,6 +134,7 @@ export default function AdminPromotionsPage() {
         code: data.code,
         description: data.description || undefined,
         type: data.type,
+        discount_type: data.discount_type ?? undefined,
         discount_value: data.discount_value,
         gift_months: data.gift_months,
         start_date: data.start_date,
@@ -170,6 +181,7 @@ export default function AdminPromotionsPage() {
       code: promotion.code,
       description: promotion.description ?? '',
       type: promotion.type,
+      discount_type: promotion.discount_type ?? 'percent',
       discount_value: promotion.discount_value,
       gift_months: promotion.gift_months,
       start_date: promotion.start_date.slice(0, 10),
@@ -203,12 +215,13 @@ export default function AdminPromotionsPage() {
       header: '折扣',
       cell: ({ row }) => {
         const value = row.original.discount_value;
+        const discountType = row.original.discount_type;
         if (value == null) return '-';
         const numVal = Number(value);
-        if (numVal < 1) {
-          return `${Math.round(numVal * 100)}% (${numVal * 10}折)`;
+        if (discountType === 'percent' || (!discountType && numVal < 1)) {
+          return `${Math.round(numVal * 100)}% (${Math.round(numVal * 10)}折)`;
         }
-        return `减免 ¥${numVal}`;
+        return `立减 ¥${numVal}`;
       },
     },
     {
@@ -343,31 +356,60 @@ export default function AdminPromotionsPage() {
       />
 
       {(form.watch('type') === 'discount' || form.watch('type') === 'mixed') && (
-        <FormField
-          control={form.control}
-          name="discount_value"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>折扣值</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.8 表示 8 折，或填写减免金额"
-                  {...field}
-                  value={field.value ?? ''}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    field.onChange(val === '' ? null : parseFloat(val));
-                  }}
-                />
-              </FormControl>
-              <FormDescription>
-                小于 1 表示折扣率（如 0.8 = 8 折），大于等于 1 表示减免金额
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+        <>
+          <FormField
+            control={form.control}
+            name="discount_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>折扣类型</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value ?? 'percent'}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择折扣类型" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="percent">百分比折扣（如 8 折）</SelectItem>
+                    <SelectItem value="fixed">固定金额减免（如立减 50 元）</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="discount_value"
+            render={({ field }) => {
+              const discountType = form.watch('discount_type');
+              const isPercent = discountType === 'percent' || (!discountType && form.watch('type') === 'discount');
+              return (
+                <FormItem>
+                  <FormLabel>{isPercent ? '折扣率' : '减免金额'}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step={isPercent ? '0.01' : '1'}
+                      placeholder={isPercent ? '0.8 表示 8 折' : '输入减免金额（如 50）'}
+                      {...field}
+                      value={field.value ?? ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        field.onChange(val === '' ? null : parseFloat(val));
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {isPercent
+                      ? '输入折扣率，如 0.8 表示 8 折（即 80% 价格）'
+                      : '输入固定减免金额，如 50 表示立减 50 元'}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
         />
       )}
 
@@ -540,6 +582,7 @@ export default function AdminPromotionsPage() {
                     name: d.name,
                     description: d.description || null,
                     type: d.type,
+                    discount_type: d.discount_type ?? null,
                     discount_value: d.discount_value,
                     gift_months: d.gift_months,
                     start_date: d.start_date,

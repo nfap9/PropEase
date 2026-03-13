@@ -467,14 +467,15 @@ model SubscriptionPlan {
 
 // 套餐周期定价（支持任意月数周期）
 model PlanPricing {
-  id         String   @id @db.VarChar(26)
-  plan_id    String   @db.VarChar(26)
-  months     Int              // 周期月数 (1, 3, 6, 12, 24 等)
-  price      Decimal  @db.Decimal(10, 2)
-  is_active  Boolean  @default(true)
-  sort_order Int      @default(0)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id            String   @id @db.VarChar(26)
+  plan_id       String   @db.VarChar(26)
+  months        Int              // 周期月数 (1, 3, 6, 12, 24 等)
+  price         Decimal  @db.Decimal(10, 2)
+  is_active     Boolean  @default(true)    // 是否启用（启用的才在租户端显示）
+  is_purchasable Boolean @default(true)    // 是否允许购买
+  sort_order    Int      @default(0)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
   plan SubscriptionPlan @relation(fields: [plan_id], references: [id], onDelete: Cascade)
 
@@ -489,14 +490,15 @@ model Promotion {
   name           String    @db.VarChar(100)
   code           String    @unique @db.VarChar(50)
   description    String?   @db.VarChar(500)
-  type           String    @db.VarChar(20)      // 'discount' | 'gift' | 'mixed' | 'tiered' | 'coupon' | 'referral' | 'system_gift'
-  discount_value Decimal?  @db.Decimal(10, 2)   // 折扣率(如0.8表示8折)或减免金额
+  type           String    @db.VarChar(20)      // 'discount' | 'gift' | 'mixed'
+  discount_type  String?   @db.VarChar(20)      // 'percent' 百分比折扣 | 'fixed' 固定金额减免
+  discount_value Decimal?  @db.Decimal(10, 2)   // 折扣率(如0.8表示8折)或减免金额(如50表示立减50元)
   gift_months    Int?                           // 赠送月数
   start_date     DateTime  @db.Date
   end_date       DateTime? @db.Date
   is_active      Boolean   @default(true)
 
-  // 阶梯优惠配置
+  // 阶梯优惠配置（已弃用，保留兼容）
   tiered_rules          Json?     // [{ months: 3, discount_value: 0.9, gift_months: 0 }, ...]
 
   // 优惠券配置

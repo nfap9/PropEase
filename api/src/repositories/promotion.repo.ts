@@ -38,7 +38,7 @@ export interface PromotionRepository {
   upsertPricing(
     planId: string,
     months: number,
-    data: { price: number; is_active?: boolean; sort_order?: number }
+    data: { price: number; is_active?: boolean; is_purchasable?: boolean; sort_order?: number }
   ): Promise<PlanPricing>;
 }
 
@@ -161,7 +161,7 @@ export function createPromotionRepository(db: DbClient): PromotionRepository {
     upsertPricing: async (
       planId: string,
       months: number,
-      data: { price: number; is_active?: boolean; sort_order?: number }
+      data: { price: number; is_active?: boolean; is_purchasable?: boolean; sort_order?: number }
     ) => {
       return db.planPricing.upsert({
         where: {
@@ -176,11 +176,13 @@ export function createPromotionRepository(db: DbClient): PromotionRepository {
           months,
           price: data.price,
           is_active: data.is_active ?? true,
+          is_purchasable: data.is_purchasable ?? true,
           sort_order: data.sort_order ?? 0,
         },
         update: {
           price: data.price,
           is_active: data.is_active ?? true,
+          is_purchasable: data.is_purchasable ?? true,
           sort_order: data.sort_order ?? 0,
         },
       });
@@ -205,12 +207,22 @@ export function calculatePromotionPrice(
   if (promotion.type === 'discount' || promotion.type === 'mixed') {
     if (promotion.discount_value != null) {
       const discountValue = Number(promotion.discount_value);
-      // discount_value < 1 表示折扣率（如 0.8 表示 8 折）
-      // discount_value >= 1 表示减免金额
-      if (discountValue < 1) {
+      const discountType = promotion.discount_type;
+
+      // 根据 discount_type 决定如何计算折扣
+      if (discountType === 'percent') {
+        // 百分比折扣：discount_value 表示折扣率（如 0.8 表示 8 折）
         discountAmount = originalPrice * (1 - discountValue);
-      } else {
+      } else if (discountType === 'fixed') {
+        // 固定金额减免：discount_value 表示减免金额
         discountAmount = Math.min(discountValue, originalPrice);
+      } else {
+        // 兼容旧数据：discount_value < 1 表示折扣率，>= 1 表示减免金额
+        if (discountValue < 1) {
+          discountAmount = originalPrice * (1 - discountValue);
+        } else {
+          discountAmount = Math.min(discountValue, originalPrice);
+        }
       }
     }
   }

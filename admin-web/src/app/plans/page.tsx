@@ -61,6 +61,7 @@ const pricingItemSchema = z.object({
   months: z.number().min(1, '月数最小为1'),
   price: z.number().min(0, '价格不能为负'),
   is_active: z.boolean(),
+  is_purchasable: z.boolean(),
   sort_order: z.number(),
 });
 
@@ -114,7 +115,7 @@ export default function AdminPlansPage() {
       max_members: 1,
       is_purchasable: true,
       sort_order: 0,
-      pricing: [{ months: 1, price: 0, is_active: true, sort_order: 0 }],
+      pricing: [{ months: 1, price: 0, is_active: true, is_purchasable: true, sort_order: 0 }],
     },
   });
 
@@ -207,9 +208,10 @@ export default function AdminPlansPage() {
             months: p.months,
             price: Number(p.price),
             is_active: p.is_active,
+            is_purchasable: p.is_purchasable ?? true,
             sort_order: p.sort_order,
           }))
-        : [{ months: 1, price: 0, is_active: true, sort_order: 0 }],
+        : [{ months: 1, price: 0, is_active: true, is_purchasable: true, sort_order: 0 }],
     });
     setIsEditOpen(true);
   };
@@ -306,7 +308,7 @@ export default function AdminPlansPage() {
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => append({ months: 1, price: 0, is_active: true, sort_order: 0 })}
+          onClick={() => append({ months: 1, price: 0, is_active: true, is_purchasable: true, sort_order: 0 })}
         >
           <Plus className="mr-1 h-3 w-3" />
           添加周期
@@ -314,57 +316,76 @@ export default function AdminPlansPage() {
       </div>
       <div className="space-y-2">
         {fields.map((field: { id: string }, index: number) => (
-          <div key={field.id} className="flex items-end gap-2 rounded border p-2">
-            <FormField
-              control={form.control}
-              name={`pricing.${index}.months`}
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormLabel className="text-xs">月数</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                  </FormControl>
-                </FormItem>
+          <div key={field.id} className="rounded border p-2">
+            <div className="flex items-end gap-2">
+              <FormField
+                control={form.control}
+                name={`pricing.${index}.months`}
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel className="text-xs">月数</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`pricing.${index}.price`}
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel className="text-xs">价格</FormLabel>
+                    <FormControl>
+                      <Input type="number" step="0.01" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              {fields.length > 1 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => remove(index)}
+                  className="text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               )}
-            />
-            <FormField
-              control={form.control}
-              name={`pricing.${index}.price`}
-              render={({ field }) => (
-                <FormItem className="flex-1">
-                  <FormLabel className="text-xs">价格</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name={`pricing.${index}.is_active`}
-              render={({ field }) => (
-                <FormItem className="flex items-center gap-1">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormLabel className="text-xs">启用</FormLabel>
-                </FormItem>
-              )}
-            />
-            {fields.length > 1 && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => remove(index)}
-                className="text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
+            </div>
+            <div className="flex items-center gap-4 mt-2">
+              <FormField
+                control={form.control}
+                name={`pricing.${index}.is_active`}
+                render={({ field }) => (
+                  <FormItem className="flex items-center gap-1">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="text-xs">启用</FormLabel>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`pricing.${index}.is_purchasable`}
+                render={({ field }) => (
+                  <FormItem className="flex items-center gap-1">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="text-xs">允许购买</FormLabel>
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
         ))}
       </div>

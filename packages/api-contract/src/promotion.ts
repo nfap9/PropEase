@@ -1,6 +1,9 @@
 /** 优惠活动类型 */
 export type PromotionType = 'discount' | 'gift' | 'mixed';
 
+/** 折扣类型 */
+export type DiscountType = 'percent' | 'fixed';
+
 /** 套餐周期定价 */
 export interface PlanPricing {
   id: string;
@@ -8,6 +11,8 @@ export interface PlanPricing {
   months: number;
   price: number;
   is_active: boolean;
+  /** 是否允许购买 */
+  is_purchasable: boolean;
   sort_order: number;
 }
 
@@ -26,7 +31,9 @@ export interface Promotion {
   code: string;
   description: string | null;
   type: PromotionType;
-  /** 折扣率(如0.8表示8折)或减免金额 */
+  /** 折扣类型：percent 百分比折扣 | fixed 固定金额减免 */
+  discount_type: DiscountType | null;
+  /** 折扣率(如0.8表示8折)或减免金额(如50表示立减50元) */
   discount_value: number | null;
   /** 赠送月数 */
   gift_months: number | null;
@@ -45,6 +52,8 @@ export interface PromotionCreate {
   code: string;
   description?: string | null;
   type: PromotionType;
+  /** 折扣类型 */
+  discount_type?: DiscountType | null;
   discount_value?: number | null;
   gift_months?: number | null;
   start_date: string;
@@ -59,6 +68,7 @@ export interface PromotionUpdate {
   name?: string;
   description?: string | null;
   type?: PromotionType;
+  discount_type?: DiscountType | null;
   discount_value?: number | null;
   gift_months?: number | null;
   start_date?: string;

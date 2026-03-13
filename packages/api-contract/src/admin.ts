@@ -118,6 +118,8 @@ export interface AdminPlanPricingCreate {
   months: number;
   price: number;
   is_active?: boolean;
+  /** 是否允许购买 */
+  is_purchasable?: boolean;
   sort_order?: number;
 }
 
