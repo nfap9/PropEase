@@ -2,18 +2,27 @@
 
 ## 项目概述
 
-Apartment Ultra 是一个可商用的公寓管理系统应用，目标用户是承包公寓进行运营收租的管理者（二房东）；支持公寓、房间、水电、租约、租客、账单管理；还有运营平台支持商业化运营；原始的需求描述在[原始需求](docs/原始需求.md)中。
+Apartment Ultra 是一个公寓管理产品，目的是为公寓管理从业人员提供一个便捷的管理系统；
 
+目标用户是公寓管理者；
 
-采用测试驱动开发，所有功能变更都需要维护在 docs/测试用例 中
+最终产品要为用户提供房间管理、账单管理等服务支持；还能够支持商业化运营；
+
+原始的需求描述在[原始需求](docs/原始需求.md)中。
+
+## 开发说明
 
 本仓库为 **pnpm workspaces monorepo**：根目录有 `pnpm-workspace.yaml` 与单一 `pnpm-lock.yaml`，依赖在根目录执行 `pnpm install` 安装。
 
-代码库分为：
+采用测试驱动开发，所有功能变更都需要维护在 docs/测试用例 中
 
 - **后端 api** (`/api`): Node/Express/TypeScript 应用，**项目运行与调试均使用此后端**
-- **前端 Web** (`/web`): Next.js 应用，使用 TypeScript 和 React
-- **小程序** (`/miniprogram`):小程序，使用taro框架
+- **租户端 Web** (`/tenant-web`): Next.js 应用，端口 3000，面向公寓管理者的前端
+- **运营端 Web** (`/admin-web`): Next.js 应用，端口 3001，面向平台运营者的前端
+- **移动端** (`/mobile`): Expo/React Native 应用，使用 Tamagui 框架
+- **共享包** (`/packages`):
+  - `api-contract`: API 契约定义
+  - `shared-ui`: 共享 UI 组件库
 - **Docker 部署** (`/docker`): 容器化部署配置（构建上下文为仓库根，后端为 api）
 
 ## 开发工作流
@@ -31,12 +40,16 @@ pnpm --filter apartment-ultra-api exec prisma db push
 # 4. 启动后端（端口 8000）
 pnpm dev:api
 
-# 5. 启动前端（端口 3000，另开终端）
+# 5. 启动租户端前端（端口 3000，另开终端）
 pnpm dev:web
+
+# 6. 启动运营端前端（端口 3001，另开终端）
+pnpm dev:admin
 ```
 
 - 后端详情：`api/AGENTS.md`
-- 前端详情：`web/AGENTS.md`
+- 租户端详情：`tenant-web/AGENTS.md`
+- 运营端详情：`admin-web/AGENTS.md`
 - 代码质量：`pnpm lint` / `pnpm type-check` / `pnpm test`
 
 ## 后端工作流
@@ -45,7 +58,8 @@ pnpm dev:web
 
 ## 前端工作流
 
-- 阅读 `web/AGENTS.md` 了解详情
+- **租户端**：阅读 `tenant-web/AGENTS.md` 了解详情
+- **运营端**：阅读 `admin-web/AGENTS.md` 了解详情
 
 ## 测试与质量实践
  

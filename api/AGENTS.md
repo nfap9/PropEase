@@ -17,11 +17,22 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端。
   - `config.ts`：环境配置
   - `constants.ts`：业务码、不包装路径
   - `index.ts`：入口，挂载中间件与路由
-  - `lib/prisma.ts`：Prisma 单例
-  - `middlewares/`：响应包装、错误处理、认证
-  - `routes/`：health、v1（auth、organizations、apartments、tenants、leases、utilities、bills、reports、permissions、subscriptions、notifications、custom-roles、admin、webhooks）
-  - `startup/`：启动时种子（admin 超级管理员）
-  - `utils/`：security、jwt、context、appError、orgContext
+  - `messages.ts`：错误消息定义
+  - `swagger.ts`：OpenAPI 文档配置
+  - `lib/`：Prisma 单例等基础库
+  - `constants/`：权限默认值等常量定义
+  - `errors/`：领域特定异常处理
+  - `middlewares/`：响应包装、错误处理、认证、权限校验
+  - `observability/`：可观测性相关
+  - `repositories/`：数据仓库层，封装数据库操作
+  - `routes/`：API 路由
+    - `health.ts`：健康检查
+    - `v1/`：版本 1 API（auth、organizations、apartments、tenants、leases、utilities、bills、reports、permissions、subscriptions、notifications、customRoles、admin、webhooks、config、fee-types、usage）
+  - `scheduler/`：定时任务（通知检查、月度账单生成）
+  - `services/`：业务逻辑层
+  - `startup/`：启动时检查（数据库连接检查）
+  - `types/`：TypeScript 类型定义
+  - `utils/`：工具函数（security、jwt、context、appError、orgContext、audit、billExports、subscriptionProration 等）
 
 - `prisma/schema.prisma`：数据库模型定义，由 Prisma 管理表结构。
 
@@ -48,7 +59,3 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端。
 ## 数据库
 
 - 使用 PostgreSQL；表结构以 `prisma/schema.prisma` 为准，在 api 目录执行 `pnpm exec prisma db push` 同步。
-
-## E2E 测试用户
-
-- 运行 E2E 前可设置环境变量 `SEED_E2E_USER=true` 启动 API，将自动创建固定测试用户：手机号 `13800138000`、密码 `Test1234`、姓名「E2E测试」，并创建其个人组织，供「密码登录」等 E2E 用例使用。
