@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { adminAuthRouter } from './auth.js';
 import { adminInitRouter } from './init.js';
-import { adminPromotionsRouter } from './promotions.js';
+import { adminServiceProductsRouter } from './service-products.js';
+import { adminStorefrontsRouter } from './storefronts.js';
 import { requireAdmin } from '../../../middlewares/requireAdmin.js';
 import { requireSystemInitialized } from '../../../middlewares/requireSystemInitialized.js';
 import { getAdminUser } from '../../../utils/context.js';
@@ -23,8 +24,10 @@ router.use('/auth', requireSystemInitialized, adminAuthRouter);
 router.use(requireSystemInitialized);
 router.use(requireAdmin);
 
-// 优惠活动和套餐定价管理
-router.use(adminPromotionsRouter);
+// 服务产品管理
+router.use(adminServiceProductsRouter);
+// 商店配置管理
+router.use(adminStorefrontsRouter);
 
 // --- users (admin 后台管理员) ---
 router.get('/users/me', async (req: Request, res: Response, next: NextFunction) => {

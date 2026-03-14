@@ -42,6 +42,7 @@ export type {
 /** 优惠活动 */
 export type {
   PromotionType,
+  DiscountType,
   PlanPricing,
   PromotionPlan,
   Promotion,
@@ -50,6 +51,29 @@ export type {
   PromotionListParams,
   PromotionCalculation,
 } from './promotion.js';
+
+/** 服务定价模块 */
+export type {
+  PricingDiscount,
+  ServiceProduct,
+  ServicePricing,
+  ServiceProductCreate,
+  ServiceProductUpdate,
+  ServicePricingCreate,
+  ServicePricingBatchUpdate,
+  StorefrontConfig,
+  StorefrontItem,
+  StorefrontConfigCreate,
+  StorefrontConfigUpdate,
+  StorefrontItemCreate,
+  StorefrontItemUpdate,
+  StorefrontItemsReorder,
+  StorefrontViewService,
+  StorefrontViewPricing,
+  StorefrontView,
+  PriceCalculationRequest,
+  PriceCalculationResult,
+} from './service-product.js';
 
 /** 公寓与房间 */
 export type {

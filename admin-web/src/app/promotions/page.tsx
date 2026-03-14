@@ -65,15 +65,19 @@ const promotionSchema = z.object({
   end_date: z.string().optional().nullable(),
   is_active: z.boolean(),
   plan_ids: z.array(z.string()).optional(),
-}).refine({
-  // 折扣类型验证：percent 时 discount_value 应该在 0-1 之间
-  discount_value: z.custom().refine((data) => {
-    if (data.discount_type === 'percent') {
-      return data.discount_value !== null && data.discount_value >= 0 && data.discount_value <= 1;
+}).refine(
+  (data) => {
+    // 折扣类型验证：percent 时 discount_value 应该在 0-1 之间
+    if (data.discount_type === 'percent' && data.discount_value != null) {
+      return data.discount_value >= 0 && data.discount_value <= 1;
     }
     return true;
-  }),
-});
+  },
+  {
+    message: '百分比折扣值应在 0-1 之间（如 0.8 表示 8 折）',
+    path: ['discount_value'],
+  }
+);
 
 type PromotionForm = z.infer<typeof promotionSchema>;
 
@@ -411,7 +415,7 @@ export default function AdminPromotionsPage() {
               );
             }}
           />
-        />
+        </>
       )}
 
       {(form.watch('type') === 'gift' || form.watch('type') === 'mixed') && (
@@ -494,7 +498,7 @@ export default function AdminPromotionsPage() {
                       if (checked) {
                         field.onChange([...(field.value || []), plan.id]);
                       } else {
-                        field.onChange(field.value?.filter((id) => id !== plan.id));
+                        field.onChange(field.value?.filter((id: string) => id !== plan.id));
                       }
                     }}
                   />

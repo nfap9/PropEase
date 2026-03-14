@@ -105,6 +105,14 @@ adminApi.interceptors.response.use(
     return response;
   },
   (error: AxiosError<Record<string, unknown>>) => {
+    // 处理 401 认证失败，清除 token 并跳转到登录页
+    if (error.response?.status === 401) {
+      localStorage.removeItem('admin_access_token');
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
+    }
     // 优先使用接口响应的 message，保持与业务端一致
     if (error.response?.data && typeof error.response.data === 'object') {
       const responseData = error.response.data;
