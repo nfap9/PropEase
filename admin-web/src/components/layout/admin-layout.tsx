@@ -14,7 +14,8 @@ import {
   Menu,
   LogOut,
   Palette,
-  Tag,
+  Store,
+  DollarSign,
 } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
@@ -27,8 +28,8 @@ const ADMIN_NAV = [
   { href: '/registered-users', label: '用户管理', icon: UserCircle },
   { href: '/roles', label: '运营角色', icon: Shield },
   { href: '/organizations', label: '组织管理', icon: Building2 },
-  { href: '/plans', label: '套餐配置', icon: Package },
-  { href: '/promotions', label: '优惠活动', icon: Tag },
+  { href: '/service-pricing', label: '服务定价', icon: DollarSign },
+  { href: '/storefront', label: '商店配置', icon: Store },
   { href: '/usage-pricing', label: '按量定价', icon: Package },
   { href: '/subscriptions', label: '订阅管理', icon: CreditCard },
 ];

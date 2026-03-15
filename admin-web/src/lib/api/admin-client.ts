@@ -32,6 +32,19 @@ import type {
   Promotion,
   PromotionCreate,
   PromotionUpdate,
+  ServiceProduct,
+  ServiceProductCreate,
+  ServiceProductUpdate,
+  ServicePricingCreate,
+  ServicePricingBatchUpdate,
+  StorefrontConfig,
+  StorefrontConfigCreate,
+  StorefrontConfigUpdate,
+  StorefrontItem,
+  StorefrontItemCreate,
+  StorefrontItemUpdate,
+  StorefrontItemsReorder,
+  PricingDiscount,
 } from '@apartment-ultra/api-contract';
 
 // 重新导出类型，保持向后兼容
@@ -63,6 +76,19 @@ export type {
   Promotion,
   PromotionCreate,
   PromotionUpdate,
+  ServiceProduct,
+  ServiceProductCreate,
+  ServiceProductUpdate,
+  ServicePricingCreate,
+  ServicePricingBatchUpdate,
+  StorefrontConfig,
+  StorefrontConfigCreate,
+  StorefrontConfigUpdate,
+  StorefrontItem,
+  StorefrontItemCreate,
+  StorefrontItemUpdate,
+  StorefrontItemsReorder,
+  PricingDiscount,
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
@@ -261,4 +287,39 @@ export const adminApiEndpoints = {
     adminApi.post(`/admin/promotions/${promotionId}/plans`, { plan_id: planId }),
   removePlanFromPromotion: (promotionId: string, planId: string) =>
     adminApi.delete(`/admin/promotions/${promotionId}/plans/${planId}`),
+
+  // 服务产品
+  listServiceProducts: (params?: { is_active?: boolean }) =>
+    adminApi.get<ServiceProduct[]>('/admin/service-products', { params }),
+  getServiceProduct: (id: string) =>
+    adminApi.get<ServiceProduct>(`/admin/service-products/${id}`),
+  createServiceProduct: (data: ServiceProductCreate) =>
+    adminApi.post<ServiceProduct>('/admin/service-products', data),
+  updateServiceProduct: (id: string, data: ServiceProductUpdate) =>
+    adminApi.put<ServiceProduct>(`/admin/service-products/${id}`, data),
+  deleteServiceProduct: (id: string) =>
+    adminApi.delete(`/admin/service-products/${id}`),
+  updateServiceProductPricing: (id: string, data: ServicePricingBatchUpdate) =>
+    adminApi.put<ServiceProduct>(`/admin/service-products/${id}/pricing`, data),
+
+  // 商店配置
+  listStorefronts: (params?: { is_active?: boolean }) =>
+    adminApi.get<StorefrontConfig[]>('/admin/storefronts', { params }),
+  getStorefront: (id: string) =>
+    adminApi.get<StorefrontConfig>(`/admin/storefronts/${id}`),
+  createStorefront: (data: StorefrontConfigCreate) =>
+    adminApi.post<StorefrontConfig>('/admin/storefronts', data),
+  updateStorefront: (id: string, data: StorefrontConfigUpdate) =>
+    adminApi.put<StorefrontConfig>(`/admin/storefronts/${id}`, data),
+  deleteStorefront: (id: string) =>
+    adminApi.delete(`/admin/storefronts/${id}`),
+  // 商店项
+  addStorefrontItem: (storefrontId: string, data: StorefrontItemCreate) =>
+    adminApi.post<StorefrontItem>(`/admin/storefronts/${storefrontId}/items`, data),
+  updateStorefrontItem: (storefrontId: string, itemId: string, data: StorefrontItemUpdate) =>
+    adminApi.put<StorefrontItem>(`/admin/storefronts/${storefrontId}/items/${itemId}`, data),
+  deleteStorefrontItem: (storefrontId: string, itemId: string) =>
+    adminApi.delete(`/admin/storefronts/${storefrontId}/items/${itemId}`),
+  reorderStorefrontItems: (storefrontId: string, data: StorefrontItemsReorder) =>
+    adminApi.put<void>(`/admin/storefronts/${storefrontId}/items/reorder`, data),
 };
