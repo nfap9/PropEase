@@ -6,11 +6,11 @@ import { z } from 'zod';
 import { getAdminUser } from '../../../utils/context.js';
 import { createAppError } from '../../../utils/appError.js';
 import { auditAdminAction } from '../../../utils/audit.js';
-import { ServiceProductService } from '../../../services/service-product.service.js';
+import { defaultServiceProductService } from '../../../services/service-product.service.js';
 import type { Request, Response, NextFunction } from 'express';
 
 export const adminStorefrontsRouter: Router = Router();
-const service = new ServiceProductService();
+const service = defaultServiceProductService;
 
 // ========================
 // 商店配置 CRUD
