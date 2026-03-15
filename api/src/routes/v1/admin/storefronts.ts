@@ -3,7 +3,6 @@
  */
 import { Router } from 'express';
 import { z } from 'zod';
-import { getAdminUser } from '../../../utils/context.js';
 import { createAppError } from '../../../utils/appError.js';
 import { auditAdminAction } from '../../../utils/audit.js';
 import { defaultServiceProductService } from '../../../services/service-product.service.js';
@@ -169,7 +168,7 @@ adminStorefrontsRouter.delete(
   '/storefronts/:storefront_id/items/:item_id',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await service.removeServiceFromStorefront(req.params.storefront_id, req.params.item_id);
+      await service.removeServiceFromStorefront(req.params.item_id);
       auditAdminAction(req, 'storefront-item:delete', req.params.item_id);
       res.status(204).send();
     } catch (e) {

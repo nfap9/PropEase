@@ -452,6 +452,7 @@ model SubscriptionPlan {
   subscription_orders     SubscriptionOrder[]
   next_plan_subscriptions OrganizationSubscription[] @relation("NextPlan")
   pricing                 PlanPricing[]
+  promotion_plans         PromotionPlan[]
 
   @@map("subscription_plans")
 }
@@ -523,12 +524,17 @@ model SubscriptionOrder {
   total_gift_months Int      @default(0)
   balance_deduction Decimal? @db.Decimal(10, 2)
 
+  // 促销关联（向后兼容）
+  promotion_id       String?
+  applied_promotions Json? // 促销详情快照
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   organization     Organization              @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   plan             SubscriptionPlan          @relation(fields: [plan_id], references: [id])
   org_subscription OrganizationSubscription? @relation(fields: [organization_subscription_id], references: [id], onDelete: SetNull)
+  promotion        Promotion?                @relation(fields: [promotion_id], references: [id], onDelete: SetNull)
 
   @@index([organization_id])
   @@map("subscription_orders")
@@ -739,4 +745,108 @@ model StorefrontItem {
   @@unique([storefront_id, service_id])
   @@index([storefront_id])
   @@map("storefront_items")
+}
+
+// ============================================================
+// 促销活动（保留用于向后兼容，后续版本迁移到商店配置）
+// ============================================================
+
+/// 促销活动
+model Promotion {
+  id             String    @id @db.VarChar(26)
+  name           String    @db.VarChar(100)
+  code           String?   @db.VarChar(50)
+  type           String    @db.VarChar(20) // percent, fixed, gift
+  discount_value Decimal?  @db.Decimal(10, 2)
+  gift_months    Int?
+  start_date     DateTime?
+  end_date       DateTime?
+  is_active      Boolean   @default(true)
+  is_stackable   Boolean   @default(false)
+  priority       Int       @default(0)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  plans      PromotionPlan[]
+  usages     CouponUsage[]
+  orders     SubscriptionOrder[]
+  referrals  ReferralRecord[]
+  user_gifts UserGift[]
+
+  @@index([is_active])
+  @@index([code])
+  @@map("promotions")
+}
+
+/// 套餐与促销关联
+model PromotionPlan {
+  id           String @id @db.VarChar(26)
+  promotion_id String @db.VarChar(26)
+  plan_id      String @db.VarChar(26)
+
+  promotion Promotion        @relation(fields: [promotion_id], references: [id], onDelete: Cascade)
+  plan      SubscriptionPlan @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+
+  @@unique([promotion_id, plan_id])
+  @@map("promotion_plans")
+}
+
+/// 优惠券使用记录
+model CouponUsage {
+  id              String   @id @db.VarChar(26)
+  promotion_id    String   @db.VarChar(26)
+  user_id         String   @db.VarChar(26)
+  organization_id String   @db.VarChar(26)
+  used_at         DateTime @default(now())
+
+  promotion Promotion @relation(fields: [promotion_id], references: [id], onDelete: Cascade)
+
+  @@unique([promotion_id, organization_id])
+  @@map("coupon_usages")
+}
+
+/// 推荐记录
+model ReferralRecord {
+  id               String    @id @db.VarChar(26)
+  referral_code    String    @db.VarChar(50)
+  referrer_user_id String    @db.VarChar(26)
+  referrer_org_id  String    @db.VarChar(26)
+  referee_user_id  String?   @db.VarChar(26)
+  referee_org_id   String    @db.VarChar(26)
+  status           String    @default("pending") // pending, completed, rewarded
+  reward           Decimal?  @db.Decimal(10, 2)
+  rewarded_at      DateTime?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  promotion    Promotion? @relation(fields: [promotion_id], references: [id], onDelete: SetNull)
+  promotion_id String?
+
+  @@unique([referral_code, referee_org_id])
+  @@index([referrer_user_id])
+  @@index([referee_org_id])
+  @@map("referral_records")
+}
+
+/// 用户赠送
+model UserGift {
+  id         String    @id @db.VarChar(26)
+  user_id    String    @db.VarChar(26)
+  org_id     String    @db.VarChar(26)
+  type       String    @db.VarChar(20) // balance, subscription_days
+  amount     Decimal?  @db.Decimal(10, 2)
+  days       Int?
+  reason     String    @db.VarChar(255)
+  source     String    @db.VarChar(50) // referral, promotion, admin
+  is_used    Boolean   @default(false)
+  used_at    DateTime?
+  expires_at DateTime?
+  created_at DateTime  @default(now())
+
+  promotion    Promotion? @relation(fields: [promotion_id], references: [id], onDelete: SetNull)
+  promotion_id String?
+
+  @@index([user_id])
+  @@index([org_id])
+  @@map("user_gifts")
 }

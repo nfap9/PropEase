@@ -3,7 +3,6 @@
  */
 import { Router } from 'express';
 import { z } from 'zod';
-import { getAdminUser } from '../../../utils/context.js';
 import { createAppError } from '../../../utils/appError.js';
 import { auditAdminAction } from '../../../utils/audit.js';
 import { defaultServiceProductService } from '../../../services/service-product.service.js';
@@ -74,7 +73,9 @@ adminServiceProductsRouter.post('/service-products', async (req: Request, res: R
       return next(createAppError(422, '参数校验失败'));
     }
     const product = await service.createServiceProduct(parsed.data);
-    auditAdminAction(req, 'service-product:create', product.id, { name: parsed.data.name });
+    if (product) {
+      auditAdminAction(req, 'service-product:create', product.id, { name: parsed.data.name });
+    }
     res.status(201).json(product);
   } catch (e) {
     next(e);

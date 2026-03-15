@@ -13,181 +13,52 @@ import { calculateUpgradeProration } from '../../utils/subscriptionProration.js'
 import { defaultSubscriptionService } from '../../services/subscription.service.js';
 import { isSubscriptionActive } from '../../repositories/subscription.repo.js';
 import {
-  createPromotionEngineService,
-  type PromotionCalculationInput,
-} from '../../services/promotion-engine.service.js';
-import {
-  createReferralService,
-} from '../../services/referral.service.js';
-import { createUserGiftService } from '../../services/user-gift.service.js';
+  defaultServiceProductService,
+} from '../../services/service-product.service.js';
 
 const router: Router = Router();
-const promotionEngineService = createPromotionEngineService();
-const referralService = createReferralService();
-const userGiftService = createUserGiftService();
 
 router.use(requireConsoleAuth);
 
-// ==================== 优惠相关接口 ====================
+// ==================== 商店视图接口 ====================
 
 /**
  * @openapi
- * /subscriptions/validate-coupon:
- *   post:
- *     summary: 验证优惠码
- *     tags: [订阅管理]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [code, plan_id]
- *             properties:
- *               code:
- *                 type: string
- *               plan_id:
- *                 type: string
- *               amount:
- *                 type: number
- *     responses:
- *       200:
- *         description: 验证结果
- */
-router.post(
-  '/validate-coupon',
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.consoleUser?.id;
-      if (!userId) {
-        return next(createAppError(401, '未登录'));
-      }
-
-      const body = req.body as {
-        code?: string;
-        plan_id?: string;
-        organization_id?: string;
-        amount?: number;
-      };
-
-      if (!body?.code || !body?.plan_id) {
-        return next(createAppError(400, '缺少优惠码或套餐ID'));
-      }
-
-      const orgId = body.organization_id ??
-        (typeof req.headers['x-org-id'] === 'string' ? req.headers['x-org-id'] : undefined);
-      if (!orgId) {
-        return next(createAppError(400, '缺少组织ID'));
-      }
-
-      const result = await promotionEngineService.validateCouponCode({
-        code: body.code,
-        plan_id: body.plan_id,
-        organization_id: orgId,
-        user_id: userId,
-        amount: body.amount ?? 0,
-      });
-
-      res.json({
-        valid: result.valid,
-        message: result.message,
-        promotion: result.promotion
-          ? {
-              id: result.promotion.id,
-              name: result.promotion.name,
-              type: result.promotion.type,
-              discount_value: result.promotion.discount_value
-                ? Number(result.promotion.discount_value)
-                : null,
-              gift_months: result.promotion.gift_months,
-            }
-          : null,
-      });
-    } catch (e) {
-      next(e);
-    }
-  }
-);
-
-/**
- * @openapi
- * /subscriptions/organizations/{org_id}/available-promotions:
+ * /subscriptions/storefront:
  *   get:
- *     summary: 获取可用优惠列表
+ *     summary: 获取商店视图
+ *     description: 获取商店配置及可购买的服务列表
  *     tags: [订阅管理]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: org_id
- *         required: true
- *         schema:
- *           type: string
  *       - in: query
- *         name: plan_id
- *         required: true
+ *         name: storefront_id
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: 可用优惠列表
+ *         description: 商店视图数据
  */
-router.get(
-  '/organizations/:org_id/available-promotions',
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await requireOrgMembership(req, 'org_id');
-      const userId = req.consoleUser?.id;
-      if (!userId) {
-        return next(createAppError(401, '未登录'));
-      }
-
-      const planId = req.query.plan_id as string;
-      if (!planId) {
-        return next(createAppError(400, '缺少套餐ID'));
-      }
-
-      // 检查是否是首次购买
-      const existingSub = await prisma.organizationSubscription.findUnique({
-        where: { organization_id: req.params.org_id },
-      });
-      const isFirstPurchase = !existingSub || !isSubscriptionActive(existingSub);
-
-      const promotions = await promotionEngineService.getAvailablePromotions({
-        plan_id: planId,
-        organization_id: req.params.org_id,
-        user_id: userId,
-        is_first_purchase: isFirstPurchase,
-      });
-
-      // 获取用户余额
-      const balance = await promotionEngineService.getUserBalance(req.params.org_id);
-
-      res.json({
-        promotions: promotions.map((p) => ({
-          id: p.id,
-          name: p.name,
-          code: p.code,
-          type: p.type,
-          discount_value: p.discount_value ? Number(p.discount_value) : null,
-          gift_months: p.gift_months,
-          is_stackable: p.is_stackable,
-        })),
-        balance_available: balance,
-      });
-    } catch (e) {
-      next(e);
+router.get('/storefront', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const storefrontId = req.query.storefront_id as string | undefined;
+    const view = await defaultServiceProductService.getStorefrontView(storefrontId);
+    if (!view) {
+      return next(createAppError(404, '商店配置不存在或未启用'));
     }
+    res.json(view);
+  } catch (e) {
+    next(e);
   }
-);
+});
 
 /**
  * @openapi
- * /subscriptions/calculate-price:
+ * /subscriptions/storefront/calculate-price:
  *   post:
- *     summary: 计算优惠价格
+ *     summary: 计算服务价格
+ *     description: 根据服务ID、购买时长和商店配置计算最终价格
  *     tags: [订阅管理]
  *     security:
  *       - bearerAuth: []
@@ -197,242 +68,66 @@ router.get(
  *         application/json:
  *           schema:
  *             type: object
- *             required: [plan_id, billing_months]
+ *             required: [service_id, months]
  *             properties:
- *               plan_id:
+ *               service_id:
  *                 type: string
- *               billing_months:
+ *               months:
  *                 type: integer
- *               coupon_code:
- *                 type: string
- *               use_balance:
- *                 type: boolean
- *               referral_code:
- *                 type: string
- *               organization_id:
+ *               storefront_id:
  *                 type: string
  *     responses:
  *       200:
  *         description: 价格计算结果
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 original_price:
+ *                   type: number
+ *                 discount_type:
+ *                   type: string
+ *                   enum: [percent, fixed, gift, null]
+ *                 discount_value:
+ *                   type: number
+ *                 discount_amount:
+ *                   type: number
+ *                 final_price:
+ *                   type: number
+ *                 gift_months:
+ *                   type: integer
+ *       404:
+ *         description: 服务或定价不存在
  */
 router.post(
-  '/calculate-price',
+  '/storefront/calculate-price',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = req.consoleUser?.id;
-      if (!userId) {
-        return next(createAppError(401, '未登录'));
-      }
-
       const body = req.body as {
-        plan_id?: string;
-        billing_months?: number;
-        coupon_code?: string;
-        use_balance?: boolean;
-        referral_code?: string;
-        organization_id?: string;
+        service_id?: string;
+        months?: number;
+        storefront_id?: string;
       };
 
-      if (!body?.plan_id || !body?.billing_months) {
-        return next(createAppError(400, '缺少套餐ID或购买月数'));
+      if (!body?.service_id || !body?.months) {
+        return next(createAppError(400, '缺少 service_id 或 months'));
       }
 
-      const orgId = body.organization_id ??
-        (typeof req.headers['x-org-id'] === 'string' ? req.headers['x-org-id'] : undefined);
-      if (!orgId) {
-        return next(createAppError(400, '缺少组织ID'));
-      }
-
-      // 获取套餐和周期定价
-      const plan = await prisma.subscriptionPlan.findFirst({
-        where: { id: body.plan_id },
-        include: {
-          pricing: { where: { is_active: true } },
-        },
+      const result = await defaultServiceProductService.calculatePrice({
+        service_id: body.service_id,
+        months: body.months,
+        storefront_id: body.storefront_id,
       });
-      if (!plan) {
-        return next(createAppError(404, NotFoundMessages.PLAN));
-      }
 
-      // 计算原价
-      const pricing = plan.pricing.find((p) => p.months === body.billing_months);
-      const originalPrice = pricing ? Number(pricing.price) : Number(plan.price_monthly) * body.billing_months!;
-
-      // 检查是否是首次购买
-      const existingSub = await prisma.organizationSubscription.findUnique({
-        where: { organization_id: orgId },
-      });
-      const isFirstPurchase = !existingSub || !isSubscriptionActive(existingSub);
-
-      const input: PromotionCalculationInput = {
-        plan_id: body.plan_id,
-        billing_months: body.billing_months!,
-        original_price: originalPrice,
-        organization_id: orgId,
-        user_id: userId,
-        coupon_code: body.coupon_code,
-        use_balance: body.use_balance,
-        referral_code: body.referral_code,
-        is_first_purchase: isFirstPurchase,
-      };
-
-      const result = await promotionEngineService.calculatePromotions(input);
-
-      res.json({
-        original_price: result.original_price,
-        final_price: result.final_price,
-        total_discount: result.total_discount,
-        total_gift_months: result.total_gift_months,
-        balance_deduction: result.balance_deduction,
-        applied_promotions: result.applied_promotions,
-        balance_available: result.balance_available,
-        coupon_valid: result.coupon_valid,
-        coupon_message: result.coupon_message,
-        referral_valid: result.referral_valid,
-        referral_message: result.referral_message,
-      });
+      res.json(result);
     } catch (e) {
       next(e);
     }
   }
 );
 
-// ==================== 推荐相关接口 ====================
-
-/**
- * @openapi
- * /subscriptions/referrals/my-code:
- *   get:
- *     summary: 获取我的推荐码
- *     tags: [订阅管理]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: 推荐码信息
- */
-router.get(
-  '/referrals/my-code',
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.consoleUser?.id;
-      if (!userId) {
-        return next(createAppError(401, '未登录'));
-      }
-
-      const code = await referralService.getMyReferralCode(userId);
-      const stats = await referralService.getReferralStats(userId);
-
-      res.json({
-        referral_code: code,
-        stats,
-      });
-    } catch (e) {
-      next(e);
-    }
-  }
-);
-
-/**
- * @openapi
- * /subscriptions/referrals/records:
- *   get:
- *     summary: 获取推荐记录列表
- *     tags: [订阅管理]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: type
- *         schema:
- *           type: string
- *           enum: [referrer, referee]
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *       - in: query
- *         name: pageSize
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: 推荐记录列表
- */
-router.get(
-  '/referrals/records',
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.consoleUser?.id;
-      if (!userId) {
-        return next(createAppError(401, '未登录'));
-      }
-
-      const type = (req.query.type as 'referrer' | 'referee') ?? 'referrer';
-      const page = parseInt(req.query.page as string) || 1;
-      const pageSize = Math.min(parseInt(req.query.pageSize as string) || 20, 100);
-
-      const result = await referralService.getReferralRecords({
-        userId,
-        type,
-        page,
-        pageSize,
-      });
-
-      res.json({
-        records: result.records,
-        total: result.total,
-        page,
-        pageSize,
-      });
-    } catch (e) {
-      next(e);
-    }
-  }
-);
-
-// ==================== 余额相关接口 ====================
-
-/**
- * @openapi
- * /subscriptions/organizations/{org_id}/balance:
- *   get:
- *     summary: 获取用户余额
- *     tags: [订阅管理]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: org_id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: 余额信息
- */
-router.get(
-  '/organizations/:org_id/balance',
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      await requireOrgMembership(req, 'org_id');
-
-      const balance = await userGiftService.getUserBalance(req.params.org_id);
-      const giftMonths = await userGiftService.getAvailableGiftMonths(req.params.org_id);
-
-      res.json({
-        balance: balance ? Number(balance.balance) : 0,
-        total_gifted: balance ? Number(balance.total_gifted) : 0,
-        total_used: balance ? Number(balance.total_used) : 0,
-        available_gift_months: giftMonths,
-      });
-    } catch (e) {
-      next(e);
-    }
-  }
-);
-
-// ==================== 原有接口 ====================
+// ==================== 套餐查询接口 ====================
 
 /**
  * @openapi
@@ -445,17 +140,11 @@ router.get(
  *     responses:
  *       200:
  *         description: 套餐列表
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/SubscriptionPlan'
  */
 router.get('/plans', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const list = await defaultSubscriptionService.listPlans();
-    res.json(list);
+    const plans = await defaultSubscriptionService.listPlans();
+    res.json(plans);
   } catch (e) {
     next(e);
   }
@@ -477,13 +166,7 @@ router.get('/plans', async (_req: Request, res: Response, next: NextFunction) =>
  *           type: string
  *     responses:
  *       200:
- *         description: 套餐信息
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SubscriptionPlan'
- *       404:
- *         description: 套餐不存在
+ *         description: 套餐详情
  */
 router.get('/plans/:plan_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -493,6 +176,8 @@ router.get('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
     next(e);
   }
 });
+
+// ==================== 订阅信息接口 ====================
 
 /**
  * @openapi
@@ -511,10 +196,6 @@ router.get('/plans/:plan_id', async (req: Request, res: Response, next: NextFunc
  *     responses:
  *       200:
  *         description: 订阅信息
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/OrganizationSubscription'
  */
 router.get(
   '/organizations/:org_id/subscription',
@@ -546,18 +227,6 @@ router.get(
  *     responses:
  *       200:
  *         description: 订阅状态
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 is_active:
- *                   type: boolean
- *                 plan_code:
- *                   type: string
- *                 end_date:
- *                   type: string
- *                   format: date
  */
 router.get(
   '/organizations/:org_id/subscription/status',
@@ -572,14 +241,9 @@ router.get(
   }
 );
 
-const SubscribeSchema = z.object({
-  plan_id: z.string(),
-  billing_cycle: z.enum(['monthly', 'yearly']).optional(),
-});
-
 /**
  * @openapi
- * /subscriptions/organizations/{org_id}/subscription:
+ * /subscriptions/organizations/{org_id}/subscription/subscribe:
  *   post:
  *     summary: 订阅套餐
  *     tags: [订阅管理]
@@ -601,29 +265,21 @@ const SubscribeSchema = z.object({
  *             properties:
  *               plan_id:
  *                 type: string
- *               billing_cycle:
- *                 type: string
- *                 enum: [monthly, yearly]
  *     responses:
- *       201:
+ *       200:
  *         description: 订阅成功
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/OrganizationSubscription'
  */
 router.post(
-  '/organizations/:org_id/subscription',
+  '/organizations/:org_id/subscription/subscribe',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await requireOrgMembership(req, 'org_id');
-      const parsed = SubscribeSchema.safeParse(req.body);
-      if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-      const sub = await defaultSubscriptionService.subscribe(
-        req.params.org_id,
-        parsed.data.plan_id
-      );
-      res.status(201).json(sub);
+      const body = req.body as { plan_id?: string };
+      if (!body?.plan_id) {
+        return next(createAppError(400, '缺少 plan_id'));
+      }
+      const sub = await defaultSubscriptionService.subscribe(req.params.org_id, body.plan_id);
+      res.json(sub);
     } catch (e) {
       next(e);
     }
@@ -632,9 +288,9 @@ router.post(
 
 /**
  * @openapi
- * /subscriptions/organizations/{org_id}/subscription:
+ * /subscriptions/organizations/{org_id}/subscription/update:
  *   put:
- *     summary: 更新订阅套餐
+ *     summary: 更新订阅
  *     tags: [订阅管理]
  *     security:
  *       - bearerAuth: []
@@ -650,7 +306,7 @@ router.post(
  *         application/json:
  *           schema:
  *             type: object
- *             required: [plan_id]
+ *             required: [plan_id, effective]
  *             properties:
  *               plan_id:
  *                 type: string
@@ -660,23 +316,20 @@ router.post(
  *     responses:
  *       200:
  *         description: 更新成功
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/OrganizationSubscription'
  */
 router.put(
-  '/organizations/:org_id/subscription',
+  '/organizations/:org_id/subscription/update',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await requireOrgMembership(req, 'org_id');
       const body = req.body as { plan_id?: string; effective?: 'immediate' | 'next_cycle' };
-      if (!body?.plan_id) return next(createAppError(400, '缺少 plan_id'));
-      const effective = body.effective ?? 'immediate';
+      if (!body?.plan_id || !body?.effective) {
+        return next(createAppError(400, '缺少 plan_id 或 effective'));
+      }
       const sub = await defaultSubscriptionService.updateSubscription(
         req.params.org_id,
         body.plan_id,
-        effective
+        body.effective
       );
       res.json(sub);
     } catch (e) {
@@ -716,13 +369,12 @@ router.post(
   }
 );
 
+// ==================== 订单接口 ====================
+
 // 创建订单的请求体验证 Schema
 const CreateOrderSchema = z.object({
   plan_id: z.string(),
   billing_months: z.number().int().min(1).max(36).optional().default(1),
-  coupon_code: z.string().optional(),
-  use_balance: z.boolean().optional().default(false),
-  referral_code: z.string().optional(),
 });
 
 /**
@@ -751,36 +403,22 @@ const CreateOrderSchema = z.object({
  *                 type: string
  *               billing_months:
  *                 type: integer
- *               coupon_code:
- *                 type: string
- *               use_balance:
- *                 type: boolean
- *               referral_code:
- *                 type: string
  *     responses:
  *       201:
  *         description: 订单创建成功
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SubscriptionOrder'
  */
 router.post(
   '/organizations/:org_id/orders',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await requireOrgMembership(req, 'org_id');
-      const userId = req.consoleUser?.id;
-      if (!userId) {
-        return next(createAppError(401, '未登录'));
-      }
 
       const parsed = CreateOrderSchema.safeParse(req.body);
       if (!parsed.success) {
         return next(createAppError(422, '参数校验失败'));
       }
 
-      const { plan_id, billing_months, coupon_code, use_balance, referral_code } = parsed.data;
+      const { plan_id, billing_months } = parsed.data;
 
       const plan = await prisma.subscriptionPlan.findFirst({
         where: { id: plan_id },
@@ -803,6 +441,7 @@ router.post(
       // 计算原始价格（周期定价）
       const pricing = plan.pricing.find((p) => p.months === billing_months);
       let originalAmount = pricing ? Number(pricing.price) : Number(plan.price_monthly) * billing_months;
+      let finalAmount = originalAmount;
 
       // 升级场景的差价计算
       if (sub && isSubscriptionActive(sub) && sub.plan) {
@@ -822,44 +461,13 @@ router.post(
             const oldMonthly = Number(sub.plan.price_monthly);
             const newMonthly = Number(plan.price_monthly);
             originalAmount = calculateUpgradeProration(newMonthly, oldMonthly, remainingDays, totalDays);
+            finalAmount = originalAmount;
             if (originalAmount <= 0) {
               return next(createAppError(400, '当前套餐剩余价值已覆盖新套餐，无需补差'));
             }
           }
         }
       }
-
-      // 检查是否是首次购买
-      const isFirstPurchase = !sub || !isSubscriptionActive(sub);
-
-      // 绑定推荐关系
-      let referralRecordId: string | null = null;
-      if (referral_code && isFirstPurchase) {
-        const referralRecord = await referralService.bindReferral({
-          referralCode: referral_code,
-          refereeUserId: userId,
-          refereeOrgId: orgId,
-        });
-        if (referralRecord) {
-          referralRecordId = referralRecord.id;
-        }
-      }
-
-      // 计算优惠价格
-      const calcInput: PromotionCalculationInput = {
-        plan_id: plan.id,
-        billing_months,
-        original_price: originalAmount,
-        organization_id: orgId,
-        user_id: userId,
-        coupon_code,
-        use_balance,
-        referral_code,
-        is_first_purchase: isFirstPurchase,
-      };
-
-      const calcResult = await promotionEngineService.calculatePromotions(calcInput);
-      const finalAmount = calcResult.final_price;
 
       const orderNo = `SUB${Date.now()}`;
       const expires = new Date();
@@ -879,21 +487,8 @@ router.post(
           original_amount: originalAmount,
           status: 'pending',
           expires_at: expires,
-          applied_promotions: calcResult.applied_promotions.length > 0
-            ? JSON.parse(JSON.stringify(calcResult.applied_promotions))
-            : null,
-          total_discount: calcResult.total_discount > 0 ? calcResult.total_discount : null,
-          total_gift_months: calcResult.total_gift_months,
-          coupon_code: coupon_code ?? null,
-          balance_deduction: calcResult.balance_deduction > 0 ? calcResult.balance_deduction : null,
-          referral_record_id: referralRecordId,
         },
       });
-
-      // 如果使用了余额，扣减余额
-      if (use_balance && calcResult.balance_deduction > 0) {
-        await promotionEngineService.useUserBalance(orgId, calcResult.balance_deduction, order.id);
-      }
 
       const wechatResult = await createWechatPayNativeOrder({
         out_trade_no: orderNo,
@@ -908,41 +503,15 @@ router.post(
           data: { code_url: wechatResult.code_url },
         });
         const updated = await prisma.subscriptionOrder.findUnique({ where: { id: order.id } });
-        return res.status(201).json({
-          ...(updated ?? order),
-          promotion_details: {
-            original_price: calcResult.original_price,
-            total_discount: calcResult.total_discount,
-            balance_deduction: calcResult.balance_deduction,
-            applied_promotions: calcResult.applied_promotions,
-            gift_months: calcResult.total_gift_months,
-          },
-        });
+        return res.status(201).json(updated ?? order);
       }
 
       // 无 code_url 且微信支付未启用时，标记为可模拟支付
-      const payload = order as typeof order & {
-        simulate_pay_available?: boolean;
-        promotion_details?: {
-          original_price: number;
-          total_discount: number;
-          balance_deduction: number;
-          applied_promotions: typeof calcResult.applied_promotions;
-          gift_months: number;
-        };
-      };
+      const payload = order as typeof order & { simulate_pay_available?: boolean };
 
       if (!config.wechatPayEnabled) {
         payload.simulate_pay_available = true;
       }
-
-      payload.promotion_details = {
-        original_price: calcResult.original_price,
-        total_discount: calcResult.total_discount,
-        balance_deduction: calcResult.balance_deduction,
-        applied_promotions: calcResult.applied_promotions,
-        gift_months: calcResult.total_gift_months,
-      };
 
       res.status(201).json(payload);
     } catch (e) {
@@ -973,10 +542,6 @@ router.post(
  *     responses:
  *       200:
  *         description: 订单信息
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SubscriptionOrder'
  *       404:
  *         description: 订单不存在
  */
@@ -1022,10 +587,6 @@ router.get(
  *     responses:
  *       200:
  *         description: 模拟支付成功
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SubscriptionOrder'
  *       403:
  *         description: 非开发环境
  */
@@ -1050,27 +611,6 @@ router.post(
         data: { status: 'paid', paid_at: new Date() },
       });
       await fulfillSubscription(order.id);
-
-      // 处理推荐奖励
-      await referralService.processReferralReward(order.id);
-
-      // 应用优惠券使用记录
-      const orderWithPromotions = await prisma.subscriptionOrder.findUnique({
-        where: { id: order.id },
-        select: { id: true, applied_promotions: true },
-      });
-      if (orderWithPromotions?.applied_promotions) {
-        const appliedPromotions = orderWithPromotions.applied_promotions as Array<{
-          id: string;
-          code: string;
-          name: string;
-          type: string;
-          discount_amount: number;
-          gift_months: number;
-          balance_deduction: number;
-        }>;
-        await promotionEngineService.applyPromotionsToOrder(order, appliedPromotions);
-      }
 
       const updated = await prisma.subscriptionOrder.findUnique({
         where: { id: order.id },

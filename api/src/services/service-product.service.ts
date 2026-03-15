@@ -4,7 +4,6 @@
 import type {
   PricingDiscount,
   ServiceProduct,
-  ServicePricing,
   StorefrontConfig,
   StorefrontItem,
   StorefrontView,
@@ -15,6 +14,8 @@ import type {
 import {
   createServiceProductRepository,
   type ServiceProductRepository,
+  type ServiceProductWithPricing,
+  type StorefrontConfigWithItems,
 } from '../repositories/service-product.repo.js';
 import { prisma } from '../lib/prisma.js';
 import { AppError } from '../errors/index.js';
@@ -29,7 +30,7 @@ export interface ServiceProductService {
     name: string;
     code: string;
     description?: string;
-    max_organizations?: number;
+    max_organizations?: number | null;
     max_apartments?: number;
     max_rooms?: number;
     max_members?: number;
@@ -44,8 +45,8 @@ export interface ServiceProductService {
   }): Promise<ServiceProduct | null>;
   updateServiceProduct(id: string, data: {
     name?: string;
-    description?: string;
-    max_organizations?: number;
+    description?: string | null;
+    max_organizations?: number | null;
     max_apartments?: number;
     max_rooms?: number;
     max_members?: number;
@@ -96,7 +97,7 @@ export function createServiceProductService(
   getRepo: () => ServiceProductRepository = () => createServiceProductRepository(prisma)
 ): ServiceProductService {
   // 私有辅助方法
-  function toServiceProduct(product: any): ServiceProduct {
+  function toServiceProduct(product: ServiceProductWithPricing): ServiceProduct {
     return {
       id: product.id,
       name: product.name,
@@ -110,24 +111,20 @@ export function createServiceProductService(
       sort_order: product.sort_order,
       created_at: product.created_at.toISOString(),
       updated_at: product.updated_at.toISOString(),
-      pricing: product.pricing?.map(toServicePricing),
+      pricing: product.pricing?.map((p) => ({
+        id: p.id,
+        service_id: p.service_id,
+        months: p.months,
+        price: Number(p.price),
+        is_active: p.is_active,
+        sort_order: p.sort_order,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })),
     };
   }
 
-  function toServicePricing(pricing: any): ServicePricing {
-    return {
-      id: pricing.id,
-      service_id: pricing.service_id,
-      months: pricing.months,
-      price: Number(pricing.price),
-      is_active: pricing.is_active,
-      sort_order: pricing.sort_order,
-      created_at: pricing.created_at.toISOString(),
-      updated_at: pricing.updated_at.toISOString(),
-    };
-  }
-
-  function toStorefrontConfig(config: any): StorefrontConfig {
+  function toStorefrontConfig(config: StorefrontConfigWithItems): StorefrontConfig {
     return {
       id: config.id,
       name: config.name,
@@ -140,17 +137,17 @@ export function createServiceProductService(
     };
   }
 
-  function toStorefrontItem(item: any): StorefrontItem {
+  function toStorefrontItem(item: StorefrontConfigWithItems['items'][0]): StorefrontItem {
     return {
       id: item.id,
       storefront_id: item.storefront_id,
       service_id: item.service_id,
-      service: item.service ? toServiceProduct(item.service) : undefined,
+      service: item.service ? toServiceProduct(item.service as ServiceProductWithPricing) : undefined,
       is_visible: item.is_visible,
       sort_order: item.sort_order,
       pricing_discounts: item.pricing_discounts,
-      created_at: item.created_at.toISOString(),
-      updated_at: item.updated_at.toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
   }
 
@@ -205,7 +202,7 @@ export function createServiceProductService(
       // 检查代码是否已存在
       const existing = await repo.findByCode(data.code);
       if (existing) {
-        throw new AppError(`服务产品代码已存在: ${data.code}`, 400);
+        throw new AppError({ message: `服务产品代码已存在: ${data.code}`, statusCode: 400 });
       }
 
       const product = await repo.create({
@@ -244,7 +241,7 @@ export function createServiceProductService(
       const repo = getRepo();
       const existing = await repo.findById(id, false);
       if (!existing) {
-        throw new AppError(`服务产品不存在: ${id}`, 404);
+        throw new AppError({ message: `服务产品不存在: ${id}`, statusCode: 404 });
       }
 
       const product = await repo.update(id, data);
@@ -255,7 +252,7 @@ export function createServiceProductService(
       const repo = getRepo();
       const existing = await repo.findById(id, false);
       if (!existing) {
-        throw new AppError(`服务产品不存在: ${id}`, 404);
+        throw new AppError({ message: `服务产品不存在: ${id}`, statusCode: 404 });
       }
 
       await repo.delete(id);
@@ -273,7 +270,7 @@ export function createServiceProductService(
       const repo = getRepo();
       const existing = await repo.findById(serviceId, false);
       if (!existing) {
-        throw new AppError(`服务产品不存在: ${serviceId}`, 404);
+        throw new AppError({ message: `服务产品不存在: ${serviceId}`, statusCode: 404 });
       }
 
       await repo.upsertPricing(serviceId, pricingData);
@@ -314,7 +311,7 @@ export function createServiceProductService(
       // 检查代码是否已存在
       const existing = await repo.findStorefrontByCode(data.code);
       if (existing) {
-        throw new AppError(`商店配置代码已存在: ${data.code}`, 400);
+        throw new AppError({ message: `商店配置代码已存在: ${data.code}`, statusCode: 400 });
       }
 
       const config = await repo.createStorefront(data);
@@ -328,7 +325,7 @@ export function createServiceProductService(
       const repo = getRepo();
       const existing = await repo.findStorefrontById(id);
       if (!existing) {
-        throw new AppError(`商店配置不存在: ${id}`, 404);
+        throw new AppError({ message: `商店配置不存在: ${id}`, statusCode: 404 });
       }
 
       const config = await repo.updateStorefront(id, data);
@@ -339,7 +336,7 @@ export function createServiceProductService(
       const repo = getRepo();
       const existing = await repo.findStorefrontById(id);
       if (!existing) {
-        throw new AppError(`商店配置不存在: ${id}`, 404);
+        throw new AppError({ message: `商店配置不存在: ${id}`, statusCode: 404 });
       }
 
       await repo.deleteStorefront(id);
@@ -362,19 +359,19 @@ export function createServiceProductService(
       // 检查商店是否存在
       const storefront = await repo.findStorefrontById(storefrontId);
       if (!storefront) {
-        throw new AppError(`商店配置不存在: ${storefrontId}`, 404);
+        throw new AppError({ message: `商店配置不存在: ${storefrontId}`, statusCode: 404 });
       }
 
       // 检查服务是否存在
       const service = await repo.findById(data.service_id, true);
       if (!service) {
-        throw new AppError(`服务产品不存在: ${data.service_id}`, 404);
+        throw new AppError({ message: `服务产品不存在: ${data.service_id}`, statusCode: 404 });
       }
 
       // 检查是否已添加
       const existing = await repo.findStorefrontItemByService(storefrontId, data.service_id);
       if (existing) {
-        throw new AppError(`服务已添加到商店`, 400);
+        throw new AppError({ message: `服务已添加到商店`, statusCode: 400 });
       }
 
       const item = await repo.createStorefrontItem({
@@ -421,11 +418,11 @@ export function createServiceProductService(
         return null;
       }
 
-      // 过滤出可见的服务
-      const visibleItems = storefront.items.filter((item) => item.is_visible);
+      // 过滤出可见且有服务的项目
+      const visibleItems = storefront.items.filter((item) => item.is_visible && item.service);
 
       const services: StorefrontViewService[] = visibleItems.map((item) => {
-        const service = item.service;
+        const service = item.service!;
         const activePricing = service.pricing.filter((p) => p.is_active);
 
         return {
@@ -486,21 +483,21 @@ export function createServiceProductService(
       }
 
       if (!storefront || !storefront.is_active) {
-        throw new AppError('商店配置不存在', 404);
+        throw new AppError({ message: '商店配置不存在', statusCode: 404 });
       }
 
       // 查找服务
       const item = storefront.items.find(
-        (i) => i.service_id === request.service_id && i.is_visible
+        (i) => i.service_id === request.service_id && i.is_visible && i.service
       );
-      if (!item) {
-        throw new AppError('服务不在商店中', 404);
+      if (!item || !item.service) {
+        throw new AppError({ message: '服务不在商店中', statusCode: 404 });
       }
 
       // 查找定价
       const pricing = item.service.pricing.find((p) => p.months === request.months && p.is_active);
       if (!pricing) {
-        throw new AppError('定价不存在', 404);
+        throw new AppError({ message: '定价不存在', statusCode: 404 });
       }
 
       const originalPrice = Number(pricing.price);

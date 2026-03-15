@@ -2,7 +2,16 @@
  * 服务定价模块 - 数据访问层
  */
 import type { PrismaClient } from '@prisma/client';
+import { ulid } from 'ulid';
 import { prisma } from '../lib/prisma.js';
+
+/** 定价折扣配置 */
+export interface PricingDiscount {
+  months: number;
+  discount_type: 'gift' | 'percent' | 'fixed';
+  discount_value: number | null;
+  gift_months: number | null;
+}
 
 export interface ServiceProductWithPricing {
   id: string;
@@ -41,8 +50,8 @@ export interface StorefrontConfigWithItems {
     service_id: string;
     is_visible: boolean;
     sort_order: number;
-    pricing_discounts: any;
-    service: ServiceProductWithPricing;
+    pricing_discounts: PricingDiscount[] | null;
+    service?: ServiceProductWithPricing;
   }>;
 }
 
@@ -77,7 +86,7 @@ export interface ServiceProductRepository {
     id: string;
     service_id: string;
     months: number;
-    price: bigint;
+    price: number;
     is_active: boolean;
     sort_order: number;
   }>>;
@@ -110,33 +119,35 @@ export interface ServiceProductRepository {
     service_id: string;
     is_visible: boolean;
     sort_order: number;
-    pricing_discounts: any;
+    pricing_discounts: PricingDiscount[] | null;
   } | null>;
   createStorefrontItem(data: {
     storefront_id: string;
     service_id: string;
     is_visible?: boolean;
     sort_order?: number;
-    pricing_discounts?: any;
+    pricing_discounts?: PricingDiscount[];
   }): Promise<{
     id: string;
     storefront_id: string;
     service_id: string;
     is_visible: boolean;
     sort_order: number;
-    pricing_discounts: any;
+    pricing_discounts: PricingDiscount[] | null;
   }>;
   updateStorefrontItem(id: string, data: {
     is_visible?: boolean;
     sort_order?: number;
-    pricing_discounts?: any;
+    pricing_discounts?: PricingDiscount[];
   }): Promise<{
     id: string;
     storefront_id: string;
     service_id: string;
     is_visible: boolean;
     sort_order: number;
-    pricing_discounts: any;
+    pricing_discounts: PricingDiscount[] | null;
+    created_at: Date;
+    updated_at: Date;
   }>;
   deleteStorefrontItem(id: string): Promise<void>;
   reorderStorefrontItems(storefrontId: string, itemIds: string[]): Promise<void>;
@@ -186,6 +197,7 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
     }): Promise<ServiceProductWithPricing> {
       return db.serviceProduct.create({
         data: {
+          id: ulid(),
           name: data.name,
           code: data.code,
           description: data.description,
@@ -212,7 +224,16 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
     }): Promise<ServiceProductWithPricing> {
       return db.serviceProduct.update({
         where: { id },
-        data,
+        data: {
+          name: data.name,
+          description: data.description ?? undefined,
+          max_organizations: data.max_organizations ?? undefined,
+          max_apartments: data.max_apartments,
+          max_rooms: data.max_rooms,
+          max_members: data.max_members,
+          is_active: data.is_active,
+          sort_order: data.sort_order,
+        },
         include: { pricing: { orderBy: { sort_order: 'asc' } } },
       }) as unknown as ServiceProductWithPricing;
     },
@@ -229,14 +250,18 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
       id: string;
       service_id: string;
       months: number;
-      price: bigint;
+      price: number;
       is_active: boolean;
       sort_order: number;
     }>> {
-      return db.servicePricing.findMany({
+      const result = await db.servicePricing.findMany({
         where: { service_id: serviceId },
         orderBy: { sort_order: 'asc' },
       });
+      return result.map(p => ({
+        ...p,
+        price: Number(p.price),
+      }));
     },
 
     async upsertPricing(
@@ -265,6 +290,7 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
         } else {
           await db.servicePricing.create({
             data: {
+              id: ulid(),
               service_id: serviceId,
               months: item.months,
               price: item.price,
@@ -309,7 +335,7 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
             orderBy: { sort_order: 'asc' },
           },
         },
-        orderBy: { sort_order: 'asc' },
+        orderBy: { created_at: 'desc' },
       }) as unknown as StorefrontConfigWithItems[];
     },
 
@@ -377,6 +403,7 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
 
       return db.storefrontConfig.create({
         data: {
+          id: ulid(),
           name: data.name,
           code: data.code,
           is_active: data.is_active ?? true,
@@ -422,11 +449,18 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
       service_id: string;
       is_visible: boolean;
       sort_order: number;
-      pricing_discounts: any;
+      pricing_discounts: PricingDiscount[] | null;
     } | null> {
-      return db.storefrontItem.findUnique({
+      return db.storefrontItem.findFirst({
         where: { storefront_id: storefrontId, service_id: serviceId },
-      });
+      }) as unknown as {
+        id: string;
+        storefront_id: string;
+        service_id: string;
+        is_visible: boolean;
+        sort_order: number;
+        pricing_discounts: PricingDiscount[] | null;
+      } | null;
     },
 
     async createStorefrontItem(data: {
@@ -434,48 +468,73 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
       service_id: string;
       is_visible?: boolean;
       sort_order?: number;
-      pricing_discounts?: any;
+      pricing_discounts?: PricingDiscount[];
     }): Promise<{
       id: string;
       storefront_id: string;
       service_id: string;
       is_visible: boolean;
       sort_order: number;
-      pricing_discounts: any;
+      pricing_discounts: PricingDiscount[] | null;
     }> {
       return db.storefrontItem.create({
         data: {
+          id: ulid(),
           storefront_id: data.storefront_id,
           service_id: data.service_id,
           is_visible: data.is_visible ?? true,
           sort_order: data.sort_order ?? 0,
-          pricing_discounts: data.pricing_discounts,
+          pricing_discounts: data.pricing_discounts as unknown as never,
         },
-      });
+      }) as unknown as {
+        id: string;
+        storefront_id: string;
+        service_id: string;
+        is_visible: boolean;
+        sort_order: number;
+        pricing_discounts: PricingDiscount[] | null;
+      };
     },
 
     async updateStorefrontItem(
       id: string,
-      data: { is_visible?: boolean; sort_order?: number; pricing_discounts?: any }
+      data: { is_visible?: boolean; sort_order?: number; pricing_discounts?: PricingDiscount[] }
     ): Promise<{
       id: string;
       storefront_id: string;
       service_id: string;
       is_visible: boolean;
       sort_order: number;
-      pricing_discounts: any;
+      pricing_discounts: PricingDiscount[] | null;
+      created_at: Date;
+      updated_at: Date;
     }> {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateData: any = {
+        is_visible: data.is_visible,
+        sort_order: data.sort_order,
+        pricing_discounts: data.pricing_discounts,
+      };
       return db.storefrontItem.update({
         where: { id },
-        data,
-      });
+        data: updateData,
+      }) as unknown as {
+        id: string;
+        storefront_id: string;
+        service_id: string;
+        is_visible: boolean;
+        sort_order: number;
+        pricing_discounts: PricingDiscount[] | null;
+        created_at: Date;
+        updated_at: Date;
+      };
     },
 
     async deleteStorefrontItem(id: string): Promise<void> {
       await db.storefrontItem.delete({ where: { id } });
     },
 
-    async reorderStorefrontItems(storefrontId: string, itemIds: string[]): Promise<void> {
+    async reorderStorefrontItems(_storefrontId: string, itemIds: string[]): Promise<void> {
       for (let i = 0; i < itemIds.length; i++) {
         await db.storefrontItem.update({
           where: { id: itemIds[i] },

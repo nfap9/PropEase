@@ -11,11 +11,7 @@ import {
   type OrderWithPlan,
   isSubscriptionActive,
 } from '../repositories/subscription.repo.js';
-import {
-  createPromotionRepository,
-  calculatePromotionPrice,
-  type PromotionRepository,
-} from '../repositories/promotion.repo.js';
+// Promotion 功能已弃用，使用新的商店配置折扣系统
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
@@ -66,8 +62,7 @@ export interface SubscriptionService {
  * 创建 Subscription Service 实例
  */
 export function createSubscriptionService(
-  getRepo: () => SubscriptionRepository = () => createSubscriptionRepository(prisma),
-  getPromotionRepo: () => PromotionRepository = () => createPromotionRepository(prisma)
+  getRepo: () => SubscriptionRepository = () => createSubscriptionRepository(prisma)
 ): SubscriptionService {
   return {
     listPlans: async () => {
@@ -230,9 +225,18 @@ export function createSubscriptionService(
     },
 
     createOrder: async (orgId: string, params: CreateOrderParams) => {
-      const { planId, billingMonths = 1, promotionId } = params;
+      const { planId, billingMonths = 1 } = params;
 
-      const plan = await getRepo().findPlanById(planId);
+      // 使用包含 pricing 的查询
+      const plan = await prisma.subscriptionPlan.findFirst({
+        where: { id: planId },
+        include: {
+          pricing: {
+            where: { is_active: true },
+            orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
+          },
+        },
+      });
       if (!plan) {
         throw createAppError(404, NotFoundMessages.PLAN);
       }
@@ -241,8 +245,7 @@ export function createSubscriptionService(
       }
 
       // 查找周期定价
-      const pricing = await getPromotionRepo().findPricingByPlanAndMonths(planId, billingMonths);
-
+      const pricing = plan.pricing?.find((p: { months: number; is_active: boolean }) => p.months === billingMonths && p.is_active);
       let originalPrice: number;
       if (pricing) {
         originalPrice = Number(pricing.price);
@@ -251,22 +254,13 @@ export function createSubscriptionService(
         originalPrice = Number(plan.price_monthly) * billingMonths;
       }
 
-      // 获取并计算优惠
-      let promotion = null;
-      if (promotionId) {
-        promotion = await prisma.promotion.findUnique({ where: { id: promotionId } });
-      } else {
-        promotion = await getPromotionRepo().findActiveForPlan(planId);
-      }
-
-      const { finalPrice, giftMonths } = calculatePromotionPrice(originalPrice, promotion);
+      // TODO: 促销功能重构后重新启用
+      // const { finalPrice, giftMonths } = calculatePromotionPrice(originalPrice, promotion);
+      const finalPrice = originalPrice;
 
       const orderNo = `SUB${Date.now()}`;
       const expires = new Date();
       expires.setHours(expires.getHours() + 2);
-
-      // 注意：giftMonths 将在订单履约时使用（见 fulfillSubscription.ts）
-      void giftMonths;
 
       return getRepo().createOrder({
         id: ulid().toLowerCase(),
@@ -279,7 +273,8 @@ export function createSubscriptionService(
         original_amount: originalPrice,
         status: 'pending',
         expires_at: expires,
-        promotion: promotion ? { connect: { id: promotion.id } } : undefined,
+        // TODO: 促销功能重构后重新启用
+        // promotion: promotion ? { connect: { id: promotion.id } } : undefined,
       });
     },
 
@@ -288,9 +283,10 @@ export function createSubscriptionService(
         where: { id: orderId, organization_id: orgId },
         include: {
           plan: true,
-          promotion: {
-            select: { id: true, name: true, type: true },
-          },
+          // TODO: 促销功能重构后重新启用
+          // promotion: {
+          //   select: { id: true, name: true, type: true },
+          // },
         },
       });
       if (!order) {
