@@ -98,7 +98,7 @@ async function notifyOrgAdmins(
   type: string,
   title: string,
   content: string,
-  extraData: Record<string, unknown>
+  extraData: Prisma.InputJsonObject
 ): Promise<void> {
   const members = await prisma.organizationMember.findMany({
     where: { organization_id: orgId, role: { in: ['owner', 'admin'] } },
