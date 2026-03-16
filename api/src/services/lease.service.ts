@@ -93,6 +93,33 @@ function buildUpdateData(data: UpdateLeaseInput): Prisma.LeaseUpdateInput {
   return updateData;
 }
 
+async function notifyOrgAdmins(
+  orgId: string,
+  type: string,
+  title: string,
+  content: string,
+  extraData: Record<string, unknown>
+): Promise<void> {
+  const members = await prisma.organizationMember.findMany({
+    where: { organization_id: orgId, role: { in: ['owner', 'admin'] } },
+    select: { user_id: true },
+  });
+
+  for (const member of members) {
+    await prisma.notification.create({
+      data: {
+        id: ulid().toLowerCase(),
+        user_id: member.user_id,
+        organization_id: orgId,
+        type,
+        title,
+        content,
+        extra_data: extraData,
+      },
+    });
+  }
+}
+
 /**
  * 创建 Lease Service 实例
  */
@@ -131,7 +158,30 @@ export function createLeaseService(
       }
 
       // 创建租约并更新房间状态（事务）
-      return getRepo().createWithRoomUpdate(buildCreateData(data), data.room_id);
+      const lease = await getRepo().createWithRoomUpdate(buildCreateData(data), data.room_id);
+
+      // 新租客入住通知（不影响主流程）
+      try {
+        const startDate = new Date(data.start_date).toISOString().slice(0, 10);
+        await notifyOrgAdmins(
+          orgId,
+          'tenant_move_in',
+          `新租客入住 - ${tenant.name}`,
+          `租客 ${tenant.name} 已创建租约并入住（房间 ${room.room_number}），起租日期 ${startDate}。`,
+          {
+            lease_id: lease.id,
+            tenant_id: tenant.id,
+            tenant_name: tenant.name,
+            room_id: room.id,
+            room_number: room.room_number,
+            start_date: startDate,
+          }
+        );
+      } catch (e) {
+        console.error('Failed to create tenant_move_in notification:', e);
+      }
+
+      return lease;
     },
 
     update: async (orgId: string, id: string, data: UpdateLeaseInput) => {
@@ -148,6 +198,27 @@ export function createLeaseService(
         throw createAppError(404, NotFoundMessages.LEASE);
       }
       await getRepo().terminate(id, existing.room_id);
+
+      // 租客退租通知（不影响主流程）
+      try {
+        const endDate = new Date().toISOString().slice(0, 10);
+        await notifyOrgAdmins(
+          orgId,
+          'tenant_move_out',
+          `租客退租 - ${existing.tenant.name}`,
+          `租客 ${existing.tenant.name} 已办理退租（房间 ${existing.room.room_number}），办理日期 ${endDate}。`,
+          {
+            lease_id: existing.id,
+            tenant_id: existing.tenant_id,
+            tenant_name: existing.tenant.name,
+            room_id: existing.room_id,
+            room_number: existing.room.room_number,
+            end_date: endDate,
+          }
+        );
+      } catch (e) {
+        console.error('Failed to create tenant_move_out notification:', e);
+      }
     },
 
     delete: async (orgId: string, id: string) => {

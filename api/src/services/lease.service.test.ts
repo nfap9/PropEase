@@ -27,6 +27,12 @@ describe('LeaseService', () => {
       tenant: {
         findFirst: vi.fn(),
       },
+      organizationMember: {
+        findMany: vi.fn(),
+      },
+      notification: {
+        create: vi.fn(),
+      },
     },
   }));
 
@@ -40,6 +46,7 @@ describe('LeaseService', () => {
   const mockRoom = {
     id: roomId,
     apartment_id: '01HQTESTAPT0000001',
+    room_number: '101',
     apartment: {
       id: '01HQTESTAPT0000001',
       organization_id: orgId,
@@ -133,6 +140,7 @@ describe('LeaseService', () => {
       const { prisma } = await import('../lib/prisma.js');
       vi.mocked(prisma.room.findFirst).mockResolvedValue(mockRoom as any);
       vi.mocked(prisma.tenant.findFirst).mockResolvedValue(mockTenant as any);
+      vi.mocked(prisma.organizationMember.findMany).mockResolvedValue([]);
       vi.mocked(mockRepo.createWithRoomUpdate).mockResolvedValue(mockLease as any);
 
       const input = {
@@ -208,6 +216,8 @@ describe('LeaseService', () => {
   describe('terminate', () => {
     it('should terminate lease', async () => {
       vi.mocked(mockRepo.findByIdWithRelations).mockResolvedValue(mockLeaseWithRelations as any);
+      const { prisma } = await import('../lib/prisma.js');
+      vi.mocked(prisma.organizationMember.findMany).mockResolvedValue([]);
       vi.mocked(mockRepo.terminate).mockResolvedValue(undefined);
 
       await service.terminate(orgId, leaseId);

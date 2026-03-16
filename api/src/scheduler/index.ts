@@ -1,11 +1,12 @@
 import cron from 'node-cron';
 import { runMonthlyBillGeneration } from './monthlyBills.js';
-import { checkExpiringLeases, checkOverdueBills } from './notificationChecks.js';
+import { checkExpiringLeases, checkOverdueBills, checkUpcomingDueBills } from './notificationChecks.js';
 
 /**
  * 注册定时任务：
  * - 每月 1 日 00:05 生成月度账单
  * - 每日 08:00 检查即将到期租约
+ * - 每日 08:03 检查交租日前提醒
  * - 每日 08:05 检查逾期账单
  * 使用 Asia/Shanghai 时区。
  */
@@ -37,6 +38,19 @@ export function startScheduler(): void {
   );
 
   cron.schedule(
+    '3 8 * * *',
+    async () => {
+      try {
+        const stats = await checkUpcomingDueBills();
+        console.log('Upcoming due bills check completed:', stats);
+      } catch (e) {
+        console.error('Upcoming due bills check failed:', e);
+      }
+    },
+    { timezone: 'Asia/Shanghai' }
+  );
+
+  cron.schedule(
     '5 8 * * *',
     async () => {
       try {
@@ -49,5 +63,5 @@ export function startScheduler(): void {
     { timezone: 'Asia/Shanghai' }
   );
 
-  console.log('Scheduler started (monthly bills, expiring leases, overdue bills)');
+  console.log('Scheduler started (monthly bills, expiring leases, upcoming due bills, overdue bills)');
 }
