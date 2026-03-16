@@ -10,7 +10,7 @@ import { NotFoundMessages } from '../../messages.js';
 import { createWechatPayNativeOrder } from '../../services/wechatPayNative.js';
 import { fulfillSubscription } from '../../services/fulfillSubscription.js';
 import { defaultSubscriptionService } from '../../services/subscription.service.js';
-import { isSubscriptionActive } from '../../repositories/subscription.repo.js';
+import { isSubscriptionActive } from '../../utils/subscription.js';
 import {
   defaultServiceProductService,
 } from '../../services/service-product.service.js';

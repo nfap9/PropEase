@@ -38,6 +38,26 @@ export type SubscriptionWithRelations = OrganizationSubscription & {
   organization: Organization | null;
 };
 
+type AdminUserWithRoleRecord = Prisma.AdminUserGetPayload<{
+  include: { role: true };
+}>;
+
+type UserWithOrgsRecord = Prisma.UserGetPayload<{
+  include: {
+    organization_memberships: {
+      include: {
+        organization: {
+          select: { id: true; name: true; slug: true };
+        };
+      };
+    };
+  };
+}>;
+
+type SubscriptionWithRelationsRecord = Prisma.OrganizationSubscriptionGetPayload<{
+  include: { service: true; organization: true };
+}>;
+
 /**
  * 用户列表项（部分字段）
  */
@@ -83,7 +103,7 @@ export interface AdminRepository {
   updateUserActive(id: string, active: boolean): Promise<User>;
   deleteUser(id: string): Promise<void>;
 
-  // Services (deprecated - use ServiceProductService instead)
+  // Services
   listServices(activeOnly?: boolean): Promise<ServiceProduct[]>;
   findServiceById(id: string): Promise<ServiceProduct | null>;
 
@@ -128,25 +148,28 @@ export interface AdminRepository {
 export function createAdminRepository(db: DbClient): AdminRepository {
   return {
     findAdminByUsername: async (username: string) => {
-      return db.adminUser.findUnique({
+      const admin: AdminUserWithRoleRecord | null = await db.adminUser.findUnique({
         where: { username },
         include: { role: true },
-      }) as Promise<AdminUserWithRole | null>;
+      });
+      return admin;
     },
 
     findAdminById: async (id: string) => {
-      return db.adminUser.findUnique({
+      const admin: AdminUserWithRoleRecord | null = await db.adminUser.findUnique({
         where: { id },
         include: { role: true },
-      }) as Promise<AdminUserWithRole | null>;
+      });
+      return admin;
     },
 
     listAdmins: async (skip?: number, limit?: number) => {
-      return db.adminUser.findMany({
+      const admins: AdminUserWithRoleRecord[] = await db.adminUser.findMany({
         skip,
         take: limit,
         include: { role: true },
-      }) as Promise<AdminUserWithRole[]>;
+      });
+      return admins;
     },
 
     findAdminByUsernameOnly: async (username: string) => {
@@ -225,7 +248,7 @@ export function createAdminRepository(db: DbClient): AdminRepository {
     },
 
     findUserWithOrgs: async (id: string) => {
-      return db.user.findUnique({
+      const user: UserWithOrgsRecord | null = await db.user.findUnique({
         where: { id },
         include: {
           organization_memberships: {
@@ -234,7 +257,8 @@ export function createAdminRepository(db: DbClient): AdminRepository {
             },
           },
         },
-      }) as Promise<UserWithOrgs | null>;
+      });
+      return user;
     },
 
     findUserById: async (id: string) => {
@@ -273,19 +297,23 @@ export function createAdminRepository(db: DbClient): AdminRepository {
       limit?: number,
       where?: Prisma.OrganizationSubscriptionWhereInput
     ) => {
-      return db.organizationSubscription.findMany({
+      const subscriptions: SubscriptionWithRelationsRecord[] =
+        await db.organizationSubscription.findMany({
         skip,
         take: limit,
         where,
         include: { service: true, organization: true },
-      }) as Promise<SubscriptionWithRelations[]>;
+      });
+      return subscriptions;
     },
 
     findSubscriptionById: async (id: string) => {
-      return db.organizationSubscription.findUnique({
+      const subscription: SubscriptionWithRelationsRecord | null =
+        await db.organizationSubscription.findUnique({
         where: { id },
         include: { service: true, organization: true },
-      }) as Promise<SubscriptionWithRelations | null>;
+      });
+      return subscription;
     },
 
     renewSubscription: async (id: string, endDate: Date) => {

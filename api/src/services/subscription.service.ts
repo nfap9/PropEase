@@ -1,4 +1,5 @@
 import type {
+  Prisma,
   ServiceProduct,
   OrganizationSubscription,
   SubscriptionOrder,
@@ -9,11 +10,11 @@ import {
   type SubscriptionRepository,
   type SubscriptionWithService,
   type OrderWithService,
-  isSubscriptionActive,
 } from '../repositories/subscription.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
+import { isSubscriptionActive } from '../utils/subscription.js';
 
 /**
  * 订阅状态响应
@@ -62,6 +63,8 @@ export interface SubscriptionService {
 export function createSubscriptionService(
   getRepo: () => SubscriptionRepository = () => createSubscriptionRepository(prisma)
 ): SubscriptionService {
+  type ServiceWithPricing = Prisma.PromiseReturnType<typeof prisma.serviceProduct.findFirst>;
+
   return {
     listServices: async () => {
       // 返回服务产品时包含定价信息，只返回可购买的服务
@@ -74,7 +77,7 @@ export function createSubscriptionService(
             orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
           },
         },
-      }) as Promise<ServiceProduct[]>;
+      });
     },
 
     getServiceById: async (id: string) => {
@@ -90,7 +93,7 @@ export function createSubscriptionService(
       if (!service) {
         throw createAppError(404, NotFoundMessages.PLAN);
       }
-      return service as ServiceProduct;
+      return service as NonNullable<ServiceWithPricing>;
     },
 
     getSubscription: async (orgId: string) => {

@@ -21,6 +21,14 @@ export type OrderWithService = SubscriptionOrder & {
   service: ServiceProduct | null;
 };
 
+type SubscriptionWithServiceRecord = Prisma.OrganizationSubscriptionGetPayload<{
+  include: { service: true };
+}>;
+
+type OrderWithServiceRecord = Prisma.SubscriptionOrderGetPayload<{
+  include: { service: true };
+}>;
+
 /**
  * Subscription Repository 接口
  */
@@ -65,10 +73,12 @@ export function createSubscriptionRepository(db: DbClient): SubscriptionReposito
     },
 
     findSubscriptionByOrgId: async (orgId: string) => {
-      return db.organizationSubscription.findUnique({
+      const subscription: SubscriptionWithServiceRecord | null =
+        await db.organizationSubscription.findUnique({
         where: { organization_id: orgId },
         include: { service: true },
-      }) as Promise<SubscriptionWithService | null>;
+      });
+      return subscription;
     },
 
     createSubscription: async (data: Prisma.OrganizationSubscriptionCreateInput) => {
@@ -83,10 +93,11 @@ export function createSubscriptionRepository(db: DbClient): SubscriptionReposito
     },
 
     findOrderById: async (orderId: string, orgId: string) => {
-      return db.subscriptionOrder.findFirst({
+      const order: OrderWithServiceRecord | null = await db.subscriptionOrder.findFirst({
         where: { id: orderId, organization_id: orgId },
         include: { service: true },
-      }) as Promise<OrderWithService | null>;
+      });
+      return order;
     },
 
     createOrder: async (data: Prisma.SubscriptionOrderCreateInput) => {
@@ -100,17 +111,6 @@ export function createSubscriptionRepository(db: DbClient): SubscriptionReposito
       });
     },
   };
-}
-
-/**
- * 判断订阅是否有效
- */
-export function isSubscriptionActive(sub: { status: string; end_date: Date | null }): boolean {
-  if (sub.status !== 'active') return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  if (!sub.end_date) return true;
-  return new Date(sub.end_date) >= today;
 }
 
 /**

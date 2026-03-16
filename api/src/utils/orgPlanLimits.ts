@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma.js';
 import type { ServiceProduct } from '@prisma/client';
+import { isSubscriptionActive } from './subscription.js';
 
 const DEFAULT_FREE_LIMITS = {
   max_organizations: 1,
@@ -11,19 +12,6 @@ const DEFAULT_FREE_LIMITS = {
 };
 
 export type CountScope = 'organization' | 'user';
-
-/**
- * 判断组织的订阅是否有效：存在且 status=active 且 end_date 为空或 >= 今天
- */
-function isSubscriptionActive(sub: { status: string; end_date: Date | null } | null): boolean {
-  if (!sub || sub.status !== 'active') return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  if (!sub.end_date) return true;
-  const end = new Date(sub.end_date);
-  end.setHours(0, 0, 0, 0);
-  return end >= today;
-}
 
 /**
  * 返回组织当前应使用的服务产品（有有效订阅用订阅服务，否则用 free 服务）
