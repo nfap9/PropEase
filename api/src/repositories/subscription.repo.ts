@@ -1,6 +1,6 @@
 import type {
   Prisma,
-  SubscriptionPlan,
+  ServiceProduct,
   OrganizationSubscription,
   SubscriptionOrder,
 } from '@prisma/client';
@@ -8,37 +8,29 @@ import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
 /**
- * 订阅包含套餐信息
+ * 订阅包含服务信息
  */
-export type SubscriptionWithPlan = OrganizationSubscription & {
-  plan: SubscriptionPlan | null;
+export type SubscriptionWithService = OrganizationSubscription & {
+  service: ServiceProduct | null;
 };
 
 /**
- * 订单包含套餐信息
+ * 订单包含服务信息
  */
-export type OrderWithPlan = SubscriptionOrder & {
-  plan: SubscriptionPlan | null;
-};
-
-/**
- * 订单包含套餐和优惠信息
- */
-export type OrderWithPlanAndPromotion = SubscriptionOrder & {
-  plan: SubscriptionPlan | null;
-  promotion: { id: string; name: string; type: string } | null;
+export type OrderWithService = SubscriptionOrder & {
+  service: ServiceProduct | null;
 };
 
 /**
  * Subscription Repository 接口
  */
 export interface SubscriptionRepository {
-  // 套餐
-  findActivePlans(): Promise<SubscriptionPlan[]>;
-  findPlanById(id: string): Promise<SubscriptionPlan | null>;
+  // 服务产品
+  findActiveServices(): Promise<ServiceProduct[]>;
+  findServiceById(id: string): Promise<ServiceProduct | null>;
 
   // 组织订阅
-  findSubscriptionByOrgId(orgId: string): Promise<SubscriptionWithPlan | null>;
+  findSubscriptionByOrgId(orgId: string): Promise<SubscriptionWithService | null>;
   createSubscription(
     data: Prisma.OrganizationSubscriptionCreateInput
   ): Promise<OrganizationSubscription>;
@@ -48,7 +40,7 @@ export interface SubscriptionRepository {
   ): Promise<OrganizationSubscription>;
 
   // 订单
-  findOrderById(orderId: string, orgId: string): Promise<OrderWithPlan | null>;
+  findOrderById(orderId: string, orgId: string): Promise<OrderWithService | null>;
   createOrder(data: Prisma.SubscriptionOrderCreateInput): Promise<SubscriptionOrder>;
   updateOrder(
     orderId: string,
@@ -61,22 +53,22 @@ export interface SubscriptionRepository {
  */
 export function createSubscriptionRepository(db: DbClient): SubscriptionRepository {
   return {
-    findActivePlans: async () => {
-      return db.subscriptionPlan.findMany({
+    findActiveServices: async () => {
+      return db.serviceProduct.findMany({
         where: { is_active: true, code: { not: 'free' } },
         orderBy: { sort_order: 'asc' },
       });
     },
 
-    findPlanById: async (id: string) => {
-      return db.subscriptionPlan.findFirst({ where: { id } });
+    findServiceById: async (id: string) => {
+      return db.serviceProduct.findFirst({ where: { id } });
     },
 
     findSubscriptionByOrgId: async (orgId: string) => {
       return db.organizationSubscription.findUnique({
         where: { organization_id: orgId },
-        include: { plan: true },
-      }) as Promise<SubscriptionWithPlan | null>;
+        include: { service: true },
+      }) as Promise<SubscriptionWithService | null>;
     },
 
     createSubscription: async (data: Prisma.OrganizationSubscriptionCreateInput) => {
@@ -93,8 +85,8 @@ export function createSubscriptionRepository(db: DbClient): SubscriptionReposito
     findOrderById: async (orderId: string, orgId: string) => {
       return db.subscriptionOrder.findFirst({
         where: { id: orderId, organization_id: orgId },
-        include: { plan: true },
-      }) as Promise<OrderWithPlan | null>;
+        include: { service: true },
+      }) as Promise<OrderWithService | null>;
     },
 
     createOrder: async (data: Prisma.SubscriptionOrderCreateInput) => {

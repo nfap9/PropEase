@@ -95,6 +95,9 @@ describe('withMiddleware', () => {
 
   describe('异步中间件支持', () => {
     it('应该正确处理异步中间件', async () => {
+      // 使用真实定时器，因为测试中有 setTimeout
+      vi.useRealTimers();
+
       const executionOrder: number[] = [];
 
       const asyncMw = vi.fn(async (_req, _res, next) => {
@@ -114,6 +117,9 @@ describe('withMiddleware', () => {
       await wrappedHandler(mockReq as Request, mockRes, mockNext);
 
       expect(executionOrder).toEqual([1, 2]);
+
+      // 恢复假定时器供其他测试使用
+      vi.useFakeTimers();
     });
 
     it('应该正确处理异步中间件抛出的错误', async () => {

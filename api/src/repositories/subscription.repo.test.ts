@@ -4,10 +4,10 @@ import {
   type SubscriptionRepository,
   isSubscriptionActive,
 } from './subscription.repo.js';
-import type { SubscriptionPlan, OrganizationSubscription, SubscriptionOrder } from '@prisma/client';
+import type { ServiceProduct, OrganizationSubscription, SubscriptionOrder } from '@prisma/client';
 
 describe('SubscriptionRepository', () => {
-  const mockSubscriptionPlan = {
+  const mockServiceProduct = {
     findMany: vi.fn(),
     findFirst: vi.fn(),
   };
@@ -25,22 +25,21 @@ describe('SubscriptionRepository', () => {
   };
 
   const mockDb = {
-    subscriptionPlan: mockSubscriptionPlan,
+    serviceProduct: mockServiceProduct,
     organizationSubscription: mockOrganizationSubscription,
     subscriptionOrder: mockSubscriptionOrder,
   } as unknown as Parameters<typeof createSubscriptionRepository>[0];
   let repo: SubscriptionRepository;
 
-  const samplePlan: SubscriptionPlan = {
+  const sampleService: ServiceProduct = {
     id: '01hqtestplan00000001',
     code: 'pro',
     name: '专业版',
     description: '专业版套餐',
-    price_monthly: 99,
-    price_yearly: 999,
+    max_organizations: null,
+    max_apartments: 1,
     max_rooms: 100,
     max_members: 5,
-    features: {},
     is_active: true,
     sort_order: 1,
     created_at: new Date(),
@@ -48,13 +47,18 @@ describe('SubscriptionRepository', () => {
   };
 
   const sampleSubscription: OrganizationSubscription = {
+    id: '01hqtestsub000000001',
     organization_id: '01hqtestorg000000001',
-    plan_id: samplePlan.id,
+    service_id: sampleService.id,
+    pricing_id: null,
     status: 'active',
+    billing_months: 1,
     start_date: new Date(),
     end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
     auto_renew: true,
-    next_plan_id: null,
+    trial_ends_at: null,
+    next_service_id: null,
+    limits_snapshot: null,
     created_at: new Date(),
     updated_at: new Date(),
   };
@@ -63,12 +67,23 @@ describe('SubscriptionRepository', () => {
     id: '01hqtestorder0000001',
     order_no: 'SUB1234567890',
     organization_id: '01hqtestorg000000001',
-    plan_id: samplePlan.id,
-    billing_cycle: 'monthly',
+    service_id: sampleService.id,
+    pricing_id: null,
+    billing_months: 1,
     amount: 99,
+    original_amount: 99,
+    currency: 'CNY',
     status: 'pending',
-    expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000),
+    payment_method: 'wechat_native',
+    code_url: null,
+    wechat_transaction_id: null,
     paid_at: null,
+    expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000),
+    organization_subscription_id: null,
+    applied_discounts: null,
+    total_discount: null,
+    total_gift_months: 0,
+    balance_deduction: null,
     created_at: new Date(),
     updated_at: new Date(),
   };
@@ -78,61 +93,61 @@ describe('SubscriptionRepository', () => {
     repo = createSubscriptionRepository(mockDb);
   });
 
-  describe('findActivePlans', () => {
-    it('should return active plans excluding free', async () => {
-      mockSubscriptionPlan.findMany.mockResolvedValue([samplePlan]);
+  describe('findActiveServices', () => {
+    it('should return active services excluding free', async () => {
+      mockServiceProduct.findMany.mockResolvedValue([sampleService]);
 
-      const result = await repo.findActivePlans();
+      const result = await repo.findActiveServices();
 
-      expect(mockSubscriptionPlan.findMany).toHaveBeenCalledWith({
+      expect(mockServiceProduct.findMany).toHaveBeenCalledWith({
         where: { is_active: true, code: { not: 'free' } },
         orderBy: { sort_order: 'asc' },
       });
-      expect(result).toEqual([samplePlan]);
+      expect(result).toEqual([sampleService]);
     });
 
-    it('should return empty array when no active plans', async () => {
-      mockSubscriptionPlan.findMany.mockResolvedValue([]);
+    it('should return empty array when no active services', async () => {
+      mockServiceProduct.findMany.mockResolvedValue([]);
 
-      const result = await repo.findActivePlans();
+      const result = await repo.findActiveServices();
 
       expect(result).toEqual([]);
     });
   });
 
-  describe('findPlanById', () => {
-    it('should return plan by id', async () => {
-      mockSubscriptionPlan.findFirst.mockResolvedValue(samplePlan);
+  describe('findServiceById', () => {
+    it('should return service by id', async () => {
+      mockServiceProduct.findFirst.mockResolvedValue(sampleService);
 
-      const result = await repo.findPlanById(samplePlan.id);
+      const result = await repo.findServiceById(sampleService.id);
 
-      expect(mockSubscriptionPlan.findFirst).toHaveBeenCalledWith({
-        where: { id: samplePlan.id },
+      expect(mockServiceProduct.findFirst).toHaveBeenCalledWith({
+        where: { id: sampleService.id },
       });
-      expect(result).toEqual(samplePlan);
+      expect(result).toEqual(sampleService);
     });
 
     it('should return null if not found', async () => {
-      mockSubscriptionPlan.findFirst.mockResolvedValue(null);
+      mockServiceProduct.findFirst.mockResolvedValue(null);
 
-      const result = await repo.findPlanById('non-existent');
+      const result = await repo.findServiceById('non-existent');
 
       expect(result).toBeNull();
     });
   });
 
   describe('findSubscriptionByOrgId', () => {
-    it('should return subscription with plan', async () => {
-      const subWithPlan = { ...sampleSubscription, plan: samplePlan };
-      mockOrganizationSubscription.findUnique.mockResolvedValue(subWithPlan);
+    it('should return subscription with service', async () => {
+      const subWithService = { ...sampleSubscription, service: sampleService };
+      mockOrganizationSubscription.findUnique.mockResolvedValue(subWithService);
 
       const result = await repo.findSubscriptionByOrgId('01hqtestorg000000001');
 
       expect(mockOrganizationSubscription.findUnique).toHaveBeenCalledWith({
         where: { organization_id: '01hqtestorg000000001' },
-        include: { plan: true },
+        include: { service: true },
       });
-      expect(result).toEqual(subWithPlan);
+      expect(result).toEqual(subWithService);
     });
 
     it('should return null if not found', async () => {
@@ -149,7 +164,7 @@ describe('SubscriptionRepository', () => {
       const createInput = {
         id: 'test-sub-id',
         organization: { connect: { id: '01hqtestorg000000001' } },
-        plan: { connect: { id: samplePlan.id } },
+        service: { connect: { id: sampleService.id } },
         status: 'active',
       };
       mockOrganizationSubscription.create.mockResolvedValue(sampleSubscription);
@@ -178,17 +193,17 @@ describe('SubscriptionRepository', () => {
   });
 
   describe('findOrderById', () => {
-    it('should return order with plan when orgId matches', async () => {
-      const orderWithPlan = { ...sampleOrder, plan: samplePlan };
-      mockSubscriptionOrder.findFirst.mockResolvedValue(orderWithPlan);
+    it('should return order with service when orgId matches', async () => {
+      const orderWithService = { ...sampleOrder, service: sampleService };
+      mockSubscriptionOrder.findFirst.mockResolvedValue(orderWithService);
 
       const result = await repo.findOrderById(sampleOrder.id, '01hqtestorg000000001');
 
       expect(mockSubscriptionOrder.findFirst).toHaveBeenCalledWith({
         where: { id: sampleOrder.id, organization_id: '01hqtestorg000000001' },
-        include: { plan: true },
+        include: { service: true },
       });
-      expect(result).toEqual(orderWithPlan);
+      expect(result).toEqual(orderWithService);
     });
 
     it('should return null if order belongs to different org', async () => {
@@ -206,8 +221,8 @@ describe('SubscriptionRepository', () => {
         id: 'test-order-id',
         order_no: 'SUB123',
         organization: { connect: { id: '01hqtestorg000000001' } },
-        plan: { connect: { id: samplePlan.id } },
-        billing_cycle: 'monthly',
+        service: { connect: { id: sampleService.id } },
+        billing_months: 1,
         amount: 99,
         status: 'pending',
       };

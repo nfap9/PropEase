@@ -3,7 +3,7 @@ import type {
   AdminRole,
   User,
   Organization,
-  SubscriptionPlan,
+  ServiceProduct,
   OrganizationSubscription,
   UsageQuotaOrder,
   PlatformConfig,
@@ -34,7 +34,7 @@ export type UserWithOrgs = User & {
  * Subscription 包含关联信息
  */
 export type SubscriptionWithRelations = OrganizationSubscription & {
-  plan: SubscriptionPlan | null;
+  service: ServiceProduct | null;
   organization: Organization | null;
 };
 
@@ -83,12 +83,9 @@ export interface AdminRepository {
   updateUserActive(id: string, active: boolean): Promise<User>;
   deleteUser(id: string): Promise<void>;
 
-  // Plans
-  listPlans(activeOnly?: boolean): Promise<SubscriptionPlan[]>;
-  findPlanById(id: string): Promise<SubscriptionPlan | null>;
-  createPlan(data: Prisma.SubscriptionPlanCreateInput): Promise<SubscriptionPlan>;
-  updatePlan(id: string, data: Prisma.SubscriptionPlanUpdateInput): Promise<SubscriptionPlan>;
-  deletePlan(id: string): Promise<void>;
+  // Services (deprecated - use ServiceProductService instead)
+  listServices(activeOnly?: boolean): Promise<ServiceProduct[]>;
+  findServiceById(id: string): Promise<ServiceProduct | null>;
 
   // Subscriptions
   listSubscriptions(
@@ -255,8 +252,8 @@ export function createAdminRepository(db: DbClient): AdminRepository {
       await db.user.delete({ where: { id } });
     },
 
-    listPlans: async (activeOnly?: boolean) => {
-      return db.subscriptionPlan.findMany({
+    listServices: async (activeOnly?: boolean) => {
+      return db.serviceProduct.findMany({
         where: activeOnly ? { is_active: true } : undefined,
         orderBy: { sort_order: 'asc' },
         include: {
@@ -267,20 +264,8 @@ export function createAdminRepository(db: DbClient): AdminRepository {
       });
     },
 
-    findPlanById: async (id: string) => {
-      return db.subscriptionPlan.findUnique({ where: { id } });
-    },
-
-    createPlan: async (data: Prisma.SubscriptionPlanCreateInput) => {
-      return db.subscriptionPlan.create({ data });
-    },
-
-    updatePlan: async (id: string, data: Prisma.SubscriptionPlanUpdateInput) => {
-      return db.subscriptionPlan.update({ where: { id }, data });
-    },
-
-    deletePlan: async (id: string) => {
-      await db.subscriptionPlan.delete({ where: { id } });
+    findServiceById: async (id: string) => {
+      return db.serviceProduct.findUnique({ where: { id } });
     },
 
     listSubscriptions: async (
@@ -292,14 +277,14 @@ export function createAdminRepository(db: DbClient): AdminRepository {
         skip,
         take: limit,
         where,
-        include: { plan: true, organization: true },
+        include: { service: true, organization: true },
       }) as Promise<SubscriptionWithRelations[]>;
     },
 
     findSubscriptionById: async (id: string) => {
       return db.organizationSubscription.findUnique({
         where: { id },
-        include: { plan: true, organization: true },
+        include: { service: true, organization: true },
       }) as Promise<SubscriptionWithRelations | null>;
     },
 

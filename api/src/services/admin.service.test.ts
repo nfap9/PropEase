@@ -4,10 +4,9 @@ import {
   type AdminService,
   type CreateAdminUserInput,
   type CreateAdminRoleInput,
-  type CreatePlanInput,
 } from './admin.service.js';
 import type { AdminRepository, AdminUserWithRole } from '../repositories/admin.repo.js';
-import type { AdminUser, AdminRole, User, Organization, SubscriptionPlan } from '@prisma/client';
+import type { AdminUser, AdminRole, User, Organization } from '@prisma/client';
 
 // Mock dependencies
 vi.mock('ulid', () => ({
@@ -49,11 +48,6 @@ describe('AdminService', () => {
     findUserById: vi.fn(),
     updateUserActive: vi.fn(),
     deleteUser: vi.fn(),
-    listPlans: vi.fn(),
-    findPlanById: vi.fn(),
-    createPlan: vi.fn(),
-    updatePlan: vi.fn(),
-    deletePlan: vi.fn(),
     listSubscriptions: vi.fn(),
     findSubscriptionById: vi.fn(),
     renewSubscription: vi.fn(),
@@ -109,27 +103,6 @@ describe('AdminService', () => {
     slug: 'test-org',
     is_personal: false,
     is_active: true,
-    created_at: new Date(),
-    updated_at: new Date(),
-  };
-
-  const samplePlan: SubscriptionPlan = {
-    id: '01hqtestplan00000001',
-    code: 'pro',
-    name: '专业版',
-    description: '',
-    price_monthly: 99,
-    price_yearly: 999,
-    max_organizations: 1,
-    max_apartments: 10,
-    max_rooms: 100,
-    max_members: 5,
-    rooms_count_scope: 'organization',
-    members_count_scope: 'organization',
-    features: {},
-    is_active: true,
-    sort_order: 1,
-    free_validity_days: null,
     created_at: new Date(),
     updated_at: new Date(),
   };
@@ -294,29 +267,6 @@ describe('AdminService', () => {
       await service.deleteAdminRole(sampleRole.id);
 
       expect(mockRepo.deleteAdminRole).toHaveBeenCalledWith(sampleRole.id);
-    });
-  });
-
-  describe('updatePlan', () => {
-    it('should throw error when plan not found', async () => {
-      vi.mocked(mockRepo.findPlanById).mockResolvedValue(null);
-
-      await expect(service.updatePlan('nonexistent', {})).rejects.toMatchObject({
-        statusCode: 404,
-      });
-    });
-
-    it('should not update price for free plan', async () => {
-      const freePlan = { ...samplePlan, code: 'free' };
-      vi.mocked(mockRepo.findPlanById).mockResolvedValue(freePlan);
-      vi.mocked(mockRepo.updatePlan).mockResolvedValue(freePlan);
-
-      await service.updatePlan(freePlan.id, { price_monthly: 100 });
-
-      expect(mockRepo.updatePlan).toHaveBeenCalledWith(
-        freePlan.id,
-        expect.not.objectContaining({ price_monthly: 100 })
-      );
     });
   });
 

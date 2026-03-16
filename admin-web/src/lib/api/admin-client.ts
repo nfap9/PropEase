@@ -99,6 +99,53 @@ interface WrappedResponse<T> {
   message: string;
 }
 
+function toAdminPlan(product: ServiceProduct): AdminPlan {
+  const pricing = product.pricing ?? [];
+  const monthlyPricing = pricing.find((item) => item.months === 1) ?? null;
+  const yearlyPricing = pricing.find((item) => item.months === 12) ?? null;
+
+  return {
+    id: product.id,
+    name: product.name,
+    code: product.code,
+    description: product.description,
+    price_monthly: monthlyPricing?.price ?? 0,
+    price_yearly: yearlyPricing?.price ?? (monthlyPricing ? monthlyPricing.price * 12 : 0),
+    max_organizations: product.max_organizations,
+    max_apartments: product.max_apartments,
+    max_rooms: product.max_rooms,
+    max_members: product.max_members,
+    features: null,
+    is_active: product.is_active,
+    is_purchasable: product.code !== 'free',
+    sort_order: product.sort_order,
+    free_validity_days: null,
+    created_at: product.created_at,
+    updated_at: product.updated_at,
+    pricing: pricing.map((item) => ({
+      id: item.id,
+      plan_id: product.id,
+      months: item.months,
+      price: item.price,
+      is_active: item.is_active,
+      is_purchasable: true,
+      sort_order: item.sort_order,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+    })),
+  };
+}
+
+function mapAxiosData<TIn, TOut>(
+  response: AxiosResponse<TIn>,
+  mapper: (value: TIn) => TOut
+): AxiosResponse<TOut> {
+  return {
+    ...response,
+    data: mapper(response.data),
+  };
+}
+
 export const adminApi = axios.create({
   baseURL: API_URL,
   headers: {
@@ -135,9 +182,13 @@ adminApi.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('admin_access_token');
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        // 避免重复跳转（如果已经在登录页）
+        if (!window.location.pathname.startsWith('/login')) {
+          window.location.href = '/login';
+        }
       }
-      return Promise.reject(error);
+      // 返回一个永远 pending 的 Promise，防止 React Query 显示错误状态
+      return new Promise(() => {});
     }
     // 优先使用接口响应的 message，保持与业务端一致
     if (error.response?.data && typeof error.response.data === 'object') {
@@ -214,15 +265,66 @@ export const adminApiEndpoints = {
   deleteRegisteredUser: (id: string) => adminApi.delete(`/admin/registered-users/${id}`),
 
   // 套餐
-  listPlans: (params?: { active_only?: boolean }) =>
-    adminApi.get<AdminPlan[]>('/admin/plans', { params }),
-  getPlan: (id: string) => adminApi.get<AdminPlan>(`/admin/plans/${id}`),
-  createPlan: (data: AdminPlanCreate) => adminApi.post<AdminPlan>('/admin/plans', data),
-  updatePlan: (id: string, data: AdminPlanUpdate) =>
-    adminApi.put<AdminPlan>(`/admin/plans/${id}`, data),
-  deletePlan: (id: string) => adminApi.delete(`/admin/plans/${id}`),
-  updatePlanPricing: (planId: string, pricing: AdminPlanPricingCreate[]) =>
-    adminApi.put(`/admin/plans/${planId}/pricing`, { pricing }),
+  listPlans: async (params?: { active_only?: boolean }) =>
+    mapAxiosData(
+      await adminApi.get<ServiceProduct[]>('/admin/service-products', {
+        params: { is_active: params?.active_only, include_pricing: true },
+      }),
+      (products) => products.map(toAdminPlan)
+    ),
+  getPlan: async (id: string) =>
+    mapAxiosData(
+      await adminApi.get<ServiceProduct>(`/admin/service-products/${id}`),
+      toAdminPlan
+    ),
+  createPlan: async (data: AdminPlanCreate) =>
+    mapAxiosData(
+      await adminApi.post<ServiceProduct>('/admin/service-products', {
+        name: data.name,
+        code: data.code,
+        description: data.description ?? undefined,
+        max_organizations: data.max_organizations,
+        max_apartments: data.max_apartments,
+        max_rooms: data.max_rooms,
+        max_members: data.max_members,
+        is_active: true,
+        sort_order: data.sort_order ?? 0,
+        pricing: data.pricing?.map((item) => ({
+          months: item.months,
+          price: item.price,
+          is_active: item.is_active,
+          sort_order: item.sort_order,
+        })),
+      }),
+      toAdminPlan
+    ),
+  updatePlan: async (id: string, data: AdminPlanUpdate) =>
+    mapAxiosData(
+      await adminApi.put<ServiceProduct>(`/admin/service-products/${id}`, {
+        name: data.name ?? undefined,
+        description: data.description ?? undefined,
+        max_organizations: data.max_organizations,
+        max_apartments: data.max_apartments ?? undefined,
+        max_rooms: data.max_rooms ?? undefined,
+        max_members: data.max_members ?? undefined,
+        is_active: data.is_active ?? undefined,
+        sort_order: data.sort_order ?? undefined,
+      }),
+      toAdminPlan
+    ),
+  deletePlan: (id: string) => adminApi.delete(`/admin/service-products/${id}`),
+  updatePlanPricing: async (planId: string, pricing: AdminPlanPricingCreate[]) =>
+    mapAxiosData(
+      await adminApi.put<ServiceProduct>(`/admin/service-products/${planId}/pricing`, {
+        pricing: pricing.map((item) => ({
+          months: item.months,
+          price: item.price,
+          is_active: item.is_active,
+          sort_order: item.sort_order,
+        })),
+      }),
+      toAdminPlan
+    ),
 
   // 订阅
   listSubscriptions: (params?: {

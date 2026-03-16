@@ -5,7 +5,6 @@ import type {
   AdminRole,
   User,
   Organization,
-  SubscriptionPlan,
 } from '@prisma/client';
 
 describe('AdminRepository', () => {
@@ -41,7 +40,7 @@ describe('AdminRepository', () => {
     count: vi.fn(),
   };
 
-  const mockSubscriptionPlan = {
+  const mockServiceProduct = {
     findMany: vi.fn(),
     findUnique: vi.fn(),
     create: vi.fn(),
@@ -66,7 +65,7 @@ describe('AdminRepository', () => {
     adminRole: mockAdminRole,
     organization: mockOrganization,
     user: mockUser,
-    subscriptionPlan: mockSubscriptionPlan,
+    serviceProduct: mockServiceProduct,
     organizationSubscription: mockOrganizationSubscription,
     apartment: mockApartment,
     room: mockRoom,
@@ -312,58 +311,6 @@ describe('AdminRepository', () => {
         const result = await repo.findUserWithOrgs(sampleUser.id);
 
         expect(result?.organization_memberships).toHaveLength(1);
-      });
-    });
-  });
-
-  describe('Plans', () => {
-    describe('listPlans', () => {
-      it('should return all plans when activeOnly is false', async () => {
-        const plan: SubscriptionPlan = {
-          id: 'plan1',
-          code: 'pro',
-          name: '专业版',
-          description: '',
-          price_monthly: 99,
-          price_yearly: 999,
-          max_rooms: 100,
-          max_members: 5,
-          features: {},
-          is_active: true,
-          sort_order: 1,
-          created_at: new Date(),
-          updated_at: new Date(),
-        };
-        mockSubscriptionPlan.findMany.mockResolvedValue([plan]);
-
-        const result = await repo.listPlans(false);
-
-        expect(mockSubscriptionPlan.findMany).toHaveBeenCalledWith({
-          where: undefined,
-          orderBy: { sort_order: 'asc' },
-          include: {
-            pricing: {
-              orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
-            },
-          },
-        });
-        expect(result).toHaveLength(1);
-      });
-
-      it('should return only active plans when activeOnly is true', async () => {
-        mockSubscriptionPlan.findMany.mockResolvedValue([]);
-
-        await repo.listPlans(true);
-
-        expect(mockSubscriptionPlan.findMany).toHaveBeenCalledWith({
-          where: { is_active: true },
-          orderBy: { sort_order: 'asc' },
-          include: {
-            pricing: {
-              orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
-            },
-          },
-        });
       });
     });
   });

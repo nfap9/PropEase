@@ -3,11 +3,11 @@ import type {
   AdminRole,
   User,
   Organization,
-  SubscriptionPlan,
   OrganizationSubscription,
   UsageQuotaOrder,
   Prisma,
 } from '@prisma/client';
+import type { ServiceProduct } from '@apartment-ultra/api-contract';
 
 // 使用 Prisma.InputJsonValue 类型
 type InputJsonValue = Prisma.InputJsonValue;
@@ -22,7 +22,9 @@ import { NotFoundMessages } from '../messages.js';
 import { hashPassword, verifyPassword } from '../utils/security.js';
 import { createAdminAccessToken } from '../utils/jwt.js';
 import { ulid } from 'ulid';
-import { prisma } from '../lib/prisma.js';
+import {
+  defaultServiceProductService,
+} from './service-product.service.js';
 
 /**
  * 登录结果
@@ -69,32 +71,6 @@ export interface UpdateAdminRoleInput {
   name?: string;
   permissions?: string[] | Record<string, unknown>;
 }
-
-/**
- * 创建套餐输入
- */
-export interface CreatePlanInput {
-  name: string;
-  code: string;
-  price_monthly?: number;
-  price_yearly?: number;
-  max_organizations?: number | null;
-  max_apartments?: number;
-  max_rooms?: number;
-  max_members?: number;
-  rooms_count_scope?: 'organization' | 'user';
-  members_count_scope?: 'organization' | 'user';
-  is_active?: boolean;
-  is_purchasable?: boolean;
-  sort_order?: number;
-  free_validity_days?: number | null;
-  pricing?: Array<{ months: number; price: number; is_active?: boolean; sort_order?: number }>;
-}
-
-/**
- * 更新套餐输入
- */
-export type UpdatePlanInput = Partial<CreatePlanInput>;
 
 /**
  * 使用量定价
@@ -186,12 +162,9 @@ export interface AdminService {
   setRegisteredUserActive(userId: string, active: boolean): Promise<User>;
   deleteRegisteredUser(userId: string): Promise<void>;
 
-  // Plans
-  listPlans(activeOnly?: boolean): Promise<SubscriptionPlan[]>;
-  getPlan(planId: string): Promise<SubscriptionPlan>;
-  createPlan(data: CreatePlanInput): Promise<SubscriptionPlan>;
-  updatePlan(planId: string, data: UpdatePlanInput): Promise<SubscriptionPlan>;
-  deletePlan(planId: string): Promise<void>;
+  // Services (使用新的服务定价模块)
+  listServices(activeOnly?: boolean): Promise<ServiceProduct[]>;
+  getService(serviceId: string): Promise<ServiceProduct>;
 
   // Subscriptions
   listSubscriptions(
@@ -457,91 +430,20 @@ export function createAdminService(
       await getRepo().deleteUser(userId);
     },
 
-    listPlans: async (activeOnly?: boolean) => {
-      return getRepo().listPlans(activeOnly);
-    },
-
-    getPlan: async (planId: string) => {
-      const plan = await getRepo().findPlanById(planId);
-      if (!plan) {
-        throw createAppError(404, NotFoundMessages.PLAN);
-      }
-      return plan;
-    },
-
-    createPlan: async (data: CreatePlanInput) => {
-      const plan = await getRepo().createPlan({
-        id: ulid().toLowerCase(),
-        name: data.name,
-        code: data.code,
-        price_monthly: data.price_monthly ?? 0,
-        price_yearly: data.price_yearly ?? data.price_monthly ?? 0,
-        max_organizations: data.max_organizations,
-        max_apartments: data.max_apartments ?? 1,
-        max_rooms: data.max_rooms ?? 100,
-        max_members: data.max_members ?? 1,
-        rooms_count_scope: data.rooms_count_scope ?? 'organization',
-        members_count_scope: data.members_count_scope ?? 'organization',
-        is_active: data.is_active ?? true,
-        is_purchasable: data.is_purchasable ?? true,
-        sort_order: data.sort_order ?? 0,
-        free_validity_days: data.free_validity_days,
+    listServices: async (activeOnly?: boolean) => {
+      const products = await defaultServiceProductService.listServiceProducts({
+        is_active: activeOnly ? true : undefined,
+        include_pricing: true,
       });
-
-      // 创建周期定价
-      if (data.pricing && data.pricing.length > 0) {
-        for (const p of data.pricing) {
-          await prisma.planPricing.create({
-            data: {
-              id: ulid().toLowerCase(),
-              plan_id: plan.id,
-              months: p.months,
-              price: p.price,
-              is_active: p.is_active ?? true,
-              sort_order: p.sort_order ?? 0,
-            },
-          });
-        }
-      }
-
-      return plan;
+      return products;
     },
 
-    updatePlan: async (planId: string, data: UpdatePlanInput) => {
-      const existing = await getRepo().findPlanById(planId);
-      if (!existing) {
+    getService: async (serviceId: string) => {
+      const service = await defaultServiceProductService.getServiceProductById(serviceId);
+      if (!service) {
         throw createAppError(404, NotFoundMessages.PLAN);
       }
-      const isFree = existing.code === 'free';
-      const updateData: Prisma.SubscriptionPlanUpdateInput = {};
-      if (data.name != null) updateData.name = data.name;
-      if (data.code != null) updateData.code = data.code;
-      if (!isFree) {
-        if (data.price_monthly != null) updateData.price_monthly = data.price_monthly;
-        if (data.price_yearly != null) updateData.price_yearly = data.price_yearly;
-      }
-      if (data.max_organizations !== undefined)
-        updateData.max_organizations = data.max_organizations;
-      if (data.max_apartments != null) updateData.max_apartments = data.max_apartments;
-      if (data.max_rooms != null) updateData.max_rooms = data.max_rooms;
-      if (data.max_members != null) updateData.max_members = data.max_members;
-      if (data.rooms_count_scope != null) updateData.rooms_count_scope = data.rooms_count_scope;
-      if (data.members_count_scope != null)
-        updateData.members_count_scope = data.members_count_scope;
-      if (data.is_active !== undefined) updateData.is_active = data.is_active;
-      if (data.is_purchasable !== undefined) updateData.is_purchasable = data.is_purchasable;
-      if (data.sort_order != null) updateData.sort_order = data.sort_order;
-      if (data.free_validity_days !== undefined)
-        updateData.free_validity_days = data.free_validity_days;
-      return getRepo().updatePlan(planId, updateData);
-    },
-
-    deletePlan: async (planId: string) => {
-      const existing = await getRepo().findPlanById(planId);
-      if (!existing) {
-        throw createAppError(404, NotFoundMessages.PLAN);
-      }
-      await getRepo().deletePlan(planId);
+      return service;
     },
 
     listSubscriptions: async (

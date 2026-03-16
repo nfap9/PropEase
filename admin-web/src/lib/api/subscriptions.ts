@@ -38,20 +38,41 @@ export const subscriptionsApi = {
   },
 
   subscribe: async (orgId: string, data: SubscribeRequest): Promise<OrganizationSubscription> => {
+    const serviceId = 'service_id' in data && typeof data.service_id === 'string'
+      ? data.service_id
+      : data.plan_id;
+    const billingMonths = data.billing_months ?? (data.billing_cycle === 'yearly' ? 12 : 1);
     const response = await api.post<OrganizationSubscription>(
       `/subscriptions/organizations/${orgId}/subscription`,
-      data
+      {
+        service_id: serviceId,
+        billing_cycle: data.billing_cycle,
+        billing_months: billingMonths,
+        auto_renew: data.auto_renew,
+      }
     );
     return response.data;
   },
 
   changePlan: async (
     orgId: string,
-    data: { plan_id: string; billing_cycle?: string }
+    data: {
+      plan_id?: string;
+      service_id?: string;
+      billing_cycle?: string;
+      billing_months?: number;
+      effective?: 'immediate' | 'next_cycle';
+    }
   ): Promise<OrganizationSubscription> => {
+    const serviceId = data.service_id ?? data.plan_id;
     const response = await api.put<OrganizationSubscription>(
       `/subscriptions/organizations/${orgId}/subscription`,
-      data
+      {
+        service_id: serviceId,
+        billing_cycle: data.billing_cycle,
+        billing_months: data.billing_months,
+        effective: data.effective,
+      }
     );
     return response.data;
   },
@@ -66,9 +87,16 @@ export const subscriptionsApi = {
 
   // 订阅支付订单（付费套餐）
   createOrder: async (orgId: string, data: SubscriptionOrderCreate): Promise<SubscriptionOrder> => {
+    const serviceId = 'service_id' in data && typeof data.service_id === 'string'
+      ? data.service_id
+      : data.plan_id;
+    const billingMonths = data.billing_months ?? (data.billing_cycle === 'yearly' ? 12 : 1);
     const response = await api.post<SubscriptionOrder>(
       `/subscriptions/organizations/${orgId}/orders`,
-      { plan_id: data.plan_id, billing_cycle: data.billing_cycle ?? 'monthly' }
+      {
+        service_id: serviceId,
+        billing_months: billingMonths,
+      }
     );
     return response.data;
   },
