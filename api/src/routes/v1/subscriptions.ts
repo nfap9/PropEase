@@ -1,6 +1,5 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
-import { ulid } from 'ulid';
 import { prisma } from '../../lib/prisma.js';
 import { config } from '../../config.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
@@ -447,24 +446,6 @@ router.post(
         include: { service: true },
       });
 
-      // 计算原始价格（周期定价）
-      const pricing = service.pricing.find((p) => p.months === billing_months);
-      const monthlyPricing = service.pricing.find((p) => p.months === 1);
-      let selectedPricingId: string | undefined;
-      let originalAmount: number;
-
-      if (pricing) {
-        selectedPricingId = pricing.id;
-        originalAmount = Number(pricing.price);
-      } else if (monthlyPricing) {
-        selectedPricingId = billing_months === 1 ? monthlyPricing.id : undefined;
-        originalAmount = Number(monthlyPricing.price) * billing_months;
-      } else {
-        return next(createAppError(400, '未找到合适的定价'));
-      }
-
-      const finalAmount = originalAmount;
-
       // 升级场景的差价计算（可选，暂时简化处理）
       if (sub && isSubscriptionActive(sub) && sub.service) {
         const currentSort = sub.service.sort_order;
@@ -474,32 +455,16 @@ router.post(
         // 升级场景可以计算差价，这里简化为直接使用新套餐价格
       }
 
-      const orderNo = `SUB${Date.now()}`;
-      const expires = new Date();
-      expires.setHours(expires.getHours() + 2);
-      const timeExpireIso = expires.toISOString();
-
-      // 创建订单
-      const order = await prisma.subscriptionOrder.create({
-        data: {
-          id: ulid().toLowerCase(),
-          order_no: orderNo,
-          organization_id: orgId,
-          service_id: service.id,
-          pricing_id: selectedPricingId,
-          billing_months,
-          amount: finalAmount,
-          original_amount: originalAmount,
-          status: 'pending',
-          expires_at: expires,
-        },
+      const order = await defaultSubscriptionService.createOrder(orgId, {
+        serviceId: service.id,
+        billingMonths: billing_months,
       });
 
       const wechatResult = await createWechatPayNativeOrder({
-        out_trade_no: orderNo,
+        out_trade_no: order.order_no,
         description: `服务订阅-${service.name}`,
-        amount_yuan: finalAmount,
-        time_expire: timeExpireIso,
+        amount_yuan: Number(order.amount),
+        time_expire: order.expires_at.toISOString(),
       });
 
       if (wechatResult?.code_url) {

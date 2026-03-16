@@ -5,6 +5,7 @@ import {
 } from './subscription.service.js';
 import type { SubscriptionRepository, SubscriptionWithService } from '../repositories/subscription.repo.js';
 import type { ServiceProduct, OrganizationSubscription, SubscriptionOrder } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 
 // Mock ulid - use vi.fn with inline implementation to avoid reset issues
 vi.mock('ulid', () => ({
@@ -366,6 +367,69 @@ describe('SubscriptionService', () => {
       await service.cancelSubscription(orgId);
 
       expect(mockRepo.updateSubscription).toHaveBeenCalledWith(orgId, { status: 'cancelled' });
+    });
+  });
+
+  describe('createOrder', () => {
+    it('should fallback to monthly pricing when exact billing months pricing is missing', async () => {
+      vi.mocked(prisma.serviceProduct.findFirst).mockResolvedValue({
+        ...sampleService,
+        pricing: [
+          {
+            id: 'pricing-monthly',
+            service_id: sampleService.id,
+            months: 1,
+            price: 99,
+            is_active: true,
+            sort_order: 0,
+            created_at: new Date(),
+            updated_at: new Date(),
+          },
+        ],
+      } as Awaited<ReturnType<typeof prisma.serviceProduct.findFirst>>);
+      vi.mocked(mockRepo.createOrder).mockResolvedValue(sampleOrder);
+
+      await service.createOrder(orgId, {
+        serviceId: sampleService.id,
+        billingMonths: 3,
+      });
+
+      expect(mockRepo.createOrder).toHaveBeenCalledWith(
+        expect.objectContaining({
+          billing_months: 3,
+          amount: 297,
+          original_amount: 297,
+          pricing: undefined,
+        })
+      );
+    });
+
+    it('should throw when neither exact pricing nor monthly fallback exists', async () => {
+      vi.mocked(prisma.serviceProduct.findFirst).mockResolvedValue({
+        ...sampleService,
+        pricing: [
+          {
+            id: 'pricing-yearly',
+            service_id: sampleService.id,
+            months: 12,
+            price: 999,
+            is_active: true,
+            sort_order: 0,
+            created_at: new Date(),
+            updated_at: new Date(),
+          },
+        ],
+      } as Awaited<ReturnType<typeof prisma.serviceProduct.findFirst>>);
+
+      await expect(
+        service.createOrder(orgId, {
+          serviceId: sampleService.id,
+          billingMonths: 2,
+        })
+      ).rejects.toMatchObject({
+        statusCode: 400,
+        message: '未找到合适的定价',
+      });
     });
   });
 });

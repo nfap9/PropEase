@@ -7,6 +7,8 @@ import type {
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
+export { isSubscriptionActive } from '../utils/subscription.js';
+
 /**
  * 订阅包含服务信息
  */
