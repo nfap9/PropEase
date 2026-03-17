@@ -21,6 +21,28 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function resolveCurrentOrganization(
+  orgs: Organization[],
+  currentOrg: Organization | null,
+  preferredOrgId?: string | null
+): Organization | null {
+  if (orgs.length === 0) {
+    return null;
+  }
+
+  const preferredIds = [preferredOrgId, currentOrg?.id, localStorage.getItem('current_organization_id')];
+
+  for (const orgId of preferredIds) {
+    if (!orgId) continue;
+    const matchedOrg = orgs.find((org) => org.id === orgId);
+    if (matchedOrg) {
+      return matchedOrg;
+    }
+  }
+
+  return orgs[0];
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
@@ -29,13 +51,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const loadOrganizations = async () => {
+  const loadOrganizations = async (preferredOrgId?: string | null) => {
     try {
       const orgs = await organizationsApi.list();
-      setOrganizations(orgs || []);
-      return orgs || [];
+      const nextOrganizations = orgs || [];
+      setOrganizations(nextOrganizations);
+      setOrganization((currentOrg) => {
+        const nextOrganization = resolveCurrentOrganization(
+          nextOrganizations,
+          currentOrg,
+          preferredOrgId
+        );
+
+        if (nextOrganization) {
+          localStorage.setItem('current_organization_id', nextOrganization.id);
+        } else {
+          localStorage.removeItem('current_organization_id');
+        }
+
+        return nextOrganization;
+      });
+      return nextOrganizations;
     } catch {
       setOrganizations([]);
+      setOrganization(null);
       return [];
     }
   };
@@ -52,23 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const userData = await authApi.getMe();
           setUser(userData);
 
-          // 获取用户的组织列表并设置第一个作为当前组织
-          const orgs = await loadOrganizations();
-          if (orgs.length > 0) {
-            const savedOrgId = localStorage.getItem('current_organization_id');
-            if (savedOrgId) {
-              const savedOrg = orgs.find((org: Organization) => org.id === savedOrgId);
-              if (savedOrg) {
-                setOrganization(savedOrg);
-              } else {
-                setOrganization(orgs[0]);
-                localStorage.setItem('current_organization_id', orgs[0].id);
-              }
-            } else {
-              setOrganization(orgs[0]);
-              localStorage.setItem('current_organization_id', orgs[0].id);
-            }
-          }
+          await loadOrganizations();
         } catch {
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
@@ -88,12 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userData = await authApi.getMe();
     setUser(userData);
 
-    // 获取用户的组织列表
-    const orgs = await loadOrganizations();
-    if (orgs.length > 0) {
-      setOrganization(orgs[0]);
-      localStorage.setItem('current_organization_id', orgs[0].id);
-    }
+    await loadOrganizations();
 
     router.push('/dashboard');
   };

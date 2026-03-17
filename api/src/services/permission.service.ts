@@ -51,7 +51,10 @@ export interface PermissionService {
   ): Promise<void>;
 
   // 我的权限
-  getMyPermissions(): Promise<{ permissions: string[] }>;
+  getMyPermissions(
+    userId: string,
+    orgId: string
+  ): Promise<{ permissions: string[]; system_roles: SystemRole[]; is_super_admin: boolean }>;
 
   // 系统角色
   listSystemRoleConfigs(): Promise<SystemRoleConfig[]>;
@@ -158,9 +161,53 @@ export function createPermissionService(
       } as Prisma.InputJsonValue);
     },
 
-    getMyPermissions: async () => {
-      const perms = await getRepo().findAll();
-      return { permissions: perms.map((p) => p.code) };
+    getMyPermissions: async (userId: string, orgId: string) => {
+      const systemRoles = (await getRepo().findUserSystemRoles(userId)).map((role) => role.role as SystemRole);
+      const isSuperAdmin = systemRoles.includes('super_admin');
+
+      if (isSuperAdmin) {
+        const perms = await getRepo().findAll();
+        return {
+          permissions: perms.map((p) => p.code),
+          system_roles: systemRoles,
+          is_super_admin: true,
+        };
+      }
+
+      const memberRole = await getRepo().findMemberRole(orgId, userId);
+      if (!memberRole) {
+        throw createAppError(403, 'Access denied');
+      }
+
+      let permissionCodes: string[];
+
+      if (memberRole === 'owner') {
+        const perms = await getRepo().findAll();
+        permissionCodes = perms.map((p) => p.code);
+      } else if (ORG_MEMBER_ROLES.includes(memberRole as OrgMemberRole)) {
+        const org = await getRepo().findOrgById(orgId);
+        if (!org) {
+          throw createAppError(404, '组织不存在');
+        }
+
+        const settings = (org.settings as Record<string, unknown> | null) ?? {};
+        const rolePermissions = (
+          settings.role_permissions as Record<string, string[] | undefined> | undefined
+        )?.[memberRole];
+
+        permissionCodes =
+          Array.isArray(rolePermissions) && rolePermissions.length > 0
+            ? rolePermissions
+            : toPermissionCodes(DEFAULT_ORG_ROLE_PERMISSIONS[memberRole as OrgMemberRole]);
+      } else {
+        permissionCodes = [];
+      }
+
+      return {
+        permissions: [...new Set(permissionCodes)],
+        system_roles: systemRoles,
+        is_super_admin: false,
+      };
     },
 
     listSystemRoleConfigs: async () => {

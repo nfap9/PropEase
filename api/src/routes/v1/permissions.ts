@@ -220,7 +220,8 @@ router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const result = await defaultPermissionService.getMyPermissions();
+    const orgId = await requireOrgMembership(req, 'org_id');
+    const result = await defaultPermissionService.getMyPermissions(user.id, orgId);
     res.json(result);
   } catch (e) {
     next(e);

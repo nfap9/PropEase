@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Building2 } from 'lucide-react';
 import { useBrandConfig } from '@/lib/brand-config-context';
+import { useAuth } from '@/lib/auth/context';
 import { usePermissions } from '@/hooks/use-permissions';
+import { canAccessRule } from '@/lib/permission-access';
 import { NAV_ITEMS } from './nav-config';
 
 interface NavContentProps {
@@ -18,11 +20,17 @@ interface NavContentProps {
  */
 export function NavContent({ onNavClick }: NavContentProps) {
   const brandConfig = useBrandConfig();
-  const { hasPermission, isSuperAdmin } = usePermissions();
+  const { organization } = useAuth();
+  const { permissions, hasPermission, isSuperAdmin } = usePermissions();
   const pathname = usePathname();
 
-  const visibleNavItems = NAV_ITEMS.filter(
-    (item) => !item.permission || isSuperAdmin || hasPermission(item.permission)
+  const visibleNavItems = NAV_ITEMS.filter((item) =>
+    canAccessRule(item, {
+      organization,
+      permissions,
+      isSuperAdmin,
+      hasPermission,
+    })
   );
 
   return (

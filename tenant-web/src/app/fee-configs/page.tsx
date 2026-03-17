@@ -16,11 +16,24 @@ import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { Plus, Pencil, Trash2, DollarSign, ChevronDown, ChevronRight } from 'lucide-react';
 import { feeTypesApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
+import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
+import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
+import { canAccessRule } from '@/lib/permission-access';
 import type { FeeType, FeeSpecification } from '@apartment-ultra/api-contract';
 
 export default function FeeConfigPage() {
   const { organization } = useAuth();
+  const { permissions, hasPermission, isSuperAdmin } = usePermissions();
   const orgId = organization?.id;
+  const canAccessFeeConfigs = canAccessRule(
+    { requiresOrganization: true, permission: PERMISSIONS.SETTINGS_VIEW },
+    {
+      organization,
+      permissions,
+      isSuperAdmin,
+      hasPermission,
+    }
+  );
   const [feeTypes, setFeeTypes] = useState<FeeType[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +53,7 @@ export default function FeeConfigPage() {
   const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
 
   const loadData = useCallback(async () => {
-    if (!orgId) return;
+    if (!orgId || !canAccessFeeConfigs) return;
     try {
       setLoading(true);
       const data = await feeTypesApi.list(orgId);
@@ -50,7 +63,7 @@ export default function FeeConfigPage() {
     } finally {
       setLoading(false);
     }
-  }, [orgId]);
+  }, [canAccessFeeConfigs, orgId]);
 
   useEffect(() => {
     loadData();
@@ -165,34 +178,36 @@ export default function FeeConfigPage() {
   };
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <DollarSign className="h-8 w-8" />
-            <div>
-              <h1 className="text-3xl font-bold" data-testid="fee-types-heading">费用配置</h1>
-              <p className="text-muted-foreground">管理费用类型和规格定价</p>
+    <PermissionPageGuard>
+      {canAccessFeeConfigs ? (
+        <MainLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <DollarSign className="h-8 w-8" />
+              <div>
+                <h1 className="text-3xl font-bold" data-testid="fee-types-heading">费用配置</h1>
+                <p className="text-muted-foreground">管理费用类型和规格定价</p>
+              </div>
             </div>
+            <Button onClick={() => openTypeDialog()} data-testid="fee-types-new-btn">
+              <Plus className="mr-2 h-4 w-4" />
+              添加费用类型
+            </Button>
           </div>
-          <Button onClick={() => openTypeDialog()} data-testid="fee-types-new-btn">
-            <Plus className="mr-2 h-4 w-4" />
-            添加费用类型
-          </Button>
-        </div>
 
-        {loading ? (
-          <div className="text-center py-8">加载中...</div>
-        ) : feeTypes.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>暂无费用类型</p>
-              <p className="text-sm mt-2">点击上方&ldquo;添加费用类型&rdquo;开始配置</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4" data-testid="fee-types-list">
+          {loading ? (
+            <div className="text-center py-8">加载中...</div>
+          ) : feeTypes.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>暂无费用类型</p>
+                <p className="text-sm mt-2">点击上方&ldquo;添加费用类型&rdquo;开始配置</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4" data-testid="fee-types-list">
             {feeTypes.map((type) => {
               const isExpanded = expandedTypes.has(type.id);
               const specs = type.specifications || [];
@@ -283,11 +298,11 @@ export default function FeeConfigPage() {
                 </Card>
               );
             })}
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* 费用类型对话框 */}
-        <Dialog open={typeDialogOpen} onOpenChange={setTypeDialogOpen}>
+          {/* 费用类型对话框 */}
+          <Dialog open={typeDialogOpen} onOpenChange={setTypeDialogOpen}>
           <DialogContent className="max-w-sm" data-testid={editingType ? 'fee-types-edit-dialog' : 'fee-types-create-dialog'}>
             <DialogHeader>
               <DialogTitle>{editingType ? '编辑费用类型' : '添加费用类型'}</DialogTitle>
@@ -312,10 +327,10 @@ export default function FeeConfigPage() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+          </Dialog>
 
-        {/* 规格对话框 */}
-        <Dialog open={specDialogOpen} onOpenChange={setSpecDialogOpen}>
+          {/* 规格对话框 */}
+          <Dialog open={specDialogOpen} onOpenChange={setSpecDialogOpen}>
           <DialogContent className="max-w-sm">
             <DialogHeader>
               <DialogTitle>{editingSpec ? '编辑规格' : '添加规格'}</DialogTitle>
@@ -351,8 +366,10 @@ export default function FeeConfigPage() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
-      </div>
-    </MainLayout>
+          </Dialog>
+        </div>
+        </MainLayout>
+      ) : null}
+    </PermissionPageGuard>
   );
 }

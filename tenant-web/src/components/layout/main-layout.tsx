@@ -20,17 +20,30 @@ import { useState } from 'react';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { OrgSelector } from '@/components/common/org-selector';
 import { usePermissions } from '@/hooks/use-permissions';
+import { canAccessRule } from '@/lib/permission-access';
 import { NavContent } from './nav-content';
-import { SETTINGS_ITEMS } from './nav-config';
+import { NAV_ITEMS, SETTINGS_ITEMS } from './nav-config';
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, organization, logout } = useAuth();
-  const { hasPermission, isSuperAdmin } = usePermissions();
+  const { permissions, hasPermission, isSuperAdmin } = usePermissions();
   const [open, setOpen] = useState(false);
+
+  const accessContext = {
+    organization,
+    permissions,
+    isSuperAdmin,
+    hasPermission,
+  };
+  const canAccessNotifications = canAccessRule(
+    NAV_ITEMS.find((item) => item.id === 'notifications')!,
+    accessContext
+  );
 
   const { data: unreadCount = 0 } = useQuery({
     queryKey: ['notifications', 'unread-count'],
     queryFn: () => notificationsApi.getUnreadCount(),
+    enabled: canAccessNotifications,
   });
 
   const orgId = organization?.id;
@@ -42,8 +55,8 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   const planLabel =
     subscriptionStatus?.plan?.name ?? null;
 
-  const visibleSettingsItems = SETTINGS_ITEMS.filter(
-    (item) => !item.permission || isSuperAdmin || hasPermission(item.permission)
+  const visibleSettingsItems = SETTINGS_ITEMS.filter((item) =>
+    canAccessRule(item, accessContext)
   );
 
   return (
@@ -77,16 +90,18 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 
           <ThemeToggle />
 
-          <Button variant="ghost" size="icon" className="relative" asChild>
-            <Link href="/notifications" aria-label="通知">
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-medium text-destructive-foreground">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </Link>
-          </Button>
+          {canAccessNotifications && (
+            <Button variant="ghost" size="icon" className="relative" asChild>
+              <Link href="/notifications" aria-label="通知">
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-medium text-destructive-foreground">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </Link>
+            </Button>
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -2,11 +2,15 @@
 
 import { useAuth } from '@/lib/auth/context';
 import { MainLayout } from '@/components/layout/main-layout';
+import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
+import { usePermissions } from '@/hooks/use-permissions';
+import { canAccessRule } from '@/lib/permission-access';
 import { Loader2 } from 'lucide-react';
 import { DashboardContent } from './dashboard-content';
 
 export default function DashboardPage() {
-  const { isLoading } = useAuth();
+  const { isLoading, organization } = useAuth();
+  const { permissions, hasPermission, isSuperAdmin } = usePermissions();
 
   if (isLoading) {
     return (
@@ -16,9 +20,23 @@ export default function DashboardPage() {
     );
   }
 
+  const canAccessDashboard = canAccessRule(
+    { requiresOrganization: true, requireAnyPermission: true },
+    {
+      organization,
+      permissions,
+      isSuperAdmin,
+      hasPermission,
+    }
+  );
+
   return (
-    <MainLayout>
-      <DashboardContent />
-    </MainLayout>
+    <PermissionPageGuard>
+      {canAccessDashboard ? (
+        <MainLayout>
+          <DashboardContent />
+        </MainLayout>
+      ) : null}
+    </PermissionPageGuard>
   );
 }
