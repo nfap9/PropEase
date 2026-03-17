@@ -13,12 +13,12 @@
   },
   "dependencies": {
     "@apartment-ultra/api-contract": "workspace:*",
-    "axios": "^1.13.5",
-    "react-hook-form": "^7.71.2"
+    "axios": "catalog:",
+    "react-hook-form": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "typescript": "^5",
-    "vitest": "^4.0.18"
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

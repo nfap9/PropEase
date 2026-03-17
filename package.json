@@ -22,8 +22,8 @@
     "test:e2e:report": "playwright show-report e2e/report"
   },
   "devDependencies": {
-    "@types/react": "18.3.28",
-    "@types/react-dom": "18.3.7",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@playwright/test": "^1.58.2",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2"
@@ -47,7 +47,7 @@
       "sonner": "^2.0.7",
       "tailwind-merge": "^3.5.0",
       "tailwindcss-animate": "^1.0.7",
-      "zod": "^3.23.8"
+      "zod": "^3.25.76"
     }
   },
   "engines": {

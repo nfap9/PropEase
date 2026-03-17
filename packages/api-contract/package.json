@@ -19,7 +19,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "typescript": "^5.4.0"
+    "typescript": "catalog:"
   },
   "engines": {
     "node": ">=18"
