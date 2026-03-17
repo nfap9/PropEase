@@ -12,6 +12,9 @@ RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.
 
 # 复制 workspace 配置
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY tsconfig.base.json tsconfig.base.json
+COPY tsconfig.nextjs.json tsconfig.nextjs.json
+COPY tsconfig.react-package.json tsconfig.react-package.json
 COPY api/package.json api/package.json
 COPY admin-web/package.json admin-web/package.json
 COPY packages/ packages/
@@ -36,6 +39,9 @@ COPY --from=deps /app/packages ./packages
 
 # 复制源代码
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY tsconfig.base.json tsconfig.base.json
+COPY tsconfig.nextjs.json tsconfig.nextjs.json
+COPY tsconfig.react-package.json tsconfig.react-package.json
 COPY api/package.json api/package.json
 COPY admin-web/package.json admin-web/package.json
 COPY packages/ packages/

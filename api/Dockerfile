@@ -8,6 +8,7 @@ RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.
 
 # 复制 workspace 根与各包（含 api-contract），使用单一 lockfile 安装
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY tsconfig.base.json tsconfig.base.json
 COPY api/package.json api/package.json
 COPY packages/ packages/
 RUN pnpm install --frozen-lockfile
