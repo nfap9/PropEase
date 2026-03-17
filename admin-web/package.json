@@ -16,6 +16,7 @@
   "dependencies": {
     "@apartment-ultra/api-contract": "workspace:*",
     "@apartment-ultra/shared-ui": "workspace:*",
+    "@apartment-ultra/web-api-client": "workspace:*",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-avatar": "^1.1.11",

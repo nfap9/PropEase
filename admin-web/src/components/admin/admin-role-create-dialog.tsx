@@ -4,8 +4,8 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   Form,
   FormControl,
@@ -21,7 +21,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from '@apartment-ultra/shared-ui/components/ui';
 import { AdminPermissionCheckboxGroup } from './admin-permission-checkbox-group';
 
 const schema = z.object({

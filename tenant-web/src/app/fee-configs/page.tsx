@@ -2,17 +2,17 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { Plus, Pencil, Trash2, DollarSign, ChevronDown, ChevronRight } from 'lucide-react';
 import { feeTypesApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';

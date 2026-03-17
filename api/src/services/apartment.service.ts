@@ -84,16 +84,11 @@ export function createApartmentService(
     },
 
     getById: async (orgId: string, id: string) => {
-      const apartment = await getRepo().findByIdAndOrg(id, orgId);
+      const apartment = await getRepo().findByIdAndOrgWithRooms(id, orgId);
       if (!apartment) {
         throw createAppError(404, NotFoundMessages.APARTMENT);
       }
-      // 需要包含 rooms
-      const withRooms = await prisma.apartment.findUnique({
-        where: { id },
-        include: { rooms: true },
-      });
-      return withRooms!;
+      return apartment;
     },
 
     create: async (orgId: string, data: CreateApartmentInput) => {

@@ -78,6 +78,20 @@ describe('ApartmentRepository', () => {
     });
   });
 
+  describe('findByIdAndOrgWithRooms', () => {
+    it('should return apartment with rooms by id and org', async () => {
+      mockDb.apartment.findFirst.mockResolvedValue({ ...mockApartment, rooms: mockRooms });
+
+      const result = await repository.findByIdAndOrgWithRooms(apartmentId, orgId);
+
+      expect(result).toEqual({ ...mockApartment, rooms: mockRooms });
+      expect(mockDb.apartment.findFirst).toHaveBeenCalledWith({
+        where: { id: apartmentId, organization_id: orgId },
+        include: { rooms: true },
+      });
+    });
+  });
+
   describe('findByOrgId', () => {
     it('should return apartments by org id', async () => {
       mockDb.apartment.findMany.mockResolvedValue([mockApartment]);

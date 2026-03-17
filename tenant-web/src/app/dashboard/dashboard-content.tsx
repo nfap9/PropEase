@@ -3,9 +3,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { reportsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import Link from 'next/link';
 import {
   Building2,

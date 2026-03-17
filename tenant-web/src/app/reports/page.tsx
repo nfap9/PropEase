@@ -4,17 +4,17 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { BILL_STATUS_CONFIG, ROOM_STATUS_CONFIG } from '@/lib/status-config';
 import { reportsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';

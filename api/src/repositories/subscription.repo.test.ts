@@ -2,9 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   createSubscriptionRepository,
   type SubscriptionRepository,
+  type ServiceProductWithPricing,
   isSubscriptionActive,
 } from './subscription.repo.js';
-import type { ServiceProduct, OrganizationSubscription, SubscriptionOrder } from '@prisma/client';
+import type { ServiceProduct, OrganizationSubscription, SubscriptionOrder, ServicePricing } from '@prisma/client';
 
 describe('SubscriptionRepository', () => {
   const mockServiceProduct = {
@@ -44,6 +45,22 @@ describe('SubscriptionRepository', () => {
     sort_order: 1,
     created_at: new Date(),
     updated_at: new Date(),
+  };
+
+  const samplePricing: ServicePricing = {
+    id: 'pricing-monthly',
+    service_id: sampleService.id,
+    months: 1,
+    price: 99,
+    is_active: true,
+    sort_order: 0,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  const sampleServiceWithPricing: ServiceProductWithPricing = {
+    ...sampleService,
+    pricing: [samplePricing],
   };
 
   const sampleSubscription: OrganizationSubscription = {
@@ -115,6 +132,26 @@ describe('SubscriptionRepository', () => {
     });
   });
 
+  describe('findActiveServicesWithPricing', () => {
+    it('should return active services with active pricing', async () => {
+      mockServiceProduct.findMany.mockResolvedValue([sampleServiceWithPricing]);
+
+      const result = await repo.findActiveServicesWithPricing();
+
+      expect(mockServiceProduct.findMany).toHaveBeenCalledWith({
+        where: { is_active: true, code: { not: 'free' } },
+        orderBy: { sort_order: 'asc' },
+        include: {
+          pricing: {
+            where: { is_active: true },
+            orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
+          },
+        },
+      });
+      expect(result).toEqual([sampleServiceWithPricing]);
+    });
+  });
+
   describe('findServiceById', () => {
     it('should return service by id', async () => {
       mockServiceProduct.findFirst.mockResolvedValue(sampleService);
@@ -133,6 +170,38 @@ describe('SubscriptionRepository', () => {
       const result = await repo.findServiceById('non-existent');
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('findServiceByIdWithPricing', () => {
+    it('should return service with active pricing by id', async () => {
+      mockServiceProduct.findFirst.mockResolvedValue(sampleServiceWithPricing);
+
+      const result = await repo.findServiceByIdWithPricing(sampleService.id);
+
+      expect(mockServiceProduct.findFirst).toHaveBeenCalledWith({
+        where: { id: sampleService.id },
+        include: {
+          pricing: {
+            where: { is_active: true },
+            orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
+          },
+        },
+      });
+      expect(result).toEqual(sampleServiceWithPricing);
+    });
+  });
+
+  describe('findActiveServiceByCode', () => {
+    it('should return active service by code', async () => {
+      mockServiceProduct.findFirst.mockResolvedValue(sampleService);
+
+      const result = await repo.findActiveServiceByCode('pro');
+
+      expect(mockServiceProduct.findFirst).toHaveBeenCalledWith({
+        where: { code: 'pro', is_active: true },
+      });
+      expect(result).toEqual(sampleService);
     });
   });
 
@@ -212,6 +281,21 @@ describe('SubscriptionRepository', () => {
       const result = await repo.findOrderById(sampleOrder.id, 'different-org');
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('findOrderByIdOnly', () => {
+    it('should return order with service by id', async () => {
+      const orderWithService = { ...sampleOrder, service: sampleService };
+      mockSubscriptionOrder.findUnique = vi.fn().mockResolvedValue(orderWithService);
+
+      const result = await repo.findOrderByIdOnly(sampleOrder.id);
+
+      expect(mockSubscriptionOrder.findUnique).toHaveBeenCalledWith({
+        where: { id: sampleOrder.id },
+        include: { service: true },
+      });
+      expect(result).toEqual(orderWithService);
     });
   });
 

@@ -7,9 +7,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/lib/auth/context';
-import { Button } from '@/components/ui/button';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { useBrandConfig } from '@/lib/brand-config-context';
-import { Input } from '@/components/ui/input';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Card,
   CardContent,
@@ -17,7 +17,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   Form,
   FormControl,
@@ -25,7 +25,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from '@apartment-ultra/shared-ui/components/ui';
 
 // 手机号验证正则
 const phoneRegex = /^1[3-9]\d{9}$/;

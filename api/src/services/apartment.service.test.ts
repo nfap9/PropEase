@@ -17,21 +17,11 @@ vi.mock('ulid', () => ({
   ulid: vi.fn(() => '01HQTESTAPT000001'),
 }));
 
-// Mock prisma
-vi.mock('../lib/prisma.js', () => ({
-  prisma: {
-    apartment: {
-      findUnique: vi.fn(),
-    },
-  },
-}));
-
-import { prisma } from '../lib/prisma.js';
-
 describe('ApartmentService', () => {
   const mockRepo: ApartmentRepository = {
     findByOrgIdWithRooms: vi.fn(),
     findByIdAndOrg: vi.fn(),
+    findByIdAndOrgWithRooms: vi.fn(),
     findById: vi.fn(),
     findByOrgId: vi.fn(),
     create: vi.fn(),
@@ -106,18 +96,17 @@ describe('ApartmentService', () => {
   describe('getById', () => {
     it('should return apartment with rooms', async () => {
       const aptWithRooms = { ...sampleApartment, rooms: sampleRooms };
-      vi.mocked(mockRepo.findByIdAndOrg).mockResolvedValue(sampleApartment);
-      vi.mocked(prisma.apartment.findUnique).mockResolvedValue(aptWithRooms);
+      vi.mocked(mockRepo.findByIdAndOrgWithRooms).mockResolvedValue(aptWithRooms);
       service = createApartmentService(() => mockRepo);
 
       const result = await service.getById(orgId, sampleApartment.id);
 
-      expect(mockRepo.findByIdAndOrg).toHaveBeenCalledWith(sampleApartment.id, orgId);
+      expect(mockRepo.findByIdAndOrgWithRooms).toHaveBeenCalledWith(sampleApartment.id, orgId);
       expect(result).toEqual(aptWithRooms);
     });
 
     it('should throw 404 when apartment not found', async () => {
-      vi.mocked(mockRepo.findByIdAndOrg).mockResolvedValue(null);
+      vi.mocked(mockRepo.findByIdAndOrgWithRooms).mockResolvedValue(null);
       service = createApartmentService(() => mockRepo);
 
       await expect(service.getById(orgId, 'non-existent')).rejects.toMatchObject({

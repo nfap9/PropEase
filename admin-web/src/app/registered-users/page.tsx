@@ -8,10 +8,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions } from '@/components/common/table-actions';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { ORG_STATUS_CONFIG } from '@/lib/status-config';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +21,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -29,7 +29,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   Form,
   FormControl,
@@ -37,15 +37,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   adminApiEndpoints,
   AdminPlan,
@@ -56,7 +56,7 @@ import { getErrorMessage } from '@/lib/utils/error';
 import { formatDateTime } from '@/lib/date-utils';
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye, Gift, Power, PowerOff, Trash2 } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 
 type FilterActive = 'all' | 'active' | 'inactive';
 

@@ -11,9 +11,9 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,7 +31,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   Card,
   CardContent,
@@ -39,7 +39,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@apartment-ultra/shared-ui/components/ui';
 import { apartmentsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { ApartmentWithStats } from '@/types';
@@ -55,13 +55,13 @@ import {
   MapPin,
   Search,
 } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@apartment-ultra/shared-ui/components/ui';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 

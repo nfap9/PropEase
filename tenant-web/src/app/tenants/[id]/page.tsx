@@ -1,27 +1,46 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { LEASE_STATUS_CONFIG } from '@/lib/status-config';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { tenantsApi, leasesApi } from '@/lib/api';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { tenantReachabilityApi, tenantsApi, leasesApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { Lease } from '@/types';
-import { ArrowLeft, User, Phone, CreditCard, AlertCircle, FileText, Building2 } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import {
+  ArrowLeft,
+  User,
+  Phone,
+  CreditCard,
+  AlertCircle,
+  FileText,
+  Building2,
+  MessageSquareMore,
+} from 'lucide-react';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import Link from 'next/link';
 import { DataTable } from '@/components/common/data-table';
-import { formatDate } from '@/lib/date-utils';
+import { formatDate, formatDateTime } from '@/lib/date-utils';
 import { ColumnDef } from '@tanstack/react-table';
+import {
+  getDeliveryStatusLabel,
+  getDeliveryStatusVariant,
+  getTenantReachabilityEventLabel,
+  getTenantSmsReachabilityLabel,
+  getTenantSmsReachabilityStatus,
+  getTenantSmsReachabilityVariant,
+} from '@/lib/tenant-reachability';
 
 export default function TenantDetailPage({ params }: { params: { id: string } }) {
   const tenantId = params.id;
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
 
@@ -37,6 +56,33 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
     queryKey: ['leases', orgId],
     queryFn: () => leasesApi.list(orgId!),
     enabled: !!orgId,
+  });
+
+  const { data: deliveries = [], isLoading: deliveriesLoading } = useQuery({
+    queryKey: ['tenant-reachability', 'deliveries', orgId, tenantId],
+    queryFn: () =>
+      tenantReachabilityApi.listDeliveries(orgId!, {
+        tenant_id: tenantId,
+        limit: 5,
+      }),
+    enabled: !!orgId,
+  });
+
+  const toggleSmsMutation = useMutation({
+    mutationFn: (nextOptOut: boolean) =>
+      tenantsApi.update(orgId!, tenantId, {
+        sms_opt_out: nextOptOut,
+        sms_opt_out_reason: nextOptOut ? '管理员手动暂停短信触达' : null,
+      }),
+    onSuccess: (_tenant, nextOptOut) => {
+      queryClient.invalidateQueries({ queryKey: ['tenant', orgId, tenantId] });
+      queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
+      toast.success(nextOptOut ? '已暂停短信触达' : '已恢复短信触达');
+    },
+    onError: (error) => {
+      const message = error instanceof Error ? error.message : '操作失败，请稍后重试';
+      toast.error(message);
+    },
   });
 
   // 过滤该租客的租约
@@ -131,6 +177,8 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
     );
   }
 
+  const smsStatus = getTenantSmsReachabilityStatus(tenant);
+
   return (
     <PermissionPageGuard>
       <MainLayout>
@@ -197,71 +245,156 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
               </CardContent>
             </Card>
 
-            {/* 当前租约 */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  当前租约
+                  <MessageSquareMore className="h-5 w-5" />
+                  触达状态
                 </CardTitle>
                 <CardDescription>
-                  {activeLease ? '租客当前生效的租约' : '暂无生效租约'}
+                  当前短信正式触达状态与最近的退订边界
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {activeLease ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-muted-foreground">房间</Label>
-                        <p className="font-medium">
-                          {activeLease.room?.apartment?.name && (
-                            <span className="text-muted-foreground">
-                              {activeLease.room.apartment.name} -
-                            </span>
-                          )}{' '}
-                          {activeLease.room?.room_number || '-'}
-                        </p>
-                      </div>
-                      <div>
-                        <Label className="text-muted-foreground">月租</Label>
-                        <p className="font-medium">¥{activeLease.monthly_rent.toLocaleString()}</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-muted-foreground">开始日期</Label>
-                        <p className="font-medium">{formatDate(activeLease.start_date)}</p>
-                      </div>
-                      <div>
-                        <Label className="text-muted-foreground">结束日期</Label>
-                        <p className="font-medium">
-                          {activeLease.end_date ? formatDate(activeLease.end_date) : '长期'}
-                        </p>
-                      </div>
-                    </div>
-                    {activeLease.deposit && activeLease.deposit > 0 && (
-                      <div>
-                        <Label className="text-muted-foreground">押金</Label>
-                        <p className="font-medium">¥{activeLease.deposit.toLocaleString()}</p>
-                      </div>
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant={getTenantSmsReachabilityVariant(smsStatus)}>
+                      {getTenantSmsReachabilityLabel(smsStatus)}
+                    </Badge>
+                    {tenant.sms_opt_out_at && (
+                      <span className="text-sm text-muted-foreground">
+                        暂停于 {formatDateTime(tenant.sms_opt_out_at)}
+                      </span>
                     )}
-                    <Button variant="outline" className="w-full" asChild>
-                      <Link href={`/leases?highlight=${activeLease.id}`}>查看租约详情</Link>
-                    </Button>
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <AlertCircle className="mb-4 h-12 w-12 text-muted-foreground" />
-                    <p className="text-muted-foreground">该租客暂无生效租约</p>
-                    <Button className="mt-4" asChild>
-                      <Link href={`/leases?tenant=${tenantId}`}>创建租约</Link>
-                    </Button>
+                  <div>
+                    <Label className="text-muted-foreground">短信接收号码</Label>
+                    <p className="font-medium">{tenant.phone || '暂未填写手机号'}</p>
                   </div>
-                )}
+                  {tenant.sms_opt_out_reason && (
+                    <div>
+                      <Label className="text-muted-foreground">暂停原因</Label>
+                      <p className="font-medium">{tenant.sms_opt_out_reason}</p>
+                    </div>
+                  )}
+                  <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
+                    账单生成、到期前提醒和逾期催缴会优先走短信。没有手机号或已退订时，系统会保留发送记录并标记为“已跳过”。
+                  </div>
+                  <Button
+                    variant={tenant.sms_opt_out ? 'outline' : 'destructive'}
+                    onClick={() => toggleSmsMutation.mutate(!tenant.sms_opt_out)}
+                    disabled={toggleSmsMutation.isPending}
+                  >
+                    {tenant.sms_opt_out ? '恢复短信触达' : '暂停短信触达'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                当前租约
+              </CardTitle>
+              <CardDescription>
+                {activeLease ? '租客当前生效的租约' : '暂无生效租约'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {activeLease ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-muted-foreground">房间</Label>
+                      <p className="font-medium">
+                        {activeLease.room?.apartment?.name && (
+                          <span className="text-muted-foreground">
+                            {activeLease.room.apartment.name} -
+                          </span>
+                        )}{' '}
+                        {activeLease.room?.room_number || '-'}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">月租</Label>
+                      <p className="font-medium">¥{activeLease.monthly_rent.toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-muted-foreground">开始日期</Label>
+                      <p className="font-medium">{formatDate(activeLease.start_date)}</p>
+                    </div>
+                    <div>
+                      <Label className="text-muted-foreground">结束日期</Label>
+                      <p className="font-medium">
+                        {activeLease.end_date ? formatDate(activeLease.end_date) : '长期'}
+                      </p>
+                    </div>
+                  </div>
+                  {activeLease.deposit && activeLease.deposit > 0 && (
+                    <div>
+                      <Label className="text-muted-foreground">押金</Label>
+                      <p className="font-medium">¥{activeLease.deposit.toLocaleString()}</p>
+                    </div>
+                  )}
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link href={`/leases?highlight=${activeLease.id}`}>查看租约详情</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <AlertCircle className="mb-4 h-12 w-12 text-muted-foreground" />
+                  <p className="text-muted-foreground">该租客暂无生效租约</p>
+                  <Button className="mt-4" asChild>
+                    <Link href={`/leases?tenant=${tenantId}`}>创建租约</Link>
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>最近触达记录</CardTitle>
+              <CardDescription>快速确认最近一次发送、失败或跳过原因</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {deliveriesLoading ? (
+                <Skeleton className="h-40" />
+              ) : deliveries.length > 0 ? (
+                <div className="space-y-3">
+                  {deliveries.map((delivery) => (
+                    <div
+                      key={delivery.id}
+                      className="flex flex-col gap-2 rounded-lg border p-4 md:flex-row md:items-start md:justify-between"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant={getDeliveryStatusVariant(delivery.status)}>
+                            {getDeliveryStatusLabel(delivery.status)}
+                          </Badge>
+                          <span className="font-medium">
+                            {getTenantReachabilityEventLabel(delivery.event_type)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {delivery.status_reason || delivery.content}
+                        </p>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {formatDateTime(delivery.created_at)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center text-muted-foreground">暂无触达记录</div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* 租约历史 */}
           <Card>

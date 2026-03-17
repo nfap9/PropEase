@@ -1,5 +1,6 @@
 import { ulid } from 'ulid';
 import { prisma } from '../lib/prisma.js';
+import { defaultTenantReachabilityService } from '../services/tenantReachability.service.js';
 
 /** 检查即将到期的租约并创建通知（每日 08:00） */
 export async function checkExpiringLeases(): Promise<Record<string, number>> {
@@ -94,6 +95,13 @@ export async function checkOverdueBills(): Promise<Record<string, number>> {
     });
     const title = `账单逾期提醒 - ${tenantName}`;
     const content = `租客 ${tenantName}（房间 ${bill.lease.room.room_number}）的账单已逾期 ${daysOverdue} 天。金额: ¥${Number(bill.total_amount).toFixed(2)}，截止日期: ${dueDate.toISOString().slice(0, 10)}。`;
+
+    try {
+      await defaultTenantReachabilityService.sendBillOverdue(bill.id);
+    } catch (error) {
+      console.error('[notificationChecks] failed to send tenant bill_overdue sms:', error);
+    }
+
     for (const m of members) {
       await prisma.notification.create({
         data: {
@@ -157,6 +165,12 @@ export async function checkUpcomingDueBills(): Promise<Record<string, number>> {
       });
       const title = `交租日提醒 - ${tenantName}`;
       const content = `租客 ${tenantName}（房间 ${bill.lease.room.room_number}）账单将在 ${days} 天后到期，金额: ¥${Number(bill.total_amount).toFixed(2)}，截止日期: ${targetStr}。`;
+
+      try {
+        await defaultTenantReachabilityService.sendRentDueReminder(bill.id);
+      } catch (error) {
+        console.error('[notificationChecks] failed to send tenant rent_due_reminder sms:', error);
+      }
 
       for (const m of members) {
         await prisma.notification.create({

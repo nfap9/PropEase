@@ -8,7 +8,8 @@
 当前执行窗口按 `2026-03-17` 到 `2026-03-29` 跟踪，聚焦 3 条并行流：
 
 - 治理收敛流：`#39`、`#40`、`#38` 已完成
-- 业务价值流：`#24`、`#26`、`#30`、`#27` 已完成
+- 共享层收敛流：`#35`、`#36` 已完成
+- 业务价值流：`#24`、`#26`、`#30`、`#27`、`#28` 已完成
 - 移动端能力流：`#29` 已完成
 
 ## Completed This Window
@@ -73,6 +74,30 @@
 
 - 这次只收敛工程配置和版本治理，不在本窗口内继续推进共享 API client 或 shared-ui 迁移
 
+### `#35 [packages] 提取共享 API client 包`
+
+- 已新增共享包 `packages/web-api-client/`
+- 共享包已承接 `ApiError`、统一响应解包、401 refresh 处理与通用错误/表单工具
+- `tenant-web` 与 `admin-web` 的通用 `lib/api/client.ts` 已改为复用共享实现
+- 双端重复的错误提示与表单错误转换工具已改为复用共享包导出
+
+当前边界：
+
+- `admin-web` 的 `admin-client.ts` 仍保持独立，继续使用后台专用 token 与接口语义
+- 这轮不继续扩张为所有 API 模块一次性全面迁移
+
+### `#36 [packages] 让 shared-ui 成为可独立复用的 UI 包`
+
+- `shared-ui` 已清掉包内对应用级 `@/` alias 的依赖
+- 已补齐 `components` 包入口与 `switch` 导出，包可独立 type-check
+- `tenant-web` / `admin-web` 的首批基础 UI 引用已切到 `@apartment-ultra/shared-ui/components/ui`
+- `shared-ui` 内的通用工具已改为直接复用共享 API client
+
+当前边界：
+
+- 应用侧原有 `src/components/ui/*` 副本暂时保留，避免在本窗口里混入大规模删除与视觉回归
+- 这轮优先收敛消费入口与包独立性，不扩展成完整设计系统重组
+
 ### `#30 [tenant-web] 完善管理员消息提醒能力`
 
 - 后端通知列表接口已支持按 `status / category` 过滤
@@ -84,6 +109,19 @@
 
 - 当前正式交付仍是站内消息
 - 短信 / 企微仅保留为预留通道字段，不在本窗口内接入真实发送
+
+### `#28 [tenant-web] 建立租客端消息触达能力`
+
+- 默认正式渠道已落为短信
+- 已覆盖账单生成、到期前提醒、逾期催缴三类租客通知场景
+- 后端已补齐模板配置、发送记录、失败/退订边界与短信 Webhook 适配层
+- `tenant-web` 已补齐“消息触达”设置页、模板管理、发送记录查询和租客详情触达状态
+
+当前边界：
+
+- 当前只接 `sms`，后续渠道继续沿同一套模板/记录接口扩展
+- 实际真实发送取决于部署环境是否配置 `SMS_WEBHOOK_URL`
+- 入站自动退订不在本窗口内扩展，当前以后台退订标记为准
 
 ### `#27 [tenant-web] 增加水电读数异常校验`
 
@@ -101,23 +139,54 @@
 
 本轮已通过：
 
+- `pnpm install`
+- `pnpm --filter @apartment-ultra/web-api-client test:run`
+- `pnpm --filter @apartment-ultra/shared-ui type-check`
+- `pnpm --filter @apartment-ultra/shared-ui test:run`
+- `pnpm --filter apartment-ultra-tenant type-check`
+- `pnpm --filter apartment-ultra-admin type-check`
 - `pnpm lint`
 - `XDG_CACHE_HOME=/tmp/prisma-cache pnpm type-check`
-- `XDG_CACHE_HOME=/tmp/prisma-cache pnpm test`
+- `pnpm --filter apartment-ultra-api run test`
+- `pnpm --filter apartment-ultra-tenant run test:run`
 - `pnpm type-check:mobile`
 - `git diff --check`
 
 ## Next Up
 
-按当前 Project 排期，下一批待进入实施的是：
+按当前 issue 状态与依赖关系，建议的主执行顺序是：
 
-1. `#35 [packages] 提取共享 API client 包`
-2. `#36 [packages] 让 shared-ui 成为可独立复用的 UI 包`
-3. `#28 [tenant-web] 建立租客端消息触达能力`
-4. `#37 [api] 统一服务层与仓储层职责边界`
+1. `#37 [api] 统一服务层与仓储层职责边界`
+2. 视业务优先级继续收口后续渠道扩展与治理项
+
+## Parallel Tracks
+
+当前建议拆成 3 条追踪流：
+
+### A. 共享层收敛流
+
+- 覆盖：`#35 -> #36`
+- 状态：已完成
+- 结论：已完成共享 API client 与 shared-ui 第一轮收敛，可关闭本追踪流
+- 追踪文档：`docs/tracking/shared-layer-stream.md`
+
+### B. 后端分层试点流
+
+- 覆盖：`#37`
+- 结论：可以与 A 并行
+- 原因：可将试点限定在 `apartment` / `subscription`，避免与通知、账单、租客触达链路冲突
+- 追踪文档：`docs/tracking/api-boundary-stream.md`
+
+### C. 租客触达能力流
+
+- 覆盖：`#28`
+- 状态：第一期已完成
+- 结论：短信模板、发送记录和退订链路已落地；后续渠道可沿现有接口继续扩展
+- 追踪文档：`docs/tracking/tenant-reachability-stream.md`
 
 ## Notes
 
 - GitHub Project 状态应与本文件保持一致。
 - 已完成但尚未验收发布的工作，允许保持代码完成、等待业务确认。
 - 若实际排期调整，以 GitHub Project 为准，并同步修改本文件。
+- 并行任务的细粒度状态，统一维护在 `docs/tracking/`。

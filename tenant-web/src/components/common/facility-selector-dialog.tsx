@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
+import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@apartment-ultra/shared-ui/components/ui';
 import { ChevronDown, ChevronRight, Minus, Plus } from 'lucide-react';
 import type { RoomFacilities, FacilityItem, FacilityPreset } from '@/types';
 import { FURNITURE_PRESETS, APPLIANCE_PRESETS } from '@/lib/constants/facilities';

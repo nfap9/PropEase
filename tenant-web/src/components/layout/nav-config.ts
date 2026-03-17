@@ -12,6 +12,7 @@ import {
   CreditCard,
   History,
   DollarSign,
+  MessageSquareMore,
 } from 'lucide-react';
 import { PERMISSIONS } from '@/hooks/use-permissions';
 
@@ -62,6 +63,7 @@ export const NAV_ITEMS: NavItem[] = [
 export const SETTINGS_ITEMS: NavItem[] = [
   { href: '/settings/team', label: '团队管理', icon: Users, permission: PERMISSIONS.MEMBER_VIEW, id: 'team' },
   { href: '/settings/subscription', label: '套餐购买', icon: CreditCard, permission: null, id: 'subscription' },
+  { href: '/settings/notifications', label: '消息触达', icon: MessageSquareMore, permission: null, id: 'notifications' },
   {
     href: '/settings/permissions',
     label: '权限管理',

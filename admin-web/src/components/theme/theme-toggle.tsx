@@ -2,13 +2,13 @@
 
 import { useTheme } from 'next-themes';
 import { Moon, Sun, Monitor } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@apartment-ultra/shared-ui/components/ui';
 import { useEffect, useState } from 'react';
 
 export function ThemeToggle() {

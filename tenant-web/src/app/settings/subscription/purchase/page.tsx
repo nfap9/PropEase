@@ -5,10 +5,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Check,
   Crown,
@@ -27,7 +27,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@apartment-ultra/shared-ui/components/ui';
 import { subscriptionsApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';

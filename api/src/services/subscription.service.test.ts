@@ -3,47 +3,17 @@ import {
   createSubscriptionService,
   type SubscriptionService,
 } from './subscription.service.js';
-import type { SubscriptionRepository, SubscriptionWithService } from '../repositories/subscription.repo.js';
-import type { ServiceProduct, OrganizationSubscription, SubscriptionOrder } from '@prisma/client';
-import { prisma } from '../lib/prisma.js';
+import type {
+  OrderWithService,
+  ServiceProductWithPricing,
+  SubscriptionRepository,
+  SubscriptionWithService,
+} from '../repositories/subscription.repo.js';
+import type { ServiceProduct, OrganizationSubscription, SubscriptionOrder, ServicePricing } from '@prisma/client';
 
 // Mock ulid - use vi.fn with inline implementation to avoid reset issues
 vi.mock('ulid', () => ({
   ulid: vi.fn(() => '01HQTESTSUB000001'),
-}));
-
-// Mock prisma
-vi.mock('../lib/prisma.js', () => ({
-  prisma: {
-    serviceProduct: {
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-    },
-    organizationSubscription: {
-      findFirst: vi.fn(),
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-    },
-    subscriptionOrder: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-    },
-    servicePricing: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-    },
-  },
 }));
 
 const sampleService: ServiceProduct = {
@@ -75,6 +45,30 @@ const higherService: ServiceProduct = {
   code: 'enterprise',
   name: '企业版',
   sort_order: 2,
+};
+
+const monthlyPricing: ServicePricing = {
+  id: 'pricing-monthly',
+  service_id: sampleService.id,
+  months: 1,
+  price: 99,
+  is_active: true,
+  sort_order: 0,
+  created_at: new Date(),
+  updated_at: new Date(),
+};
+
+const quarterlyPricing: ServicePricing = {
+  ...monthlyPricing,
+  id: 'pricing-quarterly',
+  months: 3,
+  price: 279,
+  sort_order: 1,
+};
+
+const sampleServiceWithPricing: ServiceProductWithPricing = {
+  ...sampleService,
+  pricing: [monthlyPricing, quarterlyPricing],
 };
 
 const sampleSubscription: SubscriptionWithService = {
@@ -120,10 +114,17 @@ const sampleOrder: SubscriptionOrder = {
   updated_at: new Date(),
 };
 
+const sampleOrderWithService: OrderWithService = {
+  ...sampleOrder,
+  service: sampleService,
+};
+
 describe('SubscriptionService', () => {
   const mockRepo: SubscriptionRepository = {
     findActiveServices: vi.fn(),
+    findActiveServicesWithPricing: vi.fn(),
     findServiceById: vi.fn(),
+    findServiceByIdWithPricing: vi.fn(),
     findSubscriptionByOrgId: vi.fn(),
     createSubscription: vi.fn(),
     updateSubscription: vi.fn(),
@@ -139,6 +140,36 @@ describe('SubscriptionService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     service = createSubscriptionService(() => mockRepo);
+  });
+
+  describe('listServices', () => {
+    it('should return active services with pricing from repository', async () => {
+      vi.mocked(mockRepo.findActiveServicesWithPricing).mockResolvedValue([sampleServiceWithPricing]);
+
+      const result = await service.listServices();
+
+      expect(mockRepo.findActiveServicesWithPricing).toHaveBeenCalled();
+      expect(result).toEqual([sampleServiceWithPricing]);
+    });
+  });
+
+  describe('getServiceById', () => {
+    it('should return service with pricing from repository', async () => {
+      vi.mocked(mockRepo.findServiceByIdWithPricing).mockResolvedValue(sampleServiceWithPricing);
+
+      const result = await service.getServiceById(sampleService.id);
+
+      expect(mockRepo.findServiceByIdWithPricing).toHaveBeenCalledWith(sampleService.id);
+      expect(result).toEqual(sampleServiceWithPricing);
+    });
+
+    it('should throw 404 when service not found', async () => {
+      vi.mocked(mockRepo.findServiceByIdWithPricing).mockResolvedValue(null);
+
+      await expect(service.getServiceById('missing')).rejects.toMatchObject({
+        statusCode: 404,
+      });
+    });
   });
 
   describe('getSubscription', () => {
@@ -372,21 +403,10 @@ describe('SubscriptionService', () => {
 
   describe('createOrder', () => {
     it('should fallback to monthly pricing when exact billing months pricing is missing', async () => {
-      vi.mocked(prisma.serviceProduct.findFirst).mockResolvedValue({
+      vi.mocked(mockRepo.findServiceByIdWithPricing).mockResolvedValue({
         ...sampleService,
-        pricing: [
-          {
-            id: 'pricing-monthly',
-            service_id: sampleService.id,
-            months: 1,
-            price: 99,
-            is_active: true,
-            sort_order: 0,
-            created_at: new Date(),
-            updated_at: new Date(),
-          },
-        ],
-      } as Awaited<ReturnType<typeof prisma.serviceProduct.findFirst>>);
+        pricing: [monthlyPricing],
+      });
       vi.mocked(mockRepo.createOrder).mockResolvedValue(sampleOrder);
 
       await service.createOrder(orgId, {
@@ -405,7 +425,7 @@ describe('SubscriptionService', () => {
     });
 
     it('should throw when neither exact pricing nor monthly fallback exists', async () => {
-      vi.mocked(prisma.serviceProduct.findFirst).mockResolvedValue({
+      vi.mocked(mockRepo.findServiceByIdWithPricing).mockResolvedValue({
         ...sampleService,
         pricing: [
           {
@@ -419,7 +439,7 @@ describe('SubscriptionService', () => {
             updated_at: new Date(),
           },
         ],
-      } as Awaited<ReturnType<typeof prisma.serviceProduct.findFirst>>);
+      });
 
       await expect(
         service.createOrder(orgId, {
@@ -429,6 +449,25 @@ describe('SubscriptionService', () => {
       ).rejects.toMatchObject({
         statusCode: 400,
         message: '未找到合适的定价',
+      });
+    });
+  });
+
+  describe('getOrder', () => {
+    it('should return order from repository', async () => {
+      vi.mocked(mockRepo.findOrderById).mockResolvedValue(sampleOrderWithService);
+
+      const result = await service.getOrder(orgId, sampleOrder.id);
+
+      expect(mockRepo.findOrderById).toHaveBeenCalledWith(sampleOrder.id, orgId);
+      expect(result).toEqual(sampleOrderWithService);
+    });
+
+    it('should throw 404 when order not found', async () => {
+      vi.mocked(mockRepo.findOrderById).mockResolvedValue(null);
+
+      await expect(service.getOrder(orgId, 'missing')).rejects.toMatchObject({
+        statusCode: 404,
       });
     });
   });

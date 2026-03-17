@@ -9,7 +9,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminRole } from '@/lib/api/admin-client';
 
 export interface AdminRoleDeleteDialogProps {

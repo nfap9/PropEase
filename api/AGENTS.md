@@ -66,3 +66,11 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端。
 ## 数据库
 
 - 使用 PostgreSQL；表结构以 `prisma/schema.prisma` 为准，在 api 目录执行 `pnpm exec prisma db push` 同步。
+
+## 分层约定
+
+- `services/` 负责业务规则、权限/状态校验、错误语义与流程编排；不要在 service 中直接编写 Prisma 查询。
+- `repositories/` 负责封装 Prisma 读写；service 默认通过 `createXxxRepository(prisma)` 或 `defaultXxxRepo` 注入依赖。
+- 单元测试优先 mock repository，而不是 mock Prisma Client；repository 测试再覆盖具体查询条件。
+- 需要事务时，由 service 打开 `prisma.$transaction(async (tx) => ...)`，并在事务内用 `createXxxRepository(tx)` 组装仓储，避免在 service 中混用事务对象和裸 Prisma 查询。
+- 本约定已在 `apartment`、`subscription` 试点模块落地，后续模块按同样模式迁移。

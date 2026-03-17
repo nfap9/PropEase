@@ -9,7 +9,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from '@apartment-ultra/shared-ui/components/ui';
 import { Room } from '@/types';
 
 interface TerminateDialogProps {

@@ -11,12 +11,12 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
 import { DataTable } from '@/components/common/data-table';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,27 +34,27 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@apartment-ultra/shared-ui/components/ui';
 import { ColumnDef } from '@tanstack/react-table';
 import { organizationsApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
 import { formatDateTime } from '@/lib/date-utils';
 import { OrganizationMember, MemberRole } from '@/types';
 import { Plus, MoreHorizontal, Pencil, Trash2, UserPlus, Building2, Users } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/lib/auth/context';
 
 // 注意: 实际使用时从 testids 导入 TEAM_SETTINGS 常量

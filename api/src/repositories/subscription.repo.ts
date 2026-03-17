@@ -23,6 +23,10 @@ export type OrderWithService = SubscriptionOrder & {
   service: ServiceProduct | null;
 };
 
+export type ServiceProductWithPricing = Prisma.ServiceProductGetPayload<{
+  include: { pricing: true };
+}>;
+
 type SubscriptionWithServiceRecord = Prisma.OrganizationSubscriptionGetPayload<{
   include: { service: true };
 }>;
@@ -31,13 +35,20 @@ type OrderWithServiceRecord = Prisma.SubscriptionOrderGetPayload<{
   include: { service: true };
 }>;
 
+type ServiceProductWithPricingRecord = Prisma.ServiceProductGetPayload<{
+  include: { pricing: true };
+}>;
+
 /**
  * Subscription Repository 接口
  */
 export interface SubscriptionRepository {
   // 服务产品
   findActiveServices(): Promise<ServiceProduct[]>;
+  findActiveServicesWithPricing(): Promise<ServiceProductWithPricing[]>;
   findServiceById(id: string): Promise<ServiceProduct | null>;
+  findServiceByIdWithPricing(id: string): Promise<ServiceProductWithPricing | null>;
+  findActiveServiceByCode(code: string): Promise<ServiceProduct | null>;
 
   // 组织订阅
   findSubscriptionByOrgId(orgId: string): Promise<SubscriptionWithService | null>;
@@ -51,6 +62,7 @@ export interface SubscriptionRepository {
 
   // 订单
   findOrderById(orderId: string, orgId: string): Promise<OrderWithService | null>;
+  findOrderByIdOnly(orderId: string): Promise<OrderWithService | null>;
   createOrder(data: Prisma.SubscriptionOrderCreateInput): Promise<SubscriptionOrder>;
   updateOrder(
     orderId: string,
@@ -70,8 +82,41 @@ export function createSubscriptionRepository(db: DbClient): SubscriptionReposito
       });
     },
 
+    findActiveServicesWithPricing: async () => {
+      const services: ServiceProductWithPricingRecord[] = await db.serviceProduct.findMany({
+        where: { is_active: true, code: { not: 'free' } },
+        orderBy: { sort_order: 'asc' },
+        include: {
+          pricing: {
+            where: { is_active: true },
+            orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
+          },
+        },
+      });
+      return services;
+    },
+
     findServiceById: async (id: string) => {
       return db.serviceProduct.findFirst({ where: { id } });
+    },
+
+    findServiceByIdWithPricing: async (id: string) => {
+      const service: ServiceProductWithPricingRecord | null = await db.serviceProduct.findFirst({
+        where: { id },
+        include: {
+          pricing: {
+            where: { is_active: true },
+            orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
+          },
+        },
+      });
+      return service;
+    },
+
+    findActiveServiceByCode: async (code: string) => {
+      return db.serviceProduct.findFirst({
+        where: { code, is_active: true },
+      });
     },
 
     findSubscriptionByOrgId: async (orgId: string) => {
@@ -97,6 +142,14 @@ export function createSubscriptionRepository(db: DbClient): SubscriptionReposito
     findOrderById: async (orderId: string, orgId: string) => {
       const order: OrderWithServiceRecord | null = await db.subscriptionOrder.findFirst({
         where: { id: orderId, organization_id: orgId },
+        include: { service: true },
+      });
+      return order;
+    },
+
+    findOrderByIdOnly: async (orderId: string) => {
+      const order: OrderWithServiceRecord | null = await db.subscriptionOrder.findUnique({
+        where: { id: orderId },
         include: { service: true },
       });
       return order;

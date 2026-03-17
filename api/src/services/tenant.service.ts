@@ -11,6 +11,8 @@ import { prisma } from '../lib/prisma.js';
 export interface CreateTenantInput {
   name: string;
   phone?: string;
+  sms_opt_out?: boolean;
+  sms_opt_out_reason?: string;
   id_card?: string;
   emergency_contact?: string;
   emergency_phone?: string;
@@ -23,6 +25,8 @@ export interface CreateTenantInput {
 export interface UpdateTenantInput {
   name?: string;
   phone?: string;
+  sms_opt_out?: boolean;
+  sms_opt_out_reason?: string;
   id_card?: string;
   emergency_contact?: string;
   emergency_phone?: string;
@@ -33,11 +37,15 @@ export interface UpdateTenantInput {
  * 构建租客创建数据
  */
 function buildCreateData(orgId: string, data: CreateTenantInput): Prisma.TenantCreateInput {
+  const smsOptOut = data.sms_opt_out ?? false;
   return {
     id: ulid().toLowerCase(),
     organization: { connect: { id: orgId } },
     name: data.name,
     phone: data.phone,
+    sms_opt_out: smsOptOut,
+    sms_opt_out_at: smsOptOut ? new Date() : null,
+    sms_opt_out_reason: smsOptOut ? data.sms_opt_out_reason : null,
     id_card: data.id_card,
     emergency_contact: data.emergency_contact,
     emergency_phone: data.emergency_phone,
@@ -49,9 +57,20 @@ function buildCreateData(orgId: string, data: CreateTenantInput): Prisma.TenantC
  * 构建租客更新数据
  */
 function buildUpdateData(existing: Tenant, data: UpdateTenantInput): Prisma.TenantUpdateInput {
+  const smsOptOut = data.sms_opt_out ?? existing.sms_opt_out;
+  const smsOptOutChanged = data.sms_opt_out != null && data.sms_opt_out !== existing.sms_opt_out;
   return {
     name: data.name ?? existing.name,
     phone: data.phone ?? existing.phone,
+    sms_opt_out: smsOptOut,
+    sms_opt_out_at: smsOptOut
+      ? smsOptOutChanged
+        ? new Date()
+        : existing.sms_opt_out_at
+      : null,
+    sms_opt_out_reason: smsOptOut
+      ? data.sms_opt_out_reason ?? existing.sms_opt_out_reason
+      : null,
     id_card: data.id_card ?? existing.id_card,
     emergency_contact: data.emergency_contact ?? existing.emergency_contact,
     emergency_phone: data.emergency_phone ?? existing.emergency_phone,

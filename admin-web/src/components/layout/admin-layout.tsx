@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import {
   LayoutDashboard,
   Users,
@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@apartment-ultra/shared-ui/components/ui';
 
 const ADMIN_NAV = [
   { href: '/', label: '概览', icon: LayoutDashboard },

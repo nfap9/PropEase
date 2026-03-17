@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth/context';
-import { Button } from '@/components/ui/button';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,13 +11,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Avatar, AvatarFallback } from '@apartment-ultra/shared-ui/components/ui';
 import { Bell } from 'lucide-react';
 import { notificationsApi, subscriptionsApi } from '@/lib/api';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { useState } from 'react';
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { OrgSelector } from '@/components/common/org-selector';
 import { usePermissions } from '@/hooks/use-permissions';
 import { NavContent } from './nav-content';

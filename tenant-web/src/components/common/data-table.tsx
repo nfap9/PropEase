@@ -18,8 +18,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 

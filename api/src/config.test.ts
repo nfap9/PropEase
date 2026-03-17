@@ -29,6 +29,10 @@ describe('config', () => {
       'WECHAT_PAY_NOTIFY_URL_BASE',
       'WECHAT_PRIVATE_KEY',
       'WECHAT_PRIVATE_KEY_PATH',
+      'SMS_NOTIFICATIONS_ENABLED',
+      'SMS_WEBHOOK_URL',
+      'SMS_WEBHOOK_TOKEN',
+      'SMS_SENDER_SIGN',
     ];
     keysToClear.forEach((key) => {
       if (process.env[key] !== undefined) {
@@ -271,6 +275,7 @@ describe('config', () => {
         adminAccessTokenExpireMinutes: 30,
         corsOrigins: ['http://localhost:3000'],
         wechatPayEnabled: false,
+        smsNotificationsEnabled: false,
       };
 
       const result = configSchema.safeParse(validConfig);

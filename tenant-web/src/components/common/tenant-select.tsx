@@ -7,7 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@apartment-ultra/shared-ui/components/ui';
 import { tenantsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 

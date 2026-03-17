@@ -6,9 +6,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { NotificationCategory } from '@apartment-ultra/api-contract';
 import { MainLayout } from '@/components/layout/main-layout';
 import { AuthGuard } from '@/components/layout/auth-guard';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { notificationsApi, type Notification } from '@/lib/api/notifications';
 import {
   getNotificationActionLabel,
@@ -101,8 +101,8 @@ export default function NotificationsPage() {
                     当前已接入站内通知
                   </div>
                   <p className="mt-1">
-                    合同到期、交租提醒、账单逾期和租客入住/退租都会进入此处；
-                    短信与企微通道当前先预留字段，不在本窗口内接入。
+                    这里继续用于查看管理员站内通知；
+                    租客短信正式触达的模板配置与发送记录，请前往设置中的“消息触达”页面查看。
                   </p>
                 </div>
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

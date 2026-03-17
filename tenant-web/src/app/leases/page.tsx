@@ -17,10 +17,10 @@ import {
   LeaseCreatedParams,
 } from '@/components/common/lease-form-dialog';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Form,
   FormControl,
@@ -28,7 +28,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -36,8 +36,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Alert, AlertDescription, AlertTitle } from '@apartment-ultra/shared-ui/components/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,7 +47,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from '@apartment-ultra/shared-ui/components/ui';
 import { ColumnDef } from '@tanstack/react-table';
 import { leasesApi, apartmentsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
@@ -58,7 +58,7 @@ import { Lease } from '@/types';
 import { LEASE_STATUS_CONFIG } from '@/lib/status-config';
 import { LeaseFilters, LeaseFiltersState } from './components';
 import { Plus, Pencil, Trash2, Ban, Building2, Info } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 
 // 注意: 实际使用时从 testids 导入 LEASES 常量
 const LEASES = {

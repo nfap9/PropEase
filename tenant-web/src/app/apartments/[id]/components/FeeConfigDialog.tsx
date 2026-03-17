@@ -9,9 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { Plus, Trash2, Loader2 } from 'lucide-react';
 import { apartmentFeeConfigApi, feeTypesApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';

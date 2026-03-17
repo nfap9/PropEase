@@ -11,6 +11,7 @@ import {
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
+import { defaultTenantReachabilityService } from './tenantReachability.service.js';
 
 /**
  * 创建账单输入
@@ -136,7 +137,13 @@ export function createBillService(
       if (!lease || lease.room.apartment.organization_id !== orgId) {
         throw createAppError(404, NotFoundMessages.LEASE);
       }
-      return getBillRepo().create(buildCreateData(data));
+      const bill = await getBillRepo().create(buildCreateData(data));
+      try {
+        await defaultTenantReachabilityService.sendBillGenerated(bill.id);
+      } catch (error) {
+        console.error('[bill.service] failed to send tenant bill_generated sms:', error);
+      }
+      return bill;
     },
 
     update: async (orgId: string, id: string, data: UpdateBillInput) => {

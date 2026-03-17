@@ -13,7 +13,7 @@ import { useAuth } from '@/lib/auth/context';
 import { OrgRoleList } from '@/components/settings/org-role-list';
 import { OrgRoleDetailPanel } from '@/components/settings/org-role-detail-panel';
 import { Shield } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { cn } from '@/lib/utils';
 
 // 注意: 实际使用时从 testids 导入 PERMISSIONS 常量

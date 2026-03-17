@@ -44,6 +44,14 @@ const configSchema = z.object({
   wechatPrivateKey: z.string().optional(),
   /** 微信私钥文件路径 */
   wechatPrivateKeyPath: z.string().optional(),
+  /** 是否启用租客短信触达 */
+  smsNotificationsEnabled: z.boolean(),
+  /** 短信网关 Webhook 地址 */
+  smsWebhookUrl: z.string().optional(),
+  /** 短信网关鉴权 Token */
+  smsWebhookToken: z.string().optional(),
+  /** 短信签名 */
+  smsSenderSign: z.string().optional(),
 }).refine(
   (data) => {
     // 当启用微信支付时，必须配置必要字段
@@ -58,6 +66,14 @@ const configSchema = z.object({
   },
   {
     message: '启用微信支付时，必须配置: WECHAT_MCH_ID, WECHAT_APP_ID, WECHAT_CERT_SERIAL_NO, WECHAT_APIV3_KEY 和私钥 (WECHAT_PRIVATE_KEY 或 WECHAT_PRIVATE_KEY_PATH)',
+  }
+).refine(
+  (data) => {
+    if (!data.smsNotificationsEnabled) return true;
+    return !!data.smsWebhookUrl;
+  },
+  {
+    message: '启用短信触达时，必须配置 SMS_WEBHOOK_URL',
   }
 );
 
@@ -127,6 +143,10 @@ function buildRawConfig() {
     wechatPayNotifyUrlBase: envStr('WECHAT_PAY_NOTIFY_URL_BASE', '') || undefined,
     wechatPrivateKey: envStr('WECHAT_PRIVATE_KEY', '') || undefined,
     wechatPrivateKeyPath: envStr('WECHAT_PRIVATE_KEY_PATH', '') || undefined,
+    smsNotificationsEnabled: envBool('SMS_NOTIFICATIONS_ENABLED', false),
+    smsWebhookUrl: envStr('SMS_WEBHOOK_URL', '') || undefined,
+    smsWebhookToken: envStr('SMS_WEBHOOK_TOKEN', '') || undefined,
+    smsSenderSign: envStr('SMS_SENDER_SIGN', '') || undefined,
   };
 }
 

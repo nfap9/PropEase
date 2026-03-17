@@ -2,8 +2,15 @@
 
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/main-layout';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Building2, Settings as SettingsIcon, CreditCard, Shield } from 'lucide-react';
+import { Card, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Users,
+  Building2,
+  Settings as SettingsIcon,
+  CreditCard,
+  Shield,
+  MessageSquareMore,
+} from 'lucide-react';
 
 // 注意: 实际使用时从 testids 导入 SETTINGS 常量
 const SETTINGS = {
@@ -32,6 +39,14 @@ const SETTINGS_ITEMS = [
     icon: Shield,
     testId: SETTINGS.PERMISSIONS_LINK,
     cardTestId: SETTINGS.PERMISSIONS_CARD,
+  },
+  {
+    title: '消息触达',
+    description: '管理租客短信模板与发送记录',
+    href: '/settings/notifications',
+    icon: MessageSquareMore,
+    testId: 'settings-notifications-link',
+    cardTestId: 'settings-notifications-card',
   },
   {
     title: '订阅管理',

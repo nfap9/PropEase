@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions } from '@/components/common/table-actions';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { ORG_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import {
   Select,
@@ -15,13 +15,13 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@apartment-ultra/shared-ui/components/ui';
 import { adminApiEndpoints, AdminOrganization } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import { formatDateTime } from '@/lib/date-utils';
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye, Power, PowerOff } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 
 type FilterActive = 'all' | 'active' | 'inactive';
 

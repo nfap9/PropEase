@@ -10,7 +10,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,9 +20,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from '@apartment-ultra/shared-ui/components/ui';
 import { Building2, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { useRouter } from 'next/navigation';
 import { Organization } from '@/types';
 

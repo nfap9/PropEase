@@ -108,6 +108,11 @@ export type {
   NotificationExtraData,
   NotificationChannelName,
   NotificationChannelStatus,
+  TenantReachabilityChannel,
+  TenantReachabilityEventType,
+  NotificationDeliveryStatus,
+  TenantNotificationTemplate,
+  TenantNotificationDelivery,
   UnreadCountResponse,
 } from './notifications.js';
 

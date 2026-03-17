@@ -1,5 +1,4 @@
 import type {
-  Prisma,
   ServiceProduct,
   OrganizationSubscription,
   SubscriptionOrder,
@@ -63,37 +62,17 @@ export interface SubscriptionService {
 export function createSubscriptionService(
   getRepo: () => SubscriptionRepository = () => createSubscriptionRepository(prisma)
 ): SubscriptionService {
-  type ServiceWithPricing = Prisma.PromiseReturnType<typeof prisma.serviceProduct.findFirst>;
-
   return {
     listServices: async () => {
-      // 返回服务产品时包含定价信息，只返回可购买的服务
-      return prisma.serviceProduct.findMany({
-        where: { is_active: true, code: { not: 'free' } },
-        orderBy: { sort_order: 'asc' },
-        include: {
-          pricing: {
-            where: { is_active: true },
-            orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
-          },
-        },
-      });
+      return getRepo().findActiveServicesWithPricing();
     },
 
     getServiceById: async (id: string) => {
-      const service = await prisma.serviceProduct.findFirst({
-        where: { id },
-        include: {
-          pricing: {
-            where: { is_active: true },
-            orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
-          },
-        },
-      });
+      const service = await getRepo().findServiceByIdWithPricing(id);
       if (!service) {
         throw createAppError(404, NotFoundMessages.PLAN);
       }
-      return service as NonNullable<ServiceWithPricing>;
+      return service;
     },
 
     getSubscription: async (orgId: string) => {
@@ -230,16 +209,7 @@ export function createSubscriptionService(
     createOrder: async (orgId: string, params: CreateOrderParams) => {
       const { serviceId, billingMonths = 1, pricingId } = params;
 
-      // 使用包含 pricing 的查询
-      const service = await prisma.serviceProduct.findFirst({
-        where: { id: serviceId },
-        include: {
-          pricing: {
-            where: { is_active: true },
-            orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
-          },
-        },
-      });
+      const service = await getRepo().findServiceByIdWithPricing(serviceId);
       if (!service) {
         throw createAppError(404, NotFoundMessages.PLAN);
       }
@@ -297,12 +267,7 @@ export function createSubscriptionService(
     },
 
     getOrder: async (orgId: string, orderId: string) => {
-      const order = await prisma.subscriptionOrder.findFirst({
-        where: { id: orderId, organization_id: orgId },
-        include: {
-          service: true,
-        },
-      });
+      const order = await getRepo().findOrderById(orderId, orgId);
       if (!order) {
         throw createAppError(404, NotFoundMessages.ORDER);
       }

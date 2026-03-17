@@ -1,5 +1,5 @@
 // Components
-export * from "./components/ui"
+export * from "./components"
 
 // Lib
 export * from "./lib/utils"

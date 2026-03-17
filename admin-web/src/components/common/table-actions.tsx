@@ -1,13 +1,13 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { MoreHorizontal } from 'lucide-react';
 import { useMediaQuery } from '@/hooks/use-mobile';
 

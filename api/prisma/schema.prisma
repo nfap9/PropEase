@@ -47,6 +47,8 @@ model Organization {
   subscription        OrganizationSubscription?
   subscription_orders SubscriptionOrder[]
   user_balance        UserBalance?
+  notification_templates  NotificationTemplate[]
+  notification_deliveries NotificationDelivery[]
 
   @@map("organizations")
 }
@@ -124,6 +126,9 @@ model Tenant {
   organization_id   String   @db.VarChar(26)
   name              String   @db.VarChar(255)
   phone             String?  @db.VarChar(50)
+  sms_opt_out       Boolean  @default(false)
+  sms_opt_out_at    DateTime?
+  sms_opt_out_reason String? @db.VarChar(255)
   id_card           String?  @db.VarChar(50)
   emergency_contact String?  @db.VarChar(255)
   emergency_phone   String?  @db.VarChar(50)
@@ -133,6 +138,7 @@ model Tenant {
 
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   leases       Lease[]
+  notification_deliveries NotificationDelivery[]
 
   @@index([organization_id])
   @@map("tenants")
@@ -158,6 +164,7 @@ model Lease {
   room   Room   @relation(fields: [room_id], references: [id], onDelete: Cascade)
   tenant Tenant @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
   bills  Bill[]
+  notification_deliveries NotificationDelivery[]
 
   @@index([room_id])
   @@index([room_id, is_active])
@@ -225,6 +232,7 @@ model Bill {
   lease     Lease         @relation(fields: [lease_id], references: [id], onDelete: Cascade)
   payments  Payment[]
   fee_items BillFeeItem[]
+  notification_deliveries NotificationDelivery[]
 
   @@unique([lease_id, bill_year, bill_month])
   @@index([lease_id])
@@ -425,6 +433,56 @@ model Notification {
   @@index([user_id])
   @@index([user_id, is_read])
   @@map("notifications")
+}
+
+model NotificationTemplate {
+  id              String   @id @db.VarChar(26)
+  organization_id String   @db.VarChar(26)
+  channel         String   @db.VarChar(20)
+  event_type      String   @db.VarChar(50)
+  name            String   @db.VarChar(100)
+  content         String   @db.VarChar(1000)
+  is_enabled      Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  organization Organization          @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  deliveries   NotificationDelivery[]
+
+  @@unique([organization_id, channel, event_type])
+  @@index([organization_id, channel])
+  @@map("notification_templates")
+}
+
+model NotificationDelivery {
+  id                  String   @id @db.VarChar(26)
+  organization_id     String   @db.VarChar(26)
+  tenant_id           String?  @db.VarChar(26)
+  lease_id            String?  @db.VarChar(26)
+  bill_id             String?  @db.VarChar(26)
+  template_id         String?  @db.VarChar(26)
+  channel             String   @db.VarChar(20)
+  event_type          String   @db.VarChar(50)
+  recipient           String?  @db.VarChar(50)
+  status              String   @db.VarChar(20)
+  content             String   @db.VarChar(1000)
+  provider_message_id String?  @db.VarChar(100)
+  status_reason       String?  @db.VarChar(255)
+  extra_data          Json?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  organization Organization         @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  tenant       Tenant?              @relation(fields: [tenant_id], references: [id], onDelete: SetNull)
+  lease        Lease?               @relation(fields: [lease_id], references: [id], onDelete: SetNull)
+  bill         Bill?                @relation(fields: [bill_id], references: [id], onDelete: SetNull)
+  template     NotificationTemplate? @relation(fields: [template_id], references: [id], onDelete: SetNull)
+
+  @@index([organization_id, created_at])
+  @@index([organization_id, status])
+  @@index([tenant_id])
+  @@index([bill_id])
+  @@map("notification_deliveries")
 }
 
 model OrganizationSubscription {

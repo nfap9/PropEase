@@ -2,8 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { adminApiEndpoints, AdminPlatformStats } from '@/lib/api/admin-client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Loader2 } from 'lucide-react';
 
 function StatCard({ title, value, testid }: { title: string; value: number; testid?: string }) {

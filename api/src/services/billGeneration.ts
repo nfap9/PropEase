@@ -1,5 +1,6 @@
 import { ulid } from 'ulid';
 import { prisma } from '../lib/prisma.js';
+import { defaultTenantReachabilityService } from './tenantReachability.service.js';
 
 /**
  * 为指定组织生成指定周期的账单，与 POST /bills/generate 逻辑一致。
@@ -173,6 +174,12 @@ export async function generateBillsForOrg(
         });
       }
     });
+
+    try {
+      await defaultTenantReachabilityService.sendBillGenerated(billId);
+    } catch (error) {
+      console.error('[billGeneration] failed to send tenant bill_generated sms:', error);
+    }
 
     created += 1;
   }

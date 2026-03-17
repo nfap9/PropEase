@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ColumnDef } from '@tanstack/react-table';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Room, RoomStatus } from '@/types';
 import { ROOM_STATUS_CONFIG } from '@/lib/status-config';

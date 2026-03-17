@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { ApiError } from '@/lib/api/client';
+import { ApiError } from '@apartment-ultra/web-api-client';
 import { filterEmptyStrings, setFormErrors, extractFieldErrors } from './form';
 
 describe('form utils', () => {

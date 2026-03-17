@@ -31,6 +31,7 @@ export type ApartmentWithStats = Apartment & {
 export interface ApartmentRepository {
   findById(id: string): Promise<Apartment | null>;
   findByIdAndOrg(id: string, orgId: string): Promise<Apartment | null>;
+  findByIdAndOrgWithRooms(id: string, orgId: string): Promise<ApartmentWithRooms | null>;
   findByOrgId(orgId: string): Promise<Apartment[]>;
   findByOrgIdWithRooms(orgId: string): Promise<ApartmentWithRooms[]>;
   create(data: Prisma.ApartmentCreateInput): Promise<Apartment>;
@@ -50,6 +51,13 @@ export function createApartmentRepository(db: DbClient): ApartmentRepository {
 
     findByIdAndOrg: async (id: string, orgId: string) => {
       return db.apartment.findFirst({ where: { id, organization_id: orgId } });
+    },
+
+    findByIdAndOrgWithRooms: async (id: string, orgId: string) => {
+      return db.apartment.findFirst({
+        where: { id, organization_id: orgId },
+        include: { rooms: true },
+      });
     },
 
     findByOrgId: async (orgId: string) => {

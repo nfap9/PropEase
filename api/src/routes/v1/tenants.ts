@@ -12,6 +12,8 @@ router.use(requireConsoleAuth);
 const TenantCreateSchema = z.object({
   name: z.string().min(1),
   phone: z.string().optional(),
+  sms_opt_out: z.boolean().optional(),
+  sms_opt_out_reason: z.string().max(255).optional(),
   id_card: z.string().optional(),
   emergency_contact: z.string().optional(),
   emergency_phone: z.string().optional(),
