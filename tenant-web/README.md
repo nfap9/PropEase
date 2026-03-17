@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tenant Web
 
-## Getting Started
+租客端 Web 应用，基于 Next.js 14 构建，承载租客/二房东日常使用的业务界面。
 
-First, run the development server:
+## 本地开发
+
+先在仓库根目录安装依赖：
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+然后启动租客端开发服务器：
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+默认地址为 [http://localhost:3000](http://localhost:3000)。
 
-## Learn More
+如果需要完整联调，建议同时在仓库根目录启动：
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm dev:api
+pnpm dev:admin
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 常用命令
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm dev
+pnpm build
+pnpm type-check
+pnpm test:run
+```
 
-## Deploy on Vercel
+## 相关文档
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [租客端开发指南](./AGENTS.md)
+- [仓库总览](../README.md)
+- [E2E 测试指南](../e2e/AGENTS.md)

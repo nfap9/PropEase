@@ -1,6 +1,6 @@
 # Apartment Ultra
 
-多租户 SaaS 公寓/房产管理系统，为管理多个租赁房产的房东设计，支持免费与付费套餐、运营后台与微信支付订阅。
+多租户 SaaS 公寓/房产管理系统，为管理多个租赁房产的房东设计，支持订阅购买、运营后台、服务定价与微信支付。
 
 ## 功能特性
 
@@ -10,12 +10,12 @@
 - 租客管理、租约管理（创建/续约/终止）
 - 水电记录、账单管理（自动生成、PDF/Excel 导出）
 - 报表分析、多用户协作、事务提醒
-- 订阅与支付（套餐选择、微信支付）
+- 订阅与支付（套餐购买、微信支付）
 
 ### 运营后台（平台方）
 
 - 运营账号与角色管理
-- 组织管理、套餐配置、订阅管理
+- 组织管理、服务定价、商店配置、订阅管理
 - 运营分析（平台概览）
 
 ## 技术栈
@@ -51,8 +51,11 @@ pnpm --filter apartment-ultra-api exec prisma db push
 # 4. 启动后端（端口 8000）
 pnpm dev:api
 
-# 5. 启动前端（端口 3000，另开终端）
+# 5. 启动租客端（端口 3000，另开终端）
 pnpm dev:web
+
+# 6. 启动运营后台（端口 3001，另开终端）
+pnpm dev:admin
 ```
 
 ### 服务器部署
@@ -63,8 +66,8 @@ pnpm dev:web
 
 | 服务 | 地址 |
 |------|------|
-| Web（业务端） | http://localhost:3000 |
-| 运营后台 | http://localhost:3000/admin |
+| 租客端 Web | http://localhost:3000 |
+| 运营后台 | http://localhost:3001 |
 | API 文档 | http://localhost:8000/docs |
 
 ## 测试账号
@@ -76,10 +79,10 @@ pnpm dev:web
 ## 更多文档
 
 - [后端 API 文档](api/AGENTS.md) - 后端架构与开发指南
-- [前端 Web 文档](web/AGENTS.md) - 前端架构与开发指南
+- [租客端文档](tenant-web/AGENTS.md) - 租客端前端开发说明
 - [E2E 测试指南](e2e/AGENTS.md) - E2E 测试编写规范
 - [Docker 部署](docker/README.md) - 生产环境部署配置
-- [API 接口文档](docs/API.md) - 完整 API 说明
+- [API 契约文档](docs/api-contract/README.md) - 契约与接口说明
 
 ## License
 
