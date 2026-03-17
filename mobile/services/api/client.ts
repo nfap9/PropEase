@@ -20,7 +20,7 @@ export type { FieldError }
  * - Web: 使用 localStorage
  * - Native: 使用 expo-secure-store
  */
-const secureStorage = {
+export const secureStorage = {
   async getItem(key: string): Promise<string | null> {
     if (Platform.OS === 'web') {
       return localStorage.getItem(key)
@@ -268,8 +268,5 @@ export const api = {
   delete: <T>(url: string, data?: unknown, options?: RequestOptions) =>
     request<T>(url, { ...options, method: 'DELETE', data }),
 }
-
-// 导出存储适配器供其他模块使用
-export { secureStorage }
 
 export default api

@@ -56,6 +56,9 @@ pnpm dev:web
 
 # 6. 启动运营后台（端口 3001，另开终端）
 pnpm dev:admin
+
+# 7. 启动移动端原型（Expo，另开终端，可选）
+pnpm dev:mobile
 ```
 
 ### 服务器部署
@@ -70,6 +73,25 @@ pnpm dev:admin
 | 运营后台 | http://localhost:3001 |
 | API 文档 | http://localhost:8000/docs |
 
+## 移动端当前状态
+
+`mobile/` 当前按实验性 Expo 客户端管理，已接入 workspace、独立开发命令和最小 `type-check`，但暂未并入根级 `pnpm lint` / `pnpm type-check` / `pnpm test` 统一质量门。
+
+当前根级质量门覆盖：
+
+- `pnpm lint`：`api`、`tenant-web`、`admin-web`
+- `pnpm type-check`：`api`、`tenant-web`、`admin-web`
+- `pnpm test`：`api`、`tenant-web`、`admin-web`
+
+如需维护移动端，请优先使用：
+
+```bash
+pnpm dev:mobile
+pnpm type-check:mobile
+```
+
+移动端后续与 Web 端共享 API contract、认证流和工程配置的收敛，继续跟踪 Issue `#35`、`#38`、`#40`。
+
 ## 测试账号
 
 **业务端**：需自行注册，或设置 `SEED_E2E_USER=true` 启动 API 创建测试用户（手机号 `13800138000`，密码 `Test1234`）
@@ -83,6 +105,7 @@ pnpm dev:admin
 - [后端 API 文档](api/AGENTS.md) - 后端架构与开发指南
 - [运营后台文档](admin-web/AGENTS.md) - 运营后台开发说明
 - [租客端文档](tenant-web/AGENTS.md) - 租客端前端开发说明
+- [移动端文档](mobile/AGENTS.md) - Expo 客户端当前边界与维护方式
 - [E2E 测试指南](e2e/AGENTS.md) - E2E 测试编写规范
 - [Docker 部署](docker/README.md) - 生产环境部署配置
 - [API 契约文档](docs/api-contract/README.md) - 契约与接口说明

@@ -17,6 +17,7 @@
         "name": "next"
       }
     ],
+    "types": ["react", "react-dom", "node"],
     "paths": {
       "@/*": ["./src/*"],
       "@/components/*": ["./src/components/*"],

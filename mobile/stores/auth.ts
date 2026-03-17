@@ -37,8 +37,8 @@ interface AuthState {
   isLoading: boolean
 
   // Actions
-  login: (phone: string, password?: string, verificationCode?: string) => Promise<void>
-  register: (phone: string, password: string, fullName: string, verificationCode: string) => Promise<void>
+  login: (phone: string, password: string) => Promise<void>
+  register: (phone: string, password: string, fullName: string) => Promise<void>
   logout: () => Promise<void>
   setUser: (user: User) => void
   setOrganization: (org: Organization) => void
@@ -55,11 +55,10 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: true,
 
-      login: async (phone, password, verificationCode) => {
+      login: async (phone, password) => {
         const response = await authApi.login({
           phone,
           password,
-          verification_code: verificationCode,
         })
 
         await crossPlatformStorage.setItem('access_token', response.access_token)
@@ -72,22 +71,14 @@ export const useAuthStore = create<AuthState>()(
         await get().loadOrganizations()
       },
 
-      register: async (phone, password, fullName, verificationCode) => {
-        const response = await authApi.register({
+      register: async (phone, password, fullName) => {
+        await authApi.register({
           phone,
           password,
           full_name: fullName,
-          verification_code: verificationCode,
         })
 
-        await crossPlatformStorage.setItem('access_token', response.access_token)
-        await crossPlatformStorage.setItem('refresh_token', response.refresh_token)
-
-        const user = await authApi.getMe()
-        set({ user, isAuthenticated: true })
-
-        // 加载组织
-        await get().loadOrganizations()
+        await get().login(phone, password)
       },
 
       logout: async () => {
@@ -127,7 +118,9 @@ export const useAuthStore = create<AuthState>()(
               ? orgs.find((o) => o.id === savedOrgId) || orgs[0]
               : orgs[0]
 
-            await get().setOrganization(org)
+            if (org) {
+              await get().setOrganization(org)
+            }
           }
         } catch (error) {
           console.error('Failed to load organizations:', error)

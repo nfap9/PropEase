@@ -47,13 +47,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ColumnDef } from '@tanstack/react-table';
 import { adminApiEndpoints, AdminPlan, AdminPlanUpdate, type AdminPlanPricingCreate } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
-import { Plus, Pencil, Trash2, DollarSign, Settings, ShoppingCart } from 'lucide-react';
+import { Plus, Pencil, Trash2, DollarSign, Settings } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // 周期定价项 Schema
@@ -85,7 +84,6 @@ const planUpdateSchema = planCreateSchema.extend({
 
 type PlanCreateForm = z.infer<typeof planCreateSchema>;
 type PlanUpdateForm = z.infer<typeof planUpdateSchema>;
-type PricingItem = z.infer<typeof pricingItemSchema>;
 
 export default function AdminPlansPage() {
   const queryClient = useQueryClient();

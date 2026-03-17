@@ -17,7 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       api: ${{ steps.filter.outputs.api }}
-      web: ${{ steps.filter.outputs.web }}
+      tenant_web: ${{ steps.filter.outputs.tenant_web }}
+      admin_web: ${{ steps.filter.outputs.admin_web }}
+      mobile: ${{ steps.filter.outputs.mobile }}
       docker: ${{ steps.filter.outputs.docker }}
     steps:
       - name: Checkout code
@@ -32,9 +34,17 @@ jobs:
               - 'api/**'
               - 'packages/api-contract/**'
               - 'pnpm-lock.yaml'
-            web:
+            tenant_web:
               - 'tenant-web/**'
+              - 'packages/api-contract/**'
+              - 'pnpm-lock.yaml'
+            admin_web:
               - 'admin-web/**'
+              - 'packages/api-contract/**'
+              - 'packages/shared-ui/**'
+              - 'pnpm-lock.yaml'
+            mobile:
+              - 'mobile/**'
               - 'packages/api-contract/**'
               - 'pnpm-lock.yaml'
             docker:
@@ -114,11 +124,11 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test
 
-  # 前端构建检查
-  frontend:
-    name: Frontend
+  # 租客端 Web：lint、类型检查、测试与构建
+  tenant-web:
+    name: tenant-web
     needs: [changes]
-    if: needs.changes.outputs.web == 'true'
+    if: needs.changes.outputs.tenant_web == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -153,24 +163,117 @@ jobs:
         run: pnpm --filter @apartment-ultra/api-contract run build
 
       - name: Run ESLint
-        run: pnpm --filter frontend run lint
+        run: pnpm --filter apartment-ultra-tenant run lint
 
       - name: Type check
-        run: pnpm --filter frontend run type-check
+        run: pnpm --filter apartment-ultra-tenant run type-check
 
       - name: Run tests
-        run: pnpm --filter frontend run test:run
+        run: pnpm --filter apartment-ultra-tenant run test:run
 
       - name: Build
-        run: pnpm --filter frontend run build
+        run: pnpm --filter apartment-ultra-tenant run build
         env:
           NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+
+  # 运营后台：lint、类型检查、测试与构建
+  admin-web:
+    name: admin-web
+    needs: [changes]
+    if: needs.changes.outputs.admin_web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Restore api-contract build
+        id: contract-cache-admin
+        uses: actions/cache@v4
+        with:
+          path: packages/api-contract/dist
+          key: contract-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'packages/api-contract/**') }}
+          restore-keys: |
+            contract-${{ runner.os }}-
+
+      - name: Build api-contract
+        if: steps.contract-cache-admin.outputs.cache-hit != 'true'
+        run: pnpm --filter @apartment-ultra/api-contract run build
+
+      - name: Run ESLint
+        run: pnpm --filter apartment-ultra-admin run lint
+
+      - name: Type check
+        run: pnpm --filter apartment-ultra-admin run type-check
+
+      - name: Run tests
+        run: pnpm --filter apartment-ultra-admin run test:run
+
+      - name: Build
+        run: pnpm --filter apartment-ultra-admin run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+
+  # 移动端（mobile）：当前按实验性包单独治理，只接入最小 type-check
+  mobile:
+    name: mobile
+    needs: [changes]
+    if: needs.changes.outputs.mobile == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Restore api-contract build
+        id: contract-cache-mobile
+        uses: actions/cache@v4
+        with:
+          path: packages/api-contract/dist
+          key: contract-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'packages/api-contract/**') }}
+          restore-keys: |
+            contract-${{ runner.os }}-
+
+      - name: Build api-contract
+        if: steps.contract-cache-mobile.outputs.cache-hit != 'true'
+        run: pnpm --filter @apartment-ultra/api-contract run build
+
+      - name: Type check
+        run: pnpm --filter mobile run type-check
 
   # Docker 构建验证并推送到 GHCR（仅 push 到 main 时运行）
   docker:
     name: Docker build & push
     runs-on: ubuntu-latest
-    needs: [changes, api, frontend]
+    needs: [changes, api, tenant-web, admin-web]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read

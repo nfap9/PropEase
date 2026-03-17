@@ -4,7 +4,6 @@ import type {
   LoginCredentials,
   RegisterData,
   TokenResponse,
-  SendSmsCodeData,
 } from '@apartment-ultra/api-contract'
 
 export const authApi = {
@@ -18,15 +17,8 @@ export const authApi = {
   /**
    * 用户注册
    */
-  register: async (data: RegisterData): Promise<TokenResponse> => {
-    return api.post<TokenResponse>('/auth/register', data, { skipAuth: true })
-  },
-
-  /**
-   * 发送短信验证码
-   */
-  sendSmsCode: async (data: SendSmsCodeData): Promise<void> => {
-    return api.post<void>('/auth/sms/send', data, { skipAuth: true })
+  register: async (data: RegisterData): Promise<User> => {
+    return api.post<User>('/auth/register', data, { skipAuth: true })
   },
 
   /**

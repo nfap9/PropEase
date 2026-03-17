@@ -1,4 +1,4 @@
-export { api, request, ApiError, type ApiResponse, type FieldError } from './client'
+export { api, request, ApiError, secureStorage, type ApiResponse, type FieldError } from './client'
 export { authApi } from './auth'
 export { apartmentsApi, type ApartmentWithStats } from './apartments'
 export { roomsApi } from './rooms'

@@ -20,6 +20,7 @@
 - 后端 API：[`api/AGENTS.md`](./api/AGENTS.md)
 - 租户端 Web：[`tenant-web/AGENTS.md`](./tenant-web/AGENTS.md)
 - 运营后台：[`admin-web/AGENTS.md`](./admin-web/AGENTS.md)
+- 移动端：[`mobile/AGENTS.md`](./mobile/AGENTS.md)
 - E2E 测试：[`e2e/AGENTS.md`](./e2e/AGENTS.md)
 - 项目文档导航：[`docs/README.md`](./docs/README.md)
 
@@ -40,7 +41,7 @@ Apartment Ultra 是一个公寓管理产品，核心能力包括：
 - `api/`：当前唯一在用的后端，Node/Express/TypeScript
 - `tenant-web/`：租户端前端，Next.js，默认端口 `3000`
 - `admin-web/`：运营后台前端，Next.js，默认端口 `3001`
-- `mobile/`：Expo/React Native 客户端
+- `mobile/`：实验性 Expo/React Native 客户端，当前按单独质量门治理
 - `packages/api-contract/`：接口契约相关共享包
 - `packages/shared-ui/`：共享 UI 组件
 - `docs/`：长期说明、规范、测试用例、设计稿
@@ -68,6 +69,9 @@ pnpm dev:web
 
 # 6. 启动运营后台
 pnpm dev:admin
+
+# 7. 如需维护移动端原型，再单独启动
+pnpm dev:mobile
 ```
 
 如无特殊说明，所有前端和测试都以 `api/` 作为后端。
@@ -123,6 +127,11 @@ pnpm dev:admin
   - `pnpm lint`
   - `pnpm type-check`
   - `pnpm test`
+  - `pnpm type-check:mobile`
+
+`mobile/` 当前只接入独立 `type-check`，还没有纳入根级 `lint` / `type-check` / `test` 聚合命令；处理移动端任务时要显式运行对应命令。
+
+当前根级聚合命令默认覆盖 `api`、`tenant-web`、`admin-web`。如果任务涉及这三个包，优先用根命令验证；如果涉及 `mobile/`，再额外运行 `pnpm type-check:mobile`。
 
 如果任务只改文档或纯元数据，可以不跑完整测试，但要明确说明验证范围。
 

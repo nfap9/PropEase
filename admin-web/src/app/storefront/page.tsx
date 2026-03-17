@@ -23,14 +23,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -69,7 +61,7 @@ import {
   PricingDiscount,
 } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
-import { Plus, Pencil, Trash2, Store, Settings, GripVertical } from 'lucide-react';
+import { Plus, Pencil, Trash2, Store, GripVertical } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // 商店配置 Schema

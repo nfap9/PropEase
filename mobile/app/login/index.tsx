@@ -11,15 +11,14 @@ import { Colors } from '@/constants'
 // 登录表单 Schema
 const loginSchema = z.object({
   phone: z.string().min(11, '请输入正确的手机号').max(11),
-  password: z.string().min(6, '密码至少6位'),
+  password: z.string().min(8, '密码至少8位'),
 })
 
 // 注册表单 Schema
 const registerSchema = z.object({
   phone: z.string().min(11, '请输入正确的手机号').max(11),
-  password: z.string().min(6, '密码至少6位'),
+  password: z.string().min(8, '密码至少8位'),
   full_name: z.string().min(2, '姓名至少2个字'),
-  verification_code: z.string().min(6, '验证码为6位数字'),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
@@ -46,7 +45,6 @@ export default function LoginScreen() {
       phone: '',
       password: '',
       full_name: '',
-      verification_code: '',
     },
   })
 
@@ -67,7 +65,7 @@ export default function LoginScreen() {
     setLoading(true)
     setError(null)
     try {
-      await register(data.phone, data.password, data.full_name, data.verification_code)
+      await register(data.phone, data.password, data.full_name)
       router.replace('/')
     } catch (err: any) {
       setError(err.message || '注册失败，请重试')
@@ -327,48 +325,6 @@ export default function LoginScreen() {
                   )}
                 />
                 <Text style={{ position: 'absolute', left: 16, top: 18, fontSize: 18 }}>🔒</Text>
-              </View>
-              <View>
-                <Controller
-                  control={registerForm.control}
-                  name="verification_code"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInput
-                      style={{
-                        paddingLeft: 48,
-                        paddingRight: 100,
-                        paddingVertical: 16,
-                        backgroundColor: '#F8FAFC',
-                        borderWidth: 1,
-                        borderColor: registerForm.formState.errors.verification_code ? Colors.danger : '#E5E7EB',
-                        borderRadius: 16,
-                        fontSize: 14,
-                      }}
-                      placeholder="短信验证码"
-                      placeholderTextColor={Colors.textMuted}
-                      keyboardType="number-pad"
-                      maxLength={6}
-                      value={value}
-                      onChangeText={onChange}
-                    />
-                  )}
-                />
-                <Text style={{ position: 'absolute', left: 16, top: 18, fontSize: 18 }}>🛡️</Text>
-                <TouchableOpacity
-                  style={{
-                    position: 'absolute',
-                    right: 12,
-                    top: 10,
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    backgroundColor: '#EFF6FF',
-                    borderRadius: 8,
-                  }}
-                >
-                  <Text style={{ fontSize: 12, color: Colors.primary, fontWeight: '700' }}>
-                    获取验证码
-                  </Text>
-                </TouchableOpacity>
               </View>
             </View>
           )}
