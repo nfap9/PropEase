@@ -1,16 +1,13 @@
 import api from './client'
-import type { DashboardOverview, IncomeReport, OccupancyReport } from '@apartment-ultra/api-contract'
+import type {
+  DashboardOverview,
+  IncomeReport,
+  IncomeReportParams,
+  OccupancyReport,
+  OccupancyReportParams,
+} from '@apartment-ultra/api-contract'
 
-export interface IncomeReportParams {
-  start_date?: string
-  end_date?: string
-  group_by?: 'day' | 'week' | 'month'
-}
-
-export interface OccupancyReportParams {
-  start_date?: string
-  end_date?: string
-}
+export type { IncomeReportParams, OccupancyReportParams };
 
 export const reportsApi = {
   /**

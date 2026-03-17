@@ -10,9 +10,21 @@ export interface Organization {
   slug: string;
   settings: Record<string, unknown>;
   is_personal: boolean;
+  is_active?: boolean;
   created_at: string;
+  updated_at?: string;
   /** 列表接口返回：当前用户在该组织中的角色 */
   role?: MemberRole;
+}
+
+export interface OrganizationCreate {
+  name: string;
+  slug?: string;
+}
+
+export interface OrganizationUpdate {
+  name?: string;
+  settings?: Record<string, unknown>;
 }
 
 /** 迁移统计 */
@@ -49,7 +61,7 @@ export interface OrganizationMember {
   user_id: string;
   role: MemberRole;
   user?: User;
-  user_phone: string;
+  user_phone: string | null;
   user_full_name: string;
   joined_at: string;
   created_at: string;
@@ -61,12 +73,17 @@ export interface OrganizationUsage {
   apartments_used: number;
   rooms_used: number;
   members_used: number;
+  max_organizations: number;
   max_apartments: number;
   max_rooms: number;
   max_members: number;
+  rooms_count_scope?: 'organization' | 'user';
+  members_count_scope?: 'organization' | 'user';
   apartments_remaining: number;
   rooms_remaining: number;
   members_remaining: number;
+  organizations_used?: number;
+  organizations_remaining?: number;
   can_invite_members: boolean;
   can_create_team: boolean;
 }

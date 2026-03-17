@@ -1,21 +1,7 @@
+import type { Notification, UnreadCountResponse } from '@apartment-ultra/api-contract';
 import api from './client';
 
-/** 通知项（与 API 返回一致） */
-export interface Notification {
-  id: string;
-  user_id: string;
-  title: string;
-  body: string;
-  type?: string | null;
-  is_read: boolean;
-  extra_data?: unknown;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface UnreadCountResponse {
-  count: number;
-}
+export type { Notification };
 
 export const notificationsApi = {
   list: async (): Promise<Notification[]> => {

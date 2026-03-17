@@ -6,73 +6,14 @@ import {
   SubscribeRequest,
   SubscriptionStatus,
   OrganizationUsage,
+  StorefrontView,
+  StorefrontViewPricing,
+  StorefrontViewService,
+  PriceCalculationResult,
 } from '@/types';
 
-/**
- * 定价折扣配置
- */
-export interface PricingDiscount {
-  months: number;
-  discount_type: 'gift' | 'percent' | 'fixed';
-  discount_value: number | null;
-  gift_months: number | null;
-}
-
-/**
- * 商店服务定价
- */
-export interface StorefrontServicePricing {
-  id: string;
-  service_id: string;
-  months: number;
-  price: number;
-  discount_type: string | null;
-  discount_value: number | null;
-  discount_amount: number;
-  final_price: number;
-  gift_months: number;
-  is_active: boolean;
-  sort_order: number;
-}
-
-/**
- * 商店服务
- */
-export interface StorefrontService {
-  id: string;
-  name: string;
-  code: string;
-  description: string | null;
-  max_organizations: number | null;
-  max_apartments: number;
-  max_rooms: number;
-  max_members: number;
-  pricing: StorefrontServicePricing[];
-}
-
-/**
- * 商店视图
- */
-export interface StorefrontView {
-  id: string;
-  name: string;
-  code: string;
-  is_active: boolean;
-  is_default: boolean;
-  services: StorefrontService[];
-}
-
-/**
- * 价格计算结果
- */
-export interface PriceCalculationResult {
-  original_price: number;
-  final_price: number;
-  discount_type: string | null;
-  discount_value: number | null;
-  discount_amount: number;
-  gift_months: number;
-}
+export type StorefrontServicePricing = StorefrontViewPricing;
+export type StorefrontService = StorefrontViewService;
 
 export const subscriptionsApi = {
   // Plans

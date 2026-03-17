@@ -13,3 +13,29 @@ export interface Tenant {
   notes: string | null;
   created_at: string;
 }
+
+export interface TenantCreate {
+  name: string;
+  phone?: string;
+  sms_opt_out?: boolean;
+  sms_opt_out_reason?: string;
+  id_card?: string;
+  emergency_contact?: string;
+  emergency_phone?: string;
+  notes?: string;
+}
+
+export interface TenantUpdate {
+  name?: string;
+  phone?: string;
+  sms_opt_out?: boolean;
+  sms_opt_out_reason?: string;
+  id_card?: string;
+  emergency_contact?: string;
+  emergency_phone?: string;
+  notes?: string;
+}
+
+export interface TenantListParams {
+  search?: string;
+}

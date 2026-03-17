@@ -3,9 +3,9 @@ import { useLocalSearchParams, router } from 'expo-router'
 import { useQuery } from '@tanstack/react-query'
 import { leasesApi } from '@/services/api'
 import { Colors } from '@/constants'
+import type { Lease } from '@apartment-ultra/api-contract'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type LeaseData = any
+type LeaseData = Lease | undefined
 
 export default function LeaseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -207,12 +207,12 @@ export default function LeaseDetailScreen() {
               >
                 <Text style={{ fontSize: 16 }}>📍</Text>
               </View>
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={{ fontSize: 14, fontWeight: '700', color: Colors.textPrimary }}>
-                  {lease?.room?.apartment_name || '未知公寓'}
-                </Text>
-                <Text style={{ fontSize: 12, color: Colors.textMuted }}>
-                  公寓名称
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '700', color: Colors.textPrimary }}>
+                    {lease?.room?.apartment?.name || '未知公寓'}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: Colors.textMuted }}>
+                    公寓名称
                 </Text>
               </View>
             </View>
@@ -263,7 +263,7 @@ export default function LeaseDetailScreen() {
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={{ fontSize: 12, color: Colors.textMuted }}>押金</Text>
                 <Text style={{ fontSize: 14, fontWeight: '700', color: Colors.textPrimary }}>
-                  {formatCurrency(lease?.deposit_amount)}
+                  {formatCurrency(lease?.deposit)}
                 </Text>
               </View>
             </View>

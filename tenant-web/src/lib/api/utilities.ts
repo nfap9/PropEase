@@ -1,42 +1,17 @@
 import api from './client';
 import { UtilityReading } from '@/types';
+import type {
+  BatchUtilityReadingData,
+  RoomMissingInitialReading,
+  UtilityExportRoom,
+} from '@apartment-ultra/api-contract';
 
 export type UtilityReadingMutationData = Partial<UtilityReading> & {
   reading_context?: 'normal' | 'initial' | 'meter_reset';
   anomaly_reason?: string;
 };
 
-export interface BatchUtilityReadingItem {
-  room_id: string; // ULID
-  water_reading?: number | null;
-  electricity_reading?: number | null;
-  notes?: string | null;
-}
-
-export interface BatchUtilityReadingData {
-  period_year: number;
-  period_month: number;
-  reading_date: string;
-  readings: BatchUtilityReadingItem[];
-}
-
-export interface RoomMissingInitialReading {
-  room_id: string;
-  apartment_name: string;
-  room_number: string;
-  tenant_name: string;
-  lease_start_date: string;
-}
-
-export interface UtilityExportRoom {
-  room_id: string; // ULID
-  apartment_name: string;
-  room_number: string;
-  tenant_name: string;
-  billing_day: number;
-  water_previous: number | null;
-  electricity_previous: number | null;
-}
+export type { BatchUtilityReadingData, RoomMissingInitialReading, UtilityExportRoom };
 
 export const utilitiesApi = {
   list: async (

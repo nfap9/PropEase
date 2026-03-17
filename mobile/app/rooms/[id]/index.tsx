@@ -288,10 +288,10 @@ export default function RoomDetailScreen() {
                 </View>
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={{ fontSize: 14, fontWeight: '700', color: Colors.textPrimary }}>
-                    {room?.floor ? `${room.floor}层` : '未知'}
+                    {room?.area ? `${room.area} m²` : room?.layout || '未知'}
                   </Text>
                   <Text style={{ fontSize: 12, color: Colors.textMuted, marginTop: 2 }}>
-                    所在楼层
+                    房间信息
                   </Text>
                 </View>
               </View>

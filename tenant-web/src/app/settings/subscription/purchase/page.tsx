@@ -32,6 +32,7 @@ import { subscriptionsApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import type { StorefrontService, StorefrontServicePricing } from '@/lib/api/subscriptions';
+import { getPricingSummary } from './pricing';
 
 const SUBSCRIPTION = {
   HEADING: 'subscription-purchase-heading',
@@ -118,7 +119,7 @@ export default function SubscriptionPurchasePage() {
     if (!selectedService) return;
 
     const billingMonths = selectedPricing?.months ?? 1;
-    const price = selectedPricing?.final_price ?? 0;
+    const price = getPricingSummary(selectedPricing).finalPrice;
 
     if (price <= 0) {
       subscribeMutation.mutate({ planId: selectedService.id, billingMonths });
@@ -140,6 +141,7 @@ export default function SubscriptionPurchasePage() {
 
   const isPending = subscribeMutation.isPending || createOrderMutation.isPending;
   const services = storefront?.services ?? [];
+  const selectedPricingSummary = getPricingSummary(selectedPricing);
 
   return (
     <MainLayout>
@@ -214,38 +216,44 @@ export default function SubscriptionPurchasePage() {
                     {/* 周期定价选择 */}
                     {pricing.length > 0 ? (
                       <div className="space-y-2">
-                        {pricing.map((p) => (
-                          <button
-                            key={p.id}
-                            className="flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors hover:bg-muted"
-                            onClick={() => handleSubscribe(service, p)}
-                            disabled={isCurrentPlan || isPending}
-                          >
-                            <div>
-                              <p className="font-medium">{p.months} 个月</p>
-                              {p.gift_months > 0 && (
-                                <Badge variant="outline" className="text-xs text-purple-600">
-                                  <Gift className="mr-1 h-3 w-3" />
-                                  赠送 {p.gift_months} 个月
-                                </Badge>
-                              )}
-                              {p.discount_amount > 0 && (
-                                <Badge variant="outline" className="text-xs text-green-600">
-                                  <Tag className="mr-1 h-3 w-3" />
-                                  优惠 ¥{p.discount_amount.toFixed(0)}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-right">
-                              {p.discount_amount > 0 && (
-                                <p className="text-sm text-muted-foreground line-through">
-                                  ¥{p.price.toFixed(2)}
+                        {pricing.map((p) => {
+                          const pricingSummary = getPricingSummary(p);
+
+                          return (
+                            <button
+                              key={p.id}
+                              className="flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors hover:bg-muted"
+                              onClick={() => handleSubscribe(service, p)}
+                              disabled={isCurrentPlan || isPending}
+                            >
+                              <div>
+                                <p className="font-medium">{p.months} 个月</p>
+                                {pricingSummary.giftMonths > 0 && (
+                                  <Badge variant="outline" className="text-xs text-purple-600">
+                                    <Gift className="mr-1 h-3 w-3" />
+                                    赠送 {pricingSummary.giftMonths} 个月
+                                  </Badge>
+                                )}
+                                {pricingSummary.discountAmount > 0 && (
+                                  <Badge variant="outline" className="text-xs text-green-600">
+                                    <Tag className="mr-1 h-3 w-3" />
+                                    优惠 ¥{pricingSummary.discountAmount.toFixed(0)}
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                {pricingSummary.discountAmount > 0 && (
+                                  <p className="text-sm text-muted-foreground line-through">
+                                    ¥{pricingSummary.originalPrice.toFixed(2)}
+                                  </p>
+                                )}
+                                <p className="text-lg font-bold">
+                                  {formatPrice(pricingSummary.finalPrice)}
                                 </p>
-                              )}
-                              <p className="text-lg font-bold">{formatPrice(p.final_price)}</p>
-                            </div>
-                          </button>
-                        ))}
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     ) : (
                       <Button
@@ -310,29 +318,29 @@ export default function SubscriptionPurchasePage() {
                 <div className="space-y-3 rounded-lg border p-4">
                   <div className="flex justify-between">
                     <span>原价</span>
-                    <span>¥{selectedPricing.price.toFixed(2)}</span>
+                    <span>¥{selectedPricingSummary.originalPrice.toFixed(2)}</span>
                   </div>
-                  {selectedPricing.discount_amount > 0 && (
+                  {selectedPricingSummary.discountAmount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>
                         <Tag className="mr-1 inline h-4 w-4" />
                         优惠减免
                       </span>
-                      <span>-¥{selectedPricing.discount_amount.toFixed(2)}</span>
+                      <span>-¥{selectedPricingSummary.discountAmount.toFixed(2)}</span>
                     </div>
                   )}
-                  {selectedPricing.gift_months > 0 && (
+                  {selectedPricingSummary.giftMonths > 0 && (
                     <div className="flex justify-between text-purple-600">
                       <span>
                         <Gift className="mr-1 inline h-4 w-4" />
                         赠送时长
                       </span>
-                      <span>+{selectedPricing.gift_months} 个月</span>
+                      <span>+{selectedPricingSummary.giftMonths} 个月</span>
                     </div>
                   )}
                   <div className="border-t flex justify-between pt-2 font-bold">
                     <span>实付金额</span>
-                    <span className="text-xl">{formatPrice(selectedPricing.final_price)}</span>
+                    <span className="text-xl">{formatPrice(selectedPricingSummary.finalPrice)}</span>
                   </div>
                 </div>
               )}
@@ -345,7 +353,7 @@ export default function SubscriptionPurchasePage() {
               <Button onClick={handleConfirmSubscribe} disabled={isPending}>
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 确认
-                {selectedPricing && selectedPricing.final_price > 0 ? '并去支付' : '订阅'}
+                {selectedPricing && selectedPricingSummary.finalPrice > 0 ? '并去支付' : '订阅'}
               </Button>
             </DialogFooter>
           </DialogContent>

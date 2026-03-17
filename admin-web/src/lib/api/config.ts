@@ -1,17 +1,11 @@
 /**
  * 公开配置 API - 无需认证
  */
+import type { BrandConfig, PublicConfig } from '@apartment-ultra/api-contract';
 import { api } from './client';
 
-export interface BrandConfig {
-  app_name: string;
-  app_description: string;
-  logo_url: string;
-  favicon_url: string;
-  login_subtitle: string;
-  register_subtitle: string;
-}
+export type { BrandConfig };
 
 export const configApi = {
-  getPublic: () => api.get<{ brand: BrandConfig }>('/config/public'),
+  getPublic: () => api.get<PublicConfig>('/config/public'),
 };

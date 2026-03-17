@@ -1,41 +1,15 @@
 import api from './client'
-import type { Apartment, Room } from '@apartment-ultra/api-contract'
+import type {
+  Apartment,
+  ApartmentCreate,
+  ApartmentUpdate,
+  ApartmentWithStats,
+  Room,
+  RoomCreate,
+  RoomUpdate,
+} from '@apartment-ultra/api-contract'
 
-// 内部定义创建/更新数据类型
-export interface CreateApartmentData {
-  name: string
-  address?: string
-  description?: string
-}
-
-export interface UpdateApartmentData {
-  name?: string
-  address?: string
-  description?: string
-}
-
-export interface CreateRoomData {
-  room_number: string
-  floor?: number
-  monthly_rent: number
-  status?: 'available' | 'occupied' | 'maintenance'
-}
-
-export interface UpdateRoomData {
-  room_number?: string
-  floor?: number
-  monthly_rent?: number
-  status?: 'available' | 'occupied' | 'maintenance'
-}
-
-// 带统计的公寓类型
-export interface ApartmentWithStats extends Apartment {
-  room_count: number
-  available_rooms: number
-  occupied_rooms: number
-  maintenance_rooms: number
-  occupancy_rate: number
-}
+export type { ApartmentWithStats };
 
 export const apartmentsApi = {
   /**
@@ -55,14 +29,14 @@ export const apartmentsApi = {
   /**
    * 创建公寓
    */
-  create: async (data: CreateApartmentData): Promise<Apartment> => {
+  create: async (data: ApartmentCreate): Promise<Apartment> => {
     return api.post<Apartment>('/apartments', data)
   },
 
   /**
    * 更新公寓
    */
-  update: async (id: string, data: UpdateApartmentData): Promise<Apartment> => {
+  update: async (id: string, data: ApartmentUpdate): Promise<Apartment> => {
     return api.put<Apartment>(`/apartments/${id}`, data)
   },
 
@@ -83,14 +57,14 @@ export const apartmentsApi = {
   /**
    * 创建房间
    */
-  createRoom: async (apartmentId: string, data: CreateRoomData): Promise<Room> => {
+  createRoom: async (apartmentId: string, data: RoomCreate): Promise<Room> => {
     return api.post<Room>(`/apartments/${apartmentId}/rooms`, data)
   },
 
   /**
    * 批量创建房间
    */
-  batchCreateRooms: async (apartmentId: string, rooms: CreateRoomData[]): Promise<Room[]> => {
+  batchCreateRooms: async (apartmentId: string, rooms: RoomCreate[]): Promise<Room[]> => {
     return api.post<Room[]>(`/apartments/${apartmentId}/rooms/batch`, { rooms })
   },
 
@@ -104,7 +78,7 @@ export const apartmentsApi = {
   /**
    * 更新房间
    */
-  updateRoom: async (roomId: string, data: UpdateRoomData): Promise<Room> => {
+  updateRoom: async (roomId: string, data: RoomUpdate): Promise<Room> => {
     return api.put<Room>(`/apartments/rooms/${roomId}`, data)
   },
 

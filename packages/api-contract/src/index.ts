@@ -18,8 +18,16 @@ export type {
 
 /** 组织 */
 export type {
+  BrandConfig,
+  PublicConfig,
+} from './config.js';
+
+/** 组织 */
+export type {
   MemberRole,
   Organization,
+  OrganizationCreate,
+  OrganizationUpdate,
   MigrationStats,
   DeletionPreview,
   OrganizationMember,
@@ -78,27 +86,47 @@ export type {
 /** 公寓与房间 */
 export type {
   Apartment,
+  ApartmentCreate,
+  ApartmentUpdate,
   RoomStats,
   ApartmentWithStats,
   RoomStatus,
+  FacilityItem,
+  RoomFacilities,
+  FacilityPreset,
   Room,
+  RoomCreate,
+  RoomUpdate,
   RoomBatchCreate,
   UtilityConfig,
   UtilityConfigCreate,
   UtilityConfigUpdate,
-  FacilityItem,
-  RoomFacilities,
-  FacilityPreset,
 } from './apartments.js';
 
 /** 租客 */
-export type { Tenant } from './tenants.js';
+export type { Tenant, TenantCreate, TenantUpdate, TenantListParams } from './tenants.js';
 
 /** 租约 */
-export type { Lease } from './leases.js';
+export type { Lease, LeaseCreate, LeaseUpdate, LeaseListParams } from './leases.js';
 
 /** 水电读数 */
-export type { UtilityReading } from './utilities.js';
+export type {
+  UtilityReading,
+  UtilityReadingCreate,
+  UtilityReadingUpdate,
+  UtilityListParams,
+  BatchUtilityReadingItem,
+  BatchUtilityReadingData,
+  RoomMissingInitialReading,
+  UtilityExportRoom,
+} from './utilities.js';
+
+/** 按量购买 */
+export type {
+  UsagePricing,
+  UsageQuota,
+  UsageQuotaOrder,
+} from './usage.js';
 
 /** 通知 */
 export type {
@@ -121,7 +149,13 @@ export type {
   BillStatus,
   PaymentMethod,
   Bill,
+  BillCreate,
+  BillUpdate,
+  BillListParams,
+  GenerateBillsRequest,
+  GenerateBillsResult,
   Payment,
+  PaymentCreate,
 } from './bills.js';
 
 /** 费用类型与配置 */
@@ -143,7 +177,9 @@ export type {
 export type {
   DashboardOverview,
   IncomeReport,
+  IncomeReportParams,
   OccupancyReport,
+  OccupancyReportParams,
 } from './reports.js';
 
 /** 权限 */

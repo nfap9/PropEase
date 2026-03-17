@@ -1,30 +1,7 @@
 import api from './client'
-import type { Tenant } from '@apartment-ultra/api-contract'
+import type { Tenant, TenantCreate, TenantListParams, TenantUpdate } from '@apartment-ultra/api-contract'
 
-// 内部定义创建/更新数据类型
-export interface CreateTenantData {
-  name: string
-  phone: string
-  id_card_number?: string
-  emergency_contact?: string
-  emergency_phone?: string
-  notes?: string
-}
-
-export interface UpdateTenantData {
-  name?: string
-  phone?: string
-  id_card_number?: string
-  emergency_contact?: string
-  emergency_phone?: string
-  notes?: string
-}
-
-export interface TenantListParams {
-  search?: string
-  page?: number
-  limit?: number
-}
+export type { TenantListParams };
 
 export const tenantsApi = {
   /**
@@ -44,14 +21,14 @@ export const tenantsApi = {
   /**
    * 创建租客
    */
-  create: async (data: CreateTenantData): Promise<Tenant> => {
+  create: async (data: TenantCreate): Promise<Tenant> => {
     return api.post<Tenant>('/tenants', data)
   },
 
   /**
    * 更新租客
    */
-  update: async (id: string, data: UpdateTenantData): Promise<Tenant> => {
+  update: async (id: string, data: TenantUpdate): Promise<Tenant> => {
     return api.put<Tenant>(`/tenants/${id}`, data)
   },
 

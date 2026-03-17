@@ -1,13 +1,5 @@
+import type { BrandConfig } from '@apartment-ultra/api-contract';
 import { prisma } from '../lib/prisma.js';
-
-export interface BrandConfig {
-  app_name: string;
-  app_description: string;
-  logo_url: string;
-  favicon_url: string;
-  login_subtitle: string;
-  register_subtitle: string;
-}
 
 export const DEFAULT_BRAND: BrandConfig = {
   app_name: '公寓管理系统',

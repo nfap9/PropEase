@@ -8,6 +8,18 @@ export interface Apartment {
   created_at: string;
 }
 
+export interface ApartmentCreate {
+  name: string;
+  address?: string;
+  description?: string;
+}
+
+export interface ApartmentUpdate {
+  name?: string;
+  address?: string;
+  description?: string;
+}
+
 /** 房间统计 */
 export interface RoomStats {
   total: number;
@@ -58,6 +70,26 @@ export interface Room {
   notes: string | null;
   apartment?: Apartment;
   created_at: string;
+}
+
+export interface RoomCreate {
+  room_number: string;
+  layout?: string;
+  monthly_rent: number;
+  area?: number;
+  notes?: string;
+  status?: RoomStatus;
+  facilities?: RoomFacilities | null;
+}
+
+export interface RoomUpdate {
+  room_number?: string;
+  layout?: string;
+  status?: RoomStatus;
+  monthly_rent?: number;
+  area?: number;
+  notes?: string;
+  facilities?: RoomFacilities | null;
 }
 
 /** 批量创建房间 */

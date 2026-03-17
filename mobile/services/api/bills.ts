@@ -1,46 +1,15 @@
 import api from './client'
-import type { Bill, Payment } from '@apartment-ultra/api-contract'
+import type {
+  Bill,
+  BillCreate,
+  BillListParams,
+  BillUpdate,
+  Payment,
+  PaymentCreate,
+} from '@apartment-ultra/api-contract'
 
-// 内部定义创建/更新数据类型
-export interface CreateBillData {
-  lease_id: string
-  bill_year: number
-  bill_month: number
-  rent_amount?: number
-  water_usage?: number
-  electricity_usage?: number
-  other_fees?: number
-  due_date?: string
-}
-
-export interface UpdateBillData {
-  rent_amount?: number
-  water_usage?: number
-  electricity_usage?: number
-  other_fees?: number
-  due_date?: string
-  status?: 'pending' | 'paid' | 'partial' | 'overdue'
-}
-
-export interface CreatePaymentData {
-  amount: number
-  payment_method?: string
-  payment_date?: string
-  reference?: string
-  notes?: string
-}
-
-export interface BillListParams {
-  status?: 'pending' | 'partial' | 'paid' | 'overdue'
-  lease_id?: string
-  bill_year?: number
-  bill_month?: number
-  page?: number
-  limit?: number
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type BillWithDetails = any
+export type { BillListParams };
+export type BillWithDetails = Bill;
 
 export const billsApi = {
   /**
@@ -60,14 +29,14 @@ export const billsApi = {
   /**
    * 创建账单
    */
-  create: async (data: CreateBillData): Promise<Bill> => {
+  create: async (data: BillCreate): Promise<Bill> => {
     return api.post<Bill>('/bills', data)
   },
 
   /**
    * 更新账单
    */
-  update: async (id: string, data: UpdateBillData): Promise<Bill> => {
+  update: async (id: string, data: BillUpdate): Promise<Bill> => {
     return api.put<Bill>(`/bills/${id}`, data)
   },
 
@@ -95,7 +64,7 @@ export const billsApi = {
   /**
    * 添加支付记录
    */
-  addPayment: async (billId: string, data: CreatePaymentData): Promise<Payment> => {
+  addPayment: async (billId: string, data: PaymentCreate): Promise<Payment> => {
     return api.post<Payment>(`/bills/${billId}/payments`, data)
   },
 }

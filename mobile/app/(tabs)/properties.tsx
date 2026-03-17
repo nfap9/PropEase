@@ -5,6 +5,15 @@ import { apartmentsApi, type ApartmentWithStats } from '@/services/api'
 import { Colors } from '@/constants'
 import { useState } from 'react'
 
+function getRoomStats(apartment: ApartmentWithStats) {
+  return apartment.room_stats ?? {
+    total: 0,
+    available: 0,
+    occupied: 0,
+    maintenance: 0,
+  }
+}
+
 export default function PropertiesScreen() {
   const [searchText, setSearchText] = useState('')
 
@@ -20,13 +29,17 @@ export default function PropertiesScreen() {
 
   // 统计总数
   const stats = apartments?.reduce(
-    (acc, apt) => ({
-      total: acc.total + 1,
-      rooms: acc.rooms + (apt.room_count || 0),
-      available: acc.available + (apt.available_rooms || 0),
-      occupied: acc.occupied + (apt.occupied_rooms || 0),
-      maintenance: acc.maintenance + (apt.maintenance_rooms || 0),
-    }),
+    (acc, apt) => {
+      const roomStats = getRoomStats(apt)
+
+      return {
+        total: acc.total + 1,
+        rooms: acc.rooms + roomStats.total,
+        available: acc.available + roomStats.available,
+        occupied: acc.occupied + roomStats.occupied,
+        maintenance: acc.maintenance + roomStats.maintenance,
+      }
+    },
     { total: 0, rooms: 0, available: 0, occupied: 0, maintenance: 0 }
   ) || { total: 0, rooms: 0, available: 0, occupied: 0, maintenance: 0 }
 
@@ -207,9 +220,10 @@ function ApartmentCard({
 }) {
   const colors = ['#2563EB', '#9333EA', '#059669', '#EA580C', '#0891B2']
   const bgColor = colors[colorIndex % colors.length]
+  const roomStats = getRoomStats(apartment)
 
-  const occupancyRate = apartment.room_count > 0
-    ? Math.round((apartment.occupied_rooms / apartment.room_count) * 100)
+  const occupancyRate = roomStats.total > 0
+    ? Math.round((roomStats.occupied / roomStats.total) * 100)
     : 0
 
   return (
@@ -262,19 +276,19 @@ function ApartmentCard({
       {/* 房间统计 */}
       <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
         <View style={{ flex: 1, backgroundColor: '#F8FAFC', borderRadius: 16, padding: 12, alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, fontWeight: '900', color: '#374151' }}>{apartment.room_count || 0}</Text>
+          <Text style={{ fontSize: 16, fontWeight: '900', color: '#374151' }}>{roomStats.total}</Text>
           <Text style={{ fontSize: 9, color: Colors.textMuted, fontWeight: '500' }}>总房间</Text>
         </View>
         <View style={{ flex: 1, backgroundColor: '#ECFDF5', borderRadius: 16, padding: 12, alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, fontWeight: '900', color: Colors.success }}>{apartment.available_rooms || 0}</Text>
+          <Text style={{ fontSize: 16, fontWeight: '900', color: Colors.success }}>{roomStats.available}</Text>
           <Text style={{ fontSize: 9, color: Colors.textMuted, fontWeight: '500' }}>空房</Text>
         </View>
         <View style={{ flex: 1, backgroundColor: '#EFF6FF', borderRadius: 16, padding: 12, alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, fontWeight: '900', color: Colors.primary }}>{apartment.occupied_rooms || 0}</Text>
+          <Text style={{ fontSize: 16, fontWeight: '900', color: Colors.primary }}>{roomStats.occupied}</Text>
           <Text style={{ fontSize: 9, color: Colors.textMuted, fontWeight: '500' }}>已租</Text>
         </View>
         <View style={{ flex: 1, backgroundColor: '#FFF7ED', borderRadius: 16, padding: 12, alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, fontWeight: '900', color: Colors.warning }}>{apartment.maintenance_rooms || 0}</Text>
+          <Text style={{ fontSize: 16, fontWeight: '900', color: Colors.warning }}>{roomStats.maintenance}</Text>
           <Text style={{ fontSize: 9, color: Colors.textMuted, fontWeight: '500' }}>维修</Text>
         </View>
       </View>

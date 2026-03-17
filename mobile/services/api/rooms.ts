@@ -1,19 +1,9 @@
 import api from './client'
-import type { Lease, Bill } from '@apartment-ultra/api-contract'
+import type { Bill, Lease, Room, RoomUpdate } from '@apartment-ultra/api-contract'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type RoomData = any
+type RoomData = Room
 
-// 内部定义更新数据类型
-export interface UpdateRoomData {
-  room_number?: string
-  floor?: number
-  monthly_rent?: number
-  status?: 'available' | 'occupied' | 'maintenance'
-  layout?: string
-  area?: number
-  notes?: string
-}
+export type UpdateRoomData = RoomUpdate
 
 export const roomsApi = {
   /**
@@ -40,17 +30,15 @@ export const roomsApi = {
   /**
    * 获取房间的租约列表
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getLeases: async (roomId: string): Promise<any[]> => {
-    return api.get(`/apartments/rooms/${roomId}/leases`)
+  getLeases: async (roomId: string): Promise<Lease[]> => {
+    return api.get<Lease[]>(`/apartments/rooms/${roomId}/leases`)
   },
 
   /**
    * 获取房间的账单列表
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getBills: async (roomId: string): Promise<any[]> => {
-    return api.get(`/apartments/rooms/${roomId}/bills`)
+  getBills: async (roomId: string): Promise<Bill[]> => {
+    return api.get<Bill[]>(`/apartments/rooms/${roomId}/bills`)
   },
 }
 

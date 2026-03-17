@@ -26,6 +26,12 @@ export interface IncomeReport {
   collection_rate: number;
 }
 
+export interface IncomeReportParams {
+  year?: number;
+  start_month?: number;
+  end_month?: number;
+}
+
 /** 入住率报表 */
 export interface OccupancyReport {
   period: string;
@@ -33,4 +39,8 @@ export interface OccupancyReport {
   occupied_rooms: number;
   vacant_rooms: number;
   occupancy_rate: number;
+}
+
+export interface OccupancyReportParams {
+  year?: number;
 }
