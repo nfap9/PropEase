@@ -79,6 +79,7 @@ pnpm dev:admin
 ## 更多文档
 
 - [文档总览](docs/README.md) - 按作用组织的项目文档导航
+- [Issue 使用规范](docs/issue-management.md) - GitHub Issue 的标题、模板与拆分规则
 - [后端 API 文档](api/AGENTS.md) - 后端架构与开发指南
 - [运营后台文档](admin-web/AGENTS.md) - 运营后台开发说明
 - [租客端文档](tenant-web/AGENTS.md) - 租客端前端开发说明

@@ -79,6 +79,7 @@ pnpm dev:admin
 - 修改任何模块前，先阅读目标文件、相邻文件和模块 `AGENTS.md`。
 - 不要跳过现有注释、类型定义和目录约定。
 - 如果发现当前文档与代码不一致，优先以代码和运行结果为准，再回补文档。
+- 处理 GitHub Issue 的创建、整理、拆分或补充时，优先遵循 [`.claude/skills/issue-management/SKILL.md`](./.claude/skills/issue-management/SKILL.md)。
 
 ### 2. 改动要收口
 
@@ -149,3 +150,5 @@ pnpm dev:admin
 ## 当前任务来源
 
 长期说明在 `docs/`，当前状态摘要见 `PROGRESS.md`，具体工作项以 GitHub Issues / PR 为准。
+
+Issue 编写与使用规范见 [`docs/issue-management.md`](./docs/issue-management.md)。
