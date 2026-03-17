@@ -1,10 +1,14 @@
 /**
- * 数据迁移脚本：SubscriptionPlan -> ServiceProduct
+ * 一次性数据迁移脚本：SubscriptionPlan -> ServiceProduct
  *
  * 执行方式：
  * 1. 确保 prisma db push 已执行（新表已创建）
- * 2. 运行: npx ts-node prisma/migrate-plans-to-services.ts
+ * 2. 运行: pnpm exec tsx scripts/migrate-plans-to-services.ts
  * 3. 验证数据迁移正确后，可删除旧表 subscription_plans, plan_pricing
+ *
+ * 说明：
+ * - 该脚本仅用于服务定价重构的历史数据迁移
+ * - 保留在 scripts 目录，避免和 Prisma schema / migration 文件混在一起
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -92,7 +96,6 @@ async function main() {
   // 5. 创建默认商店配置
   console.log('\n5. 创建默认商店配置...');
 
-  // 检查是否已存在默认配置
   const existingStorefront = await prisma.storefrontConfig.findFirst({
     where: { code: 'default' },
   });
@@ -108,14 +111,12 @@ async function main() {
       },
     });
 
-    // 将所有活跃的服务产品添加到默认商店
     const activeServices = await prisma.serviceProduct.findMany({
       where: { is_active: true },
       orderBy: { sort_order: 'asc' },
     });
 
     for (const service of activeServices) {
-      // 排除免费套餐（免费套餐不显示在商店中）
       if (service.code === 'free') continue;
 
       await prisma.storefrontItem.create({

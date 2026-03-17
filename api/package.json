@@ -17,7 +17,8 @@
     "prisma:studio": "prisma studio",
     "db:push": "prisma db push",
     "db:reset": "prisma db push --force-reset",
-    "export:openapi": "tsx scripts/export-openapi.ts"
+    "export:openapi": "tsx scripts/export-openapi.ts",
+    "migrate:plans-to-services": "tsx scripts/migrate-plans-to-services.ts"
   },
   "dependencies": {
     "@apartment-ultra/api-contract": "workspace:*",

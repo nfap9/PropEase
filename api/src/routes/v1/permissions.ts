@@ -19,11 +19,11 @@ const router: Router = Router();
 
 const GrantSystemRoleSchema = z.object({
   user_id: z.string(),
-  role: z.enum(SYSTEM_ROLES as unknown as [string, ...string[]]),
+  role: z.enum(SYSTEM_ROLES),
 });
 const RevokeSystemRoleSchema = z.object({
   user_id: z.string(),
-  role: z.enum(SYSTEM_ROLES as unknown as [string, ...string[]]),
+  role: z.enum(SYSTEM_ROLES),
 });
 
 router.use(requireConsoleAuth);

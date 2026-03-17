@@ -8,9 +8,6 @@ import type {
   Prisma,
 } from '@prisma/client';
 import type { ServiceProduct } from '@apartment-ultra/api-contract';
-
-// 使用 Prisma.InputJsonValue 类型
-type InputJsonValue = Prisma.InputJsonValue;
 import type {
   AdminRepository,
   AdminUserWithRole,
@@ -21,6 +18,7 @@ import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { hashPassword, verifyPassword } from '../utils/security.js';
 import { createAdminAccessToken } from '../utils/jwt.js';
+import { toPrismaInputJsonValue } from '../utils/json.js';
 import { ulid } from 'ulid';
 import {
   defaultServiceProductService,
@@ -322,7 +320,7 @@ export function createAdminService(
       return getRepo().createAdminRole({
         id: ulid().toLowerCase(),
         name: data.name,
-        permissions: permissions as unknown as Prisma.InputJsonValue,
+        permissions: toPrismaInputJsonValue(permissions),
         is_system: data.is_system ?? false,
       });
     },
@@ -335,7 +333,7 @@ export function createAdminService(
       const updateData: Prisma.AdminRoleUpdateInput = {};
       if (data.name != null) updateData.name = data.name;
       if (data.permissions !== undefined) {
-        updateData.permissions = data.permissions as unknown as Prisma.InputJsonValue;
+        updateData.permissions = toPrismaInputJsonValue(data.permissions);
       }
       return getRepo().updateAdminRole(roleId, updateData);
     },
@@ -532,7 +530,7 @@ export function createAdminService(
         price_per_room: data.price_per_room ?? (current.price_per_room as number) ?? 0,
         price_per_member: data.price_per_member ?? (current.price_per_member as number) ?? 0,
       };
-      await getRepo().updateUsagePricingConfig(updated as unknown as InputJsonValue);
+      await getRepo().updateUsagePricingConfig(toPrismaInputJsonValue(updated));
       return updated;
     },
 
@@ -554,7 +552,7 @@ export function createAdminService(
     },
 
     updatePlatformConfig: async (brand: PlatformBrand) => {
-      await getRepo().upsertPlatformConfig(brand as unknown as InputJsonValue);
+      await getRepo().upsertPlatformConfig(toPrismaInputJsonValue(brand));
       return brand;
     },
   };

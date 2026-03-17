@@ -142,7 +142,7 @@ export function createServiceProductService(
       id: item.id,
       storefront_id: item.storefront_id,
       service_id: item.service_id,
-      service: item.service ? toServiceProduct(item.service as ServiceProductWithPricing) : undefined,
+      service: item.service ? toServiceProduct(item.service) : undefined,
       is_visible: item.is_visible,
       sort_order: item.sort_order,
       pricing_discounts: item.pricing_discounts,

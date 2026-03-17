@@ -1,9 +1,10 @@
 /**
  * 服务定价模块 - 数据访问层
  */
-import type { PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient, StorefrontItem as PrismaStorefrontItem } from '@prisma/client';
 import { ulid } from 'ulid';
 import { prisma } from '../lib/prisma.js';
+import { toPrismaInputJsonValue } from '../utils/json.js';
 
 /** 定价折扣配置 */
 export interface PricingDiscount {
@@ -13,46 +14,92 @@ export interface PricingDiscount {
   gift_months: number | null;
 }
 
-export interface ServiceProductWithPricing {
-  id: string;
-  name: string;
-  code: string;
-  description: string | null;
-  max_organizations: number | null;
-  max_apartments: number;
-  max_rooms: number;
-  max_members: number;
-  is_active: boolean;
-  sort_order: number;
-  created_at: Date;
-  updated_at: Date;
-  pricing: Array<{
-    id: string;
-    service_id: string;
-    months: number;
-    price: bigint;
-    is_active: boolean;
-    sort_order: number;
-  }>;
+export type ServiceProductWithPricing = Prisma.ServiceProductGetPayload<{
+  include: { pricing: true };
+}>;
+
+type StorefrontItemWithServicePayload = Prisma.StorefrontItemGetPayload<{
+  include: { service: { include: { pricing: true } } };
+}>;
+
+type StorefrontConfigWithItemsPayload = Prisma.StorefrontConfigGetPayload<{
+  include: {
+    items: {
+      include: { service: { include: { pricing: true } } };
+    };
+  };
+}>;
+
+export interface StorefrontItemRecord
+  extends Omit<PrismaStorefrontItem, 'pricing_discounts'> {
+  pricing_discounts: PricingDiscount[] | null;
+  service?: ServiceProductWithPricing;
 }
 
-export interface StorefrontConfigWithItems {
-  id: string;
-  name: string;
-  code: string;
-  is_active: boolean;
-  is_default: boolean;
-  created_at: Date;
-  updated_at: Date;
-  items: Array<{
-    id: string;
-    storefront_id: string;
-    service_id: string;
-    is_visible: boolean;
-    sort_order: number;
-    pricing_discounts: PricingDiscount[] | null;
-    service?: ServiceProductWithPricing;
-  }>;
+export interface StorefrontConfigWithItems
+  extends Omit<StorefrontConfigWithItemsPayload, 'items'> {
+  items: StorefrontItemRecord[];
+}
+
+function isJsonObject(value: Prisma.JsonValue): value is Prisma.JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function parsePricingDiscounts(value: Prisma.JsonValue | null): PricingDiscount[] | null {
+  if (value === null) return null;
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  const discounts: PricingDiscount[] = [];
+
+  for (const entry of value) {
+    if (!isJsonObject(entry)) return null;
+
+    const months = entry.months;
+    const discountType = entry.discount_type;
+    const discountValue = entry.discount_value;
+    const giftMonths = entry.gift_months;
+
+    if (typeof months !== 'number') return null;
+    if (
+      discountType !== 'gift' &&
+      discountType !== 'percent' &&
+      discountType !== 'fixed'
+    ) {
+      return null;
+    }
+    if (discountValue !== null && typeof discountValue !== 'number') return null;
+    if (giftMonths !== null && typeof giftMonths !== 'number') return null;
+
+    discounts.push({
+      months,
+      discount_type: discountType,
+      discount_value: discountValue,
+      gift_months: giftMonths,
+    });
+  }
+
+  return discounts;
+}
+
+function normalizeStorefrontItem(
+  item: PrismaStorefrontItem | StorefrontItemWithServicePayload
+): StorefrontItemRecord {
+  return {
+    ...item,
+    pricing_discounts: parsePricingDiscounts(item.pricing_discounts),
+    service: 'service' in item ? item.service : undefined,
+  };
+}
+
+function normalizeStorefrontConfig(
+  config: StorefrontConfigWithItemsPayload
+): StorefrontConfigWithItems {
+  return {
+    ...config,
+    items: config.items.map(normalizeStorefrontItem),
+  };
 }
 
 /** 服务产品仓库接口 */
@@ -134,6 +181,8 @@ export interface ServiceProductRepository {
     is_visible: boolean;
     sort_order: number;
     pricing_discounts: PricingDiscount[] | null;
+    created_at: Date;
+    updated_at: Date;
   }>;
   updateStorefrontItem(id: string, data: {
     is_visible?: boolean;
@@ -165,23 +214,24 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
     async list(params?: { is_active?: boolean; include_pricing?: boolean }): Promise<ServiceProductWithPricing[]> {
       return db.serviceProduct.findMany({
         where: params?.is_active !== undefined ? { is_active: params.is_active } : undefined,
-        include: params?.include_pricing ? { pricing: { orderBy: { sort_order: 'asc' } } } : undefined,
+        include: { pricing: { orderBy: { sort_order: 'asc' } } },
         orderBy: { sort_order: 'asc' },
-      }) as unknown as ServiceProductWithPricing[];
+      });
     },
 
     async findById(id: string, includePricing = true): Promise<ServiceProductWithPricing | null> {
+      void includePricing;
       return db.serviceProduct.findUnique({
         where: { id },
-        include: includePricing ? { pricing: { orderBy: { sort_order: 'asc' } } } : undefined,
-      }) as unknown as ServiceProductWithPricing | null;
+        include: { pricing: { orderBy: { sort_order: 'asc' } } },
+      });
     },
 
     async findByCode(code: string): Promise<ServiceProductWithPricing | null> {
       return db.serviceProduct.findUnique({
         where: { code },
         include: { pricing: { orderBy: { sort_order: 'asc' } } },
-      }) as unknown as ServiceProductWithPricing | null;
+      });
     },
 
     async create(data: {
@@ -208,8 +258,8 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
           is_active: data.is_active ?? true,
           sort_order: data.sort_order ?? 0,
         },
-        include: { pricing: true },
-      }) as unknown as ServiceProductWithPricing;
+        include: { pricing: { orderBy: { sort_order: 'asc' } } },
+      });
     },
 
     async update(id: string, data: {
@@ -235,7 +285,7 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
           sort_order: data.sort_order,
         },
         include: { pricing: { orderBy: { sort_order: 'asc' } } },
-      }) as unknown as ServiceProductWithPricing;
+      });
     },
 
     async delete(id: string): Promise<void> {
@@ -323,7 +373,7 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
     // ========================
 
     async listStorefronts(params?: { is_active?: boolean }): Promise<StorefrontConfigWithItems[]> {
-      return db.storefrontConfig.findMany({
+      const configs = await db.storefrontConfig.findMany({
         where: params?.is_active !== undefined ? { is_active: params.is_active } : undefined,
         include: {
           items: {
@@ -336,11 +386,12 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
           },
         },
         orderBy: { created_at: 'desc' },
-      }) as unknown as StorefrontConfigWithItems[];
+      });
+      return configs.map(normalizeStorefrontConfig);
     },
 
     async findStorefrontById(id: string): Promise<StorefrontConfigWithItems | null> {
-      return db.storefrontConfig.findUnique({
+      const config = await db.storefrontConfig.findUnique({
         where: { id },
         include: {
           items: {
@@ -352,11 +403,12 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
             orderBy: { sort_order: 'asc' },
           },
         },
-      }) as unknown as StorefrontConfigWithItems | null;
+      });
+      return config ? normalizeStorefrontConfig(config) : null;
     },
 
     async findStorefrontByCode(code: string): Promise<StorefrontConfigWithItems | null> {
-      return db.storefrontConfig.findUnique({
+      const config = await db.storefrontConfig.findUnique({
         where: { code },
         include: {
           items: {
@@ -368,11 +420,12 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
             orderBy: { sort_order: 'asc' },
           },
         },
-      }) as unknown as StorefrontConfigWithItems | null;
+      });
+      return config ? normalizeStorefrontConfig(config) : null;
     },
 
     async findDefaultStorefront(): Promise<StorefrontConfigWithItems | null> {
-      return db.storefrontConfig.findFirst({
+      const config = await db.storefrontConfig.findFirst({
         where: { is_default: true, is_active: true },
         include: {
           items: {
@@ -384,7 +437,8 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
             orderBy: { sort_order: 'asc' },
           },
         },
-      }) as unknown as StorefrontConfigWithItems | null;
+      });
+      return config ? normalizeStorefrontConfig(config) : null;
     },
 
     async createStorefront(data: {
@@ -401,7 +455,7 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
         });
       }
 
-      return db.storefrontConfig.create({
+      const config = await db.storefrontConfig.create({
         data: {
           id: ulid(),
           name: data.name,
@@ -409,8 +463,18 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
           is_active: data.is_active ?? true,
           is_default: data.is_default ?? false,
         },
-        include: { items: true },
-      }) as unknown as StorefrontConfigWithItems;
+        include: {
+          items: {
+            include: {
+              service: {
+                include: { pricing: { orderBy: { sort_order: 'asc' } } },
+              },
+            },
+            orderBy: { sort_order: 'asc' },
+          },
+        },
+      });
+      return normalizeStorefrontConfig(config);
     },
 
     async updateStorefront(
@@ -425,11 +489,21 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
         });
       }
 
-      return db.storefrontConfig.update({
+      const config = await db.storefrontConfig.update({
         where: { id },
         data,
-        include: { items: true },
-      }) as unknown as StorefrontConfigWithItems;
+        include: {
+          items: {
+            include: {
+              service: {
+                include: { pricing: { orderBy: { sort_order: 'asc' } } },
+              },
+            },
+            orderBy: { sort_order: 'asc' },
+          },
+        },
+      });
+      return normalizeStorefrontConfig(config);
     },
 
     async deleteStorefront(id: string): Promise<void> {
@@ -451,16 +525,10 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
       sort_order: number;
       pricing_discounts: PricingDiscount[] | null;
     } | null> {
-      return db.storefrontItem.findFirst({
+      const item = await db.storefrontItem.findFirst({
         where: { storefront_id: storefrontId, service_id: serviceId },
-      }) as unknown as {
-        id: string;
-        storefront_id: string;
-        service_id: string;
-        is_visible: boolean;
-        sort_order: number;
-        pricing_discounts: PricingDiscount[] | null;
-      } | null;
+      });
+      return item ? normalizeStorefrontItem(item) : null;
     },
 
     async createStorefrontItem(data: {
@@ -476,24 +544,23 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
       is_visible: boolean;
       sort_order: number;
       pricing_discounts: PricingDiscount[] | null;
+      created_at: Date;
+      updated_at: Date;
     }> {
-      return db.storefrontItem.create({
+      const item = await db.storefrontItem.create({
         data: {
           id: ulid(),
           storefront_id: data.storefront_id,
           service_id: data.service_id,
           is_visible: data.is_visible ?? true,
           sort_order: data.sort_order ?? 0,
-          pricing_discounts: data.pricing_discounts as unknown as never,
+          pricing_discounts:
+            data.pricing_discounts === undefined
+              ? undefined
+              : toPrismaInputJsonValue(data.pricing_discounts),
         },
-      }) as unknown as {
-        id: string;
-        storefront_id: string;
-        service_id: string;
-        is_visible: boolean;
-        sort_order: number;
-        pricing_discounts: PricingDiscount[] | null;
-      };
+      });
+      return normalizeStorefrontItem(item);
     },
 
     async updateStorefrontItem(
@@ -509,25 +576,18 @@ export function createServiceProductRepository(db: PrismaClient = prisma): Servi
       created_at: Date;
       updated_at: Date;
     }> {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const updateData: any = {
-        is_visible: data.is_visible,
-        sort_order: data.sort_order,
-        pricing_discounts: data.pricing_discounts,
-      };
-      return db.storefrontItem.update({
+      const updateData: Prisma.StorefrontItemUpdateInput = {};
+      if (data.is_visible !== undefined) updateData.is_visible = data.is_visible;
+      if (data.sort_order !== undefined) updateData.sort_order = data.sort_order;
+      if (data.pricing_discounts !== undefined) {
+        updateData.pricing_discounts = toPrismaInputJsonValue(data.pricing_discounts);
+      }
+
+      const item = await db.storefrontItem.update({
         where: { id },
         data: updateData,
-      }) as unknown as {
-        id: string;
-        storefront_id: string;
-        service_id: string;
-        is_visible: boolean;
-        sort_order: number;
-        pricing_discounts: PricingDiscount[] | null;
-        created_at: Date;
-        updated_at: Date;
-      };
+      });
+      return normalizeStorefrontItem(item);
     },
 
     async deleteStorefrontItem(id: string): Promise<void> {

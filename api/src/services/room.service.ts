@@ -7,6 +7,7 @@ import {
   type RoomWithApartment,
 } from '../repositories/room.repo.js';
 import { createAppError } from '../utils/appError.js';
+import { toPrismaInputJsonValue } from '../utils/json.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -87,7 +88,10 @@ function buildCreateData(apartmentId: string, data: CreateRoomInput): Prisma.Roo
     area: data.area,
     notes: data.notes,
     status: data.status ?? 'available',
-    facilities: data.facilities ? (data.facilities as unknown as Prisma.InputJsonValue) : undefined,
+    facilities:
+      data.facilities === undefined
+        ? undefined
+        : toPrismaInputJsonValue(data.facilities),
   };
 }
 
@@ -113,7 +117,7 @@ function buildUpdateData(existing: Room, data: UpdateRoomInput): Prisma.RoomUpda
     if (data.facilities === null) {
       result.facilities = Prisma.JsonNull;
     } else {
-      result.facilities = data.facilities as unknown as Prisma.InputJsonValue;
+      result.facilities = toPrismaInputJsonValue(data.facilities);
     }
   }
 
