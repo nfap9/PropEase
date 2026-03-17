@@ -1,13 +1,21 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { AccessContext } from './permission-access';
 import { canAccessRule } from './permission-access';
 
 describe('canAccessRule', () => {
   const context = {
-    organization: { id: 'org-1', name: '测试组织' } as any,
+    organization: {
+      id: 'org-1',
+      name: '测试组织',
+      slug: 'test-org',
+      settings: {},
+      is_personal: false,
+      created_at: '2026-01-01T00:00:00.000Z',
+    },
     permissions: ['tenant:view'],
     isSuperAdmin: false,
     hasPermission: vi.fn((code: string) => code === 'tenant:view'),
-  };
+  } satisfies AccessContext;
 
   it('blocks organization-scoped pages when no organization is selected', () => {
     expect(
