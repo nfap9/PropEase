@@ -18,6 +18,8 @@
   作用：统一前后端、数据库与测试中的命名约定。
 - [Issue 使用规范](./issue-management.md)
   作用：统一 GitHub Issue 的标题、结构、拆分方式与验收标准写法。
+- [Monorepo 共享工程配置](./monorepo-governance.md)
+  作用：集中说明共享 tsconfig、eslint 与依赖版本治理方式。
 
 ### 3. 测试用例
 

@@ -1,6 +1,11 @@
 import api from './client';
 import { UtilityReading } from '@/types';
 
+export type UtilityReadingMutationData = Partial<UtilityReading> & {
+  reading_context?: 'normal' | 'initial' | 'meter_reset';
+  anomaly_reason?: string;
+};
+
 export interface BatchUtilityReadingItem {
   room_id: string; // ULID
   water_reading?: number | null;
@@ -63,7 +68,7 @@ export const utilitiesApi = {
     return response.data;
   },
 
-  create: async (orgId: string, data: Partial<UtilityReading>): Promise<UtilityReading> => {
+  create: async (orgId: string, data: UtilityReadingMutationData): Promise<UtilityReading> => {
     const response = await api.post<UtilityReading>('/utilities', data, {
       params: { org_id: orgId },
     });
@@ -73,7 +78,7 @@ export const utilitiesApi = {
   update: async (
     orgId: string,
     id: string,
-    data: Partial<UtilityReading>
+    data: UtilityReadingMutationData
   ): Promise<UtilityReading> => {
     const response = await api.put<UtilityReading>(`/utilities/${id}`, data, {
       params: { org_id: orgId },

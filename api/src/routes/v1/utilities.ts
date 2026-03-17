@@ -20,6 +20,8 @@ const ReadingCreateSchema = z.object({
   water_previous: z.number().optional(),
   electricity_previous: z.number().optional(),
   notes: z.string().optional(),
+  reading_context: z.enum(['normal', 'initial', 'meter_reset']).optional(),
+  anomaly_reason: z.string().optional(),
 });
 const ReadingUpdateSchema = ReadingCreateSchema.partial();
 const BatchReadingSchema = z.object({

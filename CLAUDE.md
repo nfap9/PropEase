@@ -146,6 +146,7 @@ pnpm dev:mobile
 - `docs/api-contract/`：统一契约说明
 - `docs/ui-design/`：设计参考和历史原型，不是代码真相
 - `PROGRESS.md`：当前高层状态摘要
+- `docs/monorepo-governance.md`：monorepo 共享工程配置与新增模块接入方式
 
 ## 语言要求
 

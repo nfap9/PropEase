@@ -10,6 +10,20 @@ import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
 
+export type ReadingContext = 'normal' | 'initial' | 'meter_reset';
+
+interface NormalizedReadingPayload {
+  room_id: string;
+  period_year: number;
+  period_month: number;
+  reading_date: string;
+  water_reading?: number;
+  electricity_reading?: number;
+  water_previous?: number;
+  electricity_previous?: number;
+  notes?: string;
+}
+
 /**
  * 创建读数输入
  */
@@ -23,6 +37,8 @@ export interface CreateReadingInput {
   water_previous?: number;
   electricity_previous?: number;
   notes?: string;
+  reading_context?: ReadingContext;
+  anomaly_reason?: string;
 }
 
 /**
@@ -53,6 +69,177 @@ export interface UpdateReadingInput {
   water_previous?: number;
   electricity_previous?: number;
   notes?: string;
+  reading_context?: ReadingContext;
+  anomaly_reason?: string;
+}
+
+const meterValidationConfigs = [
+  {
+    label: '水表',
+    currentKey: 'water_reading',
+    previousKey: 'water_previous',
+    absoluteSpikeThreshold: 80,
+  },
+  {
+    label: '电表',
+    currentKey: 'electricity_reading',
+    previousKey: 'electricity_previous',
+    absoluteSpikeThreshold: 600,
+  },
+] as const;
+
+function formatDecimal(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2);
+}
+
+function buildContextNotes(
+  context: ReadingContext,
+  anomalyReason?: string,
+  notes?: string
+): string | undefined {
+  const normalizedNotes = notes?.trim();
+  const normalizedReason = anomalyReason?.trim();
+  const contextSummary =
+    context === 'initial'
+      ? '【读数上下文】首次录入；系统已将上一读数同步为当前值'
+      : context === 'meter_reset'
+        ? `【读数上下文】更换新表${normalizedReason ? `；原因：${normalizedReason}` : ''}`
+        : normalizedReason
+          ? `【异常说明】${normalizedReason}`
+          : null;
+
+  if (!contextSummary) {
+    return normalizedNotes || undefined;
+  }
+
+  return [contextSummary, normalizedNotes].filter(Boolean).join('\n');
+}
+
+async function normalizeReadingPayload(
+  repo: UtilityRepository,
+  data: NormalizedReadingPayload & {
+    reading_context?: ReadingContext;
+    anomaly_reason?: string;
+  },
+  existing?: ReadingWithRelations | null
+): Promise<NormalizedReadingPayload> {
+  const context = data.reading_context ?? 'normal';
+  const anomalyReason = data.anomaly_reason?.trim();
+  const previousReading = await repo.findLatestReadingBefore(
+    data.room_id,
+    data.period_year,
+    data.period_month
+  );
+  const fieldErrors: Array<{ field: string; message: string }> = [];
+  const normalized: NormalizedReadingPayload = {
+    room_id: data.room_id,
+    period_year: data.period_year,
+    period_month: data.period_month,
+    reading_date: data.reading_date,
+    water_reading: data.water_reading,
+    electricity_reading: data.electricity_reading,
+    water_previous: data.water_previous,
+    electricity_previous: data.electricity_previous,
+    notes: buildContextNotes(context, anomalyReason, data.notes),
+  };
+
+  if (context === 'initial' && previousReading) {
+    fieldErrors.push({
+      field: 'reading_context',
+      message: '该房间已有历史读数，不能再使用“首次录入”建立基线。',
+    });
+  }
+
+  if (context === 'meter_reset' && !anomalyReason) {
+    fieldErrors.push({
+      field: 'anomaly_reason',
+      message: '更换新表时请填写原因，便于后续追溯。',
+    });
+  }
+
+  for (const config of meterValidationConfigs) {
+    const nextCurrentValue = normalized[config.currentKey];
+    if (nextCurrentValue == null) {
+      continue;
+    }
+
+    const explicitPrevious = normalized[config.previousKey];
+    const historicalCurrent = previousReading?.[config.currentKey];
+    const historicalPrevious = previousReading?.[config.previousKey];
+    const latestCurrentValue =
+      historicalCurrent != null ? Number(historicalCurrent) : undefined;
+    const previousUsage =
+      historicalCurrent != null && historicalPrevious != null
+        ? Number(historicalCurrent) - Number(historicalPrevious)
+        : undefined;
+
+    let previousValue = explicitPrevious;
+
+    if (previousValue == null) {
+      if (context === 'initial' && !previousReading) {
+        previousValue = nextCurrentValue;
+      } else if (latestCurrentValue != null) {
+        previousValue = latestCurrentValue;
+      }
+    }
+
+    if (previousValue == null) {
+      fieldErrors.push({
+        field: config.previousKey,
+        message: `缺少${config.label}上一期读数，请先建立首次读数基线，或在换表时手动填写上一读数。`,
+      });
+      continue;
+    }
+
+    if (nextCurrentValue < previousValue) {
+      if (context === 'meter_reset' && explicitPrevious != null) {
+        normalized[config.previousKey] = explicitPrevious;
+      } else {
+        fieldErrors.push({
+          field: config.currentKey,
+          message: `${config.label}当前读数 ${formatDecimal(nextCurrentValue)} 小于上一读数 ${formatDecimal(previousValue)}，请确认是否为换表场景。`,
+        });
+        continue;
+      }
+    } else {
+      normalized[config.previousKey] = previousValue;
+    }
+
+    const usage = nextCurrentValue - (normalized[config.previousKey] ?? previousValue);
+    const spikeThreshold = Math.max(
+      config.absoluteSpikeThreshold,
+      previousUsage != null && previousUsage > 0 ? previousUsage * 3 : 0
+    );
+
+    if (usage > spikeThreshold && !anomalyReason) {
+      fieldErrors.push({
+        field: 'anomaly_reason',
+        message: `${config.label}本期用量 ${formatDecimal(usage)} 明显异常，请补充原因后再保存。`,
+      });
+    }
+  }
+
+  if (fieldErrors.length > 0) {
+    throw createAppError(422, '读数校验未通过，请检查异常提示后重试。', {
+      fieldErrors,
+    });
+  }
+
+  if (existing) {
+    if (data.water_reading === undefined) {
+      normalized.water_reading =
+        existing.water_reading != null ? Number(existing.water_reading) : undefined;
+    }
+    if (data.electricity_reading === undefined) {
+      normalized.electricity_reading =
+        existing.electricity_reading != null ? Number(existing.electricity_reading) : undefined;
+    }
+    if (data.notes === undefined && context === 'normal' && !anomalyReason) {
+      normalized.notes = existing.notes ?? undefined;
+    }
+  }
+
+  return normalized;
 }
 
 /**
@@ -166,38 +353,76 @@ export function createUtilityService(
       if (!room || room.apartment.organization_id !== orgId) {
         throw createAppError(404, NotFoundMessages.ROOM);
       }
-      return getRepo().create(buildCreateData(data));
+      const normalized = await normalizeReadingPayload(getRepo(), data);
+      return getRepo().create(buildCreateData(normalized));
     },
 
     batchCreate: async (orgId: string, data: BatchReadingInput) => {
-      const orgRoomIds = new Set(await getRepo().getRoomIdsByOrg(orgId));
+      const repo = getRepo();
+      const orgRoomIds = new Set(await repo.getRoomIdsByOrg(orgId));
       const readingDate = new Date(data.reading_date);
 
-      const readingsData = data.readings.map((r) => {
+      const readingsData = await Promise.all(data.readings.map(async (r) => {
         if (!orgRoomIds.has(r.room_id)) {
           throw createAppError(404, NotFoundMessages.ROOM);
         }
+        const normalized = await normalizeReadingPayload(repo, {
+          room_id: r.room_id,
+          period_year: data.period_year,
+          period_month: data.period_month,
+          reading_date: data.reading_date,
+          water_reading: r.water_reading,
+          electricity_reading: r.electricity_reading,
+          notes: r.notes,
+        });
         return {
           id: ulid().toLowerCase(),
           room: { connect: { id: r.room_id } },
           period_year: data.period_year,
           period_month: data.period_month,
           reading_date: readingDate,
-          water_reading: r.water_reading,
-          electricity_reading: r.electricity_reading,
-          notes: r.notes,
+          water_reading: normalized.water_reading,
+          electricity_reading: normalized.electricity_reading,
+          water_previous: normalized.water_previous,
+          electricity_previous: normalized.electricity_previous,
+          notes: normalized.notes,
         };
-      });
+      }));
 
-      return getRepo().createBatch(readingsData);
+      return repo.createBatch(readingsData);
     },
 
     update: async (orgId: string, id: string, data: UpdateReadingInput) => {
-      const existing = await getRepo().findByIdWithRelations(id);
+      const repo = getRepo();
+      const existing = await repo.findByIdWithRelations(id);
       if (!existing || existing.room.apartment.organization_id !== orgId) {
         throw createAppError(404, NotFoundMessages.READING);
       }
-      return getRepo().update(id, buildUpdateData(data));
+      const normalized = await normalizeReadingPayload(
+        repo,
+        {
+          room_id: data.room_id ?? existing.room_id,
+          period_year: data.period_year ?? existing.period_year,
+          period_month: data.period_month ?? existing.period_month,
+          reading_date:
+            data.reading_date ?? existing.reading_date.toISOString().slice(0, 10),
+          water_reading:
+            data.water_reading ??
+            (existing.water_reading != null ? Number(existing.water_reading) : undefined),
+          electricity_reading:
+            data.electricity_reading ??
+            (existing.electricity_reading != null
+              ? Number(existing.electricity_reading)
+              : undefined),
+          water_previous: data.water_previous,
+          electricity_previous: data.electricity_previous,
+          notes: data.notes,
+          reading_context: data.reading_context,
+          anomaly_reason: data.anomaly_reason,
+        },
+        existing
+      );
+      return repo.update(id, buildUpdateData(normalized));
     },
 
     delete: async (orgId: string, id: string) => {

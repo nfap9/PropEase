@@ -49,6 +49,9 @@ export async function checkExpiringLeases(): Promise<Record<string, number>> {
             title,
             content,
             extra_data: {
+              category: 'lease',
+              target_path: '/leases',
+              action_label: '查看租约',
               lease_id: lease.id,
               tenant_name: tenantName,
               room_number: lease.room.room_number,
@@ -101,6 +104,9 @@ export async function checkOverdueBills(): Promise<Record<string, number>> {
           title,
           content,
           extra_data: {
+            category: 'billing',
+            target_path: '/bills',
+            action_label: '查看账单',
             bill_id: bill.id,
             tenant_name: tenantName,
             room_number: bill.lease.room.room_number,
@@ -162,6 +168,9 @@ export async function checkUpcomingDueBills(): Promise<Record<string, number>> {
             title,
             content,
             extra_data: {
+              category: 'billing',
+              target_path: '/bills',
+              action_label: '查看账单',
               bill_id: bill.id,
               tenant_name: tenantName,
               room_number: bill.lease.room.room_number,

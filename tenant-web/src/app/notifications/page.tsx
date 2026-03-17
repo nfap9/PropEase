@@ -1,14 +1,24 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { NotificationCategory } from '@apartment-ultra/api-contract';
 import { MainLayout } from '@/components/layout/main-layout';
 import { AuthGuard } from '@/components/layout/auth-guard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { notificationsApi, type Notification } from '@/lib/api/notifications';
-import { Bell, CheckCheck, Loader2 } from 'lucide-react';
+import {
+  getNotificationActionLabel,
+  getNotificationCategory,
+  getNotificationCategoryLabel,
+  getNotificationTarget,
+  getNotificationTypeLabel,
+  notificationCategoryOptions,
+} from '@/lib/notifications';
+import { Bell, CheckCheck, Loader2, MessageSquareMore } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/lib/date-utils';
 
@@ -22,40 +32,19 @@ const NOTIFICATIONS = {
   UNREAD_INDICATOR: 'notifications-unread-indicator',
 } as const;
 
-const notificationTypeLabelMap: Record<string, string> = {
-  lease_expiring: '合同到期',
-  rent_due_reminder: '交租提醒',
-  bill_overdue: '逾期催缴',
-  tenant_move_in: '新租客入住',
-  tenant_move_out: '租客退租',
-};
-
-function getNotificationTypeLabel(type?: string | null): string {
-  if (!type) return '系统通知';
-  return notificationTypeLabelMap[type] ?? '系统通知';
-}
-
-function getNotificationTarget(item: Notification): string | null {
-  switch (item.type) {
-    case 'lease_expiring':
-    case 'tenant_move_in':
-    case 'tenant_move_out':
-      return '/leases';
-    case 'bill_overdue':
-    case 'rent_due_reminder':
-      return '/bills';
-    default:
-      return null;
-  }
-}
-
 export default function NotificationsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [statusFilter, setStatusFilter] = useState<'all' | 'unread'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<NotificationCategory | 'all'>('all');
 
   const { data: list = [], isLoading: listLoading } = useQuery({
-    queryKey: ['notifications', 'list'],
-    queryFn: () => notificationsApi.list(),
+    queryKey: ['notifications', 'list', statusFilter, categoryFilter],
+    queryFn: () =>
+      notificationsApi.list({
+        status: statusFilter,
+        category: categoryFilter,
+      }),
   });
 
   const { data: unreadCount = 0 } = useQuery({
@@ -104,7 +93,49 @@ export default function NotificationsPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">通知列表</CardTitle>
+              <div className="flex flex-col gap-3">
+                <CardTitle className="text-lg">通知列表</CardTitle>
+                <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 font-medium text-foreground">
+                    <MessageSquareMore className="h-4 w-4" />
+                    当前已接入站内通知
+                  </div>
+                  <p className="mt-1">
+                    合同到期、交租提醒、账单逾期和租客入住/退租都会进入此处；
+                    短信与企微通道当前先预留字段，不在本窗口内接入。
+                  </p>
+                </div>
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant={statusFilter === 'all' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setStatusFilter('all')}
+                    >
+                      全部
+                    </Button>
+                    <Button
+                      variant={statusFilter === 'unread' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setStatusFilter('unread')}
+                    >
+                      仅看未读
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {notificationCategoryOptions.map((option) => (
+                      <Button
+                        key={option.value}
+                        variant={categoryFilter === option.value ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setCategoryFilter(option.value)}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {listLoading ? (
@@ -161,7 +192,9 @@ function NotificationItem({
   testids: Record<string, string>;
 }) {
   const typeLabel = getNotificationTypeLabel(item.type);
+  const category = getNotificationCategory(item);
   const target = getNotificationTarget(item);
+  const actionLabel = getNotificationActionLabel(item);
 
   return (
     <li
@@ -172,6 +205,7 @@ function NotificationItem({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className={cn('font-medium', !item.is_read && 'text-foreground')}>{item.title}</p>
+            <Badge>{getNotificationCategoryLabel(category)}</Badge>
             <Badge variant="outline">{typeLabel}</Badge>
           </div>
           {item.content && (
@@ -182,7 +216,7 @@ function NotificationItem({
         <div className="flex items-center gap-1">
           {target && (
             <Button variant="ghost" size="sm" onClick={onOpen}>
-              查看业务
+              {actionLabel}
             </Button>
           )}
           {!item.is_read && (

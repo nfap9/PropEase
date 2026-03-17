@@ -28,6 +28,28 @@
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2"
   },
+  "pnpm": {
+    "overrides": {
+      "next": "14.2.35",
+      "eslint-config-next": "14.2.35",
+      "react": "^18",
+      "react-dom": "^18",
+      "typescript": "^5",
+      "axios": "^1.13.5",
+      "@hookform/resolvers": "^5.2.2",
+      "@tanstack/react-query": "^5.90.21",
+      "@tanstack/react-table": "^8.21.3",
+      "class-variance-authority": "^0.7.1",
+      "clsx": "^2.1.1",
+      "date-fns": "^4.1.0",
+      "lucide-react": "^0.575.0",
+      "react-hook-form": "^7.71.2",
+      "sonner": "^2.0.7",
+      "tailwind-merge": "^3.5.0",
+      "tailwindcss-animate": "^1.0.7",
+      "zod": "^3.23.8"
+    }
+  },
   "engines": {
     "node": ">=18"
   }

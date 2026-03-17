@@ -3,6 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { AlertCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,14 +26,22 @@ import {
 import { Apartment, Room } from '@/types';
 import { Droplets, Zap } from 'lucide-react';
 
+const optionalNumberField = z
+  .union([z.number().min(0), z.nan().transform(() => undefined)])
+  .optional();
+
 const utilitySchema = z.object({
   room_id: z.string().min(1, '请选择房间'),
   period_year: z.number().min(2020).max(2100),
   period_month: z.number().min(1).max(12),
   reading_date: z.string().min(1, '请选择读数日期'),
-  water_reading: z.number().min(0).optional(),
-  electricity_reading: z.number().min(0).optional(),
+  water_reading: optionalNumberField,
+  electricity_reading: optionalNumberField,
+  water_previous: optionalNumberField,
+  electricity_previous: optionalNumberField,
   notes: z.string().optional(),
+  reading_context: z.enum(['normal', 'initial', 'meter_reset']),
+  anomaly_reason: z.string().max(200, '异常说明请控制在 200 字内').optional(),
 });
 
 type UtilityFormData = z.infer<typeof utilitySchema>;
@@ -70,14 +80,19 @@ export function CreateUtilityDialog({
       reading_date: today.toISOString().split('T')[0],
       water_reading: 0,
       electricity_reading: 0,
+      reading_context: 'normal',
       notes: '',
     },
   });
 
   const occupiedRooms = rooms?.filter((r) => r.status === 'occupied');
+  const readingContext = form.watch('reading_context');
 
   const handleSubmit = (data: UtilityFormData) => {
-    onSubmit(data);
+    onSubmit({
+      ...data,
+      anomaly_reason: data.anomaly_reason?.trim() || undefined,
+    });
     form.reset();
   };
 
@@ -169,6 +184,35 @@ export function CreateUtilityDialog({
             <Label htmlFor="reading_date">读数日期 *</Label>
             <Input id="reading_date" type="date" {...form.register('reading_date')} />
           </div>
+          <div className="space-y-2">
+            <Label>录入场景</Label>
+            <Select
+              value={readingContext}
+              onValueChange={(value: UtilityFormData['reading_context']) =>
+                form.setValue('reading_context', value)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="normal">正常抄表</SelectItem>
+                <SelectItem value="initial">首次录入</SelectItem>
+                <SelectItem value="meter_reset">更换新表</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {readingContext !== 'normal' && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>{readingContext === 'initial' ? '首次录入基线' : '更换新表说明'}</AlertTitle>
+              <AlertDescription>
+                {readingContext === 'initial'
+                  ? '首次录入时，系统会把上一读数自动同步为当前值，避免当期误计费用。'
+                  : '更换新表后，请填写更换后的起始读数，并补充原因，系统将按你填写的上一读数计算本期用量。'}
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="water_reading">
@@ -198,6 +242,50 @@ export function CreateUtilityDialog({
                 {...form.register('electricity_reading', { valueAsNumber: true })}
               />
             </div>
+          </div>
+          {readingContext !== 'normal' && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="water_previous">水表上一读数</Label>
+                <Input
+                  id="water_previous"
+                  type="number"
+                  step="0.01"
+                  placeholder={readingContext === 'initial' ? '可留空，自动取当前值' : '换表后请输入新表起始值'}
+                  {...form.register('water_previous', { valueAsNumber: true })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="electricity_previous">电表上一读数</Label>
+                <Input
+                  id="electricity_previous"
+                  type="number"
+                  step="0.01"
+                  placeholder={readingContext === 'initial' ? '可留空，自动取当前值' : '换表后请输入新表起始值'}
+                  {...form.register('electricity_previous', { valueAsNumber: true })}
+                />
+              </div>
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="anomaly_reason">
+              {readingContext === 'normal'
+                ? '异常说明（可选）'
+                : readingContext === 'initial'
+                  ? '说明（可选）'
+                  : '更换原因 *'}
+            </Label>
+            <Input
+              id="anomaly_reason"
+              placeholder={
+                readingContext === 'normal'
+                  ? '如遇到暴涨用量、人工核对等特殊情况，可在此说明'
+                  : readingContext === 'initial'
+                    ? '例如：新租客入住房间，首次建立读数基线'
+                    : '例如：旧电表损坏，2026-03-17 更换新表'
+              }
+              {...form.register('anomaly_reason')}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="notes">备注</Label>

@@ -1,12 +1,12 @@
 /** 通用契约 */
-export {
+export type {
   SuccessBody,
   ErrorResponseBody,
   ErrorResponseData,
   FieldError,
-  BusinessCode,
   PaginatedResponse,
 } from './common.js';
+export { BusinessCode } from './common.js';
 
 /** 认证与用户 */
 export type {
@@ -99,6 +99,17 @@ export type { Lease } from './leases.js';
 
 /** 水电读数 */
 export type { UtilityReading } from './utilities.js';
+
+/** 通知 */
+export type {
+  Notification,
+  NotificationType,
+  NotificationCategory,
+  NotificationExtraData,
+  NotificationChannelName,
+  NotificationChannelStatus,
+  UnreadCountResponse,
+} from './notifications.js';
 
 /** 账单与支付 */
 export type {

@@ -169,6 +169,9 @@ export function createLeaseService(
           `新租客入住 - ${tenant.name}`,
           `租客 ${tenant.name} 已创建租约并入住（房间 ${room.room_number}），起租日期 ${startDate}。`,
           {
+            category: 'tenant',
+            target_path: '/leases',
+            action_label: '查看租约',
             lease_id: lease.id,
             tenant_id: tenant.id,
             tenant_name: tenant.name,
@@ -208,6 +211,9 @@ export function createLeaseService(
           `租客退租 - ${existing.tenant.name}`,
           `租客 ${existing.tenant.name} 已办理退租（房间 ${existing.room.room_number}），办理日期 ${endDate}。`,
           {
+            category: 'tenant',
+            target_path: '/leases',
+            action_label: '查看租约',
             lease_id: existing.id,
             tenant_id: existing.tenant_id,
             tenant_name: existing.tenant.name,
