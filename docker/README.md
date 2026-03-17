@@ -93,7 +93,7 @@ DEPLOY_HOST=your-server-ip ./scripts/deploy.sh
 
 手动部署工作流定义在：
 
-- [deploy.yml](/Users/shen/workspace/apartment-ultra/.github/workflows/deploy.yml)
+- [deploy.yml](../.github/workflows/deploy.yml)
 
 需要的 GitHub Secrets：
 

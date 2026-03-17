@@ -43,7 +43,7 @@
 
 ### 命名约定
 
-与 API 及后端统一的规范见 [docs/naming-conventions.md](../../docs/naming-conventions.md)，摘要如下：
+与 API 及后端统一的规范见 [docs/naming-conventions.md](../docs/naming-conventions.md)，摘要如下：
 
 - 组件文件使用 `kebab-case.tsx`（如 `data-table.tsx`）
 - 组件名使用 `PascalCase`（如 `DataTable`）
@@ -117,7 +117,7 @@ const user: any = fetchData()
 ## 项目结构
 
 ```
-web/
+tenant-web/
 ├── src/
 │   ├── app/                 # Next.js App Router 页面
 │   │   ├── layout.tsx       # 根布局
@@ -146,7 +146,7 @@ web/
 │   └── types/               # TypeScript 类型定义
 ├── public/                  # 静态资源
 ├── package.json
-├── tailwind.config.js
+├── tailwind.config.ts
 └── tsconfig.json
 ```
 

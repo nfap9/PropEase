@@ -78,11 +78,14 @@ pnpm dev:admin
 
 ## 更多文档
 
+- [文档总览](docs/README.md) - 按作用组织的项目文档导航
 - [后端 API 文档](api/AGENTS.md) - 后端架构与开发指南
+- [运营后台文档](admin-web/AGENTS.md) - 运营后台开发说明
 - [租客端文档](tenant-web/AGENTS.md) - 租客端前端开发说明
 - [E2E 测试指南](e2e/AGENTS.md) - E2E 测试编写规范
 - [Docker 部署](docker/README.md) - 生产环境部署配置
 - [API 契约文档](docs/api-contract/README.md) - 契约与接口说明
+- [命名规范](docs/naming-conventions.md) - 前后端与测试统一命名约定
 
 ## License
 

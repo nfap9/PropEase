@@ -9,7 +9,7 @@
 | [健康检查失败](#健康检查失败) | 容器显示 unhealthy |
 | [数据库认证失败](#数据库认证失败) | password authentication failed |
 | [数据库表不存在](#数据库表不存在) | TableDoesNotExist |
-| [验证码收不到](#验证码收不到) | 测试环境无法登录 |
+| [测试账号无法登录](#测试账号无法登录) | 本地或测试环境登录失败 |
 
 ---
 
@@ -100,21 +100,20 @@ docker restart apartment_ultra_api
 
 ---
 
-## 验证码收不到
+## 测试账号无法登录
 
-**症状**: 测试环境登录时收不到验证码
+**症状**: 本地或测试环境中，测试账号无法正常登录
 
 **解决方案**:
 
 ```bash
-# 1. 启用开发模式
-echo "IS_DEV=true" >> .env.production
+# 1. 检查 API 是否启动
+docker compose -f docker/docker-compose.yaml --env-file .env.production logs api --tail 50
 
-# 2. 重启 API
-docker compose -f docker/docker-compose.yaml --env-file .env.production up -d --force-recreate api
+# 2. 检查数据库中是否存在测试用户
+docker exec apartment_ultra_db psql -U apartment_admin -d apartment_ultra -c "select phone, is_active from users limit 20;"
 
-# 3. 查看验证码
-docker logs -f apartment_ultra_api 2>&1 | grep 验证码
+# 3. 如需重新准备测试用户，使用应用当前支持的注册/初始化流程，而不是短信验证码流程
 ```
 
 ---
@@ -142,9 +141,6 @@ curl -s http://localhost:8000/health | jq .
 ```bash
 # API 日志
 docker logs -f apartment_ultra_api
-
-# 验证码
-docker logs -f apartment_ultra_api 2>&1 | grep 验证码
 
 # 审计日志
 docker logs -f apartment_ultra_api 2>&1 | grep AUDIT

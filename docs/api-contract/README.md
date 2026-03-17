@@ -1,10 +1,10 @@
 # API 契约说明
 
-api 请求/响应契约由本包与 [docs/naming-conventions.md](../naming-conventions.md) 约定。
+API 请求/响应契约由 `packages/api-contract` 与 [命名规范](../naming-conventions.md) 共同约定。
 
 **TypeScript 类型与契约**：由 **`packages/api-contract`**（`@apartment-ultra/api-contract`）统一提供，api 与 web 均依赖此包，保证前后端类型一致。
 
-**命名**：请求/响应字段、路径与查询参数统一使用 **snake_case**，详见 [docs/naming-conventions.md](../naming-conventions.md)。
+**命名**：请求/响应字段、路径与查询参数统一使用 **snake_case**，详见 [命名规范](../naming-conventions.md)。
 
 ## 成功响应
 
@@ -29,3 +29,9 @@ api 请求/响应契约由本包与 [docs/naming-conventions.md](../naming-conve
 3. 将响应保存为 `openapi.json` 于本目录或 `api/openapi-source.json`
 
 前端按路径调用的端点清单可从 OpenAPI 中整理，用于逐项实现与验收。
+
+## 文档作用
+
+- 这份文档负责说明“契约格式是什么”。
+- 具体业务字段的含义以代码中的类型定义与实际接口实现为准。
+- 业务验收场景请看 `docs/测试用例/`，不要把这份文档当作测试清单。

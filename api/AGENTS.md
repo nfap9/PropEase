@@ -46,6 +46,13 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端。
 
 请求/响应字段、路径与查询参数统一使用 **snake_case**，与数据库一致。详见 [docs/naming-conventions.md](../docs/naming-conventions.md)。
 
+## 文档职责
+
+- 本文件负责 `api/` 模块内部的开发说明。
+- 根 `README.md` 负责项目入口与启动方式。
+- `docs/api-contract/README.md` 负责统一响应契约说明。
+- `docs/测试用例/` 负责业务验收场景，不替代接口文档。
+
 ## 常用命令
 
 - `pnpm install`：安装依赖
