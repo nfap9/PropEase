@@ -5,11 +5,12 @@
 
 ## Current Window
 
-当前执行窗口按 `2026-03-17` 到 `2026-03-29` 跟踪，聚焦 3 条并行流：
+当前执行窗口按 `2026-03-17` 到 `2026-03-29` 跟踪。结合最近提交记录，当前窗口内已排定的执行流均已完成：
 
 - 治理收敛流：`#39`、`#40`、`#38` 已完成
 - 共享层收敛流：`#35`、`#36` 已完成
 - 业务价值流：`#24`、`#26`、`#30`、`#27`、`#28` 已完成
+- 后端分层试点流：`#37` 已完成
 - 移动端能力流：`#29` 已完成
 
 ## Completed This Window
@@ -135,6 +136,19 @@
 - 异常阈值仍是代码内固定规则，暂未做后台可配置化
 - 当前主要覆盖单条录入与保存校验，不扩展成完整对账工作台
 
+### `#37 [api] 统一服务层与仓储层职责边界`
+
+- `api/AGENTS.md` 已补齐 service / repository / transaction 统一约定
+- `apartment` 试点已改为 service 通过 repository 注入访问数据，不再在 service 中直接写 Prisma 查询
+- `subscription` 试点已落成同样模式，并把订单、订阅、服务产品查询收敛到 repository
+- `createPersonalOrgWithFreePlan`、`fulfillSubscription` 已改为事务内组装仓储，避免混用裸 Prisma 与事务对象
+- 对应 repository / service 层已补最小测试，覆盖事务与仓储注入场景
+
+当前边界：
+
+- 当前试点聚焦 `apartment` 与 `subscription`，不在本轮继续扩张到全部 service 模块
+- 其余模块后续继续沿同一分层模式迁移
+
 ## Verification
 
 本轮已通过：
@@ -152,12 +166,15 @@
 - `pnpm type-check:mobile`
 - `git diff --check`
 
+最近提交核对：
+
+- `6ddc3bd`：共享 Web 包收敛 + 租客触达第一期 + `apartment/subscription` 分层试点
+- `5791aa8`：共享工程配置、通知链路与水电异常校验收口
+- `2055dd3`：运营赠送套餐与账单分享能力
+
 ## Next Up
 
-按当前 issue 状态与依赖关系，建议的主执行顺序是：
-
-1. `#37 [api] 统一服务层与仓储层职责边界`
-2. 视业务优先级继续收口后续渠道扩展与治理项
+当前两周窗口内已排定任务已完成。下一步建议按新的 roadmap 或新增 issue 重新排期，而不是沿用本窗口的旧顺序。
 
 ## Parallel Tracks
 
@@ -173,8 +190,8 @@
 ### B. 后端分层试点流
 
 - 覆盖：`#37`
-- 结论：可以与 A 并行
-- 原因：可将试点限定在 `apartment` / `subscription`，避免与通知、账单、租客触达链路冲突
+- 状态：已完成
+- 结论：`apartment` / `subscription` 试点已落地，可作为后续模块迁移模板
 - 追踪文档：`docs/tracking/api-boundary-stream.md`
 
 ### C. 租客触达能力流
@@ -187,6 +204,6 @@
 ## Notes
 
 - GitHub Project 状态应与本文件保持一致。
-- 已完成但尚未验收发布的工作，允许保持代码完成、等待业务确认。
+- 当前仓库代码与最近提交表明本窗口任务已全部落地；若 GitHub issue / Project 未同步，应按本文件回写状态。
 - 若实际排期调整，以 GitHub Project 为准，并同步修改本文件。
 - 并行任务的细粒度状态，统一维护在 `docs/tracking/`。

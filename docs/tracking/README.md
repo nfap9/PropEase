@@ -7,9 +7,9 @@
 - [共享层收敛流](./shared-layer-stream.md)
   覆盖 Issue `#35`、`#36`，当前状态为已完成。
 - [后端分层试点流](./api-boundary-stream.md)
-  覆盖 Issue `#37`，负责 service / repository 边界试点重构。
+  覆盖 Issue `#37`，当前状态为已完成。
 - [租客触达能力流](./tenant-reachability-stream.md)
-  覆盖 Issue `#28`，负责租客端正式消息触达第一期。
+  覆盖 Issue `#28`，当前状态为第一期已完成。
 
 ## 使用方式
 

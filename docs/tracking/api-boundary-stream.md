@@ -1,47 +1,44 @@
 # 后端分层试点流
 
+## 当前状态
+
+- 状态：已完成
+- 对应 issue：`#37`
+
 ## 覆盖范围
 
 - `#37 [api] 统一服务层与仓储层职责边界`
 
-## 当前判断
+## 已完成结果
 
-- 这条流可以与“共享层收敛流”并行推进。
-- 但试点模块不应选择近期正在频繁变动的通知、账单、租客触达相关代码。
+- `api/AGENTS.md` 已写明统一分层规则：
+  - service 负责业务编排与错误语义
+  - repository 负责 Prisma 读写
+  - 事务内通过 `createXxxRepository(tx)` 组装仓储
+- `apartment` 试点已完成：
+  - `apartment.service.ts` 通过 repository 注入访问数据
+  - 房间统计逻辑沉淀在 repository 辅助函数
+  - service 测试以 mock repository 为主
+- `subscription` 试点已完成：
+  - 服务产品、订阅、订单查询已统一收敛到 `subscription.repo.ts`
+  - `subscription.service.ts` 通过 repository 注入访问数据
+  - 对应 service / repository 测试已补齐
+- 事务型流程已完成试点：
+  - `createPersonalOrgWithFreePlan.ts`
+  - `fulfillSubscription.ts`
+  这两处都改成在事务内组装 repository，而不是在 service 中混用事务对象和裸 Prisma
 
-## 推荐试点模块
+## 当前边界
 
-- 第一优先：`apartment`
-- 第二优先：`subscription`
+- 当前只完成 `apartment` 与 `subscription` 两个试点模块
+- 通知、账单、租客触达等近期波动较大的模块未在本轮继续展开
 
-选择理由：
+## 验证结果
 
-- 这两个模块都存在 service 直接依赖 Prisma 的情况
-- 与 `#28` 的租客触达链路重合较少
-- 重构后更容易沉淀成可复制的 repository / transaction 模式
+- `pnpm --filter apartment-ultra-api run test`
+- `XDG_CACHE_HOME=/tmp/prisma-cache pnpm type-check`
 
-## 本流边界
+## 沉淀结论
 
-- 只做 1 到 2 个模块试点
-- 不追求一次性清空全部 direct Prisma import
-- 重点输出：
-  - service / repository 职责规则
-  - 事务注入模式
-  - 单测替身写法
-
-## 阻塞与风险
-
-- 如果没有先选试点模块，这张 issue 会迅速膨胀成全局重构
-- 如果试点选到通知 / 账单 / 租客链路，会与 `#28` 产生不必要冲突
-
-## 下一步动作
-
-1. 盘点 `api/src/services/` 中 direct Prisma import 的模块清单
-2. 先固定试点为 `apartment` + `subscription`
-3. 先写分层规则，再做代码迁移
-
-## 完成信号
-
-- 试点模块中的 service 不再直接 import Prisma
-- 对应单测主要 mock repository，而不是 mock Prisma
-- `api/AGENTS.md` 补上统一分层说明
+- 后续模块继续按“repository 注入 + 事务内组装仓储”的模式推进
+- 单元测试优先 mock repository，避免把 Prisma 细节泄漏到 service 测试里
