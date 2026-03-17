@@ -2,7 +2,7 @@ import { ScrollView, View, Text, TouchableOpacity, RefreshControl } from 'react-
 import { LinearGradient } from 'expo-linear-gradient'
 import { useQuery } from '@tanstack/react-query'
 import { router } from 'expo-router'
-import { reportsApi } from '@/services/api'
+import { billsApi, reportsApi, utilitiesApi } from '@/services/api'
 import { Colors } from '@/constants'
 import { useAuth } from '@/hooks'
 
@@ -30,10 +30,23 @@ const recentActivities = [
 
 export default function HomeScreen() {
   const { organization } = useAuth()
+  const today = new Date()
+  const currentYear = today.getFullYear()
+  const currentMonth = today.getMonth() + 1
 
   const { data: overview, isLoading, refetch } = useQuery({
     queryKey: ['dashboard-overview'],
     queryFn: reportsApi.getOverview,
+  })
+
+  const { data: meterQueue = [] } = useQuery({
+    queryKey: ['utilities', 'export', currentYear, currentMonth, 'home'],
+    queryFn: () => utilitiesApi.exportRooms(currentYear, currentMonth, 7),
+  })
+
+  const { data: unpaidBills = [] } = useQuery({
+    queryKey: ['bills', 'pending', 'home'],
+    queryFn: () => billsApi.list({ status: 'pending' }),
   })
 
   return (
@@ -245,6 +258,49 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* 今日待办 */}
+        <View style={{ paddingHorizontal: 20, marginTop: 24 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <Text style={{ fontSize: 18, fontWeight: '900', color: Colors.textPrimary, letterSpacing: -0.5 }}>
+              今日待办
+            </Text>
+            <Text style={{ fontSize: 12, color: Colors.textMuted }}>
+              {organization?.name || '当前组织'}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 24,
+              padding: 18,
+              borderWidth: 1,
+              borderColor: '#F3F4F6',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.03,
+              shadowRadius: 2,
+              elevation: 1,
+              gap: 12,
+            }}
+          >
+            <TodoRow
+              icon="💧"
+              title="待抄表房间"
+              value={`${meterQueue.length} 间`}
+              accent={Colors.primary}
+              onPress={() => router.push('/utilities' as any)}
+            />
+            <TodoRow
+              icon="💰"
+              title="待处理账单"
+              value={`${unpaidBills.length} 笔`}
+              accent={Colors.warning}
+              onPress={() => router.push('/bills' as any)}
+            />
+          </View>
+        </View>
+
         {/* 最近动态 */}
         <View style={{ paddingHorizontal: 20, marginTop: 24, marginBottom: 24 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
@@ -302,6 +358,57 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
     </View>
+  )
+}
+
+function TodoRow({
+  icon,
+  title,
+  value,
+  accent,
+  onPress,
+}: {
+  icon: string
+  title: string
+  value: string
+  accent: string
+  onPress: () => void
+}) {
+  return (
+    <TouchableOpacity
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 14,
+        borderRadius: 18,
+        backgroundColor: '#F8FAFC',
+      }}
+      onPress={onPress}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 14,
+            backgroundColor: `${accent}18`,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Text style={{ fontSize: 18 }}>{icon}</Text>
+        </View>
+        <View style={{ marginLeft: 12 }}>
+          <Text style={{ fontSize: 14, fontWeight: '800', color: Colors.textPrimary }}>{title}</Text>
+          <Text style={{ marginTop: 2, fontSize: 12, color: Colors.textMuted }}>点击直达处理</Text>
+        </View>
+      </View>
+      <View style={{ alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 16, fontWeight: '900', color: accent }}>{value}</Text>
+        <Text style={{ marginTop: 2, fontSize: 11, color: Colors.textMuted }}>立即查看</Text>
+      </View>
+    </TouchableOpacity>
   )
 }
 

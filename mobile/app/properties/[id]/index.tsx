@@ -187,8 +187,12 @@ export default function ApartmentDetailScreen() {
         {activeTab === 'rooms' && (
           <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
             {rooms && rooms.length > 0 ? (
-              rooms.map((room, index) => (
-                <RoomCard key={room.id} room={room} index={index} />
+              rooms.map((room) => (
+                <RoomCard
+                  key={room.id}
+                  room={room}
+                  onPress={() => router.push(`/rooms/${room.id}` as any)}
+                />
               ))
             ) : (
               <View style={{ alignItems: 'center', paddingVertical: 40 }}>
@@ -250,7 +254,13 @@ function StatItem({ label, value, color }: { label: string; value: number | stri
 }
 
 // 房间卡片组件
-function RoomCard({ room, index }: { room: any; index: number }) {
+function RoomCard({
+  room,
+  onPress,
+}: {
+  room: any
+  onPress: () => void
+}) {
   const statusConfig = {
     available: { label: '空房', bgColor: '#ECFDF5', textColor: Colors.success, icon: '🚪' },
     occupied: { label: '已租', bgColor: '#EFF6FF', textColor: Colors.primary, icon: '👤' },
@@ -272,6 +282,7 @@ function RoomCard({ room, index }: { room: any; index: number }) {
         alignItems: 'center',
         justifyContent: 'space-between',
       }}
+      onPress={onPress}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <View
