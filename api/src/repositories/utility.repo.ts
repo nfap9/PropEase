@@ -50,6 +50,11 @@ export interface UtilityRepository {
     periodYear: number,
     periodMonth: number
   ): Promise<UtilityReading | null>;
+  findLatestReadingBefore(
+    roomId: string,
+    periodYear: number,
+    periodMonth: number
+  ): Promise<UtilityReading | null>;
   getRoomIdsByOrg(orgId: string): Promise<string[]>;
 }
 
@@ -123,6 +128,22 @@ export function createUtilityRepository(db: DbClient): UtilityRepository {
     findExistingReading: async (roomId: string, periodYear: number, periodMonth: number) => {
       return db.utilityReading.findFirst({
         where: { room_id: roomId, period_year: periodYear, period_month: periodMonth },
+      });
+    },
+
+    findLatestReadingBefore: async (roomId: string, periodYear: number, periodMonth: number) => {
+      return db.utilityReading.findFirst({
+        where: {
+          room_id: roomId,
+          OR: [
+            { period_year: { lt: periodYear } },
+            {
+              period_year: periodYear,
+              period_month: { lt: periodMonth },
+            },
+          ],
+        },
+        orderBy: [{ period_year: 'desc' }, { period_month: 'desc' }],
       });
     },
 

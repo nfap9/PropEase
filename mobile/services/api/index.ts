@@ -5,6 +5,11 @@ export { roomsApi } from './rooms'
 export { tenantsApi, type TenantListParams } from './tenants'
 export { leasesApi, type LeaseListParams, type LeaseWithDetails } from './leases'
 export { billsApi, type BillListParams, type BillWithDetails } from './bills'
-export { utilitiesApi, type UtilityListParams, type UtilityWithDetails } from './utilities'
+export {
+  utilitiesApi,
+  type UtilityExportRoom,
+  type UtilityListParams,
+  type UtilityWithDetails,
+} from './utilities'
 export { reportsApi, type IncomeReportParams, type OccupancyReportParams } from './reports'
 export { organizationsApi, type OrganizationMember } from './organizations'

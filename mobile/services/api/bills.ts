@@ -26,7 +26,8 @@ export interface CreatePaymentData {
   amount: number
   payment_method?: string
   payment_date?: string
-  remark?: string
+  reference?: string
+  notes?: string
 }
 
 export interface BillListParams {

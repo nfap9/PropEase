@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native'
+import { Alert, Linking, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
 import { useQuery } from '@tanstack/react-query'
 import { roomsApi } from '@/services/api'
@@ -55,6 +55,22 @@ export default function RoomDetailScreen() {
   ]
 
   const statusConfig = getRoomStatusConfig(room)
+
+  const handleDial = async (phone?: string | null, fallbackMessage = '暂无联系电话') => {
+    if (!phone) {
+      Alert.alert('无法拨打', fallbackMessage)
+      return
+    }
+
+    const telUrl = `tel:${phone}`
+    const canOpen = await Linking.canOpenURL(telUrl)
+    if (!canOpen) {
+      Alert.alert('无法拨打', '当前设备不支持拨打电话')
+      return
+    }
+
+    await Linking.openURL(telUrl)
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.background }}>
@@ -372,6 +388,42 @@ export default function RoomDetailScreen() {
                         📱 {lease.tenant?.phone || '暂无电话'}
                       </Text>
                     </View>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', gap: 10, marginTop: 2 }}>
+                    <TouchableOpacity
+                      style={{
+                        flex: 1,
+                        paddingVertical: 10,
+                        borderRadius: 14,
+                        alignItems: 'center',
+                        backgroundColor: '#EFF6FF',
+                      }}
+                      onPress={() => handleDial(lease.tenant?.phone, '租客未填写手机号')}
+                    >
+                      <Text style={{ fontSize: 12, fontWeight: '700', color: Colors.primary }}>
+                        拨打租客
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{
+                        flex: 1,
+                        paddingVertical: 10,
+                        borderRadius: 14,
+                        alignItems: 'center',
+                        backgroundColor: '#F8FAFC',
+                      }}
+                      onPress={() =>
+                        handleDial(
+                          lease.tenant?.emergency_phone,
+                          '租客未填写紧急联系人电话'
+                        )
+                      }
+                    >
+                      <Text style={{ fontSize: 12, fontWeight: '700', color: Colors.textSecondary }}>
+                        紧急联系
+                      </Text>
+                    </TouchableOpacity>
                   </View>
 
                   {/* 租期信息 */}

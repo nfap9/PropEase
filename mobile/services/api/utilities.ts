@@ -1,19 +1,26 @@
 import api from './client'
-import type { UtilityReading } from '@apartment-ultra/api-contract'
+import type { Apartment, Room, UtilityReading } from '@apartment-ultra/api-contract'
 
 // 内部定义创建/更新数据类型
 export interface CreateUtilityReadingData {
   room_id: string
   period_year: number
   period_month: number
-  water_reading: number
-  electricity_reading: number
-  is_initial?: boolean
+  reading_date: string
+  water_reading?: number
+  electricity_reading?: number
+  water_previous?: number
+  electricity_previous?: number
+  notes?: string
 }
 
 export interface UpdateUtilityReadingData {
+  reading_date?: string
   water_reading?: number
   electricity_reading?: number
+  water_previous?: number
+  electricity_previous?: number
+  notes?: string
 }
 
 export interface UtilityListParams {
@@ -25,8 +32,23 @@ export interface UtilityListParams {
   limit?: number
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type UtilityWithDetails = any
+export interface UtilityWithDetails extends UtilityReading {
+  room?: Room & { apartment?: Apartment }
+}
+
+export interface UtilityExportRoom {
+  room_id: string
+  apartment_id: string
+  apartment_name: string
+  room_number: string
+  tenant_name: string
+  tenant_phone: string
+  billing_day: number
+  water_previous: number | null
+  electricity_previous: number | null
+  water_unit_price: number | null
+  electricity_unit_price: number | null
+}
 
 export const utilitiesApi = {
   /**
@@ -76,6 +98,18 @@ export const utilitiesApi = {
    */
   getRoomsWithoutInitialReading: async (apartmentId?: string): Promise<{ room_id: string; room_number: string }[]> => {
     return api.get('/utilities/rooms-missing-initial', apartmentId ? { apartment_id: apartmentId } as Record<string, unknown> : undefined)
+  },
+
+  exportRooms: async (
+    periodYear: number,
+    periodMonth: number,
+    daysRange?: number
+  ): Promise<UtilityExportRoom[]> => {
+    return api.get<UtilityExportRoom[]>('/utilities/export', {
+      period_year: periodYear,
+      period_month: periodMonth,
+      days_range: daysRange,
+    })
   },
 }
 

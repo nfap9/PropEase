@@ -60,12 +60,16 @@ export interface UpdateReadingInput {
  */
 export interface RoomExportInfo {
   room_id: string;
+  apartment_id: string;
   apartment_name: string;
   room_number: string;
   tenant_name: string;
+  tenant_phone: string;
   billing_day: number;
   water_previous: number | null;
   electricity_previous: number | null;
+  water_unit_price: number | null;
+  electricity_unit_price: number | null;
 }
 
 /**
@@ -252,7 +256,7 @@ export function createUtilityService(
       const rooms = await prisma.room.findMany({
         where: { apartment: { organization_id: orgId } },
         include: {
-          apartment: true,
+          apartment: { include: { utility_config: true } },
           leases: {
             where: { is_active: true },
             include: { tenant: true },
@@ -306,9 +310,11 @@ export function createUtilityService(
           const lease = r.leases[0];
           let waterPrevious: number | null = null;
           let electricityPrevious: number | null = null;
+          let waterUnitPrice: number | null = null;
+          let electricityUnitPrice: number | null = null;
 
           if (period) {
-            const prev = await getRepo().findExistingReading(r.id, period.year, period.month);
+            const prev = await getRepo().findLatestReadingBefore(r.id, period.year, period.month);
             if (prev) {
               waterPrevious = prev.water_reading != null ? Number(prev.water_reading) : null;
               electricityPrevious =
@@ -316,14 +322,37 @@ export function createUtilityService(
             }
           }
 
+          if (lease) {
+            const leaseWaterRate = Number(lease.water_rate);
+            const leaseElectricityRate = Number(lease.electricity_rate);
+
+            waterUnitPrice =
+              leaseWaterRate > 0
+                ? leaseWaterRate
+                : r.apartment.utility_config?.water_price_per_unit != null
+                  ? Number(r.apartment.utility_config.water_price_per_unit)
+                  : null;
+
+            electricityUnitPrice =
+              leaseElectricityRate > 0
+                ? leaseElectricityRate
+                : r.apartment.utility_config?.electricity_price_per_unit != null
+                  ? Number(r.apartment.utility_config.electricity_price_per_unit)
+                  : null;
+          }
+
           return {
             room_id: r.id,
+            apartment_id: r.apartment.id,
             apartment_name: r.apartment.name,
             room_number: r.room_number,
             tenant_name: lease?.tenant?.name ?? '',
+            tenant_phone: lease?.tenant?.phone ?? '',
             billing_day: lease?.billing_day ?? 1,
             water_previous: waterPrevious,
             electricity_previous: electricityPrevious,
+            water_unit_price: waterUnitPrice,
+            electricity_unit_price: electricityUnitPrice,
           };
         })
       );
