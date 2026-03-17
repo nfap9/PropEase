@@ -166,6 +166,7 @@ export type {
   AdminPlanPricingUpdate,
   AdminSubscription,
   AdminSubscriptionRenew,
+  AdminSubscriptionGiftCreate,
   AdminPlatformConfig,
   AdminUsagePricing,
   AdminUsagePricingUpdate,

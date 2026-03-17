@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
+  Linking,
   RefreshControl,
   ScrollView,
   Text,
@@ -10,6 +11,7 @@ import {
   View,
 } from 'react-native'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { router } from 'expo-router'
 import { utilitiesApi, leasesApi, apartmentsApi, type UtilityExportRoom, type UtilityWithDetails } from '@/services/api'
 import { Colors } from '@/constants'
 
@@ -398,6 +400,26 @@ export default function UtilitiesScreen() {
     return visiblePendingItems[currentIndex + 1]?.roomId ?? null
   }
 
+  const handleOpenRoom = (roomId: string) => {
+    router.push(`/rooms/${roomId}` as any)
+  }
+
+  const handleCallTenant = async (phone?: string | null) => {
+    if (!phone) {
+      Alert.alert('暂无联系电话', '当前房间还没有可拨打的租客手机号。')
+      return
+    }
+
+    const telUrl = `tel:${phone}`
+    const canOpen = await Linking.canOpenURL(telUrl)
+    if (!canOpen) {
+      Alert.alert('无法拨打', '当前设备不支持拨打电话。')
+      return
+    }
+
+    await Linking.openURL(telUrl)
+  }
+
   const handleSave = async (moveNext: boolean) => {
     if (!activeItem) return
 
@@ -614,6 +636,48 @@ export default function UtilitiesScreen() {
               <InfoRow label="出账日" value={`每月${activeItem.billingDay}日`} />
               <InfoRow label="租客电话" value={activeItem.tenantPhone || '暂无'} />
               <InfoRow label="抄表日期" value={readingDate} last />
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  borderRadius: 16,
+                  paddingVertical: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#EFF6FF',
+                }}
+                onPress={() => handleOpenRoom(activeItem.roomId)}
+              >
+                <Text style={{ fontSize: 13, fontWeight: '800', color: Colors.primary }}>
+                  查看房间
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  borderRadius: 16,
+                  paddingVertical: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: activeItem.tenantPhone ? '#ECFDF5' : '#F8FAFC',
+                  borderWidth: 1,
+                  borderColor: activeItem.tenantPhone ? '#BBF7D0' : Colors.borderLight,
+                }}
+                onPress={() => handleCallTenant(activeItem.tenantPhone)}
+              >
+                <Text
+                  style={{
+                    fontSize: 13,
+                    fontWeight: '800',
+                    color: activeItem.tenantPhone ? Colors.success : Colors.textMuted,
+                  }}
+                >
+                  联系租客
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <View style={{ marginTop: 18, gap: 14 }}>

@@ -39,12 +39,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
 import { billsApi, billFeeItemsApi } from '@/lib/api';
+import { shareBillSummary } from '@/lib/bills/share';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
 import { Bill, BillStatus, PaymentMethod, Payment } from '@/types';
 import { BILL_STATUS_CONFIG } from '@/lib/status-config';
+import type { BillFeeItem } from '@apartment-ultra/api-contract';
 import {
   Download,
   DollarSign,
@@ -54,6 +56,7 @@ import {
   FileSpreadsheet,
   FilePlus,
   Eye,
+  Share2,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -73,6 +76,7 @@ const BILLS = {
   CANCEL_BUTTON: 'bills-cancel-btn',
   LIST: 'bills-list',
   PAY_BUTTON: 'bills-pay-btn',
+  SHARE_BUTTON: 'bills-share-btn',
 } as const;
 
 const paymentSchema = z.object({
@@ -129,6 +133,7 @@ function BillsContent() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [selectedBillId, setSelectedBillId] = useState<string | null>(null);
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [sharingBillId, setSharingBillId] = useState<string | null>(null);
 
   const { data: bills, isLoading: billsLoading } = useQuery({
     queryKey: ['bills', orgId],
@@ -253,6 +258,27 @@ function BillsContent() {
     }
   };
 
+  const handleShareBill = async (bill: Bill, feeItems: BillFeeItem[] = []) => {
+    try {
+      setSharingBillId(bill.id);
+      const result = await shareBillSummary({
+        bill,
+        organizationName: organization?.name,
+        feeItems,
+      });
+      toast.success(
+        result === 'shared' ? '已调起系统分享面板' : '分享图已下载，可直接转发给租客或同事'
+      );
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return;
+      }
+      toast.error(getErrorMessage(error, '生成分享图失败，请重试'));
+    } finally {
+      setSharingBillId((current) => (current === bill.id ? null : current));
+    }
+  };
+
   const filteredBills = bills?.filter(
     (bill: Bill) => statusFilter === 'all' || bill.status === statusFilter
   );
@@ -348,6 +374,11 @@ function BillsContent() {
             label: '导出PDF',
             icon: Download,
             onClick: () => exportPdf(bill.id),
+          },
+          {
+            label: sharingBillId === bill.id ? '生成分享图中…' : '分享账单',
+            icon: Share2,
+            onClick: () => handleShareBill(bill),
           },
         ];
         return <TableActions actions={actions} />;
@@ -626,6 +657,15 @@ function BillsContent() {
                       登记付款
                     </Button>
                   )}
+                  <Button
+                    variant="outline"
+                    onClick={() => handleShareBill(billDetail, billFeeItems ?? [])}
+                    disabled={sharingBillId === billDetail.id}
+                    data-testid={BILLS.SHARE_BUTTON}
+                  >
+                    <Share2 className="mr-2 h-4 w-4" />
+                    {sharingBillId === billDetail.id ? '生成中...' : '分享账单'}
+                  </Button>
                   <Button variant="outline" onClick={() => exportPdf(billDetail.id)}>
                     <Download className="mr-2 h-4 w-4" />
                     导出PDF

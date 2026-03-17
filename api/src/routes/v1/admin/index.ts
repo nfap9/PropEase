@@ -14,6 +14,14 @@ import type { Request, Response, NextFunction } from 'express';
 
 const router: Router = Router();
 
+const AdminSubscriptionGiftSchema = z.object({
+  organization_id: z.string().min(1),
+  service_id: z.string().min(1),
+  pricing_id: z.string().min(1).nullable().optional(),
+  billing_months: z.coerce.number().int().min(1),
+  gift_months: z.coerce.number().int().min(0).optional(),
+});
+
 // 初始化路由无需任何认证
 router.use('/init', adminInitRouter);
 
@@ -365,6 +373,18 @@ router.post(
     }
   }
 );
+
+router.post('/subscriptions/gift', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const parsed = AdminSubscriptionGiftSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const updated = await defaultAdminService.giftSubscription(parsed.data);
+    auditAdminAction(req, 'admin:subscription:gift', undefined, parsed.data);
+    res.status(201).json(updated);
+  } catch (e) {
+    next(e);
+  }
+});
 
 router.get('/stats', async (_req: Request, res: Response, next: NextFunction) => {
   try {

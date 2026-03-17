@@ -338,6 +338,14 @@ export const adminApiEndpoints = {
     adminApi.post<AdminSubscription>(`/admin/subscriptions/${id}/renew`, data),
   cancelSubscription: (id: string) =>
     adminApi.post<AdminSubscription>(`/admin/subscriptions/${id}/cancel`),
+  giftSubscription: (data: {
+    organization_id: string;
+    service_id: string;
+    pricing_id?: string | null;
+    billing_months: number;
+    gift_months?: number;
+  }) =>
+    adminApi.post<AdminSubscription>('/admin/subscriptions/gift', data),
 
   // 品牌配置
   getPlatformConfig: () =>

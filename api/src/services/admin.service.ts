@@ -23,6 +23,9 @@ import { ulid } from 'ulid';
 import {
   defaultServiceProductService,
 } from './service-product.service.js';
+import { defaultSubscriptionService } from './subscription.service.js';
+import { fulfillSubscription } from './fulfillSubscription.js';
+import { defaultSubscriptionRepo } from '../repositories/subscription.repo.js';
 
 /**
  * 登录结果
@@ -88,6 +91,14 @@ export interface UpdateUsagePricingInput {
   price_per_apartment?: number;
   price_per_room?: number;
   price_per_member?: number;
+}
+
+export interface GiftSubscriptionInput {
+  organization_id: string;
+  service_id: string;
+  pricing_id?: string | null;
+  billing_months: number;
+  gift_months?: number;
 }
 
 /**
@@ -174,6 +185,7 @@ export interface AdminService {
   getSubscription(subscriptionId: string): Promise<SubscriptionWithRelations>;
   renewSubscription(subscriptionId: string): Promise<OrganizationSubscription>;
   cancelSubscription(subscriptionId: string): Promise<void>;
+  giftSubscription(data: GiftSubscriptionInput): Promise<SubscriptionWithRelations>;
 
   // Stats
   getStats(): Promise<AdminStats>;
@@ -484,6 +496,80 @@ export function createAdminService(
         throw createAppError(404, NotFoundMessages.SUBSCRIPTION);
       }
       await getRepo().cancelSubscription(subscriptionId);
+    },
+
+    giftSubscription: async (data: GiftSubscriptionInput) => {
+      const org = await getRepo().findOrganizationById(data.organization_id);
+      if (!org) {
+        throw createAppError(404, NotFoundMessages.ORGANIZATION);
+      }
+      if (!org.is_active) {
+        throw createAppError(400, '组织已停用，无法赠送套餐');
+      }
+      if (data.billing_months < 1) {
+        throw createAppError(422, '赠送周期至少为 1 个月');
+      }
+
+      const giftMonths = data.gift_months ?? 0;
+      if (giftMonths < 0) {
+        throw createAppError(422, '附加赠送月数不能小于 0');
+      }
+
+      const currentSubscriptions = await getRepo().listSubscriptions(0, 1, {
+        organization_id: data.organization_id,
+      });
+      const currentSubscription = currentSubscriptions[0] ?? null;
+
+      if (
+        currentSubscription &&
+        currentSubscription.status === 'active' &&
+        currentSubscription.service_id !== data.service_id
+      ) {
+        throw createAppError(
+          400,
+          '当前组织已有生效订阅，赠送仅支持延长当前套餐；变更套餐请走正常订阅调整流程'
+        );
+      }
+
+      const order = await defaultSubscriptionService.createOrder(data.organization_id, {
+        serviceId: data.service_id,
+        pricingId: data.pricing_id ?? undefined,
+        billingMonths: data.billing_months,
+      });
+
+      const originalAmount = Number(order.original_amount ?? order.amount);
+      const paidAt = new Date();
+
+      await defaultSubscriptionRepo.updateOrder(order.id, {
+        status: 'paid',
+        amount: 0,
+        original_amount: originalAmount,
+        payment_method: 'admin_grant',
+        paid_at: paidAt,
+        expires_at: paidAt,
+        total_discount: originalAmount,
+        total_gift_months: giftMonths,
+        applied_discounts: toPrismaInputJsonValue([
+          {
+            discount_type: 'fixed',
+            discount_value: originalAmount,
+            gift_months: giftMonths,
+            source: 'admin_gift',
+          },
+        ]),
+      });
+
+      await fulfillSubscription(order.id);
+
+      const updatedSubscriptions = await getRepo().listSubscriptions(0, 1, {
+        organization_id: data.organization_id,
+      });
+      const updatedSubscription = updatedSubscriptions[0] ?? null;
+      if (!updatedSubscription) {
+        throw createAppError(500, '赠送成功，但未读取到最新订阅结果');
+      }
+
+      return updatedSubscription;
     },
 
     getStats: async () => {

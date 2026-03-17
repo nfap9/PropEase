@@ -212,6 +212,14 @@ export interface AdminSubscriptionRenew {
   extend_days: number;
 }
 
+export interface AdminSubscriptionGiftCreate {
+  organization_id: string;
+  service_id: string;
+  pricing_id?: string | null;
+  billing_months: number;
+  gift_months?: number;
+}
+
 /** 品牌配置 */
 export interface AdminPlatformConfig {
   app_name: string;

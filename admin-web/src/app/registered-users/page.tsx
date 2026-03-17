@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { DataTable } from '@/components/common/data-table';
@@ -19,6 +22,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Select,
@@ -29,16 +48,30 @@ import {
 } from '@/components/ui/select';
 import {
   adminApiEndpoints,
+  AdminPlan,
   AdminRegisteredUser,
   AdminRegisteredUserDetail,
 } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import { formatDateTime } from '@/lib/date-utils';
 import { ColumnDef } from '@tanstack/react-table';
-import { Eye, Power, PowerOff, Trash2 } from 'lucide-react';
+import { Eye, Gift, Power, PowerOff, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type FilterActive = 'all' | 'active' | 'inactive';
+
+const giftSubscriptionSchema = z.object({
+  organization_id: z.string().min(1, '请选择赠送组织'),
+  service_id: z.string().min(1, '请选择套餐'),
+  pricing_id: z.string().min(1, '请选择赠送周期'),
+  gift_months: z.coerce
+    .number()
+    .int()
+    .min(0, '附加赠送月数不能小于 0')
+    .max(24, '附加赠送月数不能超过 24'),
+});
+
+type GiftSubscriptionForm = z.infer<typeof giftSubscriptionSchema>;
 
 export default function AdminRegisteredUsersPage() {
   const queryClient = useQueryClient();
@@ -50,6 +83,7 @@ export default function AdminRegisteredUsersPage() {
   const [disableConfirmUserId, setDisableConfirmUserId] = useState<string | null>(null);
   /** 待删除确认的用户 id */
   const [deleteConfirmUserId, setDeleteConfirmUserId] = useState<string | null>(null);
+  const [isGiftOpen, setIsGiftOpen] = useState(false);
 
   const isActiveParam = activeFilter === 'all' ? undefined : activeFilter === 'active';
 
@@ -74,6 +108,32 @@ export default function AdminRegisteredUsersPage() {
     },
     enabled: !!detailUserId,
   });
+
+  const { data: plans = [], isLoading: plansLoading } = useQuery({
+    queryKey: ['admin', 'plans', 'gift-options'],
+    queryFn: async () => {
+      const res = await adminApiEndpoints.listPlans({ active_only: true });
+      return ((res.data ?? []) as AdminPlan[]).filter(
+        (plan) => plan.is_active && plan.code !== 'free' && (plan.pricing?.length ?? 0) > 0
+      );
+    },
+    enabled: isGiftOpen,
+  });
+
+  const giftForm = useForm<GiftSubscriptionForm>({
+    resolver: zodResolver(giftSubscriptionSchema),
+    defaultValues: {
+      organization_id: '',
+      service_id: '',
+      pricing_id: '',
+      gift_months: 0,
+    },
+  });
+
+  const selectedGiftPlan = plans.find((plan) => plan.id === giftForm.watch('service_id')) ?? null;
+  const selectedPricing =
+    selectedGiftPlan?.pricing?.find((pricing) => pricing.id === giftForm.watch('pricing_id')) ??
+    null;
 
   const setActiveMutation = useMutation({
     mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
@@ -101,6 +161,54 @@ export default function AdminRegisteredUsersPage() {
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
+
+  const giftSubscriptionMutation = useMutation({
+    mutationFn: async (values: GiftSubscriptionForm) => {
+      const pricing =
+        plans
+          .find((plan) => plan.id === values.service_id)
+          ?.pricing?.find((item) => item.id === values.pricing_id) ?? null;
+
+      if (!pricing) {
+        throw new Error('请选择赠送周期');
+      }
+
+      return adminApiEndpoints.giftSubscription({
+        organization_id: values.organization_id,
+        service_id: values.service_id,
+        pricing_id: values.pricing_id,
+        billing_months: pricing.months,
+        gift_months: values.gift_months,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'subscriptions'] });
+      if (detailUserId) {
+        queryClient.invalidateQueries({
+          queryKey: ['admin', 'registered-users', 'detail', detailUserId],
+        });
+      }
+      setIsGiftOpen(false);
+      giftForm.reset({
+        organization_id: detail?.organizations[0]?.id ?? '',
+        service_id: '',
+        pricing_id: '',
+        gift_months: 0,
+      });
+      toast.success('赠送已生效，订阅有效期已更新');
+    },
+    onError: (error) => toast.error(getErrorMessage(error, '赠送失败，请重试')),
+  });
+
+  const openGiftDialog = (userDetail: AdminRegisteredUserDetail) => {
+    giftForm.reset({
+      organization_id: userDetail.organizations[0]?.id ?? '',
+      service_id: '',
+      pricing_id: '',
+      gift_months: 0,
+    });
+    setIsGiftOpen(true);
+  };
 
   const columns: ColumnDef<AdminRegisteredUser>[] = [
     { accessorKey: 'phone', header: '手机号' },
@@ -326,6 +434,15 @@ export default function AdminRegisteredUsersPage() {
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2 pt-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => openGiftDialog(detail)}
+                      disabled={detail.organizations.length === 0}
+                    >
+                      <Gift className="mr-2 h-4 w-4" />
+                      赠送套餐
+                    </Button>
                     {detail.is_active ? (
                       <Button
                         variant="destructive"
@@ -368,6 +485,154 @@ export default function AdminRegisteredUsersPage() {
           )}
         </SheetContent>
       </Sheet>
+
+      <Dialog open={isGiftOpen} onOpenChange={setIsGiftOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>赠送套餐</DialogTitle>
+            <DialogDescription>
+              为该用户所属组织发起 0 元赠送订单。若组织当前已有同套餐生效订阅，会在现有到期日后顺延；不同套餐切换仍需走正常订阅调整流程。
+            </DialogDescription>
+          </DialogHeader>
+          {detail ? (
+            <Form {...giftForm}>
+              <form
+                onSubmit={giftForm.handleSubmit((values) =>
+                  giftSubscriptionMutation.mutate(values)
+                )}
+                className="space-y-4"
+              >
+                <FormField
+                  control={giftForm.control}
+                  name="organization_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>目标组织</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="请选择组织" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {detail.organizations.map((org) => (
+                            <SelectItem key={org.id} value={org.id}>
+                              {org.name} ({org.role})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={giftForm.control}
+                  name="service_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>赠送套餐</FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          const nextPlan = plans.find((plan) => plan.id === value) ?? null;
+                          const nextPricing = nextPlan?.pricing?.[0]?.id ?? '';
+                          giftForm.setValue('pricing_id', nextPricing, { shouldValidate: true });
+                        }}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={plansLoading ? '加载中...' : '请选择套餐'} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {plans.map((plan) => (
+                            <SelectItem key={plan.id} value={plan.id}>
+                              {plan.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={giftForm.control}
+                  name="pricing_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>赠送周期</FormLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="请选择周期" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {(selectedGiftPlan?.pricing ?? []).map((pricing) => (
+                            <SelectItem key={pricing.id} value={pricing.id}>
+                              {pricing.months} 个月 · ¥{pricing.price.toLocaleString()}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={giftForm.control}
+                  name="gift_months"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>附加赠送月数</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          max={24}
+                          value={field.value}
+                          onChange={(event) => field.onChange(event.target.value)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {selectedPricing && (
+                  <div className="rounded-lg border bg-muted/40 px-3 py-3 text-sm text-muted-foreground">
+                    本次将按原价 ¥{selectedPricing.price.toLocaleString()} 记录为运营赠送，
+                    基础周期 {selectedPricing.months} 个月，
+                    附加赠送 {giftForm.watch('gift_months')} 个月。
+                  </div>
+                )}
+
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsGiftOpen(false)}>
+                    取消
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={
+                      giftSubscriptionMutation.isPending || detail.organizations.length === 0
+                    }
+                  >
+                    {giftSubscriptionMutation.isPending ? '赠送中...' : '确认赠送'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          ) : (
+            <p className="text-sm text-muted-foreground">请先选择目标用户。</p>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

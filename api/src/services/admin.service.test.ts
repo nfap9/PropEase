@@ -22,7 +22,26 @@ vi.mock('../utils/jwt.js', () => ({
   createAdminAccessToken: vi.fn(() => 'admin_token_123'),
 }));
 
+vi.mock('./subscription.service.js', () => ({
+  defaultSubscriptionService: {
+    createOrder: vi.fn(),
+  },
+}));
+
+vi.mock('./fulfillSubscription.js', () => ({
+  fulfillSubscription: vi.fn(),
+}));
+
+vi.mock('../repositories/subscription.repo.js', () => ({
+  defaultSubscriptionRepo: {
+    updateOrder: vi.fn(),
+  },
+}));
+
 import { hashPassword, verifyPassword } from '../utils/security.js';
+import { defaultSubscriptionService } from './subscription.service.js';
+import { fulfillSubscription } from './fulfillSubscription.js';
+import { defaultSubscriptionRepo } from '../repositories/subscription.repo.js';
 
 describe('AdminService', () => {
   const mockRepo: AdminRepository = {
@@ -390,6 +409,108 @@ describe('AdminService', () => {
 
       expect(result.organizations).toHaveLength(1);
       expect(result.organizations[0].role).toBe('owner');
+    });
+  });
+
+  describe('giftSubscription', () => {
+    it('should reject gifting another service while subscription is active', async () => {
+      vi.mocked(mockRepo.findOrganizationById).mockResolvedValue(sampleOrg);
+      vi.mocked(mockRepo.listSubscriptions).mockResolvedValue([
+        {
+          id: '01hqtestsub000000001',
+          organization_id: sampleOrg.id,
+          service_id: 'service-current',
+          pricing_id: null,
+          status: 'active',
+          billing_months: 1,
+          start_date: new Date(),
+          end_date: new Date(),
+          auto_renew: true,
+          trial_ends_at: null,
+          next_service_id: null,
+          limits_snapshot: null,
+          created_at: new Date(),
+          updated_at: new Date(),
+          service: null,
+          organization: sampleOrg,
+        },
+      ] as any);
+
+      await expect(
+        service.giftSubscription({
+          organization_id: sampleOrg.id,
+          service_id: 'service-next',
+          billing_months: 12,
+          gift_months: 1,
+        })
+      ).rejects.toMatchObject({
+        statusCode: 400,
+        message: '当前组织已有生效订阅，赠送仅支持延长当前套餐；变更套餐请走正常订阅调整流程',
+      });
+    });
+
+    it('should create an admin gift order and return the updated subscription', async () => {
+      const updatedSubscription = {
+        id: '01hqtestsub000000001',
+        organization_id: sampleOrg.id,
+        service_id: 'service-current',
+        pricing_id: 'pricing-12',
+        status: 'active',
+        billing_months: 12,
+        start_date: new Date(),
+        end_date: new Date('2026-12-31'),
+        auto_renew: true,
+        trial_ends_at: null,
+        next_service_id: null,
+        limits_snapshot: null,
+        created_at: new Date(),
+        updated_at: new Date(),
+        service: null,
+        organization: sampleOrg,
+      };
+
+      vi.mocked(mockRepo.findOrganizationById).mockResolvedValue(sampleOrg);
+      vi.mocked(mockRepo.listSubscriptions)
+        .mockResolvedValueOnce([
+          {
+            ...updatedSubscription,
+            billing_months: 1,
+          },
+        ] as any)
+        .mockResolvedValueOnce([updatedSubscription] as any);
+      vi.mocked(defaultSubscriptionService.createOrder).mockResolvedValue({
+        id: 'order-gift-1',
+        original_amount: 1200,
+        amount: 1200,
+      } as any);
+      vi.mocked(defaultSubscriptionRepo.updateOrder).mockResolvedValue({} as any);
+      vi.mocked(fulfillSubscription).mockResolvedValue(undefined);
+
+      const result = await service.giftSubscription({
+        organization_id: sampleOrg.id,
+        service_id: 'service-current',
+        pricing_id: 'pricing-12',
+        billing_months: 12,
+        gift_months: 2,
+      });
+
+      expect(defaultSubscriptionService.createOrder).toHaveBeenCalledWith(sampleOrg.id, {
+        serviceId: 'service-current',
+        pricingId: 'pricing-12',
+        billingMonths: 12,
+      });
+      expect(defaultSubscriptionRepo.updateOrder).toHaveBeenCalledWith(
+        'order-gift-1',
+        expect.objectContaining({
+          status: 'paid',
+          amount: 0,
+          payment_method: 'admin_grant',
+          total_discount: 1200,
+          total_gift_months: 2,
+        })
+      );
+      expect(fulfillSubscription).toHaveBeenCalledWith('order-gift-1');
+      expect(result).toEqual(updatedSubscription);
     });
   });
 });
