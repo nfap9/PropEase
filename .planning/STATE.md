@@ -22,11 +22,13 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Recent Work
 
-(None yet)
+- Phase 1 context captured: 返回按钮样式、面包屑导航、入口展示方式
 
 ## Decisions
 
-(None yet)
+- Phase 1: 返回按钮使用「文字+图标」形式
+- Phase 1: 启用面包屑导航，显示完整层级路径
+- Phase 1: 保持卡片网格入口形式
 
 ## Blockers
 
