@@ -14,8 +14,10 @@
 - ROUTE-02: 在布局中添加返回设置首页的导航
 - ROUTE-03: 确保所有子页面继承统一样式
 
+**Status:** Complete
+
 **Plans:**
-- [ ] 01-01-PLAN.md — 添加 breadcrumb 组件，创建 settings 统一布局
+1/1 plans complete
 
 **Success Criteria:**
 1. 访问 /settings/team 时能看到面包屑或返回按钮
