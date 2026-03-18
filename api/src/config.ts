@@ -104,12 +104,25 @@ function envCorsOrigins(): string[] | true {
   // 通配符 "*" 表示允许所有来源（仅用于开发环境）
   if (v === '*') return true;
   if (!v || v === '') return ['http://localhost:3000'];
+
+  const normalized = v.trim();
   try {
-    const parsed = JSON.parse(v) as unknown;
-    return Array.isArray(parsed) ? parsed.map(String) : [v];
+    const parsed = JSON.parse(normalized) as unknown;
+    if (Array.isArray(parsed)) {
+      return parsed.map(String);
+    }
   } catch {
-    return [v];
+    // Ignore JSON parsing errors and fall back to plain-text parsing below.
   }
+
+  if (normalized.includes(',')) {
+    return normalized
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+  }
+
+  return [normalized];
 }
 
 // ============================================

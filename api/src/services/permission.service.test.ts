@@ -40,6 +40,21 @@ describe('PermissionService', () => {
     });
   });
 
+  it('falls back to default full permissions when owner permissions table is empty', async () => {
+    repo.findUserSystemRoles.mockResolvedValue([]);
+    repo.findMemberRole.mockResolvedValue('owner');
+    repo.findAll.mockResolvedValue([]);
+
+    const service = createPermissionService(() => repo as any);
+    const result = await service.getMyPermissions('user-1', 'org-1');
+
+    expect(result.permissions).toContain('apartment:view');
+    expect(result.permissions).toContain('report:export');
+    expect(result.permissions).toContain('settings:edit');
+    expect(result.system_roles).toEqual([]);
+    expect(result.is_super_admin).toBe(false);
+  });
+
   it('returns custom role permissions for organization members', async () => {
     repo.findUserSystemRoles.mockResolvedValue([]);
     repo.findMemberRole.mockResolvedValue('member');

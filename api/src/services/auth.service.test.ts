@@ -20,13 +20,8 @@ vi.mock('../utils/jwt.js', () => ({
   decodeToken: vi.fn(),
 }));
 
-vi.mock('../services/createPersonalOrgWithFreePlan.js', () => ({
-  createPersonalOrgWithFreePlan: vi.fn().mockResolvedValue(undefined),
-}));
-
 import { hashPassword, verifyPassword } from '../utils/security.js';
 import { decodeToken, createAccessToken, createRefreshToken } from '../utils/jwt.js';
-import { createPersonalOrgWithFreePlan } from './createPersonalOrgWithFreePlan.js';
 
 describe('AuthService', () => {
   const mockAuthRepo: AuthRepository = {
@@ -81,7 +76,6 @@ describe('AuthService', () => {
       expect(mockAuthRepo.findUserByPhone).toHaveBeenCalledWith('13800138000');
       expect(hashPassword).toHaveBeenCalledWith('password123');
       expect(mockAuthRepo.createUser).toHaveBeenCalled();
-      expect(createPersonalOrgWithFreePlan).toHaveBeenCalledWith(sampleUser.id);
       expect(result).toEqual({
         id: sampleUser.id,
         phone: sampleUser.phone,

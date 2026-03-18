@@ -13,7 +13,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (phone: string, password: string) => Promise<string>;
-  register: (phone: string, password: string, fullName: string) => Promise<void>;
+  register: (phone: string, password: string, fullName: string) => Promise<string>;
   logout: () => void;
   setOrganization: (org: Organization | null) => void;
   refreshOrganizations: (preferredOrgId?: string | null) => Promise<void>;
@@ -122,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       full_name: fullName,
     });
     // 注册成功后自动登录
-    await login(phone, password);
+    return login(phone, password);
   };
 
   const logout = () => {

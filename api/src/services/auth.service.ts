@@ -78,11 +78,6 @@ export function createAuthService(
         password_hash: passwordHash,
       });
 
-      // 创建个人组织和免费套餐
-      const { createPersonalOrgWithFreePlan } =
-        await import('../services/createPersonalOrgWithFreePlan.js');
-      await createPersonalOrgWithFreePlan(user.id);
-
       return {
         id: user.id,
         phone: user.phone,

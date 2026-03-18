@@ -1,0 +1,183 @@
+# Apartment Ultra 本地开发 Docker Compose
+# 提供 api、tenant-web、admin-web 的容器内热更新。
+
+name: apartment-ultra-dev
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-apartment_ultra}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - apartment-dev-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - apartment-dev-network
+
+  api:
+    build:
+      context: ..
+      dockerfile: api/Dockerfile.dev
+    working_dir: /app
+    environment:
+      CI: "true"
+      NODE_ENV: development
+      PORT: 8000
+      npm_config_store_dir: /root/.local/share/pnpm/store
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-apartment_ultra}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "300"
+    command:
+      [
+        "sh",
+        "-c",
+        "pnpm --filter @apartment-ultra/api-contract run build && pnpm --filter apartment-ultra-api dev:docker"
+      ]
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../api/src:/app/api/src
+      - ../api/prisma:/app/api/prisma
+      - ../api/package.json:/app/api/package.json:ro
+      - ../api/tsconfig.json:/app/api/tsconfig.json:ro
+      - ../api/prisma.config.ts:/app/api/prisma.config.ts:ro
+      - ../packages/api-contract:/app/packages/api-contract
+      - ../packages/shared-ui:/app/packages/shared-ui
+      - ../packages/web-api-client:/app/packages/web-api-client
+      - ../package.json:/app/package.json:ro
+      - ../pnpm-workspace.yaml:/app/pnpm-workspace.yaml:ro
+      - ../pnpm-lock.yaml:/app/pnpm-lock.yaml:ro
+      - ../tsconfig.base.json:/app/tsconfig.base.json:ro
+      - ../tsconfig.nextjs.json:/app/tsconfig.nextjs.json:ro
+      - ../tsconfig.react-package.json:/app/tsconfig.react-package.json:ro
+    networks:
+      - apartment-dev-network
+
+  tenant-web:
+    build:
+      context: ..
+      dockerfile: tenant-web/Dockerfile.dev
+    working_dir: /app
+    environment:
+      CI: "true"
+      NODE_ENV: development
+      npm_config_store_dir: /root/.local/share/pnpm/store
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+      API_URL_SERVER: http://api:8000/api/v1
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "300"
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "${TENANT_WEB_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_started
+    volumes:
+      - ../tenant-web/src:/app/tenant-web/src
+      - ../tenant-web/public:/app/tenant-web/public
+      - ../tenant-web/package.json:/app/tenant-web/package.json:ro
+      - ../tenant-web/tsconfig.json:/app/tenant-web/tsconfig.json:ro
+      - ../tenant-web/next.config.mjs:/app/tenant-web/next.config.mjs:ro
+      - ../tenant-web/tailwind.config.ts:/app/tenant-web/tailwind.config.ts:ro
+      - ../tenant-web/postcss.config.mjs:/app/tenant-web/postcss.config.mjs:ro
+      - ../tenant-web/components.json:/app/tenant-web/components.json:ro
+      - ../packages/api-contract:/app/packages/api-contract
+      - ../packages/shared-ui:/app/packages/shared-ui
+      - ../packages/web-api-client:/app/packages/web-api-client
+      - ../package.json:/app/package.json:ro
+      - ../pnpm-workspace.yaml:/app/pnpm-workspace.yaml:ro
+      - ../pnpm-lock.yaml:/app/pnpm-lock.yaml:ro
+      - ../tsconfig.base.json:/app/tsconfig.base.json:ro
+      - ../tsconfig.nextjs.json:/app/tsconfig.nextjs.json:ro
+      - ../tsconfig.react-package.json:/app/tsconfig.react-package.json:ro
+    networks:
+      - apartment-dev-network
+    command:
+      [
+        "sh",
+        "-c",
+        "pnpm --filter @apartment-ultra/api-contract run build && pnpm --filter apartment-ultra-tenant dev"
+      ]
+
+  admin-web:
+    build:
+      context: ..
+      dockerfile: admin-web/Dockerfile.dev
+    working_dir: /app
+    environment:
+      CI: "true"
+      NODE_ENV: development
+      npm_config_store_dir: /root/.local/share/pnpm/store
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+      API_URL_SERVER: http://api:8000/api/v1
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "300"
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "${ADMIN_WEB_PORT:-3001}:3001"
+    depends_on:
+      api:
+        condition: service_started
+    volumes:
+      - ../admin-web/src:/app/admin-web/src
+      - ../admin-web/package.json:/app/admin-web/package.json:ro
+      - ../admin-web/tsconfig.json:/app/admin-web/tsconfig.json:ro
+      - ../admin-web/next.config.mjs:/app/admin-web/next.config.mjs:ro
+      - ../admin-web/tailwind.config.ts:/app/admin-web/tailwind.config.ts:ro
+      - ../admin-web/postcss.config.mjs:/app/admin-web/postcss.config.mjs:ro
+      - ../packages/api-contract:/app/packages/api-contract
+      - ../packages/shared-ui:/app/packages/shared-ui
+      - ../packages/web-api-client:/app/packages/web-api-client
+      - ../package.json:/app/package.json:ro
+      - ../pnpm-workspace.yaml:/app/pnpm-workspace.yaml:ro
+      - ../pnpm-lock.yaml:/app/pnpm-lock.yaml:ro
+      - ../tsconfig.base.json:/app/tsconfig.base.json:ro
+      - ../tsconfig.nextjs.json:/app/tsconfig.nextjs.json:ro
+      - ../tsconfig.react-package.json:/app/tsconfig.react-package.json:ro
+    networks:
+      - apartment-dev-network
+    command:
+      [
+        "sh",
+        "-c",
+        "pnpm --filter @apartment-ultra/api-contract run build && pnpm --filter apartment-ultra-admin dev"
+      ]
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+
+networks:
+  apartment-dev-network:
+    driver: bridge

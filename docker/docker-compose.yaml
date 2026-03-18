@@ -11,6 +11,8 @@
 #     docker compose -f docker/docker-compose.yaml --env-file docker/.env.docker up -d
 # ==================================================================
 
+name: apartment-ultra-prod
+
 services:
   postgres:
     image: postgres:15-alpine

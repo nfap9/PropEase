@@ -25,8 +25,8 @@
 推荐本地仅启动数据库等依赖，业务服务仍在宿主机运行：
 
 ```bash
-cd docker
-docker compose -f docker-compose.middleware.yaml up -d
+cp docker/middleware.env.example docker/middleware.env
+docker compose -p apartment-ultra-middleware -f docker/docker-compose.middleware.yaml --env-file docker/middleware.env up -d
 ```
 
 然后在仓库根目录分别启动：
@@ -36,6 +36,46 @@ pnpm dev:api
 pnpm dev:web
 pnpm dev:admin
 ```
+
+### 使用 Docker 热更新开发
+
+如果希望前后端都跑在容器里，并且修改代码后自动热更新，可以使用开发编排文件：
+
+```bash
+docker compose -p apartment-ultra-dev -f docker/docker-compose.dev.yaml --env-file docker/.env.dev up --build --force-recreate
+```
+
+首次启动会在容器内执行 `pnpm install`，时间会稍长一些；后续会复用命名卷中的依赖缓存。
+
+启动后可访问：
+
+- 租客端: `http://localhost:3000`
+- 运营端: `http://localhost:3001`
+- API: `http://localhost:8000`
+
+说明：
+
+- 仓库源码会挂载到容器内，因此保存代码后会触发 `tsx watch` 和 `next dev` 热更新。
+- 已为容器内文件监听开启轮询配置，适配 Docker Desktop 挂载场景。
+- 如果依赖异常，可执行 `docker compose -p apartment-ultra-dev -f docker/docker-compose.dev.yaml --env-file docker/.env.dev down -v --remove-orphans` 后重启。
+
+### 三套运行模式
+
+当前仓库推荐按下列职责区分：
+
+| 模式 | Compose 文件 | 环境文件 | 用途 |
+|------|------|------|------|
+| `middleware` | `docker/docker-compose.middleware.yaml` | `docker/middleware.env` | 只启动 PostgreSQL / Redis |
+| `development` | `docker/docker-compose.dev.yaml` | `docker/.env.dev` | 前后端容器内热更新开发 |
+| `production` | `docker/docker-compose.yaml` | `.env.production` | 正式部署 |
+
+对应的容器名称会遵循 Compose 统一格式：
+
+- 开发环境：`apartment-ultra-dev-<service>-1`
+- 中间件环境：`apartment-ultra-middleware-<service>-1`
+- 生产环境：`apartment-ultra-prod-<service>-1`
+
+例如：`apartment-ultra-dev-api-1`、`apartment-ultra-dev-tenant-web-1`。
 
 ### 本地完整部署测试
 

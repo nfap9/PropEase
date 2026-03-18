@@ -40,7 +40,7 @@
 
 ```bash
 # 1. 启动 Docker 中间件（PostgreSQL, Redis）
-cd docker && docker compose -f docker-compose.middleware.yaml up -d
+pnpm docker:middleware
 
 # 2. 安装依赖
 pnpm install
@@ -59,6 +59,28 @@ pnpm dev:admin
 
 # 7. 启动移动端原型（Expo，另开终端，可选）
 pnpm dev:mobile
+```
+
+### Docker 三种运行方式
+
+项目当前支持三套明确模式：
+
+```bash
+# 1. 中间件模式：只启 PostgreSQL / Redis，业务服务跑宿主机
+pnpm docker:middleware
+
+# 2. 开发模式：API + tenant-web + admin-web 全部容器内热更新
+pnpm docker:dev
+
+# 3. 生产式本地验证：使用生产 compose 在本机完整拉起
+pnpm docker:prod:local
+```
+
+如开发态首次依赖卷异常，可执行：
+
+```bash
+pnpm docker:dev:reset
+pnpm docker:dev
 ```
 
 ### 服务器部署

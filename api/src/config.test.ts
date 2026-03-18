@@ -89,6 +89,14 @@ describe('config', () => {
       expect(config.corsOrigins).toEqual(['http://localhost:3000', 'http://localhost:3001']);
     });
 
+    it('解析逗号分隔的 URL 列表', async () => {
+      process.env.CORS_ORIGINS = 'http://localhost:3000, http://localhost:3001';
+
+      const { config } = await import('./config.js');
+
+      expect(config.corsOrigins).toEqual(['http://localhost:3000', 'http://localhost:3001']);
+    });
+
     it('通配符 "*" 返回 true', async () => {
       process.env.CORS_ORIGINS = '*';
 

@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/lib/auth/context';
+import { getPostAuthRedirectPath } from '@/lib/auth/redirect';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { useBrandConfig } from '@/lib/brand-config-context';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
@@ -49,18 +50,19 @@ const registerSchema = z
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
-  const { register: registerUser, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { register: registerUser, isAuthenticated, isLoading: isAuthLoading, organizations, organization } =
+    useAuth();
   const brandConfig = useBrandConfig();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 已登录用户自动跳转到仪表盘
+  // 已登录用户自动跳转到登录后目标页
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
-      router.replace('/dashboard');
+      router.replace(getPostAuthRedirectPath(organizations, organization));
     }
-  }, [isAuthLoading, isAuthenticated, router]);
+  }, [isAuthLoading, isAuthenticated, organization, organizations, router]);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -76,8 +78,8 @@ export default function RegisterPage() {
     setIsLoading(true);
     setError(null);
     try {
-      await registerUser(data.phone, data.password, data.full_name);
-      router.push('/dashboard');
+      const targetPath = await registerUser(data.phone, data.password, data.full_name);
+      router.replace(targetPath);
     } catch {
       setError('注册失败，手机号可能已被使用');
     } finally {

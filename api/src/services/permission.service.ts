@@ -183,7 +183,10 @@ export function createPermissionService(
 
       if (memberRole === 'owner') {
         const perms = await getRepo().findAll();
-        permissionCodes = perms.map((p) => p.code);
+        permissionCodes =
+          perms.length > 0
+            ? perms.map((p) => p.code)
+            : toPermissionCodes(DEFAULT_ORG_ROLE_PERMISSIONS.admin);
       } else if (ORG_MEMBER_ROLES.includes(memberRole as OrgMemberRole)) {
         const org = await getRepo().findOrgById(orgId);
         if (!org) {

@@ -1,0 +1,21 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.com && pnpm config set store-dir /root/.local/share/pnpm/store
+
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY tsconfig.base.json tsconfig.base.json
+COPY tsconfig.nextjs.json tsconfig.nextjs.json
+COPY tsconfig.react-package.json tsconfig.react-package.json
+COPY api/package.json api/package.json
+COPY tenant-web/package.json tenant-web/package.json
+COPY packages/api-contract/package.json packages/api-contract/package.json
+COPY packages/shared-ui/package.json packages/shared-ui/package.json
+COPY packages/web-api-client/package.json packages/web-api-client/package.json
+
+RUN pnpm install --frozen-lockfile --store-dir /root/.local/share/pnpm/store
+
+EXPOSE 3000
+
+CMD ["sh", "-c", "pnpm install --frozen-lockfile --store-dir /root/.local/share/pnpm/store && pnpm --filter @apartment-ultra/api-contract run build && pnpm --filter apartment-ultra-tenant dev"]

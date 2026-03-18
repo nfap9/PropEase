@@ -3,17 +3,18 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-RUN corepack enable pnpm
+RUN corepack enable pnpm && pnpm config set store-dir /root/.local/share/pnpm/store
 
 # 复制根目录配置
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY tsconfig.base.json tsconfig.base.json
 
 # 复制 API 和 api-contract 的 package.json
 COPY api/package.json api/package.json
 COPY packages/api-contract/package.json packages/api-contract/package.json
 
 # 安装依赖
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --store-dir /root/.local/share/pnpm/store
 
 # 复制 api-contract 源码并构建
 COPY packages/api-contract/ packages/api-contract/
