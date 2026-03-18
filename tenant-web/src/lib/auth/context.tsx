@@ -12,11 +12,11 @@ interface AuthContextType {
   organizations: Organization[];
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (phone: string, password: string) => Promise<void>;
+  login: (phone: string, password: string) => Promise<string>;
   register: (phone: string, password: string, fullName: string) => Promise<void>;
   logout: () => void;
   setOrganization: (org: Organization | null) => void;
-  refreshOrganizations: () => Promise<void>;
+  refreshOrganizations: (preferredOrgId?: string | null) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -79,8 +79,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const refreshOrganizations = async () => {
-    await loadOrganizations();
+  const refreshOrganizations = async (preferredOrgId?: string | null) => {
+    await loadOrganizations(preferredOrgId);
   };
 
   useEffect(() => {
@@ -111,9 +111,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userData = await authApi.getMe();
     setUser(userData);
 
-    await loadOrganizations();
-
-    router.push('/dashboard');
+    const orgs = await loadOrganizations();
+    return orgs.length > 0 ? '/dashboard' : '/organizations/new';
   };
 
   const register = async (phone: string, password: string, fullName: string) => {

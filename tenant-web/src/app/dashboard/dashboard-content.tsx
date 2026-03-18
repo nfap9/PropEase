@@ -92,7 +92,7 @@ export function DashboardContent() {
         <Building2 className="mb-4 h-16 w-16 text-muted-foreground" />
         <h2 className="mb-2 text-xl font-semibold">欢迎使用{brandConfig.app_name}</h2>
         <p className="mb-4 text-muted-foreground">您还没有加入任何组织，请先创建一个组织开始使用</p>
-        <a href="/settings/team" className="text-primary hover:underline">
+        <a href="/organizations/new" className="text-primary hover:underline">
           前往创建组织
         </a>
       </div>

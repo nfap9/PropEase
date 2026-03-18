@@ -11,6 +11,7 @@ const { getMeMock, listOrganizationsMock } = vi.hoisted(() => ({
 vi.mock('@/lib/api', () => ({
   authApi: {
     getMe: getMeMock,
+    login: vi.fn(),
   },
   organizationsApi: {
     list: listOrganizationsMock,

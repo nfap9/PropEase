@@ -4,20 +4,21 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/context';
+import { getPostAuthRedirectPath } from '@/lib/auth/redirect';
 
 export default function HomePage() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, organizations, organization } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!isLoading) {
       if (isAuthenticated) {
-        router.push('/dashboard');
+        router.replace(getPostAuthRedirectPath(organizations, organization));
       } else {
-        router.push('/login');
+        router.replace('/login');
       }
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, organization, organizations, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">

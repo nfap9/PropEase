@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/lib/auth/context';
+import { getPostAuthRedirectPath } from '@/lib/auth/redirect';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -38,7 +39,7 @@ const passwordLoginSchema = z.object({
 type PasswordLoginFormValues = z.infer<typeof passwordLoginSchema>;
 
 export default function LoginPage() {
-  const { login, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { login, isAuthenticated, isLoading: isAuthLoading, organizations, organization } = useAuth();
   const brandConfig = useBrandConfig();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -47,9 +48,9 @@ export default function LoginPage() {
   // 已登录用户自动跳转到仪表盘
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
-      router.replace('/dashboard');
+      router.replace(getPostAuthRedirectPath(organizations, organization));
     }
-  }, [isAuthLoading, isAuthenticated, router]);
+  }, [isAuthLoading, isAuthenticated, organization, organizations, router]);
 
   const passwordForm = useForm<PasswordLoginFormValues>({
     resolver: zodResolver(passwordLoginSchema),
@@ -64,8 +65,8 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
     try {
-      await login(data.phone, data.password);
-      router.push('/dashboard');
+      const targetPath = await login(data.phone, data.password);
+      router.replace(targetPath);
     } catch {
       setError('手机号或密码错误');
     } finally {

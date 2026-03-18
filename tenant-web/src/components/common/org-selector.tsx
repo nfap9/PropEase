@@ -56,7 +56,7 @@ export function OrgSelector() {
       <Button
         variant="outline"
         size="sm"
-        onClick={() => router.push('/settings/team')}
+        onClick={() => router.push('/organizations/new')}
         className="gap-2"
       >
         <Plus className="h-4 w-4" />

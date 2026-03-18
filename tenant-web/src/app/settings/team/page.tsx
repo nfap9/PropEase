@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -56,6 +57,7 @@ import { OrganizationMember, MemberRole } from '@/types';
 import { Plus, MoreHorizontal, Pencil, Trash2, UserPlus, Building2, Users } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/lib/auth/context';
+import { invalidateOrgScopedQueries } from '@/lib/query-utils';
 
 // 注意: 实际使用时从 testids 导入 TEAM_SETTINGS 常量
 const TEAM_SETTINGS = {
@@ -101,6 +103,7 @@ const ROLE_COLORS: Record<MemberRole, 'default' | 'secondary' | 'destructive' | 
 
 export default function TeamSettingsPage() {
   const { user, organization, setOrganization, refreshOrganizations } = useAuth();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [isCreateOrgOpen, setIsCreateOrgOpen] = useState(false);
   const [isEditOrgOpen, setIsEditOrgOpen] = useState(false);
@@ -142,12 +145,15 @@ export default function TeamSettingsPage() {
           .replace(/\s+/g, '-')
           .replace(/[^a-z0-9-]/g, ''),
       }),
-    onSuccess: async () => {
+    onSuccess: async (createdOrganization) => {
       queryClient.invalidateQueries({ queryKey: ['organizations'] });
-      await refreshOrganizations();
+      await refreshOrganizations(createdOrganization.id);
+      setOrganization(createdOrganization);
+      invalidateOrgScopedQueries(queryClient);
       setIsCreateOrgOpen(false);
       createOrgForm.reset();
       toast.success('组织创建成功');
+      router.push('/dashboard');
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });

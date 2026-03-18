@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth/context';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import { canAccessRule, type AccessRule } from '@/lib/permission-access';
 import { MainLayout } from '@/components/layout/main-layout';
+import { ORGANIZATION_ONBOARDING_PATH } from '@/lib/auth/redirect';
 
 /**
  * 路由到权限的映射
@@ -47,7 +48,7 @@ interface PermissionPageGuardProps {
  * </PermissionPageGuard>
  */
 export function PermissionPageGuard({ children, permission, accessRule }: PermissionPageGuardProps) {
-  const { isAuthenticated, isLoading: authLoading, organization } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, organization, organizations } = useAuth();
   const { permissions, hasPermission, isLoading: permissionsLoading, isSuperAdmin } = usePermissions();
   const router = useRouter();
   const pathname = usePathname();
@@ -65,7 +66,19 @@ export function PermissionPageGuard({ children, permission, accessRule }: Permis
       router.push('/login');
       return;
     }
-  }, [authLoading, permissionsLoading, isAuthenticated, router]);
+
+    if (resolvedAccessRule?.requiresOrganization && !organization && organizations.length === 0) {
+      router.replace(ORGANIZATION_ONBOARDING_PATH);
+    }
+  }, [
+    authLoading,
+    isAuthenticated,
+    organization,
+    organizations.length,
+    permissionsLoading,
+    resolvedAccessRule,
+    router,
+  ]);
 
   // 加载中
   if (authLoading || permissionsLoading) {
@@ -84,6 +97,10 @@ export function PermissionPageGuard({ children, permission, accessRule }: Permis
   }
 
   if (resolvedAccessRule?.requiresOrganization && !organization) {
+    if (organizations.length === 0) {
+      return null;
+    }
+
     return (
       <MainLayout>
         <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4">
