@@ -497,6 +497,7 @@ model OrganizationSubscription {
   auto_renew      Boolean   @default(true)
   trial_ends_at   DateTime? @db.Date
   next_service_id String?   @db.VarChar(26)
+  cancel_reason   String?   @db.VarChar(500) // 取消原因
   limits_snapshot Json?
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt

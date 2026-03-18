@@ -135,13 +135,20 @@ router.post(
  *     tags: [订阅管理]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: active_only
+ *         schema:
+ *           type: boolean
+ *           default: true
  *     responses:
  *       200:
  *         description: 服务产品列表
  */
-router.get('/plans', async (_req: Request, res: Response, next: NextFunction) => {
+router.get('/plans', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const services = await defaultSubscriptionService.listServices();
+    const activeOnly = req.query.active_only !== 'false';
+    const services = await defaultSubscriptionService.listServices(activeOnly);
     res.json(services);
   } catch (e) {
     next(e);
@@ -283,7 +290,8 @@ router.post(
         return next(createAppError(400, '缺少 service_id'));
       }
       const billingMonths = body.billing_cycle === 'yearly' ? 12 : 1;
-      const sub = await defaultSubscriptionService.subscribe(req.params.org_id, body.service_id, billingMonths);
+      const autoRenew = body.auto_renew ?? true;
+      const sub = await defaultSubscriptionService.subscribe(req.params.org_id, body.service_id, billingMonths, autoRenew);
       res.json(sub);
     } catch (e) {
       next(e);
@@ -358,6 +366,15 @@ router.put(
  *         required: true
  *         schema:
  *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *                 description: 取消原因
  *     responses:
  *       200:
  *         description: 取消成功
@@ -367,7 +384,8 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await requireOrgMembership(req, 'org_id');
-      await defaultSubscriptionService.cancelSubscription(req.params.org_id);
+      const body = req.body as { reason?: string };
+      await defaultSubscriptionService.cancelSubscription(req.params.org_id, body.reason);
       res.json({ message: 'ok' });
     } catch (e) {
       next(e);

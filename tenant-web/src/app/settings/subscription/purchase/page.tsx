@@ -82,7 +82,7 @@ export default function SubscriptionPurchasePage() {
   const createOrderMutation = useMutation({
     mutationFn: (params: { planId: string; billingMonths: number }) =>
       subscriptionsApi.createOrder(orgId!, {
-        plan_id: params.planId,
+        service_id: params.planId,
         billing_months: params.billingMonths,
       }),
     onSuccess: (order) => {
@@ -189,7 +189,7 @@ export default function SubscriptionPurchasePage() {
           <div className="grid gap-6 md:grid-cols-3" data-testid={SUBSCRIPTION.SERVICES_GRID}>
             {services.map((service) => {
               const Icon = SERVICE_ICONS[service.code] || Building2;
-              const isCurrentPlan = subscriptionStatus?.plan?.code === service.code;
+              const isCurrentPlan = subscriptionStatus?.service?.code === service.code;
               const pricing = service.pricing ?? [];
 
               return (

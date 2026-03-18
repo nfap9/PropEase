@@ -99,7 +99,7 @@ export const subscriptionsApi = {
   },
 
   // Orders
-  createOrder: async (orgId: string, data: { plan_id: string; billing_months?: number }): Promise<SubscriptionOrder> => {
+  createOrder: async (orgId: string, data: { service_id: string; billing_months?: number }): Promise<SubscriptionOrder> => {
     const response = await api.post<SubscriptionOrder>(
       `/subscriptions/organizations/${orgId}/orders`,
       data

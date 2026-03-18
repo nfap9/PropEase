@@ -41,17 +41,17 @@ export interface CreateOrderParams {
  * Subscription Service 接口
  */
 export interface SubscriptionService {
-  listServices(): Promise<ServiceProduct[]>;
+  listServices(activeOnly?: boolean): Promise<ServiceProduct[]>;
   getServiceById(id: string): Promise<ServiceProduct>;
   getSubscription(orgId: string): Promise<SubscriptionWithService | null>;
   getSubscriptionStatus(orgId: string): Promise<SubscriptionStatus>;
-  subscribe(orgId: string, serviceId: string, billingMonths?: number): Promise<OrganizationSubscription>;
+  subscribe(orgId: string, serviceId: string, billingMonths?: number, autoRenew?: boolean): Promise<OrganizationSubscription>;
   updateSubscription(
     orgId: string,
     serviceId: string,
     effective: 'immediate' | 'next_cycle'
   ): Promise<OrganizationSubscription>;
-  cancelSubscription(orgId: string): Promise<void>;
+  cancelSubscription(orgId: string, reason?: string): Promise<void>;
   createOrder(orgId: string, params: CreateOrderParams): Promise<SubscriptionOrder>;
   getOrder(orgId: string, orderId: string): Promise<OrderWithService>;
 }
@@ -63,8 +63,8 @@ export function createSubscriptionService(
   getRepo: () => SubscriptionRepository = () => createSubscriptionRepository(prisma)
 ): SubscriptionService {
   return {
-    listServices: async () => {
-      return getRepo().findActiveServicesWithPricing();
+    listServices: async (activeOnly = true) => {
+      return getRepo().findActiveServicesWithPricing(activeOnly);
     },
 
     getServiceById: async (id: string) => {
@@ -119,7 +119,7 @@ export function createSubscriptionService(
       };
     },
 
-    subscribe: async (orgId: string, serviceId: string, billingMonths = 1) => {
+    subscribe: async (orgId: string, serviceId: string, billingMonths = 1, autoRenew = true) => {
       const service = await getRepo().findServiceById(serviceId);
       if (!service) {
         throw createAppError(404, NotFoundMessages.PLAN);
@@ -146,6 +146,7 @@ export function createSubscriptionService(
           billing_months: billingMonths,
           start_date: start,
           end_date: end,
+          auto_renew: autoRenew,
           next_service: { disconnect: true },
         });
       }
@@ -157,6 +158,7 @@ export function createSubscriptionService(
         billing_months: billingMonths,
         start_date: start,
         end_date: end,
+        auto_renew: autoRenew,
       });
     },
 
@@ -198,12 +200,15 @@ export function createSubscriptionService(
       });
     },
 
-    cancelSubscription: async (orgId: string) => {
+    cancelSubscription: async (orgId: string, reason?: string) => {
       const sub = await getRepo().findSubscriptionByOrgId(orgId);
       if (!sub) {
         throw createAppError(404, NotFoundMessages.SUBSCRIPTION);
       }
-      await getRepo().updateSubscription(orgId, { status: 'cancelled' });
+      await getRepo().updateSubscription(orgId, {
+        status: 'cancelled',
+        cancel_reason: reason,
+      });
     },
 
     createOrder: async (orgId: string, params: CreateOrderParams) => {

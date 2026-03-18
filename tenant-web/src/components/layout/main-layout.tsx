@@ -53,7 +53,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
     enabled: !!orgId,
   });
   const planLabel =
-    subscriptionStatus?.plan?.name ?? null;
+    subscriptionStatus?.service?.name ?? null;
 
   const visibleSettingsItems = SETTINGS_ITEMS.filter((item) =>
     canAccessRule(item, accessContext)

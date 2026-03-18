@@ -97,10 +97,10 @@ export default function SubscriptionPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {subscriptionStatus?.has_subscription && subscriptionStatus.plan ? (
+                {subscriptionStatus?.has_subscription && subscriptionStatus.service ? (
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                      <p className="text-2xl font-bold">{subscriptionStatus.plan.name}</p>
+                      <p className="text-2xl font-bold">{subscriptionStatus.service.name}</p>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">状态:</span>
                         <Badge
@@ -236,7 +236,7 @@ export default function SubscriptionPage() {
             </Card>
 
             {/* 续费/升级提示 */}
-            {subscriptionStatus?.plan?.code === 'free' && (
+            {subscriptionStatus?.service?.code === 'free' && (
               <Card className="border-primary/50 bg-primary/5">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">

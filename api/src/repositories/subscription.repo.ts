@@ -45,7 +45,7 @@ type ServiceProductWithPricingRecord = Prisma.ServiceProductGetPayload<{
 export interface SubscriptionRepository {
   // 服务产品
   findActiveServices(): Promise<ServiceProduct[]>;
-  findActiveServicesWithPricing(): Promise<ServiceProductWithPricing[]>;
+  findActiveServicesWithPricing(activeOnly?: boolean): Promise<ServiceProductWithPricing[]>;
   findServiceById(id: string): Promise<ServiceProduct | null>;
   findServiceByIdWithPricing(id: string): Promise<ServiceProductWithPricing | null>;
   findActiveServiceByCode(code: string): Promise<ServiceProduct | null>;
@@ -82,15 +82,20 @@ export function createSubscriptionRepository(db: DbClient): SubscriptionReposito
       });
     },
 
-    findActiveServicesWithPricing: async () => {
+    findActiveServicesWithPricing: async (activeOnly = true) => {
+      const where = activeOnly ? { is_active: true, code: { not: 'free' } } : { code: { not: 'free' } };
       const services: ServiceProductWithPricingRecord[] = await db.serviceProduct.findMany({
-        where: { is_active: true, code: { not: 'free' } },
+        where,
         orderBy: { sort_order: 'asc' },
         include: {
-          pricing: {
-            where: { is_active: true },
-            orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
-          },
+          pricing: activeOnly
+            ? {
+                where: { is_active: true },
+                orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
+              }
+            : {
+                orderBy: [{ sort_order: 'asc' }, { months: 'asc' }],
+              },
         },
       });
       return services;
