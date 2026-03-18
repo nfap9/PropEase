@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { permissionsApi } from '@/lib/api/permissions';
 import { useAuth } from '@/lib/auth/context';
@@ -14,7 +15,7 @@ export function usePermissions(orgId?: string) {
   const { organization } = useAuth();
   const targetOrgId = orgId || organization?.id;
 
-  const { data: response, isLoading } = useQuery({
+  const { data: response, isLoading, error } = useQuery({
     queryKey: ['my-permissions', targetOrgId],
     queryFn: () => (targetOrgId ? permissionsApi.getMyPermissions(targetOrgId) : null),
     enabled: !!targetOrgId,
@@ -24,6 +25,12 @@ export function usePermissions(orgId?: string) {
   const permissions = response?.permissions || [];
   const systemRoles = response?.system_roles || [];
   const isSuperAdmin = response?.is_super_admin || false;
+
+  useEffect(() => {
+    if (error) {
+      console.error('[usePermissions] Failed to load permissions:', error);
+    }
+  }, [error]);
 
   /**
    * 检查是否拥有单个权限
@@ -61,6 +68,7 @@ export function usePermissions(orgId?: string) {
     systemRoles,
     isSuperAdmin,
     isLoading,
+    error,
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
