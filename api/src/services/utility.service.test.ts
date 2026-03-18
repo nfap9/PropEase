@@ -64,25 +64,31 @@ describe('UtilityService', () => {
     );
   });
 
-  it('should reject normal readings when no previous baseline exists', async () => {
+  it('should auto-handle first reading when no previous baseline exists', async () => {
     const { prisma } = await import('../lib/prisma.js');
     vi.mocked(prisma.room.findFirst).mockResolvedValue({
       id: '01room',
       apartment: { organization_id: '01org' },
     } as any);
     vi.mocked(mockRepo.findLatestReadingBefore).mockResolvedValue(null);
+    vi.mocked(mockRepo.create).mockResolvedValue({
+      id: '01reading',
+    } as any);
 
-    await expect(
-      service.create('01org', {
-        room_id: '01room',
-        period_year: 2026,
-        period_month: 3,
-        reading_date: '2026-03-17',
-        water_reading: 20,
-      })
-    ).rejects.toMatchObject({
-      message: '读数校验未通过，请检查异常提示后重试。',
+    // 没有历史读数时，使用 normal 场景会自动按首次录入处理
+    await service.create('01org', {
+      room_id: '01room',
+      period_year: 2026,
+      period_month: 3,
+      reading_date: '2026-03-17',
+      water_reading: 20,
     });
+
+    expect(mockRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        water_previous: 20,
+      })
+    );
   });
 
   it('should allow initial readings to build the first baseline', async () => {

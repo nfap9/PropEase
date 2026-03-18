@@ -8,6 +8,10 @@ import {
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
+import {
+  DEFAULT_ORG_ROLE_PERMISSIONS,
+  toPermissionCodes,
+} from '../constants/permissionDefaults.js';
 
 /**
  * 创建组织输入
@@ -112,11 +116,21 @@ export function createOrganizationService(
       }
 
       const orgId = ulid().toLowerCase();
+
+      // 初始化组织角色权限
+      const rolePermissions: Record<string, string[]> = {
+        owner: toPermissionCodes(DEFAULT_ORG_ROLE_PERMISSIONS.admin), // owner 拥有所有权限
+        admin: toPermissionCodes(DEFAULT_ORG_ROLE_PERMISSIONS.admin),
+        member: toPermissionCodes(DEFAULT_ORG_ROLE_PERMISSIONS.member),
+        viewer: toPermissionCodes(DEFAULT_ORG_ROLE_PERMISSIONS.viewer),
+      };
+
       const org = await getRepo().create({
         id: orgId,
         name: data.name,
         slug: finalSlug,
         is_personal: false,
+        settings: { role_permissions: rolePermissions } as Prisma.InputJsonValue,
       });
 
       await getRepo().createMember({

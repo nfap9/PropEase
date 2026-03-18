@@ -176,7 +176,12 @@ async function normalizeReadingPayload(
     let previousValue = explicitPrevious;
 
     if (previousValue == null) {
+      // 首次录入场景：没有历史读数时，用当前读数作为上一期
       if (context === 'initial' && !previousReading) {
+        previousValue = nextCurrentValue;
+      }
+      // 正常抄表场景：没有历史读数时，自动按首次录入处理
+      else if (!previousReading) {
         previousValue = nextCurrentValue;
       } else if (latestCurrentValue != null) {
         previousValue = latestCurrentValue;
