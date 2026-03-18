@@ -10,7 +10,7 @@ import { SUBSCRIPTION_STATUS_CONFIG } from '@/lib/status-config';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import {
   ArrowLeft,
-  CreditCard,
+  ShoppingBag,
   Package,
   Building2,
   Home,
@@ -70,7 +70,7 @@ export default function SubscriptionPage() {
           </Button>
           <div className="flex-1">
             <h1 className="flex items-center gap-2 text-3xl font-bold" data-testid={SUBSCRIPTION.HEADING}>
-              <CreditCard className="h-8 w-8" />
+              <ShoppingBag className="h-8 w-8" />
               我的订阅
             </h1>
             <p className="text-muted-foreground">查看订阅状态与使用量</p>
