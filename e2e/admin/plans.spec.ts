@@ -12,10 +12,12 @@ import { test, expect } from '@playwright/test';
 import { adminLogin } from '../helpers/auth';
 import { ADMIN_PLANS, COMMON } from '../testids';
 
+const ADMIN_BASE_URL = 'http://localhost:3001';
+
 test.describe('套餐管理页面', () => {
   test.beforeEach(async ({ page }) => {
     await adminLogin(page);
-    await page.goto('/admin/plans');
+    await page.goto(`${ADMIN_BASE_URL}/admin/plans`);
   });
 
   test('应该显示套餐列表', async ({ page }) => {
@@ -42,7 +44,7 @@ test.describe('套餐管理页面', () => {
 test.describe('创建套餐', () => {
   test.beforeEach(async ({ page }) => {
     await adminLogin(page);
-    await page.goto('/admin/plans');
+    await page.goto(`${ADMIN_BASE_URL}/admin/plans`);
   });
 
   test('显示创建套餐弹窗', async ({ page }) => {
@@ -82,7 +84,7 @@ test.describe('创建套餐', () => {
 test.describe('编辑套餐', () => {
   test.beforeEach(async ({ page }) => {
     await adminLogin(page);
-    await page.goto('/admin/plans');
+    await page.goto(`${ADMIN_BASE_URL}/admin/plans`);
   });
 
   test('编辑套餐信息', async ({ page }) => {
@@ -107,7 +109,7 @@ test.describe('编辑套餐', () => {
 test.describe('套餐状态管理', () => {
   test.beforeEach(async ({ page }) => {
     await adminLogin(page);
-    await page.goto('/admin/plans');
+    await page.goto(`${ADMIN_BASE_URL}/admin/plans`);
   });
 
   test('停用套餐按钮存在', async ({ page }) => {

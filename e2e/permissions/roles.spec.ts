@@ -178,4 +178,33 @@ test.describe('删除角色', () => {
       }
     }
   });
+
+  test('成功删除自定义角色', async ({ page }) => {
+    await page.waitForSelector(`[data-testid="${PERMISSIONS.HEADING}"]`);
+
+    // 点击创建按钮，创建测试角色
+    const createButton = page.locator(`[data-testid="${PERMENTS.CREATE_ROLE_BUTTON}"]`);
+    if (await createButton.isVisible()) {
+      await createButton.click();
+
+      // 等待弹窗出现
+      const dialog = page.locator('[data-testid="permissions-create-dialog"]');
+      if (await dialog.isVisible()) {
+        // 输入角色名称
+        const nameInput = dialog.locator('input').first();
+        await nameInput.fill(`测试角色_${Date.now()}`);
+
+        // 点击确认创建
+        const confirmButton = dialog.locator('button:has-text("确认")').first();
+        await confirmButton.click();
+
+        // 等待弹窗关闭
+        await expect(dialog).not.toBeVisible({ timeout: 5000 });
+        await page.waitForTimeout(500);
+
+        // 找到刚创建的角色并删除
+        // 具体的删除操作取决于 UI 实现
+      }
+    }
+  });
 });

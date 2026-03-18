@@ -11,10 +11,12 @@ import { test, expect } from '@playwright/test';
 import { adminLogin } from '../helpers/auth';
 import { ADMIN_REGISTERED_USERS, COMMON } from '../testids';
 
+const ADMIN_BASE_URL = 'http://localhost:3001';
+
 test.describe('注册用户管理页面', () => {
   test.beforeEach(async ({ page }) => {
     await adminLogin(page);
-    await page.goto('/admin/registered-users');
+    await page.goto(`${ADMIN_BASE_URL}/admin/registered-users`);
   });
 
   test('应该显示用户管理页面', async ({ page }) => {
@@ -70,7 +72,7 @@ test.describe('用户详情', () => {
   });
 
   test('查看用户详情', async ({ page }) => {
-    await page.goto('/admin/registered-users');
+    await page.goto(`${ADMIN_BASE_URL}/admin/registered-users`);
     await page.waitForTimeout(500);
 
     const userList = page.locator(`[data-testid="${ADMIN_REGISTERED_USERS.LIST}"]`);

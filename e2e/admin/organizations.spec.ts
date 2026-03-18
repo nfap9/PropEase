@@ -11,10 +11,12 @@ import { test, expect } from '@playwright/test';
 import { adminLogin } from '../helpers/auth';
 import { ADMIN_ORGANIZATIONS, COMMON } from '../testids';
 
+const ADMIN_BASE_URL = 'http://localhost:3001';
+
 test.describe('组织管理页面', () => {
   test.beforeEach(async ({ page }) => {
     await adminLogin(page);
-    await page.goto('/admin/organizations');
+    await page.goto(`${ADMIN_BASE_URL}/admin/organizations`);
   });
 
   test('应该显示组织列表', async ({ page }) => {
@@ -35,7 +37,7 @@ test.describe('组织详情', () => {
   });
 
   test('查看组织详情', async ({ page }) => {
-    await page.goto('/admin/organizations');
+    await page.goto(`${ADMIN_BASE_URL}/admin/organizations`);
     await page.waitForTimeout(500);
 
     const orgList = page.locator(`[data-testid="${ADMIN_ORGANIZATIONS.LIST}"]`);
@@ -55,7 +57,7 @@ test.describe('组织状态管理', () => {
   });
 
   test('停用组织按钮存在', async ({ page }) => {
-    await page.goto('/admin/organizations');
+    await page.goto(`${ADMIN_BASE_URL}/admin/organizations`);
     await page.waitForTimeout(500);
 
     const orgList = page.locator(`[data-testid="${ADMIN_ORGANIZATIONS.LIST}"]`);
@@ -74,7 +76,7 @@ test.describe('组织状态管理', () => {
   });
 
   test('启用组织按钮存在', async ({ page }) => {
-    await page.goto('/admin/organizations');
+    await page.goto(`${ADMIN_BASE_URL}/admin/organizations`);
     await page.waitForTimeout(500);
 
     const orgList = page.locator(`[data-testid="${ADMIN_ORGANIZATIONS.LIST}"]`);

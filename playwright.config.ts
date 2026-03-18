@@ -7,6 +7,9 @@ import { defineConfig, devices } from '@playwright/test';
  * - pnpm test:e2e          运行所有 E2E 测试
  * - pnpm test:e2e:ui       使用 UI 模式运行测试
  * - pnpm test:e2e:debug    调试模式
+ * - pnpm test:e2e:headed   在浏览器中运行测试
+ * - pnpm test:e2e:setup   创建认证状态（首次或 token 过期时运行）
+ * - pnpm test:e2e:project  只运行指定项目（chromium/firefox/webkit）
  */
 export default defineConfig({
   // 测试目录
@@ -14,6 +17,9 @@ export default defineConfig({
 
   // 测试文件匹配模式
   testMatch: '**/*.spec.ts',
+
+  // 排除 setup 文件
+  testIgnore: '**/*.setup.ts',
 
   // 完全并行运行测试
   fullyParallel: true,
@@ -31,6 +37,8 @@ export default defineConfig({
   reporter: [
     ['html', { outputFolder: 'e2e/results/report' }],
     ['list'],
+    // 可选：添加 JSON reporter 用于 CI/CD
+    // ['json', { outputFile: 'e2e/results/report/results.json' }],
   ],
 
   // 测试输出目录（trace、截图、视频等）
@@ -55,6 +63,25 @@ export default defineConfig({
 
     // 导航超时
     navigationTimeout: 30000,
+
+    // 启用 HTTP 缓存
+    httpCache: true,
+
+    // 忽略 HTTPS 错误（开发环境）
+    ignoreHTTPSErrors: true,
+
+    // 颜色支持
+    colorScheme: 'light',
+
+    // 地理区域和时区
+    locale: 'zh-CN',
+    timezoneId: 'Asia/Shanghai',
+
+    // 视图ports
+    viewport: { width: 1280, height: 720 },
+
+    // 权限（如果需要）
+    // permissions: ['geolocation', 'notifications'],
   },
 
   // 配置项目（浏览器）
@@ -63,14 +90,16 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    // 开发环境默认只运行 Chromium，加快测试速度
+    // CI 环境可以取消注释以下行来运行多浏览器测试
+    // {
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] },
+    // },
+    // {
+    //   name: 'webkit',
+    //   use: { ...devices['Desktop Safari'] },
+    // },
     // 移动端测试（可选）
     // {
     //   name: 'Mobile Chrome',
@@ -81,6 +110,14 @@ export default defineConfig({
     //   use: { ...devices['iPhone 12'] },
     // },
   ],
+
+  // Setup 文件 - 用于预登录等全局设置
+  // 注意：setup 文件会在所有测试之前运行一次
+  // 使用 storageState 可以复用登录状态，加快测试速度
+  globalSetup: './e2e/global.setup.ts',
+
+  // 全局 teardown
+  globalTeardown: undefined,
 
   // 本地开发时自动启动服务
   webServer: {

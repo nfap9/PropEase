@@ -1,5 +1,17 @@
+/**
+ * E2E 测试 Fixtures
+ *
+ * 提供了多种测试 fixture：
+ * - basePage: 基础页面对象
+ * - authenticatedPage: 自动登录的页面
+ * - authState: 认证状态
+ * - orgId: 组织 ID
+ * - adminPage: 运营后台页面
+ */
+
 import { test as base, Page } from '@playwright/test';
-import { login, AUTH_STORAGE_KEYS } from './helpers/auth';
+import { login, logout, adminLogin, AUTH_STORAGE_KEYS } from './helpers/auth';
+import { BasePage } from './pages/base-page';
 
 /**
  * 认证信息类型
@@ -15,6 +27,11 @@ export interface AuthState {
  */
 export interface TestFixtures {
   /**
+   * 基础页面对象
+   * 提供通用的页面操作方法
+   */
+  basePage: BasePage;
+  /**
    * 已认证的页面（自动登录）
    *
    * 使用此 fixture 时会自动执行登录操作，并保存认证状态到 localStorage
@@ -28,6 +45,10 @@ export interface TestFixtures {
    * 当前组织 ID（在登录后自动设置）
    */
   orgId: string | undefined;
+  /**
+   * 运营后台页面（自动登录）
+   */
+  adminPage: Page;
 }
 
 /**
@@ -44,6 +65,12 @@ export interface TestFixtures {
  * ```
  */
 export const test = base.extend<TestFixtures>({
+  // 基础页面对象 fixture
+  basePage: async ({ page }, use) => {
+    const basePage = new BasePage(page);
+    await use(basePage);
+  },
+
   // 已认证的页面 fixture
   authenticatedPage: async ({ page }, use) => {
     // 执行密码登录
@@ -108,6 +135,15 @@ export const test = base.extend<TestFixtures>({
     );
 
     await use(organizationId || undefined);
+  },
+
+  // 运营后台页面 fixture
+  adminPage: async ({ page }, use) => {
+    // 执行运营后台登录
+    await adminLogin(page);
+
+    // 使用已登录的页面
+    await use(page);
   },
 });
 

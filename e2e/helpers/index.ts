@@ -13,3 +13,6 @@ export * from './ui';
 
 // API 相关
 export * from './api';
+
+// 测试数据相关
+export * from './test-data';

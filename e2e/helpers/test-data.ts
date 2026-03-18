@@ -125,6 +125,60 @@ export class TestDataGenerator {
   }
 
   /**
+   * 创建组织（如果用户没有组织）
+   */
+  async createOrganization(name?: string): Promise<{ id: string; name: string }> {
+    const orgName = name || `${this.prefix}_测试公寓`;
+
+    const org = await this.api.post<{ id: string; name: string }>('/api/v1/organizations', {
+      name: orgName,
+    });
+
+    this.orgId = org.id;
+    this.api.setOrgId(this.orgId);
+
+    return org;
+  }
+
+  /**
+   * 确保用户有组织（获取或创建）
+   */
+  async ensureOrganization(): Promise<string> {
+    // 如果已经有组织 ID，直接返回
+    if (this.orgId) {
+      return this.orgId;
+    }
+
+    // 尝试获取个人组织
+    try {
+      const personalOrg = await this.api.getRaw<{ code: number; data: { id: string } }>('/api/v1/organizations/personal');
+      if (personalOrg.code === 0 && personalOrg.data?.id) {
+        this.orgId = personalOrg.data.id;
+        this.api.setOrgId(this.orgId);
+        return this.orgId;
+      }
+    } catch {
+      // 继续尝试获取组织列表
+    }
+
+    // 尝试获取组织列表
+    try {
+      const orgs = await this.api.getRaw<{ code: number; data: { id: string }[] }>('/api/v1/organizations');
+      if (orgs.code === 0 && orgs.data && orgs.data.length > 0) {
+        this.orgId = orgs.data[0].id;
+        this.api.setOrgId(this.orgId);
+        return this.orgId;
+      }
+    } catch {
+      // 继续创建新组织
+    }
+
+    // 没有组织，创建一个
+    const org = await this.createOrganization();
+    return org.id;
+  }
+
+  /**
    * 获取创建的公寓名称
    */
   getApartmentName(): string {

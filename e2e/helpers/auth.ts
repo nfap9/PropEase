@@ -33,7 +33,7 @@ export const ADMIN_TEST_ACCOUNTS = {
     // 运营后台管理员（避免与系统默认 admin 混用）
     // 仅使用 E2E_PLATFORM_ADMIN_*（不兼容旧环境变量），避免行为不确定
     username: process.env.E2E_PLATFORM_ADMIN_USERNAME || 'e2e_admin',
-    password: process.env.E2E_PLATFORM_ADMIN_PASSWORD || 'admin123',
+    password: process.env.E2E_PLATFORM_ADMIN_PASSWORD || 'Admin@123456',
   },
 };
 
@@ -73,8 +73,11 @@ export async function login(
   // 点击登录按钮
   await page.click(`[data-testid="${AUTH.LOGIN_BUTTON}"]`);
 
-  // 等待跳转到首页（dashboard 或其他已登录页面）
-  await page.waitForURL(/\/(dashboard|apartments|rooms)/, { timeout: 15000 });
+  // 等待跳转到首页（dashboard、apartments、rooms 或创建组织页）
+  await page.waitForURL(
+    /\/(dashboard|apartments|rooms|organizations\/new)/,
+    { timeout: 15000 }
+  );
 
   // 等待 token 存入 localStorage
   await page.waitForFunction(
@@ -97,8 +100,18 @@ export async function logout(page: Page): Promise<void> {
     localStorage.removeItem('current_organization_id');
   });
 
-  // 跳转到登录页
-  await page.goto('/login');
+  // 使用 JavaScript 强制导航到登录页
+  await page.evaluate(() => {
+    window.location.href = '/login';
+  });
+
+  // 等待导航完成
+  try {
+    await page.waitForURL(/\/login/, { timeout: 5000 });
+  } catch {
+    // 如果等待 URL 失败，直接 reload
+    await page.reload({ waitUntil: 'domcontentloaded' });
+  }
 
   // 等待登录页加载
   await page.waitForSelector(`[data-testid="${AUTH.LOGIN_PAGE}"]`);
@@ -187,7 +200,8 @@ export async function adminLogin(
   username: string = ADMIN_TEST_ACCOUNTS.admin.username,
   password: string = ADMIN_TEST_ACCOUNTS.admin.password
 ): Promise<void> {
-  await page.goto('/admin/login');
+  // 运营后台在 localhost:3001
+  await page.goto('http://localhost:3001/login');
 
   // 等待登录页加载
   await page.waitForSelector(`[data-testid="${ADMIN_LOGIN.PAGE}"]`, { timeout: 10000 });
@@ -201,8 +215,8 @@ export async function adminLogin(
   // 点击登录按钮
   await page.click(`[data-testid="${ADMIN_LOGIN.LOGIN_BUTTON}"]`);
 
-  // 等待跳转到管理后台首页
-  await page.waitForURL(/\/admin(?!\/login)/, { timeout: 15000 });
+  // 等待跳转到管理后台首页（运营后台使用根路径 /, /users 等）
+  await page.waitForURL(/http:\/\/localhost:3001\//, { timeout: 15000 });
 
   // 等待 token 存入 localStorage
   await page.waitForFunction(
