@@ -455,7 +455,7 @@ router.post(
 
       if (!service) return next(createAppError(404, NotFoundMessages.PLAN));
       if (service.code === 'free') {
-        return next(createAppError(400, '免费套餐无需购买，注册时已自动开通'));
+        return next(createAppError(400, '免费服务无需购买，注册时已自动开通'));
       }
 
       const orgId = req.params.org_id;
@@ -468,9 +468,9 @@ router.post(
       if (sub && isSubscriptionActive(sub) && sub.service) {
         const currentSort = sub.service.sort_order;
         if (service.sort_order < currentSort) {
-          return next(createAppError(400, '不支持降级到低等级套餐'));
+          return next(createAppError(400, '不支持降级到低等级服务'));
         }
-        // 升级场景可以计算差价，这里简化为直接使用新套餐价格
+        // 升级场景可以计算差价，这里简化为直接使用新服务价格
       }
 
       const order = await defaultSubscriptionService.createOrder(orgId, {

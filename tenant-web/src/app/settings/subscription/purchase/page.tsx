@@ -92,7 +92,7 @@ export default function SubscriptionPurchasePage() {
     onError: (error) => toast.error(getErrorMessage(error, '创建订单失败，请重试')),
   });
 
-  // 免费套餐直接订阅
+  // 免费服务直接订阅
   const subscribeMutation = useMutation({
     mutationFn: (params: { planId: string; billingMonths: number }) =>
       subscriptionsApi.subscribe(orgId!, {
@@ -165,7 +165,7 @@ export default function SubscriptionPurchasePage() {
               <ShoppingCart className="h-8 w-8" />
               服务购买
             </h1>
-            <p className="text-muted-foreground">选择适合您的服务套餐</p>
+            <p className="text-muted-foreground">选择适合您的服务服务</p>
           </div>
         </div>
 
@@ -202,7 +202,7 @@ export default function SubscriptionPurchasePage() {
                 >
                   {isCurrentPlan && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge>当前套餐</Badge>
+                      <Badge>当前服务</Badge>
                     </div>
                   )}
                   <CardHeader>
@@ -263,7 +263,7 @@ export default function SubscriptionPurchasePage() {
                         onClick={() => handleSubscribe(service)}
                         data-testid={SUBSCRIPTION.SUBSCRIBE_BTN}
                       >
-                        {isCurrentPlan ? '当前套餐' : '立即订阅'}
+                        {isCurrentPlan ? '当前服务' : '立即订阅'}
                       </Button>
                     )}
 
@@ -295,7 +295,7 @@ export default function SubscriptionPurchasePage() {
           <Card>
             <CardContent className="pt-6">
               <p className="text-center text-muted-foreground">
-                暂无可购买的服务套餐，请联系运营方。
+                暂无可购买的服务服务，请联系运营方。
               </p>
             </CardContent>
           </Card>

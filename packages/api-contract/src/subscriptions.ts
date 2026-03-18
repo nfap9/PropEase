@@ -94,7 +94,7 @@ export interface SubscriptionOrder {
   /** 优惠活动 ID */
   promotion_id: string | null;
   created_at: string;
-  /** 订单详情接口返回时包含套餐信息 */
+  /** 订单详情接口返回时包含服务信息 */
   plan?: SubscriptionPlan | null;
   /** 优惠活动信息（可选） */
   promotion?: { id: string; name: string; type: string } | null;
@@ -124,7 +124,7 @@ export interface UsageQuotaItem {
 
 /** 组织使用量统计 */
 export interface OrganizationUsageStats {
-  /** 套餐配额使用情况 */
+  /** 服务配额使用情况 */
   plan_quotas: {
     apartments: UsageQuotaItem;
     rooms: UsageQuotaItem;

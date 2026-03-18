@@ -445,7 +445,7 @@ describe('AdminService', () => {
         })
       ).rejects.toMatchObject({
         statusCode: 400,
-        message: '当前组织已有生效订阅，赠送仅支持延长当前套餐；变更套餐请走正常订阅调整流程',
+        message: '当前组织已有生效订阅，赠送仅支持延长当前服务；变更服务请走正常订阅调整流程',
       });
     });
 

@@ -134,7 +134,7 @@ export default function AdminSubscriptionsPage() {
     },
     {
       id: 'plan_name',
-      header: '套餐',
+      header: '服务',
       cell: ({ row }) => row.original.plan?.name ?? '—',
     },
     { accessorKey: 'billing_cycle', header: '计费周期' },

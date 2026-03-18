@@ -55,7 +55,7 @@ test.describe('运营后台导航', () => {
     await page.waitForTimeout(500);
   });
 
-  test('访问套餐配置页面', async ({ page }) => {
+  test('访问服务配置页面', async ({ page }) => {
     await page.goto(`${ADMIN_BASE_URL}/admin/plans`);
     await page.waitForTimeout(500);
   });

@@ -29,7 +29,7 @@ export const NotFoundMessages = {
   NOTIFICATION: '通知不存在',
   CUSTOM_ROLE: '自定义角色不存在',
   SUBSCRIPTION: '订阅不存在',
-  PLAN: '套餐不存在',
+  PLAN: '服务不存在',
   ROLE: '角色不存在',
   UTILITY_CONFIG: '水电配置不存在',
   PROMOTION: '优惠活动不存在',

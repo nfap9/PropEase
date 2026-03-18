@@ -504,7 +504,7 @@ export function createAdminService(
         throw createAppError(404, NotFoundMessages.ORGANIZATION);
       }
       if (!org.is_active) {
-        throw createAppError(400, '组织已停用，无法赠送套餐');
+        throw createAppError(400, '组织已停用，无法赠送服务');
       }
       if (data.billing_months < 1) {
         throw createAppError(422, '赠送周期至少为 1 个月');
@@ -527,7 +527,7 @@ export function createAdminService(
       ) {
         throw createAppError(
           400,
-          '当前组织已有生效订阅，赠送仅支持延长当前套餐；变更套餐请走正常订阅调整流程'
+          '当前组织已有生效订阅，赠送仅支持延长当前服务；变更服务请走正常订阅调整流程'
         );
       }
 

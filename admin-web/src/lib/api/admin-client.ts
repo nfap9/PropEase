@@ -264,7 +264,7 @@ export const adminApiEndpoints = {
     adminApi.patch<AdminRegisteredUser>(`/admin/registered-users/${id}/active`, data),
   deleteRegisteredUser: (id: string) => adminApi.delete(`/admin/registered-users/${id}`),
 
-  // 套餐
+  // 服务
   listPlans: async (params?: { active_only?: boolean }) =>
     mapAxiosData(
       await adminApi.get<ServiceProduct[]>('/admin/service-products', {

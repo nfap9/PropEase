@@ -62,7 +62,7 @@ export default function AdminDashboardPage() {
         <StatCard title="活跃订阅数" value={stats.active_subscriptions_count} testid="admin-subscription-count" />
       </div>
       <p className="mt-6 text-sm text-muted-foreground">
-        使用左侧导航管理运营账号、角色、组织、套餐与订阅。
+        使用左侧导航管理运营账号、角色、组织、服务与订阅。
       </p>
     </div>
   );

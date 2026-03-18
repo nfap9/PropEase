@@ -123,7 +123,7 @@ export const SETTINGS_ITEMS: NavItem[] = [
   { href: '/settings/team', label: '团队管理', icon: Users, permission: PERMISSIONS.MEMBER_VIEW, id: 'team' },
   {
     href: '/settings/subscription',
-    label: '套餐购买',
+    label: '服务购买',
     icon: CreditCard,
     requiresOrganization: true,
     requireAnyPermission: true,
@@ -146,7 +146,7 @@ export const SETTINGS_ITEMS: NavItem[] = [
   },
 ];
 
-/** 套餐 code 到展示名的映射 */
+/** 服务 code 到展示名的映射 */
 export const PLAN_CODE_LABEL: Record<string, string> = {
   free: '免费版',
   pro: '专业版',

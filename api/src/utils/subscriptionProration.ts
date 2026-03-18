@@ -1,6 +1,6 @@
 /**
  * 升级差价（proration）计算
- * 公式：新套餐月价×剩余月数 - 旧套餐月价×剩余天数/周期总天数
+ * 公式：新服务月价×剩余月数 - 旧服务月价×剩余天数/周期总天数
  */
 export function calculateUpgradeProration(
   newPlanPriceMonthly: number,

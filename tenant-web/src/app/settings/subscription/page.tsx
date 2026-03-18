@@ -77,7 +77,7 @@ export default function SubscriptionPage() {
           </div>
           <Button onClick={() => router.push('/settings/subscription/purchase')} data-testid={SUBSCRIPTION.UPGRADE_BUTTON}>
             <ShoppingCart className="mr-2 h-4 w-4" />
-            购买套餐
+            购买服务
           </Button>
         </div>
 
@@ -93,7 +93,7 @@ export default function SubscriptionPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Package className="h-5 w-5" />
-                  当前套餐
+                  当前服务
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -129,10 +129,10 @@ export default function SubscriptionPage() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-4 py-4">
-                    <p className="text-muted-foreground">您未购买任何套餐</p>
+                    <p className="text-muted-foreground">您未购买任何服务</p>
                     <Button onClick={() => router.push('/settings/subscription/purchase')}>
                       <ShoppingCart className="mr-2 h-4 w-4" />
-                      购买套餐
+                      购买服务
                     </Button>
                   </div>
                 )}
@@ -247,7 +247,7 @@ export default function SubscriptionPage() {
                       </p>
                     </div>
                     <Button onClick={() => router.push('/settings/subscription/purchase')}>
-                      查看套餐
+                      查看服务
                     </Button>
                   </div>
                 </CardContent>

@@ -2,9 +2,9 @@
  * 订阅模块 E2E 测试
  *
  * 覆盖场景：
- * - 套餐列表展示
+ * - 服务列表展示
  * - 当前订阅信息
- * - 升级/降级套餐
+ * - 升级/降级服务
  * - 订阅状态筛选
  */
 
@@ -24,14 +24,14 @@ test.describe('订阅管理页面', () => {
     await expect(page.locator(`[data-testid="${SUBSCRIPTION.HEADING}"]`)).toBeVisible();
   });
 
-  test('应该显示套餐列表', async ({ page }) => {
+  test('应该显示服务列表', async ({ page }) => {
     // 等待页面加载
     await page.waitForSelector(`[data-testid="${SUBSCRIPTION.HEADING}"]`);
 
-    // 套餐列表应该存在
+    // 服务列表应该存在
     const planList = page.locator(`[data-testid="${SUBSCRIPTION.PLAN_LIST}"]`);
     if (await planList.isVisible()) {
-      // 应该有套餐选项
+      // 应该有服务选项
       const plans = planList.locator('> *');
       const count = await plans.count();
       expect(count).toBeGreaterThan(0);
@@ -49,7 +49,7 @@ test.describe('订阅管理页面', () => {
     }
   });
 
-  test('点击升级套餐按钮', async ({ page }) => {
+  test('点击升级服务按钮', async ({ page }) => {
     await page.waitForSelector(`[data-testid="${SUBSCRIPTION.HEADING}"]`);
 
     // 升级按钮

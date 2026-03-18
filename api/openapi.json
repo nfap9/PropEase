@@ -4325,7 +4325,7 @@
     },
     "/subscriptions/plans": {
       "get": {
-        "summary": "获取套餐列表",
+        "summary": "获取服务列表",
         "tags": [
           "订阅管理"
         ],
@@ -4336,7 +4336,7 @@
         ],
         "responses": {
           "200": {
-            "description": "套餐列表",
+            "description": "服务列表",
             "content": {
               "application/json": {
                 "schema": {
@@ -4353,7 +4353,7 @@
     },
     "/subscriptions/plans/{plan_id}": {
       "get": {
-        "summary": "获取套餐详情",
+        "summary": "获取服务详情",
         "tags": [
           "订阅管理"
         ],
@@ -4374,7 +4374,7 @@
         ],
         "responses": {
           "200": {
-            "description": "套餐信息",
+            "description": "服务信息",
             "content": {
               "application/json": {
                 "schema": {
@@ -4384,7 +4384,7 @@
             }
           },
           "404": {
-            "description": "套餐不存在"
+            "description": "服务不存在"
           }
         }
       }
@@ -4424,7 +4424,7 @@
         }
       },
       "post": {
-        "summary": "订阅套餐",
+        "summary": "订阅服务",
         "tags": [
           "订阅管理"
         ],
@@ -4482,7 +4482,7 @@
         }
       },
       "put": {
-        "summary": "更新订阅套餐",
+        "summary": "更新订阅服务",
         "tags": [
           "订阅管理"
         ],

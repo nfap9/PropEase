@@ -121,7 +121,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
                   <p className="text-xs leading-none text-muted-foreground">{user?.phone}</p>
                   {planLabel != null && (
                     <p className="text-xs leading-none text-muted-foreground">
-                      当前套餐：{planLabel}
+                      当前服务：{planLabel}
                     </p>
                   )}
                 </div>

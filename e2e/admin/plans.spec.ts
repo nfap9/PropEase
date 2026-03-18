@@ -1,11 +1,11 @@
 /**
- * 运营后台 - 套餐管理 E2E 测试
+ * 运营后台 - 服务管理 E2E 测试
  *
  * 覆盖场景：
- * - 套餐列表展示
- * - 创建套餐
- * - 编辑套餐
- * - 启用/停用套餐
+ * - 服务列表展示
+ * - 创建服务
+ * - 编辑服务
+ * - 启用/停用服务
  */
 
 import { test, expect } from '@playwright/test';
@@ -14,13 +14,13 @@ import { ADMIN_PLANS, COMMON } from '../testids';
 
 const ADMIN_BASE_URL = 'http://localhost:3001';
 
-test.describe('套餐管理页面', () => {
+test.describe('服务管理页面', () => {
   test.beforeEach(async ({ page }) => {
     await adminLogin(page);
     await page.goto(`${ADMIN_BASE_URL}/admin/plans`);
   });
 
-  test('应该显示套餐列表', async ({ page }) => {
+  test('应该显示服务列表', async ({ page }) => {
     await page.waitForTimeout(500);
 
     const planList = page.locator(`[data-testid="${ADMIN_PLANS.LIST}"]`);
@@ -31,7 +31,7 @@ test.describe('套餐管理页面', () => {
     }
   });
 
-  test('应该显示创建套餐按钮', async ({ page }) => {
+  test('应该显示创建服务按钮', async ({ page }) => {
     await page.waitForTimeout(500);
 
     const createButton = page.locator(`[data-testid="${ADMIN_PLANS.CREATE_BUTTON}"]`);
@@ -41,13 +41,13 @@ test.describe('套餐管理页面', () => {
   });
 });
 
-test.describe('创建套餐', () => {
+test.describe('创建服务', () => {
   test.beforeEach(async ({ page }) => {
     await adminLogin(page);
     await page.goto(`${ADMIN_BASE_URL}/admin/plans`);
   });
 
-  test('显示创建套餐弹窗', async ({ page }) => {
+  test('显示创建服务弹窗', async ({ page }) => {
     await page.waitForTimeout(500);
 
     const createButton = page.locator(`[data-testid="${ADMIN_PLANS.CREATE_BUTTON}"]`);
@@ -61,7 +61,7 @@ test.describe('创建套餐', () => {
     }
   });
 
-  test('创建套餐 - 名称为空显示验证错误', async ({ page }) => {
+  test('创建服务 - 名称为空显示验证错误', async ({ page }) => {
     await page.waitForTimeout(500);
 
     const createButton = page.locator(`[data-testid="${ADMIN_PLANS.CREATE_BUTTON}"]`);
@@ -81,13 +81,13 @@ test.describe('创建套餐', () => {
   });
 });
 
-test.describe('编辑套餐', () => {
+test.describe('编辑服务', () => {
   test.beforeEach(async ({ page }) => {
     await adminLogin(page);
     await page.goto(`${ADMIN_BASE_URL}/admin/plans`);
   });
 
-  test('编辑套餐信息', async ({ page }) => {
+  test('编辑服务信息', async ({ page }) => {
     await page.waitForTimeout(500);
 
     const planList = page.locator(`[data-testid="${ADMIN_PLANS.LIST}"]`);
@@ -106,13 +106,13 @@ test.describe('编辑套餐', () => {
   });
 });
 
-test.describe('套餐状态管理', () => {
+test.describe('服务状态管理', () => {
   test.beforeEach(async ({ page }) => {
     await adminLogin(page);
     await page.goto(`${ADMIN_BASE_URL}/admin/plans`);
   });
 
-  test('停用套餐按钮存在', async ({ page }) => {
+  test('停用服务按钮存在', async ({ page }) => {
     await page.waitForTimeout(500);
 
     const planList = page.locator(`[data-testid="${ADMIN_PLANS.LIST}"]`);

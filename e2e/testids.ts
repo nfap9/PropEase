@@ -425,11 +425,11 @@ export const PERMISSIONS = {
 export const SUBSCRIPTION = {
   /** 页面标题 */
   HEADING: 'subscription-heading',
-  /** 套餐列表 */
+  /** 服务列表 */
   PLAN_LIST: 'subscription-plan-list',
   /** 当前订阅信息 */
   CURRENT_SUBSCRIPTION: 'subscription-current',
-  /** 升级套餐按钮 */
+  /** 升级服务按钮 */
   UPGRADE_BUTTON: 'subscription-upgrade-btn',
 } as const;
 
@@ -585,15 +585,15 @@ export const ADMIN_ORGANIZATIONS = {
   DISABLE_BUTTON: 'admin-organizations-disable-btn',
 } as const;
 
-/** 运营端 - 套餐配置 */
+/** 运营端 - 服务配置 */
 export const ADMIN_PLANS = {
   /** 页面标题 */
   HEADING: 'admin-plans-heading',
-  /** 新建套餐按钮 */
+  /** 新建服务按钮 */
   CREATE_BUTTON: 'admin-plans-create-btn',
-  /** 套餐列表 */
+  /** 服务列表 */
   LIST: 'admin-plans-list',
-  /** 新建套餐弹窗 */
+  /** 新建服务弹窗 */
   CREATE_DIALOG: 'admin-plans-create-dialog',
 } as const;
 
@@ -605,7 +605,7 @@ export const ADMIN_SUBSCRIPTIONS = {
   LIST: 'admin-subscriptions-list',
   /** 状态筛选 */
   STATUS_FILTER: 'admin-subscriptions-status-filter',
-  /** 套餐筛选 */
+  /** 服务筛选 */
   PLAN_FILTER: 'admin-subscriptions-plan-filter',
 } as const;
 

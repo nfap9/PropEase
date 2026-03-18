@@ -20,7 +20,7 @@ const sampleService: ServiceProduct = {
   id: '01hqtestplan00000001',
   code: 'pro',
   name: '专业版',
-  description: '专业版套餐',
+  description: '专业版服务',
   max_organizations: null,
   max_apartments: 1,
   max_rooms: 100,
@@ -257,7 +257,7 @@ describe('SubscriptionService', () => {
 
       await expect(service.subscribe(orgId, freeService.id)).rejects.toMatchObject({
         statusCode: 400,
-        message: '免费套餐仅在注册时自动开通，请通过付费套餐订阅',
+        message: '免费服务仅在注册时自动开通，请通过付费服务订阅',
       });
     });
 
@@ -274,7 +274,7 @@ describe('SubscriptionService', () => {
 
       await expect(service.subscribe(orgId, lowerService.id)).rejects.toMatchObject({
         statusCode: 400,
-        message: '不支持降级到低等级套餐',
+        message: '不支持降级到低等级服务',
       });
     });
 
@@ -319,7 +319,7 @@ describe('SubscriptionService', () => {
         service.updateSubscription(orgId, freeService.id, 'immediate')
       ).rejects.toMatchObject({
         statusCode: 400,
-        message: '免费套餐不可通过此接口修改',
+        message: '免费服务不可通过此接口修改',
       });
     });
 
@@ -362,7 +362,7 @@ describe('SubscriptionService', () => {
         service.updateSubscription(orgId, lowerService.id, 'immediate')
       ).rejects.toMatchObject({
         statusCode: 400,
-        message: '不支持降级，当前套餐等级更高',
+        message: '不支持降级，当前服务等级更高',
       });
     });
 

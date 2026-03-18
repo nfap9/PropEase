@@ -123,7 +123,7 @@ export interface AdminPlanPricingCreate {
   sort_order?: number;
 }
 
-/** 套餐（运营侧） */
+/** 服务（运营侧） */
 export interface AdminPlan {
   id: string;
   name: string;
@@ -185,7 +185,7 @@ export interface AdminPlanUpdate {
   free_validity_days?: number | null;
 }
 
-/** 批量更新套餐定价 */
+/** 批量更新服务定价 */
 export interface AdminPlanPricingUpdate {
   pricing: AdminPlanPricingCreate[];
 }

@@ -125,7 +125,7 @@ export function createSubscriptionService(
         throw createAppError(404, NotFoundMessages.PLAN);
       }
       if (service.code === 'free') {
-        throw createAppError(400, '免费套餐仅在注册时自动开通，请通过付费套餐订阅');
+        throw createAppError(400, '免费服务仅在注册时自动开通，请通过付费服务订阅');
       }
 
       const existing = await getRepo().findSubscriptionByOrgId(orgId);
@@ -135,7 +135,7 @@ export function createSubscriptionService(
 
       if (existing && existing.service && isSubscriptionActive(existing)) {
         if (service.sort_order < existing.service.sort_order) {
-          throw createAppError(400, '不支持降级到低等级套餐');
+          throw createAppError(400, '不支持降级到低等级服务');
         }
       }
 
@@ -172,7 +172,7 @@ export function createSubscriptionService(
         throw createAppError(404, NotFoundMessages.PLAN);
       }
       if (service.code === 'free') {
-        throw createAppError(400, '免费套餐不可通过此接口修改');
+        throw createAppError(400, '免费服务不可通过此接口修改');
       }
 
       const sub = await getRepo().findSubscriptionByOrgId(orgId);
@@ -188,7 +188,7 @@ export function createSubscriptionService(
 
       const currentSort = sub.service?.sort_order ?? 0;
       if (service.sort_order < currentSort) {
-        throw createAppError(400, '不支持降级，当前套餐等级更高');
+        throw createAppError(400, '不支持降级，当前服务等级更高');
       }
       if (service.sort_order > currentSort) {
         throw createAppError(400, '升级请通过订阅页创建订单并支付差价');
@@ -219,7 +219,7 @@ export function createSubscriptionService(
         throw createAppError(404, NotFoundMessages.PLAN);
       }
       if (service.code === 'free') {
-        throw createAppError(400, '免费套餐无需购买，注册时已自动开通');
+        throw createAppError(400, '免费服务无需购买，注册时已自动开通');
       }
 
       // 查找周期定价

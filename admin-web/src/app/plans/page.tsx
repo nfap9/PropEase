@@ -65,8 +65,8 @@ const pricingItemSchema = z.object({
 });
 
 const planCreateSchema = z.object({
-  name: z.string().min(1, '请输入套餐名称'),
-  code: z.string().min(1, '请输入套餐代码'),
+  name: z.string().min(1, '请输入服务名称'),
+  code: z.string().min(1, '请输入服务代码'),
   description: z.string().optional(),
   max_organizations: z.coerce.number().min(-1, '-1 表示无限制'),
   max_apartments: z.coerce.number().min(-1, '-1 表示无限制'),
@@ -149,7 +149,7 @@ export default function AdminPlansPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'plans'] });
       setIsCreateOpen(false);
       createForm.reset();
-      toast.success('套餐创建成功');
+      toast.success('服务创建成功');
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
@@ -161,7 +161,7 @@ export default function AdminPlansPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'plans'] });
       setIsEditOpen(false);
       setSelectedPlan(null);
-      toast.success('套餐已更新');
+      toast.success('服务已更新');
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
@@ -182,7 +182,7 @@ export default function AdminPlansPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'plans'] });
       setIsDeleteOpen(false);
       setSelectedPlan(null);
-      toast.success('套餐已删除');
+      toast.success('服务已删除');
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
@@ -402,10 +402,10 @@ export default function AdminPlansPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold" data-testid="admin-plans-heading">套餐配置</h2>
+        <h2 className="text-xl font-semibold" data-testid="admin-plans-heading">服务配置</h2>
         <Button onClick={() => setIsCreateOpen(true)} data-testid="admin-plans-create-btn">
           <Plus className="mr-2 h-4 w-4" />
-          新建套餐
+          新建服务
         </Button>
       </div>
 
@@ -415,8 +415,8 @@ export default function AdminPlansPage() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl">
           <DialogHeader>
-            <DialogTitle>新建套餐</DialogTitle>
-            <DialogDescription>创建新的订阅套餐</DialogDescription>
+            <DialogTitle>新建服务</DialogTitle>
+            <DialogDescription>创建新的订阅服务</DialogDescription>
           </DialogHeader>
           <Form {...createForm}>
             <form
@@ -428,7 +428,7 @@ export default function AdminPlansPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>套餐名称</FormLabel>
+                    <FormLabel>服务名称</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -441,7 +441,7 @@ export default function AdminPlansPage() {
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>套餐代码</FormLabel>
+                    <FormLabel>服务代码</FormLabel>
                     <FormControl>
                       <Input placeholder="如 free, pro" {...field} />
                     </FormControl>
@@ -582,7 +582,7 @@ export default function AdminPlansPage() {
       <Sheet open={isEditOpen} onOpenChange={setIsEditOpen}>
         <SheetContent className="w-full sm:max-w-xl overflow-y-auto max-h-screen">
           <SheetHeader>
-            <SheetTitle>编辑套餐</SheetTitle>
+            <SheetTitle>编辑服务</SheetTitle>
             <SheetDescription>{selectedPlan?.name}</SheetDescription>
           </SheetHeader>
           <Form {...editForm}>
@@ -618,7 +618,7 @@ export default function AdminPlansPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>套餐名称</FormLabel>
+                    <FormLabel>服务名称</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -631,7 +631,7 @@ export default function AdminPlansPage() {
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>套餐代码</FormLabel>
+                    <FormLabel>服务代码</FormLabel>
                     <FormControl>
                       <Input {...field} disabled />
                     </FormControl>
@@ -789,7 +789,7 @@ export default function AdminPlansPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>确认删除</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要删除套餐「{selectedPlan?.name}」吗？若已有组织使用该套餐，可能影响业务。
+              确定要删除服务「{selectedPlan?.name}」吗？若已有组织使用该服务，可能影响业务。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -36,7 +36,7 @@ describe('SubscriptionRepository', () => {
     id: '01hqtestplan00000001',
     code: 'pro',
     name: '专业版',
-    description: '专业版套餐',
+    description: '专业版服务',
     max_organizations: null,
     max_apartments: 1,
     max_rooms: 100,

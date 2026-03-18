@@ -111,7 +111,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     const orgCount = await userOrganizationCount(user.id);
     const maxOrgs = await getMaxOrganizationsForUser(user.id);
     if (orgCount >= maxOrgs)
-      return next(createAppError(403, `当前最多可拥有 ${maxOrgs} 个组织，如需更多请升级套餐`));
+      return next(createAppError(403, `当前最多可拥有 ${maxOrgs} 个组织，如需更多请升级服务`));
     const parsed = CreateOrgSchema.safeParse(req.body);
     if (!parsed.success)
       return next(
@@ -553,7 +553,7 @@ router.post('/:orgId/members', async (req: Request, res: Response, next: NextFun
     const limits = await getEffectivePlanLimits(orgId, user.id);
     const members_used = await getMembersUsedForLimitCheck(orgId, user.id);
     if (members_used >= limits.max_members)
-      return next(createAppError(403, `当前套餐最多允许 ${limits.max_members} 名成员`));
+      return next(createAppError(403, `当前服务最多允许 ${limits.max_members} 名成员`));
     const phone = (req.query.phone as string) ?? (req.body?.phone as string);
     const role = ((req.query.role as string) ?? req.body?.role ?? 'member') as string;
     if (!phone) return next(createAppError(400, '缺少 phone'));

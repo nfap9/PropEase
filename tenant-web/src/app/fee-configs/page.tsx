@@ -339,7 +339,7 @@ export default function FeeConfigPage() {
               <div className="space-y-2">
                 <Label>规格名称</Label>
                 <Input
-                  placeholder="如：50M套餐、标准"
+                  placeholder="如：50M服务、标准"
                   value={specName}
                   onChange={(e) => setSpecName(e.target.value)}
                 />

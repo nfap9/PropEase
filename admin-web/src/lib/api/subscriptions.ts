@@ -85,7 +85,7 @@ export const subscriptionsApi = {
     return response.data;
   },
 
-  // 订阅支付订单（付费套餐）
+  // 订阅支付订单（付费服务）
   createOrder: async (orgId: string, data: SubscriptionOrderCreate): Promise<SubscriptionOrder> => {
     const serviceId = 'service_id' in data && typeof data.service_id === 'string'
       ? data.service_id

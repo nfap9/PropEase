@@ -62,7 +62,7 @@ type FilterActive = 'all' | 'active' | 'inactive';
 
 const giftSubscriptionSchema = z.object({
   organization_id: z.string().min(1, '请选择赠送组织'),
-  service_id: z.string().min(1, '请选择套餐'),
+  service_id: z.string().min(1, '请选择服务'),
   pricing_id: z.string().min(1, '请选择赠送周期'),
   gift_months: z.coerce
     .number()
@@ -441,7 +441,7 @@ export default function AdminRegisteredUsersPage() {
                       disabled={detail.organizations.length === 0}
                     >
                       <Gift className="mr-2 h-4 w-4" />
-                      赠送套餐
+                      赠送服务
                     </Button>
                     {detail.is_active ? (
                       <Button
@@ -489,9 +489,9 @@ export default function AdminRegisteredUsersPage() {
       <Dialog open={isGiftOpen} onOpenChange={setIsGiftOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>赠送套餐</DialogTitle>
+            <DialogTitle>赠送服务</DialogTitle>
             <DialogDescription>
-              为该用户所属组织发起 0 元赠送订单。若组织当前已有同套餐生效订阅，会在现有到期日后顺延；不同套餐切换仍需走正常订阅调整流程。
+              为该用户所属组织发起 0 元赠送订单。若组织当前已有同服务生效订阅，会在现有到期日后顺延；不同服务切换仍需走正常订阅调整流程。
             </DialogDescription>
           </DialogHeader>
           {detail ? (
@@ -532,7 +532,7 @@ export default function AdminRegisteredUsersPage() {
                   name="service_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>赠送套餐</FormLabel>
+                      <FormLabel>赠送服务</FormLabel>
                       <Select
                         value={field.value}
                         onValueChange={(value) => {
@@ -544,7 +544,7 @@ export default function AdminRegisteredUsersPage() {
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder={plansLoading ? '加载中...' : '请选择套餐'} />
+                            <SelectValue placeholder={plansLoading ? '加载中...' : '请选择服务'} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>

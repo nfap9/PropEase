@@ -50,7 +50,7 @@ const SETTINGS_ITEMS = [
   },
   {
     title: '订阅管理',
-    description: '管理订阅套餐和账单',
+    description: '管理订阅服务和账单',
     href: '/settings/subscription',
     icon: CreditCard,
     testId: 'settings-subscription-link',

@@ -4,7 +4,7 @@ export type PromotionType = 'discount' | 'gift' | 'mixed';
 /** 折扣类型 */
 export type DiscountType = 'percent' | 'fixed';
 
-/** 套餐周期定价 */
+/** 服务周期定价 */
 export interface PlanPricing {
   id: string;
   plan_id: string;
@@ -16,7 +16,7 @@ export interface PlanPricing {
   sort_order: number;
 }
 
-/** 优惠活动关联的套餐 */
+/** 优惠活动关联的服务 */
 export interface PromotionPlan {
   id: string;
   promotion_id: string;
@@ -42,7 +42,7 @@ export interface Promotion {
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  /** 关联的套餐（可选，查询时返回） */
+  /** 关联的服务（可选，查询时返回） */
   plans?: PromotionPlan[];
 }
 
@@ -59,7 +59,7 @@ export interface PromotionCreate {
   start_date: string;
   end_date?: string | null;
   is_active?: boolean;
-  /** 关联的套餐 ID 列表 */
+  /** 关联的服务 ID 列表 */
   plan_ids?: string[];
 }
 

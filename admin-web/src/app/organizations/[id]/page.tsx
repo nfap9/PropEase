@@ -80,7 +80,7 @@ export default function AdminOrganizationDetailPage() {
               <span>{org.slug}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">套餐</span>
+              <span className="text-muted-foreground">服务</span>
               <span className="text-muted-foreground">详见订阅管理</span>
             </div>
             <div className="flex justify-between">

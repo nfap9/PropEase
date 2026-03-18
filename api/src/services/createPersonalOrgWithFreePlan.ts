@@ -59,7 +59,7 @@ async function createPersonalOrgRecords(
 
 /**
  * 用户注册时创建个人组织
- * 不再自动开通免费套餐，用户需要手动购买套餐
+ * 不再自动开通免费服务，用户需要手动购买服务
  */
 export async function createPersonalOrg(
   userId: string,

@@ -67,7 +67,7 @@ export default function AdminOrganizationsPage() {
       ),
     },
     { accessorKey: 'slug', header: 'Slug' },
-    { accessorKey: 'plan', header: '套餐' },
+    { accessorKey: 'plan', header: '服务' },
     {
       accessorKey: 'is_personal',
       header: '个人团队',

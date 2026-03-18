@@ -135,7 +135,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     const limits = await getEffectivePlanLimits(orgId, user?.id);
     const apartmentsUsed = await prisma.apartment.count({ where: { organization_id: orgId } });
     if (apartmentsUsed >= limits.max_apartments) {
-      return next(createAppError(403, `当前套餐最多允许 ${limits.max_apartments} 个公寓`));
+      return next(createAppError(403, `当前服务最多允许 ${limits.max_apartments} 个公寓`));
     }
     const parsed = ApartmentCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
@@ -357,7 +357,7 @@ router.post('/:apartmentId/rooms', async (req: Request, res: Response, next: Nex
     const limits = await getEffectivePlanLimits(orgId, user.id);
     const roomsUsed = await getRoomsUsedForLimitCheck(orgId, user.id);
     if (roomsUsed + 1 > limits.max_rooms) {
-      return next(createAppError(403, `当前套餐最多允许 ${limits.max_rooms} 个房间`));
+      return next(createAppError(403, `当前服务最多允许 ${limits.max_rooms} 个房间`));
     }
     const parsed = RoomCreateSchema.safeParse({
       ...req.body,
@@ -436,7 +436,7 @@ router.post(
         return next(
           createAppError(
             403,
-            `当前套餐最多允许 ${limits.max_rooms} 个房间，当前已用 ${roomsUsed}，无法再添加 ${addCount} 个`
+            `当前服务最多允许 ${limits.max_rooms} 个房间，当前已用 ${roomsUsed}，无法再添加 ${addCount} 个`
           )
         );
       }
