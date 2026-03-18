@@ -5,10 +5,8 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Users,
-  Building2,
   Settings as SettingsIcon,
-  CreditCard,
-  Shield,
+  ShoppingBag,
   MessageSquareMore,
 } from 'lucide-react';
 
@@ -17,28 +15,17 @@ const SETTINGS = {
   HEADING: 'settings-heading',
   TEAM_CARD: 'settings-team-card',
   TEAM_LINK: 'settings-team-link',
-  PERMISSIONS_CARD: 'settings-permissions-card',
-  PERMISSIONS_LINK: 'settings-permissions-link',
   SUBSCRIPTION_CARD: 'settings-subscription-card',
-  ORG_CARD: 'settings-org-card',
 } as const;
 
 const SETTINGS_ITEMS = [
   {
-    title: '团队设置',
-    description: '管理组织成员和权限',
+    title: '团队与权限',
+    description: '管理团队成员和角色权限',
     href: '/settings/team',
     icon: Users,
     testId: SETTINGS.TEAM_LINK,
     cardTestId: SETTINGS.TEAM_CARD,
-  },
-  {
-    title: '权限管理',
-    description: '配置角色权限',
-    href: '/settings/permissions',
-    icon: Shield,
-    testId: SETTINGS.PERMISSIONS_LINK,
-    cardTestId: SETTINGS.PERMISSIONS_CARD,
   },
   {
     title: '消息触达',
@@ -52,17 +39,9 @@ const SETTINGS_ITEMS = [
     title: '订阅管理',
     description: '管理订阅服务和账单',
     href: '/settings/subscription',
-    icon: CreditCard,
+    icon: ShoppingBag,
     testId: 'settings-subscription-link',
     cardTestId: SETTINGS.SUBSCRIPTION_CARD,
-  },
-  {
-    title: '组织管理',
-    description: '创建和编辑组织信息',
-    href: '/settings/team',
-    icon: Building2,
-    testId: 'settings-org-link',
-    cardTestId: SETTINGS.ORG_CARD,
   },
 ];
 
