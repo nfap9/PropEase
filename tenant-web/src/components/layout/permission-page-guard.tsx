@@ -111,6 +111,13 @@ export function PermissionPageGuard({ children, permission, accessRule }: Permis
     );
   }
 
+  // Owner bypass: owners can always access /settings/permissions regardless of SETTINGS_VIEW permission.
+  // This is the definitive fix for owners being blocked when usePermissions fails silently.
+  const isSettingsPermissionsRoute = pathname === '/settings/permissions';
+  if (isSettingsPermissionsRoute && organization?.role === 'owner') {
+    return <>{children}</>;
+  }
+
   if (
     resolvedAccessRule &&
     !canAccessRule(resolvedAccessRule, {
