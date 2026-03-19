@@ -30,6 +30,7 @@ function toOrgResponse(o: {
   is_active: boolean;
   created_at: Date;
   updated_at: Date;
+  notes: string | null;
 }) {
   return {
     id: o.id,
@@ -40,6 +41,7 @@ function toOrgResponse(o: {
     is_active: o.is_active,
     created_at: o.created_at,
     updated_at: o.updated_at,
+    notes: o.notes,
   };
 }
 
@@ -330,6 +332,7 @@ router.put('/:orgId', async (req: Request, res: Response, next: NextFunction) =>
     const org = await defaultOrgService.update(req.params.orgId, user.id, {
       name: parsed.data.name,
       settings: parsed.data.settings as Record<string, unknown> | undefined,
+      notes: parsed.data.notes,
     });
     res.json(toOrgResponse(org));
   } catch (e) {

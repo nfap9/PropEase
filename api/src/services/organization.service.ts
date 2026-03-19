@@ -27,6 +27,7 @@ export interface CreateOrgInput {
 export interface UpdateOrgInput {
   name?: string;
   settings?: Record<string, unknown>;
+  notes?: string;
 }
 
 /**
