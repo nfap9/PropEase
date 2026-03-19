@@ -56,13 +56,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="customers"
-        options={{
-          title: '客户',
-          tabBarIcon: ({ focused }) => <TabIcon icon="👥" label="客户" active={focused} />,
-        }}
-      />
-      <Tabs.Screen
         name="bills"
         options={{
           title: '账单',

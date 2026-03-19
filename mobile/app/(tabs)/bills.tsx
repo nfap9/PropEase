@@ -97,9 +97,25 @@ export default function BillsScreen() {
           borderBottomRightRadius: 40,
         }}
       >
-        <Text style={{ fontSize: 24, fontWeight: '900', color: 'white', marginBottom: 16, letterSpacing: -0.5 }}>
-          账单管理
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <Text style={{ fontSize: 24, fontWeight: '900', color: 'white', letterSpacing: -0.5 }}>
+            账单管理
+          </Text>
+          <TouchableOpacity
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              borderRadius: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+            onPress={() => router.push('/customers')}
+          >
+            <Text style={{ fontSize: 12, color: 'white', marginRight: 4 }}>👥</Text>
+            <Text style={{ fontSize: 12, fontWeight: '700', color: 'white' }}>客户</Text>
+          </TouchableOpacity>
+        </View>
         <View
           style={{
             flexDirection: 'row',
