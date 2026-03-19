@@ -200,6 +200,12 @@ export async function adminLogin(
   username: string = ADMIN_TEST_ACCOUNTS.admin.username,
   password: string = ADMIN_TEST_ACCOUNTS.admin.password
 ): Promise<void> {
+  // 检查是否已登录运营后台，跳过重复登录
+  const isAuth = await isAdminAuthenticated(page);
+  if (isAuth) {
+    return;
+  }
+
   // 运营后台在 localhost:3001
   await page.goto('http://localhost:3001/login');
 

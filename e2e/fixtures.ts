@@ -137,14 +137,24 @@ export const test = base.extend<TestFixtures>({
     await use(organizationId || undefined);
   },
 
-  // 运营后台页面 fixture
-  adminPage: async ({ page }, use) => {
-    // 执行运营后台登录
-    await adminLogin(page);
-
-    // 使用已登录的页面
-    await use(page);
-  },
+  // 运营后台页面 fixture（worker 级复用）
+  adminPage: [
+    async ({ page, context }, use) => {
+      const storageStatePath = 'e2e/results/.auth/admin.json';
+      try {
+        const fs = await import('fs');
+        if (fs.existsSync(storageStatePath)) {
+          await context.storageState({ path: storageStatePath });
+        }
+      } catch {
+        // 忽略 fs 错误，继续执行登录
+      }
+      await adminLogin(page);
+      await use(page);
+      await context.storageState({ path: storageStatePath });
+    },
+    { scope: 'worker' },
+  ],
 });
 
 /**
