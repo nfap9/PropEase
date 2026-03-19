@@ -102,6 +102,9 @@ interface RequestOptions {
   skipAuth?: boolean
 }
 
+/** 单例锁：防止并发刷新 token */
+let refreshLock: Promise<boolean> | null = null
+
 /**
  * 获取存储的 token
  */
@@ -117,39 +120,51 @@ async function getOrgId(): Promise<string | null> {
 }
 
 /**
- * 处理 401 认证失败 - 尝试刷新 token
+ * 处理 401 认证失败 - 尝试刷新 token（单例锁机制，防止竞态）
  */
 async function handleUnauthorized(): Promise<boolean> {
-  try {
-    const refreshToken = await secureStorage.getItem('refresh_token')
-    if (!refreshToken) {
-      return false
-    }
-
-    const response = await fetch(`${API_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: refreshToken }),
-    })
-
-    if (!response.ok) {
-      return false
-    }
-
-    const responseData = await response.json()
-    const tokenData =
-      responseData && 'code' in responseData && responseData.code === 0
-        ? responseData.data
-        : responseData
-
-    const { access_token, refresh_token } = tokenData
-    await secureStorage.setItem('access_token', access_token)
-    await secureStorage.setItem('refresh_token', refresh_token)
-
-    return true
-  } catch {
-    return false
+  // 如果已有刷新在进行，等待它完成
+  if (refreshLock) {
+    return refreshLock
   }
+
+  // 创建新的刷新 Promise
+  refreshLock = (async () => {
+    try {
+      const refreshToken = await secureStorage.getItem('refresh_token')
+      if (!refreshToken) {
+        return false
+      }
+
+      const response = await fetch(`${API_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      })
+
+      if (!response.ok) {
+        return false
+      }
+
+      const responseData = await response.json()
+      const tokenData =
+        responseData && 'code' in responseData && responseData.code === 0
+          ? responseData.data
+          : responseData
+
+      const { access_token, refresh_token } = tokenData
+      await secureStorage.setItem('access_token', access_token)
+      await secureStorage.setItem('refresh_token', refresh_token)
+
+      return true
+    } catch {
+      return false
+    } finally {
+      refreshLock = null
+    }
+  })()
+
+  return refreshLock
 }
 
 /**
@@ -208,15 +223,18 @@ export async function request<T>(url: string, options: RequestOptions = {}): Pro
   if (response.status === 401 && !skipAuth) {
     const refreshed = await handleUnauthorized()
     if (refreshed) {
-      // 重试请求
+      // 重新获取最新 token 并构建新的 fetchOptions（不依赖闭包中的旧值）
       const newToken = await getToken()
       if (newToken) {
-        requestHeaders['Authorization'] = `Bearer ${newToken}`
+        const retryOptions: RequestInit = {
+          ...fetchOptions,
+          headers: {
+            ...fetchOptions.headers,
+            'Authorization': `Bearer ${newToken}`,
+          },
+        }
+        response = await fetch(`${API_URL}${url}`, retryOptions)
       }
-      response = await fetch(`${API_URL}${url}`, {
-        ...fetchOptions,
-        headers: requestHeaders,
-      })
     } else {
       await clearAuthAndRedirect()
       throw new ApiError(401, '认证已过期，请重新登录')
