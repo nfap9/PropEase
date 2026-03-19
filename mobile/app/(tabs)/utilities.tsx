@@ -14,6 +14,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { router } from 'expo-router'
 import { utilitiesApi, leasesApi, apartmentsApi, type UtilityExportRoom, type UtilityWithDetails } from '@/services/api'
 import { Colors } from '@/constants'
+import {
+  MeterInputCard,
+  InfoRow,
+  EmptyState,
+  QueueCard,
+  FilterTabs,
+  ApartmentFilterPill,
+  SummaryChip,
+} from '@/components/utilities'
 
 type FilterType = 'all' | 'pending' | 'entered'
 type QueueStatus = 'pending' | 'upcoming' | 'overdue' | 'entered'
@@ -29,7 +38,7 @@ type ActiveLease = {
   }
 }
 
-type QueueItem = {
+export type QueueItem = {
   roomId: string
   readingId?: string
   apartmentId?: string
@@ -73,58 +82,11 @@ function getBillingStatus(billingDay: number): QueueStatus {
   return 'pending'
 }
 
-function getStatusMeta(status: QueueStatus) {
-  switch (status) {
-    case 'overdue':
-      return {
-        label: '已逾期',
-        textColor: Colors.danger,
-        bgColor: '#FEF2F2',
-        icon: '🔴',
-      }
-    case 'upcoming':
-      return {
-        label: '即将抄表',
-        textColor: Colors.warning,
-        bgColor: '#FFF7ED',
-        icon: '🟠',
-      }
-    case 'entered':
-      return {
-        label: '已录入',
-        textColor: Colors.success,
-        bgColor: '#ECFDF5',
-        icon: '✅',
-      }
-    default:
-      return {
-        label: '待抄表',
-        textColor: Colors.primary,
-        bgColor: '#EFF6FF',
-        icon: '🔵',
-      }
-  }
-}
-
 function parseDecimal(value: string): number | null {
   const trimmed = value.trim()
   if (!trimmed) return null
   const parsed = Number(trimmed)
   return Number.isFinite(parsed) ? parsed : null
-}
-
-function sanitizeNumericInput(value: string): string {
-  return value.replace(/[^0-9.]/g, '')
-}
-
-function formatMoney(value: number | null): string {
-  if (value == null || Number.isNaN(value)) return '--'
-  return value.toFixed(2)
-}
-
-function formatReading(value: number | null): string {
-  if (value == null || Number.isNaN(value)) return '--'
-  return value.toFixed(2)
 }
 
 function compareRoomNumber(a: string, b: string) {
@@ -448,6 +410,7 @@ export default function UtilitiesScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.background }}>
+      {/* Page Header */}
       <View
         style={{
           backgroundColor: Colors.primary,
@@ -472,6 +435,7 @@ export default function UtilitiesScreen() {
           {currentYear}年{currentMonth}月现场录入
         </Text>
 
+        {/* Search */}
         <View
           style={{
             marginTop: 18,
@@ -495,6 +459,7 @@ export default function UtilitiesScreen() {
           />
         </View>
 
+        {/* Summary chips */}
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
           <SummaryChip label="待抄表" value={pendingCount} tone="warning" />
           <SummaryChip label="已录入" value={enteredCount} tone="success" />
@@ -502,6 +467,7 @@ export default function UtilitiesScreen() {
         </View>
       </View>
 
+      {/* Scroll content */}
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 18, paddingBottom: 120 }}
@@ -509,37 +475,10 @@ export default function UtilitiesScreen() {
           <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} colors={[Colors.primary]} />
         }
       >
-        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
-          {([
-            ['pending', '待抄表'],
-            ['entered', '已录入'],
-            ['all', '全部'],
-          ] as const).map(([value, label]) => (
-            <TouchableOpacity
-              key={value}
-              style={{
-                paddingHorizontal: 14,
-                paddingVertical: 9,
-                borderRadius: 999,
-                backgroundColor: filter === value ? Colors.primary : 'white',
-                borderWidth: filter === value ? 0 : 1,
-                borderColor: Colors.border,
-              }}
-              onPress={() => setFilter(value)}
-            >
-              <Text
-                style={{
-                  fontSize: 12,
-                  fontWeight: '700',
-                  color: filter === value ? 'white' : Colors.textSecondary,
-                }}
-              >
-                {label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {/* Filter tabs */}
+        <FilterTabs filter={filter} onFilterChange={setFilter} />
 
+        {/* Apartment filter pills */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -561,6 +500,7 @@ export default function UtilitiesScreen() {
           ))}
         </ScrollView>
 
+        {/* Active item detail card */}
         {activeItem ? (
           <View
             style={{
@@ -576,6 +516,7 @@ export default function UtilitiesScreen() {
               elevation: 4,
             }}
           >
+            {/* Room header */}
             <View
               style={{
                 flexDirection: 'row',
@@ -603,26 +544,10 @@ export default function UtilitiesScreen() {
                 </Text>
               </View>
 
-              <View
-                style={{
-                  paddingHorizontal: 12,
-                  paddingVertical: 8,
-                  borderRadius: 16,
-                  backgroundColor: getStatusMeta(activeItem.status).bgColor,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 11,
-                    fontWeight: '800',
-                    color: getStatusMeta(activeItem.status).textColor,
-                  }}
-                >
-                  {getStatusMeta(activeItem.status).label}
-                </Text>
-              </View>
+              <StatusBadge status={activeItem.status} />
             </View>
 
+            {/* Info rows */}
             <View
               style={{
                 marginTop: 16,
@@ -638,6 +563,7 @@ export default function UtilitiesScreen() {
               <InfoRow label="抄表日期" value={readingDate} last />
             </View>
 
+            {/* Action buttons */}
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
               <TouchableOpacity
                 style={{
@@ -680,6 +606,7 @@ export default function UtilitiesScreen() {
               </TouchableOpacity>
             </View>
 
+            {/* Meter inputs */}
             <View style={{ marginTop: 18, gap: 14 }}>
               <MeterInputCard
                 title="水表读数"
@@ -704,6 +631,7 @@ export default function UtilitiesScreen() {
               />
             </View>
 
+            {/* Notes */}
             <View style={{ marginTop: 16 }}>
               <Text style={{ fontSize: 12, color: Colors.textMuted, fontWeight: '600' }}>
                 备注
@@ -730,6 +658,7 @@ export default function UtilitiesScreen() {
               />
             </View>
 
+            {/* Photo placeholder */}
             <TouchableOpacity
               style={{
                 marginTop: 12,
@@ -752,6 +681,7 @@ export default function UtilitiesScreen() {
               </Text>
             </TouchableOpacity>
 
+            {/* Save buttons */}
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 18 }}>
               <TouchableOpacity
                 style={{
@@ -804,6 +734,7 @@ export default function UtilitiesScreen() {
           />
         )}
 
+        {/* Queue section */}
         <View style={{ marginTop: 22 }}>
           <Text style={{ fontSize: 18, fontWeight: '900', color: Colors.textPrimary }}>
             房间队列
@@ -841,352 +772,25 @@ export default function UtilitiesScreen() {
   )
 }
 
-function SummaryChip({
-  label,
-  value,
-  tone,
-}: {
-  label: string
-  value: number
-  tone: 'warning' | 'success' | 'danger'
-}) {
-  const toneMap = {
-    warning: { bg: 'rgba(255,255,255,0.16)', valueColor: 'white', labelColor: 'rgba(255,255,255,0.72)' },
-    success: { bg: 'rgba(255,255,255,0.16)', valueColor: 'white', labelColor: 'rgba(255,255,255,0.72)' },
-    danger: { bg: 'rgba(255,255,255,0.16)', valueColor: 'white', labelColor: 'rgba(255,255,255,0.72)' },
-  } as const
+function StatusBadge({ status }: { status: QueueStatus }) {
+  const meta = {
+    overdue: { label: '已逾期', textColor: Colors.danger, bgColor: '#FEF2F2' },
+    upcoming: { label: '即将抄表', textColor: Colors.warning, bgColor: '#FFF7ED' },
+    entered: { label: '已录入', textColor: Colors.success, bgColor: '#ECFDF5' },
+    pending: { label: '待抄表', textColor: Colors.primary, bgColor: '#EFF6FF' },
+  }[status]
 
   return (
     <View
       style={{
-        flex: 1,
-        borderRadius: 18,
-        backgroundColor: toneMap[tone].bg,
-        paddingVertical: 12,
-        paddingHorizontal: 14,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 16,
+        backgroundColor: meta.bgColor,
       }}
     >
-      <Text style={{ fontSize: 22, fontWeight: '900', color: toneMap[tone].valueColor }}>{value}</Text>
-      <Text style={{ marginTop: 3, fontSize: 11, color: toneMap[tone].labelColor }}>{label}</Text>
-    </View>
-  )
-}
-
-function ApartmentFilterPill({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string
-  selected: boolean
-  onPress: () => void
-}) {
-  return (
-    <TouchableOpacity
-      style={{
-        paddingHorizontal: 14,
-        paddingVertical: 9,
-        borderRadius: 999,
-        backgroundColor: selected ? '#DBEAFE' : 'white',
-        borderWidth: 1,
-        borderColor: selected ? '#BFDBFE' : Colors.borderLight,
-      }}
-      onPress={onPress}
-    >
-      <Text
-        style={{
-          fontSize: 12,
-          fontWeight: '700',
-          color: selected ? Colors.primary : Colors.textSecondary,
-        }}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
-  )
-}
-
-function QueueCard({
-  item,
-  selected,
-  onPress,
-}: {
-  item: QueueItem
-  selected: boolean
-  onPress: () => void
-}) {
-  const meta = getStatusMeta(item.status)
-
-  return (
-    <TouchableOpacity
-      style={{
-        backgroundColor: 'white',
-        borderRadius: 24,
-        padding: 16,
-        borderWidth: 1.5,
-        borderColor: selected ? '#BFDBFE' : Colors.borderLight,
-        shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: selected ? 0.08 : 0.03,
-        shadowRadius: 6,
-        elevation: selected ? 3 : 1,
-      }}
-      onPress={onPress}
-    >
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-          <View
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 16,
-              backgroundColor: meta.bgColor,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text style={{ fontSize: 18 }}>{meta.icon}</Text>
-          </View>
-          <View style={{ marginLeft: 12, flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ fontSize: 16, fontWeight: '800', color: Colors.textPrimary }}>
-                {item.roomNumber}
-              </Text>
-              {item.status !== 'entered' ? (
-                <View
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 999,
-                    backgroundColor: Colors.danger,
-                    marginLeft: 8,
-                  }}
-                />
-              ) : null}
-            </View>
-            <Text style={{ marginTop: 2, fontSize: 11, color: Colors.textMuted }}>
-              {item.apartmentName}
-            </Text>
-            <Text style={{ marginTop: 4, fontSize: 12, color: Colors.textSecondary }}>
-              {item.tenantName || '未绑定租客'}
-            </Text>
-          </View>
-        </View>
-
-        <View
-          style={{
-            paddingHorizontal: 10,
-            paddingVertical: 6,
-            borderRadius: 12,
-            backgroundColor: meta.bgColor,
-          }}
-        >
-          <Text style={{ fontSize: 11, fontWeight: '800', color: meta.textColor }}>
-            {meta.label}
-          </Text>
-        </View>
-      </View>
-
-      <View
-        style={{
-          marginTop: 14,
-          paddingTop: 14,
-          borderTopWidth: 1,
-          borderTopColor: Colors.borderLight,
-          flexDirection: 'row',
-        }}
-      >
-        <QueueMetric
-          label="上次水表"
-          value={formatReading(item.waterPrevious)}
-          suffix="m3"
-        />
-        <QueueMetric
-          label="上次电表"
-          value={formatReading(item.electricityPrevious)}
-          suffix="kWh"
-        />
-        <QueueMetric
-          label="出账日"
-          value={`${item.billingDay}`}
-          suffix="日"
-        />
-      </View>
-    </TouchableOpacity>
-  )
-}
-
-function QueueMetric({
-  label,
-  value,
-  suffix,
-}: {
-  label: string
-  value: string
-  suffix: string
-}) {
-  return (
-    <View style={{ flex: 1 }}>
-      <Text style={{ fontSize: 11, color: Colors.textMuted }}>{label}</Text>
-      <Text style={{ marginTop: 4, fontSize: 13, fontWeight: '700', color: Colors.textPrimary }}>
-        {value}
-        <Text style={{ fontSize: 11, color: Colors.textMuted }}> {suffix}</Text>
-      </Text>
-    </View>
-  )
-}
-
-function MeterInputCard({
-  title,
-  unit,
-  previous,
-  price,
-  value,
-  usage,
-  fee,
-  onChange,
-}: {
-  title: string
-  unit: string
-  previous: number | null
-  price: number | null
-  value: string
-  usage: number | null
-  fee: number | null
-  onChange: (value: string) => void
-}) {
-  return (
-    <View
-      style={{
-        backgroundColor: '#F8FAFC',
-        borderRadius: 22,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: Colors.borderLight,
-      }}
-    >
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Text style={{ fontSize: 14, fontWeight: '800', color: Colors.textPrimary }}>{title}</Text>
-        <Text style={{ fontSize: 11, color: Colors.textMuted }}>
-          上次读数 {formatReading(previous)} {unit}
-        </Text>
-      </View>
-
-      <View
-        style={{
-          marginTop: 12,
-          borderRadius: 20,
-          backgroundColor: 'white',
-          borderWidth: 1,
-          borderColor: Colors.border,
-          paddingHorizontal: 18,
-          paddingVertical: 14,
-        }}
-      >
-        <Text style={{ fontSize: 11, color: Colors.textMuted }}>当前读数</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
-          <TextInput
-            style={{
-              flex: 1,
-              fontSize: 36,
-              fontWeight: '900',
-              color: Colors.textPrimary,
-              paddingVertical: 0,
-            }}
-            keyboardType="decimal-pad"
-            placeholder="0"
-            placeholderTextColor="#CBD5E1"
-            value={value}
-            onChangeText={(nextValue) => onChange(sanitizeNumericInput(nextValue))}
-          />
-          <Text style={{ marginLeft: 8, fontSize: 14, fontWeight: '700', color: Colors.textMuted }}>
-            {unit}
-          </Text>
-        </View>
-      </View>
-
-      <View style={{ flexDirection: 'row', marginTop: 12 }}>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 11, color: Colors.textMuted }}>本次用量</Text>
-          <Text style={{ marginTop: 4, fontSize: 16, fontWeight: '800', color: Colors.textPrimary }}>
-            {usage != null ? usage.toFixed(2) : '--'}
-          </Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 11, color: Colors.textMuted }}>单价</Text>
-          <Text style={{ marginTop: 4, fontSize: 16, fontWeight: '800', color: Colors.textPrimary }}>
-            {price != null ? `¥${price.toFixed(2)}` : '--'}
-          </Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 11, color: Colors.textMuted }}>费用</Text>
-          <Text style={{ marginTop: 4, fontSize: 16, fontWeight: '800', color: Colors.primary }}>
-            {fee != null ? `¥${formatMoney(fee)}` : '--'}
-          </Text>
-        </View>
-      </View>
-    </View>
-  )
-}
-
-function InfoRow({
-  label,
-  value,
-  last,
-}: {
-  label: string
-  value: string
-  last?: boolean
-}) {
-  return (
-    <View
-      style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingBottom: last ? 0 : 10,
-        marginBottom: last ? 0 : 10,
-        borderBottomWidth: last ? 0 : 1,
-        borderBottomColor: Colors.borderLight,
-      }}
-    >
-      <Text style={{ fontSize: 12, color: Colors.textMuted }}>{label}</Text>
-      <Text style={{ fontSize: 12, fontWeight: '700', color: Colors.textPrimary }}>{value}</Text>
-    </View>
-  )
-}
-
-function EmptyState({
-  icon,
-  title,
-  description,
-}: {
-  icon: string
-  title: string
-  description: string
-}) {
-  return (
-    <View style={{ alignItems: 'center', paddingVertical: 36 }}>
-      <Text style={{ fontSize: 42 }}>{icon}</Text>
-      <Text
-        style={{
-          marginTop: 12,
-          fontSize: 16,
-          fontWeight: '800',
-          color: Colors.textPrimary,
-        }}
-      >
-        {title}
-      </Text>
-      <Text
-        style={{
-          marginTop: 6,
-          fontSize: 12,
-          lineHeight: 18,
-          color: Colors.textMuted,
-          textAlign: 'center',
-        }}
-      >
-        {description}
+      <Text style={{ fontSize: 11, fontWeight: '800', color: meta.textColor }}>
+        {meta.label}
       </Text>
     </View>
   )
