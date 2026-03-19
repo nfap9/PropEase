@@ -47,13 +47,24 @@ Exceptions: none for this phase
 
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
-| Body | 16px | 400 (normal) | 1.5 |
 | Label | 14px | 400 (normal) | 1.4 |
+| Body | 16px | 400 (normal) | 1.5 |
+| Card Title | 18px (text-lg) | 600 (semibold) | 1.3 |
 | Heading | 30px (text-3xl) | 600 (semibold) | 1.2 |
-| Card Title | 18px (text-lg) | 500 (medium) | 1.3 |
-| Small/Caption | 14px | 400 | 1.4 |
 
 **Source:** Pre-populated from existing tenant-web patterns (settings page heading `text-3xl font-bold`, card titles `text-lg`, button text `text-sm`).
+**Note:** 4 sizes (14/16/18/30px), 2 weights (400/600). "Small/Caption" role removed — redundant with Label at 14px.
+
+---
+
+## Visual Focal Points
+
+| Screen | Focal Point |
+|--------|-------------|
+| Organization list (`/organizations`) | Page title "我的组织" as visual anchor |
+| Empty state (creation form) | Empty state icon Building2 |
+
+**Rationale:** Primary screen is the organization list — page title anchors the user's attention. On empty state, the Building2 icon in the card header draws focus to the creation action.
 
 ---
 
@@ -148,11 +159,11 @@ Accent reserved for: Primary CTA buttons, card hover border highlight (`hover:bo
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS (focal points declared)
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS (fixed: 4 sizes, 2 weights)
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** pending — fixed blocking issues (typography), re-verifying
