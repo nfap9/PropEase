@@ -60,6 +60,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Roadmap Evolution
 
+- Phase 4 added: tenant-web前端重构：新注册/登录页、header+sider+main主布局、业务模块导航
 - Phase 3 added: 重新编排tenant-web前端路由：添加组织视图用于创建/选择组织
 
 ---
