@@ -82,6 +82,9 @@ export default defineConfig({
 
     // 权限（如果需要）
     // permissions: ['geolocation', 'notifications'],
+
+    // 运营后台基础 URL（用于 admin E2E 测试）
+    E2E_ADMIN_BASE_URL: process.env.E2E_ADMIN_BASE_URL || 'http://localhost:3001',
   },
 
   // 配置项目（浏览器）
@@ -119,11 +122,19 @@ export default defineConfig({
   // 全局 teardown
   globalTeardown: undefined,
 
-  // 本地开发时自动启动服务
-  webServer: {
-    command: 'pnpm dev:web',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  // 本地开发时自动启动服务（支持同时启动 tenant-web 和 admin-web）
+  webServer: [
+    {
+      command: 'pnpm dev:web',
+      url: 'http://localhost:3000',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120000,
+    },
+    {
+      command: 'pnpm dev:admin',
+      url: 'http://localhost:3001',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120000,
+    },
+  ],
 });
