@@ -4,12 +4,12 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 04
 status: unknown
-last_updated: "2026-03-19T06:14:40Z"
+last_updated: "2026-03-19T06:18:04.618Z"
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 8
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # State: 前端路由重构
@@ -32,10 +32,11 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 1 | ● | 1/1 | 100% |
 | 2 | ● | 2/2 | 100% |
 | 3 | ● | 2/2 | 100% |
-| 4 | ○ | 1/3 | 33% |
+| 4 | ○ | 2/3 | 66% |
 
 ## Recent Work
 
+- Phase 4 Plan 02 complete: integrated shadcn/ui collapsible sidebar with MainLayout, icon-only collapsed state with hover tooltips
 - Phase 4 Plan 01 complete: established (auth) and (dashboard) route groups, fixed Bell->Menu mobile nav bug
 - Phase 3 Plan 02 complete: added org switch card to Settings page, /organizations/new redirects to /organizations
 - Phase 3 Plan 01 complete: created dual-mode /organizations page with create/select handling
@@ -58,6 +59,9 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 1: 保持卡片网格入口形式
 - Phase 1: Breadcrumb hides on /settings homepage, shows on sub-pages only
 - Phase 1: Page titles via PAGE_TITLES constant mapping with parent-path fallback
+- [Phase 04]: Phase 4: SidebarProvider wraps MainLayout for collapsible sidebar state
+- [Phase 04]: Phase 4: Sidebar uses collapsible=icon mode for hover tooltip collapsed state
+- [Phase 04]: Phase 4: SidebarTrigger replaces custom Sheet for mobile navigation
 
 ## Blockers
 
