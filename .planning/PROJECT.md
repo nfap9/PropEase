@@ -50,6 +50,18 @@
 
 ---
 
+## Milestone v1.1: 运营后台
+
+**Goal:** 完善运营后台功能，与租户端对标，提供平台级管理能力
+
+**Target features:**
+- 运营数据看板（全局统计、收入分析）
+- 组织管理（CRUD、成员管理）
+- 系统配置（费用模板、通知配置）
+- 运营后台 E2E 测试
+
+---
+
 ## Next Milestone
 
 Next milestone not yet planned. Use `/gsd:new-milestone` to start.
