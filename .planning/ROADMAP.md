@@ -87,12 +87,23 @@ Plans:
 
 ### Phase 5: 优化架构
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** 架构优化四个领域: API 路由重构(薄路由+厚控制器)、权限系统 DRY(api-contract)、前端 API 客户端统一(web-api-client)、日志系统(pino 结构化日志)
+
+**Requirements:** TBD (refactoring - no new features)
 **Depends on:** Phase 4
-**Plans:** 0 plans
+**Status:** Ready
+**Plans:** 4 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 5 to break down)
+- [ ] 05-01-PLAN.md — Permission System DRY (api-contract 单一数据源)
+- [ ] 05-02-PLAN.md — API Client Unification (web-api-client 统一前后端)
+- [ ] 05-03-PLAN.md — API Route Refactoring (薄路由+厚控制器)
+- [ ] 05-04-PLAN.md — Logging (pino 结构化日志替换 console)
+
+**Success Criteria:**
+1. [ ] 权限码在 api-contract 定义，前后端共享
+2. [ ] web-api-client 同时支持 tenant 和 admin 模式
+3. [ ] 5 个大路由文件变为薄路由 (<50 行)
+4. [ ] 所有 services/scheduler 使用 pino 替代 console.log/error
 
 ---
