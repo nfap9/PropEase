@@ -256,6 +256,32 @@ export function createBrowserApiClient(
   });
 }
 
+export interface AdminApiConfig {
+  baseURL: string;
+  adminTokenKey?: string;
+  loginPath?: string;
+}
+
+export function createAdminApiClient(config: AdminApiConfig): AxiosInstance {
+  const tokenStorage = createLocalStorageTokenStorage(
+    config.adminTokenKey ?? 'admin_access_token',
+    'admin_refresh_token'
+  );
+
+  return createApiClient({
+    baseURL: config.baseURL,
+    tokenStorage,
+    refreshTokens: undefined,
+    onAuthFailure: () => {
+      if (typeof window === 'undefined') return;
+      if (!window.location.pathname.startsWith(config.loginPath ?? '/login')) {
+        window.location.href = config.loginPath ?? '/login';
+      }
+    },
+    suppressUnauthorizedError: true,
+  });
+}
+
 interface ErrorMessageBody {
   message?: string;
   data?: { errors?: Array<{ field?: string; message?: string }> };
