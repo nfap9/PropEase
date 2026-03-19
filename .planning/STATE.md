@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 2
+current_phase: 03
 status: unknown
-last_updated: "2026-03-19T01:28:41.603Z"
+last_updated: "2026-03-19T05:40:47.081Z"
 progress:
-  total_phases: 2
+  total_phases: 3
   completed_phases: 2
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 5
+  completed_plans: 4
 ---
 
 # State: 前端路由重构
 
 **Milestone:** v1.0
-**Current Phase:** 3
+**Current Phase:** 03
 
 ## Project Reference
 
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 让用户能直觉地在设置页面及其子页面之间导航
 
-**Current focus:** Phase 2 — 修复链接指向（即将完成）
+**Current focus:** Phase 03 — tenant-web
 
 ## Progress
 
@@ -31,16 +31,18 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 |-------|--------|-------|----------|
 | 1 | ● | 1/1 | 100% |
 | 2 | ● | 2/2 | 100% |
-| 3 | ○ | 0/0 | 0% |
+| 3 | ◐ | 1/2 | 50% |
 
 ## Recent Work
 
+- Phase 3 Plan 01 complete: created dual-mode /organizations page with create/select handling
 - Phase 2 Plan 02 complete: changed subscription page heading icon from CreditCard to ShoppingBag
 - Phase 2 Plan 01 complete: merged team/permissions settings, updated subscription icon
 - Phase 1 Plan 01 complete: unified settings layout with breadcrumb navigation
 
 ## Decisions
 
+- Phase 3: Created dual-mode /organizations page - creation form for 0 orgs, selection list for 1+ orgs
 - Phase 2: Merged "团队设置" and "权限管理" into "团队与权限" pointing to /settings/team
 - Phase 2: Subscription icon changed from CreditCard to ShoppingBag
 - Phase 1: 返回按钮使用「文字+图标」形式
