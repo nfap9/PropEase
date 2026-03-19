@@ -30,7 +30,8 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | Phase | Status | Plans | Progress |
 |-------|--------|-------|----------|
 | 1 | ● | 1/1 | 100% |
-| 2 | ◐ | 2/3 | 67% |
+| 2 | ● | 2/2 | 100% |
+| 3 | ○ | 0/0 | 0% |
 
 ## Recent Work
 
@@ -51,6 +52,10 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ## Blockers
 
 (None yet)
+
+## Roadmap Evolution
+
+- Phase 3 added: 重新编排tenant-web前端路由：添加组织视图用于创建/选择组织
 
 ---
 *Last updated: 2026-03-19*
