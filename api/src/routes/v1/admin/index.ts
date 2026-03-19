@@ -1,12 +1,11 @@
 import { Router } from 'express';
-import { z } from 'zod';
 import { adminAuthRouter } from './auth.js';
 import { adminInitRouter } from './init.js';
 import { adminServiceProductsRouter } from './service-products.js';
 import { adminStorefrontsRouter } from './storefronts.js';
 import { requireAdmin } from '../../../middlewares/requireAdmin.js';
 import { requireSystemInitialized } from '../../../middlewares/requireSystemInitialized.js';
-import * as ctrl from '../admin.controller.js';
+import * as ctrl from './admin.controller.js';
 
 const router: Router = Router();
 
