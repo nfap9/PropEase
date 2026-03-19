@@ -4,10 +4,10 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 05
 status: unknown
-last_updated: "2026-03-19T09:49:19.079Z"
+last_updated: "2026-03-19T09:53:36.560Z"
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 12
   completed_plans: 12
 ---
@@ -37,6 +37,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Recent Work
 
+- Phase 5 Plan 04 complete: pino structured logging for services (bill, lease, billGeneration, wechatPay) and scheduler (index, notificationChecks, monthlyBills, audit)
 - Phase 5 Plan 03 complete: thin routes + fat controllers for 5 route files (apartments, organizations, bills, subscriptions, admin)
 - Phase 5: Context gathered — API route refactoring (controllers), permission system DRY (api-contract), frontend DRY (web-api-client), logging (pino)
 - Phase 4 Plan 02 complete: integrated shadcn/ui collapsible sidebar with MainLayout, icon-only collapsed state with hover tooltips
@@ -80,6 +81,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 5: web-api-client unified for both tenant-web and admin-web
 - Phase 5 Plan 02: createAdminApiClient 复用 web-api-client 逻辑，admin 使用 admin_access_token，无 refresh token，401 静默跳转登录页
 - Phase 5: Structured logger (pino) for services + scheduler only
+- Phase 5 Plan 04: pino logger singleton created at api/src/utils/logger.ts, all services and scheduler use structured logging (10 files, 1 created + 9 modified)
 
 ## Blockers
 
@@ -101,4 +103,4 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ---
 *Last updated: 2026-03-19*
 
-*Last activity: 2026-03-19 - Completed Phase 5 Plan 03: thin routes + fat controllers refactoring for 5 API route files*
+*Last activity: 2026-03-19 - Completed Phase 5 Plan 04: pino structured logging for services and scheduler*
