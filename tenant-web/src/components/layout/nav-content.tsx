@@ -8,6 +8,11 @@ import { useAuth } from '@/lib/auth/context';
 import { usePermissions } from '@/hooks/use-permissions';
 import { canAccessRule } from '@/lib/permission-access';
 import { NAV_ITEMS } from './nav-config';
+import {
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from '@/components/ui/sidebar';
 
 interface NavContentProps {
   onNavClick?: () => void;
@@ -46,29 +51,33 @@ export function NavContent({ onNavClick }: NavContentProps) {
           <span>{brandConfig.app_name}</span>
         </Link>
       </div>
-      <nav className="flex-1 space-y-1 p-4">
-        {visibleNavItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = item.exact
-            ? pathname === item.href
-            : pathname === item.href || pathname.startsWith(item.href + '/');
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onNavClick}
-              data-testid={`nav-${item.id}`}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-                isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 p-2">
+        <SidebarMenu>
+          {visibleNavItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = item.exact
+              ? pathname === item.href
+              : pathname === item.href || pathname.startsWith(item.href + '/');
+            return (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  isActive={isActive}
+                  tooltip={item.label}
+                  asChild
+                >
+                  <Link
+                    href={item.href}
+                    onClick={onNavClick}
+                    data-testid={`nav-${item.id}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
       </nav>
     </>
   );
