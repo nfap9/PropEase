@@ -1,4 +1,11 @@
+/**
+ * 权限访问控制
+ * 业务权限码 (apartment:view, bill:create 等) 定义在 @apartment-ultra/api-contract
+ * 运营后台权限码 (admin:user:read 等) 定义在 admin-permissions.ts
+ */
 import type { Organization } from '@/types';
+// 业务端 RESOURCES/ACTIONS 常量（用于类型推导，不改变 AccessRule.permission 为 string 的设计）
+import { RESOURCES, ACTIONS } from '@apartment-ultra/api-contract';
 
 export interface AccessRule {
   permission?: string | null;

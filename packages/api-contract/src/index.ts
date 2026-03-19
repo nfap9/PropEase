@@ -182,7 +182,7 @@ export type {
   OccupancyReportParams,
 } from './reports.js';
 
-/** 权限 */
+/** 权限类型 */
 export type {
   Resource,
   Action,
@@ -192,6 +192,15 @@ export type {
   UserPermissionsResponse,
   SystemRole,
   SystemRoleConfig,
+} from './permissions.js';
+
+/** 权限常量 */
+export {
+  RESOURCES,
+  ACTIONS,
+  RESOURCE_NAMES,
+  ACTION_NAMES,
+  toPermissionCodes,
 } from './permissions.js';
 
 /** 运营后台 */

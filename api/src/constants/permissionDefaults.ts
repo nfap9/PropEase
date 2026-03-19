@@ -1,47 +1,24 @@
 /**
- * 与 api-legacy/app/utils/permission_defaults.py 对齐的权限与系统角色配置
+ * 权限常量 — 从 @apartment-ultra/api-contract 导入共享部分
+ * 系统角色和默认权限配置保留在本地（后端特定）
  */
 
-export const RESOURCES = [
-  'apartment',
-  'room',
-  'tenant',
-  'lease',
-  'bill',
-  'utility',
-  'member',
-  'settings',
-  'report',
-] as const;
+import {
+  RESOURCES,
+  ACTIONS,
+  RESOURCE_NAMES,
+  ACTION_NAMES,
+  toPermissionCodes,
+  type Resource,
+  type Action,
+} from '@apartment-ultra/api-contract';
 
-export const ACTIONS = ['view', 'create', 'edit', 'delete', 'export'] as const;
+// Re-export for backwards compatibility — 内部模块从 permissionDefaults 导入
+export { RESOURCES, ACTIONS, toPermissionCodes };
+export type { Resource, Action };
 
-export const RESOURCE_NAMES: Record<(typeof RESOURCES)[number], string> = {
-  apartment: '公寓管理',
-  room: '房间管理',
-  tenant: '租客管理',
-  lease: '租约管理',
-  bill: '账单管理',
-  utility: '水电管理',
-  member: '成员管理',
-  settings: '系统设置',
-  report: '报表分析',
-};
-
-export const ACTION_NAMES: Record<(typeof ACTIONS)[number], string> = {
-  view: '查看',
-  create: '创建',
-  edit: '编辑',
-  delete: '删除',
-  export: '导出',
-};
-
-export function getPermissionName(
-  resource: (typeof RESOURCES)[number],
-  action: (typeof ACTIONS)[number]
-): string {
-  return `${RESOURCE_NAMES[resource] ?? resource}${ACTION_NAMES[action] ?? action}`;
-}
+// UI 标签保留在 per-app（中文本地化）
+export { RESOURCE_NAMES, ACTION_NAMES };
 
 export const SYSTEM_ROLES = [
   'super_admin',
@@ -65,12 +42,11 @@ export const SYSTEM_ROLE_CONFIGS: Array<{ role: SystemRole; name: string; descri
 /** 系统角色对应的 (resource, action) 列表 */
 export const DEFAULT_SYSTEM_ROLE_PERMISSIONS: Record<
   SystemRole,
-  Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }>
+  Array<{ resource: Resource; action: Action }>
 > = {
   super_admin: (() => {
-    const perms: Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }> =
-      [];
-    const actions: Array<(typeof ACTIONS)[number]> = ['view', 'create', 'edit', 'delete', 'export'];
+    const perms: Array<{ resource: Resource; action: Action }> = [];
+    const actions: Action[] = ['view', 'create', 'edit', 'delete', 'export'];
     for (const r of RESOURCES) for (const a of actions) perms.push({ resource: r, action: a });
     return perms;
   })(),
@@ -127,12 +103,11 @@ export type OrgMemberRole = (typeof ORG_MEMBER_ROLES)[number];
 /** 组织角色默认权限（(resource, action) 列表），用于未自定义时的 GET 与 /me 计算 */
 export const DEFAULT_ORG_ROLE_PERMISSIONS: Record<
   OrgMemberRole,
-  Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }>
+  Array<{ resource: Resource; action: Action }>
 > = {
   admin: (() => {
-    const perms: Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }> =
-      [];
-    const actions: Array<(typeof ACTIONS)[number]> = ['view', 'create', 'edit', 'delete', 'export'];
+    const perms: Array<{ resource: Resource; action: Action }> = [];
+    const actions: Action[] = ['view', 'create', 'edit', 'delete', 'export'];
     for (const r of RESOURCES) for (const a of actions) perms.push({ resource: r, action: a });
     return perms;
   })(),
@@ -171,10 +146,3 @@ export const DEFAULT_ORG_ROLE_PERMISSIONS: Record<
     { resource: 'report', action: 'view' },
   ],
 };
-
-/** 将 (resource, action) 列表转为权限码列表 */
-export function toPermissionCodes(
-  perms: Array<{ resource: (typeof RESOURCES)[number]; action: (typeof ACTIONS)[number] }>
-): string[] {
-  return perms.map((p) => `${p.resource}:${p.action}`);
-}

@@ -1,19 +1,46 @@
 import type { MemberRole } from './organizations.js';
 
-/** 资源 */
-export type Resource =
-  | 'apartment'
-  | 'room'
-  | 'tenant'
-  | 'lease'
-  | 'bill'
-  | 'utility'
-  | 'member'
-  | 'settings'
-  | 'report';
+// ===== 权限码常量（共享给所有应用） =====
 
-/** 操作 */
-export type Action = 'view' | 'create' | 'edit' | 'delete' | 'export';
+/** 资源类型 */
+export const RESOURCES = ['apartment', 'room', 'tenant', 'lease', 'bill', 'utility', 'member', 'settings', 'report'] as const;
+export type Resource = typeof RESOURCES[number];
+
+/** 操作类型 */
+export const ACTIONS = ['view', 'create', 'edit', 'delete', 'export'] as const;
+export type Action = typeof ACTIONS[number];
+
+/** 资源中文名 */
+export const RESOURCE_NAMES: Record<Resource, string> = {
+  apartment: '公寓管理',
+  room: '房间管理',
+  tenant: '租客管理',
+  lease: '租约管理',
+  bill: '账单管理',
+  utility: '水电管理',
+  member: '成员管理',
+  settings: '系统设置',
+  report: '报表分析',
+};
+
+/** 操作中文名 */
+export const ACTION_NAMES: Record<Action, string> = {
+  view: '查看',
+  create: '创建',
+  edit: '编辑',
+  delete: '删除',
+  export: '导出',
+};
+
+/**
+ * 将 (resource, action) 列表转为权限码列表
+ * 例如: [{ resource: 'apartment', action: 'view' }] => ['apartment:view']
+ */
+export function toPermissionCodes(
+  perms: Array<{ resource: Resource; action: Action }>
+): string[] {
+  return perms.map((p) => `${p.resource}:${p.action}`);
+}
 
 /** 权限 */
 export interface Permission {
