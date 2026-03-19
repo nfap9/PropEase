@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 3
+current_phase: 2
 status: unknown
 last_updated: "2026-03-19T01:28:41.603Z"
 progress:
-  total_phases: 3
+  total_phases: 2
   completed_phases: 2
   total_plans: 3
   completed_plans: 3
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 让用户能直觉地在设置页面及其子页面之间导航
 
-**Current focus:** Phase 2 — 修复链接指向
+**Current focus:** Phase 2 — 修复链接指向（即将完成）
 
 ## Progress
 
@@ -31,8 +31,6 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 |-------|--------|-------|----------|
 | 1 | ● | 1/1 | 100% |
 | 2 | ◐ | 2/3 | 67% |
-| 3 | ○ | 0/2 | 0% |
-| 4 | ○ | 0/2 | 0% |
 
 ## Recent Work
 
