@@ -1,12 +1,10 @@
 import { View, Text, ScrollView, TouchableOpacity, TextInput, RefreshControl } from 'react-native'
 import { useQuery } from '@tanstack/react-query'
 import { router } from 'expo-router'
-import { tenantsApi } from '@/services/api'
+import { tenantsApi, type TenantWithLease } from '@/services/api'
+import type { Lease } from '@apartment-ultra/api-contract'
 import { Colors } from '@/constants'
 import { useState } from 'react'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TenantData = any
 
 type FilterType = 'all' | 'active' | 'expiring'
 
@@ -14,19 +12,19 @@ export default function CustomersScreen() {
   const [searchText, setSearchText] = useState('')
   const [filter, setFilter] = useState<FilterType>('all')
 
-  const { data: tenants, isLoading, refetch } = useQuery({
+  const { data: tenants, isLoading, refetch } = useQuery<TenantWithLease[]>({
     queryKey: ['tenants', searchText, filter],
-    queryFn: () => tenantsApi.list({ search: searchText || undefined }),
+    queryFn: () => tenantsApi.list({ search: searchText || undefined }) as Promise<TenantWithLease[]>,
   })
 
   // 过滤租客
-  const filteredTenants = tenants?.filter((tenant: TenantData) => {
+  const filteredTenants = tenants?.filter((tenant: TenantWithLease) => {
     if (filter === 'all') return true
     if (filter === 'active') {
-      return tenant.lease?.some((l: { is_active: boolean }) => l.is_active)
+      return tenant.lease?.some((l: Lease) => l.is_active)
     }
     if (filter === 'expiring') {
-      return tenant.lease?.some((l: { end_date?: string; is_active: boolean }) => {
+      return tenant.lease?.some((l: Lease) => {
         if (!l.end_date || !l.is_active) return false
         const daysUntilExpiry = Math.ceil(
           (new Date(l.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
@@ -40,9 +38,9 @@ export default function CustomersScreen() {
   // 统计数据
   const stats = {
     total: tenants?.length || 0,
-    active: tenants?.filter((t: TenantData) => t.lease?.some((l: { is_active: boolean }) => l.is_active)).length || 0,
-    expiring: tenants?.filter((t: TenantData) =>
-      t.lease?.some((l: { end_date?: string; is_active: boolean }) => {
+    active: tenants?.filter((t: TenantWithLease) => t.lease?.some((l: Lease) => l.is_active)).length || 0,
+    expiring: tenants?.filter((t: TenantWithLease) =>
+      t.lease?.some((l: Lease) => {
         if (!l.end_date || !l.is_active) return false
         const daysUntilExpiry = Math.ceil(
           (new Date(l.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
@@ -58,8 +56,8 @@ export default function CustomersScreen() {
     { key: 'expiring', label: '即将到期' },
   ]
 
-  const getTenantStatus = (tenant: TenantData) => {
-    const activeLease = tenant.lease?.find((l: { is_active: boolean }) => l.is_active)
+  const getTenantStatus = (tenant: TenantWithLease) => {
+    const activeLease = tenant.lease?.find((l: Lease) => l.is_active)
     if (!activeLease) return { label: '未租', color: Colors.textMuted, bgColor: '#F3F4F6' }
 
     if (activeLease.end_date) {
@@ -168,7 +166,7 @@ export default function CustomersScreen() {
         }
       >
         {filteredTenants && filteredTenants.length > 0 ? (
-          filteredTenants.map((tenant: TenantData) => {
+          filteredTenants.map((tenant: TenantWithLease) => {
             const statusConfig = getTenantStatus(tenant)
             return (
               <TouchableOpacity
@@ -188,7 +186,7 @@ export default function CustomersScreen() {
                   borderWidth: 1,
                   borderColor: '#F3F4F6',
                 }}
-                onPress={() => router.push(`/customers/${tenant.id}` as any)}
+                onPress={() => router.push(`/customers/${tenant.id}`)}
               >
                 {/* 头像 */}
                 <View style={{
@@ -261,7 +259,7 @@ export default function CustomersScreen() {
           shadowRadius: 8,
           elevation: 4,
         }}
-        onPress={() => router.push('/customers/new' as any)}
+        onPress={() => router.push('/customers/new')}
       >
         <Text style={{ fontSize: 28, color: 'white' }}>+</Text>
       </TouchableOpacity>

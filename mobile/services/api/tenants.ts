@@ -1,7 +1,15 @@
 import api from './client'
 import type { Tenant, TenantCreate, TenantListParams, TenantUpdate } from '@apartment-ultra/api-contract'
+import type { Lease } from '@apartment-ultra/api-contract'
 
-export type { TenantListParams };
+export type { TenantListParams }
+
+/** 租客与租约关联（API 实际返回结构） */
+export interface TenantWithLease extends Tenant {
+  lease?: Lease[]
+  /** 性别（API 实际返回字段） */
+  gender?: 'male' | 'female'
+}
 
 export const tenantsApi = {
   /**
