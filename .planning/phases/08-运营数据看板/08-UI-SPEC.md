@@ -1,8 +1,9 @@
 ---
 phase: 8
 slug: 运营数据看板
-status: draft
-shadcn_initialized: false
+status: approved
+reviewed_at: 2026-03-20
+shadcn_initialized: true
 preset: none
 created: 2026-03-20
 ---
