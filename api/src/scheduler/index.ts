@@ -1,4 +1,5 @@
 import cron from 'node-cron';
+import { logger } from '../utils/logger.js';
 import { runMonthlyBillGeneration } from './monthlyBills.js';
 import { checkExpiringLeases, checkOverdueBills, checkUpcomingDueBills } from './notificationChecks.js';
 
@@ -16,9 +17,9 @@ export function startScheduler(): void {
     async () => {
       try {
         const stats = await runMonthlyBillGeneration();
-        console.log('Monthly bill generation completed:', stats);
+        logger.info({ stats }, 'Monthly bill generation completed');
       } catch (e) {
-        console.error('Monthly bill generation failed:', e);
+        logger.error({ err: e }, 'Monthly bill generation failed');
       }
     },
     { timezone: 'Asia/Shanghai' }
@@ -29,9 +30,9 @@ export function startScheduler(): void {
     async () => {
       try {
         const stats = await checkExpiringLeases();
-        console.log('Expiring leases check completed:', stats);
+        logger.info({ stats }, 'Expiring leases check completed');
       } catch (e) {
-        console.error('Expiring leases check failed:', e);
+        logger.error({ err: e }, 'Expiring leases check failed');
       }
     },
     { timezone: 'Asia/Shanghai' }
@@ -42,9 +43,9 @@ export function startScheduler(): void {
     async () => {
       try {
         const stats = await checkUpcomingDueBills();
-        console.log('Upcoming due bills check completed:', stats);
+        logger.info({ stats }, 'Upcoming due bills check completed');
       } catch (e) {
-        console.error('Upcoming due bills check failed:', e);
+        logger.error({ err: e }, 'Upcoming due bills check failed');
       }
     },
     { timezone: 'Asia/Shanghai' }
@@ -55,13 +56,13 @@ export function startScheduler(): void {
     async () => {
       try {
         const stats = await checkOverdueBills();
-        console.log('Overdue bills check completed:', stats);
+        logger.info({ stats }, 'Overdue bills check completed');
       } catch (e) {
-        console.error('Overdue bills check failed:', e);
+        logger.error({ err: e }, 'Overdue bills check failed');
       }
     },
     { timezone: 'Asia/Shanghai' }
   );
 
-  console.log('Scheduler started (monthly bills, expiring leases, upcoming due bills, overdue bills)');
+  logger.info('Scheduler started (monthly bills, expiring leases, upcoming due bills, overdue bills)');
 }

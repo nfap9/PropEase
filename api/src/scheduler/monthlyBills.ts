@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger.js';
 import { prisma } from '../lib/prisma.js';
 import { generateBillsForOrg } from '../services/billGeneration.js';
 
@@ -28,7 +29,7 @@ export async function runMonthlyBillGeneration(): Promise<{
       bills_created += result.created;
       bills_skipped += result.skipped;
     } catch (e) {
-      console.error('Monthly bill generation error for org', org.id, e);
+      logger.error({ err: e, orgId: org.id }, 'Monthly bill generation error');
       errors += 1;
     }
   }

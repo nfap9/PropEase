@@ -1,4 +1,5 @@
 import { ulid } from 'ulid';
+import { logger } from '../utils/logger.js';
 import { prisma } from '../lib/prisma.js';
 import { defaultTenantReachabilityService } from '../services/tenantReachability.service.js';
 
@@ -99,7 +100,7 @@ export async function checkOverdueBills(): Promise<Record<string, number>> {
     try {
       await defaultTenantReachabilityService.sendBillOverdue(bill.id);
     } catch (error) {
-      console.error('[notificationChecks] failed to send tenant bill_overdue sms:', error);
+      logger.error({ err: error, billId: bill.id }, 'failed to send tenant bill_overdue sms');
     }
 
     for (const m of members) {
@@ -169,7 +170,7 @@ export async function checkUpcomingDueBills(): Promise<Record<string, number>> {
       try {
         await defaultTenantReachabilityService.sendRentDueReminder(bill.id);
       } catch (error) {
-        console.error('[notificationChecks] failed to send tenant rent_due_reminder sms:', error);
+        logger.error({ err: error, billId: bill.id }, 'failed to send tenant rent_due_reminder sms');
       }
 
       for (const m of members) {
