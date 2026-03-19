@@ -1,14 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { Building2, Settings as SettingsIcon, ShoppingBag, MessageSquareMore, Users } from 'lucide-react';
+import { useAuth } from '@/lib/auth/context';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Users,
-  Settings as SettingsIcon,
-  ShoppingBag,
-  MessageSquareMore,
-} from 'lucide-react';
 
 // 注意: 实际使用时从 testids 导入 SETTINGS 常量
 const SETTINGS = {
@@ -16,9 +12,24 @@ const SETTINGS = {
   TEAM_CARD: 'settings-team-card',
   TEAM_LINK: 'settings-team-link',
   SUBSCRIPTION_CARD: 'settings-subscription-card',
+  ORG_SWITCH_CARD: 'settings-org-switch-card',
+  ORG_SWITCH_BUTTON: 'settings-org-switch-button',
 } as const;
 
-const SETTINGS_ITEMS = [
+// Organization switch item - shown when user has an organization
+const getOrganizationSwitchItem = (orgName: string | undefined) => {
+  if (!orgName) return null;
+  return {
+    title: orgName,
+    description: '切换组织',
+    href: '/organizations',
+    icon: Building2,
+    testId: SETTINGS.ORG_SWITCH_BUTTON,
+    cardTestId: SETTINGS.ORG_SWITCH_CARD,
+  };
+};
+
+const BASE_SETTINGS_ITEMS = [
   {
     title: '团队与权限',
     description: '管理团队成员和角色权限',
@@ -46,6 +57,13 @@ const SETTINGS_ITEMS = [
 ];
 
 export default function SettingsPage() {
+  const { organization } = useAuth();
+
+  const allSettingsItems = [
+    getOrganizationSwitchItem(organization?.name),
+    ...BASE_SETTINGS_ITEMS,
+  ].filter(Boolean);
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -58,26 +76,28 @@ export default function SettingsPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {SETTINGS_ITEMS.map((item) => (
-            <Link
-              key={item.title}
-              href={item.href}
-              data-testid={item.testId}
-            >
-              <Card
-                className="cursor-pointer transition-colors hover:border-primary"
-                data-testid={item.cardTestId}
+          {allSettingsItems.map((item) =>
+            item && (
+              <Link
+                key={item.title}
+                href={item.href}
+                data-testid={item.testId}
               >
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <item.icon className="h-5 w-5 text-muted-foreground" />
-                    <CardTitle className="text-lg">{item.title}</CardTitle>
-                  </div>
-                  <CardDescription>{item.description}</CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-          ))}
+                <Card
+                  className="cursor-pointer transition-colors hover:border-primary"
+                  data-testid={item.cardTestId}
+                >
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <item.icon className="h-5 w-5 text-muted-foreground" />
+                      <CardTitle className="text-lg">{item.title}</CardTitle>
+                    </div>
+                    <CardDescription>{item.description}</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
+            )
+          )}
         </div>
       </div>
     </MainLayout>
