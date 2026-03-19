@@ -85,6 +85,14 @@ const apartmentSchema = z.object({
 
 type ApartmentFormData = z.infer<typeof apartmentSchema>;
 
+// Helper to handle NaN from empty number inputs - converts empty/NaN to undefined so .optional() works
+const numberRegister = (name: keyof ApartmentFormData, form: ReturnType<typeof useForm<ApartmentFormData>>) => ({
+  ...form.register(name, {
+    valueAsNumber: true,
+    setValueAs: (v: unknown) => (v === '' || (typeof v === 'number' && isNaN(v)) ? undefined : v),
+  }),
+});
+
 export default function ApartmentsPage() {
   const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
@@ -434,15 +442,15 @@ export default function ApartmentsPage() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="floors">楼层数</Label>
-                  <Input id="floors" type="number" min={1} {...createForm.register('floors', { valueAsNumber: true })} placeholder="如：5" />
+                  <Input id="floors" type="number" min={1} {...numberRegister('floors', createForm)} placeholder="如：5" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="land_area">用地面积（亩）</Label>
-                  <Input id="land_area" type="number" min={0} step={0.01} {...createForm.register('land_area', { valueAsNumber: true })} placeholder="如：2.5" />
+                  <Input id="land_area" type="number" min={0} step={0.01} {...numberRegister('land_area', createForm)} placeholder="如：2.5" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="total_area">总面积（㎡）</Label>
-                  <Input id="total_area" type="number" min={0} step={0.01} {...createForm.register('total_area', { valueAsNumber: true })} placeholder="如：500" />
+                  <Input id="total_area" type="number" min={0} step={0.01} {...numberRegister('total_area', createForm)} placeholder="如：500" />
                 </div>
               </div>
 
@@ -470,11 +478,11 @@ export default function ApartmentsPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="landlord_rent">房东租金（元/月）</Label>
-                      <Input id="landlord_rent" type="number" min={0} step={0.01} {...createForm.register('landlord_rent', { valueAsNumber: true })} placeholder="如：5000" />
+                      <Input id="landlord_rent" type="number" min={0} step={0.01} {...numberRegister('landlord_rent', createForm)} placeholder="如：5000" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="operating_cost">经营成本（元/月）</Label>
-                      <Input id="operating_cost" type="number" min={0} step={0.01} {...createForm.register('operating_cost', { valueAsNumber: true })} placeholder="如：1000" />
+                      <Input id="operating_cost" type="number" min={0} step={0.01} {...numberRegister('operating_cost', createForm)} placeholder="如：1000" />
                     </div>
                   </div>
                 </div>
@@ -529,15 +537,15 @@ export default function ApartmentsPage() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-floors">楼层数</Label>
-                  <Input id="edit-floors" type="number" min={1} {...editForm.register('floors', { valueAsNumber: true })} placeholder="如：5" />
+                  <Input id="edit-floors" type="number" min={1} {...numberRegister('floors', editForm)} placeholder="如：5" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-land_area">用地面积（亩）</Label>
-                  <Input id="edit-land_area" type="number" min={0} step={0.01} {...editForm.register('land_area', { valueAsNumber: true })} placeholder="如：2.5" />
+                  <Input id="edit-land_area" type="number" min={0} step={0.01} {...numberRegister('land_area', editForm)} placeholder="如：2.5" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-total_area">总面积（㎡）</Label>
-                  <Input id="edit-total_area" type="number" min={0} step={0.01} {...editForm.register('total_area', { valueAsNumber: true })} placeholder="如：500" />
+                  <Input id="edit-total_area" type="number" min={0} step={0.01} {...numberRegister('total_area', editForm)} placeholder="如：500" />
                 </div>
               </div>
 
@@ -565,11 +573,11 @@ export default function ApartmentsPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="edit-landlord_rent">房东租金（元/月）</Label>
-                      <Input id="edit-landlord_rent" type="number" min={0} step={0.01} {...editForm.register('landlord_rent', { valueAsNumber: true })} placeholder="如：5000" />
+                      <Input id="edit-landlord_rent" type="number" min={0} step={0.01} {...numberRegister('landlord_rent', editForm)} placeholder="如：5000" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="edit-operating_cost">经营成本（元/月）</Label>
-                      <Input id="edit-operating_cost" type="number" min={0} step={0.01} {...editForm.register('operating_cost', { valueAsNumber: true })} placeholder="如：1000" />
+                      <Input id="edit-operating_cost" type="number" min={0} step={0.01} {...numberRegister('operating_cost', editForm)} placeholder="如：1000" />
                     </div>
                   </div>
                 </div>
