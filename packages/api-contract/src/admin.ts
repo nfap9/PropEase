@@ -18,6 +18,14 @@ export interface AdminPlatformStats {
   apartments_count: number;
   rooms_count: number;
   active_subscriptions_count: number;
+  /** 入住率百分比 (0-100) */
+  occupancy_rate?: number;
+  /** 本月收入（单位：元） */
+  monthly_revenue?: number;
+  /** 待缴账单数 */
+  pending_bills?: number;
+  /** 逾期账单数 */
+  overdue_bills?: number;
 }
 
 /** 运营账号 */
