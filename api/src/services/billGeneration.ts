@@ -1,5 +1,6 @@
 import { ulid } from 'ulid';
 import { prisma } from '../lib/prisma.js';
+import { logger } from '../utils/logger.js';
 import { defaultTenantReachabilityService } from './tenantReachability.service.js';
 
 /**
@@ -178,7 +179,7 @@ export async function generateBillsForOrg(
     try {
       await defaultTenantReachabilityService.sendBillGenerated(billId);
     } catch (error) {
-      console.error('[billGeneration] failed to send tenant bill_generated sms:', error);
+      logger.error({ err: error, billId }, 'failed to send tenant bill_generated sms');
     }
 
     created += 1;

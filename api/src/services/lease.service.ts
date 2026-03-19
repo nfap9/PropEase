@@ -7,6 +7,7 @@ import {
 } from '../repositories/lease.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
+import { logger } from '../utils/logger.js';
 import { prisma } from '../lib/prisma.js';
 
 /**
@@ -181,7 +182,7 @@ export function createLeaseService(
           }
         );
       } catch (e) {
-        console.error('Failed to create tenant_move_in notification:', e);
+        logger.error({ err: e, leaseId: lease.id }, 'Failed to create tenant_move_in notification');
       }
 
       return lease;
@@ -223,7 +224,7 @@ export function createLeaseService(
           }
         );
       } catch (e) {
-        console.error('Failed to create tenant_move_out notification:', e);
+        logger.error({ err: e, leaseId: existing.id }, 'Failed to create tenant_move_out notification');
       }
     },
 

@@ -1,5 +1,6 @@
 import * as crypto from 'crypto';
 import * as fs from 'fs';
+import { logger } from '../utils/logger.js';
 import { config } from '../config.js';
 
 const WECHAT_PAY_BASE = 'https://api.mch.weixin.qq.com';
@@ -110,7 +111,7 @@ export async function createWechatPayNativeOrder(
 
   if (!res.ok) {
     const errText = await res.text();
-    console.error('WeChat Pay Native order failed:', res.status, errText);
+    logger.error({ status: res.status, errText }, 'WeChat Pay Native order failed');
     return null;
   }
 

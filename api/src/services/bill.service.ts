@@ -10,6 +10,7 @@ import {
 } from '../repositories/bill.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
+import { logger } from '../utils/logger.js';
 import { prisma } from '../lib/prisma.js';
 import { defaultTenantReachabilityService } from './tenantReachability.service.js';
 
@@ -141,7 +142,7 @@ export function createBillService(
       try {
         await defaultTenantReachabilityService.sendBillGenerated(bill.id);
       } catch (error) {
-        console.error('[bill.service] failed to send tenant bill_generated sms:', error);
+        logger.error({ err: error, billId: bill.id }, 'failed to send tenant bill_generated sms');
       }
       return bill;
     },
