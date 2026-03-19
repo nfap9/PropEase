@@ -1,52 +1,54 @@
-# 前端路由重构 - 设置页面优化
+# Apartment Ultra
 
 ## What This Is
 
-重构 Apartment Ultra 的前端路由结构，尤其是设置页面(/settings)及其子页面，提供更直觉的用户导航体验。
+公寓管理产品，核心能力包括：房源、公寓、房间、租客、租约管理、账单、水电和报表、平台运营、服务定价、商店配置与订阅能力。
 
 ## Core Value
 
-让用户能直觉地在设置页面及其子页面之间导航，没有任何页面会"丢失"。
+高效的公寓管理体验 — 让房东和租客都能直观地完成日常操作。
 
-## Requirements
+---
 
-### Active
+## Milestone v1.0 MVP (SHIPPED 2026-03-19)
 
-- [ ] 统一设置页面的返回导航（所有子页面都能返回到设置首页）
-- [ ] 创建 settings 统一布局（layout），提供一致的导航栏
-- [ ] 修复链接指向不一致问题（如"组织管理"链接错误）
-- [ ] 确保所有前端应用（tenant-web, admin-web, mobile）的设置导航一致
+**Archive:** See `.planning/milestones/v1.0-ROADMAP.md`
 
-### Out of Scope
+### What Was Built
 
-- [后端 API 变更] — 仅限前端路由重构
-- [新功能开发] — 不添加新功能，仅优化导航
+- Settings 布局统一（面包屑导航）
+- 设置页面链接修复和图标一致性
+- /organizations 页面（创建/选择组织双模式）
+- Next.js route groups (auth/dashboard)、可折叠侧边栏、登录/注册页面
+- 架构优化：api-contract 权限单一数据源、web-api-client 统一客户端、薄路由+厚控制器、pino 结构化日志
 
-## Context
-
-**现有结构问题：**
-- tenant-web/src/app/settings/ 有多个子页面，但无统一 layout
-- /settings/team, /settings/permissions, /settings/notifications 等页面没有返回按钮
-- /settings/subscription 有多层子页面（purchase, pay, result）
-- 移动端 (mobile/) 也有独立的 settings 页面结构
-
-## Constraints
-
-- **[技术限制]**: Next.js App Router 的 layout 机制
-- **[兼容性]**: 保持现有 URL 结构，避免破坏已有书签/链接
-
-## Key Decisions
+### Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| 使用 Next.js Layout | 提供统一的导航结构 | — Pending |
-| 保持 URL 兼容性 | 避免破坏已有链接 | — Pending |
+| Next.js route groups | 分离公开/受保护路由 | ✓ Implemented |
+| shadcn/ui Sidebar | 可折叠侧边栏 | ✓ Implemented |
+| Thin routes + fat controllers | 路由文件精简 | ✓ Implemented |
+| pino structured logging | 可观测性 | ✓ Implemented |
+| api-contract SSOT | 权限代码 DRY | ✓ Implemented |
 
-## Current State
+### Tech Debt (Known)
 
-**Phase 1-3 complete:** Settings layout unified, links fixed, organization view added.
+- `api/src/routes/v1/admin.controller.ts` orphaned duplicate file (Phase 05)
+- `console.log/error` still in 5 files outside Plan 05-04 scope
+- Mobile 原型 (mobile/) 尚未接入根级质量门
 
-**Phase 5 complete (2026-03-19):** 架构优化 — api-contract 单一权限数据源、前端 API 客户端统一、薄路由+厚控制器重构、pino 结构化日志。
+### Process Gaps (Noted)
+
+- Phases 1-4 lack formal VERIFICATION.md (only Phase 5 has one)
+- REQUIREMENTS.md traceability table was not maintained
+- Integration checker was not run during execution
 
 ---
-*Last updated: 2026-03-19 after Phase 5 completion*
+
+## Next Milestone
+
+Next milestone not yet planned. Use `/gsd:new-milestone` to start.
+
+---
+*Last updated: 2026-03-19 after v1.0 milestone completion*
