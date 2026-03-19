@@ -11,7 +11,7 @@
 |-------|-----------|-------|--------|-----------|
 | 1-5 | v1.0 MVP | 12/12 | Complete | 2026-03-19 |
 | 6 | v1.0 MVP | 1/1 | Complete | 2026-03-19 |
-| 7 | Next | 3/3 | Planned | - |
+| 7 | Next | 1/3 | In Progress | - |
 
 <details>
 <summary>✅ v1.0 MVP (Phases 1-6) — SHIPPED 2026-03-19</summary>
@@ -33,7 +33,7 @@
 **Plans:** 3 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Token竞态修复 + 类型安全修复
+- [x] 07-01-PLAN.md — Token竞态修复 + 类型安全修复 (1/3 plans)
 - [ ] 07-02-PLAN.md — Tamagui共享基础组件 + utilities.tsx拆分
 - [ ] 07-03-PLAN.md — Tab导航重构 + bills.tsx拆分 + profile.tsx改版
 

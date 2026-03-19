@@ -1,21 +1,21 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: v1.0 MVP
-current_phase: null
-status: milestone_complete
-last_updated: "2026-03-19T20:00:00Z"
+milestone_name: milestone
+current_phase: 07
+status: unknown
+last_updated: "2026-03-20T00:39:09Z"
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 13
-  completed_plans: 13
+  total_phases: 1
+  completed_phases: 0
+  total_plans: 3
+  completed_plans: 1
 ---
 
 # State: Apartment Ultra
 
 **Milestone:** v1.0 MVP — SHIPPED 2026-03-19
-**Current Phase:** None (milestone complete)
+**Current Phase:** 07
 
 ## Project Reference
 
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 高效的公寓管理体验
 
-**Current focus:** v1.0 MVP shipped — use `/gsd:new-milestone` to plan next milestone
+**Current focus:** Phase 07 — 完善移动端
 
 ## Progress
 
@@ -35,9 +35,11 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 4 | ● | 3/3 | 100% |
 | 5 | ● | 4/4 | 100% |
 | 6 | ● | 1/1 | 100% |
+| 7 | ● | 1/3 | 33% |
 
 ## Recent Work
 
+- Phase 7 Plan 01: Token refresh singleton lock + type safety fixes for mobile
 - Phase 6: Dashboard E2E test suite (8 Playwright tests)
 - Phase 5 Plan 04: pino structured logging for services and scheduler
 - Phase 5 Plan 03: thin routes + fat controllers for 5 route files
@@ -69,6 +71,9 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 05: admin.controller.ts in admin/ subdirectory for consistent import depth
 - Phase 05: web-api-client unified for both tenant-web and admin-web modes
 - Phase 05: pino logger singleton at api/src/utils/logger.ts
+- Phase 07 Plan 01: Singleton lock (refreshLock) for token refresh prevents concurrent 401 requests from each triggering a separate refresh
+- Phase 07 Plan 01: TenantWithLease with lease[] and gender fields for customers page type safety
+- Phase 07 Plan 01: Stub route files + manual expo-router type declarations for /customers/new and /customers/[id]
 
 ## Blockers
 
@@ -90,6 +95,6 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 3 added: 重新编排tenant-web前端路由：添加组织视图用于创建/选择组织
 
 ---
-*Last updated: 2026-03-19 after v1.0 milestone completion*
+*Last updated: 2026-03-20*
 
-*Last activity: 2026-03-19 - Milestone v1.0 shipped with 6 phases, 13 plans*
+*Last activity: 2026-03-20 - Phase 07 Plan 01 complete: Token refresh singleton lock + type safety fixes*
