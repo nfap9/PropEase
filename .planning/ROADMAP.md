@@ -85,4 +85,14 @@ Plans:
 4. [x] Sidebar collapses to icon-only with tooltip on hover
 5. [ ] Login/register pages display elegant minimal visual style
 
+### Phase 5: 优化架构
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 4
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 5 to break down)
+
 ---
