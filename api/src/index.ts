@@ -2,6 +2,8 @@
 import { initObservability } from './observability/index.js';
 initObservability();
 
+import { logger } from './utils/logger.js';
+
 import express, { type Express } from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
@@ -44,7 +46,7 @@ async function start(): Promise<void> {
   // 1. 等待数据库连接
   const dbCheck = await waitForDatabase();
   if (!dbCheck.connected) {
-    console.error('[启动失败] 无法连接数据库，退出...');
+    logger.error({ err: 'database_connection_failed' }, '无法连接数据库，退出...');
     process.exit(1);
   }
 
@@ -52,7 +54,7 @@ async function start(): Promise<void> {
   if (config.isDev) {
     const schemaValid = await verifyDatabaseSchema();
     if (!schemaValid) {
-      console.error('[启动失败] 数据库 schema 不完整，请运行 prisma db push');
+      logger.error({ err: 'database_schema_invalid' }, '数据库 schema 不完整，请运行 prisma db push');
       process.exit(1);
     }
   }
@@ -61,7 +63,7 @@ async function start(): Promise<void> {
   startScheduler();
 
   app.listen(port, '0.0.0.0', () => {
-    console.log(`${config.appName} listening on port ${port}`);
+    logger.info({ port, service: config.appName }, '服务启动');
   });
 }
 
