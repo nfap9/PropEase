@@ -69,6 +69,18 @@ const apartmentSchema = z.object({
   name: z.string().min(1, '请输入公寓名称'),
   address: z.string().min(1, '请输入公寓地址'),
   description: z.string().optional(),
+  // 基本信息
+  floors: z.number().int().min(1).optional(),
+  land_area: z.number().min(0).optional(),
+  total_area: z.number().min(0).optional(),
+  // 上游信息
+  landlord_name: z.string().optional(),
+  landlord_contact: z.string().optional(),
+  contract_start: z.string().optional(),
+  contract_end: z.string().optional(),
+  landlord_rent: z.number().min(0).optional(),
+  // 经营成本
+  operating_cost: z.number().min(0).optional(),
 });
 
 type ApartmentFormData = z.infer<typeof apartmentSchema>;
@@ -92,7 +104,20 @@ export default function ApartmentsPage() {
 
   const createForm = useForm<ApartmentFormData>({
     resolver: zodResolver(apartmentSchema),
-    defaultValues: { name: '', address: '', description: '' },
+    defaultValues: {
+      name: '',
+      address: '',
+      description: '',
+      floors: undefined,
+      land_area: undefined,
+      total_area: undefined,
+      landlord_name: '',
+      landlord_contact: '',
+      contract_start: '',
+      contract_end: '',
+      landlord_rent: undefined,
+      operating_cost: undefined,
+    },
   });
 
   const editForm = useForm<ApartmentFormData>({
@@ -139,6 +164,19 @@ export default function ApartmentsPage() {
       name: apartment.name,
       address: apartment.address ?? '',
       description: apartment.description ?? '',
+      floors: apartment.floors ?? undefined,
+      land_area: apartment.land_area ?? undefined,
+      total_area: apartment.total_area ?? undefined,
+      landlord_name: apartment.landlord_name ?? '',
+      landlord_contact: apartment.landlord_contact ?? '',
+      contract_start: apartment.contract_start
+        ? new Date(apartment.contract_start).toISOString().split('T')[0]
+        : '',
+      contract_end: apartment.contract_end
+        ? new Date(apartment.contract_end).toISOString().split('T')[0]
+        : '',
+      landlord_rent: apartment.landlord_rent ?? undefined,
+      operating_cost: apartment.operating_cost ?? undefined,
     });
     setIsEditOpen(true);
   };
@@ -393,6 +431,54 @@ export default function ApartmentsPage() {
                 <Label htmlFor="description">描述</Label>
                 <Input id="description" {...createForm.register('description')} />
               </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="floors">楼层数</Label>
+                  <Input id="floors" type="number" min={1} {...createForm.register('floors', { valueAsNumber: true })} placeholder="如：5" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="land_area">用地面积（亩）</Label>
+                  <Input id="land_area" type="number" min={0} step={0.01} {...createForm.register('land_area', { valueAsNumber: true })} placeholder="如：2.5" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="total_area">总面积（㎡）</Label>
+                  <Input id="total_area" type="number" min={0} step={0.01} {...createForm.register('total_area', { valueAsNumber: true })} placeholder="如：500" />
+                </div>
+              </div>
+
+              <details className="group border rounded-md p-3">
+                <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
+                  上游信息（点击展开）
+                </summary>
+                <div className="mt-3 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="landlord_name">房东姓名</Label>
+                      <Input id="landlord_name" {...createForm.register('landlord_name')} placeholder="如：张三" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="landlord_contact">联系方式</Label>
+                      <Input id="landlord_contact" {...createForm.register('landlord_contact')} placeholder="如：138xxxx" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contract_start">合同开始</Label>
+                      <Input id="contract_start" type="date" {...createForm.register('contract_start')} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contract_end">合同结束</Label>
+                      <Input id="contract_end" type="date" {...createForm.register('contract_end')} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="landlord_rent">房东租金（元/月）</Label>
+                      <Input id="landlord_rent" type="number" min={0} step={0.01} {...createForm.register('landlord_rent', { valueAsNumber: true })} placeholder="如：5000" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="operating_cost">经营成本（元/月）</Label>
+                      <Input id="operating_cost" type="number" min={0} step={0.01} {...createForm.register('operating_cost', { valueAsNumber: true })} placeholder="如：1000" />
+                    </div>
+                  </div>
+                </div>
+              </details>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)} data-testid="apartments-cancel-btn">
                   取消
@@ -440,6 +526,54 @@ export default function ApartmentsPage() {
                 <Label htmlFor="edit-description">描述</Label>
                 <Input id="edit-description" {...editForm.register('description')} />
               </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-floors">楼层数</Label>
+                  <Input id="edit-floors" type="number" min={1} {...editForm.register('floors', { valueAsNumber: true })} placeholder="如：5" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-land_area">用地面积（亩）</Label>
+                  <Input id="edit-land_area" type="number" min={0} step={0.01} {...editForm.register('land_area', { valueAsNumber: true })} placeholder="如：2.5" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-total_area">总面积（㎡）</Label>
+                  <Input id="edit-total_area" type="number" min={0} step={0.01} {...editForm.register('total_area', { valueAsNumber: true })} placeholder="如：500" />
+                </div>
+              </div>
+
+              <details className="group border rounded-md p-3">
+                <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
+                  上游信息（点击展开）
+                </summary>
+                <div className="mt-3 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-landlord_name">房东姓名</Label>
+                      <Input id="edit-landlord_name" {...editForm.register('landlord_name')} placeholder="如：张三" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-landlord_contact">联系方式</Label>
+                      <Input id="edit-landlord_contact" {...editForm.register('landlord_contact')} placeholder="如：138xxxx" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-contract_start">合同开始</Label>
+                      <Input id="edit-contract_start" type="date" {...editForm.register('contract_start')} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-contract_end">合同结束</Label>
+                      <Input id="edit-contract_end" type="date" {...editForm.register('contract_end')} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-landlord_rent">房东租金（元/月）</Label>
+                      <Input id="edit-landlord_rent" type="number" min={0} step={0.01} {...editForm.register('landlord_rent', { valueAsNumber: true })} placeholder="如：5000" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-operating_cost">经营成本（元/月）</Label>
+                      <Input id="edit-operating_cost" type="number" min={0} step={0.01} {...editForm.register('operating_cost', { valueAsNumber: true })} placeholder="如：1000" />
+                    </div>
+                  </div>
+                </div>
+              </details>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} data-testid="apartments-cancel-btn">
                   取消
