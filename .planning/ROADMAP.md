@@ -70,19 +70,19 @@ Plans:
 - PH4-AUTH-02: Register page elegant minimal visual refresh
 
 **Depends on:** Phase 3
-**Status:** Planned
+**Status:** In Progress
 **Plans:** 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Route Group Architecture + Bug Fix
+- [x] 04-01-PLAN.md — Route Group Architecture + Bug Fix
 - [ ] 04-02-PLAN.md — Collapsible Sidebar Integration
 - [ ] 04-03-PLAN.md — Login/Register Visual Refresh
 
 **Success Criteria:**
-1. Mobile Sheet navigation opens with Menu icon tap (not Bell)
-2. Auth route group (/login, /register) accessible without authentication
-3. Dashboard route group protected by AuthGuard
-4. Sidebar collapses to icon-only with tooltip on hover
-5. Login/register pages display elegant minimal visual style
+1. [x] Mobile Sheet navigation opens with Menu icon tap (not Bell) — PH4-BUG-01 complete
+2. [x] Auth route group (/login, /register) accessible without authentication — PH4-ROUTE-01 complete
+3. [x] Dashboard route group protected by AuthGuard — PH4-ROUTE-02 complete
+4. [ ] Sidebar collapses to icon-only with tooltip on hover
+5. [ ] Login/register pages display elegant minimal visual style
 
 ---

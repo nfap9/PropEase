@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 03
+current_phase: 04
 status: unknown
-last_updated: "2026-03-19T05:43:50.983Z"
+last_updated: "2026-03-19T06:14:40Z"
 progress:
-  total_phases: 3
+  total_phases: 4
   completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 8
+  completed_plans: 6
 ---
 
 # State: 前端路由重构
 
 **Milestone:** v1.0
-**Current Phase:** 03
+**Current Phase:** 04
 
 ## Project Reference
 
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 让用户能直觉地在设置页面及其子页面之间导航
 
-**Current focus:** Phase 03 — tenant-web
+**Current focus:** Phase 04 — tenant-web-header-sider-main
 
 ## Progress
 
@@ -32,9 +32,11 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 1 | ● | 1/1 | 100% |
 | 2 | ● | 2/2 | 100% |
 | 3 | ● | 2/2 | 100% |
+| 4 | ○ | 1/3 | 33% |
 
 ## Recent Work
 
+- Phase 4 Plan 01 complete: established (auth) and (dashboard) route groups, fixed Bell->Menu mobile nav bug
 - Phase 3 Plan 02 complete: added org switch card to Settings page, /organizations/new redirects to /organizations
 - Phase 3 Plan 01 complete: created dual-mode /organizations page with create/select handling
 - Phase 2 Plan 02 complete: changed subscription page heading icon from CreditCard to ShoppingBag
@@ -43,6 +45,9 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Decisions
 
+- Phase 4: (auth) route group for public login/register pages (no AuthGuard)
+- Phase 4: (dashboard) route group with AuthGuard + MainLayout wrapper for all protected pages
+- Phase 4: Mobile Sheet navigation uses Menu icon, Bell icon reserved for notifications
 - Phase 3: Settings page shows org switch card at top of grid with current org name and Building2 icon
 - Phase 3: /organizations/new redirects to /organizations to unify org creation/selection flow
 - Phase 3: Created dual-mode /organizations page - creation form for 0 orgs, selection list for 1+ orgs
