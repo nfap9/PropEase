@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 3 | ● | 2/2 | 100% |
 | 4 | ● | 3/3 | 100% |
 | 5 | ● | 4/4 | 100% |
-| 6 | ○ | 0/0 | 0% |
+| 6 | ● | 1/1 | 100% |
 
 ## Recent Work
 
@@ -83,6 +83,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 5 Plan 02: createAdminApiClient 复用 web-api-client 逻辑，admin 使用 admin_access_token，无 refresh token，401 静默跳转登录页
 - Phase 5: Structured logger (pino) for services + scheduler only
 - Phase 5 Plan 04: pino logger singleton created at api/src/utils/logger.ts, all services and scheduler use structured logging (10 files, 1 created + 9 modified)
+- [Phase 06]: Phase 6 Plan 01: Dashboard E2E 测试套件，8 个测试用例（页面加载、指标卡片、待办提醒、空状态），使用 data-testid 定位和 TestDataGenerator 隔离数据
 
 ## Blockers
 
@@ -105,4 +106,4 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ---
 *Last updated: 2026-03-19*
 
-*Last activity: 2026-03-19 - Completed Phase 5 Plan 04: pino structured logging for services and scheduler*
+*Last activity: 2026-03-19 - Completed Phase 6 Plan 01: dashboard E2E test suite (8 tests)*
