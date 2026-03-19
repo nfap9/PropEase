@@ -18,6 +18,18 @@ export interface CreateApartmentInput {
   name: string;
   address?: string;
   description?: string;
+  // 基本信息
+  floors?: number;
+  land_area?: number;
+  total_area?: number;
+  // 上游信息
+  landlord_name?: string;
+  landlord_contact?: string;
+  contract_start?: string;
+  contract_end?: string;
+  landlord_rent?: number;
+  // 经营成本
+  operating_cost?: number;
 }
 
 /**
@@ -27,6 +39,18 @@ export interface UpdateApartmentInput {
   name?: string;
   address?: string;
   description?: string;
+  // 基本信息
+  floors?: number;
+  land_area?: number;
+  total_area?: number;
+  // 上游信息
+  landlord_name?: string;
+  landlord_contact?: string;
+  contract_start?: string;
+  contract_end?: string;
+  landlord_rent?: number;
+  // 经营成本
+  operating_cost?: number;
 }
 
 /**
@@ -51,6 +75,15 @@ function buildCreateData(orgId: string, data: CreateApartmentInput): Prisma.Apar
     name: data.name,
     address: data.address,
     description: data.description,
+    floors: data.floors,
+    land_area: data.land_area,
+    total_area: data.total_area,
+    landlord_name: data.landlord_name,
+    landlord_contact: data.landlord_contact,
+    contract_start: data.contract_start ? new Date(data.contract_start) : undefined,
+    contract_end: data.contract_end ? new Date(data.contract_end) : undefined,
+    landlord_rent: data.landlord_rent,
+    operating_cost: data.operating_cost,
   };
 }
 
@@ -65,6 +98,25 @@ function buildUpdateData(
     name: data.name ?? existing.name,
     address: data.address ?? existing.address,
     description: data.description ?? existing.description,
+    floors: data.floors ?? existing.floors,
+    land_area: data.land_area ?? existing.land_area,
+    total_area: data.total_area ?? existing.total_area,
+    landlord_name: data.landlord_name ?? existing.landlord_name,
+    landlord_contact: data.landlord_contact ?? existing.landlord_contact,
+    contract_start:
+      data.contract_start !== undefined
+        ? data.contract_start
+          ? new Date(data.contract_start)
+          : null
+        : existing.contract_start,
+    contract_end:
+      data.contract_end !== undefined
+        ? data.contract_end
+          ? new Date(data.contract_end)
+          : null
+        : existing.contract_end,
+    landlord_rent: data.landlord_rent ?? existing.landlord_rent,
+    operating_cost: data.operating_cost ?? existing.operating_cost,
   };
 }
 
