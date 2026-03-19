@@ -2,8 +2,8 @@
  * 运营后台 API 客户端。
  * 使用独立的 admin_access_token，与业务端 access_token 分离。
  */
-import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { ApiError } from './client';
+import { createAdminApiClient, ApiError } from '@apartment-ultra/web-api-client';
+import type { AxiosResponse } from 'axios';
 import type {
   AdminTokenResponse,
   AdminPlatformStats,
@@ -93,12 +93,6 @@ export type {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
-interface WrappedResponse<T> {
-  code: number;
-  data: T;
-  message: string;
-}
-
 function toAdminPlan(product: ServiceProduct): AdminPlan {
   const pricing = product.pricing ?? [];
   const monthlyPricing = pricing.find((item) => item.months === 1) ?? null;
@@ -146,65 +140,11 @@ function mapAxiosData<TIn, TOut>(
   };
 }
 
-export const adminApi = axios.create({
+export const adminApi = createAdminApiClient({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache, no-store, must-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0',
-  },
+  adminTokenKey: 'admin_access_token',
+  loginPath: '/login',
 });
-
-adminApi.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('admin_access_token');
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-adminApi.interceptors.response.use(
-  (response: AxiosResponse<WrappedResponse<unknown>>) => {
-    const body = response.data;
-    if (body && typeof body === 'object' && body.code === 0 && 'data' in body) {
-      response.data = body.data as AxiosResponse['data'];
-    }
-    return response;
-  },
-  (error: AxiosError<Record<string, unknown>>) => {
-    // 处理 401 认证失败，清除 token 并跳转到登录页
-    if (error.response?.status === 401) {
-      localStorage.removeItem('admin_access_token');
-      if (typeof window !== 'undefined') {
-        // 避免重复跳转（如果已经在登录页）
-        if (!window.location.pathname.startsWith('/login')) {
-          window.location.href = '/login';
-        }
-      }
-      // 返回一个永远 pending 的 Promise，防止 React Query 显示错误状态
-      return new Promise(() => {});
-    }
-    // 优先使用接口响应的 message，保持与业务端一致
-    if (error.response?.data && typeof error.response.data === 'object') {
-      const responseData = error.response.data;
-      const msg = typeof responseData.message === 'string' ? responseData.message : null;
-      if (msg) {
-        const code =
-          typeof responseData.code === 'number'
-            ? responseData.code
-            : (error.response.status ?? 500);
-        return Promise.reject(new ApiError(code, msg, responseData.data ?? responseData));
-      }
-    }
-    return Promise.reject(error);
-  }
-);
 
 export const adminApiEndpoints = {
   // 系统初始化
