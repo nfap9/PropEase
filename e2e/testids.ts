@@ -509,14 +509,18 @@ export const COMMON = {
 export const ADMIN = {
   /** 页面标题 */
   OVERVIEW_HEADING: 'admin-overview-heading',
-  /** 组织数统计 */
-  ORG_COUNT: 'admin-org-count',
-  /** 用户数统计 */
-  USER_COUNT: 'admin-user-count',
-  /** 公寓数统计 */
-  APARTMENT_COUNT: 'admin-apartment-count',
-  /** 房间数统计 */
-  ROOM_COUNT: 'admin-room-count',
+  /** 公寓数统计卡片 */
+  APARTMENT_COUNT: 'stat-card-公寓数',
+  /** 房间数统计卡片 */
+  ROOM_COUNT: 'stat-card-房间数',
+  /** 入住率统计卡片 */
+  OCCUPANCY_RATE: 'stat-card-入住率',
+  /** 本月收入统计卡片 */
+  MONTHLY_REVENUE: 'stat-card-本月收入',
+  /** 待缴账单统计卡片 */
+  PENDING_BILLS: 'stat-card-待缴账单',
+  /** 逾期账单统计卡片 */
+  OVERDUE_BILLS: 'stat-card-逾期账单',
   /** 活跃订阅数统计 */
   ACTIVE_SUBSCRIPTION_COUNT: 'admin-active-subscription-count',
   /** 退出登录按钮 */
@@ -625,8 +629,14 @@ export const ADMIN_BRAND = {
 export const ADMIN_PRICING = {
   /** 页面标题 */
   HEADING: 'admin-pricing-heading',
-  /** 价格输入框 */
-  PRICE_INPUT: 'admin-pricing-price-input',
+  /** 组织单价输入框 */
+  PRICE_PER_ORG_INPUT: 'admin-pricing-price-per-org',
+  /** 公寓单价输入框 */
+  PRICE_PER_APARTMENT_INPUT: 'admin-pricing-price-per-apartment',
+  /** 房间单价输入框 */
+  PRICE_PER_ROOM_INPUT: 'admin-pricing-price-per-room',
+  /** 成员单价输入框 */
+  PRICE_PER_MEMBER_INPUT: 'admin-pricing-price-per-member',
   /** 保存按钮 */
   SAVE_BUTTON: 'admin-pricing-save-btn',
 } as const;
