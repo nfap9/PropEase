@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_phase: 05
-status: unknown
-last_updated: "2026-03-19T09:42:17.787Z"
+status: in_progress
+last_updated: "2026-03-19T09:48:11.406Z"
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 12
 ---
 
 # State: 前端路由重构
@@ -33,10 +33,11 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 2 | ● | 2/2 | 100% |
 | 3 | ● | 2/2 | 100% |
 | 4 | ● | 3/3 | 100% |
-| 5 | ○ | 2/4 | 50% |
+| 5 | ○ | 3/4 | 75% |
 
 ## Recent Work
 
+- Phase 5 Plan 03 complete: thin routes + fat controllers for apartments, organizations, bills, subscriptions, admin routes
 - Phase 5: Context gathered — API route refactoring (controllers), permission system DRY (api-contract), frontend DRY (web-api-client), logging (pino)
 - Phase 4 Plan 02 complete: integrated shadcn/ui collapsible sidebar with MainLayout, icon-only collapsed state with hover tooltips
 - Phase 4 Plan 01 complete: established (auth) and (dashboard) route groups, fixed Bell->Menu mobile nav bug
@@ -64,6 +65,10 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - [Phase 04]: Phase 4: SidebarProvider wraps MainLayout for collapsible sidebar state
 - [Phase 04]: Phase 4: Sidebar uses collapsible=icon mode for hover tooltip collapsed state
 - [Phase 04]: Phase 4: SidebarTrigger replaces custom Sheet for mobile navigation
+- [Phase 05]: Thin routes: 路由文件只保留 router 挂载（5-72行），controller 文件包含所有 handler + schemas
+- [Phase 05]: admin.controller.ts 放在 admin/ 子目录以保持一致的相对导入深度
+- [Phase 05]: Thin routes: 路由文件只保留 router 挂载（5-72行），controller 文件包含所有 handler + schemas
+- [Phase 05]: admin.controller.ts 放在 admin/ 子目录以保持一致的相对导入深度
 
 ## Phase 5 Decisions
 
