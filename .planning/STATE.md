@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 07
+current_phase: 8
 status: unknown
-last_updated: "2026-03-19T16:53:19.950Z"
+last_updated: "2026-03-19T17:17:56.656Z"
 progress:
-  total_phases: 1
+  total_phases: 3
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 1
+  completed_plans: 1
 ---
 
 # State: Apartment Ultra
 
 **Milestone:** v1.0 MVP — SHIPPED 2026-03-19
-**Current Phase:** 07
+**Current Phase:** 8
 
 ## Project Reference
 
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 高效的公寓管理体验
 
-**Current focus:** Phase 07 — 完善移动端
+**Current focus:** Phase 8 — 运营数据看板
 
 ## Progress
 
@@ -35,10 +35,12 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 4 | ● | 3/3 | 100% |
 | 5 | ● | 4/4 | 100% |
 | 6 | ● | 1/1 | 100% |
-| 7 | ● | 2/3 | 67% |
+| 7 | ● | 3/3 | 100% |
+| 8 | ● | 1/1 | 100% |
 
 ## Recent Work
 
+- Phase 8 Plan 01: Admin dashboard complete - 6 stat cards, income ComposedChart, occupancy AreaChart with 80% warning, year filter, refresh button
 - Phase 7 Plan 03: Tab navigation 5→4 tabs, bills.tsx split into sub-components, profile settings integration
 - Phase 7 Plan 02: Tamagui base components (Card/Button/ListItem/Header) + utilities.tsx split
 - Phase 7 Plan 01: Token refresh singleton lock + type safety fixes for mobile
@@ -80,6 +82,9 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 07 Plan 03: 4-tab navigation (首页/房源/账单/我的), customers removed from tab bar, customer entry embedded in bills page header
 - Phase 07 Plan 03: bills.tsx split into BillCard/FilterTabs/BillSearchBar sub-components (379→178 lines)
 - Phase 07 Plan 03: profile page adds common settings section (费用配置/消息通知/经营报表) ordered by usage frequency
+- Phase 08 Plan 01: AdminPlatformStats extended with optional occupancy_rate, monthly_revenue, pending_bills, overdue_bills fields
+- Phase 08 Plan 01: StatCard formats value with isPercentage/isCurrency flags (¥X.XX for currency, X.X% for percentage)
+- Phase 08 Plan 01: Charts use CSS var(--chart-N) colors matching Tailwind config; mock data generators for income/occupancy
 
 ## Blockers
 
@@ -103,4 +108,4 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ---
 *Last updated: 2026-03-20*
 
-*Last activity: 2026-03-20 - Phase 07 Plan 03 complete: Tab navigation refactor (4 tabs) + bills.tsx split*
+*Last activity: 2026-03-20 - Phase 08 Plan 01 complete: Admin dashboard (平台概览) - 6 stat cards + income/occupancy charts*
