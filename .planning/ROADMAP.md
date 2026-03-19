@@ -10,7 +10,7 @@
 | Phase | Milestone | Plans | Status | Completed |
 |-------|-----------|-------|--------|-----------|
 | 1-7 | v1.0 MVP | 16/16 | Complete | 2026-03-20 |
-| 8 | 1/1 | Complete   | 2026-03-20 | - |
+| 8 | 1/1 | Complete    | 2026-03-19 | - |
 
 ### Phase 8: 运营数据看板
 
