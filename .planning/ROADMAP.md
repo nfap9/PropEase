@@ -2,40 +2,45 @@
 
 ## Milestones
 
-- ✅ **v1.0 MVP** — Phases 1-6 (shipped 2026-03-19)
-- 🚧 **Next** — Phase 7: 完善移动端
+- ✅ **v1.0 MVP** — Phases 1-7 (shipped 2026-03-20)
+- 🚧 **v1.1** — 运营后台
 
 ## Progress
 
 | Phase | Milestone | Plans | Status | Completed |
 |-------|-----------|-------|--------|-----------|
-| 1-5 | v1.0 MVP | 12/12 | Complete | 2026-03-19 |
-| 6 | v1.0 MVP | 1/1 | Complete | 2026-03-19 |
-| 7 | Next | 2/3 | In Progress | - |
+| 1-7 | v1.0 MVP | 16/16 | Complete | 2026-03-20 |
+| 8 | v1.1 | TBD | Planned | - |
 
-<details>
-<summary>✅ v1.0 MVP (Phases 1-6) — SHIPPED 2026-03-19</summary>
+### Phase 8: 运营数据看板
 
-- [x] Phase 01: 统一设置页面布局 (1/1 plans)
-- [x] Phase 02: 修复链接指向 (2/2 plans)
-- [x] Phase 03: tenant-web组织视图 (2/2 plans)
-- [x] Phase 04: tenant-web前端重构 (3/3 plans)
-- [x] Phase 05: 优化架构 (4/4 plans)
-- [x] Phase 06: tenant-web E2E 测试 (1/1 plans)
-
-</details>
-
-### Phase 7: 完善移动端
-
-**Goal:** 提高移动端应用质量：修复Token竞态、类型安全、建立Tamagui组件库、代码拆分、Tab导航重构
-**Requirements**: MOBILE-01 (Token竞态修复), MOBILE-02 (类型安全), MOBILE-03 (Tamagui组件), MOBILE-04 (代码拆分), MOBILE-05 (Tab导航重构), MOBILE-06 (设置入口)
-**Depends on:** Phase 6
-**Plans:** 3 plans (2/3 complete)
+**Goal:** 实现运营后台仪表盘，展示全局统计数据、收入趋势、入住率分析
+**Requirements**: DASH-01, DASH-02, DASH-03, DASH-04
+**Depends on:** Phase 7
+**Plans:** 0 plans
 
 Plans:
-- [x] 07-01-PLAN.md — Token竞态修复 + 类型安全修复
-- [x] 07-02-PLAN.md — Tamagui共享基础组件 + utilities.tsx拆分
-- [x] 07-03-PLAN.md — Tab导航重构 + bills.tsx拆分 + profile.tsx改版
+- [ ] TBD (run /gsd:plan-phase 8 to break down)
+
+### Phase 9: 组织和成员管理
+
+**Goal:** 实现平台级组织和成员管理功能
+**Requirements**: ORGM-01, ORGM-02, ORGM-03
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 9 to break down)
+
+### Phase 10: 系统配置
+
+**Goal:** 实现费用模板、通知配置、默认角色配置
+**Requirements**: SYSC-01, SYSC-02, ROLE-01
+**Depends on:** Phase 9
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 10 to break down)
 
 ---
 
