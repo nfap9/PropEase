@@ -20,11 +20,35 @@ const ApartmentCreateSchema = z.object({
   name: z.string().min(1),
   address: z.string().optional(),
   description: z.string().optional(),
+  // 基本信息
+  floors: z.number().int().min(1).optional(),
+  land_area: z.number().min(0).optional(),
+  total_area: z.number().min(0).optional(),
+  // 上游信息
+  landlord_name: z.string().max(100).optional(),
+  landlord_contact: z.string().max(50).optional(),
+  contract_start: z.string().optional(),
+  contract_end: z.string().optional(),
+  landlord_rent: z.number().min(0).optional(),
+  // 经营成本
+  operating_cost: z.number().min(0).optional(),
 });
 const ApartmentUpdateSchema = z.object({
   name: z.string().min(1).optional(),
   address: z.string().optional(),
   description: z.string().optional(),
+  // 基本信息
+  floors: z.number().int().min(1).optional(),
+  land_area: z.number().min(0).optional(),
+  total_area: z.number().min(0).optional(),
+  // 上游信息
+  landlord_name: z.string().max(100).optional(),
+  landlord_contact: z.string().max(50).optional(),
+  contract_start: z.string().optional(),
+  contract_end: z.string().optional(),
+  landlord_rent: z.number().min(0).optional(),
+  // 经营成本
+  operating_cost: z.number().min(0).optional(),
 });
 const FacilityItemSchema = z.object({
   code: z.string(),
@@ -120,6 +144,31 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  *                 type: string
  *               description:
  *                 type: string
+ *               floors:
+ *                 type: integer
+ *                 minimum: 1
+ *               land_area:
+ *                 type: number
+ *                 minimum: 0
+ *               total_area:
+ *                 type: number
+ *                 minimum: 0
+ *               landlord_name:
+ *                 type: string
+ *                 maxLength: 100
+ *               landlord_contact:
+ *                 type: string
+ *                 maxLength: 50
+ *               contract_start:
+ *                 type: string
+ *               contract_end:
+ *                 type: string
+ *               landlord_rent:
+ *                 type: number
+ *                 minimum: 0
+ *               operating_cost:
+ *                 type: number
+ *                 minimum: 0
  *     responses:
  *       201:
  *         description: 创建成功
@@ -1006,6 +1055,31 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
  *                 type: string
  *               description:
  *                 type: string
+ *               floors:
+ *                 type: integer
+ *                 minimum: 1
+ *               land_area:
+ *                 type: number
+ *                 minimum: 0
+ *               total_area:
+ *                 type: number
+ *                 minimum: 0
+ *               landlord_name:
+ *                 type: string
+ *                 maxLength: 100
+ *               landlord_contact:
+ *                 type: string
+ *                 maxLength: 50
+ *               contract_start:
+ *                 type: string
+ *               contract_end:
+ *                 type: string
+ *               landlord_rent:
+ *                 type: number
+ *                 minimum: 0
+ *               operating_cost:
+ *                 type: number
+ *                 minimum: 0
  *     responses:
  *       200:
  *         description: 更新成功
