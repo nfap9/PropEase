@@ -4,12 +4,12 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 11
 status: unknown
-last_updated: "2026-03-20T00:00:00.000Z"
+last_updated: "2026-03-19T17:54:29.140Z"
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 3
+  completed_plans: 5
 ---
 
 # State: Apartment Ultra
@@ -37,12 +37,14 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 6 | ● | 1/1 | 100% |
 | 7 | ● | 3/3 | 100% |
 | 8 | ● | 1/1 | 100% |
-| 11 | ◐ | 2/5 | 40% |
+| 11 | ◐ | 3/5 | 60% |
 
 ## Recent Work
 
 - Phase 11 Plan 01: admin E2E infrastructure - worker-scope adminPage fixture with storageState, dual webServer config, BaseAdminPage base class
 - Phase 11 Plan 02: 9 admin Page Objects (Overview, Organizations, Plans, RegisteredUsers, Roles, Users, Subscriptions, Brand, Pricing) with testids added to 3 source pages
+- Phase 11 Plan 04: 4 new E2E spec files (roles, subscriptions, brand, pricing) using fixtures + Page Objects, no waitForTimeout
+- Phase 11 Plan 03: 4 admin spec files rewritten with fixtures, adminPage, and Page Objects - no waitForTimeout
 - Phase 8 Plan 01: Admin dashboard complete - 6 stat cards, income ComposedChart, occupancy AreaChart with 80% warning, year filter, refresh button
 - Phase 7 Plan 03: Tab navigation 5→4 tabs, bills.tsx split into sub-components, profile settings integration
 - Phase 7 Plan 02: Tamagui base components (Card/Button/ListItem/Header) + utilities.tsx split
@@ -94,6 +96,8 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 11 Plan 01: BaseAdminPage 使用 E2E_ADMIN_BASE_URL 环境变量，默认 http://localhost:3001
 - [Phase 11]: StatCard testids use dynamic pattern stat-card-{slugified-title} - aligned testids.ts to match
 - [Phase 11]: ADMIN_PRICING targets /usage-pricing (actual URL) - PricingPage.go() uses correct path
+- Phase 11 Plan 03: 4 admin spec files use ../fixtures import, adminPage fixture, and Page Objects - no waitForTimeout
+- Phase 11 Plan 04: Adapted spec to use actual Page Object properties (individual price inputs instead of non-existent priceInput)
 
 ## Blockers
 
@@ -118,4 +122,4 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ---
 *Last updated: 2026-03-20*
 
-*Last activity: 2026-03-20 - Phase 11 Plan 02 complete: 9 admin Page Objects for all admin pages*
+*Last activity: 2026-03-20 - Phase 11 Plan 04 complete: 4 new E2E spec files (roles, subscriptions, brand, pricing) with fixtures + Page Objects*
