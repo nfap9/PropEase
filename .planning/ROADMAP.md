@@ -1,7 +1,7 @@
 # Roadmap: 前端路由重构
 
 **Milestone:** v1.0
-**Created:** 2026-03-19
+**Created:** 2003-03-19
 
 ## Phases
 
@@ -47,21 +47,7 @@
 
 ---
 
-### Phase 3: 移动端适配
-
-**Goal:** 确保移动端的设置页面也有一致的导航体验
-
-**Requirements:**
-- ROUTE-07: 检查移动端 settings 布局
-- ROUTE-08: 统一移动端和 Web 端的设置导航体验
-
-**Success Criteria:**
-1. 移动端设置页面有返回按钮
-2. 导航结构与 tenant-web 一致
-
----
-
-### Phase 4: 验收与测试
+### Phase 3: 验收与测试
 
 **Goal:** 确保重构后的路由符合用户直觉
 
