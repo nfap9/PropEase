@@ -77,7 +77,10 @@ export default function LoginPage() {
   // 检查认证状态或已认证正在跳转时显示加载
   if (isAuthLoading || isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/40">
+      <div className="flex min-h-screen items-center justify-center"
+        style={{
+          background: 'linear-gradient(135deg, hsl(210 40% 96.1%) 0%, hsl(0 0% 100%) 50%, hsl(210 40% 96.1%) 100%)',
+        }}>
         <div className="text-muted-foreground">加载中...</div>
       </div>
     );
