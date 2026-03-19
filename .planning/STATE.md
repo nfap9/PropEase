@@ -83,6 +83,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Roadmap Evolution
 
+- Phase 7 added: 完善移动端
 - Phase 6 added: 为tenant-web所有功能添加E2E测试
 - Phase 5 added: 优化架构
 - Phase 4 added: tenant-web前端重构：新注册/登录页、header+sider+main主布局、业务模块导航
