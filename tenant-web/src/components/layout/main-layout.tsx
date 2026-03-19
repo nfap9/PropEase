@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Avatar, AvatarFallback } from '@apartment-ultra/shared-ui/components/ui';
-import { Bell } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 import { notificationsApi, subscriptionsApi } from '@/lib/api';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { useState } from 'react';
@@ -74,7 +74,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden">
-                <Bell className="h-5 w-5" />
+                <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0">
