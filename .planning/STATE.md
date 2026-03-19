@@ -15,7 +15,7 @@ progress:
 # State: 前端路由重构
 
 **Milestone:** v1.0
-**Current Phase:** 04
+**Current Phase:** 05
 
 ## Project Reference
 
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 让用户能直觉地在设置页面及其子页面之间导航
 
-**Current focus:** Phase 04 — tenant-web-header-sider-main
+**Current focus:** Phase 05 — 优化架构
 
 ## Progress
 
@@ -37,7 +37,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Recent Work
 
-- Phase 4 Plan 03 complete: apply elegant minimal styling to login/register pages with gradient backgrounds
+- Phase 5: Context gathered — API route refactoring (controllers), permission system DRY (api-contract), frontend DRY (web-api-client), logging (pino)
 - Phase 4 Plan 02 complete: integrated shadcn/ui collapsible sidebar with MainLayout, icon-only collapsed state with hover tooltips
 - Phase 4 Plan 01 complete: established (auth) and (dashboard) route groups, fixed Bell->Menu mobile nav bug
 - Phase 3 Plan 02 complete: added org switch card to Settings page, /organizations/new redirects to /organizations
@@ -64,6 +64,15 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - [Phase 04]: Phase 4: SidebarProvider wraps MainLayout for collapsible sidebar state
 - [Phase 04]: Phase 4: Sidebar uses collapsible=icon mode for hover tooltip collapsed state
 - [Phase 04]: Phase 4: SidebarTrigger replaces custom Sheet for mobile navigation
+
+## Phase 5 Decisions
+
+- Phase 5: Thin routes + fat controllers (controllers/ alongside routes/)
+- Phase 5: Refactor top 4 route files + god service files (apartments, orgs, bills, subscriptions, admin, tenantReachability, utility, service-product)
+- Phase 5: Schemas stay with controllers (no new schemas/ directory)
+- Phase 5: Permission codes in api-contract/src/permissions.ts (single source)
+- Phase 5: web-api-client unified for both tenant-web and admin-web
+- Phase 5: Structured logger (pino) for services + scheduler only
 
 ## Blockers
 
