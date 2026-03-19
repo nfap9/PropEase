@@ -159,3 +159,11 @@ Each task was committed atomically:
 *Phase: 05-优化架构*
 *Plan: 03*
 *Completed: 2026-03-19*
+
+## Self-Check: PASSED
+
+- TypeScript: `pnpm --filter apartment-ultra-api exec tsc --noEmit` PASSED (zero errors)
+- Route files: apartments.ts=36, organizations.ts=22, bills.ts=20, subscriptions.ts=28, admin/index.ts=72 (all <80 lines)
+- Controller files: apartments=428, organizations=363, bills=264, subscriptions=259, admin=430 (all >200 lines)
+- Commits: 8 commits for this plan on branch dev
+- SUMMARY.md: exists at correct path*
