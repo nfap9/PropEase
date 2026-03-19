@@ -10,17 +10,17 @@
 | Phase | Milestone | Plans | Status | Completed |
 |-------|-----------|-------|--------|-----------|
 | 1-7 | v1.0 MVP | 16/16 | Complete | 2026-03-20 |
-| 8 | v1.1 | TBD | Planned | - |
+| 8 | v1.1 | 1/1 | Planned | - |
 
 ### Phase 8: 运营数据看板
 
 **Goal:** 实现运营后台仪表盘，展示全局统计数据、收入趋势、入住率分析
 **Requirements**: DASH-01, DASH-02, DASH-03, DASH-04
 **Depends on:** Phase 7
-**Plans:** 0 plans
+**Plans:** 1 plan
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 8 to break down)
+- [ ] 08-01-PLAN.md — Dashboard UI: stat cards, charts, year filter, refresh
 
 ### Phase 9: 组织和成员管理
 
