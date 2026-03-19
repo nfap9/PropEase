@@ -21,6 +21,7 @@
 - /organizations 页面（创建/选择组织双模式）
 - Next.js route groups (auth/dashboard)、可折叠侧边栏、登录/注册页面
 - 架构优化：api-contract 权限单一数据源、web-api-client 统一客户端、薄路由+厚控制器、pino 结构化日志
+- E2E 测试：Dashboard 8 个 Playwright 测试用例覆盖页面加载、指标、待办、空状态
 
 ### Key Decisions
 
@@ -37,12 +38,15 @@
 - `api/src/routes/v1/admin.controller.ts` orphaned duplicate file (Phase 05)
 - `console.log/error` still in 5 files outside Plan 05-04 scope
 - Mobile 原型 (mobile/) 尚未接入根级质量门
+- (dashboard) route group AuthGuard unused — all pages use PermissionPageGuard instead (no security issue)
+- No dedicated login/register E2E test file
 
 ### Process Gaps (Noted)
 
-- Phases 1-4 lack formal VERIFICATION.md (only Phase 5 has one)
+- Phases 1-4 and 6 lack formal VERIFICATION.md (only Phase 5 has one)
 - REQUIREMENTS.md traceability table was not maintained
-- Integration checker was not run during execution
+- Integration checker was not run during initial execution (run retroactively during audit)
+- Phase 4 SUMMARY naming inconsistency (phase-04-plan-XX vs 04-XX)
 
 ---
 

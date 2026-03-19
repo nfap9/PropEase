@@ -1,21 +1,21 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
-current_phase: 6
-status: unknown
-last_updated: "2026-03-19T15:39:55.867Z"
+milestone_name: v1.0 MVP
+current_phase: null
+status: milestone_complete
+last_updated: "2026-03-19T20:00:00Z"
 progress:
-  total_phases: 1
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  total_phases: 6
+  completed_phases: 6
+  total_plans: 13
+  completed_plans: 13
 ---
 
 # State: Apartment Ultra
 
-**Milestone:** v1.0 MVP — COMPLETE
-**Current Phase:** 6
+**Milestone:** v1.0 MVP — SHIPPED 2026-03-19
+**Current Phase:** None (milestone complete)
 
 ## Project Reference
 
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 高效的公寓管理体验
 
-**Current focus:** Milestone v1.0 shipped — ready for next milestone
+**Current focus:** v1.0 MVP shipped — use `/gsd:new-milestone` to plan next milestone
 
 ## Progress
 
@@ -38,56 +38,41 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Recent Work
 
-- Phase 5 Plan 04 complete: pino structured logging for services (bill, lease, billGeneration, wechatPay) and scheduler (index, notificationChecks, monthlyBills, audit)
-- Phase 5 Plan 03 complete: thin routes + fat controllers for 5 route files (apartments, organizations, bills, subscriptions, admin)
-- Phase 5: Context gathered — API route refactoring (controllers), permission system DRY (api-contract), frontend DRY (web-api-client), logging (pino)
-- Phase 4 Plan 02 complete: integrated shadcn/ui collapsible sidebar with MainLayout, icon-only collapsed state with hover tooltips
-- Phase 4 Plan 01 complete: established (auth) and (dashboard) route groups, fixed Bell->Menu mobile nav bug
-- Phase 3 Plan 02 complete: added org switch card to Settings page, /organizations/new redirects to /organizations
-- Phase 3 Plan 01 complete: created dual-mode /organizations page with create/select handling
-- Phase 2 Plan 02 complete: changed subscription page heading icon from CreditCard to ShoppingBag
-- Phase 2 Plan 01 complete: merged team/permissions settings, updated subscription icon
-- Phase 1 Plan 01 complete: unified settings layout with breadcrumb navigation
+- Phase 6: Dashboard E2E test suite (8 Playwright tests)
+- Phase 5 Plan 04: pino structured logging for services and scheduler
+- Phase 5 Plan 03: thin routes + fat controllers for 5 route files
+- Phase 5 Plan 02: unified web-api-client for tenant-web and admin-web
+- Phase 5 Plan 01: api-contract permissions SSOT
+- Phase 4 Plan 03: login/register elegant minimal visual refresh
+- Phase 4 Plan 02: shadcn/ui collapsible sidebar integration
+- Phase 4 Plan 01: route groups (auth/dashboard), mobile nav bug fix
+- Phase 3 Plan 02: org switch card in Settings + /organizations/new redirect
+- Phase 3 Plan 01: dual-mode /organizations page (create/select)
+- Phase 2 Plan 02: subscription page icon ShoppingBag
+- Phase 2 Plan 01: settings links and team/permissions merge
+- Phase 1 Plan 01: unified settings layout with breadcrumbs
 
 ## Decisions
 
 - Phase 4: (auth) route group for public login/register pages (no AuthGuard)
-- Phase 4: (dashboard) route group with AuthGuard + MainLayout wrapper for all protected pages
+- Phase 4: PermissionPageGuard on each page (not (dashboard) route group layout) is actual auth pattern
 - Phase 4: Mobile Sheet navigation uses Menu icon, Bell icon reserved for notifications
-- Phase 3: Settings page shows org switch card at top of grid with current org name and Building2 icon
-- Phase 3: /organizations/new redirects to /organizations to unify org creation/selection flow
-- Phase 3: Created dual-mode /organizations page - creation form for 0 orgs, selection list for 1+ orgs
-- Phase 2: Merged "团队设置" and "权限管理" into "团队与权限" pointing to /settings/team
-- Phase 2: Subscription icon changed from CreditCard to ShoppingBag
+- Phase 4: SidebarProvider wraps MainLayout for collapsible sidebar state
+- Phase 4: Sidebar uses collapsible=icon mode for hover tooltip collapsed state
+- Phase 3: Settings page shows org switch card at top of grid
+- Phase 3: /organizations/new redirects to /organizations
+- Phase 3: Dual-mode /organizations page - creation form for 0 orgs, selection list for 1+ orgs
+- Phase 2: Merged "团队设置" and "权限管理" into "团队与权限"
+- Phase 1: Breadcrumb navigation with full hierarchy path
 - Phase 1: 返回按钮使用「文字+图标」形式
-- Phase 1: 启用面包屑导航，显示完整层级路径
-- Phase 1: 保持卡片网格入口形式
-- Phase 1: Breadcrumb hides on /settings homepage, shows on sub-pages only
-- Phase 1: Page titles via PAGE_TITLES constant mapping with parent-path fallback
-- [Phase 04]: Phase 4: SidebarProvider wraps MainLayout for collapsible sidebar state
-- [Phase 04]: Phase 4: Sidebar uses collapsible=icon mode for hover tooltip collapsed state
-- [Phase 04]: Phase 4: SidebarTrigger replaces custom Sheet for mobile navigation
-- [Phase 05]: Thin routes: 路由文件只保留 router 挂载（5-72行），controller 文件包含所有 handler + schemas
-- [Phase 05]: admin.controller.ts 放在 admin/ 子目录以保持一致的相对导入深度
-- [Phase 05]: Thin routes: 路由文件只保留 router 挂载（5-72行），controller 文件包含所有 handler + schemas
-- [Phase 05]: admin.controller.ts 放在 admin/ 子目录以保持一致的相对导入深度
-- [Phase 05]: Thin routes + fat controllers: 5 route files refactored to thin routers, all handlers extracted to controllers
-
-## Phase 5 Decisions
-
-- Phase 5: Thin routes + fat controllers (controllers/ alongside routes/)
-- Phase 5: Refactor top 4 route files + god service files (apartments, orgs, bills, subscriptions, admin, tenantReachability, utility, service-product)
-- Phase 5: Schemas stay with controllers (no new schemas/ directory)
-- Phase 5: Permission codes in api-contract/src/permissions.ts (single source)
-- Phase 5: web-api-client unified for both tenant-web and admin-web
-- Phase 5 Plan 02: createAdminApiClient 复用 web-api-client 逻辑，admin 使用 admin_access_token，无 refresh token，401 静默跳转登录页
-- Phase 5: Structured logger (pino) for services + scheduler only
-- Phase 5 Plan 04: pino logger singleton created at api/src/utils/logger.ts, all services and scheduler use structured logging (10 files, 1 created + 9 modified)
-- [Phase 06]: Phase 6 Plan 01: Dashboard E2E 测试套件，8 个测试用例（页面加载、指标卡片、待办提醒、空状态），使用 data-testid 定位和 TestDataGenerator 隔离数据
+- Phase 05: Thin routes: router files only mount routes (5-72 lines), all handler logic in controllers
+- Phase 05: admin.controller.ts in admin/ subdirectory for consistent import depth
+- Phase 05: web-api-client unified for both tenant-web and admin-web modes
+- Phase 05: pino logger singleton at api/src/utils/logger.ts
 
 ## Blockers
 
-(None yet)
+(None)
 
 ### Quick Tasks Completed
 
@@ -104,6 +89,6 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 3 added: 重新编排tenant-web前端路由：添加组织视图用于创建/选择组织
 
 ---
-*Last updated: 2026-03-19*
+*Last updated: 2026-03-19 after v1.0 milestone completion*
 
-*Last activity: 2026-03-19 - Completed Phase 6 Plan 01: dashboard E2E test suite (8 tests)*
+*Last activity: 2026-03-19 - Milestone v1.0 shipped with 6 phases, 13 plans*
