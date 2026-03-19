@@ -12,6 +12,12 @@ export { ApiError };
 
 export const api = createBrowserApiClient({
   baseURL: API_URL,
+  accessTokenKey: 'access_token',
+  refreshTokenKey: 'refresh_token',
+  refreshPath: '/auth/refresh',
+  loginPath: '/login',
+  enableRefresh: true,
+  suppressUnauthorizedError: false,
 });
 
 export default api;
