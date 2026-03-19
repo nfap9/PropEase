@@ -199,7 +199,7 @@ export async function deletionPreview(req: Request, res: Response, next: NextFun
       prisma.room.count({ where: { apartment: { organization_id: orgId } } }),
       prisma.tenant.count({ where: { organization_id: orgId } }),
       prisma.lease.count({ where: { room: { apartment: { organization_id: orgId } } } }),
-      prisma.bill.count({ where: { lease: { room: { apartment: { organization_id: orgId } } } }),
+      prisma.bill.count({ where: { lease: { room: { apartment: { organization_id: orgId } } } } }),
     ]);
     res.json({
       can_delete: !hasActiveSub,

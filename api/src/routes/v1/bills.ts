@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { Router, type Router as RouterType } from 'express';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import * as ctrl from './bills.controller.js';
 
-const router = Router();
+const router: RouterType = Router();
 router.use(requireConsoleAuth);
 
 router.get('/', ctrl.list);
