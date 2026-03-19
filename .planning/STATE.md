@@ -4,18 +4,18 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 11
 status: unknown
-last_updated: "2026-03-19T17:19:17.976Z"
+last_updated: "2026-03-19T17:44:50.292Z"
 progress:
-  total_phases: 3
+  total_phases: 4
   completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  total_plans: 5
+  completed_plans: 2
 ---
 
 # State: Apartment Ultra
 
 **Milestone:** v1.0 MVP — SHIPPED 2026-03-19
-**Current Phase:** 9
+**Current Phase:** 11
 
 ## Project Reference
 
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 高效的公寓管理体验
 
-**Current focus:** Phase 11 — 重新设计 admin-web E2E 测试架构
+**Current focus:** Phase 11 — admin-web-e2e
 
 ## Progress
 
@@ -37,9 +37,11 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 6 | ● | 1/1 | 100% |
 | 7 | ● | 3/3 | 100% |
 | 8 | ● | 1/1 | 100% |
+| 11 | ◐ | 1/5 | 20% |
 
 ## Recent Work
 
+- Phase 11 Plan 01: admin E2E infrastructure - worker-scope adminPage fixture with storageState, dual webServer config, BaseAdminPage base class
 - Phase 8 Plan 01: Admin dashboard complete - 6 stat cards, income ComposedChart, occupancy AreaChart with 80% warning, year filter, refresh button
 - Phase 7 Plan 03: Tab navigation 5→4 tabs, bills.tsx split into sub-components, profile settings integration
 - Phase 7 Plan 02: Tamagui base components (Card/Button/ListItem/Header) + utilities.tsx split
@@ -85,6 +87,10 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 08 Plan 01: AdminPlatformStats extended with optional occupancy_rate, monthly_revenue, pending_bills, overdue_bills fields
 - Phase 08 Plan 01: StatCard formats value with isPercentage/isCurrency flags (¥X.XX for currency, X.X% for percentage)
 - Phase 08 Plan 01: Charts use CSS var(--chart-N) colors matching Tailwind config; mock data generators for income/occupancy
+- Phase 11 Plan 01: adminPage fixture 使用 worker scope，storageState 路径 e2e/results/.auth/admin.json
+- Phase 11 Plan 01: adminLogin 增加 isAdminAuthenticated 提前检查跳过已登录状态
+- Phase 11 Plan 01: webServer 改为数组配置同时启动 tenant-web (3000) 和 admin-web (3001)
+- Phase 11 Plan 01: BaseAdminPage 使用 E2E_ADMIN_BASE_URL 环境变量，默认 http://localhost:3001
 
 ## Blockers
 
@@ -109,4 +115,4 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ---
 *Last updated: 2026-03-20*
 
-*Last activity: 2026-03-20 - Phase 08 Plan 01 complete: Admin dashboard (平台概览) - 6 stat cards + income/occupancy charts*
+*Last activity: 2026-03-20 - Phase 11 Plan 01 complete: admin E2E infrastructure - worker fixture + dual webServer + BaseAdminPage*

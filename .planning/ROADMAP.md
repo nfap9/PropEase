@@ -11,6 +11,7 @@
 |-------|-----------|-------|--------|-----------|
 | 1-7 | v1.0 MVP | 16/16 | Complete | 2026-03-20 |
 | 8 | 1/1 | Complete    | 2026-03-19 | - |
+| 11 | 1/5 | 1/5     | 2026-03-20 | - |
 
 ### Phase 8: 运营数据看板
 
@@ -47,10 +48,10 @@ Plans:
 **Goal:** 重新设计 admin-web E2E 测试架构，解决 waitForTimeout 滥用、fixtures 绕过、断言薄弱、无测试数据隔离等核心问题
 **Requirements**: (架构重构，无特定业务需求)
 **Depends on:** Phase 10
-**Plans:** 4/4 plans
+**Plans:** 1/5 plans complete
 
 Plans:
-- [ ] 11-01-PLAN.md — Infrastructure: fixtures.ts worker-scoped adminPage, playwright.config.ts dual webServer, BaseAdminPage
+- [x] 11-01-PLAN.md — Infrastructure: fixtures.ts worker-scoped adminPage, playwright.config.ts dual webServer, BaseAdminPage (2026-03-20)
 - [ ] 11-02-PLAN.md — Page Objects: 9 admin pages (Overview, Organizations, Plans, RegisteredUsers, Roles, Users, Subscriptions, Brand, Pricing)
 - [ ] 11-03-PLAN.md — Rewrite existing specs: overview, organizations, plans, users
 - [ ] 11-04-PLAN.md — New specs: roles, subscriptions, brand, pricing
