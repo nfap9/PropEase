@@ -14,6 +14,13 @@ export default function ProfileScreen() {
   const { user, organization, logout } = useAuth()
   const router = useRouter()
 
+  // 常用设置（按使用频率排序）
+  const commonMenuItems: MenuItem[] = [
+    { icon: '⚙️', label: '费用配置', color: '#FFF7ED', route: '/settings/fee-configs' },
+    { icon: '🔔', label: '消息通知', color: '#FEF2F2', route: '/settings/notifications' },
+    { icon: '📊', label: '经营报表', color: '#EEF2FF', route: '/settings/reports' },
+  ]
+
   const teamMenuItems: MenuItem[] = [
     { icon: '👥', label: '团队成员管理', color: '#EFF6FF', route: '/settings/team' },
     { icon: '🔐', label: '角色与权限配置', color: '#F3E8FF', route: '/settings/roles' },
@@ -25,9 +32,6 @@ export default function ProfileScreen() {
   ]
 
   const systemMenuItems: MenuItem[] = [
-    { icon: '⚙️', label: '费用配置', color: '#FFF7ED', route: '/settings/fee-configs' },
-    { icon: '📊', label: '经营报表', color: '#EEF2FF', route: '/settings/reports' },
-    { icon: '🔔', label: '消息通知', color: '#FEF2F2', route: '/settings/notifications' },
     { icon: '🔒', label: '账号与安全', color: '#F3F4F6', route: '/settings/security' },
     { icon: '❓', label: '帮助与反馈', color: '#F3F4F6', route: '/settings/help' },
   ]
@@ -169,6 +173,23 @@ export default function ProfileScreen() {
 
         {/* 功能菜单 */}
         <View style={{ paddingHorizontal: 20, marginTop: 8 }}>
+          {/* 常用设置 */}
+          <Text
+            style={{
+              fontSize: 10,
+              color: Colors.textMuted,
+              fontWeight: '700',
+              letterSpacing: 1,
+              marginBottom: 12,
+              paddingHorizontal: 8,
+            }}
+          >
+            常用设置
+          </Text>
+          <View style={{ marginBottom: 16 }}>
+            {commonMenuItems.map(renderMenuItem)}
+          </View>
+
           {/* 团队管理 */}
           <Text
             style={{
