@@ -568,6 +568,13 @@ const SidebarMenuButton = React.forwardRef<
       };
     }
 
+    // When asChild is true, we can't wrap with TooltipTrigger asChild because
+    // Slot cannot accept multiple children. Instead, return the button directly
+    // and let the consumer handle the tooltip wrapper.
+    if (asChild) {
+      return button;
+    }
+
     return (
       <Tooltip>
         <TooltipTrigger asChild>{button}</TooltipTrigger>
