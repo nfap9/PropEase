@@ -5,6 +5,18 @@ export interface Apartment {
   name: string;
   address: string | null;
   description: string | null;
+  // 基本信息
+  floors: number | null;
+  land_area: number | null;
+  total_area: number | null;
+  // 上游信息
+  landlord_name: string | null;
+  landlord_contact: string | null;
+  contract_start: string | null;
+  contract_end: string | null;
+  landlord_rent: number | null;
+  // 经营成本
+  operating_cost: number | null;
   created_at: string;
 }
 
@@ -12,12 +24,36 @@ export interface ApartmentCreate {
   name: string;
   address?: string;
   description?: string;
+  // 基本信息
+  floors?: number;
+  land_area?: number;
+  total_area?: number;
+  // 上游信息
+  landlord_name?: string;
+  landlord_contact?: string;
+  contract_start?: string;
+  contract_end?: string;
+  landlord_rent?: number;
+  // 经营成本
+  operating_cost?: number;
 }
 
 export interface ApartmentUpdate {
   name?: string;
   address?: string;
   description?: string;
+  // 基本信息
+  floors?: number;
+  land_area?: number;
+  total_area?: number;
+  // 上游信息
+  landlord_name?: string;
+  landlord_contact?: string;
+  contract_start?: string;
+  contract_end?: string;
+  landlord_rent?: number;
+  // 经营成本
+  operating_cost?: number;
 }
 
 /** 房间统计 */

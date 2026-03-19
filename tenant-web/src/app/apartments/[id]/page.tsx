@@ -71,8 +71,10 @@ import {
 } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { ROOM_STATUS_CONFIG } from '@/lib/status-config';
 import { UtilityConfigDialog } from './components/UtilityConfigDialog';
+import { format } from 'date-fns';
 
 const roomSchema = z.object({
   room_number: z.string().min(1, '请输入房间号'),
@@ -587,82 +589,119 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
             </Button>
           </div>
 
-          {/* 统计卡片 */}
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">总房间数</CardTitle>
-                <Home className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.total}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">已出租</CardTitle>
-                <Users className="h-4 w-4 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-600">{stats.occupied}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">空置</CardTitle>
-                <Home className="h-4 w-4 text-green-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">{stats.available}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">维修中</CardTitle>
-                <Wrench className="h-4 w-4 text-orange-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-600">{stats.maintenance}</div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Tabs */}
+          <Tabs defaultValue="basic" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="basic">基础信息</TabsTrigger>
+              <TabsTrigger value="upstream">上游信息</TabsTrigger>
+            </TabsList>
 
-          {/* 快捷操作 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>快捷操作</CardTitle>
-              <CardDescription>快速跳转到相关功能</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-3">
-                <Button variant="outline" asChild>
-                  <Link href={`/leases?apartment=${apartmentId}`}>
-                    <FileText className="mr-2 h-4 w-4" />
-                    查看租约
-                  </Link>
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link href={`/bills?apartment=${apartmentId}`}>
-                    <Receipt className="mr-2 h-4 w-4" />
-                    查看账单
-                  </Link>
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link href={`/utilities?apartment=${apartmentId}`}>
-                    <Zap className="mr-2 h-4 w-4" />
-                    水电录入
-                  </Link>
-                </Button>
-                <Button variant="outline" onClick={() => setIsUtilityConfigOpen(true)}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  水电配置
-                </Button>
+            <TabsContent value="basic" className="space-y-4">
+              {/* 物业信息 */}
+              {(apartment.floors || apartment.land_area || apartment.total_area) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>物业信息</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-muted-foreground">楼层数</span>
+                        <span className="font-medium">{apartment.floors ?? '-'} 层</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-muted-foreground">用地面积</span>
+                        <span className="font-medium">
+                          {apartment.land_area ? `${apartment.land_area} 亩` : '-'}
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-muted-foreground">总面积</span>
+                        <span className="font-medium">
+                          {apartment.total_area ? `${apartment.total_area} ㎡` : '-'}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* 统计卡片 */}
+              <div className="grid gap-4 md:grid-cols-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">总房间数</CardTitle>
+                    <Home className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats.total}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">已出租</CardTitle>
+                    <Users className="h-4 w-4 text-blue-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-blue-600">{stats.occupied}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">空置</CardTitle>
+                    <Home className="h-4 w-4 text-green-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">{stats.available}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">维修中</CardTitle>
+                    <Wrench className="h-4 w-4 text-orange-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-orange-600">{stats.maintenance}</div>
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* 房间列表 */}
-          <Card>
+              {/* 快捷操作 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>快捷操作</CardTitle>
+                  <CardDescription>快速跳转到相关功能</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-3">
+                    <Button variant="outline" asChild>
+                      <Link href={`/leases?apartment=${apartmentId}`}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        查看租约
+                      </Link>
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <Link href={`/bills?apartment=${apartmentId}`}>
+                        <Receipt className="mr-2 h-4 w-4" />
+                        查看账单
+                      </Link>
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <Link href={`/utilities?apartment=${apartmentId}`}>
+                        <Zap className="mr-2 h-4 w-4" />
+                        水电录入
+                      </Link>
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsUtilityConfigOpen(true)}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      水电配置
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* 房间列表 */}
+              <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>房间列表</CardTitle>
@@ -869,6 +908,57 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
               )}
             </CardContent>
           </Card>
+            </TabsContent>
+
+            <TabsContent value="upstream" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>上游信息</CardTitle>
+                  <CardDescription>房东和合同相关信息</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col">
+                      <span className="text-xs text-muted-foreground">房东姓名</span>
+                      <span className="font-medium">{apartment.landlord_name ?? '-'}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs text-muted-foreground">联系方式</span>
+                      <span className="font-medium">{apartment.landlord_contact ?? '-'}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs text-muted-foreground">合同开始</span>
+                      <span className="font-medium">
+                        {apartment.contract_start
+                          ? format(new Date(apartment.contract_start), 'yyyy-MM-dd')
+                          : '-'}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs text-muted-foreground">合同结束</span>
+                      <span className="font-medium">
+                        {apartment.contract_end
+                          ? format(new Date(apartment.contract_end), 'yyyy-MM-dd')
+                          : '-'}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs text-muted-foreground">房东租金</span>
+                      <span className="font-medium">
+                        {apartment.landlord_rent ? `¥${apartment.landlord_rent}/月` : '-'}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs text-muted-foreground">经营成本</span>
+                      <span className="font-medium">
+                        {apartment.operating_cost ? `¥${apartment.operating_cost}/月` : '-'}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* 编辑公寓对话框 */}
