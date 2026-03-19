@@ -46,5 +46,7 @@
 
 **Phase 1-3 complete:** Settings layout unified, links fixed, organization view added.
 
+**Phase 5 complete (2026-03-19):** 架构优化 — api-contract 单一权限数据源、前端 API 客户端统一、薄路由+厚控制器重构、pino 结构化日志。
+
 ---
-*Last updated: 2026-03-19 after Phase 3 completion*
+*Last updated: 2026-03-19 after Phase 5 completion*
