@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Dimensions } from 'react-native'
 import { useQuery } from '@tanstack/react-query'
 import { router } from 'expo-router'
-import { reportsApi } from '@/services/api'
+import { reportsApi, type DashboardOverview } from '@/services/api'
 import { Colors } from '@/constants'
 import { useState } from 'react'
 
@@ -9,13 +9,10 @@ const screenWidth = Dimensions.get('window').width
 
 type TimeFilter = 'month' | 'quarter' | 'year'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type OverviewData = any
-
 export default function ReportsScreen() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('month')
 
-  const { data: overview, isLoading, refetch } = useQuery<OverviewData>({
+  const { data: overview, isLoading, refetch } = useQuery<DashboardOverview>({
     queryKey: ['reports-overview', timeFilter],
     queryFn: reportsApi.getOverview,
   })

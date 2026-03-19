@@ -11,5 +11,5 @@ export {
   type UtilityListParams,
   type UtilityWithDetails,
 } from './utilities'
-export { reportsApi, type IncomeReportParams, type OccupancyReportParams } from './reports'
+export { reportsApi, type IncomeReportParams, type OccupancyReportParams, type DashboardOverview } from './reports'
 export { organizationsApi, type OrganizationMember } from './organizations'

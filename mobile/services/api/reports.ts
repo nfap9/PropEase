@@ -7,7 +7,7 @@ import type {
   OccupancyReportParams,
 } from '@apartment-ultra/api-contract'
 
-export type { IncomeReportParams, OccupancyReportParams };
+export type { IncomeReportParams, OccupancyReportParams, DashboardOverview };
 
 export const reportsApi = {
   /**
