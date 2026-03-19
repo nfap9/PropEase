@@ -213,7 +213,7 @@ export default function AdminSubscriptionsPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="text-xl font-semibold">订阅管理</h2>
+        <h2 className="text-xl font-semibold" data-testid="admin-subscriptions-heading">订阅管理</h2>
         <div className="flex items-center gap-2">
           <Input
             placeholder="按组织 ID 筛选"
@@ -239,7 +239,7 @@ export default function AdminSubscriptionsPage() {
         </div>
       </div>
 
-      <DataTable columns={columns} data={subscriptions ?? []} />
+      <DataTable columns={columns} data={subscriptions ?? []} testid="admin-subscriptions-list" />
 
       {/* 续期 */}
       <Dialog open={isRenewOpen} onOpenChange={setIsRenewOpen}>

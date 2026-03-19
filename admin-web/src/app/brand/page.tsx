@@ -97,7 +97,7 @@ export default function AdminBrandPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h2 className="mb-4 text-xl font-semibold">品牌配置</h2>
+      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-brand-heading">品牌配置</h2>
       <Card>
         <CardHeader>
           <CardTitle>系统名称与品牌</CardTitle>
@@ -118,7 +118,7 @@ export default function AdminBrandPage() {
                   <FormItem>
                     <FormLabel>系统名称</FormLabel>
                     <FormControl>
-                      <Input placeholder="公寓管理系统" {...field} />
+                      <Input placeholder="公寓管理系统" data-testid="admin-brand-name-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -131,7 +131,7 @@ export default function AdminBrandPage() {
                   <FormItem>
                     <FormLabel>系统描述</FormLabel>
                     <FormControl>
-                      <Input placeholder="多租户 SaaS 公寓/物业管理系统" {...field} />
+                      <Input placeholder="多租户 SaaS 公寓/物业管理系统" data-testid="admin-brand-description-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -144,7 +144,7 @@ export default function AdminBrandPage() {
                   <FormItem>
                     <FormLabel>登录页副标题</FormLabel>
                     <FormControl>
-                      <Input placeholder="用户登录，管理公寓、租客与账单" {...field} />
+                      <Input placeholder="用户登录，管理公寓、租客与账单" data-testid="admin-brand-login-subtitle-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -157,7 +157,7 @@ export default function AdminBrandPage() {
                   <FormItem>
                     <FormLabel>注册页副标题</FormLabel>
                     <FormControl>
-                      <Input placeholder="创建新账户" {...field} />
+                      <Input placeholder="创建新账户" data-testid="admin-brand-register-subtitle-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -170,7 +170,7 @@ export default function AdminBrandPage() {
                   <FormItem>
                     <FormLabel>Logo URL（可选）</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://..." type="url" {...field} />
+                      <Input placeholder="https://..." type="url" data-testid="admin-brand-logo-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -183,13 +183,13 @@ export default function AdminBrandPage() {
                   <FormItem>
                     <FormLabel>Favicon URL（可选）</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://..." type="url" {...field} />
+                      <Input placeholder="https://..." type="url" data-testid="admin-brand-favicon-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={updateMutation.isPending}>
+              <Button type="submit" data-testid="admin-brand-save-btn" disabled={updateMutation.isPending}>
                 {updateMutation.isPending ? '保存中...' : '保存'}
               </Button>
             </form>

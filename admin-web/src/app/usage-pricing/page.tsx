@@ -82,7 +82,7 @@ export default function AdminUsagePricingPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h2 className="mb-4 text-xl font-semibold">按量定价</h2>
+      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-pricing-heading">按量定价</h2>
       <Card>
         <CardHeader>
           <CardTitle>组织 / 公寓 / 房间 / 成员单价</CardTitle>
@@ -101,7 +101,7 @@ export default function AdminUsagePricingPage() {
                   <FormItem>
                     <FormLabel>组织单价（元/个/年）</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input type="number" step="0.01" data-testid="admin-pricing-price-per-org" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -114,7 +114,7 @@ export default function AdminUsagePricingPage() {
                   <FormItem>
                     <FormLabel>公寓单价（元/个/年）</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input type="number" step="0.01" data-testid="admin-pricing-price-per-apartment" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -127,7 +127,7 @@ export default function AdminUsagePricingPage() {
                   <FormItem>
                     <FormLabel>房间单价（元/个/年）</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input type="number" step="0.01" data-testid="admin-pricing-price-per-room" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -140,13 +140,13 @@ export default function AdminUsagePricingPage() {
                   <FormItem>
                     <FormLabel>成员单价（元/个/年）</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input type="number" step="0.01" data-testid="admin-pricing-price-per-member" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" disabled={updateMutation.isPending}>
+              <Button type="submit" data-testid="admin-pricing-save-btn" disabled={updateMutation.isPending}>
                 {updateMutation.isPending ? '保存中…' : '保存'}
               </Button>
             </form>
