@@ -4,12 +4,12 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 03
 status: unknown
-last_updated: "2026-03-19T05:40:47.081Z"
+last_updated: "2026-03-19T05:42:42Z"
 progress:
   total_phases: 3
   completed_phases: 2
   total_plans: 5
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # State: 前端路由重构
@@ -31,10 +31,11 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 |-------|--------|-------|----------|
 | 1 | ● | 1/1 | 100% |
 | 2 | ● | 2/2 | 100% |
-| 3 | ◐ | 1/2 | 50% |
+| 3 | ● | 2/2 | 100% |
 
 ## Recent Work
 
+- Phase 3 Plan 02 complete: added org switch card to Settings page, /organizations/new redirects to /organizations
 - Phase 3 Plan 01 complete: created dual-mode /organizations page with create/select handling
 - Phase 2 Plan 02 complete: changed subscription page heading icon from CreditCard to ShoppingBag
 - Phase 2 Plan 01 complete: merged team/permissions settings, updated subscription icon
@@ -42,6 +43,8 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Decisions
 
+- Phase 3: Settings page shows org switch card at top of grid with current org name and Building2 icon
+- Phase 3: /organizations/new redirects to /organizations to unify org creation/selection flow
 - Phase 3: Created dual-mode /organizations page - creation form for 0 orgs, selection list for 1+ orgs
 - Phase 2: Merged "团队设置" and "权限管理" into "团队与权限" pointing to /settings/team
 - Phase 2: Subscription icon changed from CreditCard to ShoppingBag
