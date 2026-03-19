@@ -6,6 +6,7 @@ import {
   MemberRole,
   MigrationStats,
   DeletionPreview,
+  OrganizationCreate,
 } from '@/types';
 
 export const organizationsApi = {
@@ -19,7 +20,7 @@ export const organizationsApi = {
     return response.data;
   },
 
-  create: async (data: { name: string; slug?: string }): Promise<Organization> => {
+  create: async (data: OrganizationCreate): Promise<Organization> => {
     const response = await api.post<Organization>('/organizations', data);
     return response.data;
   },

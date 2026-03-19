@@ -13,6 +13,7 @@ export interface Organization {
   is_active?: boolean;
   created_at: string;
   updated_at?: string;
+  notes?: string;
   /** 列表接口返回：当前用户在该组织中的角色 */
   role?: MemberRole;
 }
@@ -20,11 +21,13 @@ export interface Organization {
 export interface OrganizationCreate {
   name: string;
   slug?: string;
+  notes?: string;
 }
 
 export interface OrganizationUpdate {
   name?: string;
   settings?: Record<string, unknown>;
+  notes?: string;
 }
 
 /** 迁移统计 */

@@ -29,6 +29,7 @@ import {
 
 const createOrganizationSchema = z.object({
   name: z.string().trim().min(1, '请输入组织名称'),
+  notes: z.string().optional(),
 });
 
 type CreateOrganizationFormData = z.infer<typeof createOrganizationSchema>;
@@ -52,6 +53,7 @@ export default function CreateOrganizationPage() {
     resolver: zodResolver(createOrganizationSchema),
     defaultValues: {
       name: '',
+      notes: '',
     },
   });
 
@@ -79,6 +81,7 @@ export default function CreateOrganizationPage() {
       organizationsApi.create({
         name: data.name.trim(),
         slug: buildOrganizationSlug(data.name.trim()),
+        notes: data.notes?.trim(),
       }),
     onSuccess: async (createdOrganization) => {
       await refreshOrganizations(createdOrganization.id);
@@ -131,6 +134,16 @@ export default function CreateOrganizationPage() {
               {form.formState.errors.name && (
                 <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
               )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">备注</Label>
+              <textarea
+                id="notes"
+                {...form.register('notes')}
+                placeholder="备注信息（选填）"
+                rows={3}
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
             </div>
             <Button type="submit" className="w-full" disabled={createOrgMutation.isPending}>
               {createOrgMutation.isPending ? '创建中...' : '创建组织并进入'}

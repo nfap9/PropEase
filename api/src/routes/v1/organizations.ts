@@ -72,7 +72,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-const CreateOrgSchema = z.object({ name: z.string().min(1), slug: z.string().optional() });
+const CreateOrgSchema = z.object({ name: z.string().min(1), slug: z.string().optional(), notes: z.string().max(1000).optional() });
 
 /**
  * @openapi
@@ -282,6 +282,7 @@ router.get('/:orgId', async (req: Request, res: Response, next: NextFunction) =>
 const UpdateOrgSchema = z.object({
   name: z.string().min(1).optional(),
   settings: z.record(z.unknown()).optional(),
+  notes: z.string().max(1000).optional(),
 });
 
 /**
