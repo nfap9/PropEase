@@ -55,10 +55,10 @@
 **Goal:** 完善运营后台功能，与租户端对标，提供平台级管理能力
 
 **Target features:**
-- 运营数据看板（全局统计、收入分析）
-- 组织管理（CRUD、成员管理）
-- 系统配置（费用模板、通知配置）
-- 运营后台 E2E 测试
+- 运营数据看板（全局统计、收入分析） ← Phase 08 ✓
+- 组织管理（CRUD、成员管理） ← Phase 09
+- 系统配置（费用模板、通知配置） ← Phase 10
+- 运营后台 E2E 测试 ← Phase 11
 
 ---
 
@@ -67,4 +67,4 @@
 Next milestone not yet planned. Use `/gsd:new-milestone` to start.
 
 ---
-*Last updated: 2026-03-19 after v1.0 milestone completion*
+*Last updated: 2026-03-20 after Phase 08 completion*
