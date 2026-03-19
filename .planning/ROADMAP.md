@@ -95,14 +95,14 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Permission System DRY (api-contract 单一数据源)
-- [ ] 05-02-PLAN.md — API Client Unification (web-api-client 统一前后端)
+- [x] 05-01-PLAN.md — Permission System DRY (api-contract 单一数据源)
+- [x] 05-02-PLAN.md — API Client Unification (web-api-client 统一前后端)
 - [ ] 05-03-PLAN.md — API Route Refactoring (薄路由+厚控制器)
 - [ ] 05-04-PLAN.md — Logging (pino 结构化日志替换 console)
 
 **Success Criteria:**
-1. [ ] 权限码在 api-contract 定义，前后端共享
-2. [ ] web-api-client 同时支持 tenant 和 admin 模式
+1. [x] 权限码在 api-contract 定义，前后端共享
+2. [x] web-api-client 同时支持 tenant 和 admin 模式
 3. [ ] 5 个大路由文件变为薄路由 (<50 行)
 4. [ ] 所有 services/scheduler 使用 pino 替代 console.log/error
 

@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 04
+current_phase: 05
 status: unknown
-last_updated: "2026-03-19T07:33:00.000Z"
+last_updated: "2026-03-19T09:37:15.172Z"
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 12
+  completed_plans: 10
 ---
 
 # State: 前端路由重构
@@ -33,7 +33,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 2 | ● | 2/2 | 100% |
 | 3 | ● | 2/2 | 100% |
 | 4 | ● | 3/3 | 100% |
-| 5 | ○ | 0/0 | 0% |
+| 5 | ○ | 2/4 | 50% |
 
 ## Recent Work
 
@@ -72,6 +72,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 5: Schemas stay with controllers (no new schemas/ directory)
 - Phase 5: Permission codes in api-contract/src/permissions.ts (single source)
 - Phase 5: web-api-client unified for both tenant-web and admin-web
+- Phase 5 Plan 02: createAdminApiClient 复用 web-api-client 逻辑，admin 使用 admin_access_token，无 refresh token，401 静默跳转登录页
 - Phase 5: Structured logger (pino) for services + scheduler only
 
 ## Blockers
@@ -94,4 +95,4 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ---
 *Last updated: 2026-03-19*
 
-*Last activity: 2026-03-19 - Completed quick task 260319-m9l: admin和tenant的默认端口冲突*
+*Last activity: 2026-03-19 - Completed Phase 5 Plan 02: 统一前端 API 客户端（web-api-client 被 tenant-web 和 admin-web 共用）*
