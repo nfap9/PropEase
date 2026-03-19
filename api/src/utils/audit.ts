@@ -3,6 +3,8 @@
  * 用于记录运营后台操作，方便追踪和审计
  */
 
+import { logger } from './logger.js';
+
 type AuditAction =
   | 'admin:login'
   | 'admin:user:create'
@@ -54,7 +56,7 @@ export function auditLog(params: AuditLogParams): void {
   if (targetId) logData.targetId = targetId;
   if (metadata) logData.metadata = metadata;
 
-  console.log('[AUDIT]', JSON.stringify(logData));
+  logger.info({ ...logData, type: 'audit' }, 'AUDIT');
 }
 
 /**
