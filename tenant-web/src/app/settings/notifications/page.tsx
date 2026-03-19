@@ -9,7 +9,6 @@ import type {
 } from '@/types';
 import { toast } from 'sonner';
 import { ColumnDef } from '@tanstack/react-table';
-import { MainLayout } from '@/components/layout/main-layout';
 import { DataTable } from '@/components/common/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -164,31 +163,26 @@ export default function ReachabilitySettingsPage() {
 
   if (authLoading) {
     return (
-      <MainLayout>
-        <div className="space-y-6">
-          <Skeleton className="h-10 w-56" />
-          <Skeleton className="h-40" />
-          <Skeleton className="h-96" />
-        </div>
-      </MainLayout>
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-56" />
+        <Skeleton className="h-40" />
+        <Skeleton className="h-96" />
+      </div>
     );
   }
 
   if (!orgId) {
     return (
-      <MainLayout>
-        <div className="flex h-full flex-col items-center justify-center space-y-3 text-center">
-          <ShieldOff className="h-12 w-12 text-muted-foreground" />
-          <h1 className="text-2xl font-semibold">请先选择组织</h1>
-          <p className="text-muted-foreground">选择组织后才可以配置租客消息触达能力。</p>
-        </div>
-      </MainLayout>
+      <div className="flex h-full flex-col items-center justify-center space-y-3 text-center">
+        <ShieldOff className="h-12 w-12 text-muted-foreground" />
+        <h1 className="text-2xl font-semibold">请先选择组织</h1>
+        <p className="text-muted-foreground">选择组织后才可以配置租客消息触达能力。</p>
+      </div>
     );
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex items-center gap-3">
           <BellRing className="h-8 w-8" />
           <div>
@@ -356,7 +350,6 @@ export default function ReachabilitySettingsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </MainLayout>
   );
 }
 

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { permissionsApi } from '@/lib/api/permissions';
 import { organizationsApi } from '@/lib/api';
@@ -108,40 +107,35 @@ export default function PermissionsPage() {
 
   if (!organization) {
     return (
-      <MainLayout>
-        <div className="flex h-96 items-center justify-center">
-          <p className="text-muted-foreground">请先选择一个组织</p>
-        </div>
-      </MainLayout>
+      <div className="flex h-96 items-center justify-center">
+        <p className="text-muted-foreground">请先选择一个组织</p>
+      </div>
     );
   }
 
   if (permissionsLoading) {
     return (
-      <MainLayout>
-        <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-              <Shield className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <Skeleton className="h-8 w-48" />
-              <Skeleton className="mt-1 h-4 w-64" />
-            </div>
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <Shield className="h-5 w-5 text-primary" />
           </div>
-          <div className="flex h-[calc(100vh-12rem)] min-h-[400px] rounded-lg border bg-card">
-            <Skeleton className="w-56 shrink-0" />
-            <Skeleton className={cn('flex-1')} />
+          <div>
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="mt-1 h-4 w-64" />
           </div>
         </div>
-      </MainLayout>
+        <div className="flex h-[calc(100vh-12rem)] min-h-[400px] rounded-lg border bg-card">
+          <Skeleton className="w-56 shrink-0" />
+          <Skeleton className={cn('flex-1')} />
+        </div>
+      </div>
     );
   }
 
   return (
     <PermissionPageGuard>
-      <MainLayout>
-        <div className="space-y-6">
+      <div className="space-y-6">
           <div className="flex items-center gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
               <Shield className="h-5 w-5 text-primary" />
@@ -173,7 +167,6 @@ export default function PermissionsPage() {
             </main>
           </div>
         </div>
-      </MainLayout>
     </PermissionPageGuard>
   );
 }

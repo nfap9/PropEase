@@ -3,7 +3,6 @@
 import { Suspense, useCallback, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
@@ -63,59 +62,51 @@ function SubscriptionPayContent() {
 
   if (!orderId || !orgId) {
     return (
-      <MainLayout>
-        <div className="space-y-6">
-          <p className="text-muted-foreground">缺少订单信息</p>
-          <Button variant="outline" onClick={handleBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            返回订阅管理
-          </Button>
-        </div>
-      </MainLayout>
+      <div className="space-y-6">
+        <p className="text-muted-foreground">缺少订单信息</p>
+        <Button variant="outline" onClick={handleBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          返回订阅管理
+        </Button>
+      </div>
     );
   }
 
   if (isLoading && !order) {
     return (
-      <MainLayout>
-        <div className="space-y-6">
-          <Skeleton className="h-10 w-48" />
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent className="flex flex-col items-center gap-4">
-              <Skeleton className="h-48 w-48 rounded" />
-              <Skeleton className="h-4 w-64" />
-            </CardContent>
-          </Card>
-        </div>
-      </MainLayout>
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-48" />
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4">
+            <Skeleton className="h-48 w-48 rounded" />
+            <Skeleton className="h-4 w-64" />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   if (isError || !order) {
     return (
-      <MainLayout>
-        <div className="space-y-6">
-          <p className="text-destructive">无法加载订单</p>
-          <Button variant="outline" onClick={handleBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            返回订阅管理
-          </Button>
-        </div>
-      </MainLayout>
+      <div className="space-y-6">
+        <p className="text-destructive">无法加载订单</p>
+        <Button variant="outline" onClick={handleBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          返回订阅管理
+        </Button>
+      </div>
     );
   }
 
   if (order.status === 'paid') {
     return (
-      <MainLayout>
-        <div className="flex flex-col items-center justify-center gap-4 py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p>支付成功，正在跳转...</p>
-        </div>
-      </MainLayout>
+      <div className="flex flex-col items-center justify-center gap-4 py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p>支付成功，正在跳转...</p>
+      </div>
     );
   }
 
@@ -123,17 +114,15 @@ function SubscriptionPayContent() {
     const config =
       order.status === 'cancelled' ? ORDER_STATUS_CONFIG.cancelled : ORDER_STATUS_CONFIG.failed;
     return (
-      <MainLayout>
-        <div className="space-y-6">
-          <div className="flex items-center gap-2">
-            <Badge variant={config.variant}>{config.label}</Badge>
-          </div>
-          <Button variant="outline" onClick={handleBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            返回订阅管理
-          </Button>
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <Badge variant={config.variant}>{config.label}</Badge>
         </div>
-      </MainLayout>
+        <Button variant="outline" onClick={handleBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          返回订阅管理
+        </Button>
+      </div>
     );
   }
 
@@ -141,18 +130,16 @@ function SubscriptionPayContent() {
   if (isExpired) {
     const config = ORDER_STATUS_CONFIG.expired;
     return (
-      <MainLayout>
-        <div className="space-y-6">
-          <div className="flex items-center gap-2">
-            <Badge variant={config.variant}>{config.label}</Badge>
-            <span className="text-muted-foreground">请返回订阅管理重新下单</span>
-          </div>
-          <Button variant="outline" onClick={handleBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            返回订阅管理
-          </Button>
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <Badge variant={config.variant}>{config.label}</Badge>
+          <span className="text-muted-foreground">请返回订阅管理重新下单</span>
         </div>
-      </MainLayout>
+        <Button variant="outline" onClick={handleBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          返回订阅管理
+        </Button>
+      </div>
     );
   }
 
@@ -161,8 +148,7 @@ function SubscriptionPayContent() {
     : null;
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -240,7 +226,6 @@ function SubscriptionPayContent() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
   );
 }
 
@@ -248,20 +233,18 @@ export default function SubscriptionPayPage() {
   return (
     <Suspense
       fallback={
-        <MainLayout>
-          <div className="space-y-6">
-            <Skeleton className="h-10 w-48" />
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-32" />
-              </CardHeader>
-              <CardContent className="flex flex-col items-center gap-4">
-                <Skeleton className="h-48 w-48 rounded" />
-                <Skeleton className="h-4 w-64" />
-              </CardContent>
-            </Card>
-          </div>
-        </MainLayout>
+        <div className="space-y-6">
+          <Skeleton className="h-10 w-48" />
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-4">
+              <Skeleton className="h-48 w-48 rounded" />
+              <Skeleton className="h-4 w-64" />
+            </CardContent>
+          </Card>
+        </div>
       }
     >
       <SubscriptionPayContent />

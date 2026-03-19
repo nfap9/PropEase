@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
@@ -144,8 +143,7 @@ export default function SubscriptionPurchasePage() {
   const selectedPricingSummary = getPricingSummary(selectedPricing);
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button
@@ -359,6 +357,5 @@ export default function SubscriptionPurchasePage() {
           </DialogContent>
         </Dialog>
       </div>
-    </MainLayout>
   );
 }

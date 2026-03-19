@@ -7,7 +7,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
@@ -276,19 +275,16 @@ export default function TeamSettingsPage() {
 
   if (orgsLoading) {
     return (
-      <MainLayout>
-        <div className="space-y-6">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-96" />
-        </div>
-      </MainLayout>
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-96" />
+      </div>
     );
   }
 
   return (
     <PermissionPageGuard>
-      <MainLayout>
-        <div className="space-y-6">
+      <div className="space-y-6">
           <h1 className="text-3xl font-bold" data-testid={TEAM_SETTINGS.HEADING}>团队设置</h1>
 
           <Tabs defaultValue="organizations" className="space-y-4">
@@ -531,7 +527,6 @@ export default function TeamSettingsPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </MainLayout>
     </PermissionPageGuard>
   );
 }

@@ -77,11 +77,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
           {/* Header */}
           <header className="flex h-16 items-center justify-between border-b px-4">
             {/* Mobile Nav Trigger - uses SidebarTrigger which handles Sheet automatically */}
-            <SidebarTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden">
-                {/* SidebarTrigger renders PanelLeft icon internally */}
-              </Button>
-            </SidebarTrigger>
+            <SidebarTrigger className="lg:hidden" />
 
             {/* 全局组织选择器 */}
             <div className="flex flex-1 justify-center">

@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { Building2, Settings as SettingsIcon, ShoppingBag, MessageSquareMore, Users } from 'lucide-react';
 import { useAuth } from '@/lib/auth/context';
-import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 
 // 注意: 实际使用时从 testids 导入 SETTINGS 常量
@@ -65,8 +64,7 @@ export default function SettingsPage() {
   ].filter(Boolean);
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex items-center gap-4">
           <SettingsIcon className="h-8 w-8" />
           <div>
@@ -100,6 +98,5 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
-    </MainLayout>
   );
 }

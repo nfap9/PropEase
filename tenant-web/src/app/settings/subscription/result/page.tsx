@@ -3,7 +3,6 @@
 import { Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
@@ -34,8 +33,7 @@ function SubscriptionResultContent() {
   };
 
   return (
-    <MainLayout>
-      <div className="mx-auto max-w-md space-y-6">
+    <div className="mx-auto max-w-md space-y-6">
         <Card className={isSuccess ? 'border-green-500/50' : 'border-destructive/50'}>
           <CardHeader>
             <div className="flex items-center gap-3">
@@ -65,7 +63,6 @@ function SubscriptionResultContent() {
           返回订阅管理
         </Button>
       </div>
-    </MainLayout>
   );
 }
 
@@ -73,12 +70,10 @@ export default function SubscriptionResultPage() {
   return (
     <Suspense
       fallback={
-        <MainLayout>
-          <div className="mx-auto max-w-md space-y-6">
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-        </MainLayout>
+        <div className="mx-auto max-w-md space-y-6">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
       }
     >
       <SubscriptionResultContent />
