@@ -153,6 +153,7 @@ export function createOrganizationService(
       const updateData: Prisma.OrganizationUpdateInput = {};
       if (data.name != null) updateData.name = data.name;
       if (data.settings != null) updateData.settings = data.settings as Prisma.InputJsonValue;
+      if (data.notes != null) updateData.notes = data.notes;
 
       return getRepo().update(orgId, updateData);
     },
