@@ -9,7 +9,7 @@
 | Phase | Milestone | Plans | Status | Completed |
 |-------|-----------|-------|--------|-----------|
 | 1-5 | v1.0 MVP | 12/12 | Complete | 2026-03-19 |
-| 6 | 1/1 | Complete   | 2026-03-19 | — |
+| 6 | 1/1 | Complete    | 2026-03-19 | — |
 
 ### Phase 6: 为tenant-web所有功能添加E2E测试
 
