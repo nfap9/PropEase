@@ -1,21 +1,73 @@
-// 颜色常量 - 与设计规范对齐
+// 颜色常量 - 与 tamagui.config.ts 设计令牌对齐
 export const Colors = {
-  // 主色
+  // 主色（对应 tamagui primary600）
   primary: '#2563EB',
   primaryLight: '#3B82F6',
   primaryDark: '#1D4ED8',
+  primary50: '#EFF6FF',
+  primary100: '#DBEAFE',
+  primary200: '#BFDBFE',
+  primary300: '#93C5FD',
+  primary400: '#60A5FA',
+  primary500: '#3B82F6',
+  primary600: '#2563EB',
+  primary700: '#1D4ED8',
+  primary800: '#1E40AF',
+  primary900: '#1E3A8A',
 
-  // 成功色（绿色）
-  success: '#059669',
-  successLight: '#10B981',
+  // 成功色（对应 tamagui success600）
+  success: '#10B981',
+  successLight: '#34D399',
+  success50: '#ECFDF5',
+  success100: '#D1FAE5',
+  success200: '#A7F3D0',
+  success300: '#6EE7B7',
+  success400: '#34D399',
+  success500: '#10B981',
+  success600: '#059669',
+  success700: '#047857',
+  success800: '#065F46',
+  success900: '#064E3B',
 
-  // 警告色（橙色）
-  warning: '#EA580C',
-  warningLight: '#F59E0B',
+  // 警告色（对应 tamagui warning600）
+  warning: '#F97316',
+  warningLight: '#FB923C',
+  warning50: '#FFF7ED',
+  warning100: '#FFEDD5',
+  warning200: '#FED7AA',
+  warning300: '#FDBA74',
+  warning400: '#FB923C',
+  warning500: '#F97316',
+  warning600: '#EA580C',
+  warning700: '#C2410C',
+  warning800: '#9A3412',
+  warning900: '#7C2D12',
 
-  // 危险色（红色）
-  danger: '#DC2626',
-  dangerLight: '#EF4444',
+  // 危险色（对应 tamagui danger600）
+  danger: '#EF4444',
+  dangerLight: '#F87171',
+  danger50: '#FEF2F2',
+  danger100: '#FEE2E2',
+  danger200: '#FECACA',
+  danger300: '#FCA5A5',
+  danger400: '#F87171',
+  danger500: '#EF4444',
+  danger600: '#DC2626',
+  danger700: '#B91C1C',
+  danger800: '#991B1B',
+  danger900: '#7F1D1D',
+
+  // 灰色梯度（对应 tamagui gray）
+  gray50: '#F8FAFC',
+  gray100: '#F1F5F9',
+  gray200: '#E2E8F0',
+  gray300: '#CBD5E1',
+  gray400: '#94A3B8',
+  gray500: '#64748B',
+  gray600: '#475569',
+  gray700: '#334155',
+  gray800: '#1E293B',
+  gray900: '#0F172A',
 
   // 背景
   background: '#F8FAFC',
@@ -26,10 +78,14 @@ export const Colors = {
   textPrimary: '#1F2937',
   textSecondary: '#6B7280',
   textMuted: '#9CA3AF',
+  textInverse: '#FFFFFF',
 
   // 边框
   border: '#E5E7EB',
   borderLight: '#F3F4F6',
+
+  // 透明
+  transparent: 'transparent',
 } as const
 
 // 状态颜色映射
