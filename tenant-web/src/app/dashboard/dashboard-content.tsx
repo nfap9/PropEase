@@ -39,7 +39,7 @@ function StatCard({
   testid?: string;
 }) {
   return (
-    <Card data-testid={testid}>
+    <Card data-testid={testid} className="h-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className={`h-4 w-4 ${iconColor || 'text-muted-foreground'}`} />
@@ -110,7 +110,7 @@ export function DashboardContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       <h1 className="text-3xl font-bold" data-testid="dashboard-heading">首页</h1>
 
       {overviewLoading ? (
