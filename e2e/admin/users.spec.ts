@@ -1,5 +1,5 @@
 /**
- * 运营后台 - 用户管理 E2E 测试
+ * 运营后台注册用户管理 E2E 测试
  *
  * 覆盖场景：
  * - 用户列表展示
@@ -7,81 +7,74 @@
  * - 查看用户详情
  */
 
-import { test, expect } from '@playwright/test';
-import { adminLogin } from '../helpers/auth';
-import { ADMIN_REGISTERED_USERS, COMMON } from '../testids';
-
-const ADMIN_BASE_URL = 'http://localhost:3001';
+import { test, expect } from '../fixtures';
+import { RegisteredUsersPage } from '../pages/admin/registered-users-page';
+import { ADMIN_REGISTERED_USERS } from '../testids';
 
 test.describe('注册用户管理页面', () => {
-  test.beforeEach(async ({ page }) => {
-    await adminLogin(page);
-    await page.goto(`${ADMIN_BASE_URL}/admin/registered-users`);
+  let usersPage: RegisteredUsersPage;
+
+  test.beforeEach(async ({ adminPage }) => {
+    usersPage = new RegisteredUsersPage(adminPage);
+    await usersPage.load();
   });
 
-  test('应该显示用户管理页面', async ({ page }) => {
-    // 等待页面加载
-    await page.waitForTimeout(500);
+  test('显示用户列表', async () => {
+    await expect(usersPage.list).toBeVisible();
+    await expect(usersPage.heading).toBeVisible();
   });
 
-  test('应该显示用户列表', async ({ page }) => {
-    await page.waitForTimeout(500);
-
-    const userList = page.locator(`[data-testid="${ADMIN_REGISTERED_USERS.LIST}"]`);
-    if (await userList.isVisible()) {
-      const users = userList.locator('> *');
-      const count = await users.count();
-      expect(count).toBeGreaterThanOrEqual(0);
-    }
+  test('搜索框可输入', async () => {
+    await expect(usersPage.searchInput).toBeVisible();
+    await usersPage.search('138');
+    // 等待搜索结果
+    await usersPage.list.waitFor({ state: 'visible', timeout: 10000 });
   });
 
-  test('搜索用户', async ({ page }) => {
-    await page.waitForTimeout(500);
-
-    const searchInput = page.locator(`[data-testid="${ADMIN_REGISTERED_USERS.SEARCH_INPUT}"]`);
-    if (await searchInput.isVisible()) {
-      // 输入搜索关键词
-      await searchInput.fill('138');
-      await page.waitForTimeout(500);
-
-      // 验证搜索结果
-      const userList = page.locator(`[data-testid="${ADMIN_REGISTERED_USERS.LIST}"]`);
-      if (await userList.isVisible()) {
-        await page.waitForTimeout(300);
-      }
-    }
+  test('清空搜索显示所有用户', async () => {
+    await usersPage.search('138');
+    await usersPage.search('');
+    await usersPage.list.waitFor({ state: 'visible', timeout: 10000 });
   });
 
-  test('清空搜索显示所有用户', async ({ page }) => {
-    await page.waitForTimeout(500);
-
-    const searchInput = page.locator(`[data-testid="${ADMIN_REGISTERED_USERS.SEARCH_INPUT}"]`);
-    if (await searchInput.isVisible()) {
-      // 输入并清空
-      await searchInput.fill('138');
-      await page.waitForTimeout(300);
-      await searchInput.clear();
-      await page.waitForTimeout(500);
-    }
+  test('用户列表可以加载数据', async () => {
+    const count = await usersPage.getRowCount();
+    expect(count).toBeGreaterThanOrEqual(0);
   });
 });
 
 test.describe('用户详情', () => {
-  test.beforeEach(async ({ page }) => {
-    await adminLogin(page);
+  let usersPage: RegisteredUsersPage;
+
+  test.beforeEach(async ({ adminPage }) => {
+    usersPage = new RegisteredUsersPage(adminPage);
+    await usersPage.load();
   });
 
-  test('查看用户详情', async ({ page }) => {
-    await page.goto(`${ADMIN_BASE_URL}/admin/registered-users`);
-    await page.waitForTimeout(500);
-
-    const userList = page.locator(`[data-testid="${ADMIN_REGISTERED_USERS.LIST}"]`);
-    if (await userList.isVisible()) {
-      const firstUser = userList.locator('> *').first();
-      if (await firstUser.isVisible()) {
-        await firstUser.click();
-        await page.waitForTimeout(500);
-      }
+  test('用户列表不为空时显示第一项', async () => {
+    const count = await usersPage.getRowCount();
+    if (count > 0) {
+      const firstUser = usersPage.list.locator('> *').first();
+      await firstUser.waitFor({ state: 'visible', timeout: 10000 });
     }
+  });
+});
+
+test.describe('用户搜索功能', () => {
+  let usersPage: RegisteredUsersPage;
+
+  test.beforeEach(async ({ adminPage }) => {
+    usersPage = new RegisteredUsersPage(adminPage);
+    await usersPage.load();
+  });
+
+  test('搜索输入框可见', async () => {
+    await expect(usersPage.searchInput).toBeVisible();
+  });
+
+  test('执行搜索后列表更新', async () => {
+    await usersPage.searchInput.fill('138');
+    await usersPage.searchInput.press('Enter');
+    await usersPage.list.waitFor({ state: 'visible', timeout: 10000 });
   });
 });

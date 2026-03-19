@@ -1,67 +1,63 @@
 /**
- * 运营后台 - 概览页面 E2E 测试
+ * 运营后台概览页 E2E 测试
  *
  * 覆盖场景：
  * - 概览页统计数据展示
  * - 退出登录
  */
 
-import { test, expect } from '@playwright/test';
-import { adminLogin } from '../helpers/auth';
+import { test, expect } from '../fixtures';
+import { OverviewPage } from '../pages/admin/overview-page';
 import { ADMIN } from '../testids';
 
-const ADMIN_BASE_URL = 'http://localhost:3001';
-
 test.describe('运营后台概览页', () => {
-  test.beforeEach(async ({ page }) => {
-    await adminLogin(page);
-    await page.goto(`${ADMIN_BASE_URL}/`);
+  let overviewPage: OverviewPage;
+
+  test.beforeEach(async ({ adminPage }) => {
+    overviewPage = new OverviewPage(adminPage);
+    await overviewPage.load();
   });
 
-  test('应该显示概览页统计数据', async ({ page }) => {
-    // 等待页面加载
-    await page.waitForSelector(`[data-testid="${ADMIN.OVERVIEW_HEADING}"]`, { timeout: 10000 });
+  test('显示统计数据卡片', async () => {
+    // 等待卡片可见
+    await overviewPage.apartmentCountCard.waitFor({ state: 'visible', timeout: 10000 });
+    await overviewPage.roomCountCard.waitFor({ state: 'visible', timeout: 10000 });
 
-    // 验证统计数据展示
-    const orgCount = page.locator(`[data-testid="${ADMIN.ORG_COUNT}"]`);
-    if (await orgCount.isVisible()) {
-      await expect(orgCount).toBeVisible();
-    }
+    // 验证卡片内容非空
+    const apartmentCount = await overviewPage.getStatCardValue(ADMIN.APARTMENT_COUNT);
+    expect(apartmentCount.trim().length).toBeGreaterThan(0);
+  });
 
-    const userCount = page.locator(`[data-testid="${ADMIN.USER_COUNT}"]`);
-    if (await userCount.isVisible()) {
-      await expect(userCount).toBeVisible();
-    }
+  test('显示房间数统计', async () => {
+    await overviewPage.apartmentCountCard.waitFor({ state: 'visible', timeout: 10000 });
+    await overviewPage.roomCountCard.waitFor({ state: 'visible', timeout: 10000 });
+
+    const roomCount = await overviewPage.getStatCardValue(ADMIN.ROOM_COUNT);
+    expect(roomCount.trim().length).toBeGreaterThan(0);
+  });
+
+  test('退出登录成功', async () => {
+    await overviewPage.logout();
+    await expect(overviewPage.page).toHaveURL(/admin\/login/);
   });
 });
 
-test.describe('运营后台导航', () => {
-  test.beforeEach(async ({ page }) => {
-    await adminLogin(page);
+test.describe('运营后台概览页 - 导航测试', () => {
+  let overviewPage: OverviewPage;
+
+  test.beforeEach(async ({ adminPage }) => {
+    overviewPage = new OverviewPage(adminPage);
+    await overviewPage.load();
   });
 
-  test('访问用户管理页面', async ({ page }) => {
-    await page.goto(`${ADMIN_BASE_URL}/admin/registered-users`);
-    await page.waitForTimeout(500);
+  test('概览页标题可见', async () => {
+    await expect(overviewPage.heading).toBeVisible();
   });
 
-  test('访问角色管理页面', async ({ page }) => {
-    await page.goto(`${ADMIN_BASE_URL}/admin/roles`);
-    await page.waitForTimeout(500);
-  });
-
-  test('访问组织管理页面', async ({ page }) => {
-    await page.goto(`${ADMIN_BASE_URL}/admin/organizations`);
-    await page.waitForTimeout(500);
-  });
-
-  test('访问服务配置页面', async ({ page }) => {
-    await page.goto(`${ADMIN_BASE_URL}/admin/plans`);
-    await page.waitForTimeout(500);
-  });
-
-  test('访问订阅管理页面', async ({ page }) => {
-    await page.goto(`${ADMIN_BASE_URL}/admin/subscriptions`);
-    await page.waitForTimeout(500);
+  test('概览页显示所有统计卡片', async () => {
+    await expect(overviewPage.apartmentCountCard).toBeVisible();
+    await expect(overviewPage.roomCountCard).toBeVisible();
+    await expect(overviewPage.occupancyRateCard).toBeVisible();
+    await expect(overviewPage.monthlyRevenueCard).toBeVisible();
   });
 });

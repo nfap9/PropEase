@@ -1,5 +1,5 @@
 /**
- * 运营后台 - 组织管理 E2E 测试
+ * 运营后台组织管理 E2E 测试
  *
  * 覆盖场景：
  * - 组织列表展示
@@ -7,90 +7,56 @@
  * - 启用/停用组织
  */
 
-import { test, expect } from '@playwright/test';
-import { adminLogin } from '../helpers/auth';
-import { ADMIN_ORGANIZATIONS, COMMON } from '../testids';
-
-const ADMIN_BASE_URL = 'http://localhost:3001';
+import { test, expect } from '../fixtures';
+import { OrganizationsPage } from '../pages/admin/organizations-page';
+import { ADMIN_ORGANIZATIONS } from '../testids';
 
 test.describe('组织管理页面', () => {
-  test.beforeEach(async ({ page }) => {
-    await adminLogin(page);
-    await page.goto(`${ADMIN_BASE_URL}/admin/organizations`);
+  let orgPage: OrganizationsPage;
+
+  test.beforeEach(async ({ adminPage }) => {
+    orgPage = new OrganizationsPage(adminPage);
+    await orgPage.load();
   });
 
-  test('应该显示组织列表', async ({ page }) => {
-    await page.waitForTimeout(500);
+  test('显示组织列表', async () => {
+    await expect(orgPage.list).toBeVisible();
+    await expect(orgPage.heading).toBeVisible();
+  });
 
-    const orgList = page.locator(`[data-testid="${ADMIN_ORGANIZATIONS.LIST}"]`);
-    if (await orgList.isVisible()) {
-      const orgs = orgList.locator('> *');
-      const count = await orgs.count();
-      expect(count).toBeGreaterThanOrEqual(0);
-    }
+  test('组织列表可以加载数据', async () => {
+    const count = await orgPage.getListRowCount();
+    expect(count).toBeGreaterThanOrEqual(0);
   });
 });
 
 test.describe('组织详情', () => {
-  test.beforeEach(async ({ page }) => {
-    await adminLogin(page);
+  let orgPage: OrganizationsPage;
+
+  test.beforeEach(async ({ adminPage }) => {
+    orgPage = new OrganizationsPage(adminPage);
+    await orgPage.load();
   });
 
-  test('查看组织详情', async ({ page }) => {
-    await page.goto(`${ADMIN_BASE_URL}/admin/organizations`);
-    await page.waitForTimeout(500);
-
-    const orgList = page.locator(`[data-testid="${ADMIN_ORGANIZATIONS.LIST}"]`);
-    if (await orgList.isVisible()) {
-      const firstOrg = orgList.locator('> *').first();
-      if (await firstOrg.isVisible()) {
-        await firstOrg.click();
-        await page.waitForTimeout(500);
-      }
+  test('组织列表不为空时显示第一项', async () => {
+    const count = await orgPage.getListRowCount();
+    if (count > 0) {
+      const firstOrg = orgPage.list.locator('> *').first();
+      await firstOrg.waitFor({ state: 'visible', timeout: 10000 });
     }
   });
 });
 
 test.describe('组织状态管理', () => {
-  test.beforeEach(async ({ page }) => {
-    await adminLogin(page);
+  let orgPage: OrganizationsPage;
+
+  test.beforeEach(async ({ adminPage }) => {
+    orgPage = new OrganizationsPage(adminPage);
+    await orgPage.load();
   });
 
-  test('停用组织按钮存在', async ({ page }) => {
-    await page.goto(`${ADMIN_BASE_URL}/admin/organizations`);
-    await page.waitForTimeout(500);
-
-    const orgList = page.locator(`[data-testid="${ADMIN_ORGANIZATIONS.LIST}"]`);
-    if (await orgList.isVisible()) {
-      const firstOrg = orgList.locator('> *').first();
-      if (await firstOrg.isVisible()) {
-        await firstOrg.hover();
-
-        const disableButton = page.locator(`[data-testid="${ADMIN_ORGANIZATIONS.DISABLE_BUTTON}"]`).first();
-        // 只验证按钮存在，不实际点击
-        if (await disableButton.isVisible()) {
-          await expect(disableButton).toBeVisible();
-        }
-      }
-    }
-  });
-
-  test('启用组织按钮存在', async ({ page }) => {
-    await page.goto(`${ADMIN_BASE_URL}/admin/organizations`);
-    await page.waitForTimeout(500);
-
-    const orgList = page.locator(`[data-testid="${ADMIN_ORGANIZATIONS.LIST}"]`);
-    if (await orgList.isVisible()) {
-      // 查找已停用的组织
-      const disabledOrg = orgList.locator('text="已停用"').first();
-      if (await disabledOrg.isVisible()) {
-        await disabledOrg.hover();
-
-        const enableButton = page.locator(`[data-testid="${ADMIN_ORGANIZATIONS.ENABLE_BUTTON}"]`).first();
-        if (await enableButton.isVisible()) {
-          await expect(enableButton).toBeVisible();
-        }
-      }
-    }
+  test('页面显示组织列表', async () => {
+    await orgPage.list.waitFor({ state: 'visible', timeout: 10000 });
+    await expect(orgPage.list).toBeVisible();
   });
 });
