@@ -80,8 +80,9 @@ Each task was committed atomically:
 4. **Task 4: 提取 subscriptions 路由到 subscriptions.controller.ts** — `d49b84b` (refactor)
 5. **Task 5: 提取 admin 路由到 admin.controller.ts** — `fb7c378` (refactor)
 6. **Fix: 修复导入路径和类型注解** — `ed16075` (fix)
+7. **Fix: 添加 RouterType 注解并修复 organizations.controller.ts 缺少闭合括号** — `aff9010` (fix)
 
-**Plan metadata commit:** `ed16075` (fix: correct import paths and type annotations)
+**Plan metadata commit:** `aff9010` (fix: add RouterType annotations and fix missing parenthesis)
 
 ## Files Created/Modified
 

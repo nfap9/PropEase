@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_phase: 05
-status: in_progress
-last_updated: "2026-03-19T09:48:11.406Z"
+status: unknown
+last_updated: "2026-03-19T09:49:19.079Z"
 progress:
   total_phases: 5
   completed_phases: 4
@@ -33,11 +33,11 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 2 | ● | 2/2 | 100% |
 | 3 | ● | 2/2 | 100% |
 | 4 | ● | 3/3 | 100% |
-| 5 | ○ | 3/4 | 75% |
+| 5 | ● | 4/4 | 100% |
 
 ## Recent Work
 
-- Phase 5 Plan 03 complete: thin routes + fat controllers for apartments, organizations, bills, subscriptions, admin routes
+- Phase 5 Plan 03 complete: thin routes + fat controllers for 5 route files (apartments, organizations, bills, subscriptions, admin)
 - Phase 5: Context gathered — API route refactoring (controllers), permission system DRY (api-contract), frontend DRY (web-api-client), logging (pino)
 - Phase 4 Plan 02 complete: integrated shadcn/ui collapsible sidebar with MainLayout, icon-only collapsed state with hover tooltips
 - Phase 4 Plan 01 complete: established (auth) and (dashboard) route groups, fixed Bell->Menu mobile nav bug
@@ -69,6 +69,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - [Phase 05]: admin.controller.ts 放在 admin/ 子目录以保持一致的相对导入深度
 - [Phase 05]: Thin routes: 路由文件只保留 router 挂载（5-72行），controller 文件包含所有 handler + schemas
 - [Phase 05]: admin.controller.ts 放在 admin/ 子目录以保持一致的相对导入深度
+- [Phase 05]: Thin routes + fat controllers: 5 route files refactored to thin routers, all handlers extracted to controllers
 
 ## Phase 5 Decisions
 
@@ -100,4 +101,4 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ---
 *Last updated: 2026-03-19*
 
-*Last activity: 2026-03-19 - Completed Phase 5 Plan 02: 统一前端 API 客户端（web-api-client 被 tenant-web 和 admin-web 共用）*
+*Last activity: 2026-03-19 - Completed Phase 5 Plan 03: thin routes + fat controllers refactoring for 5 API route files*
