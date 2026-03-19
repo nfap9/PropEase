@@ -43,7 +43,17 @@
 
 **Plans:**
 2/2 plans complete
-- [ ] 02-02-PLAN.md — 更新订阅管理页面图标
+
+### Phase 3: tenant-web组织视图 - 创建/选择组织页面
+
+**Goal:** 创建 /organizations 页面，支持组织创建（0个组织时）和组织选择（多个组织时）；在设置页面添加组织切换入口
+
+**Requirements**: TBD
+**Depends on:** Phase 2
+**Plans:** 2 plans
+
+Plans:
+- [x] 03-01-PLAN.md — 创建 /organizations 页面（双模式：创建/选择）
+- [x] 03-02-PLAN.md — 设置页面添加组织切换入口 + /organizations/new 重定向
 
 ---
-
