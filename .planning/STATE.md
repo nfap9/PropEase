@@ -6,7 +6,7 @@ current_phase: null
 status: milestone_complete
 last_updated: "2026-03-19T19:30:00Z"
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 5
   total_plans: 12
   completed_plans: 12
@@ -34,6 +34,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 3 | ● | 2/2 | 100% |
 | 4 | ● | 3/3 | 100% |
 | 5 | ● | 4/4 | 100% |
+| 6 | ○ | 0/0 | 0% |
 
 ## Recent Work
 
@@ -96,6 +97,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Roadmap Evolution
 
+- Phase 6 added: 为tenant-web所有功能添加E2E测试
 - Phase 5 added: 优化架构
 - Phase 4 added: tenant-web前端重构：新注册/登录页、header+sider+main主布局、业务模块导航
 - Phase 3 added: 重新编排tenant-web前端路由：添加组织视图用于创建/选择组织
