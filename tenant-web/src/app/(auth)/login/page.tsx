@@ -84,10 +84,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-muted/40 p-4" data-testid="auth-login-page">
-      <Card className="w-full max-w-md">
+    <div className="relative flex min-h-screen items-center justify-center p-4"
+      style={{
+        background: 'linear-gradient(135deg, hsl(210 40% 96.1%) 0%, hsl(0 0% 100%) 50%, hsl(210 40% 96.1%) 100%)',
+      }}
+      data-testid="auth-login-page">
+      <Card className="w-full max-w-md shadow-xl shadow-gray-200/50 dark:shadow-gray-900/50 rounded-xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">{brandConfig.app_name}</CardTitle>
+          <CardTitle className="text-xl font-semibold">{brandConfig.app_name}</CardTitle>
           <CardDescription>{brandConfig.login_subtitle}</CardDescription>
         </CardHeader>
         <CardContent>
