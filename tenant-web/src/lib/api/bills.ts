@@ -1,6 +1,6 @@
 import api from './client';
 import { Bill, Payment, BillStatus } from '@/types';
-import type { BillFeeItem } from '@apartment-ultra/api-contract';
+import type { BillFeeItem } from '@/types';
 
 export const billsApi = {
   list: async (

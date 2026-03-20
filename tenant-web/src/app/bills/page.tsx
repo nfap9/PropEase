@@ -46,7 +46,7 @@ import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
 import { Bill, BillStatus, PaymentMethod, Payment } from '@/types';
 import { BILL_STATUS_CONFIG } from '@/lib/status-config';
-import type { BillFeeItem } from '@apartment-ultra/api-contract';
+import type { BillFeeItem } from '@/types';
 import {
   Download,
   DollarSign,

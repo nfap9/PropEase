@@ -1,5 +1,5 @@
 import type { Bill } from '@/types';
-import type { BillFeeItem } from '@apartment-ultra/api-contract';
+import type { BillFeeItem } from '@/types';
 
 const CARD_WIDTH = 1080;
 const CARD_PADDING_X = 72;
