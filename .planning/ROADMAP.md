@@ -12,6 +12,7 @@
 | 1-7 | v1.0 MVP | 16/16 | Complete | 2026-03-20 |
 | 8 | 1/1 | Complete    | 2026-03-19 | - |
 | 11 | 4/5 | 4/5     | 2026-03-20 | - |
+| 12 | 1/1 | Planned | - | - |
 
 ### Phase 8: 运营数据看板
 
@@ -58,13 +59,13 @@ Plans:
 
 ### Phase 12: 对齐api数据结构和api-contract
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** 对齐 api 数据结构和 api-contract，消除 BillFeeItem 导入不一致、ApartmentWithStats 定义分散、Prisma Decimal 序列化类型不匹配三个主要缺口
+**Requirements**: AC-12-01, AC-12-02, AC-12-03
 **Depends on:** Phase 11
-**Plans:** 0 plans
+**Plans:** 1/1 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 12 to break down)
+- [ ] 12-01-PLAN.md — 修复 BillFeeItem 导入、RoomStats 导入、Decimal 序列化
 
 ---
 
