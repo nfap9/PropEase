@@ -4,18 +4,18 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 12
 status: unknown
-last_updated: "2026-03-19T17:54:29.140Z"
+last_updated: "2026-03-20T06:52:04.269Z"
 progress:
-  total_phases: 4
-  completed_phases: 2
-  total_plans: 5
-  completed_plans: 5
+  total_phases: 5
+  completed_phases: 3
+  total_plans: 6
+  completed_plans: 6
 ---
 
 # State: Apartment Ultra
 
 **Milestone:** v1.0 MVP — SHIPPED 2026-03-19
-**Current Phase:** 11
+**Current Phase:** 12
 
 ## Project Reference
 
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 高效的公寓管理体验
 
-**Current focus:** Phase 11 — admin-web-e2e
+**Current focus:** Phase 12 — api-api-contract
 
 ## Progress
 
@@ -38,10 +38,11 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 7 | ● | 3/3 | 100% |
 | 8 | ● | 1/1 | 100% |
 | 11 | ◐ | 3/5 | 60% |
-| 12 | ○ | 0/0 | 0% |
+| 12 | ● | 1/1 | 100% |
 
 ## Recent Work
 
+- Phase 12 Plan 01: BillFeeItem 统一从 @/types 导入、RoomStats 从 api-contract 导入、Decimal 字段 Number() 序列化为 number
 - Phase 11 Plan 01: admin E2E infrastructure - worker-scope adminPage fixture with storageState, dual webServer config, BaseAdminPage base class
 - Phase 11 Plan 02: 9 admin Page Objects (Overview, Organizations, Plans, RegisteredUsers, Roles, Users, Subscriptions, Brand, Pricing) with testids added to 3 source pages
 - Phase 11 Plan 04: 4 new E2E spec files (roles, subscriptions, brand, pricing) using fixtures + Page Objects, no waitForTimeout
@@ -99,6 +100,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - [Phase 11]: ADMIN_PRICING targets /usage-pricing (actual URL) - PricingPage.go() uses correct path
 - Phase 11 Plan 03: 4 admin spec files use ../fixtures import, adminPage fixture, and Page Objects - no waitForTimeout
 - Phase 11 Plan 04: Adapted spec to use actual Page Object properties (individual price inputs instead of non-existent priceInput)
+- [Phase 12]: Phase 12 Plan 01: BillFeeItem 统一从 @/types 导入，RoomStats 从 api-contract 导入，Decimal 字段通过 Number() 序列化为 number
 
 ## Blockers
 
