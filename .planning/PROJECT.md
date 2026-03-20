@@ -62,9 +62,18 @@
 
 ---
 
+### Phase 12 Technical Improvement (Completed 2026-03-20)
+
+- api 数据结构和 api-contract 对齐完成
+  - BillFeeItem 类型统一从 @/types 导入（4个前端文件）
+  - RoomStats 从 @apartment-ultra/api-contract 导入
+  - Decimal 字段在 API 响应中序列化为 number
+
+---
+
 ## Next Milestone
 
 Next milestone not yet planned. Use `/gsd:new-milestone` to start.
 
 ---
-*Last updated: 2026-03-20 after Phase 08 completion*
+*Last updated: 2026-03-20 after Phase 12 completion*
