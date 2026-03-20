@@ -129,10 +129,17 @@ export function createApartmentService(
   return {
     listByOrg: async (orgId: string) => {
       const apartments = await getRepo().findByOrgIdWithRooms(orgId);
-      return apartments.map((apt) => ({
-        ...apt,
-        room_stats: calculateRoomStats(apt.rooms),
-      }));
+      return apartments.map((apt): ApartmentWithStats => {
+        const { land_area, total_area, landlord_rent, operating_cost, ...rest } = apt;
+        return {
+          ...rest,
+          land_area: land_area != null ? Number(land_area) : null,
+          total_area: total_area != null ? Number(total_area) : null,
+          landlord_rent: landlord_rent != null ? Number(landlord_rent) : null,
+          operating_cost: operating_cost != null ? Number(operating_cost) : null,
+          room_stats: calculateRoomStats(apt.rooms),
+        } as ApartmentWithStats;
+      });
     },
 
     getById: async (orgId: string, id: string) => {
@@ -140,7 +147,14 @@ export function createApartmentService(
       if (!apartment) {
         throw createAppError(404, NotFoundMessages.APARTMENT);
       }
-      return apartment;
+      const { land_area, total_area, landlord_rent, operating_cost, ...rest } = apartment;
+      return {
+        ...rest,
+        land_area: land_area != null ? Number(land_area) : null,
+        total_area: total_area != null ? Number(total_area) : null,
+        landlord_rent: landlord_rent != null ? Number(landlord_rent) : null,
+        operating_cost: operating_cost != null ? Number(operating_cost) : null,
+      } as ApartmentWithRooms;
     },
 
     create: async (orgId: string, data: CreateApartmentInput) => {
