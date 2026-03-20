@@ -1,6 +1,7 @@
 import type { Prisma, Apartment, Room } from '@prisma/client';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
+import type { RoomStats } from '@apartment-ultra/api-contract';
 
 /**
  * 公寓包含房间的类型
@@ -8,17 +9,7 @@ import { prisma } from '../lib/prisma.js';
 export type ApartmentWithRooms = Apartment & { rooms: Room[] };
 
 /**
- * 公寓统计信息
- */
-export interface RoomStats {
-  total: number;
-  available: number;
-  occupied: number;
-  maintenance: number;
-}
-
-/**
- * 公寓带统计信息
+ * 公寓带统计信息（本地扩展，保留 rooms 字段，room_stats 来自 api-contract）
  */
 export type ApartmentWithStats = Apartment & {
   rooms: Room[];
