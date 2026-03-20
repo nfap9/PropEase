@@ -56,6 +56,16 @@ Plans:
 - [x] 11-03-PLAN.md — Rewrite existing specs: overview, organizations, plans, users (2026-03-20)
 - [x] 11-04-PLAN.md — New specs: roles, subscriptions, brand, pricing (2026-03-20)
 
+### Phase 12: 对齐api数据结构和api-contract
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 11
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 12 to break down)
+
 ---
 
 *For completed milestone details, see `.planning/milestones/v1.0-ROADMAP.md`*
