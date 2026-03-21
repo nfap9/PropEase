@@ -20,8 +20,8 @@ const getOrganizationSwitchItem = (orgName: string | undefined) => {
   if (!orgName) return null;
   return {
     title: orgName,
-    description: '切换组织',
-    href: '/organizations',
+    description: '管理组织成员和权限',
+    href: '/settings/team',
     icon: Building2,
     testId: SETTINGS.ORG_SWITCH_BUTTON,
     cardTestId: SETTINGS.ORG_SWITCH_CARD,
