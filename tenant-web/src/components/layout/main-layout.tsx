@@ -13,10 +13,9 @@ import {
   DropdownMenuTrigger,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Avatar, AvatarFallback } from '@apartment-ultra/shared-ui/components/ui';
-import { Bell } from 'lucide-react';
+import { Bell, Building2 } from 'lucide-react';
 import { notificationsApi, subscriptionsApi } from '@/lib/api';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
-import { OrgSelector } from '@/components/common/org-selector';
 import { usePermissions } from '@/hooks/use-permissions';
 import { canAccessRule } from '@/lib/permission-access';
 import { NavContent } from './nav-content';
@@ -68,11 +67,6 @@ function MainContent({ children }: { children: React.ReactNode }) {
         {/* Mobile Nav Trigger - uses SidebarTrigger which handles Sheet automatically */}
         <SidebarTrigger className="lg:hidden" />
 
-        {/* 全局组织选择器 */}
-        <div className="flex flex-1 justify-center">
-          <OrgSelector />
-        </div>
-
         <ThemeToggle />
 
         {canAccessNotifications && (
@@ -109,8 +103,20 @@ function MainContent({ children }: { children: React.ReactNode }) {
                     当前服务：{planLabel}
                   </p>
                 )}
+                {organization && (
+                  <p className="text-xs leading-none text-muted-foreground">
+                    当前组织：{organization.name}
+                  </p>
+                )}
               </div>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/organizations">
+                <Building2 className="mr-2 h-4 w-4" />
+                <span>切换组织</span>
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             {visibleSettingsItems.map((item) => {
               const Icon = item.icon;

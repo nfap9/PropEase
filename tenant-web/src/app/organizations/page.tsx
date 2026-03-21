@@ -21,10 +21,7 @@ import {
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  DEFAULT_ORGANIZATION_HOME_PATH,
-  getPostAuthRedirectPath,
-} from '@/lib/auth/redirect';
+import { DEFAULT_ORGANIZATION_HOME_PATH } from '@/lib/auth/redirect';
 import { Organization } from '@/types';
 
 const createOrganizationSchema = z.object({
@@ -47,7 +44,7 @@ export default function OrganizationsPage() {
   const router = useRouter();
   const { isLoading, isAuthenticated, organizations, organization, setOrganization, refreshOrganizations } =
     useAuth();
-  const [isReady, setIsReady] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const form = useForm<CreateOrganizationFormData>({
     resolver: zodResolver(createOrganizationSchema),
@@ -67,19 +64,8 @@ export default function OrganizationsPage() {
       return;
     }
 
-    if (organizations.length === 0) {
-      setIsReady(true);
-      return;
-    }
-
-    const targetPath = getPostAuthRedirectPath(organizations, organization);
-    if (targetPath !== '/organizations') {
-      router.replace(targetPath);
-      return;
-    }
-
-    setIsReady(true);
-  }, [isAuthenticated, isLoading, organization, organizations, router]);
+    setIsCheckingAuth(false);
+  }, [isAuthenticated, isLoading, router]);
 
   const createOrgMutation = useMutation({
     mutationFn: async (data: CreateOrganizationFormData) =>
@@ -105,7 +91,7 @@ export default function OrganizationsPage() {
     router.replace(DEFAULT_ORGANIZATION_HOME_PATH);
   };
 
-  if (isLoading || !isReady) {
+  if (isLoading || isCheckingAuth) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-muted/30">
         <div className="text-sm text-muted-foreground">加载中...</div>
