@@ -12,7 +12,6 @@ interface AuthContextType {
   organizations: Organization[];
   isLoading: boolean;
   isAuthenticated: boolean;
-  isAdmin: boolean;  // true if admin_access_token present
   login: (phone: string, password: string) => Promise<string>;
   register: (phone: string, password: string, fullName: string) => Promise<string>;
   logout: () => void;
@@ -86,14 +85,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const checkAuth = async () => {
-      // Check admin_access_token first for admin role detection
-      const adminToken = localStorage.getItem('admin_access_token');
-      if (adminToken) {
-        // Admin user detected - isAdmin is true
-        setIsLoading(false);
-        return;
-      }
-
       const token = localStorage.getItem('access_token');
       if (token) {
         try {
@@ -135,24 +126,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    // Check admin status before clearing tokens
-    const wasAdmin = !!localStorage.getItem('admin_access_token');
-
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    localStorage.removeItem('admin_access_token');
     localStorage.removeItem('current_organization_id');
     setUser(null);
     setOrganization(null);
     setOrganizations([]);
     queryClient.clear();
-
-    // Redirect based on role - admin goes to admin login, tenant goes to login
-    if (wasAdmin) {
-      router.push('/admin/login');
-    } else {
-      router.push('/login');
-    }
+    router.push('/login');
   };
 
   const handleSetOrganization = (org: Organization | null) => {
@@ -172,7 +153,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         organizations,
         isLoading,
         isAuthenticated: !!user,
-        isAdmin: !!localStorage.getItem('admin_access_token'),
         login,
         register,
         logout,

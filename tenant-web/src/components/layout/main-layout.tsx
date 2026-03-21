@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Avatar, AvatarFallback } from '@apartment-ultra/shared-ui/components/ui';
-import { Bell, Building2, LayoutDashboard } from 'lucide-react';
+import { Bell, Building2 } from 'lucide-react';
 import { notificationsApi, subscriptionsApi } from '@/lib/api';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { usePermissions } from '@/hooks/use-permissions';
@@ -80,15 +80,6 @@ function MainContent({ children }: { children: React.ReactNode }) {
               )}
             </Link>
           </Button>
-        )}
-
-        {isSuperAdmin && (
-          <Link href="/admin">
-            <Button variant="outline" size="sm">
-              <LayoutDashboard className="mr-2 h-4 w-4" />
-              运营后台
-            </Button>
-          </Link>
         )}
 
         <DropdownMenu>

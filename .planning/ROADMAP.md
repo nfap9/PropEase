@@ -14,7 +14,6 @@
 | 11 | 4/5 | 4/5     | 2026-03-20 | - |
 | 12 | 1/1 | Complete    | 2026-03-20 | - |
 | 13 | 0/0 | Planned    | Complete    | 2026-03-21 |
-| 14 | 1/4 | In Progress | 2026-03-21 | - |
 
 ### Phase 8: 运营数据看板
 
@@ -78,19 +77,6 @@ Plans:
 
 Plans:
 - [x] TBD (run /gsd:plan-phase 13 to break down) (completed 2026-03-21)
-
-### Phase 14: 将tenant-web和admin-web合并为单一Next.js应用，根据用户角色切换导航和功能
-
-**Goal:** 将 tenant-web (端口3000) 和 admin-web (端口3001) 合并为单一 Next.js 应用，根据用户角色 (tenant vs platform_admin) 切换导航和功能
-**Requirements**: (架构重构，无特定业务需求)
-**Depends on:** Phase 13
-**Plans:** 1/4 plans complete
-
-Plans:
-- [x] 14-01-PLAN.md — Unify AuthProvider: isAdmin flag, clear both tokens on logout, role-based redirect (2026-03-21)
-- [ ] 14-02-PLAN.md — UnifiedLayout component: switches between AdminLayout and MainLayout based on isAdmin (2026-03-21)
-- [ ] 14-03-PLAN.md — Migrate admin routes: copy /admin/* pages, admin API client, AdminAuthLayout (2026-03-21)
-- [ ] 14-04-PLAN.md — Root page routing: / redirects admin to /admin, tenant to /dashboard, unauthenticated to /login (2026-03-21)
 
 ---
 
