@@ -11,8 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { ChevronRight, ArrowLeft } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 // Page title mapping based on route
 const PAGE_TITLES: Record<string, string> = {
@@ -76,23 +75,9 @@ export function SettingsBreadcrumb() {
 }
 
 export function SettingsLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isHome = isSettingsHome(pathname);
-
   return (
     <MainLayout>
       <div className="space-y-4">
-        {/* Back button - only show on non-home pages */}
-        {!isHome && (
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/settings">
-                <ArrowLeft className="mr-1 h-4 w-4" />
-                返回设置
-              </Link>
-            </Button>
-          </div>
-        )}
         {/* Breadcrumb navigation */}
         <SettingsBreadcrumb />
         {/* Page content */}
