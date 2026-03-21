@@ -114,6 +114,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 260319-koq | 构建打包 | 2026-03-19 | 9245d30 | [260319-koq](./quick/260319-koq/) |
 | 260319-m9l | admin和tenant的默认端口冲突 | 2026-03-19 | f6b09c2 | [260319-m9l-admin-tenant](./quick/260319-m9l-admin-tenant/) |
 | 260320-k0f | 检查各个模块是否都遵循api-contract | 2026-03-20 | a8d182f | [260320-k0f-api-contract](./quick/260320-k0f-api-contract/) |
+| 260321-owo | 在本地docker部署这个项目 | 2026-03-21 | 20eea3d | [260321-owo-docker](./quick/260321-owo-docker/) |
 
 ## Roadmap Evolution
 
@@ -128,4 +129,4 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 ---
 *Last updated: 2026-03-20*
 
-*Last activity: 2026-03-20 - Phase 12 added: 对齐api数据结构和api-contract*
+*Last activity: 2026-03-21 - Completed quick task 260321-owo: 在本地docker部署这个项目*
