@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 12
+current_phase: 13
 status: unknown
-last_updated: "2026-03-20T06:54:33.947Z"
+last_updated: "2026-03-21T04:18:55.068Z"
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 3
-  total_plans: 6
+  total_plans: 7
   completed_plans: 6
 ---
 
 # State: Apartment Ultra
 
 **Milestone:** v1.0 MVP — SHIPPED 2026-03-19
-**Current Phase:** 12
+**Current Phase:** 13
 
 ## Project Reference
 
@@ -101,6 +101,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 11 Plan 03: 4 admin spec files use ../fixtures import, adminPage fixture, and Page Objects - no waitForTimeout
 - Phase 11 Plan 04: Adapted spec to use actual Page Object properties (individual price inputs instead of non-existent priceInput)
 - [Phase 12]: Phase 12 Plan 01: BillFeeItem 统一从 @/types 导入，RoomStats 从 api-contract 导入，Decimal 字段通过 Number() 序列化为 number
+- Phase 13 added: 统一settings页面返回和面包屑组件结构
 
 ## Blockers
 

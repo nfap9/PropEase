@@ -13,6 +13,7 @@
 | 8 | 1/1 | Complete    | 2026-03-19 | - |
 | 11 | 4/5 | 4/5     | 2026-03-20 | - |
 | 12 | 1/1 | Complete    | 2026-03-20 | - |
+| 13 | 0/0 | Planned    | Complete    | 2026-03-21 |
 
 ### Phase 8: 运营数据看板
 
@@ -66,6 +67,16 @@ Plans:
 
 Plans:
 - [ ] 12-01-PLAN.md — 修复 BillFeeItem 导入、RoomStats 导入、Decimal 序列化
+
+### Phase 13: 统一settings页面返回和面包屑组件结构
+
+**Goal:** 统一 /settings 下的页面返回按钮和面包屑组件结构
+**Requirements**: TBD
+**Depends on:** Phase 12
+**Plans:** 0/1 plans complete
+
+Plans:
+- [x] TBD (run /gsd:plan-phase 13 to break down) (completed 2026-03-21)
 
 ---
 
