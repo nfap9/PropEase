@@ -82,7 +82,6 @@ export default function UtilitiesPage() {
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
 
-  const [createApartmentId, setCreateApartmentId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isExportTemplateOpen, setIsExportTemplateOpen] = useState(false);
   const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
@@ -94,12 +93,6 @@ export default function UtilitiesPage() {
     queryKey: ['apartments', orgId],
     queryFn: () => apartmentsApi.list(orgId!),
     enabled: !!orgId,
-  });
-
-  const { data: rooms } = useQuery({
-    queryKey: ['rooms', orgId, createApartmentId],
-    queryFn: () => roomsApi.list(orgId!, createApartmentId!),
-    enabled: !!orgId && createApartmentId !== null,
   });
 
   const { data: allRooms } = useQuery({
@@ -131,6 +124,14 @@ export default function UtilitiesPage() {
   });
 
   const scopeRooms = allRooms;
+  const apartmentRooms = useMemo(() => {
+    if (!apartments || !allRooms) return [];
+    return apartments.map((apt) => ({
+      apartment: apt,
+      rooms: allRooms.filter((r) => r.apartment_id === apt.id && r.status === 'occupied'),
+    })).filter((group) => group.rooms.length > 0);
+  }, [apartments, allRooms]);
+
   const activeLeaseRoomIds = useMemo(
     () => new Set(activeLeases.map((l) => l.room_id)),
     [activeLeases]
@@ -422,10 +423,8 @@ export default function UtilitiesPage() {
           onOpenChange={setIsCreateOpen}
           onSubmit={(data) => createMutation.mutate(data)}
           isPending={createMutation.isPending}
-          apartments={apartments}
-          rooms={rooms}
-          selectedApartmentId={createApartmentId}
-          onApartmentChange={setCreateApartmentId}
+          apartmentRooms={apartmentRooms}
+          orgId={orgId!}
         />
 
         <ExportTemplateDialog open={isExportTemplateOpen} onOpenChange={setIsExportTemplateOpen} />

@@ -3,6 +3,8 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { AlertCircle } from 'lucide-react';
 import {
   Dialog,
@@ -23,8 +25,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Apartment, Room } from '@/types';
+import { RadioGroup, RadioGroupItem } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Apartment, Room, UtilityReading } from '@/types';
 import { Droplets, Zap } from 'lucide-react';
+import { utilitiesApi } from '@/lib/api';
 
 const optionalNumberField = z
   .union([z.number().min(0), z.nan().transform(() => undefined)])
@@ -46,15 +60,18 @@ const utilitySchema = z.object({
 
 type UtilityFormData = z.infer<typeof utilitySchema>;
 
+interface ApartmentRoomGroup {
+  apartment: Apartment;
+  rooms: Room[];
+}
+
 interface CreateUtilityDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: UtilityFormData) => void;
   isPending: boolean;
-  apartments: Apartment[] | undefined;
-  rooms: Room[] | undefined;
-  selectedApartmentId: string | null;
-  onApartmentChange: (apartmentId: string) => void;
+  apartmentRooms: ApartmentRoomGroup[];
+  orgId: string;
 }
 
 export function CreateUtilityDialog({
@@ -62,14 +79,14 @@ export function CreateUtilityDialog({
   onOpenChange,
   onSubmit,
   isPending,
-  apartments,
-  rooms,
-  selectedApartmentId,
-  onApartmentChange,
+  apartmentRooms,
+  orgId,
 }: CreateUtilityDialogProps) {
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
+
+  const [existingReading, setExistingReading] = useState<UtilityReading | null>(null);
 
   const form = useForm<UtilityFormData>({
     resolver: zodResolver(utilitySchema),
@@ -85,10 +102,26 @@ export function CreateUtilityDialog({
     },
   });
 
-  const occupiedRooms = rooms?.filter((r) => r.status === 'occupied');
   const readingContext = form.watch('reading_context');
 
+  const { data: existingReadings = [] } = useQuery({
+    queryKey: ['utilities', 'check', orgId, form.watch('room_id'), form.watch('period_year'), form.watch('period_month')],
+    queryFn: () => utilitiesApi.list(orgId, {
+      room_id: form.watch('room_id') || undefined,
+      period_year: form.watch('period_year'),
+      period_month: form.watch('period_month'),
+    }),
+    enabled: !!orgId && !!form.watch('room_id') && form.watch('period_year') > 0 && form.watch('period_month') > 0,
+  });
+
   const handleSubmit = (data: UtilityFormData) => {
+    // Check if there's an existing reading for the same room + year + month
+    const existing = existingReadings.find((r) => r.room_id === data.room_id);
+    if (existing) {
+      setExistingReading(existing);
+      return; // Don't submit yet, show confirmation
+    }
+    // No existing reading, proceed
     onSubmit({
       ...data,
       anomaly_reason: data.anomaly_reason?.trim() || undefined,
@@ -104,81 +137,49 @@ export function CreateUtilityDialog({
           <DialogDescription>录入房间的水电表读数</DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>选择公寓</Label>
-              <Select
-                value={selectedApartmentId || ''}
-                onValueChange={(value) => onApartmentChange(value)}
-              >
-                <SelectTrigger className="min-w-[140px]">
-                  <SelectValue placeholder="选择公寓" />
-                </SelectTrigger>
-                <SelectContent>
-                  {apartments?.map((apt) => (
-                    <SelectItem key={apt.id} value={apt.id.toString()}>
-                      {apt.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="room_id">选择房间 *</Label>
-              <Select
-                value={form.watch('room_id') || ''}
-                onValueChange={(value) => form.setValue('room_id', value)}
-              >
-                <SelectTrigger className="min-w-[140px]">
-                  <SelectValue placeholder="选择房间" />
-                </SelectTrigger>
-                <SelectContent>
-                  {occupiedRooms?.map((room) => (
+          <div className="space-y-2">
+            <Label htmlFor="room_selector">公寓 - 房间</Label>
+            <Select
+              value={form.watch('room_id') || ''}
+              onValueChange={(value) => form.setValue('room_id', value)}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="选择公寓和房间" />
+              </SelectTrigger>
+              <SelectContent>
+                {apartmentRooms?.map(({ apartment, rooms }) =>
+                  rooms.map((room) => (
                     <SelectItem key={room.id} value={room.id.toString()}>
-                      {room.room_number}
+                      {apartment.name} - {room.room_number}
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="period_year">年份</Label>
-              <Select
-                value={form.watch('period_year')?.toString() || currentYear.toString()}
-                onValueChange={(value) => form.setValue('period_year', Number(value))}
-              >
-                <SelectTrigger className="min-w-[120px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}年
+          <div className="space-y-2">
+            <Label htmlFor="period">账期（年月）</Label>
+            <Select
+              value={`${form.watch('period_year')}-${form.watch('period_month')}`}
+              onValueChange={(value) => {
+                const [year, month] = value.split('-').map(Number);
+                form.setValue('period_year', year);
+                form.setValue('period_month', month);
+              }}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="选择年月" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 3 }, (_, i) => currentYear - 1 + i).flatMap((year) =>
+                  Array.from({ length: 12 }, (_, monthIdx) => monthIdx + 1).map((month) => (
+                    <SelectItem key={`${year}-${month}`} value={`${year}-${month}`}>
+                      {year}年{month}月
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="period_month">月份</Label>
-              <Select
-                value={form.watch('period_month')?.toString() || currentMonth.toString()}
-                onValueChange={(value) => form.setValue('period_month', Number(value))}
-              >
-                <SelectTrigger className="min-w-[120px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                    <SelectItem key={month} value={month.toString()}>
-                      {month}月
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                  )
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="reading_date">读数日期 *</Label>
@@ -186,21 +187,26 @@ export function CreateUtilityDialog({
           </div>
           <div className="space-y-2">
             <Label>录入场景</Label>
-            <Select
+            <RadioGroup
               value={readingContext}
               onValueChange={(value: UtilityFormData['reading_context']) =>
                 form.setValue('reading_context', value)
               }
+              className="flex flex-row space-x-4"
             >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="normal">正常抄表</SelectItem>
-                <SelectItem value="initial">首次录入</SelectItem>
-                <SelectItem value="meter_reset">更换新表</SelectItem>
-              </SelectContent>
-            </Select>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="normal" id="ctx-normal" />
+                <Label htmlFor="ctx-normal" className="font-normal cursor-pointer">正常抄表</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="initial" id="ctx-initial" />
+                <Label htmlFor="ctx-initial" className="font-normal cursor-pointer">首次录入</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="meter_reset" id="ctx-meter_reset" />
+                <Label htmlFor="ctx-meter_reset" className="font-normal cursor-pointer">更换新表</Label>
+              </div>
+            </RadioGroup>
           </div>
           {readingContext !== 'normal' && (
             <Alert>
@@ -301,6 +307,32 @@ export function CreateUtilityDialog({
           </DialogFooter>
         </form>
       </DialogContent>
+      {existingReading && (
+        <AlertDialog open={!!existingReading} onOpenChange={() => setExistingReading(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>该账期已有读数</AlertDialogTitle>
+              <AlertDialogDescription>
+                {existingReading.room?.apartment?.name} - {existingReading.room?.room_number}
+                {existingReading.period_year}年{existingReading.period_month}月已有读数记录。
+                确定要覆盖吗？
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setExistingReading(null)}>取消</AlertDialogCancel>
+              <AlertDialogAction onClick={() => {
+                // Proceed with overwrite
+                onSubmit({
+                  ...form.getValues(),
+                  anomaly_reason: form.getValues('anomaly_reason')?.trim() || undefined,
+                });
+                form.reset();
+                setExistingReading(null);
+              }}>确认覆盖</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </Dialog>
   );
 }
