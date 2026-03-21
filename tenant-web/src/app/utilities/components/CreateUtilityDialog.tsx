@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle } from 'lucide-react';
 import {
@@ -87,6 +87,7 @@ export function CreateUtilityDialog({
   const currentMonth = today.getMonth() + 1;
 
   const [existingReading, setExistingReading] = useState<UtilityReading | null>(null);
+  const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
 
   const form = useForm<UtilityFormData>({
     resolver: zodResolver(utilitySchema),
@@ -103,6 +104,18 @@ export function CreateUtilityDialog({
   });
 
   const readingContext = form.watch('reading_context');
+
+  // Filter rooms based on selected apartment
+  const roomsForSelectedApartment = useMemo(() => {
+    const group = apartmentRooms?.find((g) => g.apartment.id === selectedApartmentId);
+    return group?.rooms || [];
+  }, [apartmentRooms, selectedApartmentId]);
+
+  // Reset room_id when apartment changes
+  const handleApartmentChange = (aptId: string) => {
+    setSelectedApartmentId(aptId);
+    form.setValue('room_id', '');
+  };
 
   const { data: existingReadings = [] } = useQuery({
     queryKey: ['utilities', 'check', orgId, form.watch('room_id'), form.watch('period_year'), form.watch('period_month')],
@@ -137,49 +150,82 @@ export function CreateUtilityDialog({
           <DialogDescription>录入房间的水电表读数</DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="room_selector">公寓 - 房间</Label>
-            <Select
-              value={form.watch('room_id') || ''}
-              onValueChange={(value) => form.setValue('room_id', value)}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="选择公寓和房间" />
-              </SelectTrigger>
-              <SelectContent>
-                {apartmentRooms?.map(({ apartment, rooms }) =>
-                  rooms.map((room) => (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="apartment_selector">公寓</Label>
+              <Select
+                value={selectedApartmentId || ''}
+                onValueChange={handleApartmentChange}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="选择公寓" />
+                </SelectTrigger>
+                <SelectContent>
+                  {apartmentRooms?.map(({ apartment }) => (
+                    <SelectItem key={apartment.id} value={apartment.id.toString()}>
+                      {apartment.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="room_selector">房间</Label>
+              <Select
+                value={form.watch('room_id') || ''}
+                onValueChange={(value) => form.setValue('room_id', value)}
+                disabled={!selectedApartmentId}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder={selectedApartmentId ? "选择房间" : "先选公寓"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {roomsForSelectedApartment.map((room) => (
                     <SelectItem key={room.id} value={room.id.toString()}>
-                      {apartment.name} - {room.room_number}
+                      {room.room_number}
                     </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="period">账期（年月）</Label>
-            <Select
-              value={`${form.watch('period_year')}-${form.watch('period_month')}`}
-              onValueChange={(value) => {
-                const [year, month] = value.split('-').map(Number);
-                form.setValue('period_year', year);
-                form.setValue('period_month', month);
-              }}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="选择年月" />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 3 }, (_, i) => currentYear - 1 + i).flatMap((year) =>
-                  Array.from({ length: 12 }, (_, monthIdx) => monthIdx + 1).map((month) => (
-                    <SelectItem key={`${year}-${month}`} value={`${year}-${month}`}>
-                      {year}年{month}月
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="year_selector">年份</Label>
+              <Select
+                value={form.watch('period_year').toString()}
+                onValueChange={(value) => form.setValue('period_year', Number(value))}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="选择年份" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 3 }, (_, i) => currentYear - 1 + i).map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}年
                     </SelectItem>
-                  )
-                ))}
-              </SelectContent>
-            </Select>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="month_selector">月份</Label>
+              <Select
+                value={form.watch('period_month').toString()}
+                onValueChange={(value) => form.setValue('period_month', Number(value))}
+              >
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="选择月份" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 12 }, (_, monthIdx) => monthIdx + 1).map((month) => (
+                    <SelectItem key={month} value={month.toString()}>
+                      {month}月
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="reading_date">读数日期 *</Label>

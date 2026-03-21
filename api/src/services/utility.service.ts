@@ -358,14 +358,43 @@ export function createUtilityService(
       if (!room || room.apartment.organization_id !== orgId) {
         throw createAppError(404, NotFoundMessages.ROOM);
       }
-      const normalized = await normalizeReadingPayload(getRepo(), data);
-      return getRepo().create(buildCreateData(normalized));
+
+      // 检查是否已存在相同 room_id + period_year + period_month 的记录
+      const repo = getRepo();
+      const existing = await repo.findExistingReading(data.room_id, data.period_year, data.period_month);
+      if (existing) {
+        throw createAppError(
+          409,
+          `该房间 ${data.period_year}年${data.period_month}月 的水电读数已存在（记录ID: ${existing.id}），请返回列表页面修改或删除已有记录后重试。`
+        );
+      }
+
+      const normalized = await normalizeReadingPayload(repo, data);
+      return repo.create(buildCreateData(normalized));
     },
 
     batchCreate: async (orgId: string, data: BatchReadingInput) => {
       const repo = getRepo();
       const orgRoomIds = new Set(await repo.getRoomIdsByOrg(orgId));
       const readingDate = new Date(data.reading_date);
+
+      // 批量检查哪些房间已存在该账期的读数
+      const roomIds = data.readings.map((r) => r.room_id);
+      const existingReadings = await prisma.utilityReading.findMany({
+        where: {
+          room_id: { in: roomIds },
+          period_year: data.period_year,
+          period_month: data.period_month,
+        },
+        select: { room_id: true },
+      });
+      const existingRoomIds = new Set(existingReadings.map((r) => r.room_id));
+      if (existingRoomIds.size > 0) {
+        throw createAppError(
+          409,
+          `以下房间 ${data.period_year}年${data.period_month}月 的水电读数已存在：${Array.from(existingRoomIds).join(', ')}。请先删除已有记录后重试。`
+        );
+      }
 
       const readingsData = await Promise.all(data.readings.map(async (r) => {
         if (!orgRoomIds.has(r.room_id)) {
