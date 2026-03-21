@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -51,21 +50,18 @@ import {
 import { ColumnDef } from '@tanstack/react-table';
 import { organizationsApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
-import { formatDateTime } from '@/lib/date-utils';
-import { OrganizationMember, MemberRole } from '@/types';
-import { Plus, MoreHorizontal, Pencil, Trash2, UserPlus, Building2, Users } from 'lucide-react';
+import { formatDate, formatDateTime } from '@/lib/date-utils';
+import { OrganizationMember, MemberRole, OrganizationUsage } from '@/types';
+import { MoreHorizontal, Pencil, Trash2, UserPlus, Building2, Users, DoorOpen } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/lib/auth/context';
-import { invalidateOrgScopedQueries } from '@/lib/query-utils';
 
 // 注意: 实际使用时从 testids 导入 TEAM_SETTINGS 常量
 const TEAM_SETTINGS = {
   HEADING: 'team-settings-heading',
-  CREATE_ORG_BTN: 'team-settings-create-org-btn',
   EDIT_ORG_BTN: 'team-edit-org-btn',
   INVITE_BTN: 'team-invite-btn',
   MEMBER_LIST: 'team-settings-member-list',
-  CREATE_ORG_DIALOG: 'team-create-org-dialog',
   EDIT_ORG_DIALOG: 'team-edit-org-dialog',
   INVITE_DIALOG: 'team-invite-dialog',
   REMOVE_MEMBER_DIALOG: 'team-remove-member-dialog',
@@ -101,19 +97,12 @@ const ROLE_COLORS: Record<MemberRole, 'default' | 'secondary' | 'destructive' | 
 };
 
 export default function TeamSettingsPage() {
-  const { user, organization, setOrganization, refreshOrganizations } = useAuth();
-  const router = useRouter();
+  const { user, organization, setOrganization } = useAuth();
   const queryClient = useQueryClient();
-  const [isCreateOrgOpen, setIsCreateOrgOpen] = useState(false);
   const [isEditOrgOpen, setIsEditOrgOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isRemoveMemberOpen, setIsRemoveMemberOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<OrganizationMember | null>(null);
-
-  const { data: organizations, isLoading: orgsLoading } = useQuery({
-    queryKey: ['organizations'],
-    queryFn: organizationsApi.list,
-  });
 
   const { data: members, isLoading: membersLoading } = useQuery({
     queryKey: ['organization-members', organization?.id],
@@ -121,9 +110,10 @@ export default function TeamSettingsPage() {
     enabled: !!organization,
   });
 
-  const createOrgForm = useForm<OrganizationFormData>({
-    resolver: zodResolver(organizationSchema),
-    defaultValues: { name: '' },
+  const { data: usage, isLoading: usageLoading } = useQuery<OrganizationUsage>({
+    queryKey: ['organization-usage', organization?.id],
+    queryFn: () => organizationsApi.getUsage(organization!.id),
+    enabled: !!organization,
   });
 
   const editOrgForm = useForm<OrganizationFormData>({
@@ -133,28 +123,6 @@ export default function TeamSettingsPage() {
   const inviteForm = useForm<InviteFormData>({
     resolver: zodResolver(inviteSchema),
     defaultValues: { phone: '', role: 'member' },
-  });
-
-  const createOrgMutation = useMutation({
-    mutationFn: (data: OrganizationFormData) =>
-      organizationsApi.create({
-        name: data.name,
-        slug: data.name
-          .toLowerCase()
-          .replace(/\s+/g, '-')
-          .replace(/[^a-z0-9-]/g, ''),
-      }),
-    onSuccess: async (createdOrganization) => {
-      queryClient.invalidateQueries({ queryKey: ['organizations'] });
-      await refreshOrganizations(createdOrganization.id);
-      setOrganization(createdOrganization);
-      invalidateOrgScopedQueries(queryClient);
-      setIsCreateOrgOpen(false);
-      createOrgForm.reset();
-      toast.success('组织创建成功');
-      router.push('/dashboard');
-    },
-    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateOrgMutation = useMutation({
@@ -273,19 +241,16 @@ export default function TeamSettingsPage() {
     },
   ];
 
-  if (orgsLoading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-96" />
-      </div>
-    );
-  }
-
   return (
     <PermissionPageGuard>
       <div className="space-y-6">
-          <h1 className="text-3xl font-bold" data-testid={TEAM_SETTINGS.HEADING}>团队设置</h1>
+          <div className="flex items-center gap-3">
+            <Users className="h-8 w-8" />
+            <div>
+              <h1 className="text-3xl font-bold" data-testid={TEAM_SETTINGS.HEADING}>团队设置</h1>
+              <p className="text-muted-foreground">管理组织成员和权限</p>
+            </div>
+          </div>
 
           <Tabs defaultValue="organizations" className="space-y-4">
             <TabsList>
@@ -300,60 +265,90 @@ export default function TeamSettingsPage() {
             </TabsList>
 
             <TabsContent value="organizations" className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">当前组织</h2>
-                <Button onClick={() => setIsCreateOrgOpen(true)} data-testid={TEAM_SETTINGS.CREATE_ORG_BTN} name="team-settings-create-org-btn">
-                  <Plus className="mr-2 h-4 w-4" />
-                  创建组织
-                </Button>
-              </div>
-
               {organization ? (
-                <Card>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{organization.name}</CardTitle>
-                      <PermissionGuard permission={PERMISSIONS.SETTINGS_EDIT}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleEditOrg}
-                          data-testid={TEAM_SETTINGS.EDIT_ORG_BTN}
-                        >
-                          <Pencil className="mr-2 h-4 w-4" />
-                          编辑
-                        </Button>
-                      </PermissionGuard>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-muted-foreground">
-                      {organization.role ? (
-                        <Badge variant={ROLE_COLORS[organization.role]}>
-                          {ROLE_LABELS[organization.role]}
-                        </Badge>
+                <>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg">{organization.name}</CardTitle>
+                        <PermissionGuard permission={PERMISSIONS.SETTINGS_EDIT}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleEditOrg}
+                            data-testid={TEAM_SETTINGS.EDIT_ORG_BTN}
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            编辑
+                          </Button>
+                        </PermissionGuard>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Slug</p>
+                          <p className="font-mono text-muted-foreground">{organization.slug}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">组织类型</p>
+                          <p className="font-medium">{organization.is_personal ? '个人组织' : '团队组织'}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">创建时间</p>
+                          <p className="font-medium">{formatDate(organization.created_at)}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">你的角色</p>
+                          {organization.role ? (
+                            <Badge variant={ROLE_COLORS[organization.role]}>
+                              {ROLE_LABELS[organization.role]}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </div>
+                        <div className="col-span-2">
+                          <p className="text-muted-foreground">备注</p>
+                          <p className="font-medium">{organization.notes || '—'}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">资源统计</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {usageLoading ? (
+                        <div className="flex items-center justify-center py-6">
+                          <Skeleton className="h-8 w-32" />
+                        </div>
                       ) : (
-                        '—'
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                          <div className="flex flex-col items-center">
+                            <Building2 className="mb-1 h-5 w-5 text-muted-foreground" />
+                            <p className="text-2xl font-bold">{usage?.apartments_used ?? 0}</p>
+                            <p className="text-xs text-muted-foreground">公寓</p>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <DoorOpen className="mb-1 h-5 w-5 text-muted-foreground" />
+                            <p className="text-2xl font-bold">{usage?.rooms_used ?? 0}</p>
+                            <p className="text-xs text-muted-foreground">房间</p>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <Users className="mb-1 h-5 w-5 text-muted-foreground" />
+                            <p className="text-2xl font-bold">{usage?.members_used ?? 0}</p>
+                            <p className="text-xs text-muted-foreground">成员</p>
+                          </div>
+                        </div>
                       )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : organizations?.length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <h3 className="mt-4 text-lg font-semibold">还没有组织</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      创建一个组织开始管理您的公寓
-                    </p>
-                    <Button className="mt-4" onClick={() => setIsCreateOrgOpen(true)}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      创建组织
-                    </Button>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </>
               ) : (
-                <p className="text-sm text-muted-foreground">请从顶部导航栏的组织下拉框切换组织</p>
+                <p className="text-sm text-muted-foreground">暂无组织信息</p>
               )}
             </TabsContent>
 
@@ -383,40 +378,6 @@ export default function TeamSettingsPage() {
             </TabsContent>
           </Tabs>
         </div>
-
-        {/* Create Organization Dialog */}
-        <Dialog open={isCreateOrgOpen} onOpenChange={setIsCreateOrgOpen}>
-          <DialogContent data-testid={TEAM_SETTINGS.CREATE_ORG_DIALOG}>
-            <DialogHeader>
-              <DialogTitle>创建组织</DialogTitle>
-              <DialogDescription>创建一个新的组织来管理您的公寓</DialogDescription>
-            </DialogHeader>
-            <form
-              onSubmit={createOrgForm.handleSubmit((data) => createOrgMutation.mutate(data))}
-              className="space-y-4"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="name">
-                  组织名称 <span aria-hidden="true">*</span>
-                </Label>
-                <Input id="name" aria-required {...createOrgForm.register('name')} />
-                {createOrgForm.formState.errors.name && (
-                  <p className="text-sm text-destructive">
-                    {createOrgForm.formState.errors.name.message}
-                  </p>
-                )}
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsCreateOrgOpen(false)}>
-                  取消
-                </Button>
-                <Button type="submit" disabled={createOrgMutation.isPending}>
-                  {createOrgMutation.isPending ? '创建中...' : '创建'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
 
         {/* Edit Organization Dialog */}
         <Dialog open={isEditOrgOpen} onOpenChange={setIsEditOrgOpen}>
