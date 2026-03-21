@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 13
+current_phase: 14
 status: unknown
-last_updated: "2026-03-21T04:18:55.068Z"
+last_updated: "2026-03-21T04:22:00.000Z"
 progress:
   total_phases: 6
   completed_phases: 3
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 高效的公寓管理体验
 
-**Current focus:** Phase 12 — api-api-contract
+**Current focus:** Phase 14 — 将tenant-web和admin-web合并
 
 ## Progress
 
@@ -39,6 +39,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 8 | ● | 1/1 | 100% |
 | 11 | ◐ | 3/5 | 60% |
 | 12 | ● | 1/1 | 100% |
+| 14 | ○ | 0/4 | 0% |
 
 ## Recent Work
 
@@ -102,6 +103,10 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 11 Plan 04: Adapted spec to use actual Page Object properties (individual price inputs instead of non-existent priceInput)
 - [Phase 12]: Phase 12 Plan 01: BillFeeItem 统一从 @/types 导入，RoomStats 从 api-contract 导入，Decimal 字段通过 Number() 序列化为 number
 - Phase 13 added: 统一settings页面返回和面包屑组件结构
+- Phase 14: Unified AuthProvider with isAdmin flag computed from admin_access_token presence
+- Phase 14: Admin logout clears both access_token and admin_access_token
+- Phase 14: Root page (/) redirects isAdmin users to /admin, authenticated tenants to /dashboard, unauthenticated to /login
+- Phase 14: Admin routes use /admin/* path prefix, protected by AdminAuthLayout
 
 ## Blockers
 
@@ -117,6 +122,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 ## Roadmap Evolution
 
+- Phase 14 added: 将tenant-web和admin-web合并为单一Next.js应用，根据用户角色切换导航和功能
 - Phase 12 added: 对齐api数据结构和api-contract
 - Phase 11 added: 重新设计 admin-web E2E 测试架构
 - Phase 7 added: 完善移动端
@@ -126,6 +132,6 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 3 added: 重新编排tenant-web前端路由：添加组织视图用于创建/选择组织
 
 ---
-*Last updated: 2026-03-20*
+*Last updated: 2026-03-21*
 
-*Last activity: 2026-03-20 - Phase 12 added: 对齐api数据结构和api-contract*
+*Last activity: 2026-03-21 - Phase 14 added: 将tenant-web和admin-web合并为单一Next.js应用*
