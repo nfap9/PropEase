@@ -4,18 +4,18 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 14
 status: unknown
-last_updated: "2026-03-21T04:22:00.000Z"
+last_updated: "2026-03-21T05:18:39Z"
 progress:
-  total_phases: 6
-  completed_phases: 3
-  total_plans: 7
-  completed_plans: 6
+  total_phases: 7
+  completed_phases: 4
+  total_plans: 11
+  completed_plans: 8
 ---
 
 # State: Apartment Ultra
 
 **Milestone:** v1.0 MVP — SHIPPED 2026-03-19
-**Current Phase:** 13
+**Current Phase:** 14
 
 ## Project Reference
 
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** 高效的公寓管理体验
 
-**Current focus:** Phase 14 — 将tenant-web和admin-web合并
+**Current focus:** Phase 14 — tenant-web-admin-web-next-js
 
 ## Progress
 
@@ -39,7 +39,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 8 | ● | 1/1 | 100% |
 | 11 | ◐ | 3/5 | 60% |
 | 12 | ● | 1/1 | 100% |
-| 14 | ○ | 0/4 | 0% |
+| 14 | ◐ | 1/4 | 25% |
 
 ## Recent Work
 
@@ -107,6 +107,9 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 14: Admin logout clears both access_token and admin_access_token
 - Phase 14: Root page (/) redirects isAdmin users to /admin, authenticated tenants to /dashboard, unauthenticated to /login
 - Phase 14: Admin routes use /admin/* path prefix, protected by AdminAuthLayout
+- Phase 14 Plan 01: isAdmin computed from localStorage.getItem('admin_access_token') - not stored as state
+- Phase 14 Plan 01: Admin logout redirects to /admin/login, tenant logout redirects to /login
+- Phase 14 Plan 01: checkAuth() checks admin_access_token first and returns early if present
 
 ## Blockers
 
