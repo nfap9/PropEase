@@ -115,6 +115,7 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 | 260319-m9l | admin和tenant的默认端口冲突 | 2026-03-19 | f6b09c2 | [260319-m9l-admin-tenant](./quick/260319-m9l-admin-tenant/) |
 | 260320-k0f | 检查各个模块是否都遵循api-contract | 2026-03-20 | a8d182f | [260320-k0f-api-contract](./quick/260320-k0f-api-contract/) |
 | 260321-owo | 在本地docker部署这个项目 | 2026-03-21 | 20eea3d | [260321-owo-docker](./quick/260321-owo-docker/) |
+| 260321-py9 | 水电读数表单校验提示、确认覆盖、级联选择改造 | 2026-03-21 | 9ec0c50 | [260321-py9-水电读数表单改造](./quick/260321-py9-水电读数表单校验提示、确认覆盖、级联选择改造/) |
 
 ## Roadmap Evolution
 
@@ -127,6 +128,6 @@ See: .planning/PROJECT.md (updated 2026-03-19)
 - Phase 3 added: 重新编排tenant-web前端路由：添加组织视图用于创建/选择组织
 
 ---
-*Last updated: 2026-03-20*
+*Last updated: 2026-03-21*
 
-*Last activity: 2026-03-21 - Completed quick task 260321-owo: 在本地docker部署这个项目*
+*Last activity: 2026-03-21 - Completed quick task 260321-py9: 水电读数表单校验提示、确认覆盖、级联选择改造*
