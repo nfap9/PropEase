@@ -1,4 +1,5 @@
 import type { ReportRepository } from '../repositories/report.repo.js';
+import type { ReportMetadata } from '@apartment-ultra/api-contract';
 import { defaultReportRepo } from '../repositories/report.repo.js';
 
 /**
@@ -47,6 +48,7 @@ export interface MonthlyOccupancy {
  * Report Service 接口
  */
 export interface ReportService {
+  list(orgId: string): Promise<ReportMetadata[]>;
   getOverview(orgId: string): Promise<OverviewStats>;
   getIncome(
     orgId: string,
@@ -64,6 +66,10 @@ export function createReportService(
   getRepo: () => ReportRepository = () => defaultReportRepo
 ): ReportService {
   return {
+    list: async (orgId: string) => {
+      return getRepo().listReports(orgId);
+    },
+
     getOverview: async (orgId: string) => {
       const today = new Date();
       const [

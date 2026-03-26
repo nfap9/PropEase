@@ -47,6 +47,15 @@ export interface ReportRepository {
     monthStart: Date,
     monthEndNext: Date
   ): Promise<number>;
+
+  // 报表列表
+  listReports(orgId: string): Promise<Array<{
+    id: string;
+    type: 'overview' | 'income' | 'occupancy';
+    name: string;
+    description: string;
+    updated_at: string;
+  }>>;
 }
 
 /**
@@ -190,6 +199,34 @@ export function createReportRepository(db: DbClient): ReportRepository {
         },
       });
       return overlappingRooms.length;
+    },
+
+    listReports: async (orgId: string) => {
+      // 返回三个内置报表的元数据
+      const now = new Date().toISOString();
+      return [
+        {
+          id: `${orgId}-overview`,
+          type: 'overview' as const,
+          name: '概览统计',
+          description: '公寓、房间、入住率、收入等关键指标概览',
+          updated_at: now,
+        },
+        {
+          id: `${orgId}-income`,
+          type: 'income' as const,
+          name: '收入报表',
+          description: '月度收入明细及收缴率统计',
+          updated_at: now,
+        },
+        {
+          id: `${orgId}-occupancy`,
+          type: 'occupancy' as const,
+          name: '入住率报表',
+          description: '月度入住率变化趋势',
+          updated_at: now,
+        },
+      ];
     },
   };
 }

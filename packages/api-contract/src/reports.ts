@@ -44,3 +44,12 @@ export interface OccupancyReport {
 export interface OccupancyReportParams {
   year?: number;
 }
+
+/** 报表元数据 */
+export interface ReportMetadata {
+  id: string;
+  type: 'overview' | 'income' | 'occupancy';
+  name: string;
+  description: string;
+  updated_at: string;
+}

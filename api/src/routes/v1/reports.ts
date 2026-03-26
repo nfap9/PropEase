@@ -25,9 +25,11 @@ router.use(requireConsoleAuth);
  *               items:
  *                 type: object
  */
-router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
+router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    res.json([]);
+    const orgId = await requireOrgMembership(req);
+    const reports = await defaultReportService.list(orgId);
+    res.json(reports);
   } catch (e) {
     next(e);
   }
