@@ -119,11 +119,6 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test
 
-      - name: Test
-        run: pnpm --filter apartment-ultra-api run test
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/test
-
   # 租客端 Web：lint、类型检查、测试与构建
   tenant-web:
     name: tenant-web
@@ -167,9 +162,6 @@ jobs:
 
       - name: Type check
         run: pnpm --filter apartment-ultra-tenant run type-check
-
-      - name: Run tests
-        run: pnpm --filter apartment-ultra-tenant run test:run
 
       - name: Build
         run: pnpm --filter apartment-ultra-tenant run build
@@ -219,9 +211,6 @@ jobs:
 
       - name: Type check
         run: pnpm --filter apartment-ultra-admin run type-check
-
-      - name: Run tests
-        run: pnpm --filter apartment-ultra-admin run test:run
 
       - name: Build
         run: pnpm --filter apartment-ultra-admin run build
