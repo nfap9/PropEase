@@ -42,8 +42,8 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DASH-01 | Phase 8 | Complete |
-| DASH-02 | Phase 8 | Complete |
-| DASH-03 | Phase 8 | Complete |
+| DASH-02 | Phase 8, Phase 15 (gap closure) | Partial (mock data → real API) |
+| DASH-03 | Phase 8, Phase 15 (gap closure) | Partial (mock data → real API) |
 | DASH-04 | Phase 8 | Complete |
 | ORGM-01 | Phase 9 | Not needed |
 | ORGM-02 | Phase 9 | Not needed |
@@ -56,7 +56,10 @@
 - v1.1 requirements: 10 total
 - Mapped to phases: 10
 - Complete: 4 (DASH-01~04)
+- Partial: 2 (DASH-02, DASH-03 — Phase 15 gap closure in progress)
 - Not needed: 6 (ORGM-01~03, SYSC-01~02, ROLE-01)
+
+**Gap Closure Phases:** Phase 14 (admin E2E), Phase 15 (Dashboard backend API)
 
 ---
 *Requirements defined: 2026-03-20*

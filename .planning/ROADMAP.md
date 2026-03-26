@@ -78,6 +78,26 @@ Plans:
 Plans:
 - [x] TBD (run /gsd:plan-phase 13 to break down) (completed 2026-03-21)
 
+### Phase 14: 完成 admin E2E 测试计划 11-05 (Gap Closure)
+
+**Goal:** 定义并执行 Plan 11-05，关闭 Phase 11 遗留的测试深度缺口
+**Gap Closure:** Closes gaps from v1.1 audit: admin-e2e-partial (Plan 11-05 未定义), phase-11-context-gaps (test data isolation, sidebar navigation, CRUD assertions)
+**Depends on:** Phase 11
+**Plans:** 0/1 planned
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 14 to break down)
+
+### Phase 15: 实现 Dashboard 后端 API (Gap Closure)
+
+**Goal:** 实现后端 aggregate API 替换 mock 数据，关闭 DASH-02/DASH-03 实现缺口
+**Gap Closure:** Closes gaps from v1.1 audit: DASH-02-impl, DASH-03-impl (mock 数据), AdminPlatformStats optional 字段
+**Depends on:** Phase 8
+**Plans:** 0/1 planned
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 15 to break down)
+
 ---
 
 *For completed milestone details, see `.planning/milestones/v1.0-ROADMAP.md`*
