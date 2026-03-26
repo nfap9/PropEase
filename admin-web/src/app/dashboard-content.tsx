@@ -6,35 +6,13 @@ import { adminApiEndpoints } from '@/lib/api/admin-client';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { ChartCard } from '@/components/dashboard/chart-card';
 import { IncomeChart } from '@/components/dashboard/income-chart';
-import { OccupancyChart } from '@/components/dashboard/occupancy-chart';
 import { YearFilter } from '@/components/dashboard/year-filter';
 import { RefreshButton } from '@/components/dashboard/refresh-button';
 import { StatCardsSkeleton } from '@/components/dashboard/skeleton';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminPlatformStats } from '@apartment-ultra/api-contract';
 import type { AxiosResponse } from 'axios';
-import type { IncomeReport, OccupancyReport } from '@apartment-ultra/api-contract';
-
-function generateMockOccupancy(year: number, roomsCount: number): OccupancyReport[] {
-  const months = Array.from({ length: 12 }, (_, i) => {
-    const month = String(i + 1).padStart(2, '0');
-    const period = `${year}-${month}`;
-    // Simulate seasonal occupancy: higher in spring/summer, lower in winter
-    const seasonalBase = 0.68 + Math.sin((i / 12) * Math.PI * 2 + Math.PI) * 0.15;
-    const occupancy_rate = Math.round((seasonalBase + (roomsCount / 1000)) * 1000) / 10;
-    const clamped = Math.min(99, Math.max(50, occupancy_rate));
-    const occupied_rooms = Math.round((clamped / 100) * roomsCount);
-    const vacant_rooms = roomsCount - occupied_rooms;
-    return {
-      period,
-      total_rooms: roomsCount,
-      occupied_rooms,
-      vacant_rooms,
-      occupancy_rate: clamped,
-    };
-  });
-  return months;
-}
+import type { IncomeReport } from '@apartment-ultra/api-contract';
 
 export function DashboardContent() {
   const queryClient = useQueryClient();
@@ -63,9 +41,7 @@ export function DashboardContent() {
   });
 
   const stats = statsResponse?.data;
-  const roomsCount = stats?.rooms_count ?? 0;
   const incomeData: IncomeReport[] = incomeResponse ?? [];
-  const occupancyData = generateMockOccupancy(selectedYear, roomsCount);
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['admin'] });
@@ -118,17 +94,10 @@ export function DashboardContent() {
       </div>
 
       {/* Charts */}
-      <div className="grid gap-6 lg:grid-cols-5">
-        <div className="lg:col-span-3">
-          <ChartCard title="收入趋势">
-            <IncomeChart data={incomeData} />
-          </ChartCard>
-        </div>
-        <div className="lg:col-span-2">
-          <ChartCard title="入住率分析">
-            <OccupancyChart data={occupancyData} />
-          </ChartCard>
-        </div>
+      <div className="grid gap-6 lg:grid-cols-1">
+        <ChartCard title="收入趋势">
+          <IncomeChart data={incomeData} />
+        </ChartCard>
       </div>
     </div>
   );
