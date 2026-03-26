@@ -6,7 +6,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: 工程基础设施与数据层规范化** - 建立 CI 门禁，将所有 Mock 数据替换为真实 API 调用
+- [x] **Phase 1: 工程基础设施与数据层规范化** - 建立 CI 门禁，将所有 Mock 数据替换为真实 API 调用 (completed 2026-03-26)
 - [ ] **Phase 2: 页面拆分规划与导航架构** - 拆分巨型页面，完善页面导航上下文
 - [ ] **Phase 3: 组件提取与数据访问 Hooks** - 提取可复用组件和 data hooks
 - [ ] **Phase 4: 样式统一与设计系统完善** - 统一设计令牌，完善 CSS 主题化
@@ -30,7 +30,7 @@
   5. CI 门禁包含 lint/type-check/test，执行失败则无法合并
 
 **Plans**: 1 plan
-- [ ] 01-01-PLAN.md — Mock数据替换(Reports)、CI门禁修改、EmptyState组件创建
+- [x] 01-01-PLAN.md — Mock数据替换(Reports)、CI门禁修改、EmptyState组件创建
 
 ---
 
@@ -112,7 +112,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 1. 工程基础设施与数据层规范化 | 1/1 | Not started | - |
+| 1. 工程基础设施与数据层规范化 | 1/1 | Complete   | 2026-03-26 |
 | 2. 页面拆分规划与导航架构 | 0/TBD | Not started | - |
 | 3. 组件提取与数据访问 Hooks | 0/TBD | Not started | - |
 | 4. 样式统一与设计系统完善 | 0/TBD | Not started | - |

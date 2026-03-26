@@ -9,10 +9,10 @@
 
 ### 数据层规范化 (Data)
 
-- [ ] **DATA-01**: 租客端所有使用 mock 数据的 API 调用替换为真实数据库查询
-- [ ] **DATA-02**: 运营后台所有使用 mock 数据的 API 调用替换为真实数据库查询
-- [ ] **DATA-03**: API 响应类型与前端类型定义保持一致（Zod schema 校验）
-- [ ] **DATA-04**: 空状态（empty state）正确处理，无数据时显示友好提示
+- [x] **DATA-01**: 租客端所有使用 mock 数据的 API 调用替换为真实数据库查询
+- [x] **DATA-02**: 运营后台所有使用 mock 数据的 API 调用替换为真实数据库查询
+- [x] **DATA-03**: API 响应类型与前端类型定义保持一致（Zod schema 校验）
+- [x] **DATA-04**: 空状态（empty state）正确处理，无数据时显示友好提示
 
 ### 页面拆分 (Page Split)
 
@@ -43,8 +43,8 @@
 
 ### 工程保障 (Engineering)
 
-- [ ] **ENG-01**: CI 门禁建立（lint/type-check/test）
-- [ ] **ENG-02**: 回归测试套件覆盖核心业务流程
+- [x] **ENG-01**: CI 门禁建立（lint/type-check/test）
+- [x] **ENG-02**: 回归测试套件覆盖核心业务流程
 
 ## v2 Requirements
 
@@ -77,10 +77,10 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
+| DATA-02 | Phase 1 | Complete |
+| DATA-03 | Phase 1 | Complete |
+| DATA-04 | Phase 1 | Complete |
 | PAGE-01 | Phase 2 | Pending |
 | PAGE-02 | Phase 2 | Pending |
 | PAGE-03 | Phase 2 | Pending |
@@ -96,8 +96,8 @@
 | USAB-02 | Phase 5 | Pending |
 | USAB-03 | Phase 5 | Pending |
 | USAB-04 | Phase 5 | Pending |
-| ENG-01 | Phase 1 | Pending |
-| ENG-02 | Phase 1 | Pending |
+| ENG-01 | Phase 1 | Complete |
+| ENG-02 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 21 total
