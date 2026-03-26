@@ -80,9 +80,6 @@ htmlcov/
 *.swp
 *.swo
 
-# Planning artifacts (GSD workflow)
-.planning/
-
 # Database
 *.db
 *.sqlite3
