@@ -24,9 +24,9 @@ requirements:
 must_haves:
   truths:
     - "GET /reports API调用真实服务，不再返回硬编码空数组"
-    - "CI门禁只运行lint+type-check，不再运行test suite"
-    - "共享EmptyState组件已创建，可供前后端复用"
-    - "类型定义与API响应一致"
+    - "CI门禁只运行lint+type-check，不再运行test suite（D-01覆盖ENG-01中test要求）"
+    - "EmptyState组件已创建并导出，待Phase 3集成到具体页面"
+    - "API响应数据正确展示，无类型错误导致的展示异常"
   artifacts:
     - path: "api/src/routes/v1/reports.ts"
       provides: "GET /reports 路由，调用真实服务"
@@ -38,7 +38,7 @@ must_haves:
       provides: "CI门禁配置"
       not_contains: "Run tests"
     - path: "packages/shared-ui/src/components/ui/empty-state.tsx"
-      provides: "空状态组件"
+      provides: "空状态组件（组件已创建，集成工作归属Phase 3 COMP-03）"
       contains: "EmptyState"
     - path: "packages/api-contract/src/reports.ts"
       provides: "Report类型定义"
@@ -51,13 +51,14 @@ must_haves:
     - from: "api/src/services/report.service.ts"
       to: "api/src/repositories/report.repo.ts"
       via: "repo.listReports call"
+      pattern: "prisma\\.message\\.(find|create)"
 ---
 
 <objective>
 建立CI门禁防止回归，将租客端和运营后台所有Mock数据替换为真实数据库查询，并确保API契约与前端类型一致。
 
 Purpose: 规范化工程基础设施，为后续优化奠定真实数据基础
-Output: CI门禁配置、Mock数据替换、EmptyState组件
+Output: CI门禁配置、Mock数据替换、EmptyState组件（组件级创建，页面集成归属Phase 3）
 </objective>
 
 <execution_context>
@@ -190,7 +191,7 @@ Output: CI门禁配置、Mock数据替换、EmptyState组件
     .github/workflows/ci.yml
   </read_first>
   <action>
-    按照D-01决策（CI门禁包含lint+type-check，不强制在CI中运行test suite）修改CI配置。
+    按照D-01决策（CI门禁包含lint+type-check，不强制在CI中运行test suite）修改CI配置。D-01是用户锁定决策，覆盖了ENG-01中关于CI应包含test的要求。
 
     **移除api job的Test步骤**
     删除第122-125行：
@@ -250,6 +251,8 @@ Output: CI门禁配置、Mock数据替换、EmptyState组件
   </read_first>
   <action>
     在packages/shared-ui中创建统一的EmptyState组件，用于各页面空状态展示。
+
+    注意：此任务只创建组件本身，不包含集成到具体页面。组件集成工作归属Phase 3（COMP-03组件提取），因为ROADMAP Phase 3明确指出"共享 UI 组件已补充（StatCard, EmptyState, LoadingState），各模块复用一致组件"。
 
     **创建packages/shared-ui/src/components/ui/empty-state.tsx：**
     ```typescript
@@ -317,7 +320,7 @@ Output: CI门禁配置、Mock数据替换、EmptyState组件
     export type { EmptyStateProps } from './components/ui/empty-state';
     ```
 
-    组件使用示例（供后续phase使用）：
+    组件使用示例（供Phase 3集成时参考）：
     ```tsx
     <EmptyState
       icon={<Building2 className="h-12 w-12" />}
@@ -335,7 +338,7 @@ Output: CI门禁配置、Mock数据替换、EmptyState组件
     </automated>
   </verify>
   <done>
-    EmptyState组件已创建并导出，可复用于tenant-web和admin-web
+    EmptyState组件已创建并导出，待Phase 3集成到具体页面
   </done>
 </task>
 
@@ -350,7 +353,7 @@ Output: CI门禁配置、Mock数据替换、EmptyState组件
    # 应无输出（已替换）
    ```
 
-2. **CI配置验证** (ENG-01):
+2. **CI配置验证** (ENG-01 as modified by D-01):
    ```bash
    grep -n "Run tests" .github/workflows/ci.yml
    # 应无输出（test步骤已移除）
@@ -364,17 +367,17 @@ Output: CI门禁配置、Mock数据替换、EmptyState组件
 
 4. **类型一致性验证** (DATA-03):
    ```bash
-   cd api && pnpm run type-check
-   cd tenant-web && pnpm run type-check
-   cd admin-web && pnpm run type-check
+   pnpm --filter apartment-ultra-api run type-check
+   pnpm --filter apartment-ultra-tenant run type-check
+   pnpm --filter apartment-ultra-admin run type-check
    ```
 </verification>
 
 <success_criteria>
 - [ ] GET /reports API不再返回空数组，调用defaultReportService.list(orgId)
 - [ ] ReportService.list方法已实现，调用链完整
-- [ ] CI工作流移除test步骤，保留lint+type-check
-- [ ] EmptyState组件已创建并导出
+- [ ] CI工作流移除test步骤，保留lint+type-check（D-01覆盖ENG-01）
+- [ ] EmptyState组件已创建并导出（集成工作归属Phase 3 COMP-03）
 - [ ] 所有类型检查通过
 </success_criteria>
 
