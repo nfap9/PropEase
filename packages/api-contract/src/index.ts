@@ -180,6 +180,7 @@ export type {
   IncomeReportParams,
   OccupancyReport,
   OccupancyReportParams,
+  ReportMetadata,
 } from './reports.js';
 
 /** 权限类型 */
