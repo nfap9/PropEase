@@ -34,26 +34,29 @@
 | 租户端功能开发 | 已在 v1.0 完成 |
 | 移动端完整功能 | Phase 7 已覆盖基础，完整功能后续 |
 | 审批流程 | 高复杂度，后续版本 |
+| 平台级组织管理 (ORGM-01~03) | 不需要，租户端已有成员管理 |
+| 系统配置 (SYSC-01~02, ROLE-01) | 当前版本不需要，后续再议 |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DASH-01 | Phase 8 | Pending |
-| DASH-02 | Phase 8 | Pending |
-| DASH-03 | Phase 8 | Pending |
-| DASH-04 | Phase 8 | Pending |
-| ORGM-01 | Phase 9 | Pending |
-| ORGM-02 | Phase 9 | Pending |
-| ORGM-03 | Phase 9 | Pending |
-| SYSC-01 | Phase 10 | Pending |
-| SYSC-02 | Phase 10 | Pending |
-| ROLE-01 | Phase 10 | Pending |
+| DASH-01 | Phase 8 | Complete |
+| DASH-02 | Phase 8 | Complete |
+| DASH-03 | Phase 8 | Complete |
+| DASH-04 | Phase 8 | Complete |
+| ORGM-01 | Phase 9 | Not needed |
+| ORGM-02 | Phase 9 | Not needed |
+| ORGM-03 | Phase 9 | Not needed |
+| SYSC-01 | Phase 10 | Not needed |
+| SYSC-02 | Phase 10 | Not needed |
+| ROLE-01 | Phase 10 | Not needed |
 
 **Coverage:**
 - v1.1 requirements: 10 total
 - Mapped to phases: 10
-- Unmapped: 0 ✓
+- Complete: 4 (DASH-01~04)
+- Not needed: 6 (ORGM-01~03, SYSC-01~02, ROLE-01)
 
 ---
 *Requirements defined: 2026-03-20*
