@@ -29,7 +29,8 @@
   4. 空状态（无数据时）显示友好提示而非空白或错误
   5. CI 门禁包含 lint/type-check/test，执行失败则无法合并
 
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 01-01-PLAN.md — Mock数据替换(Reports)、CI门禁修改、EmptyState组件创建
 
 ---
 
@@ -111,7 +112,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 1. 工程基础设施与数据层规范化 | 0/TBD | Not started | - |
+| 1. 工程基础设施与数据层规范化 | 1/1 | Not started | - |
 | 2. 页面拆分规划与导航架构 | 0/TBD | Not started | - |
 | 3. 组件提取与数据访问 Hooks | 0/TBD | Not started | - |
 | 4. 样式统一与设计系统完善 | 0/TBD | Not started | - |
