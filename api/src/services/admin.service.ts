@@ -189,6 +189,22 @@ export interface AdminService {
 
   // Stats
   getStats(): Promise<AdminStats>;
+  getAdminIncome(
+    year: number,
+    startMonth?: number,
+    endMonth?: number
+  ): Promise<
+    Array<{
+      period: string;
+      total_rent: number;
+      total_water: number;
+      total_electricity: number;
+      total_other: number;
+      total_amount: number;
+      collected_amount: number;
+      collection_rate: number;
+    }>
+  >;
 
   // Usage Pricing
   getUsagePricing(): Promise<UsagePricing>;
@@ -593,6 +609,58 @@ export function createAdminService(
         rooms_count,
         active_subscriptions_count,
       };
+    },
+
+    getAdminIncome: async (year: number, startMonth?: number, endMonth?: number) => {
+      const bills = await getRepo().getBillsByYear(year, startMonth, endMonth);
+
+      const byMonth = new Map<
+        number,
+        {
+          total_rent: number;
+          total_water: number;
+          total_electricity: number;
+          total_other: number;
+          total_amount: number;
+          collected_amount: number;
+        }
+      >();
+
+      for (const b of bills) {
+        const m = b.bill_month;
+        if (!byMonth.has(m)) {
+          byMonth.set(m, {
+            total_rent: 0,
+            total_water: 0,
+            total_electricity: 0,
+            total_other: 0,
+            total_amount: 0,
+            collected_amount: 0,
+          });
+        }
+        const row = byMonth.get(m)!;
+        row.total_rent += Number(b.rent_amount);
+        row.total_water += Number(b.water_amount);
+        row.total_electricity += Number(b.electricity_amount);
+        row.total_other += Number(b.other_amount);
+        row.total_amount += Number(b.total_amount);
+        row.collected_amount += Number(b.paid_amount);
+      }
+
+      const sortedMonths = Array.from(byMonth.entries()).sort((a, b) => a[0] - b[0]);
+      return sortedMonths.map(([month, row]) => ({
+        period: `${year}-${String(month).padStart(2, '0')}`,
+        total_rent: row.total_rent,
+        total_water: row.total_water,
+        total_electricity: row.total_electricity,
+        total_other: row.total_other,
+        total_amount: row.total_amount,
+        collected_amount: row.collected_amount,
+        collection_rate:
+          row.total_amount > 0
+            ? Math.round((row.collected_amount / row.total_amount) * 1000) / 10
+            : 0,
+      }));
     },
 
     getUsagePricing: async () => {

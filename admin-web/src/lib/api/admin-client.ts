@@ -161,6 +161,20 @@ export const adminApiEndpoints = {
 
   getStats: () => adminApi.get<AdminPlatformStats>('/admin/stats'),
 
+  getAdminIncome: (year: number) =>
+    adminApi.get<
+      Array<{
+        period: string;
+        total_rent: number;
+        total_water: number;
+        total_electricity: number;
+        total_other: number;
+        total_amount: number;
+        collected_amount: number;
+        collection_rate: number;
+      }>
+    >('/admin/income', { params: { year } }),
+
   // 运营账号
   listUsers: (params?: { skip?: number; limit?: number }) =>
     adminApi.get<AdminUser[]>('/admin/users', { params }),

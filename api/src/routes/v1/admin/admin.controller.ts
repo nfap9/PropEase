@@ -374,6 +374,19 @@ export async function getStats(_req: Request, res: Response, next: NextFunction)
   }
 }
 
+// --- income reports ---
+export async function getAdminIncome(req: Request, res: Response, next: NextFunction) {
+  try {
+    const year = req.query.year != null ? Number(req.query.year) : new Date().getFullYear();
+    const startMonth = req.query.start_month != null ? Number(req.query.start_month) : undefined;
+    const endMonth = req.query.end_month != null ? Number(req.query.end_month) : undefined;
+    const income = await defaultAdminService.getAdminIncome(year, startMonth, endMonth);
+    res.json(income);
+  } catch (e) {
+    next(e);
+  }
+}
+
 // --- usage pricing ---
 export async function getUsagePricing(_req: Request, res: Response, next: NextFunction) {
   try {

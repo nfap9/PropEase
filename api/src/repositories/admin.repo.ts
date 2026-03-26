@@ -124,6 +124,23 @@ export interface AdminRepository {
   countRooms(): Promise<number>;
   countActiveSubscriptions(): Promise<number>;
 
+  // Income Reports
+  getBillsByYear(
+    year: number,
+    startMonth?: number,
+    endMonth?: number
+  ): Promise<
+    Array<{
+      bill_month: number;
+      rent_amount: Prisma.Decimal | null;
+      water_amount: Prisma.Decimal | null;
+      electricity_amount: Prisma.Decimal | null;
+      other_amount: Prisma.Decimal | null;
+      total_amount: Prisma.Decimal | null;
+      paid_amount: Prisma.Decimal | null;
+    }>
+  >;
+
   // Usage Orders
   listUsageOrders(
     skip?: number,
@@ -384,6 +401,29 @@ export function createAdminRepository(db: DbClient): AdminRepository {
         where: { id: 'default' },
         create: { id: 'default', usage_pricing: usagePricing },
         update: { usage_pricing: usagePricing },
+      });
+    },
+
+    getBillsByYear: async (
+      year: number,
+      startMonth?: number,
+      endMonth?: number
+    ) => {
+      return db.bill.findMany({
+        where: {
+          bill_year: year,
+          ...(startMonth != null ? { bill_month: { gte: startMonth } } : {}),
+          ...(endMonth != null ? { bill_month: { lte: endMonth } } : {}),
+        },
+        select: {
+          bill_month: true,
+          rent_amount: true,
+          water_amount: true,
+          electricity_amount: true,
+          other_amount: true,
+          total_amount: true,
+          paid_amount: true,
+        },
       });
     },
   };

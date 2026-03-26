@@ -61,6 +61,7 @@ router.post('/subscriptions/gift', ctrl.giftSubscription);
 
 // --- stats & usage pricing ---
 router.get('/stats', ctrl.getStats);
+router.get('/income', ctrl.getAdminIncome);
 router.get('/usage-pricing', ctrl.getUsagePricing);
 router.put('/usage-pricing', ctrl.updateUsagePricing);
 router.get('/usage-orders', ctrl.listUsageOrders);

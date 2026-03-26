@@ -11,38 +11,9 @@ import { YearFilter } from '@/components/dashboard/year-filter';
 import { RefreshButton } from '@/components/dashboard/refresh-button';
 import { StatCardsSkeleton } from '@/components/dashboard/skeleton';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import type { AdminPlatformStats, IncomeReport, OccupancyReport } from '@apartment-ultra/api-contract';
+import type { AdminPlatformStats } from '@apartment-ultra/api-contract';
 import type { AxiosResponse } from 'axios';
-
-function generateMockIncome(year: number, roomsCount: number): IncomeReport[] {
-  const months = Array.from({ length: 12 }, (_, i) => {
-    const month = String(i + 1).padStart(2, '0');
-    const period = `${year}-${month}`;
-    // Vary data slightly by month, scale by room count
-    const baseRent = Math.max(roomsCount * 800, 20000);
-    const variance = 0.85 + Math.random() * 0.3;
-    const total_rent = Math.round(baseRent * variance);
-    const total_water = Math.round(800 + Math.random() * 400);
-    const total_electricity = Math.round(1200 + Math.random() * 600);
-    const total_other = Math.round(300 + Math.random() * 200);
-    const total_amount = total_rent + total_water + total_electricity + total_other;
-    const collected_ratio = 0.72 + Math.random() * 0.22;
-    const collected_amount = Math.round(total_amount * collected_ratio);
-    const uncollected = total_amount - collected_amount;
-    const collection_rate = Math.round((collected_ratio * 1000)) / 10;
-    return {
-      period,
-      total_rent,
-      total_water,
-      total_electricity,
-      total_other,
-      total_amount,
-      collected_amount,
-      collection_rate,
-    };
-  });
-  return months;
-}
+import type { IncomeReport, OccupancyReport } from '@apartment-ultra/api-contract';
 
 function generateMockOccupancy(year: number, roomsCount: number): OccupancyReport[] {
   const months = Array.from({ length: 12 }, (_, i) => {
@@ -81,10 +52,19 @@ export function DashboardContent() {
     },
   });
 
+  const {
+    data: incomeResponse,
+  } = useQuery({
+    queryKey: ['admin', 'income', selectedYear],
+    queryFn: async () => {
+      const res = await adminApiEndpoints.getAdminIncome(selectedYear);
+      return res.data;
+    },
+  });
+
   const stats = statsResponse?.data;
   const roomsCount = stats?.rooms_count ?? 0;
-
-  const incomeData = generateMockIncome(selectedYear, roomsCount);
+  const incomeData: IncomeReport[] = incomeResponse ?? [];
   const occupancyData = generateMockOccupancy(selectedYear, roomsCount);
 
   const handleRefresh = () => {
