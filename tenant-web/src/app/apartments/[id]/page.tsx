@@ -183,12 +183,32 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
         name: z.string().min(1, '请输入公寓名称'),
         address: z.string().min(1, '请输入公寓地址'),
         description: z.string().optional(),
+        // 基本信息
+        floors: z.number().min(1).optional(),
+        land_area: z.number().min(0).optional(),
+        total_area: z.number().min(0).optional(),
+        // 上游信息
+        landlord_name: z.string().optional(),
+        landlord_contact: z.string().optional(),
+        contract_start: z.string().optional(),
+        contract_end: z.string().optional(),
+        landlord_rent: z.number().min(0).optional(),
+        operating_cost: z.number().min(0).optional(),
       })
     ),
     defaultValues: {
       name: '',
       address: '',
       description: '',
+      floors: undefined,
+      land_area: undefined,
+      total_area: undefined,
+      landlord_name: '',
+      landlord_contact: '',
+      contract_start: '',
+      contract_end: '',
+      landlord_rent: undefined,
+      operating_cost: undefined,
     },
   });
 
@@ -325,8 +345,20 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
 
   // 更新公寓
   const updateApartmentMutation = useMutation({
-    mutationFn: (data: { name: string; address: string; description?: string }) =>
-      apartmentsApi.update(orgId!, apartmentId, filterEmptyStrings(data)),
+    mutationFn: (data: {
+      name: string;
+      address: string;
+      description?: string;
+      floors?: number;
+      land_area?: number;
+      total_area?: number;
+      landlord_name?: string;
+      landlord_contact?: string;
+      contract_start?: string;
+      contract_end?: string;
+      landlord_rent?: number;
+      operating_cost?: number;
+    }) => apartmentsApi.update(orgId!, apartmentId, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartment', orgId, apartmentId] });
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
@@ -495,6 +527,19 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
         name: apartment.name,
         address: apartment.address ?? '',
         description: apartment.description ?? '',
+        floors: apartment.floors ?? undefined,
+        land_area: apartment.land_area ?? undefined,
+        total_area: apartment.total_area ?? undefined,
+        landlord_name: apartment.landlord_name ?? '',
+        landlord_contact: apartment.landlord_contact ?? '',
+        contract_start: apartment.contract_start
+          ? new Date(apartment.contract_start).toISOString().split('T')[0]
+          : '',
+        contract_end: apartment.contract_end
+          ? new Date(apartment.contract_end).toISOString().split('T')[0]
+          : '',
+        landlord_rent: apartment.landlord_rent ?? undefined,
+        operating_cost: apartment.operating_cost ?? undefined,
       });
       setIsEditApartmentOpen(true);
     }
@@ -597,108 +642,64 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
             </TabsList>
 
             <TabsContent value="basic" className="space-y-4">
-              {/* 物业信息 */}
-              {(apartment.floors || apartment.land_area || apartment.total_area) && (
+              {/* 物业信息 + 房间统计 */}
+              <div className="grid gap-4 md:grid-cols-2">
+                {/* 物业信息 */}
+                {(apartment.floors || apartment.land_area || apartment.total_area) && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>物业信息</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-muted-foreground">楼层数</span>
+                          <span className="font-medium">{apartment.floors ?? '-'} 层</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-muted-foreground">用地面积</span>
+                          <span className="font-medium">
+                            {apartment.land_area ? `${apartment.land_area} 亩` : '-'}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs text-muted-foreground">总面积</span>
+                          <span className="font-medium">
+                            {apartment.total_area ? `${apartment.total_area} ㎡` : '-'}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* 房间统计 */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>物业信息</CardTitle>
+                    <CardTitle>房间统计</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-4 gap-4">
                       <div className="flex flex-col">
-                        <span className="text-xs text-muted-foreground">楼层数</span>
-                        <span className="font-medium">{apartment.floors ?? '-'} 层</span>
+                        <span className="text-xs text-muted-foreground">总房间数</span>
+                        <span className="text-2xl font-bold">{stats.total}</span>
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-xs text-muted-foreground">用地面积</span>
-                        <span className="font-medium">
-                          {apartment.land_area ? `${apartment.land_area} 亩` : '-'}
-                        </span>
+                        <span className="text-xs text-muted-foreground">已出租</span>
+                        <span className="text-2xl font-bold text-blue-600">{stats.occupied}</span>
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-xs text-muted-foreground">总面积</span>
-                        <span className="font-medium">
-                          {apartment.total_area ? `${apartment.total_area} ㎡` : '-'}
-                        </span>
+                        <span className="text-xs text-muted-foreground">空置</span>
+                        <span className="text-2xl font-bold text-green-600">{stats.available}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-muted-foreground">维修中</span>
+                        <span className="text-2xl font-bold text-orange-600">{stats.maintenance}</span>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              )}
-
-              {/* 统计卡片 */}
-              <div className="grid gap-4 md:grid-cols-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">总房间数</CardTitle>
-                    <Home className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{stats.total}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">已出租</CardTitle>
-                    <Users className="h-4 w-4 text-blue-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-blue-600">{stats.occupied}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">空置</CardTitle>
-                    <Home className="h-4 w-4 text-green-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-green-600">{stats.available}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">维修中</CardTitle>
-                    <Wrench className="h-4 w-4 text-orange-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-orange-600">{stats.maintenance}</div>
-                  </CardContent>
-                </Card>
               </div>
-
-              {/* 快捷操作 */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>快捷操作</CardTitle>
-                  <CardDescription>快速跳转到相关功能</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-3">
-                    <Button variant="outline" asChild>
-                      <Link href={`/leases?apartment=${apartmentId}`}>
-                        <FileText className="mr-2 h-4 w-4" />
-                        查看租约
-                      </Link>
-                    </Button>
-                    <Button variant="outline" asChild>
-                      <Link href={`/bills?apartment=${apartmentId}`}>
-                        <Receipt className="mr-2 h-4 w-4" />
-                        查看账单
-                      </Link>
-                    </Button>
-                    <Button variant="outline" asChild>
-                      <Link href={`/utilities?apartment=${apartmentId}`}>
-                        <Zap className="mr-2 h-4 w-4" />
-                        水电录入
-                      </Link>
-                    </Button>
-                    <Button variant="outline" onClick={() => setIsUtilityConfigOpen(true)}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      水电配置
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
 
               {/* 房间列表 */}
               <Card>
@@ -994,6 +995,89 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                 <Label htmlFor="description">描述</Label>
                 <Input id="description" {...apartmentForm.register('description')} />
               </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="floors">楼层数</Label>
+                  <Input
+                    id="floors"
+                    type="number"
+                    min={1}
+                    {...apartmentForm.register('floors', { valueAsNumber: true })}
+                    placeholder="如：5"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="land_area">用地面积（亩）</Label>
+                  <Input
+                    id="land_area"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    {...apartmentForm.register('land_area', { valueAsNumber: true })}
+                    placeholder="如：2.5"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="total_area">总面积（㎡）</Label>
+                  <Input
+                    id="total_area"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    {...apartmentForm.register('total_area', { valueAsNumber: true })}
+                    placeholder="如：500"
+                  />
+                </div>
+              </div>
+
+              <details className="group border rounded-md p-3">
+                <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
+                  上游信息（点击展开）
+                </summary>
+                <div className="mt-3 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="landlord_name">房东姓名</Label>
+                      <Input id="landlord_name" {...apartmentForm.register('landlord_name')} placeholder="如：张三" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="landlord_contact">联系方式</Label>
+                      <Input id="landlord_contact" {...apartmentForm.register('landlord_contact')} placeholder="如：138xxxx" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contract_start">合同开始</Label>
+                      <Input id="contract_start" type="date" {...apartmentForm.register('contract_start')} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contract_end">合同结束</Label>
+                      <Input id="contract_end" type="date" {...apartmentForm.register('contract_end')} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="landlord_rent">房东租金（元/月）</Label>
+                      <Input
+                        id="landlord_rent"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        {...apartmentForm.register('landlord_rent', { valueAsNumber: true })}
+                        placeholder="如：5000"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="operating_cost">经营成本（元/月）</Label>
+                      <Input
+                        id="operating_cost"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        {...apartmentForm.register('operating_cost', { valueAsNumber: true })}
+                        placeholder="如：1000"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </details>
+
               <DialogFooter>
                 <Button
                   type="button"
