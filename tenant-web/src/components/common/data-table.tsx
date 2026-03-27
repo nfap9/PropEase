@@ -29,11 +29,7 @@ interface DataTableProps<TData, TValue> {
   testid?: string;
 }
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-  testid,
-}: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, testid }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
@@ -54,16 +50,14 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4" data-testid={testid}>
-      <div className="rounded-md border">
+      <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-[0_18px_40px_-24px_rgba(15,23,42,0.22)]">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -74,9 +68,7 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
                 </TableRow>
               ))
@@ -90,11 +82,15 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between px-2">
+      <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-muted-foreground">
-          共 {table.getFilteredRowModel().rows.length} 条记录
+          共 <span className="font-semibold text-foreground">{table.getFilteredRowModel().rows.length}</span> 条记录
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            第 <span className="font-semibold text-foreground">{table.getState().pagination.pageIndex + 1}</span> /{' '}
+            <span className="font-semibold text-foreground">{table.getPageCount()}</span> 页
+          </span>
           <Button
             variant="outline"
             size="sm"
@@ -111,15 +107,7 @@ export function DataTable<TData, TValue>({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm">
-            第 {table.getState().pagination.pageIndex + 1} / {table.getPageCount()} 页
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
+          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
             <ChevronRight className="h-4 w-4" />
           </Button>
           <Button

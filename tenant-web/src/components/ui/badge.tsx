@@ -4,19 +4,17 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+  'inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-[0.02em] transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
   {
     variants: {
       variant: {
-        default: 'border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80',
-        secondary:
-          'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        destructive:
-          'border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80',
-        success: 'border-transparent bg-success text-success-foreground shadow hover:bg-success/80',
-        warning: 'border-transparent bg-warning text-warning-foreground shadow hover:bg-warning/80',
-        info: 'border-transparent bg-info text-info-foreground shadow hover:bg-info/80',
-        outline: 'text-foreground',
+        default: 'border-transparent bg-primary/12 text-primary shadow-sm hover:bg-primary/18',
+        secondary: 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/90',
+        destructive: 'border-transparent bg-destructive/14 text-destructive shadow-sm hover:bg-destructive/18',
+        success: 'border-transparent bg-success/14 text-success shadow-sm hover:bg-success/18',
+        warning: 'border-transparent bg-warning/18 text-amber-950 shadow-sm hover:bg-warning/24',
+        info: 'border-transparent bg-info/14 text-info shadow-sm hover:bg-info/18',
+        outline: 'border-border bg-background text-foreground',
       },
     },
     defaultVariants: {
@@ -25,8 +23,7 @@ const badgeVariants = cva(
   }
 );
 
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> {}
+export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement>, VariantProps<typeof badgeVariants> {}
 
 function Badge({ className, variant, ...props }: BadgeProps) {
   return <span className={cn(badgeVariants({ variant }), className)} {...props} />;
