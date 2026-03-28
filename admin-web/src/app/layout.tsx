@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/layout/providers";
 import { AdminAuthLayout } from "@/components/layout/admin-auth-layout";
+import { adminMessages } from "@/lib/i18n";
 
 export const metadata: Metadata = {
-  title: "管理平台 - Apartment Ultra",
-  description: "公寓管理系统管理平台",
+  title: adminMessages.meta.title,
+  description: adminMessages.meta.description,
 };
 
 export default function RootLayout({

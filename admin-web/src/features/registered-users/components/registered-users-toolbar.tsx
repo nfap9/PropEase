@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import type { FilterActive } from '../registered-users.schemas';
+import { adminMessages } from '@/lib/i18n';
 
 interface RegisteredUsersToolbarProps {
   activeFilter: FilterActive;
@@ -30,28 +31,28 @@ export function RegisteredUsersToolbar({
   return (
     <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
       <h2 className="text-xl font-semibold" data-testid="admin-registered-users-heading">
-        用户管理
+        {adminMessages.registeredUsers.heading}
       </h2>
       <div className="flex flex-wrap items-center gap-2">
         <form onSubmit={onSearchSubmit} className="flex gap-2">
           <Input
-            placeholder="手机号或姓名"
+            placeholder={adminMessages.registeredUsers.toolbar.searchPlaceholder}
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
             className="w-40"
           />
           <Button type="submit" variant="secondary" size="sm">
-            搜索
+            {adminMessages.registeredUsers.toolbar.search}
           </Button>
         </form>
         <Select value={activeFilter} onValueChange={(value) => onActiveFilterChange(value as FilterActive)}>
           <SelectTrigger className="w-36">
-            <SelectValue placeholder="状态筛选" />
+            <SelectValue placeholder={adminMessages.registeredUsers.toolbar.statusPlaceholder} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">全部</SelectItem>
-            <SelectItem value="active">启用</SelectItem>
-            <SelectItem value="inactive">停用</SelectItem>
+            <SelectItem value="all">{adminMessages.registeredUsers.toolbar.all}</SelectItem>
+            <SelectItem value="active">{adminMessages.registeredUsers.toolbar.active}</SelectItem>
+            <SelectItem value="inactive">{adminMessages.registeredUsers.toolbar.inactive}</SelectItem>
           </SelectContent>
         </Select>
       </div>

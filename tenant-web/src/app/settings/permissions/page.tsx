@@ -14,6 +14,7 @@ import { OrgRoleDetailPanel } from '@/components/settings/org-role-detail-panel'
 import { Shield } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { cn } from '@/lib/utils';
+import { tenantI18n, tenantMessages } from '@/lib/i18n';
 
 // 注意: 实际使用时从 testids 导入 PERMISSIONS 常量
 const PERMISSIONS = {
@@ -67,7 +68,7 @@ export default function PermissionsPage() {
         permission_codes: data.codes,
       }),
     onSuccess: () => {
-      toast.success('功能分配已更新');
+      toast.success(tenantMessages.settings.permissions.saved);
       queryClient.invalidateQueries({
         queryKey: ['role-permissions', organization?.id],
       });
@@ -141,9 +142,9 @@ export default function PermissionsPage() {
               <Shield className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight" data-testid={PERMISSIONS.HEADING}>功能分配</h1>
+              <h1 className="text-2xl font-bold tracking-tight" data-testid={PERMISSIONS.HEADING}>{tenantMessages.settings.permissions.heading}</h1>
               <p className="text-sm text-muted-foreground">
-                为「{organization.name}」下的管理成员、协作成员、只读成员设置可使用的功能；仅创建者可修改。
+                {tenantI18n.t('settings.permissions.description', { organizationName: organization.name })}
               </p>
             </div>
           </div>

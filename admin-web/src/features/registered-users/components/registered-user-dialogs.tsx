@@ -44,6 +44,7 @@ import type { AdminPlan, AdminRegisteredUserDetail } from '@/lib/api/admin-clien
 import { formatDateTime } from '@/lib/date-utils';
 import { ORG_STATUS_CONFIG } from '@/lib/status-config';
 import type { GiftSubscriptionForm } from '../registered-users.schemas';
+import { adminI18n, adminMessages } from '@/lib/i18n';
 
 type SelectedPricing = NonNullable<AdminPlan['pricing']>[number];
 
@@ -62,16 +63,16 @@ export function DisableRegisteredUserDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>确认停用</AlertDialogTitle>
-          <AlertDialogDescription>确定要停用该账号吗？停用后该用户将无法登录系统。</AlertDialogDescription>
+          <AlertDialogTitle>{adminMessages.registeredUsers.dialogs.disableTitle}</AlertDialogTitle>
+          <AlertDialogDescription>{adminMessages.registeredUsers.dialogs.disableDescription}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isPending ? '处理中…' : '确定停用'}
+            {isPending ? adminMessages.common.processing : adminMessages.registeredUsers.dialogs.disableConfirm}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -94,16 +95,16 @@ export function DeleteRegisteredUserDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>确认删除</AlertDialogTitle>
-          <AlertDialogDescription>确定要删除该注册用户吗？删除后账号及其关联数据将无法恢复。</AlertDialogDescription>
+          <AlertDialogTitle>{adminMessages.registeredUsers.dialogs.deleteTitle}</AlertDialogTitle>
+          <AlertDialogDescription>{adminMessages.registeredUsers.dialogs.deleteDescription}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isPending ? '处理中…' : '确定删除'}
+            {isPending ? adminMessages.common.processing : adminMessages.registeredUsers.dialogs.deleteConfirm}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -140,7 +141,7 @@ export function RegisteredUserDetailSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-md">
         <SheetHeader>
-          <SheetTitle>用户详情</SheetTitle>
+          <SheetTitle>{adminMessages.registeredUsers.dialogs.detailTitle}</SheetTitle>
         </SheetHeader>
         {detailUserId && (
           <div className="mt-6">
@@ -149,15 +150,15 @@ export function RegisteredUserDetailSheet({
             ) : detail ? (
               <div className="space-y-4">
                 <div>
-                  <span className="text-muted-foreground">手机号</span>
+                  <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.phone}</span>
                   <p className="font-medium">{detail.phone}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">姓名</span>
+                  <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.name}</span>
                   <p className="font-medium">{detail.full_name}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">状态</span>
+                  <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.status}</span>
                   <p>
                     <Badge
                       variant={
@@ -169,13 +170,13 @@ export function RegisteredUserDetailSheet({
                   </p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">注册时间</span>
+                  <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.createdAt}</span>
                   <p className="font-medium">{formatDateTime(detail.created_at)}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">所属组织</span>
+                  <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.organizations}</span>
                   {detail.organizations.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">暂无</p>
+                    <p className="text-sm text-muted-foreground">{adminMessages.registeredUsers.dialogs.emptyOrganizations}</p>
                   ) : (
                     <ul className="mt-1 space-y-1">
                       {detail.organizations.map((organization) => (
@@ -198,15 +199,15 @@ export function RegisteredUserDetailSheet({
                     disabled={detail.organizations.length === 0}
                   >
                     <Gift className="mr-2 h-4 w-4" />
-                    赠送服务
+                    {adminMessages.registeredUsers.dialogs.giftService}
                   </Button>
                   {detail.is_active ? (
                     <Button variant="destructive" size="sm" onClick={onDisable} disabled={isSetActivePending}>
-                      停用账号
+                      {adminMessages.registeredUsers.dialogs.disableAccount}
                     </Button>
                   ) : (
                     <Button variant="default" size="sm" onClick={onEnable} disabled={isSetActivePending}>
-                      启用账号
+                      {adminMessages.registeredUsers.dialogs.enableAccount}
                     </Button>
                   )}
                   <Button
@@ -216,12 +217,12 @@ export function RegisteredUserDetailSheet({
                     onClick={onDelete}
                     disabled={isDeletePending}
                   >
-                    删除账号
+                    {adminMessages.registeredUsers.dialogs.deleteAccount}
                   </Button>
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">加载失败</p>
+              <p className="text-sm text-muted-foreground">{adminMessages.registeredUsers.dialogs.loadFailed}</p>
             )}
           </div>
         )}
@@ -257,10 +258,8 @@ export function GiftSubscriptionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>赠送服务</DialogTitle>
-          <DialogDescription>
-            为该用户所属团队发起 0 元赠送订单。若团队当前已有同服务生效订阅，会在现有到期日后顺延；不同服务切换仍需走正常订阅调整流程。
-          </DialogDescription>
+          <DialogTitle>{adminMessages.registeredUsers.dialogs.giftTitle}</DialogTitle>
+          <DialogDescription>{adminMessages.registeredUsers.dialogs.giftDescription}</DialogDescription>
         </DialogHeader>
         {detail ? (
           <Form {...form}>
@@ -270,11 +269,11 @@ export function GiftSubscriptionDialog({
                 name="organization_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>目标团队</FormLabel>
+                    <FormLabel>{adminMessages.registeredUsers.dialogs.targetOrganization}</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="请选择团队" />
+                          <SelectValue placeholder={adminMessages.registeredUsers.dialogs.targetOrganizationPlaceholder} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -295,7 +294,7 @@ export function GiftSubscriptionDialog({
                 name="service_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>赠送服务</FormLabel>
+                    <FormLabel>{adminMessages.registeredUsers.dialogs.targetService}</FormLabel>
                     <Select
                       value={field.value}
                       onValueChange={(value) => {
@@ -307,7 +306,7 @@ export function GiftSubscriptionDialog({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={plansLoading ? '加载中...' : '请选择服务'} />
+                          <SelectValue placeholder={plansLoading ? adminMessages.registeredUsers.dialogs.loadingPlans : adminMessages.registeredUsers.dialogs.targetServicePlaceholder} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -328,11 +327,11 @@ export function GiftSubscriptionDialog({
                 name="pricing_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>赠送周期</FormLabel>
+                    <FormLabel>{adminMessages.registeredUsers.dialogs.targetPricing}</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="请选择周期" />
+                          <SelectValue placeholder={adminMessages.registeredUsers.dialogs.targetPricingPlaceholder} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -353,7 +352,7 @@ export function GiftSubscriptionDialog({
                 name="gift_months"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>附加赠送月数</FormLabel>
+                    <FormLabel>{adminMessages.registeredUsers.dialogs.extraMonths}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -370,22 +369,26 @@ export function GiftSubscriptionDialog({
 
               {selectedPricing && (
                 <div className="rounded-lg border bg-muted/40 px-3 py-3 text-sm text-muted-foreground">
-                  本次将按原价 ¥{selectedPricing.price.toLocaleString()} 记录为运营赠送，基础周期 {selectedPricing.months} 个月，附加赠送 {form.watch('gift_months')} 个月。
+                  {adminI18n.t('registeredUsers.dialogs.summary', {
+                    price: selectedPricing.price.toLocaleString(),
+                    months: selectedPricing.months,
+                    giftMonths: form.watch('gift_months'),
+                  })}
                 </div>
               )}
 
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                  取消
+                  {adminMessages.common.cancel}
                 </Button>
                 <Button type="submit" disabled={isPending || detail.organizations.length === 0}>
-                  {isPending ? '赠送中...' : '确认赠送'}
+                  {isPending ? adminMessages.registeredUsers.dialogs.gifting : adminMessages.registeredUsers.dialogs.confirmGift}
                 </Button>
               </DialogFooter>
             </form>
           </Form>
         ) : (
-          <p className="text-sm text-muted-foreground">请先选择目标用户。</p>
+          <p className="text-sm text-muted-foreground">{adminMessages.registeredUsers.dialogs.noUserSelected}</p>
         )}
       </DialogContent>
     </Dialog>

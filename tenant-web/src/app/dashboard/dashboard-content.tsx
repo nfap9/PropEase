@@ -30,6 +30,7 @@ import {
 import { reportsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { useBrandConfig } from '@/lib/brand-config-context';
+import { tenantI18n, tenantMessages } from '@/lib/i18n';
 
 function StatCard({
   title,
@@ -173,10 +174,12 @@ export function DashboardContent() {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <Building2 className="mb-4 h-16 w-16 text-muted-foreground" />
-        <h2 className="mb-2 text-xl font-semibold">欢迎使用{brandConfig.app_name}</h2>
-        <p className="mb-4 text-muted-foreground">您还没有加入任何团队，请先创建一个团队开始使用</p>
+        <h2 className="mb-2 text-xl font-semibold">
+          {tenantI18n.t('dashboard.noOrganizationsTitle', { appName: brandConfig.app_name })}
+        </h2>
+        <p className="mb-4 text-muted-foreground">{tenantMessages.dashboard.noOrganizationsDescription}</p>
         <a href="/organizations/new" className="text-primary hover:underline">
-          前往创建团队
+          {tenantMessages.dashboard.createTeam}
         </a>
       </div>
     );
@@ -186,8 +189,8 @@ export function DashboardContent() {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <Building2 className="mb-4 h-16 w-16 text-muted-foreground" />
-        <h2 className="mb-2 text-xl font-semibold">请选择团队</h2>
-        <p className="mb-4 text-muted-foreground">请在顶部导航栏选择一个团队开始使用</p>
+        <h2 className="mb-2 text-xl font-semibold">{tenantMessages.dashboard.selectTeamTitle}</h2>
+        <p className="mb-4 text-muted-foreground">{tenantMessages.dashboard.selectTeamDescription}</p>
       </div>
     );
   }
@@ -211,9 +214,9 @@ export function DashboardContent() {
       ? {
           href: '/bills?status=pending',
           icon: Clock,
-          title: '待收账单',
-          detail: '优先核对本月应收与到账情况',
-          badge: `${pendingBills} 笔`,
+          title: tenantMessages.dashboard.actionFocus.pendingBillsTitle,
+          detail: tenantMessages.dashboard.actionFocus.pendingBillsDetail,
+          badge: tenantI18n.t('dashboard.actionFocus.pendingBillsBadge', { count: pendingBills }),
           variant: 'warning' as const,
         }
       : null,
@@ -221,9 +224,9 @@ export function DashboardContent() {
       ? {
           href: '/bills?status=overdue',
           icon: AlertCircle,
-          title: '逾期账单',
-          detail: '建议立即跟进催缴与回款计划',
-          badge: `${overdueBills} 笔`,
+          title: tenantMessages.dashboard.actionFocus.overdueBillsTitle,
+          detail: tenantMessages.dashboard.actionFocus.overdueBillsDetail,
+          badge: tenantI18n.t('dashboard.actionFocus.pendingBillsBadge', { count: overdueBills }),
           variant: 'destructive' as const,
         }
       : null,
@@ -231,18 +234,20 @@ export function DashboardContent() {
       ? {
           href: '/utilities',
           icon: Zap,
-          title: '待补签约月读数',
-          detail: '补齐水电初始值，避免后续账单偏差',
-          badge: `${roomsMissingInitialReadings} 间`,
+          title: tenantMessages.dashboard.actionFocus.missingReadingsTitle,
+          detail: tenantMessages.dashboard.actionFocus.missingReadingsDetail,
+          badge: tenantI18n.t('dashboard.actionFocus.missingReadingsBadge', {
+            count: roomsMissingInitialReadings,
+          }),
           variant: 'warning' as const,
         }
       : null,
     {
       href: '/reports',
       icon: ArrowUpRight,
-      title: '查看经营分析',
-      detail: '进入经营分析页查看更细的趋势拆解',
-      badge: '分析',
+      title: tenantMessages.dashboard.actionFocus.reportsTitle,
+      detail: tenantMessages.dashboard.actionFocus.reportsDetail,
+      badge: tenantMessages.dashboard.actionFocus.reportsBadge,
       variant: 'outline' as const,
     },
   ].filter(Boolean) as Array<{
@@ -262,42 +267,60 @@ export function DashboardContent() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <Badge variant="outline" className="mb-3">
-                  业务首页
+                  {tenantMessages.dashboard.hero.badge}
                 </Badge>
                 <CardTitle className="text-3xl font-semibold" data-testid="dashboard-heading">
-                  首页
+                  {tenantMessages.dashboard.hero.title}
                 </CardTitle>
                 <CardDescription className="mt-2 max-w-2xl">
-                  围绕房源、租约、账单与抄表状态构建的日常经营视图，帮助团队快速定位今天最该处理的事项。
+                  {tenantMessages.dashboard.hero.description}
                 </CardDescription>
               </div>
               <div className="rounded-2xl border border-primary/10 bg-background/85 px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">当前团队</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {tenantMessages.dashboard.hero.currentTeam}
+                </p>
                 <p className="mt-2 text-base font-semibold">{organization.name}</p>
-                <p className="mt-1 text-xs text-muted-foreground">已接入 {totalApartments} 个公寓主体</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {tenantI18n.t('dashboard.hero.connectedApartments', { count: totalApartments })}
+                </p>
               </div>
             </div>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-border/70 bg-background/85 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">入住效率</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {tenantMessages.dashboard.hero.occupancyTitle}
+              </p>
               <p className="mt-3 text-3xl font-semibold">{occupancyRate}%</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                已入住 {occupiedRooms} 间 / 总计 {totalRooms} 间
+                {tenantI18n.t('dashboard.hero.occupancyDetail', {
+                  occupied: occupiedRooms,
+                  total: totalRooms,
+                })}
               </p>
             </div>
             <div className="rounded-2xl border border-border/70 bg-background/85 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">本月应收</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {tenantMessages.dashboard.hero.revenueTitle}
+              </p>
               <p className="mt-3 text-3xl font-semibold">{formatCurrency(monthlyRevenue)}</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                待收 {pendingBills} 笔，逾期 {overdueBills} 笔
+                {tenantI18n.t('dashboard.hero.revenueDetail', {
+                  pending: pendingBills,
+                  overdue: overdueBills,
+                })}
               </p>
             </div>
             <div className="rounded-2xl border border-border/70 bg-background/85 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">资源余量</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {tenantMessages.dashboard.hero.capacityTitle}
+              </p>
               <p className="mt-3 text-3xl font-semibold">{availableRooms}</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                可出租房间占比 {formatRatio(availableRooms, totalRooms)}
+                {tenantI18n.t('dashboard.hero.capacityDetail', {
+                  ratio: formatRatio(availableRooms, totalRooms),
+                })}
               </p>
             </div>
           </CardContent>
@@ -307,10 +330,12 @@ export function DashboardContent() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>执行重点</CardTitle>
-                <CardDescription>优先处理影响现金流和账单准确性的事项</CardDescription>
+                <CardTitle>{tenantMessages.dashboard.actionFocus.title}</CardTitle>
+                <CardDescription>{tenantMessages.dashboard.actionFocus.description}</CardDescription>
               </div>
-              <Badge variant="outline">{actionItems.length} 项</Badge>
+              <Badge variant="outline">
+                {tenantI18n.t('dashboard.actionFocus.count', { count: actionItems.length })}
+              </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -323,74 +348,81 @@ export function DashboardContent() {
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          title="公寓数量"
+          title={tenantMessages.dashboard.stats.apartmentsTitle}
           value={totalApartments}
-          description="覆盖的公寓主体"
-          helper={`当前团队已管理 ${totalApartments} 个公寓`}
+          description={tenantMessages.dashboard.stats.apartmentsDescription}
+          helper={tenantI18n.t('dashboard.stats.apartmentsHelper', { count: totalApartments })}
           icon={Building2}
           toneClassName="bg-sky-100 text-sky-700"
           testid="dashboard-apartment-count"
         />
         <StatCard
-          title="房间总数"
+          title={tenantMessages.dashboard.stats.roomsTitle}
           value={totalRooms}
-          description="可管理房间资源池"
-          helper={`其中空置 ${availableRooms} 间`}
+          description={tenantMessages.dashboard.stats.roomsDescription}
+          helper={tenantI18n.t('dashboard.stats.roomsHelper', { count: availableRooms })}
           icon={Home}
           toneClassName="bg-emerald-100 text-emerald-700"
           testid="dashboard-room-count"
         />
         <StatCard
-          title="入住率"
+          title={tenantMessages.dashboard.stats.occupancyTitle}
           value={`${occupancyRate}%`}
-          description={`${occupiedRooms} / ${totalRooms} 间已入住`}
-          helper="反映房源消化与租赁稳定度"
+          description={tenantI18n.t('dashboard.stats.occupancyDescription', {
+            occupied: occupiedRooms,
+            total: totalRooms,
+          })}
+          helper={tenantMessages.dashboard.stats.occupancyHelper}
           icon={Percent}
           toneClassName="bg-violet-100 text-violet-700"
           testid="dashboard-occupancy-rate"
         />
         <StatCard
-          title="活跃租约"
+          title={tenantMessages.dashboard.stats.leasesTitle}
           value={overview?.active_leases || 0}
-          description="当前仍在履行中的租约"
-          helper="可结合到期时间做续租计划"
+          description={tenantMessages.dashboard.stats.leasesDescription}
+          helper={tenantMessages.dashboard.stats.leasesHelper}
           icon={FileText}
           toneClassName="bg-amber-100 text-amber-700"
           testid="dashboard-active-leases"
         />
         <StatCard
-          title="租客总数"
+          title={tenantMessages.dashboard.stats.tenantsTitle}
           value={overview?.total_tenants || 0}
-          description="已关联的在管租客"
-          helper="建议定期核对租客与租约绑定关系"
+          description={tenantMessages.dashboard.stats.tenantsDescription}
+          helper={tenantMessages.dashboard.stats.tenantsHelper}
           icon={Users}
           toneClassName="bg-cyan-100 text-cyan-700"
           testid="dashboard-tenant-count"
         />
         <StatCard
-          title="本月收入"
+          title={tenantMessages.dashboard.stats.revenueTitle}
           value={formatCurrency(monthlyRevenue)}
-          description="本月账单口径下的应收金额"
-          helper="用于衡量本期回款与账单规模"
+          description={tenantMessages.dashboard.stats.revenueDescription}
+          helper={tenantMessages.dashboard.stats.revenueHelper}
           icon={DollarSign}
           toneClassName="bg-emerald-100 text-emerald-700"
           testid="dashboard-monthly-revenue"
         />
         <StatCard
-          title="待收账单"
+          title={tenantMessages.dashboard.stats.pendingTitle}
           value={pendingBills}
-          description="尚未完成回款的账单"
-          helper="建议按到期日排序逐步催收"
+          description={tenantMessages.dashboard.stats.pendingDescription}
+          helper={tenantMessages.dashboard.stats.pendingHelper}
           icon={Clock}
           toneClassName="bg-amber-100 text-amber-700"
           valueBadgeVariant="warning"
           testid="dashboard-pending-bills"
         />
         <StatCard
-          title="逾期账单"
+          title={tenantMessages.dashboard.stats.overdueTitle}
           value={overdueBills}
-          description={overdueBills ? '已超过应收期限，需要专项跟进' : '当前没有逾期账单'}
-          helper="逾期越早处理，坏账风险越低"
+          description={
+            overdueBills
+              ? tenantMessages.dashboard.stats.overdueDescriptionActive
+              : tenantMessages.dashboard.stats.overdueDescriptionClear
+          }
+          helper={tenantMessages.dashboard.stats.overdueHelper}
           icon={AlertCircle}
           toneClassName="bg-rose-100 text-rose-700"
           valueBadgeVariant="destructive"
@@ -403,33 +435,59 @@ export function DashboardContent() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>资产组合概览</CardTitle>
-                <CardDescription>从房源供给、入住结构到租约活跃度快速了解经营面</CardDescription>
+                <CardTitle>{tenantMessages.dashboard.portfolio.title}</CardTitle>
+                <CardDescription>{tenantMessages.dashboard.portfolio.description}</CardDescription>
               </div>
               <Badge variant="outline">
                 <Layers3 className="mr-1 h-3 w-3" />
-                组合
+                {tenantMessages.dashboard.portfolio.badge}
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">房源结构</p>
-              <MetricRow label="公寓数量" value={`${totalApartments} 个`} />
-              <MetricRow label="房间总数" value={`${totalRooms} 间`} />
-              <MetricRow label="可租房间" value={`${availableRooms} 间`} tone="text-emerald-600" />
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {tenantMessages.dashboard.portfolio.supplyTitle}
+              </p>
               <MetricRow
-                label="签约月待补读数"
-                value={`${roomsMissingInitialReadings} 间`}
+                label={tenantMessages.dashboard.portfolio.apartments}
+                value={tenantI18n.t('dashboard.portfolio.apartmentsValue', { count: totalApartments })}
+              />
+              <MetricRow
+                label={tenantMessages.dashboard.portfolio.rooms}
+                value={tenantI18n.t('dashboard.portfolio.roomsValue', { count: totalRooms })}
+              />
+              <MetricRow
+                label={tenantMessages.dashboard.portfolio.availableRooms}
+                value={tenantI18n.t('dashboard.portfolio.availableRoomsValue', { count: availableRooms })}
+                tone="text-emerald-600"
+              />
+              <MetricRow
+                label={tenantMessages.dashboard.portfolio.missingReadings}
+                value={tenantI18n.t('dashboard.portfolio.missingReadingsValue', {
+                  count: roomsMissingInitialReadings,
+                })}
                 tone={roomsMissingInitialReadings > 0 ? 'text-amber-600' : 'text-foreground'}
               />
             </div>
             <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">履约结构</p>
-              <MetricRow label="活跃租约" value={`${overview?.active_leases || 0} 份`} />
-              <MetricRow label="租客总数" value={`${overview?.total_tenants || 0} 人`} />
-              <MetricRow label="入住率" value={`${occupancyRate}%`} tone="text-primary" />
-              <MetricRow label="空置率" value={`${Math.max(0, 100 - occupancyRate)}%`} />
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {tenantMessages.dashboard.portfolio.performanceTitle}
+              </p>
+              <MetricRow
+                label={tenantMessages.dashboard.portfolio.activeLeases}
+                value={tenantI18n.t('dashboard.portfolio.activeLeasesValue', {
+                  count: overview?.active_leases || 0,
+                })}
+              />
+              <MetricRow
+                label={tenantMessages.dashboard.portfolio.tenants}
+                value={tenantI18n.t('dashboard.portfolio.tenantsValue', {
+                  count: overview?.total_tenants || 0,
+                })}
+              />
+              <MetricRow label={tenantMessages.dashboard.portfolio.occupancy} value={`${occupancyRate}%`} tone="text-primary" />
+              <MetricRow label={tenantMessages.dashboard.portfolio.vacancy} value={`${Math.max(0, 100 - occupancyRate)}%`} />
             </div>
           </CardContent>
         </Card>
@@ -438,31 +496,35 @@ export function DashboardContent() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>现金流关注项</CardTitle>
-                <CardDescription>把收入、待收与逾期拉到同一个面板中观察</CardDescription>
+                <CardTitle>{tenantMessages.dashboard.cashflow.title}</CardTitle>
+                <CardDescription>{tenantMessages.dashboard.cashflow.description}</CardDescription>
               </div>
               <Badge variant="outline">
                 <Wallet className="mr-1 h-3 w-3" />
-                财务
+                {tenantMessages.dashboard.cashflow.badge}
               </Badge>
             </div>
           </CardHeader>
           <CardContent>
             <div className="rounded-2xl border border-border/70 bg-background/85 p-4">
-              <MetricRow label="本月应收" value={formatCurrency(monthlyRevenue)} />
+              <MetricRow label={tenantMessages.dashboard.cashflow.revenue} value={formatCurrency(monthlyRevenue)} />
               <MetricRow
-                label="待收账单"
-                value={`${pendingBills} 笔`}
+                label={tenantMessages.dashboard.cashflow.pending}
+                value={tenantI18n.t('dashboard.cashflow.pendingValue', { count: pendingBills })}
                 tone={pendingBills > 0 ? 'text-amber-600' : 'text-foreground'}
               />
               <MetricRow
-                label="逾期账单"
-                value={`${overdueBills} 笔`}
+                label={tenantMessages.dashboard.cashflow.overdue}
+                value={tenantI18n.t('dashboard.cashflow.overdueValue', { count: overdueBills })}
                 tone={overdueBills > 0 ? 'text-rose-600' : 'text-foreground'}
               />
               <MetricRow
-                label="经营状态"
-                value={overdueBills > 0 ? '需重点跟进' : '整体稳定'}
+                label={tenantMessages.dashboard.cashflow.businessStatus}
+                value={
+                  overdueBills > 0
+                    ? tenantMessages.dashboard.cashflow.businessStatusAttention
+                    : tenantMessages.dashboard.cashflow.businessStatusStable
+                }
                 tone={overdueBills > 0 ? 'text-rose-600' : 'text-emerald-600'}
               />
             </div>
@@ -471,9 +533,9 @@ export function DashboardContent() {
               <div className="flex items-start gap-3">
                 <BadgeCheck className="mt-0.5 h-5 w-5" />
                 <div>
-                  <p className="text-sm font-semibold">建议动作</p>
+                  <p className="text-sm font-semibold">{tenantMessages.dashboard.cashflow.recommendationTitle}</p>
                   <p className="mt-1 text-sm leading-6 text-emerald-800">
-                    优先处理逾期与待收账单，再补齐签约月初始水电读数，可显著提升后续账单准确率和回款节奏。
+                    {tenantMessages.dashboard.cashflow.recommendationDescription}
                   </p>
                 </div>
               </div>

@@ -13,6 +13,7 @@ import { subscriptionsApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import { toast } from 'sonner';
+import { tenantI18n, tenantMessages } from '@/lib/i18n';
 
 const POLL_INTERVAL_MS = 2500;
 
@@ -47,7 +48,8 @@ function SubscriptionPayContent() {
         router.replace(`/settings/subscription/result?order_id=${orderId}&status=success`);
       }
     },
-    onError: (err) => toast.error(getErrorMessage(err, '模拟支付失败，请重试')),
+    onError: (err) =>
+      toast.error(getErrorMessage(err, tenantMessages.settings.subscriptionPage.pay.simulateFailed)),
   });
 
   const handleBack = useCallback(() => {
@@ -63,10 +65,10 @@ function SubscriptionPayContent() {
   if (!orderId || !orgId) {
     return (
       <div className="space-y-6">
-        <p className="text-muted-foreground">缺少订单信息</p>
+        <p className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.pay.missingOrder}</p>
         <Button variant="outline" onClick={handleBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          返回订阅管理
+          {tenantMessages.settings.subscriptionPage.pay.backToSubscription}
         </Button>
       </div>
     );
@@ -92,10 +94,10 @@ function SubscriptionPayContent() {
   if (isError || !order) {
     return (
       <div className="space-y-6">
-        <p className="text-destructive">无法加载订单</p>
+        <p className="text-destructive">{tenantMessages.settings.subscriptionPage.pay.loadFailed}</p>
         <Button variant="outline" onClick={handleBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          返回订阅管理
+          {tenantMessages.settings.subscriptionPage.pay.backToSubscription}
         </Button>
       </div>
     );
@@ -105,7 +107,7 @@ function SubscriptionPayContent() {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p>支付成功，正在跳转...</p>
+        <p>{tenantMessages.settings.subscriptionPage.pay.paidRedirecting}</p>
       </div>
     );
   }
@@ -120,7 +122,7 @@ function SubscriptionPayContent() {
         </div>
         <Button variant="outline" onClick={handleBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          返回订阅管理
+          {tenantMessages.settings.subscriptionPage.pay.backToSubscription}
         </Button>
       </div>
     );
@@ -133,11 +135,11 @@ function SubscriptionPayContent() {
       <div className="space-y-6">
         <div className="flex items-center gap-2">
           <Badge variant={config.variant}>{config.label}</Badge>
-          <span className="text-muted-foreground">请返回订阅管理重新下单</span>
+          <span className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.pay.expiredHint}</span>
         </div>
         <Button variant="outline" onClick={handleBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          返回订阅管理
+          {tenantMessages.settings.subscriptionPage.pay.backToSubscription}
         </Button>
       </div>
     );
@@ -152,29 +154,34 @@ function SubscriptionPayContent() {
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={handleBack}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            返回
+            {tenantMessages.settings.subscriptionPage.pay.back}
           </Button>
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-bold">
               <Smartphone className="h-7 w-7" />
-              微信扫码支付
+              {tenantMessages.settings.subscriptionPage.pay.heading}
             </h1>
-            <p className="text-muted-foreground">请使用微信扫描下方二维码完成支付</p>
+            <p className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.pay.description}</p>
           </div>
         </div>
 
         <Card className="mx-auto max-w-md">
           <CardHeader>
-            <CardTitle>订单号：{order.order_no}</CardTitle>
+            <CardTitle>
+              {tenantI18n.t('settings.subscriptionPage.pay.orderNumber', { orderNo: order.order_no })}
+            </CardTitle>
             <CardDescription>
               {order.plan?.name ? (
-                <>
-                  {order.plan.name} · 金额 ¥{Number(order.amount).toFixed(2)}
-                </>
+                tenantI18n.t('settings.subscriptionPage.pay.orderAmountWithPlan', {
+                  planName: order.plan.name,
+                  amount: Number(order.amount).toFixed(2),
+                })
               ) : (
-                <>金额 ¥{Number(order.amount).toFixed(2)}</>
+                tenantI18n.t('settings.subscriptionPage.pay.orderAmountOnly', {
+                  amount: Number(order.amount).toFixed(2),
+                })
               )}
-              ，支付完成后将自动刷新
+              ，{tenantMessages.settings.subscriptionPage.pay.autoRefresh}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-6">
@@ -184,19 +191,19 @@ function SubscriptionPayContent() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={qrUrl}
-                  alt="支付二维码"
+                  alt={tenantMessages.settings.subscriptionPage.pay.qrAlt}
                   className="rounded-lg border bg-white p-2"
                   width={220}
                   height={220}
                 />
                 <p className="text-center text-sm text-muted-foreground">
-                  请使用微信扫描二维码完成支付
+                  {tenantMessages.settings.subscriptionPage.pay.qrHint}
                 </p>
               </>
             ) : order.simulate_pay_available ? (
               <div className="flex flex-col items-center gap-4 py-4">
                 <p className="text-center text-muted-foreground">
-                  开发环境：微信支付未配置，可使用模拟支付完成流程
+                  {tenantMessages.settings.subscriptionPage.pay.devHint}
                 </p>
                 <Button
                   onClick={() => simulatePayMutation.mutate()}
@@ -209,18 +216,18 @@ function SubscriptionPayContent() {
                   ) : (
                     <FlaskConical className="h-4 w-4" />
                   )}
-                  模拟支付
+                  {tenantMessages.settings.subscriptionPage.pay.simulatePay}
                 </Button>
               </div>
             ) : (
               <p className="py-8 text-center text-muted-foreground">
-                当前环境未配置支付，无法展示二维码。请联系管理员配置微信支付。
+                {tenantMessages.settings.subscriptionPage.pay.unavailable}
               </p>
             )}
             {qrUrl && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                等待支付中…
+                {tenantMessages.settings.subscriptionPage.pay.waiting}
               </div>
             )}
           </CardContent>

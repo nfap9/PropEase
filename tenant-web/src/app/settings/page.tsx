@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Building2, Settings as SettingsIcon, ShoppingBag, MessageSquareMore, Users } from 'lucide-react';
 import { useAuth } from '@/lib/auth/context';
 import { Card, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { tenantMessages } from '@/lib/i18n';
 
 // 注意: 实际使用时从 testids 导入 SETTINGS 常量
 const SETTINGS = {
@@ -20,7 +21,7 @@ const getOrganizationSwitchItem = (orgName: string | undefined) => {
   if (!orgName) return null;
   return {
     title: orgName,
-    description: '管理团队成员与协作分工',
+    description: tenantMessages.settings.home.teamCardDescription,
     href: '/settings/team',
     icon: Building2,
     testId: SETTINGS.ORG_SWITCH_BUTTON,
@@ -30,24 +31,24 @@ const getOrganizationSwitchItem = (orgName: string | undefined) => {
 
 const BASE_SETTINGS_ITEMS = [
   {
-    title: '团队与分工',
-    description: '管理团队成员与协作分工',
+    title: tenantMessages.settings.home.teamCardTitle,
+    description: tenantMessages.settings.home.teamCardDescription,
     href: '/settings/team',
     icon: Users,
     testId: SETTINGS.TEAM_LINK,
     cardTestId: SETTINGS.TEAM_CARD,
   },
   {
-    title: '消息触达',
-    description: '管理租客短信模板与发送记录',
+    title: tenantMessages.settings.home.notificationsTitle,
+    description: tenantMessages.settings.home.notificationsDescription,
     href: '/settings/notifications',
     icon: MessageSquareMore,
     testId: 'settings-notifications-link',
     cardTestId: 'settings-notifications-card',
   },
   {
-    title: '订阅管理',
-    description: '管理订阅服务和账单',
+    title: tenantMessages.settings.home.subscriptionTitle,
+    description: tenantMessages.settings.home.subscriptionDescription,
     href: '/settings/subscription',
     icon: ShoppingBag,
     testId: 'settings-subscription-link',
@@ -68,8 +69,8 @@ export default function SettingsPage() {
         <div className="flex items-center gap-4">
           <SettingsIcon className="h-8 w-8" />
           <div>
-            <h1 className="text-3xl font-bold" data-testid={SETTINGS.HEADING}>设置</h1>
-            <p className="text-muted-foreground">管理您的账户与团队设置</p>
+            <h1 className="text-3xl font-bold" data-testid={SETTINGS.HEADING}>{tenantMessages.settings.home.heading}</h1>
+            <p className="text-muted-foreground">{tenantMessages.settings.home.description}</p>
           </div>
         </div>
 

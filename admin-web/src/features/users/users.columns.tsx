@@ -7,6 +7,7 @@ import { TableActions } from '@/components/common/table-actions';
 import { formatDateTime } from '@/lib/date-utils';
 import { ORG_STATUS_CONFIG } from '@/lib/status-config';
 import type { AdminUser } from '@/lib/api/admin-client';
+import { adminMessages } from '@/lib/i18n';
 
 interface CreateAdminUsersColumnsOptions {
   onEdit: (user: AdminUser) => void;
@@ -29,7 +30,7 @@ export function createAdminUsersColumns({
     },
     {
       accessorKey: 'role_name',
-      header: '分工',
+      header: adminMessages.users.columns.role,
       cell: ({ row }) => row.original.role_name ?? '—',
     },
     {

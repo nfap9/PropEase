@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { subscriptionsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
+import { tenantI18n, tenantMessages } from '@/lib/i18n';
 
 const SUBSCRIPTION = {
   HEADING: 'subscription-heading',
@@ -64,13 +65,13 @@ export default function SubscriptionPage() {
           <div className="flex-1">
             <h1 className="flex items-center gap-2 text-3xl font-bold" data-testid={SUBSCRIPTION.HEADING}>
               <ShoppingBag className="h-8 w-8" />
-              我的订阅
+              {tenantMessages.settings.subscriptionPage.heading}
             </h1>
-            <p className="text-muted-foreground">查看订阅状态与使用量</p>
+            <p className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.description}</p>
           </div>
           <Button onClick={() => router.push('/settings/subscription/purchase')} data-testid={SUBSCRIPTION.UPGRADE_BUTTON}>
             <ShoppingCart className="mr-2 h-4 w-4" />
-            购买服务
+            {tenantMessages.settings.subscriptionPage.buyService}
           </Button>
         </div>
 
@@ -86,7 +87,7 @@ export default function SubscriptionPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Package className="h-5 w-5" />
-                  当前服务
+                  {tenantMessages.settings.subscriptionPage.currentServiceTitle}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -95,7 +96,9 @@ export default function SubscriptionPage() {
                     <div className="space-y-1">
                       <p className="text-2xl font-bold">{subscriptionStatus.service.name}</p>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">状态:</span>
+                        <span className="text-sm text-muted-foreground">
+                          {tenantMessages.settings.subscriptionPage.statusLabel}
+                        </span>
                         <Badge
                           variant={
                             SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus.status ?? 'none']?.variant ??
@@ -104,16 +107,20 @@ export default function SubscriptionPage() {
                         >
                           {SUBSCRIPTION_STATUS_CONFIG[subscriptionStatus.status ?? 'none']?.label ??
                             subscriptionStatus.status ??
-                            '未订阅'}
+                            tenantMessages.settings.subscriptionPage.none}
                         </Badge>
                       </div>
                       {subscriptionStatus.is_active && subscriptionStatus.end_date && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Calendar className="h-4 w-4" />
-                          有效期至: {formatDate(subscriptionStatus.end_date)}
+                          {tenantI18n.t('settings.subscriptionPage.validUntil', {
+                            date: formatDate(subscriptionStatus.end_date),
+                          })}
                           {subscriptionStatus.days_remaining !== null && subscriptionStatus.days_remaining > 0 && (
                             <span className="ml-2 text-amber-600">
-                              (剩余 {subscriptionStatus.days_remaining} 天)
+                              {tenantI18n.t('settings.subscriptionPage.daysRemaining', {
+                                days: subscriptionStatus.days_remaining,
+                              })}
                             </span>
                           )}
                         </div>
@@ -122,10 +129,10 @@ export default function SubscriptionPage() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-4 py-4">
-                    <p className="text-muted-foreground">您未购买任何服务</p>
+                    <p className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.noService}</p>
                     <Button onClick={() => router.push('/settings/subscription/purchase')}>
                       <ShoppingCart className="mr-2 h-4 w-4" />
-                      购买服务
+                      {tenantMessages.settings.subscriptionPage.buyService}
                     </Button>
                   </div>
                 )}
@@ -137,9 +144,9 @@ export default function SubscriptionPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-5 w-5" />
-                  配额使用
+                  {tenantMessages.settings.subscriptionPage.usageTitle}
                 </CardTitle>
-                <CardDescription>当前团队的资源使用情况</CardDescription>
+                <CardDescription>{tenantMessages.settings.subscriptionPage.usageDescription}</CardDescription>
               </CardHeader>
               <CardContent>
                 {usage ? (
@@ -149,7 +156,7 @@ export default function SubscriptionPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">公寓</span>
+                          <span className="font-medium">{tenantMessages.settings.subscriptionPage.apartment}</span>
                         </div>
                         <span className="text-sm text-muted-foreground">
                           {usage.apartments_used} / {usage.max_apartments === -1 ? '∞' : usage.max_apartments}
@@ -165,7 +172,9 @@ export default function SubscriptionPage() {
                       )}
                       {usage.apartments_remaining !== null && usage.apartments_remaining >= 0 && (
                         <p className="text-xs text-muted-foreground">
-                          剩余 {usage.apartments_remaining} 个
+                          {tenantI18n.t('settings.subscriptionPage.remainingApartments', {
+                            count: usage.apartments_remaining,
+                          })}
                         </p>
                       )}
                     </div>
@@ -175,7 +184,7 @@ export default function SubscriptionPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Home className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">房间</span>
+                          <span className="font-medium">{tenantMessages.settings.subscriptionPage.room}</span>
                         </div>
                         <span className="text-sm text-muted-foreground">
                           {usage.rooms_used} / {usage.max_rooms === -1 ? '∞' : usage.max_rooms}
@@ -191,7 +200,9 @@ export default function SubscriptionPage() {
                       )}
                       {usage.rooms_remaining !== null && usage.rooms_remaining >= 0 && (
                         <p className="text-xs text-muted-foreground">
-                          剩余 {usage.rooms_remaining} 间
+                          {tenantI18n.t('settings.subscriptionPage.remainingRooms', {
+                            count: usage.rooms_remaining,
+                          })}
                         </p>
                       )}
                     </div>
@@ -201,7 +212,7 @@ export default function SubscriptionPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">成员</span>
+                          <span className="font-medium">{tenantMessages.settings.subscriptionPage.member}</span>
                         </div>
                         <span className="text-sm text-muted-foreground">
                           {usage.members_used} / {usage.max_members === -1 ? '∞' : usage.max_members}
@@ -217,13 +228,15 @@ export default function SubscriptionPage() {
                       )}
                       {usage.members_remaining !== null && usage.members_remaining >= 0 && (
                         <p className="text-xs text-muted-foreground">
-                          剩余 {usage.members_remaining} 人
+                          {tenantI18n.t('settings.subscriptionPage.remainingMembers', {
+                            count: usage.members_remaining,
+                          })}
                         </p>
                       )}
                     </div>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground">暂无使用数据</p>
+                  <p className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.noUsage}</p>
                 )}
               </CardContent>
             </Card>
@@ -234,13 +247,13 @@ export default function SubscriptionPage() {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">升级获取更多功能</p>
+                      <p className="font-medium">{tenantMessages.settings.subscriptionPage.upgradeTitle}</p>
                       <p className="text-sm text-muted-foreground">
-                        解锁更多公寓、房间和成员配额
+                        {tenantMessages.settings.subscriptionPage.upgradeDescription}
                       </p>
                     </div>
                     <Button onClick={() => router.push('/settings/subscription/purchase')}>
-                      查看服务
+                      {tenantMessages.settings.subscriptionPage.viewServices}
                     </Button>
                   </div>
                 </CardContent>

@@ -12,17 +12,18 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { ChevronRight } from 'lucide-react';
+import { tenantMessages } from '@/lib/i18n';
 
 // Page title mapping based on route
 const PAGE_TITLES: Record<string, string> = {
-  '/settings': '设置',
-  '/settings/team': '团队设置',
-  '/settings/permissions': '功能分配',
-  '/settings/notifications': '租客消息触达',
-  '/settings/subscription': '我的订阅',
-  '/settings/subscription/purchase': '服务购买',
-  '/settings/subscription/pay': '微信扫码支付',
-  '/settings/subscription/result': '支付结果',
+  '/settings': tenantMessages.settings.breadcrumb.root,
+  '/settings/team': tenantMessages.settings.breadcrumb.team,
+  '/settings/permissions': tenantMessages.settings.breadcrumb.permissions,
+  '/settings/notifications': tenantMessages.settings.breadcrumb.notifications,
+  '/settings/subscription': tenantMessages.settings.breadcrumb.subscription,
+  '/settings/subscription/purchase': tenantMessages.settings.breadcrumb.subscriptionPurchase,
+  '/settings/subscription/pay': tenantMessages.settings.breadcrumb.subscriptionPay,
+  '/settings/subscription/result': tenantMessages.settings.breadcrumb.subscriptionResult,
 };
 
 function getPageTitle(pathname: string): string {
@@ -37,7 +38,7 @@ function getPageTitle(pathname: string): string {
   }
   // Fallback: extract last segment
   const segments = pathname.split('/');
-  return segments[segments.length - 1] || '设置';
+  return segments[segments.length - 1] || tenantMessages.settings.breadcrumb.root;
 }
 
 function isSettingsHome(pathname: string): boolean {
@@ -59,7 +60,7 @@ export function SettingsBreadcrumb() {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/settings">设置</Link>
+              <Link href="/settings">{tenantMessages.settings.breadcrumb.root}</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator>

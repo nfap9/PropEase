@@ -24,6 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
+import { adminMessages } from '@/lib/i18n';
 
 const schema = z.object({
   username: z.string().min(1, '请输入用户名'),
@@ -116,7 +117,7 @@ export default function AdminLoginPage() {
         <div className="absolute bottom-[-6rem] right-[-4rem] h-72 w-72 rounded-full bg-sky-300/20 blur-3xl" />
         <div className="relative flex items-center gap-3 rounded-full border border-white/70 bg-white/82 px-5 py-3 text-sm text-slate-600 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] backdrop-blur-xl">
           <LoaderCircle className="h-4 w-4 animate-spin text-primary" />
-          <span>正在检查后台状态...</span>
+          <span>{adminMessages.login.checkingStatus}</span>
         </div>
       </div>
     );
@@ -141,29 +142,29 @@ export default function AdminLoginPage() {
             <div className="relative flex h-full flex-col">
               <div className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/15 bg-primary/10 px-3 py-1.5 text-[11px] font-semibold tracking-[0.16em] text-primary uppercase">
                 <ShieldCheck className="h-3.5 w-3.5" />
-                管理平台
+                {adminMessages.login.badge}
               </div>
 
               <div className="mt-8 max-w-xl lg:mt-14">
                 <p className="text-sm font-medium tracking-[0.08em] text-foreground/60 uppercase">Apartment Ultra</p>
                 <h1 className="mt-4 text-3xl font-semibold leading-tight text-slate-950 sm:text-4xl lg:text-[3.4rem] lg:leading-[1.08]">
-                  让平台运营视角更集中，也更稳。
+                  {adminMessages.login.headline}
                 </h1>
                 <p className="mt-5 max-w-lg text-sm leading-7 text-slate-600 sm:text-base">
-                  用更清楚的入口处理界面信息、团队管理、已购服务和账号体系，让日常管理更简洁、明确、可控。
+                  {adminMessages.login.description}
                 </p>
               </div>
 
               <div className="mt-10 max-w-md rounded-[28px] border border-white/70 bg-white/68 px-6 py-5 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)]">
-                <p className="text-xs font-medium tracking-[0.16em] text-primary/70 uppercase">Slogan</p>
+                <p className="text-xs font-medium tracking-[0.16em] text-primary/70 uppercase">{adminMessages.login.sloganLabel}</p>
                 <p className="mt-3 text-base font-medium leading-7 text-slate-700">
-                  后台不是更复杂，而是更有秩序。
+                  {adminMessages.login.slogan}
                 </p>
               </div>
 
               <div className="mt-auto hidden pt-10 lg:block">
                 <p className="max-w-sm text-sm leading-7 text-slate-500">
-                  仅限管理账号登录。
+                  {adminMessages.login.accessNotice}
                 </p>
               </div>
             </div>
@@ -174,13 +175,13 @@ export default function AdminLoginPage() {
               <CardHeader className="space-y-6 pb-6">
                 <div className="inline-flex w-fit rounded-full border border-border/70 bg-muted/70 p-1">
                   <div className="rounded-full bg-white px-4 py-2 text-sm font-medium text-slate-950 shadow-sm">
-                    运营入口
+                    {adminMessages.login.entryBadge}
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <CardTitle className="text-2xl font-semibold text-slate-950 sm:text-[1.85rem]">管理平台登录</CardTitle>
+                  <CardTitle className="text-2xl font-semibold text-slate-950 sm:text-[1.85rem]">{adminMessages.login.formTitle}</CardTitle>
                   <CardDescription className="max-w-lg text-sm leading-7 text-slate-600">
-                    请输入管理账号信息后登录。
+                    {adminMessages.login.formDescription}
                   </CardDescription>
                 </div>
               </CardHeader>
@@ -198,10 +199,10 @@ export default function AdminLoginPage() {
                         name="username"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>用户名</FormLabel>
+                            <FormLabel>{adminMessages.login.form.username}</FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="请输入用户名"
+                                placeholder={adminMessages.login.form.usernamePlaceholder}
                                 className={AUTH_INPUT_CLASSNAME}
                                 {...field}
                                 autoComplete="username"
@@ -217,11 +218,11 @@ export default function AdminLoginPage() {
                         name="password"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>密码</FormLabel>
+                            <FormLabel>{adminMessages.login.form.password}</FormLabel>
                             <FormControl>
                               <Input
                                 type="password"
-                                placeholder="请输入密码"
+                                placeholder={adminMessages.login.form.passwordPlaceholder}
                                 className={AUTH_INPUT_CLASSNAME}
                                 {...field}
                                 autoComplete="current-password"
@@ -238,14 +239,14 @@ export default function AdminLoginPage() {
                         disabled={isSubmitting}
                         data-testid="admin-login-button"
                       >
-                        {isSubmitting ? '登录中...' : '登录并进入后台'}
+                        {isSubmitting ? adminMessages.login.form.submitting : adminMessages.login.form.submit}
                       </Button>
                     </form>
                   </Form>
                 </div>
               </CardContent>
               <div className="border-t border-border/70 px-5 pb-5 pt-5 text-sm text-muted-foreground sm:px-6 sm:pb-6">
-                仅限运营账号登录，普通业务用户请从业务端入口进入系统。
+                {adminMessages.login.footer}
               </div>
             </Card>
           </section>

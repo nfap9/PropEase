@@ -37,6 +37,7 @@ import {
   getBillDetailDescription,
   getBillPaymentSummary,
 } from '../bills.utils';
+import { tenantI18n, tenantMessages } from '@/lib/i18n';
 
 export function BillDetailDialog({
   open,
@@ -67,7 +68,7 @@ export function BillDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg" data-testid={BILLS.DETAIL_DIALOG}>
         <DialogHeader>
-          <DialogTitle>账单详情</DialogTitle>
+          <DialogTitle>{tenantMessages.bills.dialogs.detailTitle}</DialogTitle>
           <DialogDescription>{getBillDetailDescription(billDetail ?? null, selectedBillId)}</DialogDescription>
         </DialogHeader>
         {isLoading ? (
@@ -76,34 +77,34 @@ export function BillDetailDialog({
           <div className="space-y-4">
             <div className="grid gap-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">账单月份</span>
+                <span className="text-muted-foreground">{tenantMessages.bills.dialogs.billMonth}</span>
                 <span>{formatBillPeriod(billDetail)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">公寓/房间</span>
+                <span className="text-muted-foreground">{tenantMessages.bills.dialogs.apartmentRoom}</span>
                 <span>
                   {billDetail.lease?.room?.apartment?.name ?? '-'} - {billDetail.lease?.room?.room_number ?? '-'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">租客</span>
+                <span className="text-muted-foreground">{tenantMessages.bills.dialogs.tenant}</span>
                 <span>{billDetail.lease?.tenant?.name ?? '-'}</span>
               </div>
               <div className="grid gap-2 border-t pt-3">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">租金</span>
+                  <span className="text-muted-foreground">{tenantMessages.bills.dialogs.rent}</span>
                   <span>¥{Number(billDetail.rent_amount).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">水费</span>
+                  <span className="text-muted-foreground">{tenantMessages.bills.dialogs.water}</span>
                   <span>¥{Number(billDetail.water_amount).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">电费</span>
+                  <span className="text-muted-foreground">{tenantMessages.bills.dialogs.electricity}</span>
                   <span>¥{Number(billDetail.electricity_amount).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">其他费用</span>
+                  <span className="text-muted-foreground">{tenantMessages.bills.dialogs.otherFees}</span>
                   <span>¥{Number(billDetail.other_amount).toLocaleString()}</span>
                 </div>
               </div>
@@ -115,7 +116,7 @@ export function BillDetailDialog({
                 </div>
               ) : billFeeItems && billFeeItems.length > 0 ? (
                 <div className="mt-4">
-                  <h4 className="mb-2 text-sm font-medium">费用明细</h4>
+                  <h4 className="mb-2 text-sm font-medium">{tenantMessages.bills.dialogs.feeDetails}</h4>
                   <div className="rounded-md border">
                     <div className="divide-y">
                       {billFeeItems.map((item) => (
@@ -135,26 +136,26 @@ export function BillDetailDialog({
               ) : null}
 
               <div className="flex justify-between border-t pt-3 font-medium">
-                <span>账单合计</span>
+                <span>{tenantMessages.bills.dialogs.total}</span>
                 <span>¥{Number(billDetail.total_amount).toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">已付金额</span>
+                <span className="text-muted-foreground">{tenantMessages.bills.dialogs.paid}</span>
                 <span className="text-green-600">¥{Number(billDetail.paid_amount).toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">到期日</span>
+                <span className="text-muted-foreground">{tenantMessages.bills.dialogs.dueDate}</span>
                 <span>{formatDate(billDetail.due_date)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">状态</span>
+                <span className="text-muted-foreground">{tenantMessages.bills.dialogs.status}</span>
                 <Badge variant={BILL_STATUS_CONFIG[billDetail.status].variant}>
                   {BILL_STATUS_CONFIG[billDetail.status].label}
                 </Badge>
               </div>
               {billDetail.notes && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">备注</span>
+                  <span className="text-muted-foreground">{tenantMessages.bills.dialogs.notes}</span>
                   <span>{billDetail.notes}</span>
                 </div>
               )}
@@ -162,7 +163,7 @@ export function BillDetailDialog({
 
             {(billDetail as Bill & { payments?: Payment[] }).payments?.length ? (
               <div>
-                <h4 className="mb-2 text-sm font-medium">付款记录</h4>
+                <h4 className="mb-2 text-sm font-medium">{tenantMessages.bills.dialogs.paymentRecords}</h4>
                 <div className="rounded-md border">
                   <div className="divide-y">
                     {(billDetail as Bill & { payments?: Payment[] }).payments!.map((payment) => (
@@ -186,7 +187,7 @@ export function BillDetailDialog({
               {billDetail.status !== 'paid' && (
                 <Button onClick={onPayment} data-testid={BILLS.PAY_BUTTON}>
                   <DollarSign className="mr-2 h-4 w-4" />
-                  登记付款
+                  {tenantMessages.bills.columns.recordPayment}
                 </Button>
               )}
               <Button
@@ -196,14 +197,14 @@ export function BillDetailDialog({
                 data-testid={BILLS.SHARE_BUTTON}
               >
                 <Share2 className="mr-2 h-4 w-4" />
-                {sharingBillId === billDetail.id ? '生成中...' : '分享账单'}
+                {sharingBillId === billDetail.id ? tenantMessages.bills.dialogs.shareGenerating : tenantMessages.bills.dialogs.share}
               </Button>
               <Button variant="outline" onClick={() => onExportPdf(billDetail.id)}>
                 <Download className="mr-2 h-4 w-4" />
-                导出PDF
+                {tenantMessages.bills.columns.exportPdf}
               </Button>
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                关闭
+                {tenantMessages.bills.dialogs.close}
               </Button>
             </DialogFooter>
           </div>
@@ -230,13 +231,13 @@ export function BillGenerateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md" data-testid={BILLS.GENERATE_DIALOG}>
         <DialogHeader>
-          <DialogTitle>手动出账</DialogTitle>
-          <DialogDescription>为当前团队的在租房间生成指定月份的账单。已有账单的租约将被跳过。</DialogDescription>
+          <DialogTitle>{tenantMessages.bills.dialogs.generateTitle}</DialogTitle>
+          <DialogDescription>{tenantMessages.bills.dialogs.generateDescription}</DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="bill_year">账单年份</Label>
+              <Label htmlFor="bill_year">{tenantMessages.bills.dialogs.billYear}</Label>
               <Input
                 id="bill_year"
                 type="number"
@@ -249,7 +250,7 @@ export function BillGenerateDialog({
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="bill_month">账单月份</Label>
+              <Label htmlFor="bill_month">{tenantMessages.bills.dialogs.billMonthLabel}</Label>
               <Select
                 value={String(form.watch('bill_month'))}
                 onValueChange={(value) => form.setValue('bill_month', Number(value))}
@@ -268,7 +269,7 @@ export function BillGenerateDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="due_date">到期日</Label>
+              <Label htmlFor="due_date">{tenantMessages.bills.dialogs.dueDateLabel}</Label>
             <Input id="due_date" type="date" {...form.register('due_date')} />
             {form.formState.errors.due_date && (
               <p className="text-sm text-destructive">{form.formState.errors.due_date.message}</p>
@@ -276,10 +277,10 @@ export function BillGenerateDialog({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} data-testid={BILLS.CANCEL_BUTTON}>
-              取消
+              {tenantMessages.common.cancel}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? '生成中...' : '生成账单'}
+              {isPending ? tenantMessages.bills.dialogs.generating : tenantMessages.bills.dialogs.generate}
             </Button>
           </DialogFooter>
         </form>
@@ -309,15 +310,19 @@ export function BillPaymentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md" data-testid={BILLS.PAYMENT_DIALOG}>
         <DialogHeader>
-          <DialogTitle>登记付款</DialogTitle>
+          <DialogTitle>{tenantMessages.bills.dialogs.paymentTitle}</DialogTitle>
           <DialogDescription>
-            账单金额: ¥{paymentSummary.totalAmount.toLocaleString()}， 已付: ¥{paymentSummary.paidAmount.toLocaleString()}， 待付: ¥{paymentSummary.pendingAmount.toLocaleString()}
+            {tenantI18n.t('bills.dialogs.paymentSummary', {
+              total: paymentSummary.totalAmount.toLocaleString(),
+              paid: paymentSummary.paidAmount.toLocaleString(),
+              pending: paymentSummary.pendingAmount.toLocaleString(),
+            })}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="amount">
-              付款金额 <span aria-hidden="true">*</span>
+              {tenantMessages.bills.dialogs.amount} <span aria-hidden="true">*</span>
             </Label>
             <Input
               id="amount"
@@ -334,7 +339,7 @@ export function BillPaymentDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="payment_date">
-                付款日期 <span aria-hidden="true">*</span>
+                {tenantMessages.bills.dialogs.paymentDate} <span aria-hidden="true">*</span>
               </Label>
               <Input
                 id="payment_date"
@@ -346,7 +351,7 @@ export function BillPaymentDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="payment_method">
-                付款方式 <span aria-hidden="true">*</span>
+                {tenantMessages.bills.dialogs.paymentMethod} <span aria-hidden="true">*</span>
               </Label>
               <Select
                 value={form.watch('payment_method')}
@@ -366,19 +371,19 @@ export function BillPaymentDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="reference">交易号/参考号</Label>
+            <Label htmlFor="reference">{tenantMessages.bills.dialogs.reference}</Label>
             <Input id="reference" {...form.register('reference')} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="notes">备注</Label>
+            <Label htmlFor="notes">{tenantMessages.bills.dialogs.notesLabel}</Label>
             <Input id="notes" {...form.register('notes')} />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} data-testid={BILLS.CANCEL_BUTTON}>
-              取消
+              {tenantMessages.common.cancel}
             </Button>
             <Button type="submit" disabled={isPending} data-testid={BILLS.CONFIRM_PAYMENT_BUTTON}>
-              {isPending ? '处理中...' : '确认收款'}
+              {isPending ? tenantMessages.bills.dialogs.processing : tenantMessages.bills.dialogs.confirmPayment}
             </Button>
           </DialogFooter>
         </form>

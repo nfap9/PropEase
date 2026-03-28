@@ -8,6 +8,7 @@ import {
   type ServiceProductUpdate,
 } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
+import { adminMessages } from '@/lib/i18n';
 
 interface UseServicePricingDataOptions {
   onCreateSuccess: () => void;
@@ -39,7 +40,7 @@ export function useServicePricingData({
     onSuccess: () => {
       invalidateServices();
       onCreateSuccess();
-      toast.success('服务方案已创建');
+      toast.success(adminMessages.servicePricing.toast.created);
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
@@ -50,7 +51,7 @@ export function useServicePricingData({
     onSuccess: () => {
       invalidateServices();
       onUpdateSuccess();
-      toast.success('服务方案已更新');
+      toast.success(adminMessages.servicePricing.toast.updated);
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
@@ -60,7 +61,7 @@ export function useServicePricingData({
       adminApiEndpoints.updateServiceProductPricing(id, { pricing }),
     onSuccess: () => {
       invalidateServices();
-      toast.success('价格设置已更新');
+      toast.success(adminMessages.servicePricing.toast.pricingUpdated);
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新定价失败，请重试')),
   });
@@ -70,7 +71,7 @@ export function useServicePricingData({
     onSuccess: () => {
       invalidateServices();
       onDeleteSuccess();
-      toast.success('服务方案已删除');
+      toast.success(adminMessages.servicePricing.toast.deleted);
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });

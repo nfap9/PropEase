@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminRole } from '@/lib/api/admin-client';
+import { adminI18n, adminMessages } from '@/lib/i18n';
 
 export interface AdminRoleDeleteDialogProps {
   open: boolean;
@@ -36,23 +37,23 @@ export function AdminRoleDeleteDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>确认删除</AlertDialogTitle>
+          <AlertDialogTitle>{adminMessages.roles.deleteDialog.title}</AlertDialogTitle>
           <AlertDialogDescription>
             {isSystemRole ? (
-              <>内置分工「{role?.name}」不可删除。</>
+              <>{adminI18n.t('roles.deleteDialog.builtinDescription', { name: role?.name ?? '' })}</>
             ) : (
-              <>确定要删除分工「{role?.name}」吗？此操作不可恢复。</>
+              <>{adminI18n.t('roles.deleteDialog.confirmDescription', { name: role?.name ?? '' })}</>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
           {!isSystemRole && (
             <AlertDialogAction
               onClick={onConfirm}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isPending ? '删除中…' : '删除'}
+              {isPending ? adminMessages.common.deleting : adminMessages.common.delete}
             </AlertDialogAction>
           )}
         </AlertDialogFooter>

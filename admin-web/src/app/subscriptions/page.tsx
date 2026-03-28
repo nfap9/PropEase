@@ -52,9 +52,10 @@ import { adminApiEndpoints, AdminSubscription } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import { CalendarPlus, Ban } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { adminI18n, adminMessages } from '@/lib/i18n';
 
 const renewSchema = z.object({
-  extend_days: z.coerce.number().min(1, '至少延长 1 天'),
+  extend_days: z.coerce.number().min(1, adminMessages.subscriptions.renewDialog.validation),
 });
 
 type RenewForm = z.infer<typeof renewSchema>;
@@ -92,9 +93,10 @@ export default function AdminSubscriptionsPage() {
       setIsRenewOpen(false);
       setSelectedSub(null);
       renewForm.reset({ extend_days: 30 });
-      toast.success('续期成功');
+      toast.success(adminMessages.subscriptions.toast.renewed);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '续期失败，请重试')),
+    onError: (error) =>
+      toast.error(getErrorMessage(error, adminMessages.subscriptions.errors.renew)),
   });
 
   const cancelMutation = useMutation({
@@ -103,9 +105,10 @@ export default function AdminSubscriptionsPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'subscriptions'] });
       setIsCancelOpen(false);
       setSelectedSub(null);
-      toast.success('已取消订阅');
+      toast.success(adminMessages.subscriptions.toast.cancelled);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '取消失败，请重试')),
+    onError: (error) =>
+      toast.error(getErrorMessage(error, adminMessages.subscriptions.errors.cancel)),
   });
 
   const handleRenew = (sub: AdminSubscription) => {
@@ -122,7 +125,7 @@ export default function AdminSubscriptionsPage() {
   const columns: ColumnDef<AdminSubscription>[] = [
     {
       accessorKey: 'organization_id',
-      header: '团队 ID',
+      header: adminMessages.subscriptions.columns.teamId,
       cell: ({ row }) => (
         <Link
           href={`/organizations/${row.original.organization_id}`}
@@ -134,13 +137,13 @@ export default function AdminSubscriptionsPage() {
     },
     {
       id: 'plan_name',
-      header: '服务',
+      header: adminMessages.subscriptions.columns.service,
       cell: ({ row }) => row.original.plan?.name ?? '—',
     },
-    { accessorKey: 'billing_cycle', header: '计费周期' },
+    { accessorKey: 'billing_cycle', header: adminMessages.subscriptions.columns.billingCycle },
     {
       accessorKey: 'status',
-      header: '状态',
+      header: adminMessages.subscriptions.columns.status,
       cell: ({ row }) => {
         const s = row.original.status;
         const config = SUBSCRIPTION_STATUS_CONFIG[s] ?? {
@@ -152,17 +155,17 @@ export default function AdminSubscriptionsPage() {
     },
     {
       accessorKey: 'start_date',
-      header: '开始日期',
+      header: adminMessages.subscriptions.columns.startDate,
       cell: ({ row }) => formatDate(row.original.start_date),
     },
     {
       accessorKey: 'end_date',
-      header: '结束日期',
+      header: adminMessages.subscriptions.columns.endDate,
       cell: ({ row }) => formatDate(row.original.end_date),
     },
     {
       accessorKey: 'auto_renew',
-      header: '自动续费',
+      header: adminMessages.subscriptions.columns.autoRenew,
       cell: ({ row }) => {
         const config = row.original.auto_renew
           ? BOOLEAN_YES_NO_CONFIG.yes
@@ -172,7 +175,7 @@ export default function AdminSubscriptionsPage() {
     },
     {
       id: 'actions',
-      header: '操作',
+      header: adminMessages.subscriptions.columns.actions,
       cell: ({ row }) => {
         const sub = row.original;
         const isActive = sub.status === 'active';
@@ -183,12 +186,12 @@ export default function AdminSubscriptionsPage() {
                 ? [
                     {
                       icon: CalendarPlus,
-                      label: '续期',
+                      label: adminMessages.subscriptions.actions.renew,
                       onClick: () => handleRenew(sub),
                     },
                     {
                       icon: Ban,
-                      label: '取消',
+                      label: adminMessages.subscriptions.actions.cancel,
                       variant: 'destructive' as const,
                       onClick: () => handleCancel(sub),
                     },
@@ -213,10 +216,10 @@ export default function AdminSubscriptionsPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="text-xl font-semibold" data-testid="admin-subscriptions-heading">已购服务</h2>
+        <h2 className="text-xl font-semibold" data-testid="admin-subscriptions-heading">{adminMessages.subscriptions.heading}</h2>
         <div className="flex items-center gap-2">
           <Input
-            placeholder="按团队 ID 筛选"
+            placeholder={adminMessages.subscriptions.teamIdPlaceholder}
             value={orgIdFilter}
             onChange={(e) => setOrgIdFilter(e.target.value)}
             className="w-48"
@@ -226,14 +229,14 @@ export default function AdminSubscriptionsPage() {
             onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}
           >
             <SelectTrigger className="w-32">
-              <SelectValue placeholder="状态" />
+              <SelectValue placeholder={adminMessages.subscriptions.filters.statusPlaceholder} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">全部状态</SelectItem>
-              <SelectItem value="active">生效中</SelectItem>
-              <SelectItem value="expired">已过期</SelectItem>
-              <SelectItem value="cancelled">已取消</SelectItem>
-              <SelectItem value="trial">试用</SelectItem>
+              <SelectItem value="all">{adminMessages.subscriptions.filters.all}</SelectItem>
+              <SelectItem value="active">{adminMessages.subscriptions.filters.active}</SelectItem>
+              <SelectItem value="expired">{adminMessages.subscriptions.filters.expired}</SelectItem>
+              <SelectItem value="cancelled">{adminMessages.subscriptions.filters.cancelled}</SelectItem>
+              <SelectItem value="trial">{adminMessages.subscriptions.filters.trial}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -245,9 +248,13 @@ export default function AdminSubscriptionsPage() {
       <Dialog open={isRenewOpen} onOpenChange={setIsRenewOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>手动续期</DialogTitle>
+            <DialogTitle>{adminMessages.subscriptions.renewDialog.title}</DialogTitle>
             <DialogDescription>
-              {selectedSub ? `为团队 ${selectedSub.organization_id} 的订阅延长有效期` : ''}
+              {selectedSub
+                ? adminI18n.t('subscriptions.renewDialog.description', {
+                    organizationId: selectedSub.organization_id,
+                  })
+                : ''}
             </DialogDescription>
           </DialogHeader>
           <Form {...renewForm}>
@@ -267,7 +274,7 @@ export default function AdminSubscriptionsPage() {
                 name="extend_days"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>延长天数</FormLabel>
+                    <FormLabel>{adminMessages.subscriptions.renewDialog.extendDays}</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -277,10 +284,10 @@ export default function AdminSubscriptionsPage() {
               />
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsRenewOpen(false)}>
-                  取消
+                  {adminMessages.common.cancel}
                 </Button>
                 <Button type="submit" disabled={renewMutation.isPending}>
-                  {renewMutation.isPending ? '提交中…' : '确定续期'}
+                  {renewMutation.isPending ? adminMessages.common.submitting : adminMessages.subscriptions.renewDialog.submit}
                 </Button>
               </DialogFooter>
             </form>
@@ -292,19 +299,20 @@ export default function AdminSubscriptionsPage() {
       <AlertDialog open={isCancelOpen} onOpenChange={setIsCancelOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认取消订阅</AlertDialogTitle>
+            <AlertDialogTitle>{adminMessages.subscriptions.cancelDialog.title}</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要取消团队「{selectedSub?.organization_id}
-              」的订阅吗？取消后该团队将按免费版限制使用。
+              {adminI18n.t('subscriptions.cancelDialog.description', {
+                organizationId: selectedSub?.organization_id ?? '',
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>返回</AlertDialogCancel>
+            <AlertDialogCancel>{adminMessages.subscriptions.cancelDialog.back}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => selectedSub && cancelMutation.mutate(selectedSub.id)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {cancelMutation.isPending ? '处理中…' : '确认取消'}
+              {cancelMutation.isPending ? adminMessages.common.processing : adminMessages.subscriptions.cancelDialog.submit}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

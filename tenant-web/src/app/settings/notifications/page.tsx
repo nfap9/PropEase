@@ -29,6 +29,7 @@ import {
   tenantReachabilityStatusOptions,
 } from '@/lib/tenant-reachability';
 import { BellRing, MessageSquare, Send, ShieldOff } from 'lucide-react';
+import { tenantI18n, tenantMessages } from '@/lib/i18n';
 
 type EditableTemplateState = Record<
   TenantReachabilityEventType,
@@ -102,10 +103,15 @@ export default function ReachabilitySettingsPage() {
     }) => tenantReachabilityApi.updateTemplate(orgId!, eventType, { content, is_enabled }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tenant-reachability', 'templates', orgId] });
-      toast.success(`${getTenantReachabilityEventLabel(variables.eventType)}模板已保存`);
+      toast.success(
+        tenantI18n.t('settings.notificationsPage.saved', {
+          event: getTenantReachabilityEventLabel(variables.eventType),
+        })
+      );
     },
     onError: (error) => {
-      const message = error instanceof Error ? error.message : '保存失败，请稍后重试';
+      const message =
+        error instanceof Error ? error.message : tenantMessages.settings.notificationsPage.saveFailed;
       toast.error(message);
     },
   });
@@ -114,7 +120,7 @@ export default function ReachabilitySettingsPage() {
     () => [
       {
         accessorKey: 'tenant_name',
-        header: '租客',
+        header: tenantMessages.settings.notificationsPage.columns.tenant,
         cell: ({ row }) => (
           <div>
             <div className="font-medium">{row.original.tenant_name || '-'}</div>
@@ -124,12 +130,12 @@ export default function ReachabilitySettingsPage() {
       },
       {
         accessorKey: 'event_type',
-        header: '场景',
+        header: tenantMessages.settings.notificationsPage.columns.scenario,
         cell: ({ row }) => getTenantReachabilityEventLabel(row.original.event_type),
       },
       {
         accessorKey: 'status',
-        header: '状态',
+        header: tenantMessages.settings.notificationsPage.columns.status,
         cell: ({ row }) => (
           <Badge variant={getDeliveryStatusVariant(row.original.status)}>
             {getDeliveryStatusLabel(row.original.status)}
@@ -138,12 +144,12 @@ export default function ReachabilitySettingsPage() {
       },
       {
         accessorKey: 'recipient',
-        header: '接收号码',
+        header: tenantMessages.settings.notificationsPage.columns.recipient,
         cell: ({ row }) => row.original.recipient || '-',
       },
       {
         accessorKey: 'status_reason',
-        header: '结果说明',
+        header: tenantMessages.settings.notificationsPage.columns.result,
         cell: ({ row }) => (
           <div className="max-w-sm text-sm text-muted-foreground">
             {row.original.status_reason || row.original.content}
@@ -152,7 +158,7 @@ export default function ReachabilitySettingsPage() {
       },
       {
         accessorKey: 'created_at',
-        header: '发送时间',
+        header: tenantMessages.settings.notificationsPage.columns.sentAt,
         cell: ({ row }) => formatDateTime(row.original.created_at),
       },
     ],
@@ -175,8 +181,8 @@ export default function ReachabilitySettingsPage() {
     return (
       <div className="flex h-full flex-col items-center justify-center space-y-3 text-center">
         <ShieldOff className="h-12 w-12 text-muted-foreground" />
-        <h1 className="text-2xl font-semibold">请先选择组织</h1>
-        <p className="text-muted-foreground">选择组织后才可以配置租客消息触达能力。</p>
+        <h1 className="text-2xl font-semibold">{tenantMessages.settings.notificationsPage.noOrganizationTitle}</h1>
+        <p className="text-muted-foreground">{tenantMessages.settings.notificationsPage.noOrganizationDescription}</p>
       </div>
     );
   }
@@ -186,31 +192,39 @@ export default function ReachabilitySettingsPage() {
         <div className="flex items-center gap-3">
           <BellRing className="h-8 w-8" />
           <div>
-            <h1 className="text-3xl font-bold">租客消息触达</h1>
-            <p className="text-muted-foreground">
-              当前第一期仅接入短信通道，覆盖账单生成、到期前提醒和逾期催缴。
-            </p>
+            <h1 className="text-3xl font-bold">{tenantMessages.settings.notificationsPage.heading}</h1>
+            <p className="text-muted-foreground">{tenantMessages.settings.notificationsPage.description}</p>
           </div>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">当前边界</CardTitle>
-            <CardDescription>
-              如果未配置 `SMS_WEBHOOK_URL`，系统会照常落发送记录，但状态会标记为“已跳过”。
-            </CardDescription>
+            <CardTitle className="text-lg">{tenantMessages.settings.notificationsPage.boundaryTitle}</CardTitle>
+            <CardDescription>{tenantMessages.settings.notificationsPage.boundaryDescription}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-3">
-            <SummaryCard title="正式通道" value="短信" icon={MessageSquare} />
-            <SummaryCard title="记录总数" value={String(summary.total)} icon={Send} />
-            <SummaryCard title="失败/跳过" value={`${summary.failed}/${summary.skipped}`} icon={ShieldOff} />
+            <SummaryCard
+              title={tenantMessages.settings.notificationsPage.summaries.channelTitle}
+              value={tenantMessages.settings.notificationsPage.summaries.channelValue}
+              icon={MessageSquare}
+            />
+            <SummaryCard
+              title={tenantMessages.settings.notificationsPage.summaries.totalTitle}
+              value={String(summary.total)}
+              icon={Send}
+            />
+            <SummaryCard
+              title={tenantMessages.settings.notificationsPage.summaries.failedSkippedTitle}
+              value={`${summary.failed}/${summary.skipped}`}
+              icon={ShieldOff}
+            />
           </CardContent>
         </Card>
 
         <Tabs defaultValue="templates" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="templates">模板管理</TabsTrigger>
-            <TabsTrigger value="deliveries">发送记录</TabsTrigger>
+            <TabsTrigger value="templates">{tenantMessages.settings.notificationsPage.tabs.templates}</TabsTrigger>
+            <TabsTrigger value="deliveries">{tenantMessages.settings.notificationsPage.tabs.deliveries}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="templates" className="space-y-4">
@@ -225,14 +239,12 @@ export default function ReachabilitySettingsPage() {
                       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div>
                           <CardTitle>{template.name}</CardTitle>
-                          <CardDescription>
-                            支持变量: {'{{organization_name}}'}、{'{{tenant_name}}'}、
-                            {'{{room_number}}'}、{'{{bill_period}}'}、{'{{amount}}'}、
-                            {'{{due_date}}'}、{'{{days_overdue}}'}
-                          </CardDescription>
+                          <CardDescription>{tenantMessages.settings.notificationsPage.templateVariables}</CardDescription>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Label htmlFor={`template-enabled-${template.event_type}`}>启用模板</Label>
+                          <Label htmlFor={`template-enabled-${template.event_type}`}>
+                            {tenantMessages.settings.notificationsPage.enableTemplate}
+                          </Label>
                           <Switch
                             id={`template-enabled-${template.event_type}`}
                             checked={editable?.is_enabled ?? true}
@@ -271,7 +283,7 @@ export default function ReachabilitySettingsPage() {
                       />
                       <div className="flex items-center justify-between">
                         <p className="text-xs text-muted-foreground">
-                          默认建议保留“退订”提示，退订后系统会自动跳过后续短信发送。
+                          {tenantMessages.settings.notificationsPage.unsubscribeHint}
                         </p>
                         <Button
                           onClick={() =>
@@ -283,7 +295,7 @@ export default function ReachabilitySettingsPage() {
                           }
                           disabled={updateTemplateMutation.isPending}
                         >
-                          保存模板
+                          {tenantMessages.settings.notificationsPage.saveTemplate}
                         </Button>
                       </div>
                     </CardContent>
@@ -296,13 +308,13 @@ export default function ReachabilitySettingsPage() {
           <TabsContent value="deliveries" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>发送记录</CardTitle>
-                <CardDescription>查询租客正式触达链路的发送、失败和跳过原因。</CardDescription>
+                <CardTitle>{tenantMessages.settings.notificationsPage.deliveriesTitle}</CardTitle>
+                <CardDescription>{tenantMessages.settings.notificationsPage.deliveriesDescription}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex flex-col gap-4 md:flex-row">
                   <div className="space-y-2">
-                    <Label>场景筛选</Label>
+                    <Label>{tenantMessages.settings.notificationsPage.eventFilterLabel}</Label>
                     <div className="flex flex-wrap gap-2">
                       {tenantReachabilityEventOptions.map((option) => (
                         <Button
@@ -317,7 +329,7 @@ export default function ReachabilitySettingsPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>状态筛选</Label>
+                    <Label>{tenantMessages.settings.notificationsPage.statusFilterLabel}</Label>
                     <div className="flex flex-wrap gap-2">
                       {tenantReachabilityStatusOptions.map((option) => (
                         <Button
@@ -334,10 +346,10 @@ export default function ReachabilitySettingsPage() {
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-4">
-                  <StatCard title="总记录" value={String(summary.total)} />
-                  <StatCard title="发送成功" value={String(summary.sent)} />
-                  <StatCard title="发送失败" value={String(summary.failed)} />
-                  <StatCard title="已跳过" value={String(summary.skipped)} />
+                  <StatCard title={tenantMessages.settings.notificationsPage.stats.total} value={String(summary.total)} />
+                  <StatCard title={tenantMessages.settings.notificationsPage.stats.sent} value={String(summary.sent)} />
+                  <StatCard title={tenantMessages.settings.notificationsPage.stats.failed} value={String(summary.failed)} />
+                  <StatCard title={tenantMessages.settings.notificationsPage.stats.skipped} value={String(summary.skipped)} />
                 </div>
 
                 {deliveriesLoading ? (

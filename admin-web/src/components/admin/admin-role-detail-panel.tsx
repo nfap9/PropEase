@@ -4,6 +4,7 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminRole } from '@/lib/api/admin-client';
 import { AdminPermissionCheckboxGroup } from './admin-permission-checkbox-group';
 import { Save } from 'lucide-react';
+import { adminMessages } from '@/lib/i18n';
 
 export interface AdminRoleDetailPanelProps {
   role: AdminRole | null;
@@ -27,7 +28,7 @@ export function AdminRoleDetailPanel({
   if (!role) {
     return (
       <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-        请从左侧选择一项分工
+        {adminMessages.roles.emptyState}
       </div>
     );
   }
@@ -39,7 +40,7 @@ export function AdminRoleDetailPanel({
       <div className="border-b p-4">
         <h3 className="font-semibold">{role.name}</h3>
         {readOnly && (
-          <p className="mt-1 text-sm text-muted-foreground">内置分工仅可查看，不可修改</p>
+          <p className="mt-1 text-sm text-muted-foreground">{adminMessages.roles.readonlyHint}</p>
         )}
       </div>
       <div className="flex-1 overflow-y-auto p-4">
@@ -55,7 +56,7 @@ export function AdminRoleDetailPanel({
         <div className="border-t p-4">
           <Button onClick={onSave} disabled={isSaving}>
             <Save className="mr-2 h-4 w-4" />
-            {isSaving ? '保存中…' : '保存'}
+            {isSaving ? adminMessages.common.saving : adminMessages.common.save}
           </Button>
         </div>
       )}

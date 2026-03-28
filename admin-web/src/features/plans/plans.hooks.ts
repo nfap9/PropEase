@@ -8,6 +8,7 @@ import {
   type AdminPlanUpdate,
 } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
+import { adminMessages } from '@/lib/i18n';
 
 interface UsePlansDataOptions {
   onCreateSuccess: () => void;
@@ -39,7 +40,7 @@ export function usePlansData({
     onSuccess: () => {
       invalidatePlans();
       onCreateSuccess();
-      toast.success('服务创建成功');
+      toast.success(adminMessages.plans.toast.created);
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
@@ -50,7 +51,7 @@ export function usePlansData({
     onSuccess: () => {
       invalidatePlans();
       onUpdateSuccess();
-      toast.success('服务已更新');
+      toast.success(adminMessages.plans.toast.updated);
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
@@ -60,7 +61,7 @@ export function usePlansData({
       adminApiEndpoints.updatePlanPricing(planId, pricing),
     onSuccess: () => {
       invalidatePlans();
-      toast.success('周期定价已更新');
+      toast.success(adminMessages.plans.toast.pricingUpdated);
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新定价失败，请重试')),
   });
@@ -70,7 +71,7 @@ export function usePlansData({
     onSuccess: () => {
       invalidatePlans();
       onDeleteSuccess();
-      toast.success('服务已删除');
+      toast.success(adminMessages.plans.toast.deleted);
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });

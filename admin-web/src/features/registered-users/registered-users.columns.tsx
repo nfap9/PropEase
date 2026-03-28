@@ -7,6 +7,7 @@ import { TableActions } from '@/components/common/table-actions';
 import { formatDateTime } from '@/lib/date-utils';
 import { ORG_STATUS_CONFIG } from '@/lib/status-config';
 import type { AdminRegisteredUser } from '@/lib/api/admin-client';
+import { adminMessages } from '@/lib/i18n';
 
 interface CreateRegisteredUsersColumnsOptions {
   onView: (userId: string) => void;
@@ -22,11 +23,11 @@ export function createRegisteredUsersColumns({
   onDelete,
 }: CreateRegisteredUsersColumnsOptions): ColumnDef<AdminRegisteredUser>[] {
   return [
-    { accessorKey: 'phone', header: '手机号' },
-    { accessorKey: 'full_name', header: '姓名' },
+    { accessorKey: 'phone', header: adminMessages.registeredUsers.columns.phone },
+    { accessorKey: 'full_name', header: adminMessages.registeredUsers.columns.name },
     {
       accessorKey: 'is_active',
-      header: '状态',
+      header: adminMessages.registeredUsers.columns.status,
       cell: ({ row }) => {
         const config = row.original.is_active ? ORG_STATUS_CONFIG.active : ORG_STATUS_CONFIG.inactive;
         return <Badge variant={config.variant}>{config.label}</Badge>;
@@ -34,12 +35,12 @@ export function createRegisteredUsersColumns({
     },
     {
       accessorKey: 'created_at',
-      header: '注册时间',
+      header: adminMessages.registeredUsers.columns.createdAt,
       cell: ({ row }) => formatDateTime(row.original.created_at),
     },
     {
       id: 'actions',
-      header: '操作',
+      header: adminMessages.registeredUsers.columns.actions,
       cell: ({ row }) => {
         const user = row.original;
         return (
@@ -47,14 +48,14 @@ export function createRegisteredUsersColumns({
             actions={[
               {
                 icon: Eye,
-                label: '详情',
+                label: adminMessages.registeredUsers.actions.detail,
                 onClick: () => onView(user.id),
               },
               ...(user.is_active
                 ? [
                     {
                       icon: PowerOff,
-                      label: '停用',
+                      label: adminMessages.registeredUsers.actions.disable,
                       variant: 'destructive' as const,
                       onClick: () => onDisable(user.id),
                     },
@@ -62,13 +63,13 @@ export function createRegisteredUsersColumns({
                 : [
                     {
                       icon: Power,
-                      label: '启用',
+                      label: adminMessages.registeredUsers.actions.enable,
                       onClick: () => onEnable(user.id),
                     },
                   ]),
               {
                 icon: Trash2,
-                label: '删除',
+                label: adminMessages.registeredUsers.actions.delete,
                 variant: 'destructive',
                 onClick: () => onDelete(user.id),
               },

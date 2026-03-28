@@ -23,9 +23,10 @@ import {
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { AdminPermissionCheckboxGroup } from './admin-permission-checkbox-group';
+import { adminMessages } from '@/lib/i18n';
 
 const schema = z.object({
-  name: z.string().min(1, '请输入分工名称'),
+  name: z.string().min(1, adminMessages.roles.createDialog.nameValidation),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -68,8 +69,8 @@ export function AdminRoleCreateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto overscroll-contain">
         <DialogHeader>
-          <DialogTitle>新建分工</DialogTitle>
-          <DialogDescription>填写分工名称，并勾选该分工可使用的功能</DialogDescription>
+          <DialogTitle>{adminMessages.roles.createDialog.title}</DialogTitle>
+          <DialogDescription>{adminMessages.roles.createDialog.description}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -78,9 +79,9 @@ export function AdminRoleCreateDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>分工名称</FormLabel>
+                  <FormLabel>{adminMessages.roles.createDialog.nameLabel}</FormLabel>
                   <FormControl>
-                    <Input placeholder="如：平台协作" {...field} />
+                    <Input placeholder={adminMessages.roles.createDialog.namePlaceholder} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -93,10 +94,10 @@ export function AdminRoleCreateDialog({
             />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                取消
+                {adminMessages.common.cancel}
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? '提交中…' : '创建'}
+                {isPending ? '提交中…' : adminMessages.common.create}
               </Button>
             </DialogFooter>
           </form>

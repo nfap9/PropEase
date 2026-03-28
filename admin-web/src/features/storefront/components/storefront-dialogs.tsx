@@ -61,6 +61,7 @@ import {
   normalizePricingDiscounts,
 } from '../storefront.utils';
 import { StorefrontDiscountFields } from './storefront-discount-fields';
+import { adminI18n, adminMessages } from '@/lib/i18n';
 
 export function StorefrontFormDialog({
   mode,
@@ -94,9 +95,9 @@ export function StorefrontFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{mode === 'create' ? '新建商品展示' : '编辑商品展示'}</DialogTitle>
+          <DialogTitle>{mode === 'create' ? adminMessages.storefront.dialog.createTitle : adminMessages.storefront.dialog.editTitle}</DialogTitle>
           <DialogDescription>
-            {mode === 'create' ? '创建新的商品展示页' : storefront?.name}
+            {mode === 'create' ? adminMessages.storefront.dialog.createDescription : storefront?.name}
           </DialogDescription>
         </DialogHeader>
 
@@ -107,7 +108,7 @@ export function StorefrontFormDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>商店名称</FormLabel>
+                  <FormLabel>{adminMessages.storefront.fields.name}</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -121,9 +122,9 @@ export function StorefrontFormDialog({
               name="code"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>商店代码</FormLabel>
+                  <FormLabel>{adminMessages.storefront.fields.code}</FormLabel>
                   <FormControl>
-                    <Input placeholder="如 default, promotion" {...field} disabled={mode === 'edit'} />
+                    <Input placeholder={adminMessages.storefront.fields.codePlaceholder} {...field} disabled={mode === 'edit'} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -138,7 +139,7 @@ export function StorefrontFormDialog({
                   <FormControl>
                     <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
                   </FormControl>
-                  <FormLabel className="!mt-0">设为默认商店</FormLabel>
+                  <FormLabel className="!mt-0">{adminMessages.storefront.fields.default}</FormLabel>
                 </FormItem>
               )}
             />
@@ -151,17 +152,23 @@ export function StorefrontFormDialog({
                   <FormControl>
                     <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
                   </FormControl>
-                  <FormLabel className="!mt-0">启用</FormLabel>
+                  <FormLabel className="!mt-0">{adminMessages.storefront.fields.enabled}</FormLabel>
                 </FormItem>
               )}
             />
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                取消
+                {adminMessages.common.cancel}
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? (mode === 'create' ? '创建中…' : '保存中…') : mode === 'create' ? '创建' : '保存'}
+                {isPending
+                  ? mode === 'create'
+                    ? adminMessages.common.creating
+                    : adminMessages.common.saving
+                  : mode === 'create'
+                    ? adminMessages.common.create
+                    : adminMessages.common.save}
               </Button>
             </DialogFooter>
           </form>
@@ -188,18 +195,18 @@ export function StorefrontDeleteDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>确认删除</AlertDialogTitle>
+          <AlertDialogTitle>{adminMessages.servicePricing.dialogs.deleteTitle}</AlertDialogTitle>
           <AlertDialogDescription>
-            确定要删除商品展示「{storefront?.name}」吗？此操作将同时删除其中的商品内容。
+            {adminI18n.t('storefront.dialog.deleteDescription', { name: storefront?.name ?? '' })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isPending ? '删除中…' : '删除'}
+            {isPending ? adminMessages.common.deleting : adminMessages.common.delete}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -267,10 +274,12 @@ export function StorefrontItemFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{mode === 'create' ? '添加服务到商店' : '编辑商店项'}</DialogTitle>
+          <DialogTitle>{mode === 'create' ? adminMessages.storefront.dialog.itemCreateTitle : adminMessages.storefront.dialog.itemEditTitle}</DialogTitle>
           <DialogDescription>
             {mode === 'create'
-              ? `为 ${storefront?.name ?? '当前商店'} 选择要展示的服务产品`
+              ? adminI18n.t('storefront.dialog.itemCreateDescription', {
+                  storefrontName: storefront?.name ?? adminMessages.storefront.heading,
+                })
               : item?.service?.name}
           </DialogDescription>
         </DialogHeader>
@@ -283,11 +292,11 @@ export function StorefrontItemFormDialog({
                 name="service_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>服务产品</FormLabel>
+                    <FormLabel>{adminMessages.storefront.fields.service}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="选择服务" />
+                          <SelectValue placeholder={adminMessages.storefront.fields.servicePlaceholder} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -312,7 +321,7 @@ export function StorefrontItemFormDialog({
                   <FormControl>
                     <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
                   </FormControl>
-                  <FormLabel className="!mt-0">在用户界面显示</FormLabel>
+                  <FormLabel className="!mt-0">{adminMessages.storefront.fields.visible}</FormLabel>
                 </FormItem>
               )}
             />
@@ -322,7 +331,7 @@ export function StorefrontItemFormDialog({
               name="sort_order"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>排序</FormLabel>
+                  <FormLabel>{adminMessages.storefront.fields.sortOrder}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -339,10 +348,16 @@ export function StorefrontItemFormDialog({
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                取消
+                {adminMessages.common.cancel}
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? (mode === 'create' ? '添加中…' : '保存中…') : mode === 'create' ? '添加' : '保存'}
+                {isPending
+                  ? mode === 'create'
+                    ? '添加中…'
+                    : adminMessages.common.saving
+                  : mode === 'create'
+                    ? '添加'
+                    : adminMessages.common.save}
               </Button>
             </DialogFooter>
           </form>
@@ -369,18 +384,18 @@ export function StorefrontItemDeleteDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>确认删除</AlertDialogTitle>
+          <AlertDialogTitle>{adminMessages.storefront.dialog.itemDeleteTitle}</AlertDialogTitle>
           <AlertDialogDescription>
-            确定要从商店移除「{item?.service?.name}」吗？
+            {adminI18n.t('storefront.dialog.itemDeleteDescription', { name: item?.service?.name ?? '' })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isPending ? '删除中…' : '删除'}
+            {isPending ? adminMessages.common.deleting : adminMessages.common.delete}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

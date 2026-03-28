@@ -49,6 +49,7 @@ import {
   getPlanUpdateFormValues,
 } from '../plans.utils';
 import { PlanPricingFields } from './plan-pricing-fields';
+import { adminI18n, adminMessages } from '@/lib/i18n';
 
 type PlanForm = PlanCreateForm | PlanUpdateForm;
 
@@ -75,7 +76,7 @@ function PlanFormSections({
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>服务名称</FormLabel>
+            <FormLabel>{adminMessages.plans.fields.name}</FormLabel>
             <FormControl>
               <Input {...field} />
             </FormControl>
@@ -89,9 +90,9 @@ function PlanFormSections({
         name="code"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>服务代码</FormLabel>
+            <FormLabel>{adminMessages.plans.fields.code}</FormLabel>
             <FormControl>
-              <Input placeholder="如 free, pro" {...field} disabled={mode === 'edit'} />
+              <Input placeholder={adminMessages.plans.fields.codePlaceholder} {...field} disabled={mode === 'edit'} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -103,7 +104,7 @@ function PlanFormSections({
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{mode === 'create' ? '描述（选填）' : '描述'}</FormLabel>
+            <FormLabel>{mode === 'create' ? adminMessages.plans.fields.optionalDescription : adminMessages.plans.fields.description}</FormLabel>
             <FormControl>
               <Input {...field} />
             </FormControl>
@@ -116,11 +117,11 @@ function PlanFormSections({
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="pricing" className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
-            价格配置
+            {adminMessages.plans.fields.pricingTab}
           </TabsTrigger>
           <TabsTrigger value="limits" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            用量配置
+            {adminMessages.plans.fields.limitsTab}
           </TabsTrigger>
         </TabsList>
 
@@ -134,7 +135,7 @@ function PlanFormSections({
                 <FormControl>
                   <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
-                <FormLabel className="!mt-0">允许用户在线购买</FormLabel>
+                <FormLabel className="!mt-0">{adminMessages.plans.fields.allowPurchase}</FormLabel>
               </FormItem>
             )}
           />
@@ -147,9 +148,9 @@ function PlanFormSections({
               name="max_organizations"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>最大组织数</FormLabel>
+                  <FormLabel>{adminMessages.plans.fields.maxOrganizations}</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="-1 表示不限制" {...field} />
+                    <Input type="number" placeholder={adminMessages.plans.fields.maxOrganizationsPlaceholder} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -160,7 +161,7 @@ function PlanFormSections({
               name="max_apartments"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>最大公寓数</FormLabel>
+                  <FormLabel>{adminMessages.plans.fields.maxApartments}</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
@@ -173,7 +174,7 @@ function PlanFormSections({
               name="max_rooms"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>最大房间数</FormLabel>
+                  <FormLabel>{adminMessages.plans.fields.maxRooms}</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
@@ -186,7 +187,7 @@ function PlanFormSections({
               name="max_members"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>最大团队成员数</FormLabel>
+                  <FormLabel>{adminMessages.plans.fields.maxMembers}</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
@@ -203,7 +204,7 @@ function PlanFormSections({
         name="sort_order"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>排序</FormLabel>
+            <FormLabel>{adminMessages.plans.fields.sortOrder}</FormLabel>
             <FormControl>
               <Input type="number" {...field} />
             </FormControl>
@@ -221,7 +222,7 @@ function PlanFormSections({
               <FormControl>
                 <Checkbox checked={field.value} onCheckedChange={(value) => field.onChange(value === true)} />
               </FormControl>
-              <FormLabel className="!mt-0">启用</FormLabel>
+              <FormLabel className="!mt-0">{adminMessages.plans.fields.enabled}</FormLabel>
             </FormItem>
           )}
         />
@@ -258,18 +259,18 @@ export function PlanCreateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>新建服务</DialogTitle>
-          <DialogDescription>创建新的订阅服务</DialogDescription>
+          <DialogTitle>{adminMessages.plans.dialogs.createTitle}</DialogTitle>
+          <DialogDescription>{adminMessages.plans.dialogs.createDescription}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <PlanFormSections form={form as UseFormReturn<PlanForm>} mode="create" activeTab={activeTab} onTabChange={setActiveTab} />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                取消
+                {adminMessages.common.cancel}
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? '提交中…' : '创建'}
+                {isPending ? adminMessages.common.submitting : adminMessages.common.create}
               </Button>
             </DialogFooter>
           </form>
@@ -308,7 +309,7 @@ export function PlanEditSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="max-h-screen w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle>编辑服务</SheetTitle>
+          <SheetTitle>{adminMessages.plans.dialogs.editTitle}</SheetTitle>
           <SheetDescription>{plan?.name}</SheetDescription>
         </SheetHeader>
         <Form {...form}>
@@ -319,10 +320,10 @@ export function PlanEditSheet({
             <PlanFormSections form={form as UseFormReturn<PlanForm>} mode="edit" activeTab={activeTab} onTabChange={setActiveTab} />
             <SheetFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                取消
+                {adminMessages.common.cancel}
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? '保存中…' : '保存'}
+                {isPending ? adminMessages.common.saving : adminMessages.common.save}
               </Button>
             </SheetFooter>
           </form>
@@ -349,18 +350,18 @@ export function PlanDeleteDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>确认删除</AlertDialogTitle>
+          <AlertDialogTitle>{adminMessages.plans.dialogs.deleteTitle}</AlertDialogTitle>
           <AlertDialogDescription>
-            确定要删除服务「{plan?.name}」吗？若已有组织使用该服务，可能影响业务。
+            {adminI18n.t('plans.dialogs.deleteDescription', { name: plan?.name ?? '' })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isPending ? '删除中…' : '删除'}
+            {isPending ? adminMessages.common.deleting : adminMessages.common.delete}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

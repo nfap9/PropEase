@@ -13,6 +13,7 @@ import { getAllAdminPermissionCodes } from '@/lib/constants/admin-permissions';
 import { togglePermissionCode } from './utils';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { cn } from '@/lib/utils';
+import { adminMessages } from '@/lib/i18n';
 
 export default function AdminRolesPage() {
   const queryClient = useQueryClient();
@@ -47,7 +48,7 @@ export default function AdminRolesPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
       setIsCreateOpen(false);
       setCreatePermissionCodes([]);
-      toast.success('分工创建成功');
+      toast.success(adminMessages.roles.toast.created);
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
@@ -57,7 +58,7 @@ export default function AdminRolesPage() {
       adminApiEndpoints.updateRole(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
-      toast.success('功能设置已保存');
+      toast.success(adminMessages.roles.toast.saved);
     },
     onError: (error) => toast.error(getErrorMessage(error, '保存失败，请重试')),
   });
@@ -68,7 +69,7 @@ export default function AdminRolesPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
       setIsDeleteOpen(false);
       setSelectedRole(null);
-      toast.success('分工已删除');
+      toast.success(adminMessages.roles.toast.deleted);
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });

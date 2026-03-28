@@ -5,6 +5,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/common/data-table';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import type { StorefrontConfig } from '@/lib/api/admin-client';
+import { adminMessages } from '@/lib/i18n';
 
 export function StorefrontListView({
   storefronts,
@@ -19,11 +20,11 @@ export function StorefrontListView({
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold" data-testid="storefront-heading">
-          商品展示
+          {adminMessages.storefront.heading}
         </h2>
         <Button onClick={onCreate} data-testid="storefront-create-btn">
           <Plus className="mr-2 h-4 w-4" />
-          新建展示页
+          {adminMessages.storefront.createButton}
         </Button>
       </div>
 

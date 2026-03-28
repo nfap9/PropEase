@@ -22,6 +22,7 @@ import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import type { Bill, BillStatus } from '@/types';
 import { BILLS } from '../bills.schemas';
 import type { BillStats } from '../bills.utils';
+import { tenantMessages } from '@/lib/i18n';
 
 interface BillsListViewProps {
   orgId?: string;
@@ -50,8 +51,8 @@ export function BillsListView({
     return (
       <div className="flex h-full flex-col items-center justify-center space-y-4">
         <Building2 className="h-16 w-16 text-muted-foreground" />
-        <h2 className="text-xl font-semibold">请先创建或加入团队</h2>
-        <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
+        <h2 className="text-xl font-semibold">{tenantMessages.bills.list.noTeamTitle}</h2>
+        <p className="text-muted-foreground">{tenantMessages.bills.list.noTeamDescription}</p>
       </div>
     );
   }
@@ -60,14 +61,14 @@ export function BillsListView({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold" data-testid={BILLS.HEADING}>
-          账单管理
+          {tenantMessages.bills.list.heading}
         </h1>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">账单总数</CardTitle>
+            <CardTitle className="text-sm font-medium">{tenantMessages.bills.list.total}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
@@ -75,7 +76,7 @@ export function BillsListView({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">待收款</CardTitle>
+            <CardTitle className="text-sm font-medium">{tenantMessages.bills.list.pendingAmount}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
@@ -86,7 +87,7 @@ export function BillsListView({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">已收款</CardTitle>
+            <CardTitle className="text-sm font-medium">{tenantMessages.bills.list.paidAmount}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">¥{stats.paidAmount.toLocaleString()}</div>
@@ -94,7 +95,7 @@ export function BillsListView({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">逾期账单</CardTitle>
+            <CardTitle className="text-sm font-medium">{tenantMessages.bills.list.overdueCount}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
@@ -106,21 +107,21 @@ export function BillsListView({
         <div className="flex items-center gap-4">
           <Button onClick={onGenerate} data-testid={BILLS.GENERATE_BUTTON}>
             <FilePlus className="mr-2 h-4 w-4" />
-            手动出账
+            {tenantMessages.bills.list.generate}
           </Button>
           <Select
             value={statusFilter}
             onValueChange={(value) => onStatusFilterChange(value as BillStatus | 'all')}
           >
             <SelectTrigger className="w-[150px]" data-testid={BILLS.STATUS_FILTER}>
-              <SelectValue placeholder="筛选状态" />
+              <SelectValue placeholder={tenantMessages.bills.list.statusPlaceholder} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">全部</SelectItem>
-              <SelectItem value="pending">待支付</SelectItem>
-              <SelectItem value="partial">部分支付</SelectItem>
-              <SelectItem value="paid">已支付</SelectItem>
-              <SelectItem value="overdue">已逾期</SelectItem>
+              <SelectItem value="all">{tenantMessages.bills.list.all}</SelectItem>
+              <SelectItem value="pending">{tenantMessages.bills.list.pending}</SelectItem>
+              <SelectItem value="partial">{tenantMessages.bills.list.partial}</SelectItem>
+              <SelectItem value="paid">{tenantMessages.bills.list.paid}</SelectItem>
+              <SelectItem value="overdue">{tenantMessages.bills.list.overdue}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -129,18 +130,18 @@ export function BillsListView({
           <DropdownMenuTrigger asChild>
             <Button variant="outline" disabled={bills.length === 0} data-testid={BILLS.EXPORT_BUTTON}>
               <Download className="mr-2 h-4 w-4" />
-              批量导出
+              {tenantMessages.bills.list.export}
               <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem onClick={() => onExport('all')}>
               <FileSpreadsheet className="mr-2 h-4 w-4" />
-              导出全部账单
+              {tenantMessages.bills.list.exportAll}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onExport('unfinished')}>
               <AlertCircle className="mr-2 h-4 w-4" />
-              导出未完成账单
+              {tenantMessages.bills.list.exportUnfinished}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

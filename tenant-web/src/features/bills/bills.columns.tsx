@@ -8,6 +8,7 @@ import { formatDate } from '@/lib/date-utils';
 import { BILL_STATUS_CONFIG } from '@/lib/status-config';
 import type { Bill } from '@/types';
 import { formatBillLocation, formatBillPeriod } from './bills.utils';
+import { tenantMessages } from '@/lib/i18n';
 
 interface CreateBillsColumnsOptions {
   sharingBillId: string | null;
@@ -27,12 +28,12 @@ export function createBillsColumns({
   return [
     {
       accessorKey: 'bill_month',
-      header: '月份',
+      header: tenantMessages.bills.columns.month,
       cell: ({ row }) => formatBillPeriod(row.original),
     },
     {
       accessorKey: 'lease',
-      header: '房间/租客',
+      header: tenantMessages.bills.columns.roomTenant,
       cell: ({ row }) => (
         <div>
           <div>{formatBillLocation(row.original)}</div>
@@ -42,12 +43,12 @@ export function createBillsColumns({
     },
     {
       accessorKey: 'total_amount',
-      header: '账单金额',
+      header: tenantMessages.bills.columns.totalAmount,
       cell: ({ row }) => `¥${row.original.total_amount.toLocaleString()}`,
     },
     {
       accessorKey: 'paid_amount',
-      header: '已付金额',
+      header: tenantMessages.bills.columns.paidAmount,
       cell: ({ row }) => (
         <span className={row.original.paid_amount < row.original.total_amount ? 'text-orange-600' : 'text-green-600'}>
           ¥{row.original.paid_amount.toLocaleString()}
@@ -56,12 +57,12 @@ export function createBillsColumns({
     },
     {
       accessorKey: 'due_date',
-      header: '到期日',
+      header: tenantMessages.bills.columns.dueDate,
       cell: ({ row }) => formatDate(row.original.due_date),
     },
     {
       accessorKey: 'status',
-      header: '状态',
+      header: tenantMessages.bills.columns.status,
       cell: ({ row }) => {
         const config = BILL_STATUS_CONFIG[row.original.status];
         const Icon = config.icon;
@@ -80,23 +81,23 @@ export function createBillsColumns({
         const bill = row.original;
         const actions: TableAction[] = [
           {
-            label: '查看详情',
+            label: tenantMessages.bills.columns.viewDetail,
             icon: Eye,
             onClick: () => onViewDetail(bill),
           },
           {
-            label: '登记付款',
+            label: tenantMessages.bills.columns.recordPayment,
             icon: DollarSign,
             onClick: () => onPayment(bill),
             show: bill.status !== 'paid',
           },
           {
-            label: '导出PDF',
+            label: tenantMessages.bills.columns.exportPdf,
             icon: Download,
             onClick: () => onExportPdf(bill.id),
           },
           {
-            label: sharingBillId === bill.id ? '生成分享图中…' : '分享账单',
+            label: sharingBillId === bill.id ? tenantMessages.bills.columns.sharing : tenantMessages.bills.columns.share,
             icon: Share2,
             onClick: () => onShare(bill),
           },

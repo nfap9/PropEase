@@ -40,6 +40,7 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminRole, AdminUser } from '@/lib/api/admin-client';
+import { adminI18n, adminMessages } from '@/lib/i18n';
 import {
   createUserSchema,
   editUserSchema,
@@ -82,8 +83,8 @@ export function CreateUserDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>新建管理账号</DialogTitle>
-          <DialogDescription>创建新的管理平台登录账号</DialogDescription>
+          <DialogTitle>{adminMessages.users.dialogs.createTitle}</DialogTitle>
+          <DialogDescription>{adminMessages.users.dialogs.createDescription}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -92,9 +93,9 @@ export function CreateUserDialog({
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>用户名</FormLabel>
+                  <FormLabel>{adminMessages.users.fields.username}</FormLabel>
                   <FormControl>
-                    <Input placeholder="登录用户名" {...field} />
+                    <Input placeholder={adminMessages.users.fields.usernamePlaceholder} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -105,9 +106,9 @@ export function CreateUserDialog({
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>密码</FormLabel>
+                  <FormLabel>{adminMessages.users.fields.password}</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="至少 8 位，含大小写、数字、特殊字符" {...field} />
+                    <Input type="password" placeholder={adminMessages.users.fields.passwordPlaceholder} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -118,9 +119,9 @@ export function CreateUserDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>姓名</FormLabel>
+                  <FormLabel>{adminMessages.users.fields.displayName}</FormLabel>
                   <FormControl>
-                    <Input placeholder="显示姓名" {...field} />
+                    <Input placeholder={adminMessages.users.fields.displayNamePlaceholder} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -131,7 +132,7 @@ export function CreateUserDialog({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>邮箱（选填）</FormLabel>
+                  <FormLabel>{adminMessages.users.fields.emailOptional}</FormLabel>
                   <FormControl>
                     <Input type="email" placeholder="email@example.com" {...field} />
                   </FormControl>
@@ -144,11 +145,11 @@ export function CreateUserDialog({
               name="role_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>账号分工</FormLabel>
+                  <FormLabel>{adminMessages.users.fields.accountRole}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="选择分工" />
+                        <SelectValue placeholder={adminMessages.users.fields.selectRolePlaceholder} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -165,10 +166,10 @@ export function CreateUserDialog({
             />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                取消
+                {adminMessages.common.cancel}
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? '提交中…' : '创建'}
+                {isPending ? adminMessages.common.submitting : adminMessages.common.create}
               </Button>
             </DialogFooter>
           </form>
@@ -207,7 +208,7 @@ export function EditUserDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>编辑管理账号</DialogTitle>
+          <DialogTitle>{adminMessages.users.dialogs.editTitle}</DialogTitle>
           <DialogDescription>{user ? `编辑 ${user.username}` : ''}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -217,7 +218,7 @@ export function EditUserDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>姓名</FormLabel>
+                  <FormLabel>{adminMessages.users.fields.displayName}</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -230,7 +231,7 @@ export function EditUserDialog({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>邮箱</FormLabel>
+                  <FormLabel>{adminMessages.users.fields.email}</FormLabel>
                   <FormControl>
                     <Input type="email" {...field} />
                   </FormControl>
@@ -243,11 +244,11 @@ export function EditUserDialog({
               name="role_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>账号分工</FormLabel>
+                  <FormLabel>{adminMessages.users.fields.accountRole}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="选择分工" />
+                        <SelectValue placeholder={adminMessages.users.fields.selectRolePlaceholder} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -275,7 +276,7 @@ export function EditUserDialog({
                     />
                   </FormControl>
                   <FormLabel htmlFor="edit-form-is_active" className="!mt-0">
-                    启用
+                    {adminMessages.users.fields.active}
                   </FormLabel>
                   <FormMessage />
                 </FormItem>
@@ -283,10 +284,10 @@ export function EditUserDialog({
             />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                取消
+                {adminMessages.common.cancel}
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? '保存中…' : '保存'}
+                {isPending ? adminMessages.common.saving : adminMessages.common.save}
               </Button>
             </DialogFooter>
           </form>
@@ -324,8 +325,10 @@ export function ResetPasswordDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>重置密码</DialogTitle>
-          <DialogDescription>{user ? `为 ${user.username} 设置新密码` : ''}</DialogDescription>
+          <DialogTitle>{adminMessages.users.dialogs.resetPasswordTitle}</DialogTitle>
+          <DialogDescription>
+            {user ? adminI18n.t('users.dialogs.resetPasswordDescription', { username: user.username }) : ''}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -334,9 +337,9 @@ export function ResetPasswordDialog({
               name="new_password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>新密码</FormLabel>
+                  <FormLabel>{adminMessages.users.fields.newPassword}</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="至少 8 位，含大小写、数字、特殊字符" {...field} />
+                    <Input type="password" placeholder={adminMessages.users.fields.passwordPlaceholder} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -347,9 +350,9 @@ export function ResetPasswordDialog({
               name="confirm"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>确认密码</FormLabel>
+                  <FormLabel>{adminMessages.users.fields.confirmPassword}</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="再次输入" {...field} />
+                    <Input type="password" placeholder={adminMessages.users.fields.confirmPasswordPlaceholder} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -357,10 +360,10 @@ export function ResetPasswordDialog({
             />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                取消
+                {adminMessages.common.cancel}
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? '提交中…' : '确定'}
+                {isPending ? adminMessages.common.submitting : adminMessages.common.confirm}
               </Button>
             </DialogFooter>
           </form>
@@ -387,23 +390,23 @@ export function DeleteUserDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>确认删除</AlertDialogTitle>
+          <AlertDialogTitle>{adminMessages.users.deleteDialog.title}</AlertDialogTitle>
           <AlertDialogDescription>
             {user?.is_system ? (
-              <>内置账号「{user?.username}」不可删除。</>
+              <>{adminI18n.t('users.deleteDialog.builtinDescription', { username: user?.username ?? '' })}</>
             ) : (
-              <>确定要删除管理账号「{user?.username}」吗？此操作不可恢复。</>
+              <>{adminI18n.t('users.deleteDialog.confirmDescription', { username: user?.username ?? '' })}</>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
           {!user?.is_system && (
             <AlertDialogAction
               onClick={onConfirm}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isPending ? '删除中…' : '删除'}
+              {isPending ? adminMessages.common.deleting : adminMessages.common.delete}
             </AlertDialogAction>
           )}
         </AlertDialogFooter>

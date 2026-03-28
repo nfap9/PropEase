@@ -1,16 +1,17 @@
 import { z } from 'zod';
+import { adminMessages } from '@/lib/i18n';
 
 export type FilterActive = 'all' | 'active' | 'inactive';
 
 export const giftSubscriptionSchema = z.object({
-  organization_id: z.string().min(1, '请选择赠送组织'),
-  service_id: z.string().min(1, '请选择服务'),
-  pricing_id: z.string().min(1, '请选择赠送周期'),
+  organization_id: z.string().min(1, adminMessages.registeredUsers.validation.organizationRequired),
+  service_id: z.string().min(1, adminMessages.registeredUsers.validation.serviceRequired),
+  pricing_id: z.string().min(1, adminMessages.registeredUsers.validation.pricingRequired),
   gift_months: z.coerce
     .number()
     .int()
-    .min(0, '附加赠送月数不能小于 0')
-    .max(24, '附加赠送月数不能超过 24'),
+    .min(0, adminMessages.registeredUsers.validation.extraMonthsMin)
+    .max(24, adminMessages.registeredUsers.validation.extraMonthsMax),
 });
 
 export type GiftSubscriptionForm = z.infer<typeof giftSubscriptionSchema>;

@@ -2,12 +2,13 @@
 
 import type { MemberRole } from '@/types';
 import { cn } from '@/lib/utils';
+import { tenantMessages } from '@/lib/i18n';
 
 const ROLE_LABELS: Record<MemberRole, string> = {
-  owner: '创建者',
-  admin: '管理成员',
-  member: '协作成员',
-  viewer: '只读成员',
+  owner: tenantMessages.settings.team.roles.owner,
+  admin: tenantMessages.settings.team.roles.admin,
+  member: tenantMessages.settings.team.roles.member,
+  viewer: tenantMessages.settings.team.roles.viewer,
 };
 
 /** 可配置身份（不含 owner） */
@@ -30,7 +31,7 @@ export function OrgRoleList({ selectedRole, onSelectRole, showOwner = true }: Or
   return (
     <div className="flex h-full flex-col border-r bg-muted/30">
       <div className="border-b p-3">
-        <p className="text-sm font-medium text-muted-foreground">成员身份</p>
+        <p className="text-sm font-medium text-muted-foreground">{tenantMessages.settings.team.labels.teamRoles}</p>
       </div>
       <ul className="flex-1 space-y-1 overflow-y-auto p-2">
         {roles.map((role) => (

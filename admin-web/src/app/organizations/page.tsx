@@ -22,6 +22,7 @@ import { formatDateTime } from '@/lib/date-utils';
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye, Power, PowerOff } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { adminMessages } from '@/lib/i18n';
 
 type FilterActive = 'all' | 'active' | 'inactive';
 
@@ -48,7 +49,7 @@ export default function AdminOrganizationsPage() {
       adminApiEndpoints.setOrganizationActive(id, { is_active }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'organizations'] });
-      toast.success('已更新');
+      toast.success(adminMessages.organizations.toast.updated);
     },
     onError: (error) => toast.error(getErrorMessage(error, '操作失败，请重试')),
   });
@@ -56,7 +57,7 @@ export default function AdminOrganizationsPage() {
   const columns: ColumnDef<AdminOrganization>[] = [
     {
       accessorKey: 'name',
-      header: '团队名称',
+      header: adminMessages.organizations.columns.name,
       cell: ({ row }) => (
         <Link
           href={`/organizations/${row.original.id}`}
@@ -67,10 +68,10 @@ export default function AdminOrganizationsPage() {
       ),
     },
     { accessorKey: 'slug', header: 'Slug' },
-    { accessorKey: 'plan', header: '服务' },
+    { accessorKey: 'plan', header: adminMessages.organizations.columns.service },
     {
       accessorKey: 'is_personal',
-      header: '个人团队',
+      header: adminMessages.organizations.columns.personal,
       cell: ({ row }) => {
         const config = row.original.is_personal
           ? BOOLEAN_YES_NO_CONFIG.yes
@@ -80,7 +81,7 @@ export default function AdminOrganizationsPage() {
     },
     {
       accessorKey: 'is_active',
-      header: '状态',
+      header: adminMessages.organizations.columns.status,
       cell: ({ row }) => {
         const config = row.original.is_active
           ? ORG_STATUS_CONFIG.active
@@ -90,12 +91,12 @@ export default function AdminOrganizationsPage() {
     },
     {
       accessorKey: 'created_at',
-      header: '创建时间',
+      header: adminMessages.organizations.columns.createdAt,
       cell: ({ row }) => formatDateTime(row.original.created_at),
     },
     {
       id: 'actions',
-      header: '操作',
+      header: adminMessages.organizations.columns.actions,
       cell: ({ row }) => {
         const org = row.original;
         return (
@@ -103,14 +104,14 @@ export default function AdminOrganizationsPage() {
             actions={[
               {
                 icon: Eye,
-                label: '详情',
+                label: adminMessages.organizations.actions.detail,
                 onClick: () => router.push(`/organizations/${org.id}`),
               },
               ...(org.is_active
                 ? [
                     {
                       icon: PowerOff,
-                      label: '停用',
+                      label: adminMessages.organizations.actions.disable,
                       variant: 'destructive' as const,
                       onClick: () =>
                         setActiveMutation.mutate({
@@ -122,7 +123,7 @@ export default function AdminOrganizationsPage() {
                 : [
                     {
                       icon: Power,
-                      label: '启用',
+                      label: adminMessages.organizations.actions.enable,
                       onClick: () =>
                         setActiveMutation.mutate({
                           id: org.id,
@@ -149,15 +150,15 @@ export default function AdminOrganizationsPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold" data-testid="admin-organizations-heading">团队管理</h2>
+        <h2 className="text-xl font-semibold" data-testid="admin-organizations-heading">{adminMessages.organizations.heading}</h2>
         <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as FilterActive)}>
           <SelectTrigger className="w-36">
-            <SelectValue placeholder="状态筛选" />
+            <SelectValue placeholder={adminMessages.organizations.filters.statusPlaceholder} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">全部</SelectItem>
-            <SelectItem value="active">启用</SelectItem>
-            <SelectItem value="inactive">停用</SelectItem>
+            <SelectItem value="all">{adminMessages.organizations.filters.all}</SelectItem>
+            <SelectItem value="active">{adminMessages.organizations.filters.active}</SelectItem>
+            <SelectItem value="inactive">{adminMessages.organizations.filters.inactive}</SelectItem>
           </SelectContent>
         </Select>
       </div>

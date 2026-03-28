@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apar
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { adminApiEndpoints } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
+import { adminMessages } from '@/lib/i18n';
 
 const schema = z.object({
   app_name: z.string().min(1, '请输入系统名称'),
@@ -82,7 +83,7 @@ export default function AdminBrandPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'platform-config'] });
       queryClient.invalidateQueries({ queryKey: ['config', 'public'] });
-      toast.success('已保存，系统界面将显示新配置');
+      toast.success(adminMessages.brand.toast.saved);
     },
     onError: (error) => toast.error(getErrorMessage(error, '保存失败，请重试')),
   });
@@ -97,13 +98,11 @@ export default function AdminBrandPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-brand-heading">界面信息</h2>
+      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-brand-heading">{adminMessages.brand.heading}</h2>
       <Card>
         <CardHeader>
-          <CardTitle>界面名称与品牌</CardTitle>
-          <CardDescription>
-            配置登录页、侧边栏、首页等处的系统名称与描述，修改后立即生效
-          </CardDescription>
+          <CardTitle>{adminMessages.brand.title}</CardTitle>
+          <CardDescription>{adminMessages.brand.description}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -116,9 +115,9 @@ export default function AdminBrandPage() {
                 name="app_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>系统名称</FormLabel>
+                    <FormLabel>{adminMessages.brand.fields.appName}</FormLabel>
                     <FormControl>
-                      <Input placeholder="公寓管理系统" data-testid="admin-brand-name-input" {...field} />
+                      <Input placeholder={adminMessages.brand.placeholders.appName} data-testid="admin-brand-name-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -129,9 +128,9 @@ export default function AdminBrandPage() {
                 name="app_description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>系统描述</FormLabel>
+                    <FormLabel>{adminMessages.brand.fields.appDescription}</FormLabel>
                     <FormControl>
-                      <Input placeholder="公寓、租客与账单的一体化管理系统" data-testid="admin-brand-description-input" {...field} />
+                      <Input placeholder={adminMessages.brand.placeholders.appDescription} data-testid="admin-brand-description-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -142,9 +141,9 @@ export default function AdminBrandPage() {
                 name="login_subtitle"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>登录页副标题</FormLabel>
+                    <FormLabel>{adminMessages.brand.fields.loginSubtitle}</FormLabel>
                     <FormControl>
-                      <Input placeholder="用户登录，管理公寓、租客与账单" data-testid="admin-brand-login-subtitle-input" {...field} />
+                      <Input placeholder={adminMessages.brand.placeholders.loginSubtitle} data-testid="admin-brand-login-subtitle-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -155,9 +154,9 @@ export default function AdminBrandPage() {
                 name="register_subtitle"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>注册页副标题</FormLabel>
+                    <FormLabel>{adminMessages.brand.fields.registerSubtitle}</FormLabel>
                     <FormControl>
-                      <Input placeholder="创建新账户" data-testid="admin-brand-register-subtitle-input" {...field} />
+                      <Input placeholder={adminMessages.brand.placeholders.registerSubtitle} data-testid="admin-brand-register-subtitle-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -168,9 +167,9 @@ export default function AdminBrandPage() {
                 name="logo_url"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Logo URL（可选）</FormLabel>
+                    <FormLabel>{adminMessages.brand.fields.logoUrl}</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://..." type="url" data-testid="admin-brand-logo-input" {...field} />
+                      <Input placeholder={adminMessages.brand.placeholders.url} type="url" data-testid="admin-brand-logo-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

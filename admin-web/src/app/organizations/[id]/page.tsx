@@ -13,6 +13,7 @@ import { getErrorMessage } from '@/lib/utils/error';
 import { ArrowLeft, Power, PowerOff } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { formatDateTime } from '@/lib/date-utils';
+import { adminMessages } from '@/lib/i18n';
 
 export default function AdminOrganizationDetailPage() {
   const params = useParams();
@@ -81,7 +82,7 @@ export default function AdminOrganizationDetailPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">服务</span>
-              <span className="text-muted-foreground">详见已购服务</span>
+              <span className="text-muted-foreground">{adminMessages.organizations.serviceHint}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">个人团队</span>
@@ -125,7 +126,7 @@ export default function AdminOrganizationDetailPage() {
       </Card>
 
       <p className="mt-4 text-sm text-muted-foreground">
-        订阅信息可在「已购服务」中按团队筛选查看。
+        {adminMessages.organizations.subscriptionHint}
       </p>
     </div>
   );

@@ -8,7 +8,8 @@
     ".": "./src/index.ts",
     "./components": "./src/components/index.ts",
     "./components/ui": "./src/components/ui/index.ts",
-    "./lib/utils": "./src/lib/utils/index.ts"
+    "./lib/utils": "./src/lib/utils/index.ts",
+    "./lib/i18n": "./src/lib/i18n/index.ts"
   },
   "scripts": {
     "type-check": "tsc --noEmit",

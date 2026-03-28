@@ -22,6 +22,7 @@ import { canAccessRule } from '@/lib/permission-access';
 import { NavContent } from './nav-content';
 import { NAV_ITEMS, SETTINGS_ITEMS } from './nav-config';
 import { Sidebar, SidebarContent, SidebarProvider, SidebarTrigger } from '@apartment-ultra/shared-ui/components/ui';
+import { tenantI18n, tenantMessages } from '@/lib/i18n';
 
 function MainContent({ children }: { children: React.ReactNode }) {
   const { user, organization, logout } = useAuth();
@@ -58,7 +59,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
           <div className="flex min-w-0 items-center gap-3">
             <SidebarTrigger className="lg:hidden" />
             <div className="flex min-w-0 items-center gap-2">
-              <h1 className="truncate text-base font-semibold text-foreground">{organization?.name ?? '团队空间'}</h1>
+              <h1 className="truncate text-base font-semibold text-foreground">{organization?.name ?? tenantMessages.common.currentTeam}</h1>
               {planLabel ? <Badge variant="outline">{planLabel}</Badge> : null}
             </div>
           </div>
@@ -68,7 +69,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
 
             {canAccessNotifications && (
               <Button variant="outline" size="icon" className="relative bg-background/70" asChild>
-                <Link href="/notifications" aria-label="通知">
+                <Link href="/notifications" aria-label={tenantMessages.common.notifications}>
                   <Bell className="h-4 w-4" />
                   {unreadCount > 0 && (
                     <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
@@ -86,7 +87,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
                     <AvatarFallback>{user?.full_name?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                   </Avatar>
                   <div className="hidden min-w-0 md:block">
-                    <div className="truncate text-sm font-medium">{user?.full_name || '用户'}</div>
+                    <div className="truncate text-sm font-medium">{user?.full_name || tenantMessages.common.user}</div>
                   </div>
                   <ChevronDown className="hidden h-4 w-4 text-muted-foreground md:block" />
                 </Button>
@@ -97,10 +98,14 @@ function MainContent({ children }: { children: React.ReactNode }) {
                     <p className="text-sm font-medium leading-none">{user?.full_name}</p>
                     <p className="text-xs leading-none text-muted-foreground">{user?.phone}</p>
                     {planLabel != null && (
-                      <p className="text-xs leading-none text-muted-foreground">当前服务：{planLabel}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {tenantI18n.t('common.currentService', { name: planLabel })}
+                      </p>
                     )}
                     {organization && (
-                      <p className="text-xs leading-none text-muted-foreground">当前团队：{organization.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {tenantI18n.t('common.currentTeamLabel', { name: organization.name })}
+                      </p>
                     )}
                   </div>
                 </DropdownMenuLabel>
@@ -108,7 +113,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
                 <DropdownMenuItem asChild>
                   <Link href="/organizations">
                     <Building2 className="mr-2 h-4 w-4" />
-                    <span>切换团队</span>
+                    <span>{tenantMessages.common.switchTeam}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -125,7 +130,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
                 })}
                 {visibleSettingsItems.length > 0 && <DropdownMenuSeparator />}
                 <DropdownMenuItem onClick={logout}>
-                  <span>退出登录</span>
+                  <span>{tenantMessages.common.logout}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

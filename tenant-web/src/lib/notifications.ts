@@ -1,34 +1,35 @@
 import type { Notification, NotificationCategory } from '@apartment-ultra/api-contract';
+import { tenantMessages } from '@/lib/i18n';
 
 const notificationTypeLabelMap: Record<string, string> = {
-  lease_expiring: '合同到期',
-  rent_due_reminder: '交租提醒',
-  bill_overdue: '逾期催缴',
-  tenant_move_in: '新租客入住',
-  tenant_move_out: '租客退租',
+  lease_expiring: tenantMessages.notificationsPage.types.leaseExpiring,
+  rent_due_reminder: tenantMessages.notificationsPage.types.rentDueReminder,
+  bill_overdue: tenantMessages.notificationsPage.types.billOverdue,
+  tenant_move_in: tenantMessages.notificationsPage.types.tenantMoveIn,
+  tenant_move_out: tenantMessages.notificationsPage.types.tenantMoveOut,
 };
 
 const notificationCategoryLabelMap: Record<NotificationCategory, string> = {
-  lease: '租约类',
-  billing: '账单类',
-  tenant: '租客类',
-  system: '系统类',
+  lease: tenantMessages.notificationsPage.categories.lease,
+  billing: tenantMessages.notificationsPage.categories.billing,
+  tenant: tenantMessages.notificationsPage.categories.tenant,
+  system: tenantMessages.notificationsPage.categories.system,
 };
 
 export const notificationCategoryOptions: Array<{
   value: NotificationCategory | 'all';
   label: string;
 }> = [
-  { value: 'all', label: '全部分类' },
-  { value: 'billing', label: '账单类' },
-  { value: 'lease', label: '租约类' },
-  { value: 'tenant', label: '租客类' },
-  { value: 'system', label: '系统类' },
+  { value: 'all', label: tenantMessages.notificationsPage.allCategories },
+  { value: 'billing', label: tenantMessages.notificationsPage.categories.billing },
+  { value: 'lease', label: tenantMessages.notificationsPage.categories.lease },
+  { value: 'tenant', label: tenantMessages.notificationsPage.categories.tenant },
+  { value: 'system', label: tenantMessages.notificationsPage.categories.system },
 ];
 
 export function getNotificationTypeLabel(type?: string | null): string {
-  if (!type) return '系统通知';
-  return notificationTypeLabelMap[type] ?? '系统通知';
+  if (!type) return tenantMessages.notificationsPage.systemNotification;
+  return notificationTypeLabelMap[type] ?? tenantMessages.notificationsPage.systemNotification;
 }
 
 export function getNotificationCategory(item: Notification): NotificationCategory {
@@ -57,5 +58,5 @@ export function getNotificationTarget(item: Notification): string | null {
 
 export function getNotificationActionLabel(item: Notification): string {
   const actionLabel = item.extra_data?.action_label;
-  return typeof actionLabel === 'string' && actionLabel ? actionLabel : '查看详情';
+  return typeof actionLabel === 'string' && actionLabel ? actionLabel : tenantMessages.notificationsPage.viewDetail;
 }

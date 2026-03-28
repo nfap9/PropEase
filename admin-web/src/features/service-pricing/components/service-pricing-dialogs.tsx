@@ -53,6 +53,7 @@ import {
   getServiceProductFormValues,
 } from '../service-pricing.utils';
 import { ServiceProductPricingFields } from './service-product-pricing-fields';
+import { adminI18n, adminMessages } from '@/lib/i18n';
 
 function ServiceProductFormSections({
   form,
@@ -77,7 +78,7 @@ function ServiceProductFormSections({
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>服务名称</FormLabel>
+            <FormLabel>{adminMessages.servicePricing.fields.name}</FormLabel>
             <FormControl>
               <Input {...field} />
             </FormControl>
@@ -91,9 +92,9 @@ function ServiceProductFormSections({
         name="code"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>服务代码</FormLabel>
+            <FormLabel>{adminMessages.servicePricing.fields.code}</FormLabel>
             <FormControl>
-              <Input placeholder="如 basic, pro" {...field} disabled={mode === 'edit'} />
+              <Input placeholder={adminMessages.servicePricing.fields.codePlaceholder} {...field} disabled={mode === 'edit'} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -105,7 +106,7 @@ function ServiceProductFormSections({
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{mode === 'create' ? '描述（选填）' : '描述'}</FormLabel>
+            <FormLabel>{mode === 'create' ? adminMessages.servicePricing.fields.optionalDescription : adminMessages.servicePricing.fields.description}</FormLabel>
             <FormControl>
               <Input {...field} />
             </FormControl>
@@ -118,11 +119,11 @@ function ServiceProductFormSections({
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="pricing" className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
-            定价配置
+            {adminMessages.servicePricing.fields.pricingTab}
           </TabsTrigger>
           <TabsTrigger value="limits" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            服务内容
+            {adminMessages.servicePricing.fields.contentTab}
           </TabsTrigger>
         </TabsList>
 
@@ -137,11 +138,11 @@ function ServiceProductFormSections({
               name="max_organizations"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>最大组织数</FormLabel>
+                  <FormLabel>{adminMessages.servicePricing.fields.maxOrganizations}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="留空表示不限制"
+                      placeholder={adminMessages.servicePricing.fields.maxOrganizationsPlaceholder}
                       {...field}
                       value={field.value ?? ''}
                       onChange={(event) =>
@@ -158,7 +159,7 @@ function ServiceProductFormSections({
               name="max_apartments"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>最大公寓数</FormLabel>
+                  <FormLabel>{adminMessages.servicePricing.fields.maxApartments}</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
@@ -171,7 +172,7 @@ function ServiceProductFormSections({
               name="max_rooms"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>最大房间数</FormLabel>
+                  <FormLabel>{adminMessages.servicePricing.fields.maxRooms}</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
@@ -184,7 +185,7 @@ function ServiceProductFormSections({
               name="max_members"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>最大团队成员数</FormLabel>
+                  <FormLabel>{adminMessages.servicePricing.fields.maxMembers}</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
@@ -201,7 +202,7 @@ function ServiceProductFormSections({
         name="sort_order"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>排序</FormLabel>
+            <FormLabel>{adminMessages.servicePricing.fields.sortOrder}</FormLabel>
             <FormControl>
               <Input type="number" {...field} />
             </FormControl>
@@ -219,7 +220,7 @@ function ServiceProductFormSections({
               <FormControl>
                 <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
               </FormControl>
-              <FormLabel className="!mt-0">启用</FormLabel>
+              <FormLabel className="!mt-0">{adminMessages.servicePricing.fields.enabled}</FormLabel>
             </FormItem>
           )}
         />
@@ -254,18 +255,18 @@ export function ServicePricingCreateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>新建服务产品</DialogTitle>
-          <DialogDescription>创建新的服务产品及定价</DialogDescription>
+          <DialogTitle>{adminMessages.servicePricing.dialogs.createTitle}</DialogTitle>
+          <DialogDescription>{adminMessages.servicePricing.dialogs.createDescription}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <ServiceProductFormSections form={form} mode="create" />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                取消
+                {adminMessages.common.cancel}
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? '提交中…' : '创建'}
+                {isPending ? adminMessages.common.submitting : adminMessages.common.create}
               </Button>
             </DialogFooter>
           </form>
@@ -305,7 +306,7 @@ export function ServicePricingEditSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="max-h-screen w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle>编辑服务产品</SheetTitle>
+          <SheetTitle>{adminMessages.servicePricing.dialogs.editTitle}</SheetTitle>
           <SheetDescription>{service?.name}</SheetDescription>
         </SheetHeader>
         <Form {...form}>
@@ -318,10 +319,10 @@ export function ServicePricingEditSheet({
             />
             <SheetFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                取消
+                {adminMessages.common.cancel}
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? '保存中…' : '保存'}
+                {isPending ? adminMessages.common.saving : adminMessages.common.save}
               </Button>
             </SheetFooter>
           </form>
@@ -348,18 +349,18 @@ export function ServicePricingDeleteDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>确认删除</AlertDialogTitle>
+          <AlertDialogTitle>{adminMessages.servicePricing.dialogs.deleteTitle}</AlertDialogTitle>
           <AlertDialogDescription>
-            确定要删除服务产品「{service?.name}」吗？此操作不可恢复。
+            {adminI18n.t('servicePricing.dialogs.deleteDescription', { name: service?.name ?? '' })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {isPending ? '删除中…' : '删除'}
+            {isPending ? adminMessages.common.deleting : adminMessages.common.delete}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

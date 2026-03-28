@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { adminMessages } from '@/lib/i18n';
 
 export const adminPasswordSchema = z
   .string()
@@ -16,13 +17,13 @@ export const createUserSchema = z.object({
   password: adminPasswordSchema,
   name: z.string().min(1, '请输入姓名'),
   email: z.string().optional(),
-  role_id: z.string().min(1, '请选择分工'),
+  role_id: z.string().min(1, adminMessages.users.fields.selectRoleValidation),
 });
 
 export const editUserSchema = z.object({
   name: z.string().min(1, '请输入姓名'),
   email: z.string().optional(),
-  role_id: z.string().min(1, '请选择分工'),
+  role_id: z.string().min(1, adminMessages.users.fields.selectRoleValidation),
   is_active: z.boolean(),
 });
 

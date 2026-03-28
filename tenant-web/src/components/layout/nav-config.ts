@@ -15,6 +15,7 @@ import {
   MessageSquareMore,
 } from 'lucide-react';
 import { PERMISSIONS } from '@/hooks/use-permissions';
+import { tenantMessages } from '@/lib/i18n';
 import type { AccessRule } from '@/lib/permission-access';
 
 export interface NavItem extends AccessRule {
@@ -29,7 +30,7 @@ export interface NavItem extends AccessRule {
 export const NAV_ITEMS: NavItem[] = [
   {
     href: '/dashboard',
-    label: '首页',
+    label: tenantMessages.layout.nav.home,
     icon: Home,
     requiresOrganization: true,
     requireAnyPermission: true,
@@ -37,7 +38,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: '/notifications',
-    label: '通知',
+    label: tenantMessages.layout.nav.notifications,
     icon: Bell,
     requiresOrganization: true,
     requireAnyPermission: true,
@@ -45,7 +46,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: '/apartments',
-    label: '公寓管理',
+    label: tenantMessages.layout.nav.apartments,
     icon: Building2,
     requiresOrganization: true,
     permission: PERMISSIONS.APARTMENT_VIEW,
@@ -53,7 +54,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: '/rooms',
-    label: '全部房间',
+    label: tenantMessages.layout.nav.rooms,
     icon: DoorOpen,
     requiresOrganization: true,
     permission: PERMISSIONS.ROOM_VIEW,
@@ -61,7 +62,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: '/tenants',
-    label: '租客管理',
+    label: tenantMessages.layout.nav.tenants,
     icon: Users,
     requiresOrganization: true,
     permission: PERMISSIONS.TENANT_VIEW,
@@ -69,7 +70,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: '/leases',
-    label: '租约管理',
+    label: tenantMessages.layout.nav.leases,
     icon: FileText,
     requiresOrganization: true,
     permission: PERMISSIONS.LEASE_VIEW,
@@ -77,7 +78,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: '/utilities',
-    label: '水电录入',
+    label: tenantMessages.layout.nav.utilities,
     icon: Zap,
     requiresOrganization: true,
     permission: PERMISSIONS.UTILITY_VIEW,
@@ -86,7 +87,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: '/utilities/history',
-    label: '历史水电记录',
+    label: tenantMessages.layout.nav.utilityHistory,
     icon: History,
     requiresOrganization: true,
     permission: PERMISSIONS.UTILITY_VIEW,
@@ -94,7 +95,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: '/bills',
-    label: '账单管理',
+    label: tenantMessages.layout.nav.bills,
     icon: Receipt,
     requiresOrganization: true,
     permission: PERMISSIONS.BILL_VIEW,
@@ -102,7 +103,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: '/fee-configs',
-    label: '费用配置',
+    label: tenantMessages.layout.nav.feeConfigs,
     icon: DollarSign,
     requiresOrganization: true,
     permission: PERMISSIONS.SETTINGS_VIEW,
@@ -110,7 +111,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     href: '/reports',
-    label: '经营分析',
+    label: tenantMessages.layout.nav.reports,
     icon: BarChart3,
     requiresOrganization: true,
     permission: PERMISSIONS.REPORT_VIEW,
@@ -120,10 +121,10 @@ export const NAV_ITEMS: NavItem[] = [
 
 /** 设置菜单项 */
 export const SETTINGS_ITEMS: NavItem[] = [
-  { href: '/settings/team', label: '团队管理', icon: Users, permission: PERMISSIONS.MEMBER_VIEW, id: 'team' },
+  { href: '/settings/team', label: tenantMessages.settings.nav.team, icon: Users, permission: PERMISSIONS.MEMBER_VIEW, id: 'team' },
   {
     href: '/settings/subscription',
-    label: '服务购买',
+    label: tenantMessages.settings.nav.subscription,
     icon: CreditCard,
     requiresOrganization: true,
     requireAnyPermission: true,
@@ -131,7 +132,7 @@ export const SETTINGS_ITEMS: NavItem[] = [
   },
   {
     href: '/settings/notifications',
-    label: '消息触达',
+    label: tenantMessages.settings.nav.notifications,
     icon: MessageSquareMore,
     requiresOrganization: true,
     permission: PERMISSIONS.SETTINGS_VIEW,
@@ -139,7 +140,7 @@ export const SETTINGS_ITEMS: NavItem[] = [
   },
   {
     href: '/settings/permissions',
-    label: '功能分配',
+    label: tenantMessages.settings.nav.permissions,
     icon: Shield,
     permission: PERMISSIONS.SETTINGS_VIEW,
     id: 'permissions',
@@ -148,7 +149,7 @@ export const SETTINGS_ITEMS: NavItem[] = [
 
 /** 服务 code 到展示名的映射 */
 export const PLAN_CODE_LABEL: Record<string, string> = {
-  free: '免费版',
-  pro: '专业版',
-  enterprise: '企业版',
+  free: tenantMessages.layout.plans.free,
+  pro: tenantMessages.layout.plans.pro,
+  enterprise: tenantMessages.layout.plans.enterprise,
 };

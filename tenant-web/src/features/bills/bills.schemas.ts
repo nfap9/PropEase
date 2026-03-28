@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { PaymentMethod } from '@/types';
+import { tenantMessages } from '@/lib/i18n';
 
 export const BILLS = {
   HEADING: 'bills-heading',
@@ -20,8 +21,8 @@ export const BILLS = {
 } as const;
 
 export const paymentSchema = z.object({
-  amount: z.number().min(0.01, '金额必须大于0'),
-  payment_date: z.string().min(1, '请选择付款日期'),
+  amount: z.number().min(0.01, tenantMessages.bills.validation.amountMin),
+  payment_date: z.string().min(1, tenantMessages.bills.validation.paymentDateRequired),
   payment_method: z.enum(['cash', 'wechat', 'alipay', 'bank_transfer', 'other']),
   reference: z.string().optional(),
   notes: z.string().optional(),
@@ -30,19 +31,19 @@ export const paymentSchema = z.object({
 export type PaymentFormData = z.infer<typeof paymentSchema>;
 
 export const generateBillsSchema = z.object({
-  bill_year: z.number().min(2020, '年份无效').max(2100, '年份无效'),
-  bill_month: z.number().min(1, '请选择月份').max(12, '请选择月份'),
-  due_date: z.string().min(1, '请选择到期日'),
+  bill_year: z.number().min(2020, tenantMessages.bills.validation.invalidYear).max(2100, tenantMessages.bills.validation.invalidYear),
+  bill_month: z.number().min(1, tenantMessages.bills.validation.monthRequired).max(12, tenantMessages.bills.validation.monthRequired),
+  due_date: z.string().min(1, tenantMessages.bills.validation.dueDateRequired),
 });
 
 export type GenerateBillsFormData = z.infer<typeof generateBillsSchema>;
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  cash: '现金',
-  wechat: '微信',
-  alipay: '支付宝',
-  bank_transfer: '银行转账',
-  other: '其他',
+  cash: tenantMessages.bills.paymentMethods.cash,
+  wechat: tenantMessages.bills.paymentMethods.wechat,
+  alipay: tenantMessages.bills.paymentMethods.alipay,
+  bank_transfer: tenantMessages.bills.paymentMethods.bankTransfer,
+  other: tenantMessages.bills.paymentMethods.other,
 };
 
 export function getDefaultGenerateValues(): GenerateBillsFormData {

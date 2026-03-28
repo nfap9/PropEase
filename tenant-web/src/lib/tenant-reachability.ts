@@ -4,26 +4,27 @@ import type {
   TenantNotificationDelivery,
   TenantReachabilityEventType,
 } from '@/types';
+import { tenantMessages } from '@/lib/i18n';
 
 export type TenantSmsReachabilityStatus = 'ready' | 'missing_phone' | 'opted_out';
 
 const eventLabelMap: Record<TenantReachabilityEventType, string> = {
-  bill_generated: '账单生成',
-  rent_due_reminder: '到期前提醒',
-  bill_overdue: '逾期催缴',
+  bill_generated: tenantMessages.settings.notificationsPage.events.billGenerated,
+  rent_due_reminder: tenantMessages.settings.notificationsPage.events.rentDueReminder,
+  bill_overdue: tenantMessages.settings.notificationsPage.events.billOverdue,
 };
 
 const deliveryStatusLabelMap: Record<NotificationDeliveryStatus, string> = {
-  sent: '发送成功',
-  failed: '发送失败',
-  skipped: '已跳过',
+  sent: tenantMessages.settings.notificationsPage.stats.sent,
+  failed: tenantMessages.settings.notificationsPage.stats.failed,
+  skipped: tenantMessages.settings.notificationsPage.stats.skipped,
 };
 
 export const tenantReachabilityEventOptions: Array<{
   value: TenantReachabilityEventType | 'all';
   label: string;
 }> = [
-  { value: 'all', label: '全部场景' },
+  { value: 'all', label: tenantMessages.settings.notificationsPage.allEvents },
   { value: 'bill_generated', label: eventLabelMap.bill_generated },
   { value: 'rent_due_reminder', label: eventLabelMap.rent_due_reminder },
   { value: 'bill_overdue', label: eventLabelMap.bill_overdue },
@@ -33,7 +34,7 @@ export const tenantReachabilityStatusOptions: Array<{
   value: NotificationDeliveryStatus | 'all';
   label: string;
 }> = [
-  { value: 'all', label: '全部状态' },
+  { value: 'all', label: tenantMessages.settings.notificationsPage.allStatuses },
   { value: 'sent', label: deliveryStatusLabelMap.sent },
   { value: 'failed', label: deliveryStatusLabelMap.failed },
   { value: 'skipped', label: deliveryStatusLabelMap.skipped },

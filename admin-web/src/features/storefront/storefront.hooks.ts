@@ -11,6 +11,7 @@ import {
 } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import type { StorefrontForm } from './storefront.schemas';
+import { adminMessages } from '@/lib/i18n';
 
 interface UseStorefrontDataOptions {
   selectedStorefrontForItems: StorefrontConfig | null;
@@ -77,7 +78,7 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontList();
       onStorefrontCreated();
-      toast.success('商品展示已创建');
+      toast.success(adminMessages.storefront.toast.created);
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
@@ -88,7 +89,7 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontList();
       onStorefrontUpdated();
-      toast.success('商品展示已更新');
+      toast.success(adminMessages.storefront.toast.updated);
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
@@ -98,7 +99,7 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontList();
       onStorefrontDeleted();
-      toast.success('商品展示已删除');
+      toast.success(adminMessages.storefront.toast.deleted);
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
@@ -114,7 +115,7 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontDetail();
       onItemCreated();
-      toast.success('服务已添加到商店');
+      toast.success(adminMessages.storefront.toast.itemCreated);
     },
     onError: (error) => toast.error(getErrorMessage(error, '添加失败，请重试')),
   });
@@ -132,7 +133,7 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontDetail();
       onItemUpdated();
-      toast.success('展示内容已更新');
+      toast.success(adminMessages.storefront.toast.itemUpdated);
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
@@ -148,7 +149,7 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontDetail();
       onItemDeleted();
-      toast.success('展示内容已删除');
+      toast.success(adminMessages.storefront.toast.itemDeleted);
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });

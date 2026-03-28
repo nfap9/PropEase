@@ -21,23 +21,24 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { AuthLoadingScreen } from '@/components/auth/auth-loading-screen';
 import { AuthShell } from '@/components/auth/auth-shell';
+import { tenantMessages } from '@/lib/i18n';
 
 // 手机号验证正则
 const phoneRegex = /^1[3-9]\d{9}$/;
 
 const registerSchema = z
   .object({
-    phone: z.string().regex(phoneRegex, '请输入有效的手机号'),
+    phone: z.string().regex(phoneRegex, tenantMessages.auth.register.phoneValidation),
     password: z
       .string()
-      .min(8, '密码至少8个字符')
-      .regex(/[a-zA-Z]/, '密码必须包含字母')
-      .regex(/\d/, '密码必须包含数字'),
-    full_name: z.string().min(2, '姓名至少2个字符'),
+      .min(8, tenantMessages.auth.register.passwordMin)
+      .regex(/[a-zA-Z]/, tenantMessages.auth.register.passwordLetter)
+      .regex(/\d/, tenantMessages.auth.register.passwordNumber),
+    full_name: z.string().min(2, tenantMessages.auth.register.nameValidation),
     confirm_password: z.string(),
   })
   .refine((data) => data.password === data.confirm_password, {
-    message: '两次输入的密码不一致',
+    message: tenantMessages.auth.register.confirmPasswordMismatch,
     path: ['confirm_password'],
   });
 
@@ -75,7 +76,7 @@ export default function RegisterPage() {
       const targetPath = await registerUser(data.phone, data.password, data.full_name);
       router.replace(targetPath);
     } catch {
-      setError('注册失败，手机号可能已被使用');
+      setError(tenantMessages.auth.register.failed);
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +84,7 @@ export default function RegisterPage() {
 
   // 检查认证状态或已认证正在跳转时显示加载
   if (isAuthLoading || isAuthenticated) {
-    return <AuthLoadingScreen label="正在准备你的工作台..." />;
+    return <AuthLoadingScreen label={tenantMessages.auth.register.loading} />;
   }
 
   return (
@@ -92,17 +93,17 @@ export default function RegisterPage() {
         mode="register"
         app_name={brandConfig.app_name}
         app_description={brandConfig.app_description}
-        form_title="创建账户"
+        form_title={tenantMessages.auth.register.title}
         form_description={brandConfig.register_subtitle}
         footer={
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p>
-              已有账户？{' '}
+              {tenantMessages.auth.register.hasAccount}{' '}
               <Link href="/login" className="font-medium text-primary hover:underline">
-                去登录
+                {tenantMessages.auth.register.loginNow}
               </Link>
             </p>
-            <span>注册成功后会自动登录并进入工作台</span>
+            <span>{tenantMessages.auth.register.autoLoginHint}</span>
           </div>
         }
       >
@@ -118,9 +119,9 @@ export default function RegisterPage() {
               name="full_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>姓名</FormLabel>
+                  <FormLabel>{tenantMessages.auth.register.name}</FormLabel>
                   <FormControl>
-                    <Input placeholder="请输入姓名" autoComplete="name" {...field} data-testid="auth-name-input" />
+                    <Input placeholder={tenantMessages.auth.register.namePlaceholder} autoComplete="name" {...field} data-testid="auth-name-input" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -131,11 +132,11 @@ export default function RegisterPage() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>手机号</FormLabel>
+                  <FormLabel>{tenantMessages.auth.register.phone}</FormLabel>
                   <FormControl>
                     <Input
                       type="tel"
-                      placeholder="请输入手机号"
+                      placeholder={tenantMessages.auth.register.phonePlaceholder}
                       autoComplete="tel"
                       {...field}
                       data-testid="auth-phone-input"
@@ -150,11 +151,11 @@ export default function RegisterPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>密码</FormLabel>
+                  <FormLabel>{tenantMessages.auth.register.password}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="请输入密码（至少8位，包含字母和数字）"
+                      placeholder={tenantMessages.auth.register.passwordPlaceholder}
                       autoComplete="new-password"
                       {...field}
                       data-testid="auth-password-input"
@@ -169,11 +170,11 @@ export default function RegisterPage() {
               name="confirm_password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>确认密码</FormLabel>
+                  <FormLabel>{tenantMessages.auth.register.confirmPassword}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="请再次输入密码"
+                      placeholder={tenantMessages.auth.register.confirmPasswordPlaceholder}
                       autoComplete="new-password"
                       {...field}
                       data-testid="auth-confirm-password-input"
@@ -184,7 +185,7 @@ export default function RegisterPage() {
               )}
             />
             <Button type="submit" className="h-11 w-full text-sm" disabled={isLoading} data-testid="auth-register-button">
-              {isLoading ? '注册并登录中...' : '创建账户并进入系统'}
+              {isLoading ? tenantMessages.auth.register.submitting : tenantMessages.auth.register.submit}
             </Button>
           </form>
         </Form>

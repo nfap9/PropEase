@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apar
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/lib/auth/context';
+import { tenantI18n, tenantMessages } from '@/lib/i18n';
 
 function SubscriptionResultContent() {
   const router = useRouter();
@@ -43,24 +44,30 @@ function SubscriptionResultContent() {
                 <XCircle className="h-10 w-10 text-destructive" />
               )}
               <div>
-                <CardTitle>{isSuccess ? '支付成功' : '支付未完成'}</CardTitle>
+                <CardTitle>
+                  {isSuccess
+                    ? tenantMessages.settings.subscriptionPage.result.successTitle
+                    : tenantMessages.settings.subscriptionPage.result.failedTitle}
+                </CardTitle>
                 <CardDescription>
                   {isSuccess
-                    ? '您的订阅已开通/续费/升级，感谢使用！'
-                    : '支付已取消或失败，您可返回订阅管理重新下单。'}
+                    ? tenantMessages.settings.subscriptionPage.result.successDescription
+                    : tenantMessages.settings.subscriptionPage.result.failedDescription}
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
           {orderId && (
             <CardContent>
-              <p className="text-sm text-muted-foreground">订单号：{orderId}</p>
+              <p className="text-sm text-muted-foreground">
+                {tenantI18n.t('settings.subscriptionPage.result.orderNumber', { orderId })}
+              </p>
             </CardContent>
           )}
         </Card>
         <Button className="w-full" onClick={handleBack}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          返回订阅管理
+          {tenantMessages.settings.subscriptionPage.result.back}
         </Button>
       </div>
   );

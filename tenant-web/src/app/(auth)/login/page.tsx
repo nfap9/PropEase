@@ -21,13 +21,14 @@ import {
 import { useBrandConfig } from '@/lib/brand-config-context';
 import { AuthLoadingScreen } from '@/components/auth/auth-loading-screen';
 import { AuthShell } from '@/components/auth/auth-shell';
+import { tenantMessages } from '@/lib/i18n';
 
 // 手机号验证正则
 const phoneRegex = /^1[3-9]\d{9}$/;
 
 const passwordLoginSchema = z.object({
-  phone: z.string().regex(phoneRegex, '请输入有效的手机号'),
-  password: z.string().min(8, '密码至少8个字符'),
+  phone: z.string().regex(phoneRegex, tenantMessages.auth.login.phoneValidation),
+  password: z.string().min(8, tenantMessages.auth.login.passwordValidation),
 });
 
 type PasswordLoginFormValues = z.infer<typeof passwordLoginSchema>;
@@ -65,7 +66,7 @@ export default function LoginPage() {
       const targetPath = await login(data.phone, data.password);
       router.replace(targetPath);
     } catch {
-      setError('手机号或密码错误');
+      setError(tenantMessages.auth.login.invalidCredentials);
     } finally {
       setIsLoading(false);
     }
@@ -73,7 +74,7 @@ export default function LoginPage() {
 
   // 检查认证状态或已认证正在跳转时显示加载
   if (isAuthLoading || isAuthenticated) {
-    return <AuthLoadingScreen label="正在进入工作台..." />;
+    return <AuthLoadingScreen label={tenantMessages.auth.login.loading} />;
   }
 
   return (
@@ -82,14 +83,14 @@ export default function LoginPage() {
         mode="login"
         app_name={brandConfig.app_name}
         app_description={brandConfig.app_description}
-        form_title="欢迎回来"
+        form_title={tenantMessages.auth.login.title}
         form_description={brandConfig.login_subtitle}
         footer={
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p>
-              还没有账户？{' '}
+              {tenantMessages.auth.login.noAccount}{' '}
               <Link href="/register" className="font-medium text-primary hover:underline" data-testid="auth-register-link">
-                立即注册
+                {tenantMessages.auth.login.registerNow}
               </Link>
             </p>
           </div>
@@ -107,11 +108,11 @@ export default function LoginPage() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>手机号</FormLabel>
+                  <FormLabel>{tenantMessages.auth.login.phone}</FormLabel>
                   <FormControl>
                     <Input
                       type="tel"
-                      placeholder="请输入手机号"
+                      placeholder={tenantMessages.auth.login.phonePlaceholder}
                       autoComplete="tel"
                       className={AUTH_INPUT_CLASSNAME}
                       {...field}
@@ -127,11 +128,11 @@ export default function LoginPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>密码</FormLabel>
+                  <FormLabel>{tenantMessages.auth.login.password}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="请输入密码"
+                      placeholder={tenantMessages.auth.login.passwordPlaceholder}
                       autoComplete="current-password"
                       className={AUTH_INPUT_CLASSNAME}
                       {...field}
@@ -143,7 +144,7 @@ export default function LoginPage() {
               )}
             />
             <Button type="submit" className="h-11 w-full text-sm" disabled={isLoading} data-testid="auth-login-button">
-              {isLoading ? '登录中...' : '登录并进入工作台'}
+              {isLoading ? tenantMessages.auth.login.submitting : tenantMessages.auth.login.submit}
             </Button>
           </form>
         </Form>

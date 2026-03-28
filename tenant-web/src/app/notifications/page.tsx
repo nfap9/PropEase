@@ -25,6 +25,7 @@ import {
 import { Bell, CheckCheck, Loader2, MessageSquareMore } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/lib/date-utils';
+import { tenantMessages } from '@/lib/i18n';
 
 // 注意: 实际使用时从 testids 导入 NOTIFICATIONS 常量
 const NOTIFICATIONS = {
@@ -93,8 +94,10 @@ export default function NotificationsPage() {
               <div className="flex items-center gap-2">
                 <Bell className="h-8 w-8" />
                 <div>
-                  <h1 className="text-3xl font-bold" data-testid={NOTIFICATIONS.HEADING}>通知</h1>
-                  <p className="text-muted-foreground">查看系统通知与消息</p>
+                  <h1 className="text-3xl font-bold" data-testid={NOTIFICATIONS.HEADING}>
+                    {tenantMessages.notificationsPage.heading}
+                  </h1>
+                  <p className="text-muted-foreground">{tenantMessages.notificationsPage.description}</p>
                 </div>
               </div>
               {unreadCount > 0 && (
@@ -105,7 +108,7 @@ export default function NotificationsPage() {
                   data-testid={NOTIFICATIONS.MARK_ALL_READ_BTN}
                 >
                   <CheckCheck className="mr-2 h-4 w-4" />
-                  全部标已读
+                  {tenantMessages.notificationsPage.markAllRead}
                 </Button>
               )}
             </div>
@@ -113,16 +116,13 @@ export default function NotificationsPage() {
             <Card>
               <CardHeader>
                 <div className="flex flex-col gap-3">
-                  <CardTitle className="text-lg">通知列表</CardTitle>
+                  <CardTitle className="text-lg">{tenantMessages.notificationsPage.listTitle}</CardTitle>
                   <div className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2 font-medium text-foreground">
                       <MessageSquareMore className="h-4 w-4" />
-                      当前已接入站内通知
+                      {tenantMessages.notificationsPage.infoTitle}
                     </div>
-                    <p className="mt-1">
-                      这里继续用于查看管理员站内通知；
-                      租客短信正式触达的模板配置与发送记录，请前往设置中的“消息触达”页面查看。
-                    </p>
+                    <p className="mt-1">{tenantMessages.notificationsPage.infoDescription}</p>
                   </div>
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div className="flex flex-wrap gap-2">
@@ -131,14 +131,14 @@ export default function NotificationsPage() {
                         size="sm"
                         onClick={() => setStatusFilter('all')}
                       >
-                        全部
+                        {tenantMessages.notificationsPage.filterAll}
                       </Button>
                       <Button
                         variant={statusFilter === 'unread' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setStatusFilter('unread')}
                       >
-                        仅看未读
+                        {tenantMessages.notificationsPage.filterUnread}
                       </Button>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -162,7 +162,9 @@ export default function NotificationsPage() {
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   </div>
                 ) : list.length === 0 ? (
-                  <p className="py-8 text-center text-muted-foreground" data-testid={NOTIFICATIONS.EMPTY_STATE}>暂无通知</p>
+                  <p className="py-8 text-center text-muted-foreground" data-testid={NOTIFICATIONS.EMPTY_STATE}>
+                    {tenantMessages.notificationsPage.empty}
+                  </p>
                 ) : (
                   <ul className="divide-y" data-testid={NOTIFICATIONS.LIST}>
                     {list.map((item) => (
@@ -248,7 +250,7 @@ function NotificationItem({
               disabled={isMarking}
               data-testid={testids.MARK_READ_BTN}
             >
-              {isMarking ? '处理中…' : '标为已读'}
+              {isMarking ? tenantMessages.notificationsPage.marking : tenantMessages.notificationsPage.markRead}
             </Button>
           )}
         </div>

@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { useEffect, useState } from 'react';
+import { adminMessages } from '@/lib/i18n';
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme();
@@ -22,7 +23,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" aria-label="切换主题">
+      <Button variant="ghost" size="icon" aria-label={adminMessages.theme.toggle}>
         <Sun className="h-5 w-5" />
       </Button>
     );
@@ -31,26 +32,26 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="切换主题">
+        <Button variant="ghost" size="icon" aria-label={adminMessages.theme.toggle}>
           <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">切换主题</span>
+          <span className="sr-only">{adminMessages.theme.toggle}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme('light')}>
           <Sun className="mr-2 h-4 w-4" />
-          <span>亮色</span>
+          <span>{adminMessages.theme.light}</span>
           {theme === 'light' && <span className="ml-auto text-primary">✓</span>}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('dark')}>
           <Moon className="mr-2 h-4 w-4" />
-          <span>深色</span>
+          <span>{adminMessages.theme.dark}</span>
           {theme === 'dark' && <span className="ml-auto text-primary">✓</span>}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('system')}>
           <Monitor className="mr-2 h-4 w-4" />
-          <span>跟随系统</span>
+          <span>{adminMessages.theme.system}</span>
           {theme === 'system' && <span className="ml-auto text-primary">✓</span>}
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -8,6 +8,7 @@ import { filterEmptyStrings } from '@/lib/utils/form';
 import type { Bill, BillFeeItem, BillStatus } from '@/types';
 import type { GenerateBillsFormData, PaymentFormData } from './bills.schemas';
 import { buildBillPdfFilename, buildBillsExcelFilename, downloadBlob } from './bills.utils';
+import { tenantMessages } from '@/lib/i18n';
 
 interface UseBillsDataOptions {
   orgId?: string;
@@ -54,9 +55,9 @@ export function useBillsData({
     onSuccess: () => {
       invalidateBills();
       onPaymentSuccess();
-      toast.success('付款登记成功');
+      toast.success(tenantMessages.bills.toast.paymentRecorded);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '登记失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, tenantMessages.bills.errors.payment)),
   });
 
   const generateMutation = useMutation({
@@ -66,7 +67,7 @@ export function useBillsData({
       queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
       onGenerateSuccess(result.created, result.skipped);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '出账失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, tenantMessages.bills.errors.generate)),
   });
 
   const exportPdf = async (billId: string) => {
@@ -83,9 +84,9 @@ export function useBillsData({
 
       const blob = await billsApi.exportExcel(orgId!, { ...filters, exportType });
       downloadBlob(blob, buildBillsExcelFilename(exportType));
-      toast.success('导出成功');
+      toast.success(tenantMessages.bills.toast.exportSuccess);
     } catch (error) {
-      toast.error(getErrorMessage(error, '导出失败，请重试'));
+      toast.error(getErrorMessage(error, tenantMessages.bills.errors.export));
     }
   };
 
@@ -115,14 +116,14 @@ export function useBillShare(organizationName?: string) {
         feeItems,
       });
       toast.success(
-        result === 'shared' ? '已调起系统分享面板' : '分享图已下载，可直接转发给租客或同事'
+        result === 'shared' ? tenantMessages.bills.toast.shared : tenantMessages.bills.toast.downloaded
       );
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         return;
       }
 
-      toast.error(getErrorMessage(error, '生成分享图失败，请重试'));
+      toast.error(getErrorMessage(error, tenantMessages.bills.errors.share));
     } finally {
       setSharingBillId((current) => (current === bill.id ? null : current));
     }

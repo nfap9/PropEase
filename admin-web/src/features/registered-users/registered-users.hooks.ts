@@ -13,6 +13,7 @@ import {
   getGiftEligiblePlans,
   getRegisteredUsersActiveParam,
 } from './registered-users.utils';
+import { adminMessages } from '@/lib/i18n';
 
 interface UseRegisteredUsersDataOptions {
   activeFilter: FilterActive;
@@ -89,9 +90,9 @@ export function useRegisteredUsersData({
       invalidateUsers();
       invalidateDetail();
       onUserDisabled();
-      toast.success('已更新');
+      toast.success(adminMessages.registeredUsers.toast.updated);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '操作失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, adminMessages.registeredUsers.errors.action)),
   });
 
   const deleteUserMutation = useMutation({
@@ -99,9 +100,9 @@ export function useRegisteredUsersData({
     onSuccess: (_, deletedUserId) => {
       invalidateUsers();
       onUserDeleted(deletedUserId);
-      toast.success('已删除');
+      toast.success(adminMessages.registeredUsers.toast.deleted);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, adminMessages.registeredUsers.errors.delete)),
   });
 
   const giftSubscriptionMutation = useMutation({
@@ -111,9 +112,9 @@ export function useRegisteredUsersData({
       queryClient.invalidateQueries({ queryKey: ['admin', 'subscriptions'] });
       invalidateDetail();
       onGiftSuccess();
-      toast.success('赠送已生效，订阅有效期已更新');
+      toast.success(adminMessages.registeredUsers.toast.gifted);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '赠送失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, adminMessages.registeredUsers.errors.gift)),
   });
 
   return {

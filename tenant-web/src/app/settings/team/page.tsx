@@ -55,6 +55,7 @@ import { OrganizationMember, MemberRole, OrganizationUsage } from '@/types';
 import { MoreHorizontal, Pencil, Trash2, UserPlus, Building2, Users, DoorOpen } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/lib/auth/context';
+import { tenantI18n, tenantMessages } from '@/lib/i18n';
 
 // 注意: 实际使用时从 testids 导入 TEAM_SETTINGS 常量
 const TEAM_SETTINGS = {
@@ -68,7 +69,7 @@ const TEAM_SETTINGS = {
 } as const;
 
 const organizationSchema = z.object({
-  name: z.string().min(1, '请输入团队名称'),
+  name: z.string().min(1, tenantMessages.settings.team.teamNameValidation),
 });
 
 type OrganizationFormData = z.infer<typeof organizationSchema>;
@@ -76,17 +77,17 @@ type OrganizationFormData = z.infer<typeof organizationSchema>;
 const phoneRegex = /^1[3-9]\d{9}$/;
 
 const inviteSchema = z.object({
-  phone: z.string().regex(phoneRegex, '请输入有效的手机号'),
+  phone: z.string().regex(phoneRegex, tenantMessages.settings.team.phoneValidation),
   role: z.enum(['owner', 'admin', 'member', 'viewer']),
 });
 
 type InviteFormData = z.infer<typeof inviteSchema>;
 
 const ROLE_LABELS: Record<MemberRole, string> = {
-  owner: '创建者',
-  admin: '管理成员',
-  member: '协作成员',
-  viewer: '只读成员',
+  owner: tenantMessages.settings.team.roles.owner,
+  admin: tenantMessages.settings.team.roles.admin,
+  member: tenantMessages.settings.team.roles.member,
+  viewer: tenantMessages.settings.team.roles.viewer,
 };
 
 const ROLE_COLORS: Record<MemberRole, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -133,7 +134,7 @@ export default function TeamSettingsPage() {
       queryClient.invalidateQueries({ queryKey: ['organization-members', updatedOrg.id] });
       setOrganization(updatedOrg);
       setIsEditOrgOpen(false);
-      toast.success('团队信息已更新');
+      toast.success(tenantMessages.settings.team.toasts.teamUpdated);
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
@@ -150,7 +151,7 @@ export default function TeamSettingsPage() {
       });
       setIsInviteOpen(false);
       inviteForm.reset();
-      toast.success('邀请已发送');
+      toast.success(tenantMessages.settings.team.toasts.inviteSent);
     },
     onError: (error) => toast.error(getErrorMessage(error, '邀请失败，请重试')),
   });
@@ -163,7 +164,7 @@ export default function TeamSettingsPage() {
       });
       setIsRemoveMemberOpen(false);
       setSelectedMember(null);
-      toast.success('团队成员已移除');
+      toast.success(tenantMessages.settings.team.toasts.memberRemoved);
     },
     onError: (error) => toast.error(getErrorMessage(error, '移除失败，请重试')),
   });
@@ -186,7 +187,7 @@ export default function TeamSettingsPage() {
   const memberColumns: ColumnDef<OrganizationMember>[] = [
     {
       accessorKey: 'user',
-      header: '用户',
+      header: tenantMessages.settings.team.labels.memberName,
       cell: ({ row }) => {
         const member = row.original;
         return (
@@ -195,7 +196,7 @@ export default function TeamSettingsPage() {
               {member.user_full_name?.charAt(0).toUpperCase() || 'U'}
             </div>
             <div>
-              <div className="font-medium">{member.user_full_name || '未知用户'}</div>
+              <div className="font-medium">{member.user_full_name || tenantMessages.common.unknownUser}</div>
               <div className="text-sm text-muted-foreground">{member.user_phone || '-'}</div>
             </div>
           </div>
@@ -204,14 +205,14 @@ export default function TeamSettingsPage() {
     },
     {
       accessorKey: 'role',
-      header: '身份',
+      header: tenantMessages.settings.team.labels.identity,
       cell: ({ row }) => (
         <Badge variant={ROLE_COLORS[row.original.role]}>{ROLE_LABELS[row.original.role]}</Badge>
       ),
     },
     {
       accessorKey: 'joined_at',
-      header: '加入时间',
+      header: tenantMessages.settings.team.labels.joinedAt,
       cell: ({ row }) => formatDateTime(row.original.joined_at),
     },
     {
@@ -222,7 +223,7 @@ export default function TeamSettingsPage() {
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="更多操作">
+              <Button variant="ghost" size="icon" aria-label={tenantMessages.common.moreActions}>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -232,7 +233,7 @@ export default function TeamSettingsPage() {
                 className="text-destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                移除团队成员
+                {tenantMessages.settings.team.removeMemberAction}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -247,8 +248,8 @@ export default function TeamSettingsPage() {
           <div className="flex items-center gap-3">
             <Users className="h-8 w-8" />
             <div>
-              <h1 className="text-3xl font-bold" data-testid={TEAM_SETTINGS.HEADING}>团队设置</h1>
-              <p className="text-muted-foreground">管理团队成员与协作分工</p>
+              <h1 className="text-3xl font-bold" data-testid={TEAM_SETTINGS.HEADING}>{tenantMessages.settings.team.heading}</h1>
+              <p className="text-muted-foreground">{tenantMessages.settings.team.description}</p>
             </div>
           </div>
 
@@ -256,11 +257,11 @@ export default function TeamSettingsPage() {
             <TabsList>
               <TabsTrigger value="organizations">
                 <Building2 className="mr-2 h-4 w-4" />
-                团队信息
+                {tenantMessages.settings.team.tabs.organization}
               </TabsTrigger>
               <TabsTrigger value="members" disabled={!organization}>
                 <Users className="mr-2 h-4 w-4" />
-                团队成员
+                {tenantMessages.settings.team.tabs.members}
               </TabsTrigger>
             </TabsList>
 
@@ -299,7 +300,7 @@ export default function TeamSettingsPage() {
                           <p className="font-medium">{formatDate(organization.created_at)}</p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground">你的身份</p>
+                          <p className="text-muted-foreground">{tenantMessages.settings.team.labels.yourIdentity}</p>
                           {organization.role ? (
                             <Badge variant={ROLE_COLORS[organization.role]}>
                               {ROLE_LABELS[organization.role]}
@@ -357,13 +358,13 @@ export default function TeamSettingsPage() {
                 <>
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-xl font-semibold">{organization.name} - 团队成员</h2>
-                      <p className="text-sm text-muted-foreground">管理团队成员与协作分工</p>
+                      <h2 className="text-xl font-semibold">{organization.name} - {tenantMessages.settings.team.tabs.members}</h2>
+                      <p className="text-sm text-muted-foreground">{tenantMessages.settings.team.description}</p>
                     </div>
                     {canManage && (
                       <Button onClick={() => setIsInviteOpen(true)} data-testid={TEAM_SETTINGS.INVITE_BTN}>
                         <UserPlus className="mr-2 h-4 w-4" />
-                        邀请团队成员
+                        {tenantMessages.settings.team.inviteButton}
                       </Button>
                     )}
                   </div>
@@ -383,8 +384,8 @@ export default function TeamSettingsPage() {
         <Dialog open={isEditOrgOpen} onOpenChange={setIsEditOrgOpen}>
           <DialogContent data-testid={TEAM_SETTINGS.EDIT_ORG_DIALOG}>
             <DialogHeader>
-              <DialogTitle>编辑团队</DialogTitle>
-              <DialogDescription>修改团队信息</DialogDescription>
+              <DialogTitle>{tenantMessages.settings.team.editDialogTitle}</DialogTitle>
+              <DialogDescription>{tenantMessages.settings.team.editDialogDescription}</DialogDescription>
             </DialogHeader>
             <form
               onSubmit={editOrgForm.handleSubmit(
@@ -403,7 +404,7 @@ export default function TeamSettingsPage() {
                   取消
                 </Button>
                 <Button type="submit" disabled={updateOrgMutation.isPending}>
-                  {updateOrgMutation.isPending ? '保存中...' : '保存'}
+                  {updateOrgMutation.isPending ? tenantMessages.settings.team.editSubmitting : tenantMessages.settings.team.editSubmit}
                 </Button>
               </DialogFooter>
             </form>
@@ -414,8 +415,8 @@ export default function TeamSettingsPage() {
         <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
           <DialogContent data-testid={TEAM_SETTINGS.INVITE_DIALOG}>
             <DialogHeader>
-              <DialogTitle>邀请团队成员</DialogTitle>
-              <DialogDescription>邀请新成员加入团队</DialogDescription>
+              <DialogTitle>{tenantMessages.settings.team.inviteDialogTitle}</DialogTitle>
+              <DialogDescription>{tenantMessages.settings.team.inviteDialogDescription}</DialogDescription>
             </DialogHeader>
             <form
               onSubmit={inviteForm.handleSubmit((data) => inviteMutation.mutate(data))}
@@ -428,7 +429,7 @@ export default function TeamSettingsPage() {
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="请输入手机号"
+                  placeholder={tenantMessages.settings.team.phonePlaceholder}
                   aria-required
                   {...inviteForm.register('phone')}
                 />
@@ -440,7 +441,7 @@ export default function TeamSettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="role">
-                  加入身份 <span aria-hidden="true">*</span>
+                  {tenantMessages.settings.team.labels.inviteIdentity} <span aria-hidden="true">*</span>
                 </Label>
                 <Select
                   value={inviteForm.watch('role')}
@@ -450,9 +451,9 @@ export default function TeamSettingsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">管理成员</SelectItem>
-                    <SelectItem value="member">协作成员</SelectItem>
-                    <SelectItem value="viewer">只读成员</SelectItem>
+                    <SelectItem value="admin">{tenantMessages.settings.team.roles.admin}</SelectItem>
+                    <SelectItem value="member">{tenantMessages.settings.team.roles.member}</SelectItem>
+                    <SelectItem value="viewer">{tenantMessages.settings.team.roles.viewer}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -461,7 +462,7 @@ export default function TeamSettingsPage() {
                   取消
                 </Button>
                 <Button type="submit" disabled={inviteMutation.isPending}>
-                  {inviteMutation.isPending ? '邀请中...' : '发送邀请'}
+                  {inviteMutation.isPending ? tenantMessages.settings.team.inviteSubmitting : tenantMessages.settings.team.inviteSubmit}
                 </Button>
               </DialogFooter>
             </form>
@@ -472,9 +473,11 @@ export default function TeamSettingsPage() {
         <AlertDialog open={isRemoveMemberOpen} onOpenChange={setIsRemoveMemberOpen}>
           <AlertDialogContent data-testid={TEAM_SETTINGS.REMOVE_MEMBER_DIALOG}>
             <AlertDialogHeader>
-              <AlertDialogTitle>确认移除</AlertDialogTitle>
+              <AlertDialogTitle>{tenantMessages.settings.team.removeDialogTitle}</AlertDialogTitle>
               <AlertDialogDescription>
-                确定要从团队中移除成员 &ldquo;{selectedMember?.user_full_name}&rdquo; 吗？
+                {tenantI18n.t('settings.team.removeDialogDescription', {
+                  name: selectedMember?.user_full_name ?? '',
+                })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -483,7 +486,7 @@ export default function TeamSettingsPage() {
                 onClick={() => removeMemberMutation.mutate(selectedMember!.id)}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {removeMemberMutation.isPending ? '移除中...' : '确认移除'}
+                {removeMemberMutation.isPending ? tenantMessages.settings.team.removeDialogSubmitting : tenantMessages.settings.team.removeDialogConfirm}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

@@ -20,18 +20,19 @@ import {
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@apartment-ultra/shared-ui/components/ui';
+import { adminMessages } from '@/lib/i18n';
 
 const ADMIN_NAV = [
-  { href: '/', label: '工作台', icon: LayoutDashboard },
-  { href: '/brand', label: '界面信息', icon: Palette },
-  { href: '/users', label: '管理账号', icon: Users },
-  { href: '/registered-users', label: '用户管理', icon: UserCircle },
-  { href: '/roles', label: '分工设置', icon: Shield },
-  { href: '/organizations', label: '团队管理', icon: Building2 },
-  { href: '/service-pricing', label: '服务方案', icon: DollarSign },
-  { href: '/storefront', label: '商品展示', icon: Store },
-  { href: '/usage-pricing', label: '用量计费', icon: Package },
-  { href: '/subscriptions', label: '已购服务', icon: CreditCard },
+  { href: '/', label: adminMessages.layout.nav.dashboard, icon: LayoutDashboard },
+  { href: '/brand', label: adminMessages.layout.nav.brand, icon: Palette },
+  { href: '/users', label: adminMessages.layout.nav.users, icon: Users },
+  { href: '/registered-users', label: adminMessages.layout.nav.registeredUsers, icon: UserCircle },
+  { href: '/roles', label: adminMessages.layout.nav.roles, icon: Shield },
+  { href: '/organizations', label: adminMessages.layout.nav.organizations, icon: Building2 },
+  { href: '/service-pricing', label: adminMessages.layout.nav.servicePricing, icon: DollarSign },
+  { href: '/storefront', label: adminMessages.layout.nav.storefront, icon: Store },
+  { href: '/usage-pricing', label: adminMessages.layout.nav.usagePricing, icon: Package },
+  { href: '/subscriptions', label: adminMessages.layout.nav.subscriptions, icon: CreditCard },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -46,7 +47,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const NavContent = () => (
     <>
       <div className="flex h-16 items-center border-b px-4">
-        <span className="font-semibold">管理平台</span>
+        <span className="font-semibold">{adminMessages.layout.appName}</span>
       </div>
       <nav className="flex-1 space-y-1 p-4">
         {ADMIN_NAV.map((item) => {
@@ -88,7 +89,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0">
-              <SheetTitle className="sr-only">管理平台导航</SheetTitle>
+              <SheetTitle className="sr-only">{adminMessages.layout.mobileNavTitle}</SheetTitle>
               <NavContent />
             </SheetContent>
           </Sheet>
@@ -99,7 +100,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <ThemeToggle />
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
-              退出登录
+              {adminMessages.layout.logout}
             </Button>
           </div>
         </header>

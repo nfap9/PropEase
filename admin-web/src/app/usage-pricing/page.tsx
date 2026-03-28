@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apar
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { adminApiEndpoints } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
+import { adminMessages } from '@/lib/i18n';
 
 const schema = z.object({
   price_per_org: z.coerce.number().min(0),
@@ -82,11 +83,11 @@ export default function AdminUsagePricingPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-pricing-heading">用量计费</h2>
+      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-pricing-heading">{adminMessages.usagePricing.heading}</h2>
       <Card>
         <CardHeader>
-          <CardTitle>团队 / 公寓 / 房间 / 成员单价</CardTitle>
-          <CardDescription>单位：元/个/年，系统会按使用规模应用这组计费标准</CardDescription>
+          <CardTitle>{adminMessages.usagePricing.title}</CardTitle>
+          <CardDescription>{adminMessages.usagePricing.description}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -99,7 +100,7 @@ export default function AdminUsagePricingPage() {
                 name="price_per_org"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>团队单价（元/个/年）</FormLabel>
+                    <FormLabel>{adminMessages.usagePricing.fields.organization}</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" data-testid="admin-pricing-price-per-org" {...field} />
                     </FormControl>
@@ -112,7 +113,7 @@ export default function AdminUsagePricingPage() {
                 name="price_per_apartment"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>公寓单价（元/个/年）</FormLabel>
+                    <FormLabel>{adminMessages.usagePricing.fields.apartment}</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" data-testid="admin-pricing-price-per-apartment" {...field} />
                     </FormControl>
@@ -125,7 +126,7 @@ export default function AdminUsagePricingPage() {
                 name="price_per_room"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>房间单价（元/个/年）</FormLabel>
+                    <FormLabel>{adminMessages.usagePricing.fields.room}</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" data-testid="admin-pricing-price-per-room" {...field} />
                     </FormControl>
@@ -138,7 +139,7 @@ export default function AdminUsagePricingPage() {
                 name="price_per_member"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>成员单价（元/个/年）</FormLabel>
+                    <FormLabel>{adminMessages.usagePricing.fields.member}</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" data-testid="admin-pricing-price-per-member" {...field} />
                     </FormControl>

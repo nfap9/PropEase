@@ -13,6 +13,7 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminPlatformStats } from '@apartment-ultra/api-contract';
 import type { AxiosResponse } from 'axios';
 import type { IncomeReport } from '@apartment-ultra/api-contract';
+import { adminMessages } from '@/lib/i18n';
 
 export function DashboardContent() {
   const queryClient = useQueryClient();
@@ -51,7 +52,7 @@ export function DashboardContent() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold" data-testid="admin-overview-heading">工作台</h1>
+          <h1 className="text-2xl font-semibold" data-testid="admin-overview-heading">{adminMessages.dashboard.heading}</h1>
         </div>
         <StatCardsSkeleton />
         <div className="h-96 rounded-xl bg-muted/20 animate-pulse" />
@@ -62,9 +63,9 @@ export function DashboardContent() {
   if (statsError || !stats) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-4">
-        <p className="text-destructive">加载统计数据失败</p>
+        <p className="text-destructive">{adminMessages.dashboard.loadError}</p>
         <Button variant="outline" onClick={handleRefresh}>
-          重试
+          {adminMessages.common.retry}
         </Button>
       </div>
     );
@@ -74,18 +75,18 @@ export function DashboardContent() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold" data-testid="admin-overview-heading">工作台</h1>
+        <h1 className="text-2xl font-semibold" data-testid="admin-overview-heading">{adminMessages.dashboard.heading}</h1>
         <RefreshButton onRefresh={handleRefresh} isLoading={statsLoading} />
       </div>
 
       {/* Stat Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        <StatCard title="公寓数" value={stats.apartments_count ?? 0} />
-        <StatCard title="房间数" value={stats.rooms_count ?? 0} />
-        <StatCard title="入住率" value={stats.occupancy_rate ?? 0} isPercentage />
-        <StatCard title="本月收入" value={(stats.monthly_revenue ?? 0) * 100} isCurrency />
-        <StatCard title="待缴账单" value={stats.pending_bills ?? 0} />
-        <StatCard title="逾期账单" value={stats.overdue_bills ?? 0} />
+        <StatCard title={adminMessages.dashboard.stats.apartments} value={stats.apartments_count ?? 0} />
+        <StatCard title={adminMessages.dashboard.stats.rooms} value={stats.rooms_count ?? 0} />
+        <StatCard title={adminMessages.dashboard.stats.occupancy} value={stats.occupancy_rate ?? 0} isPercentage />
+        <StatCard title={adminMessages.dashboard.stats.monthlyRevenue} value={(stats.monthly_revenue ?? 0) * 100} isCurrency />
+        <StatCard title={adminMessages.dashboard.stats.pendingBills} value={stats.pending_bills ?? 0} />
+        <StatCard title={adminMessages.dashboard.stats.overdueBills} value={stats.overdue_bills ?? 0} />
       </div>
 
       {/* Year Filter */}
@@ -95,7 +96,7 @@ export function DashboardContent() {
 
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-1">
-        <ChartCard title="收入趋势">
+        <ChartCard title={adminMessages.dashboard.charts.incomeTrend}>
           <IncomeChart data={incomeData} />
         </ChartCard>
       </div>

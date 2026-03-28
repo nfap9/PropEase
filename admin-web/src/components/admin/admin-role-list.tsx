@@ -5,6 +5,7 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminRole } from '@/lib/api/admin-client';
 import { cn } from '@/lib/utils';
 import { Plus, Trash2 } from 'lucide-react';
+import { adminI18n, adminMessages } from '@/lib/i18n';
 
 export interface AdminRoleListProps {
   roles: AdminRole[];
@@ -29,7 +30,7 @@ export function AdminRoleList({
   return (
     <div className="flex h-full flex-col border-r bg-muted/30">
       <div className="border-b p-3">
-        <h2 className="mb-2 text-sm font-semibold" data-testid="admin-roles-heading">分工设置</h2>
+        <h2 className="mb-2 text-sm font-semibold" data-testid="admin-roles-heading">{adminMessages.roles.heading}</h2>
         <Button
           variant="outline"
           size="sm"
@@ -39,7 +40,7 @@ export function AdminRoleList({
           data-testid="admin-roles-create-btn"
         >
           <Plus className="mr-2 h-4 w-4" />
-          新建分工
+          {adminMessages.roles.createButton}
         </Button>
       </div>
       <ul className="flex-1 space-y-1 overflow-y-auto p-2">
@@ -64,7 +65,7 @@ export function AdminRoleList({
               <span className="flex-1 truncate text-left">{role.name}</span>
               {role.is_system && (
                 <Badge variant="secondary" className="shrink-0 text-xs">
-                  内置
+                  {adminMessages.roles.builtin}
                 </Badge>
               )}
               {!role.is_system && (
@@ -76,7 +77,7 @@ export function AdminRoleList({
                     e.stopPropagation();
                     onDeleteRole(role);
                   }}
-                  aria-label={`删除分工 ${role.name}`}
+                  aria-label={adminI18n.t('roles.deleteAriaLabel', { name: role.name })}
                 >
                   <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>

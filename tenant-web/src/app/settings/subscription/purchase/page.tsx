@@ -32,6 +32,7 @@ import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import type { StorefrontService, StorefrontServicePricing } from '@/lib/api/subscriptions';
 import { getPricingSummary } from './pricing';
+import { tenantI18n, tenantMessages } from '@/lib/i18n';
 
 const SUBSCRIPTION = {
   HEADING: 'subscription-purchase-heading',
@@ -88,7 +89,10 @@ export default function SubscriptionPurchasePage() {
       setSelectedService(null);
       router.push(`/settings/subscription/pay?order_id=${order.id}`);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '创建订单失败，请重试')),
+    onError: (error) =>
+      toast.error(
+        getErrorMessage(error, tenantMessages.settings.subscriptionPage.purchase.createOrderFailed)
+      ),
   });
 
   // 免费服务直接订阅
@@ -100,13 +104,16 @@ export default function SubscriptionPurchasePage() {
         auto_renew: true,
       }),
     onSuccess: () => {
-      toast.success('订阅成功！');
+      toast.success(tenantMessages.settings.subscriptionPage.purchase.subscribeSuccess);
       queryClient.invalidateQueries({ queryKey: ['subscription-status', orgId] });
       queryClient.invalidateQueries({ queryKey: ['organization-usage', orgId] });
       setSelectedService(null);
       router.push('/settings/subscription');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '订阅失败，请重试')),
+    onError: (error) =>
+      toast.error(
+        getErrorMessage(error, tenantMessages.settings.subscriptionPage.purchase.subscribeFailed)
+      ),
   });
 
   const handleSubscribe = (service: StorefrontService, pricing?: StorefrontServicePricing) => {
@@ -131,11 +138,13 @@ export default function SubscriptionPurchasePage() {
   };
 
   const formatPrice = (price: number) => {
-    return price === 0 ? '免费' : `¥${price.toFixed(2)}`;
+    return price === 0 ? tenantMessages.settings.subscriptionPage.purchase.free : `¥${price.toFixed(2)}`;
   };
 
   const getLimitText = (limit: number | null) => {
-    return limit == null || limit === -1 ? '无限制' : limit.toString();
+    return limit == null || limit === -1
+      ? tenantMessages.settings.subscriptionPage.purchase.unlimited
+      : limit.toString();
   };
 
   const isPending = subscribeMutation.isPending || createOrderMutation.isPending;
@@ -153,7 +162,7 @@ export default function SubscriptionPurchasePage() {
             data-testid={SUBSCRIPTION.BACK_BTN}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            返回
+            {tenantMessages.settings.subscriptionPage.purchase.back}
           </Button>
           <div className="flex-1">
             <h1
@@ -161,9 +170,9 @@ export default function SubscriptionPurchasePage() {
               data-testid={SUBSCRIPTION.HEADING}
             >
               <ShoppingCart className="h-8 w-8" />
-              服务购买
+              {tenantMessages.settings.subscriptionPage.purchase.heading}
             </h1>
-            <p className="text-muted-foreground">选择适合您的服务服务</p>
+            <p className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.purchase.description}</p>
           </div>
         </div>
 
@@ -200,7 +209,7 @@ export default function SubscriptionPurchasePage() {
                 >
                   {isCurrentPlan && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge>当前服务</Badge>
+                      <Badge>{tenantMessages.settings.subscriptionPage.purchase.currentBadge}</Badge>
                     </div>
                   )}
                   <CardHeader>
@@ -225,17 +234,25 @@ export default function SubscriptionPurchasePage() {
                               disabled={isCurrentPlan || isPending}
                             >
                               <div>
-                                <p className="font-medium">{p.months} 个月</p>
+                                <p className="font-medium">
+                                  {tenantI18n.t('settings.subscriptionPage.purchase.durationMonths', {
+                                    months: p.months,
+                                  })}
+                                </p>
                                 {pricingSummary.giftMonths > 0 && (
                                   <Badge variant="outline" className="text-xs text-purple-600">
                                     <Gift className="mr-1 h-3 w-3" />
-                                    赠送 {pricingSummary.giftMonths} 个月
+                                    {tenantI18n.t('settings.subscriptionPage.purchase.giftMonths', {
+                                      months: pricingSummary.giftMonths,
+                                    })}
                                   </Badge>
                                 )}
                                 {pricingSummary.discountAmount > 0 && (
                                   <Badge variant="outline" className="text-xs text-green-600">
                                     <Tag className="mr-1 h-3 w-3" />
-                                    优惠 ¥{pricingSummary.discountAmount.toFixed(0)}
+                                    {tenantI18n.t('settings.subscriptionPage.purchase.discountAmount', {
+                                      amount: pricingSummary.discountAmount.toFixed(0),
+                                    })}
                                   </Badge>
                                 )}
                               </div>
@@ -261,7 +278,9 @@ export default function SubscriptionPurchasePage() {
                         onClick={() => handleSubscribe(service)}
                         data-testid={SUBSCRIPTION.SUBSCRIBE_BTN}
                       >
-                        {isCurrentPlan ? '当前服务' : '立即订阅'}
+                        {isCurrentPlan
+                          ? tenantMessages.settings.subscriptionPage.purchase.currentBadge
+                          : tenantMessages.settings.subscriptionPage.purchase.immediateSubscribe}
                       </Button>
                     )}
 
@@ -269,19 +288,35 @@ export default function SubscriptionPurchasePage() {
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center gap-2">
                         <Check className="h-4 w-4 text-green-500" />
-                        <span>组织: {getLimitText(service.max_organizations)} 个</span>
+                        <span>
+                          {tenantI18n.t('settings.subscriptionPage.purchase.teamLimit', {
+                            count: getLimitText(service.max_organizations),
+                          })}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Check className="h-4 w-4 text-green-500" />
-                        <span>公寓: {getLimitText(service.max_apartments)} 个</span>
+                        <span>
+                          {tenantI18n.t('settings.subscriptionPage.purchase.apartmentLimit', {
+                            count: getLimitText(service.max_apartments),
+                          })}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Check className="h-4 w-4 text-green-500" />
-                        <span>房间: {getLimitText(service.max_rooms)} 间</span>
+                        <span>
+                          {tenantI18n.t('settings.subscriptionPage.purchase.roomLimit', {
+                            count: getLimitText(service.max_rooms),
+                          })}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Check className="h-4 w-4 text-green-500" />
-                        <span>成员: {getLimitText(service.max_members)} 人</span>
+                        <span>
+                          {tenantI18n.t('settings.subscriptionPage.purchase.memberLimit', {
+                            count: getLimitText(service.max_members),
+                          })}
+                        </span>
                       </div>
                     </div>
                   </CardContent>
@@ -293,7 +328,7 @@ export default function SubscriptionPurchasePage() {
           <Card>
             <CardContent className="pt-6">
               <p className="text-center text-muted-foreground">
-                暂无可购买的服务服务，请联系运营方。
+                {tenantMessages.settings.subscriptionPage.purchase.empty}
               </p>
             </CardContent>
           </Card>
@@ -303,10 +338,16 @@ export default function SubscriptionPurchasePage() {
         <Dialog open={!!selectedService} onOpenChange={(open) => !open && setSelectedService(null)}>
           <DialogContent className="max-w-lg" data-testid={SUBSCRIPTION.CONFIRM_DIALOG}>
             <DialogHeader>
-              <DialogTitle>确认订阅</DialogTitle>
+              <DialogTitle>{tenantMessages.settings.subscriptionPage.purchase.confirmTitle}</DialogTitle>
               <DialogDescription>
-                确认订阅 {selectedService?.name}
-                {selectedPricing && ` (${selectedPricing.months} 个月)`}？
+                {tenantI18n.t('settings.subscriptionPage.purchase.confirmDescription', {
+                  name: selectedService?.name ?? '',
+                  duration: selectedPricing
+                    ? ` (${tenantI18n.t('settings.subscriptionPage.purchase.durationMonths', {
+                        months: selectedPricing.months,
+                      })})`
+                    : '',
+                })}
               </DialogDescription>
             </DialogHeader>
 
@@ -315,14 +356,14 @@ export default function SubscriptionPurchasePage() {
               {selectedPricing && (
                 <div className="space-y-3 rounded-lg border p-4">
                   <div className="flex justify-between">
-                    <span>原价</span>
+                    <span>{tenantMessages.settings.subscriptionPage.purchase.originalPrice}</span>
                     <span>¥{selectedPricingSummary.originalPrice.toFixed(2)}</span>
                   </div>
                   {selectedPricingSummary.discountAmount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>
                         <Tag className="mr-1 inline h-4 w-4" />
-                        优惠减免
+                        {tenantMessages.settings.subscriptionPage.purchase.discount}
                       </span>
                       <span>-¥{selectedPricingSummary.discountAmount.toFixed(2)}</span>
                     </div>
@@ -331,13 +372,17 @@ export default function SubscriptionPurchasePage() {
                     <div className="flex justify-between text-purple-600">
                       <span>
                         <Gift className="mr-1 inline h-4 w-4" />
-                        赠送时长
+                        {tenantMessages.settings.subscriptionPage.purchase.giftDuration}
                       </span>
-                      <span>+{selectedPricingSummary.giftMonths} 个月</span>
+                      <span>
+                        +{tenantI18n.t('settings.subscriptionPage.purchase.durationMonths', {
+                          months: selectedPricingSummary.giftMonths,
+                        })}
+                      </span>
                     </div>
                   )}
                   <div className="border-t flex justify-between pt-2 font-bold">
-                    <span>实付金额</span>
+                    <span>{tenantMessages.settings.subscriptionPage.purchase.finalPrice}</span>
                     <span className="text-xl">{formatPrice(selectedPricingSummary.finalPrice)}</span>
                   </div>
                 </div>
@@ -346,12 +391,14 @@ export default function SubscriptionPurchasePage() {
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setSelectedService(null)}>
-                取消
+                {tenantMessages.common.cancel}
               </Button>
               <Button onClick={handleConfirmSubscribe} disabled={isPending}>
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                确认
-                {selectedPricing && selectedPricingSummary.finalPrice > 0 ? '并去支付' : '订阅'}
+                {tenantMessages.common.confirm}
+                {selectedPricing && selectedPricingSummary.finalPrice > 0
+                  ? tenantMessages.settings.subscriptionPage.purchase.confirmAndPay
+                  : tenantMessages.settings.subscriptionPage.purchase.subscribe}
               </Button>
             </DialogFooter>
           </DialogContent>

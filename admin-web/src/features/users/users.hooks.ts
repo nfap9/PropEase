@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { adminApiEndpoints, type AdminRole, type AdminUser } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import type { AdminPasswordReset, AdminUserCreate, AdminUserUpdate } from '@/lib/api/admin-client';
+import { adminMessages } from '@/lib/i18n';
 
 interface UseAdminUsersDataOptions {
   onCreateSuccess: () => void;
@@ -44,7 +45,7 @@ export function useAdminUsersData({
     onSuccess: () => {
       invalidateUsers();
       onCreateSuccess();
-      toast.success('管理账号创建成功');
+      toast.success(adminMessages.users.toast.created);
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
@@ -55,7 +56,7 @@ export function useAdminUsersData({
     onSuccess: () => {
       invalidateUsers();
       onUpdateSuccess();
-      toast.success('管理账号已更新');
+      toast.success(adminMessages.users.toast.updated);
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
@@ -66,7 +67,7 @@ export function useAdminUsersData({
     onSuccess: () => {
       invalidateUsers();
       onResetSuccess();
-      toast.success('密码已重置');
+      toast.success(adminMessages.users.toast.resetPassword);
     },
     onError: (error) => toast.error(getErrorMessage(error, '重置失败，请重试')),
   });
@@ -76,7 +77,7 @@ export function useAdminUsersData({
     onSuccess: () => {
       invalidateUsers();
       onDeleteSuccess();
-      toast.success('管理账号已删除');
+      toast.success(adminMessages.users.toast.deleted);
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
