@@ -6,7 +6,8 @@ import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { DataTable } from '@/components/common/data-table';
-import { LeaseFormDialog, LeaseCreatedParams } from '@/components/common/lease-form-dialog';
+import { LeaseSigningDrawer } from '@/features/leases/components/lease-signing-drawer';
+import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
@@ -263,7 +264,7 @@ export default function RoomsPage() {
           )}
         </div>
 
-        <LeaseFormDialog
+        <LeaseSigningDrawer
           orgId={orgId!}
           open={isLeaseOpen}
           onOpenChange={setIsLeaseOpen}

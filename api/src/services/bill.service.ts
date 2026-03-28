@@ -23,6 +23,7 @@ export interface CreateBillInput {
   bill_month: number;
   due_date: string;
   rent_amount?: number;
+  deposit_amount?: number;
   water_amount?: number;
   electricity_amount?: number;
   other_amount?: number;
@@ -73,10 +74,11 @@ export interface BillService {
  */
 function buildCreateData(data: CreateBillInput): Prisma.BillCreateInput {
   const rent = data.rent_amount ?? 0;
+  const deposit = data.deposit_amount ?? 0;
   const water = data.water_amount ?? 0;
   const elec = data.electricity_amount ?? 0;
   const other = data.other_amount ?? 0;
-  const total = data.total_amount ?? rent + water + elec + other;
+  const total = data.total_amount ?? rent + deposit + water + elec + other;
 
   return {
     id: ulid().toLowerCase(),
@@ -85,6 +87,7 @@ function buildCreateData(data: CreateBillInput): Prisma.BillCreateInput {
     bill_month: data.bill_month,
     due_date: new Date(data.due_date),
     rent_amount: rent,
+    deposit_amount: deposit,
     water_amount: water,
     electricity_amount: elec,
     other_amount: other,

@@ -8,11 +8,9 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import {
-  LeaseFormDialog,
-  type LeaseCreatedParams,
-} from '@/components/common/lease-form-dialog';
+import { LeaseSigningDrawer } from './lease-signing-drawer';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
+import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
 import { useAuth } from '@/lib/auth/context';
 import { toDateInputValue } from '@/lib/date-utils';
 import { DataTable } from '@/components/common/data-table';
@@ -151,7 +149,7 @@ export function LeasesPageContent() {
           )}
         </div>
 
-        <LeaseFormDialog
+        <LeaseSigningDrawer
           orgId={orgId}
           open={isCreateOpen}
           onOpenChange={setIsCreateOpen}

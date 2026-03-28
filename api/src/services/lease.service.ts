@@ -9,6 +9,7 @@ import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { logger } from '../utils/logger.js';
 import { prisma } from '../lib/prisma.js';
+import { defaultBillService, type CreateBillInput } from './bill.service.js';
 
 /**
  * 创建租约输入
@@ -160,6 +161,27 @@ export function createLeaseService(
 
       // 创建租约并更新房间状态（事务）
       const lease = await getRepo().createWithRoomUpdate(buildCreateData(data), data.room_id);
+
+      // 自动创建首个账单（租金 + 押金）
+      try {
+        const startDateObj = new Date(lease.start_date);
+        const billYear = startDateObj.getFullYear();
+        const billMonth = startDateObj.getMonth() + 1;
+        const monthlyRent = Number(lease.monthly_rent);
+        const depositAmt = Number(lease.deposit ?? 0);
+        const billData: CreateBillInput = {
+          lease_id: lease.id,
+          bill_year: billYear,
+          bill_month: billMonth,
+          due_date: startDateObj.toISOString().slice(0, 10),
+          rent_amount: monthlyRent,
+          deposit_amount: depositAmt,
+          total_amount: monthlyRent + depositAmt,
+        };
+        await defaultBillService.create(orgId, billData);
+      } catch (e) {
+        logger.error({ err: e, leaseId: lease.id }, 'Failed to create initial bill for lease');
+      }
 
       // 新租客入住通知（不影响主流程）
       try {

@@ -219,6 +219,7 @@ model Bill {
   bill_month         Int
   due_date           DateTime @db.Date
   rent_amount        Decimal  @default(0) @db.Decimal(10, 2)
+  deposit_amount     Decimal  @default(0) @db.Decimal(10, 2)
   water_amount       Decimal  @default(0) @db.Decimal(10, 2)
   electricity_amount Decimal  @default(0) @db.Decimal(10, 2)
   other_amount       Decimal  @default(0) @db.Decimal(10, 2)
