@@ -1,222 +1,69 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { Building2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { apartmentsApi, roomsApi } from '@/lib/api';
-import { filterEmptyStrings } from '@/lib/utils/form';
-import { getErrorMessage } from '@/lib/utils/error';
-import { useAuth } from '@/lib/auth/context';
-import { Room, RoomStatus, RoomFacilities } from '@/types';
-import { EditRoomDialog } from '@/app/rooms/components/EditRoomDialog';
-import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
-import { getFacilityLabel } from '@/lib/constants/facilities';
-import {
-  ArrowLeft,
-  Building2,
-  Plus,
-  Pencil,
-  Trash2,
-  Home,
-  Loader2,
-  Layers,
-  Check,
-  ArrowRight,
-  ArrowLeft as ArrowLeftIcon,
-  CheckCircle,
-  X,
-  Settings2,
-} from 'lucide-react';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
-import { ROOM_STATUS_CONFIG } from '@/lib/status-config';
+import { useAuth } from '@/lib/auth/context';
+import type { Room, RoomFacilities } from '@/types';
 import { UtilityConfigDialog } from './components/UtilityConfigDialog';
-import { format } from 'date-fns';
-
-const roomSchema = z.object({
-  room_number: z.string().min(1, '请输入房间号'),
-  layout: z.string().optional(),
-  area: z.number().min(0, '面积不能为负').optional(),
-  monthly_rent: z.number().min(0, '租金不能为负'),
-  notes: z.string().optional(),
-});
-
-type RoomFormData = z.infer<typeof roomSchema>;
-
-// 批量创建的配置schema
-const roomBatchConfigSchema = z
-  .object({
-    floors: z.string().min(1, '请输入楼层'), // 支持多楼层，如 "1,2,3" 或 "1-5"
-    start_number: z.number().min(1, '起始号最小为1').max(99, '起始号最大为99'),
-    end_number: z.number().min(1, '结束号最小为1').max(99, '结束号最大为99'),
-    layout: z.string().optional(),
-    monthly_rent: z.number().min(0, '租金不能为负'),
-    area: z.number().min(0, '面积不能为负').optional(),
-    notes: z.string().optional(),
-  })
-  .refine((data) => data.end_number >= data.start_number, {
-    message: '结束号必须大于等于起始号',
-    path: ['end_number'],
-  });
-
-type RoomBatchConfigData = z.infer<typeof roomBatchConfigSchema>;
-
-// 批量编辑房间的 schema
-const batchEditSchema = z.object({
-  layout: z.string().optional(),
-  area: z.number().min(0, '面积不能为负').optional(),
-  status: z.enum(['available', 'occupied', 'maintenance']).optional(),
-});
-
-type BatchEditFormData = z.infer<typeof batchEditSchema>;
-
-// 状态边框颜色映射
-const STATUS_BORDER_COLORS: Record<RoomStatus, string> = {
-  available: 'border-green-500',
-  occupied: 'border-blue-500',
-  maintenance: 'border-orange-500',
-};
-
-// 从房间号提取楼层（假设格式为 {楼层}{房间序号:02d}，如 101、305）
-const extractFloor = (roomNumber: string): number => {
-  if (roomNumber.length <= 2) return 1;
-  return parseInt(roomNumber.slice(0, -2), 10) || 1;
-};
-
-// 常用户型选项
-const LAYOUT_OPTIONS = [
-  '单间',
-  '一室一厅',
-  '两室一厅',
-  '三室一厅',
-  '三室两厅',
-  '四室两厅',
-  '复式',
-  'Loft',
-];
+import {
+  apartmentFormDefaultValues,
+  apartmentSchema,
+  batchEditSchema,
+  roomBatchConfigSchema,
+  roomSchema,
+  type BatchEditFormData,
+  type RoomFormData,
+} from './apartment-detail.schemas';
+import {
+  useApartmentDetailData,
+  useApartmentFormSync,
+  useApartmentRoomMetrics,
+  useGeneratedRoomSelection,
+  useRoomBatchSelection,
+} from './apartment-detail.hooks';
+import { ApartmentDetailHeader } from './components/apartment-detail-header';
+import { ApartmentOverviewTab } from './components/apartment-overview-tab';
+import { ApartmentUpstreamTab } from './components/apartment-upstream-tab';
+import {
+  ApartmentEditDialog,
+  BatchCreateRoomDialog,
+  BatchEditDialog,
+  CreateRoomDialog,
+  DeleteRoomDialog,
+  RoomEditDialog,
+} from './components/apartment-detail-dialogs';
 
 export default function ApartmentDetailPage({ params }: { params: { id: string } }) {
   const apartmentId = params.id;
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
 
   const [isEditApartmentOpen, setIsEditApartmentOpen] = useState(false);
   const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
   const [isBatchCreateRoomOpen, setIsBatchCreateRoomOpen] = useState(false);
-  const [batchStep, setBatchStep] = useState<'config' | 'confirm'>('config');
-  const [selectedRooms, setSelectedRooms] = useState<Set<string>>(new Set());
+  const [batchCreateStep, setBatchCreateStep] = useState<'config' | 'confirm'>('config');
   const [isEditRoomOpen, setIsEditRoomOpen] = useState(false);
   const [isDeleteRoomOpen, setIsDeleteRoomOpen] = useState(false);
-  // 新增房间的设施配置
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [newRoomFacilities, setNewRoomFacilities] = useState<RoomFacilities | null>(null);
   const [facilityDialogOpen, setFacilityDialogOpen] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-  // 批量操作状态
   const [isBatchEditMode, setIsBatchEditMode] = useState(false);
-  const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(new Set());
   const [isBatchEditOpen, setIsBatchEditOpen] = useState(false);
   const [isUtilityConfigOpen, setIsUtilityConfigOpen] = useState(false);
 
-  // 获取公寓信息
-  const { data: apartment, isLoading: apartmentLoading } = useQuery({
-    queryKey: ['apartment', orgId, apartmentId],
-    queryFn: () => apartmentsApi.get(orgId!, apartmentId),
-    enabled: !!orgId,
-  });
-
-  // 获取该公寓的房间列表
-  const { data: rooms, isLoading: roomsLoading } = useQuery({
-    queryKey: ['rooms', orgId, apartmentId],
-    queryFn: () => roomsApi.list(orgId!, apartmentId),
-    enabled: !!orgId,
-  });
-
-  // 公寓编辑表单
   const apartmentForm = useForm({
-    resolver: zodResolver(
-      z.object({
-        name: z.string().min(1, '请输入公寓名称'),
-        address: z.string().min(1, '请输入公寓地址'),
-        description: z.string().optional(),
-        // 基本信息
-        floors: z.number().min(1).optional(),
-        land_area: z.number().min(0).optional(),
-        total_area: z.number().min(0).optional(),
-        // 上游信息
-        landlord_name: z.string().optional(),
-        landlord_contact: z.string().optional(),
-        contract_start: z.string().optional(),
-        contract_end: z.string().optional(),
-        landlord_rent: z.number().min(0).optional(),
-        operating_cost: z.number().min(0).optional(),
-      })
-    ),
-    defaultValues: {
-      name: '',
-      address: '',
-      description: '',
-      floors: undefined,
-      land_area: undefined,
-      total_area: undefined,
-      landlord_name: '',
-      landlord_contact: '',
-      contract_start: '',
-      contract_end: '',
-      landlord_rent: undefined,
-      operating_cost: undefined,
-    },
+    resolver: zodResolver(apartmentSchema),
+    defaultValues: apartmentFormDefaultValues,
   });
-
-  // 当公寓数据加载完成后，设置表单默认值
-  useState(() => {
-    if (apartment) {
-      apartmentForm.reset({
-        name: apartment.name,
-        address: apartment.address ?? '',
-        description: apartment.description ?? '',
-      });
-    }
-  });
-
-  // 房间创建表单
   const createRoomForm = useForm<RoomFormData>({
     resolver: zodResolver(roomSchema),
     defaultValues: {
@@ -227,9 +74,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       notes: '',
     },
   });
-
-  // 批量创建房间表单
-  const batchCreateRoomForm = useForm<RoomBatchConfigData>({
+  const batchCreateRoomForm = useForm({
     resolver: zodResolver(roomBatchConfigSchema),
     defaultValues: {
       floors: '1',
@@ -241,92 +86,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
       notes: '',
     },
   });
-
-  // 解析楼层字符串，支持 "1,2,3" 或 "1-5" 格式
-  const parseFloors = (floorsStr: string): number[] => {
-    const floors: Set<number> = new Set();
-    const parts = floorsStr.split(',').map((s) => s.trim());
-    for (const part of parts) {
-      if (part.includes('-')) {
-        const [start, end] = part.split('-').map((s) => parseInt(s.trim(), 10));
-        if (!isNaN(start) && !isNaN(end)) {
-          for (let i = start; i <= end; i++) {
-            floors.add(i);
-          }
-        }
-      } else {
-        const floor = parseInt(part, 10);
-        if (!isNaN(floor)) {
-          floors.add(floor);
-        }
-      }
-    }
-    return Array.from(floors).sort((a, b) => a - b);
-  };
-
-  // 根据配置生成房间列表（依赖表单字段以触发重新计算）
-  const batchFloors = batchCreateRoomForm.watch('floors');
-  const batchStartNumber = batchCreateRoomForm.watch('start_number');
-  const batchEndNumber = batchCreateRoomForm.watch('end_number');
-  const generatedRooms = useMemo(() => {
-    const floors = parseFloors(batchFloors || '1');
-    const startNum = batchStartNumber || 1;
-    const endNum = batchEndNumber || 10;
-
-    const rooms: { floor: number; rooms: string[] }[] = [];
-    for (const floor of floors) {
-      const floorRooms: string[] = [];
-      for (let num = startNum; num <= endNum; num++) {
-        floorRooms.push(`${floor}${String(num).padStart(2, '0')}`);
-      }
-      rooms.push({ floor, rooms: floorRooms });
-    }
-    return rooms;
-  }, [batchFloors, batchStartNumber, batchEndNumber]);
-
-  // 初始化选中房间（全部选中）
-  const initializeSelectedRooms = useCallback(() => {
-    const allRooms = generatedRooms.flatMap((f) => f.rooms);
-    setSelectedRooms(new Set(allRooms));
-  }, [generatedRooms]);
-
-  // 切换房间选中状态
-  const toggleRoom = (roomNumber: string) => {
-    setSelectedRooms((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(roomNumber)) {
-        newSet.delete(roomNumber);
-      } else {
-        newSet.add(roomNumber);
-      }
-      return newSet;
-    });
-  };
-
-  // 切换整层楼
-  const toggleFloor = (floorRooms: string[], select: boolean) => {
-    setSelectedRooms((prev) => {
-      const newSet = new Set(prev);
-      if (select) {
-        floorRooms.forEach((r) => newSet.add(r));
-      } else {
-        floorRooms.forEach((r) => newSet.delete(r));
-      }
-      return newSet;
-    });
-  };
-
-  // 全选/取消全选
-  const toggleAll = (select: boolean) => {
-    if (select) {
-      const allRooms = generatedRooms.flatMap((f) => f.rooms);
-      setSelectedRooms(new Set(allRooms));
-    } else {
-      setSelectedRooms(new Set());
-    }
-  };
-
-  // 批量编辑表单
   const batchEditForm = useForm<BatchEditFormData>({
     resolver: zodResolver(batchEditSchema),
     defaultValues: {
@@ -336,206 +95,84 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     },
   });
 
-  // 更新公寓
-  const updateApartmentMutation = useMutation({
-    mutationFn: (data: {
-      name: string;
-      address: string;
-      description?: string;
-      floors?: number;
-      land_area?: number;
-      total_area?: number;
-      landlord_name?: string;
-      landlord_contact?: string;
-      contract_start?: string;
-      contract_end?: string;
-      landlord_rent?: number;
-      operating_cost?: number;
-    }) => apartmentsApi.update(orgId!, apartmentId, filterEmptyStrings(data)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['apartment', orgId, apartmentId] });
-      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
-      setIsEditApartmentOpen(false);
-      toast.success('公寓信息更新成功');
-    },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
-  });
-
-  // 创建房间
-  const createRoomMutation = useMutation({
-    mutationFn: (data: RoomFormData & { status: RoomStatus; facilities?: RoomFacilities | null }) =>
-      roomsApi.create(orgId!, apartmentId, filterEmptyStrings(data)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
+  const {
+    apartment,
+    apartmentLoading,
+    rooms,
+    roomsLoading,
+    updateApartmentMutation,
+    createRoomMutation,
+    batchCreateRoomMutation,
+    updateRoomMutation,
+    deleteRoomMutation,
+    batchUpdateMutation,
+    batchDeleteMutation,
+  } = useApartmentDetailData({
+    apartmentId,
+    orgId,
+    onApartmentUpdated: () => setIsEditApartmentOpen(false),
+    onRoomCreated: () => {
       setIsCreateRoomOpen(false);
       createRoomForm.reset();
       setNewRoomFacilities(null);
-      toast.success('房间创建成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
-  });
-
-  // 批量创建房间
-  const batchCreateRoomMutation = useMutation({
-    mutationFn: (roomNumbers: string[]) => {
-      const config = batchCreateRoomForm.getValues();
-      return roomsApi.batchCreate(orgId!, apartmentId, {
-        room_numbers: roomNumbers,
-        layout: config.layout || undefined,
-        monthly_rent: config.monthly_rent,
-        area: config.area || undefined,
-        notes: config.notes || undefined,
-      });
-    },
-    onSuccess: (rooms) => {
-      queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
-      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
+    onBatchRoomsCreated: () => {
       setIsBatchCreateRoomOpen(false);
-      setBatchStep('config');
+      setBatchCreateStep('config');
       batchCreateRoomForm.reset();
-      setSelectedRooms(new Set());
-      toast.success(`成功创建 ${rooms.length} 个房间`);
+      resetGeneratedSelection();
     },
-    onError: (error) => toast.error(getErrorMessage(error, '批量创建失败，请重试')),
-  });
-
-  // 更新房间
-  const updateRoomMutation = useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string;
-      data: { room_number: string; layout?: string; area?: number; monthly_rent: number; notes?: string; facilities?: RoomFacilities | null };
-    }) => roomsApi.update(orgId!, id, filterEmptyStrings({ ...data, apartment_id: apartmentId })),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
+    onRoomUpdated: () => {
       setIsEditRoomOpen(false);
       setSelectedRoom(null);
-      toast.success('房间信息更新成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
-  });
-
-  // 删除房间
-  const deleteRoomMutation = useMutation({
-    mutationFn: (id: string) => roomsApi.delete(orgId!, id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
+    onRoomDeleted: () => {
       setIsDeleteRoomOpen(false);
       setSelectedRoom(null);
-      toast.success('房间删除成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
-  });
-
-  // 批量更新房间
-  const batchUpdateMutation = useMutation({
-    mutationFn: async (data: BatchEditFormData) => {
-      const updates = Array.from(selectedRoomIds).map((id) => {
-        const updateData: Partial<Room> = {};
-        if (data.layout !== undefined && data.layout !== '') {
-          updateData.layout = data.layout;
-        }
-        if (data.area !== undefined) {
-          updateData.area = data.area;
-        }
-        if (data.status !== undefined) {
-          updateData.status = data.status;
-        }
-        return roomsApi.update(orgId!, id, updateData);
-      });
-      return Promise.all(updates);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
+    onBatchUpdated: () => {
       setIsBatchEditOpen(false);
       setIsBatchEditMode(false);
-      setSelectedRoomIds(new Set());
+      clearRoomSelection();
       batchEditForm.reset();
-      toast.success('批量更新成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '批量更新失败，请重试')),
-  });
-
-  // 批量删除房间
-  const batchDeleteMutation = useMutation({
-    mutationFn: async () => {
-      const deletes = Array.from(selectedRoomIds).map((id) => roomsApi.delete(orgId!, id));
-      return Promise.all(deletes);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
+    onBatchDeleted: () => {
       setIsBatchEditMode(false);
-      setSelectedRoomIds(new Set());
-      toast.success('批量删除成功');
+      clearRoomSelection();
     },
-    onError: (error) => toast.error(getErrorMessage(error, '批量删除失败，请重试')),
   });
 
-  // 切换房间选中状态（批量模式）
-  const toggleRoomSelection = (roomId: string) => {
-    setSelectedRoomIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(roomId)) {
-        newSet.delete(roomId);
-      } else {
-        newSet.add(roomId);
-      }
-      return newSet;
-    });
-  };
+  useApartmentFormSync(apartment, apartmentForm);
 
-  // 全选/取消全选当前楼层
-  const toggleFloorSelection = (floorRooms: Room[], select: boolean) => {
-    setSelectedRoomIds((prev) => {
-      const newSet = new Set(prev);
-      if (select) {
-        floorRooms.forEach((r) => newSet.add(r.id));
-      } else {
-        floorRooms.forEach((r) => newSet.delete(r.id));
-      }
-      return newSet;
-    });
-  };
+  const {
+    generatedRooms,
+    selectedRooms,
+    initializeSelectedRooms,
+    toggleRoom,
+    toggleFloor,
+    toggleAll,
+    resetSelectedRooms: resetGeneratedSelection,
+  } = useGeneratedRoomSelection(batchCreateRoomForm);
 
-  // 全选/取消全选所有房间
-  const toggleAllRoomSelection = (select: boolean) => {
-    if (select && rooms) {
-      setSelectedRoomIds(new Set(rooms.map((r) => r.id)));
-    } else {
-      setSelectedRoomIds(new Set());
-    }
-  };
+  const {
+    selectedRoomIds,
+    toggleRoomSelection,
+    toggleFloorSelection,
+    toggleAllRoomSelection,
+    clearRoomSelection,
+  } = useRoomBatchSelection(rooms);
 
-  // 退出批量模式
-  const exitBatchMode = () => {
-    setIsBatchEditMode(false);
-    setSelectedRoomIds(new Set());
-  };
+  const { stats, roomGroups } = useApartmentRoomMetrics(rooms);
 
   const handleEditApartment = () => {
     if (apartment) {
-      apartmentForm.reset({
-        name: apartment.name,
-        address: apartment.address ?? '',
-        description: apartment.description ?? '',
-        floors: apartment.floors ?? undefined,
-        land_area: apartment.land_area ?? undefined,
-        total_area: apartment.total_area ?? undefined,
-        landlord_name: apartment.landlord_name ?? '',
-        landlord_contact: apartment.landlord_contact ?? '',
-        contract_start: apartment.contract_start
-          ? new Date(apartment.contract_start).toISOString().split('T')[0]
-          : '',
-        contract_end: apartment.contract_end
-          ? new Date(apartment.contract_end).toISOString().split('T')[0]
-          : '',
-        landlord_rent: apartment.landlord_rent ?? undefined,
-        operating_cost: apartment.operating_cost ?? undefined,
-      });
       setIsEditApartmentOpen(true);
     }
+  };
+
+  const handleRoomClick = (room: Room) => {
+    setSelectedRoom(room);
+    setIsEditRoomOpen(true);
   };
 
   const handleDeleteRoom = (room: Room) => {
@@ -543,43 +180,19 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     setIsDeleteRoomOpen(true);
   };
 
-  // 计算统计数据
-  const stats = {
-    total: rooms?.length || 0,
-    available: rooms?.filter((r) => r.status === 'available').length || 0,
-    occupied: rooms?.filter((r) => r.status === 'occupied').length || 0,
-    maintenance: rooms?.filter((r) => r.status === 'maintenance').length || 0,
+  const handleExitBatchMode = () => {
+    setIsBatchEditMode(false);
+    clearRoomSelection();
   };
 
-  // 按楼层分组房间
-  const roomsByFloor = useMemo(() => {
-    if (!rooms) return {};
-    const grouped: Record<number, Room[]> = {};
-    for (const room of rooms) {
-      const floor = extractFloor(room.room_number);
-      if (!grouped[floor]) {
-        grouped[floor] = [];
-      }
-      grouped[floor].push(room);
+  const handleDeleteSelectedRooms = () => {
+    if (selectedRoomIds.size === 0) {
+      return;
     }
-    // 对每层楼内的房间按房间号排序
-    for (const floor of Object.keys(grouped)) {
-      grouped[Number(floor)].sort((a, b) => a.room_number.localeCompare(b.room_number));
+
+    if (confirm(`确定要删除选中的 ${selectedRoomIds.size} 个房间吗？`)) {
+      batchDeleteMutation.mutate(Array.from(selectedRoomIds));
     }
-    return grouped;
-  }, [rooms]);
-
-  // 获取排序后的楼层列表
-  const sortedFloors = useMemo(() => {
-    return Object.keys(roomsByFloor)
-      .map(Number)
-      .sort((a, b) => a - b);
-  }, [roomsByFloor]);
-
-  // 房间卡片点击处理
-  const handleRoomClick = (room: Room) => {
-    setSelectedRoom(room);
-    setIsEditRoomOpen(true);
   };
 
   if (authLoading || apartmentLoading) {
@@ -610,485 +223,59 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     <PermissionPageGuard>
       <MainLayout>
         <div className="space-y-6">
-          {/* 返回按钮和标题 */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => router.push('/apartments')}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <h1 className="text-3xl font-bold">{apartment.name}</h1>
-                <p className="text-muted-foreground">{apartment.address}</p>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" onClick={handleEditApartment}>
-              <Pencil className="mr-2 h-4 w-4" />
-              编辑
-            </Button>
-          </div>
+          <ApartmentDetailHeader
+            apartmentName={apartment.name}
+            apartmentAddress={apartment.address}
+            onBack={() => router.push('/apartments')}
+            onEdit={handleEditApartment}
+          />
 
-          {/* Tabs */}
           <Tabs defaultValue="basic" className="space-y-4">
             <TabsList>
               <TabsTrigger value="basic">基础信息</TabsTrigger>
               <TabsTrigger value="upstream">上游信息</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="basic" className="space-y-4">
-              {/* 物业信息 + 房间统计 */}
-              <div className="grid gap-4 md:grid-cols-2">
-                {/* 物业信息 */}
-                {(apartment.floors || apartment.land_area || apartment.total_area) && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>物业信息</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="flex flex-col">
-                          <span className="text-xs text-muted-foreground">楼层数</span>
-                          <span className="font-medium">{apartment.floors ?? '-'} 层</span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-xs text-muted-foreground">用地面积</span>
-                          <span className="font-medium">
-                            {apartment.land_area ? `${apartment.land_area} 亩` : '-'}
-                          </span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-xs text-muted-foreground">总面积</span>
-                          <span className="font-medium">
-                            {apartment.total_area ? `${apartment.total_area} ㎡` : '-'}
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* 房间统计 */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>房间统计</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-4 gap-4">
-                      <div className="flex flex-col">
-                        <span className="text-xs text-muted-foreground">总房间数</span>
-                        <span className="text-2xl font-bold">{stats.total}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-xs text-muted-foreground">已出租</span>
-                        <span className="text-2xl font-bold text-blue-600">{stats.occupied}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-xs text-muted-foreground">空置</span>
-                        <span className="text-2xl font-bold text-green-600">{stats.available}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-xs text-muted-foreground">维修中</span>
-                        <span className="text-2xl font-bold text-orange-600">{stats.maintenance}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* 房间列表 */}
-              <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>房间列表</CardTitle>
-                <CardDescription>管理该公寓的所有房间</CardDescription>
-              </div>
-              <div className="flex gap-2">
-                {isBatchEditMode ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => toggleAllRoomSelection(true)}
-                    >
-                      全选
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => toggleAllRoomSelection(false)}
-                    >
-                      取消全选
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={selectedRoomIds.size === 0}
-                      onClick={() => setIsBatchEditOpen(true)}
-                    >
-                      <Pencil className="mr-2 h-4 w-4" />
-                      批量编辑 ({selectedRoomIds.size})
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      disabled={selectedRoomIds.size === 0}
-                      onClick={() => {
-                        if (confirm(`确定要删除选中的 ${selectedRoomIds.size} 个房间吗？`)) {
-                          batchDeleteMutation.mutate();
-                        }
-                      }}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      删除 ({selectedRoomIds.size})
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={exitBatchMode}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button variant="outline" onClick={() => setIsBatchEditMode(true)}>
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      批量操作
-                    </Button>
-                    <Button variant="outline" onClick={() => setIsBatchCreateRoomOpen(true)}>
-                      <Layers className="mr-2 h-4 w-4" />
-                      批量添加
-                    </Button>
-                    <Button onClick={() => setIsCreateRoomOpen(true)}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      新增房间
-                    </Button>
-                  </>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {roomsLoading ? (
-                <Skeleton className="h-64" />
-              ) : rooms && rooms.length > 0 ? (
-                <>
-                  {/* 状态图例 */}
-                  <div className="mb-4 flex items-center gap-2">
-                    {(Object.keys(ROOM_STATUS_CONFIG) as RoomStatus[]).map((status) => (
-                      <Badge
-                        key={status}
-                        variant={ROOM_STATUS_CONFIG[status].variant}
-                        className="text-xs"
-                      >
-                        {ROOM_STATUS_CONFIG[status].label}
-                      </Badge>
-                    ))}
-                  </div>
-                  {/* 楼层分组 */}
-                  <div className="space-y-6">
-                    {sortedFloors.map((floor) => {
-                      const floorRooms = roomsByFloor[floor];
-                      const selectedCount = floorRooms.filter((r) =>
-                        selectedRoomIds.has(r.id)
-                      ).length;
-                      return (
-                        <div key={floor} className="space-y-2">
-                          <h4 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                            {isBatchEditMode && (
-                              <button
-                                onClick={() =>
-                                  toggleFloorSelection(
-                                    floorRooms,
-                                    selectedCount !== floorRooms.length
-                                  )
-                                }
-                                className="rounded p-0.5 hover:bg-accent"
-                              >
-                                <div
-                                  className={`flex h-4 w-4 items-center justify-center rounded border-2 ${
-                                    selectedCount === floorRooms.length
-                                      ? 'border-primary bg-primary text-primary-foreground'
-                                      : selectedCount > 0
-                                        ? 'border-primary bg-primary/20'
-                                        : 'border-muted-foreground'
-                                  }`}
-                                >
-                                  {selectedCount === floorRooms.length && (
-                                    <Check className="h-3 w-3" />
-                                  )}
-                                </div>
-                              </button>
-                            )}
-                            <Layers className="h-4 w-4" />
-                            {floor} 楼
-                            <span className="text-xs">
-                              ({floorRooms.length} 间
-                              {isBatchEditMode && selectedCount > 0 && `，已选 ${selectedCount}`})
-                            </span>
-                          </h4>
-                          <div className="flex flex-wrap gap-2">
-                            {floorRooms.map((room) => {
-                              const borderClass = STATUS_BORDER_COLORS[room.status];
-                              const isSelected = selectedRoomIds.has(room.id);
-                              return (
-                                <div
-                                  key={room.id}
-                                  role="button"
-                                  tabIndex={0}
-                                  onClick={() => {
-                                    if (isBatchEditMode) {
-                                      toggleRoomSelection(room.id);
-                                    } else {
-                                      handleRoomClick(room);
-                                    }
-                                  }}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                      e.preventDefault();
-                                      if (isBatchEditMode) {
-                                        toggleRoomSelection(room.id);
-                                      } else {
-                                        handleRoomClick(room);
-                                      }
-                                    }
-                                  }}
-                                  className={`group relative flex min-w-[72px] cursor-pointer flex-col items-center rounded-lg border-2 bg-card p-2 transition-all hover:bg-accent ${borderClass} ${isSelected ? 'ring-2 ring-primary ring-offset-1' : ''}`}
-                                >
-                                  {isBatchEditMode && (
-                                    <div className="absolute -left-1 -top-1">
-                                      <div
-                                        className={`flex h-4 w-4 items-center justify-center rounded-full border-2 ${
-                                          isSelected
-                                            ? 'border-primary bg-primary text-primary-foreground'
-                                            : 'border-muted-foreground bg-background'
-                                        }`}
-                                      >
-                                        {isSelected && <Check className="h-3 w-3" />}
-                                      </div>
-                                    </div>
-                                  )}
-                                  <span className="font-mono text-sm font-medium">
-                                    {room.room_number}
-                                  </span>
-                                  <span className="text-xs text-muted-foreground">
-                                    ¥{room.monthly_rent.toLocaleString()}
-                                  </span>
-                                  <span className="text-xs text-muted-foreground/70">
-                                    {room.layout || '-'}
-                                  </span>
-                                  {/* 悬停时显示删除按钮（非批量模式） */}
-                                  {!isBatchEditMode && (
-                                    <div className="absolute -right-1 -top-1 opacity-0 transition-opacity group-hover:opacity-100">
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleDeleteRoom(room);
-                                        }}
-                                        className="rounded-full bg-destructive p-1 text-destructive-foreground hover:bg-destructive/80"
-                                      >
-                                        <Trash2 className="h-3 w-3" />
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                  <Home className="mb-4 h-12 w-12" />
-                  <p>暂无房间，点击上方按钮添加</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            <TabsContent value="basic">
+              <ApartmentOverviewTab
+                apartment={apartment}
+                rooms={rooms}
+                roomsLoading={roomsLoading}
+                stats={stats}
+                roomGroups={roomGroups}
+                isBatchEditMode={isBatchEditMode}
+                selectedRoomIds={selectedRoomIds}
+                isBatchDeletePending={batchDeleteMutation.isPending}
+                onOpenBatchMode={() => setIsBatchEditMode(true)}
+                onExitBatchMode={handleExitBatchMode}
+                onOpenCreateRoom={() => setIsCreateRoomOpen(true)}
+                onOpenBatchCreate={() => setIsBatchCreateRoomOpen(true)}
+                onOpenBatchEdit={() => setIsBatchEditOpen(true)}
+                onDeleteSelected={handleDeleteSelectedRooms}
+                onSelectAllRooms={toggleAllRoomSelection}
+                onToggleFloorSelection={toggleFloorSelection}
+                onToggleRoomSelection={toggleRoomSelection}
+                onRoomClick={handleRoomClick}
+                onDeleteRoom={handleDeleteRoom}
+              />
             </TabsContent>
 
-            <TabsContent value="upstream" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>上游信息</CardTitle>
-                  <CardDescription>房东和合同相关信息</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col">
-                      <span className="text-xs text-muted-foreground">房东姓名</span>
-                      <span className="font-medium">{apartment.landlord_name ?? '-'}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs text-muted-foreground">联系方式</span>
-                      <span className="font-medium">{apartment.landlord_contact ?? '-'}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs text-muted-foreground">合同开始</span>
-                      <span className="font-medium">
-                        {apartment.contract_start
-                          ? format(new Date(apartment.contract_start), 'yyyy-MM-dd')
-                          : '-'}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs text-muted-foreground">合同结束</span>
-                      <span className="font-medium">
-                        {apartment.contract_end
-                          ? format(new Date(apartment.contract_end), 'yyyy-MM-dd')
-                          : '-'}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs text-muted-foreground">房东租金</span>
-                      <span className="font-medium">
-                        {apartment.landlord_rent ? `¥${apartment.landlord_rent}/月` : '-'}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs text-muted-foreground">经营成本</span>
-                      <span className="font-medium">
-                        {apartment.operating_cost ? `¥${apartment.operating_cost}/月` : '-'}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            <TabsContent value="upstream">
+              <ApartmentUpstreamTab apartment={apartment} />
             </TabsContent>
           </Tabs>
         </div>
 
-        {/* 编辑公寓对话框 */}
-        <Dialog open={isEditApartmentOpen} onOpenChange={setIsEditApartmentOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>编辑公寓</DialogTitle>
-              <DialogDescription>修改公寓信息</DialogDescription>
-            </DialogHeader>
-            <form
-              onSubmit={apartmentForm.handleSubmit((data) => updateApartmentMutation.mutate(data))}
-              className="space-y-4"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="name">公寓名称</Label>
-                <Input id="name" {...apartmentForm.register('name')} />
-                {apartmentForm.formState.errors.name && (
-                  <p className="text-sm text-destructive">
-                    {apartmentForm.formState.errors.name.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">地址</Label>
-                <Input id="address" {...apartmentForm.register('address')} />
-                {apartmentForm.formState.errors.address && (
-                  <p className="text-sm text-destructive">
-                    {apartmentForm.formState.errors.address.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="description">描述</Label>
-                <Input id="description" {...apartmentForm.register('description')} />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="floors">楼层数</Label>
-                  <Input
-                    id="floors"
-                    type="number"
-                    min={1}
-                    {...apartmentForm.register('floors', { valueAsNumber: true })}
-                    placeholder="如：5"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="land_area">用地面积（亩）</Label>
-                  <Input
-                    id="land_area"
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    {...apartmentForm.register('land_area', { valueAsNumber: true })}
-                    placeholder="如：2.5"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="total_area">总面积（㎡）</Label>
-                  <Input
-                    id="total_area"
-                    type="number"
-                    min={0}
-                    step={0.01}
-                    {...apartmentForm.register('total_area', { valueAsNumber: true })}
-                    placeholder="如：500"
-                  />
-                </div>
-              </div>
+        <ApartmentEditDialog
+          open={isEditApartmentOpen}
+          onOpenChange={setIsEditApartmentOpen}
+          form={apartmentForm}
+          onSubmit={(data) => updateApartmentMutation.mutate(data)}
+          isPending={updateApartmentMutation.isPending}
+        />
 
-              <details className="group border rounded-md p-3">
-                <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
-                  上游信息（点击展开）
-                </summary>
-                <div className="mt-3 space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="landlord_name">房东姓名</Label>
-                      <Input id="landlord_name" {...apartmentForm.register('landlord_name')} placeholder="如：张三" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="landlord_contact">联系方式</Label>
-                      <Input id="landlord_contact" {...apartmentForm.register('landlord_contact')} placeholder="如：138xxxx" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="contract_start">合同开始</Label>
-                      <Input id="contract_start" type="date" {...apartmentForm.register('contract_start')} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="contract_end">合同结束</Label>
-                      <Input id="contract_end" type="date" {...apartmentForm.register('contract_end')} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="landlord_rent">房东租金（元/月）</Label>
-                      <Input
-                        id="landlord_rent"
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        {...apartmentForm.register('landlord_rent', { valueAsNumber: true })}
-                        placeholder="如：5000"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="operating_cost">经营成本（元/月）</Label>
-                      <Input
-                        id="operating_cost"
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        {...apartmentForm.register('operating_cost', { valueAsNumber: true })}
-                        placeholder="如：1000"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </details>
-
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsEditApartmentOpen(false)}
-                >
-                  取消
-                </Button>
-                <Button type="submit" disabled={updateApartmentMutation.isPending}>
-                  {updateApartmentMutation.isPending ? '保存中...' : '保存'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        {/* 新增房间对话框 */}
-        <Dialog
+        <CreateRoomDialog
+          apartmentName={apartment.name}
           open={isCreateRoomOpen}
           onOpenChange={(open) => {
             setIsCreateRoomOpen(open);
@@ -1096,532 +283,84 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
               setNewRoomFacilities(null);
             }
           }}
-        >
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>新增房间</DialogTitle>
-              <DialogDescription>在 {apartment.name} 添加新房间</DialogDescription>
-            </DialogHeader>
-            <form
-              onSubmit={createRoomForm.handleSubmit((data) =>
-                createRoomMutation.mutate({ ...data, status: 'available', facilities: newRoomFacilities })
-              )}
-              className="space-y-4"
-            >
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="room_number">房间号 *</Label>
-                  <Input id="room_number" {...createRoomForm.register('room_number')} />
-                  {createRoomForm.formState.errors.room_number && (
-                    <p className="text-sm text-destructive">
-                      {createRoomForm.formState.errors.room_number.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="layout">户型</Label>
-                  <Select
-                    value={createRoomForm.watch('layout') || ''}
-                    onValueChange={(value) => createRoomForm.setValue('layout', value)}
-                  >
-                    <SelectTrigger className="min-w-[120px]">
-                      <SelectValue placeholder="选择户型" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LAYOUT_OPTIONS.map((layout) => (
-                        <SelectItem key={layout} value={layout}>
-                          {layout}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="area">面积 (m²)</Label>
-                  <Input
-                    id="area"
-                    type="number"
-                    step="0.01"
-                    {...createRoomForm.register('area', { valueAsNumber: true })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="monthly_rent">月租 (元) *</Label>
-                  <Input
-                    id="monthly_rent"
-                    type="number"
-                    step="0.01"
-                    {...createRoomForm.register('monthly_rent', { valueAsNumber: true })}
-                  />
-                  {createRoomForm.formState.errors.monthly_rent && (
-                    <p className="text-sm text-destructive">
-                      {createRoomForm.formState.errors.monthly_rent.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="notes">备注</Label>
-                <Input id="notes" {...createRoomForm.register('notes')} />
-              </div>
-
-              {/* 家具家电配置 */}
-              <div className="space-y-2">
-                <Label>家具家电</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full justify-between"
-                  onClick={() => setFacilityDialogOpen(true)}
-                >
-                  <span className="text-muted-foreground">
-                    {(() => {
-                      if (
-                        !newRoomFacilities ||
-                        (newRoomFacilities.furniture.length === 0 &&
-                          newRoomFacilities.appliances.length === 0)
-                      ) {
-                        return '未配置';
-                      }
-                      const allItems = [...newRoomFacilities.furniture, ...newRoomFacilities.appliances];
-                      const count = allItems.reduce((sum, item) => sum + item.quantity, 0);
-                      const names = allItems.slice(0, 4).map((item) => {
-                        const label = getFacilityLabel(item.code);
-                        return item.quantity > 1 ? `${label}×${item.quantity}` : label;
-                      });
-                      const remaining = allItems.length - 4;
-                      return remaining > 0 ? `${names.join('、')} 等${count}件` : `${names.join('、')} 共${count}件`;
-                    })()}
-                  </span>
-                  <Settings2 className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsCreateRoomOpen(false)}>
-                  取消
-                </Button>
-                <Button type="submit" disabled={createRoomMutation.isPending}>
-                  {createRoomMutation.isPending ? '创建中...' : '创建'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        {/* 家具家电配置二级弹窗 */}
-        <FacilitySelectorDialog
-          value={newRoomFacilities}
-          onChange={setNewRoomFacilities}
-          open={facilityDialogOpen}
-          onOpenChange={setFacilityDialogOpen}
+          form={createRoomForm}
+          facilities={newRoomFacilities}
+          onFacilitiesChange={setNewRoomFacilities}
+          facilityDialogOpen={facilityDialogOpen}
+          onFacilityDialogOpenChange={setFacilityDialogOpen}
+          onSubmit={(data) =>
+            createRoomMutation.mutate({
+              ...data,
+              status: 'available',
+              facilities: newRoomFacilities,
+            })
+          }
+          isPending={createRoomMutation.isPending}
         />
 
-        {/* 批量创建房间对话框 */}
-        <Dialog
+        <BatchCreateRoomDialog
           open={isBatchCreateRoomOpen}
-          onOpenChange={(open) => {
-            setIsBatchCreateRoomOpen(open);
-            if (!open) {
-              setBatchStep('config');
-              setSelectedRooms(new Set());
-            }
-          }}
-        >
-          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {batchStep === 'config' ? '批量添加房间 - 配置' : '批量添加房间 - 确认选择'}
-              </DialogTitle>
-              <DialogDescription>
-                {batchStep === 'config'
-                  ? '设置楼层和房间号范围，支持多楼层（如 1,2,3 或 1-5）'
-                  : '点击房间号切换选中状态，只添加激活的房间'}
-              </DialogDescription>
-            </DialogHeader>
+          onOpenChange={setIsBatchCreateRoomOpen}
+          step={batchCreateStep}
+          onStepChange={setBatchCreateStep}
+          form={batchCreateRoomForm}
+          generatedRooms={generatedRooms}
+          selectedRooms={selectedRooms}
+          onInitializeSelection={initializeSelectedRooms}
+          onToggleAll={toggleAll}
+          onToggleFloor={toggleFloor}
+          onToggleRoom={toggleRoom}
+          onSubmitConfig={() => setBatchCreateStep('confirm')}
+          onSubmitRooms={() =>
+            batchCreateRoomMutation.mutate({
+              roomNumbers: Array.from(selectedRooms),
+              config: batchCreateRoomForm.getValues(),
+            })
+          }
+          isPending={batchCreateRoomMutation.isPending}
+          onResetSelection={resetGeneratedSelection}
+        />
 
-            {batchStep === 'config' ? (
-              <form
-                onSubmit={batchCreateRoomForm.handleSubmit(() => {
-                  initializeSelectedRooms();
-                  setBatchStep('confirm');
-                })}
-                className="space-y-4"
-              >
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="floors">楼层</Label>
-                    <Input
-                      id="floors"
-                      placeholder="如: 1,2,3 或 1-5"
-                      {...batchCreateRoomForm.register('floors')}
-                    />
-                    {batchCreateRoomForm.formState.errors.floors && (
-                      <p className="text-sm text-destructive">
-                        {batchCreateRoomForm.formState.errors.floors.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="start_number">起始号</Label>
-                    <Input
-                      id="start_number"
-                      type="number"
-                      min="1"
-                      max="99"
-                      {...batchCreateRoomForm.register('start_number', { valueAsNumber: true })}
-                    />
-                    {batchCreateRoomForm.formState.errors.start_number && (
-                      <p className="text-sm text-destructive">
-                        {batchCreateRoomForm.formState.errors.start_number.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="end_number">结束号</Label>
-                    <Input
-                      id="end_number"
-                      type="number"
-                      min="1"
-                      max="99"
-                      {...batchCreateRoomForm.register('end_number', { valueAsNumber: true })}
-                    />
-                    {batchCreateRoomForm.formState.errors.end_number && (
-                      <p className="text-sm text-destructive">
-                        {batchCreateRoomForm.formState.errors.end_number.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* 预览 */}
-                <div className="rounded-md bg-muted p-3">
-                  <p className="mb-2 text-sm text-muted-foreground">
-                    将生成 {generatedRooms.reduce((sum, f) => sum + f.rooms.length, 0)} 个房间 （
-                    {generatedRooms.length} 层 × {generatedRooms[0]?.rooms.length || 0} 间/层）
-                  </p>
-                  <div className="max-h-24 space-y-1 overflow-y-auto font-mono text-sm">
-                    {generatedRooms.map(({ floor, rooms }) => (
-                      <div key={floor}>
-                        {floor}楼: {rooms[0]} - {rooms[rooms.length - 1]}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="batch-layout">户型</Label>
-                    <Select
-                      value={batchCreateRoomForm.watch('layout') || ''}
-                      onValueChange={(value) => batchCreateRoomForm.setValue('layout', value)}
-                    >
-                      <SelectTrigger className="min-w-[120px]">
-                        <SelectValue placeholder="选择户型" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {LAYOUT_OPTIONS.map((layout) => (
-                          <SelectItem key={layout} value={layout}>
-                            {layout}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="batch-area">面积 (m²)</Label>
-                    <Input
-                      id="batch-area"
-                      type="number"
-                      step="0.01"
-                      {...batchCreateRoomForm.register('area', { valueAsNumber: true })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="batch-monthly_rent">月租 (元) *</Label>
-                    <Input
-                      id="batch-monthly_rent"
-                      type="number"
-                      step="0.01"
-                      {...batchCreateRoomForm.register('monthly_rent', { valueAsNumber: true })}
-                    />
-                    {batchCreateRoomForm.formState.errors.monthly_rent && (
-                      <p className="text-sm text-destructive">
-                        {batchCreateRoomForm.formState.errors.monthly_rent.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="batch-notes">备注</Label>
-                  <Input id="batch-notes" {...batchCreateRoomForm.register('notes')} />
-                </div>
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsBatchCreateRoomOpen(false)}
-                  >
-                    取消
-                  </Button>
-                  <Button type="submit">
-                    下一步
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </DialogFooter>
-              </form>
-            ) : (
-              <div className="space-y-4">
-                {/* 操作栏 */}
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => toggleAll(true)}>
-                      全选
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => toggleAll(false)}>
-                      取消全选
-                    </Button>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    已选择 <span className="font-medium text-foreground">{selectedRooms.size}</span>{' '}
-                    个房间
-                  </p>
-                </div>
-
-                {/* 每层楼的房间展示 */}
-                <div className="max-h-[400px] space-y-4 overflow-y-auto">
-                  {generatedRooms.map(({ floor, rooms }) => {
-                    const selectedCount = rooms.filter((r) => selectedRooms.has(r)).length;
-                    const allSelected = selectedCount === rooms.length;
-                    const someSelected = selectedCount > 0 && !allSelected;
-
-                    return (
-                      <div key={floor} className="rounded-lg border p-3">
-                        <div className="mb-2 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant={allSelected ? 'default' : 'outline'}
-                              size="sm"
-                              className="h-7"
-                              onClick={() => toggleFloor(rooms, !allSelected)}
-                            >
-                              {allSelected ? (
-                                <Check className="mr-1 h-4 w-4" />
-                              ) : someSelected ? (
-                                <span className="mr-1 flex h-4 w-4 items-center justify-center text-xs">
-                                  -
-                                </span>
-                              ) : (
-                                <span className="mr-1 h-4 w-4" />
-                              )}
-                              {floor}楼
-                            </Button>
-                            <span className="text-sm text-muted-foreground">
-                              ({selectedCount}/{rooms.length})
-                            </span>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs"
-                            onClick={() => toggleFloor(rooms, !allSelected)}
-                          >
-                            {allSelected ? '取消整层' : '选择整层'}
-                          </Button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {rooms.map((room) => {
-                            const isSelected = selectedRooms.has(room);
-                            return (
-                              <button
-                                key={room}
-                                type="button"
-                                onClick={() => toggleRoom(room)}
-                                className={`rounded-md px-3 py-1.5 font-mono text-sm transition-colors ${
-                                  isSelected
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                                }`}
-                              >
-                                {room}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setBatchStep('config')}>
-                    <ArrowLeftIcon className="mr-2 h-4 w-4" />
-                    上一步
-                  </Button>
-                  <Button
-                    type="button"
-                    disabled={selectedRooms.size === 0 || batchCreateRoomMutation.isPending}
-                    onClick={() => {
-                      batchCreateRoomMutation.mutate(Array.from(selectedRooms));
-                    }}
-                  >
-                    {batchCreateRoomMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        创建中...
-                      </>
-                    ) : (
-                      <>确认添加 ({selectedRooms.size} 个房间)</>
-                    )}
-                  </Button>
-                </DialogFooter>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* 编辑房间对话框 */}
-        <EditRoomDialog
+        <RoomEditDialog
           open={isEditRoomOpen}
           onOpenChange={setIsEditRoomOpen}
+          room={selectedRoom}
           onSubmit={(data) => {
-            updateRoomMutation.mutate({ id: selectedRoom!.id, data });
+            if (selectedRoom) {
+              updateRoomMutation.mutate({ roomId: selectedRoom.id, data });
+            }
           }}
           isPending={updateRoomMutation.isPending}
-          room={selectedRoom}
         />
 
-        {/* 删除房间确认对话框 */}
-        <AlertDialog open={isDeleteRoomOpen} onOpenChange={setIsDeleteRoomOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>确认删除</AlertDialogTitle>
-              <AlertDialogDescription>
-                确定要删除房间 &ldquo;{selectedRoom?.room_number}&rdquo; 吗？此操作不可撤销。
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>取消</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => deleteRoomMutation.mutate(selectedRoom!.id)}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {deleteRoomMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    删除中...
-                  </>
-                ) : (
-                  '删除'
-                )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <DeleteRoomDialog
+          open={isDeleteRoomOpen}
+          onOpenChange={setIsDeleteRoomOpen}
+          room={selectedRoom}
+          onConfirm={() => selectedRoom && deleteRoomMutation.mutate(selectedRoom.id)}
+          isPending={deleteRoomMutation.isPending}
+        />
 
-        {/* 批量编辑对话框 */}
-        <Dialog open={isBatchEditOpen} onOpenChange={setIsBatchEditOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>批量编辑</DialogTitle>
-              <DialogDescription>
-                为选中的 {selectedRoomIds.size} 个房间设置属性（留空则不修改）
-              </DialogDescription>
-            </DialogHeader>
-            <form
-              onSubmit={batchEditForm.handleSubmit((data) => batchUpdateMutation.mutate(data))}
-              className="space-y-4"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="batch-edit-layout">户型</Label>
-                <Select
-                  value={batchEditForm.watch('layout') || '__none__'}
-                  onValueChange={(value) =>
-                    batchEditForm.setValue('layout', value === '__none__' ? undefined : value)
-                  }
-                >
-                  <SelectTrigger className="min-w-[120px]">
-                    <SelectValue placeholder="不修改" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">不修改</SelectItem>
-                    {LAYOUT_OPTIONS.map((layout) => (
-                      <SelectItem key={layout} value={layout}>
-                        {layout}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="batch-edit-area">面积 (m²)</Label>
-                <Input
-                  id="batch-edit-area"
-                  type="number"
-                  step="0.01"
-                  placeholder="不修改"
-                  value={batchEditForm.watch('area') ?? ''}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === '') {
-                      batchEditForm.setValue('area', undefined);
-                    } else {
-                      const num = parseFloat(value);
-                      batchEditForm.setValue('area', isNaN(num) ? undefined : num);
-                    }
-                  }}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="batch-edit-status">状态</Label>
-                <Select
-                  value={batchEditForm.watch('status') || '__none__'}
-                  onValueChange={(value) =>
-                    batchEditForm.setValue(
-                      'status',
-                      value === '__none__' ? undefined : (value as RoomStatus)
-                    )
-                  }
-                >
-                  <SelectTrigger className="min-w-[120px]">
-                    <SelectValue placeholder="不修改" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">不修改</SelectItem>
-                    <SelectItem value="available">空置</SelectItem>
-                    <SelectItem value="occupied">已租</SelectItem>
-                    <SelectItem value="maintenance">维修中</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsBatchEditOpen(false)}>
-                  取消
-                </Button>
-                <Button type="submit" disabled={batchUpdateMutation.isPending}>
-                  {batchUpdateMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      保存中...
-                    </>
-                  ) : (
-                    '保存'
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <BatchEditDialog
+          open={isBatchEditOpen}
+          onOpenChange={setIsBatchEditOpen}
+          form={batchEditForm}
+          selectedCount={selectedRoomIds.size}
+          onSubmit={(data) =>
+            batchUpdateMutation.mutate({
+              roomIds: Array.from(selectedRoomIds),
+              data,
+            })
+          }
+          isPending={batchUpdateMutation.isPending}
+        />
 
-        {/* 水电配置对话框 */}
         <UtilityConfigDialog
           open={isUtilityConfigOpen}
           onOpenChange={setIsUtilityConfigOpen}
           orgId={orgId!}
           apartmentId={apartmentId}
-          apartmentName={apartment?.name || ''}
+          apartmentName={apartment.name}
         />
       </MainLayout>
     </PermissionPageGuard>
