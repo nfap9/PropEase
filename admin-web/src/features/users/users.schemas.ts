@@ -16,13 +16,13 @@ export const createUserSchema = z.object({
   password: adminPasswordSchema,
   name: z.string().min(1, '请输入姓名'),
   email: z.string().optional(),
-  role_id: z.string().min(1, '请选择角色'),
+  role_id: z.string().min(1, '请选择分工'),
 });
 
 export const editUserSchema = z.object({
   name: z.string().min(1, '请输入姓名'),
   email: z.string().optional(),
-  role_id: z.string().min(1, '请选择角色'),
+  role_id: z.string().min(1, '请选择分工'),
   is_active: z.boolean(),
 });
 

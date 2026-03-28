@@ -139,7 +139,7 @@ export default function SubscriptionPage() {
                   <Building2 className="h-5 w-5" />
                   配额使用
                 </CardTitle>
-                <CardDescription>当前组织的资源使用情况</CardDescription>
+                <CardDescription>当前团队的资源使用情况</CardDescription>
               </CardHeader>
               <CardContent>
                 {usage ? (

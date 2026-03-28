@@ -4,8 +4,8 @@ import { Providers } from "@/components/layout/providers";
 import { AdminAuthLayout } from "@/components/layout/admin-auth-layout";
 
 export const metadata: Metadata = {
-  title: "运营后台 - Apartment Ultra",
-  description: "公寓管理系统运营后台",
+  title: "管理平台 - Apartment Ultra",
+  description: "公寓管理系统管理平台",
 };
 
 export default function RootLayout({

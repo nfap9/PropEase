@@ -77,7 +77,7 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontList();
       onStorefrontCreated();
-      toast.success('商店配置创建成功');
+      toast.success('商品展示已创建');
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
@@ -88,7 +88,7 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontList();
       onStorefrontUpdated();
-      toast.success('商店配置已更新');
+      toast.success('商品展示已更新');
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
@@ -98,7 +98,7 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontList();
       onStorefrontDeleted();
-      toast.success('商店配置已删除');
+      toast.success('商品展示已删除');
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
@@ -132,7 +132,7 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontDetail();
       onItemUpdated();
-      toast.success('商店项已更新');
+      toast.success('展示内容已更新');
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
@@ -148,7 +148,7 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontDetail();
       onItemDeleted();
-      toast.success('商店项已删除');
+      toast.success('展示内容已删除');
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });

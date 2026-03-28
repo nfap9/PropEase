@@ -184,7 +184,7 @@ function ServiceProductFormSections({
               name="max_members"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>最大成员数</FormLabel>
+                  <FormLabel>最大团队成员数</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
@@ -366,4 +366,3 @@ export function ServicePricingDeleteDialog({
     </AlertDialog>
   );
 }
-

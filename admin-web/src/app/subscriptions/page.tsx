@@ -122,7 +122,7 @@ export default function AdminSubscriptionsPage() {
   const columns: ColumnDef<AdminSubscription>[] = [
     {
       accessorKey: 'organization_id',
-      header: '组织 ID',
+      header: '团队 ID',
       cell: ({ row }) => (
         <Link
           href={`/organizations/${row.original.organization_id}`}
@@ -213,10 +213,10 @@ export default function AdminSubscriptionsPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="text-xl font-semibold" data-testid="admin-subscriptions-heading">订阅管理</h2>
+        <h2 className="text-xl font-semibold" data-testid="admin-subscriptions-heading">已购服务</h2>
         <div className="flex items-center gap-2">
           <Input
-            placeholder="按组织 ID 筛选"
+            placeholder="按团队 ID 筛选"
             value={orgIdFilter}
             onChange={(e) => setOrgIdFilter(e.target.value)}
             className="w-48"
@@ -247,7 +247,7 @@ export default function AdminSubscriptionsPage() {
           <DialogHeader>
             <DialogTitle>手动续期</DialogTitle>
             <DialogDescription>
-              {selectedSub ? `为组织 ${selectedSub.organization_id} 的订阅延长有效期` : ''}
+              {selectedSub ? `为团队 ${selectedSub.organization_id} 的订阅延长有效期` : ''}
             </DialogDescription>
           </DialogHeader>
           <Form {...renewForm}>
@@ -294,8 +294,8 @@ export default function AdminSubscriptionsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>确认取消订阅</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要取消组织「{selectedSub?.organization_id}
-              」的订阅吗？取消后该组织将按免费版限制使用。
+              确定要取消团队「{selectedSub?.organization_id}
+              」的订阅吗？取消后该团队将按免费版限制使用。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

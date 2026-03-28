@@ -22,10 +22,10 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@apartment-ultra/
 const ADMIN_NAV = [
   { href: '/admin', label: '概览', icon: LayoutDashboard },
   { href: '/admin/brand', label: '品牌配置', icon: Palette },
-  { href: '/admin/users', label: '运营账号', icon: Users },
+  { href: '/admin/users', label: '管理账号', icon: Users },
   { href: '/admin/registered-users', label: '用户管理', icon: UserCircle },
-  { href: '/admin/roles', label: '运营角色', icon: Shield },
-  { href: '/admin/organizations', label: '组织管理', icon: Building2 },
+  { href: '/admin/roles', label: '角色权限', icon: Shield },
+  { href: '/admin/organizations', label: '团队管理', icon: Building2 },
   { href: '/admin/plans', label: '服务配置', icon: Package },
   { href: '/admin/usage-pricing', label: '按量定价', icon: Package },
   { href: '/admin/subscriptions', label: '订阅管理', icon: CreditCard },
@@ -43,7 +43,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const NavContent = () => (
     <>
       <div className="flex h-16 items-center border-b px-4">
-        <span className="font-semibold">运营后台</span>
+        <span className="font-semibold">管理平台</span>
       </div>
       <nav className="flex-1 space-y-1 p-4">
         {ADMIN_NAV.map((item) => {
@@ -85,7 +85,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0">
-              <SheetTitle className="sr-only">运营后台导航</SheetTitle>
+              <SheetTitle className="sr-only">管理平台导航</SheetTitle>
               <NavContent />
             </SheetContent>
           </Sheet>

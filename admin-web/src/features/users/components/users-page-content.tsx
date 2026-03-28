@@ -72,7 +72,7 @@ export function UsersPageContent() {
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold" data-testid="admin-users-heading">
-          运营账号
+          管理账号
         </h2>
         <Button onClick={() => setIsCreateOpen(true)} data-testid="admin-users-create-btn">
           <Plus className="mr-2 h-4 w-4" />

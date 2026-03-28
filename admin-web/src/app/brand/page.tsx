@@ -82,7 +82,7 @@ export default function AdminBrandPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'platform-config'] });
       queryClient.invalidateQueries({ queryKey: ['config', 'public'] });
-      toast.success('已保存，业务端将显示新配置');
+      toast.success('已保存，系统界面将显示新配置');
     },
     onError: (error) => toast.error(getErrorMessage(error, '保存失败，请重试')),
   });
@@ -97,12 +97,12 @@ export default function AdminBrandPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-brand-heading">品牌配置</h2>
+      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-brand-heading">界面信息</h2>
       <Card>
         <CardHeader>
-          <CardTitle>系统名称与品牌</CardTitle>
+          <CardTitle>界面名称与品牌</CardTitle>
           <CardDescription>
-            配置业务端登录页、侧边栏、首页等处的系统名称与描述，修改后立即生效
+            配置登录页、侧边栏、首页等处的系统名称与描述，修改后立即生效
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -19,7 +19,7 @@ export function ServicePricingView({
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold" data-testid="service-pricing-heading">
-          服务定价
+          服务方案
         </h2>
         <Button onClick={onCreate} data-testid="service-pricing-create-btn">
           <Plus className="mr-2 h-4 w-4" />
@@ -31,4 +31,3 @@ export function ServicePricingView({
     </div>
   );
 }
-

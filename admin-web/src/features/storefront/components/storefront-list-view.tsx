@@ -19,11 +19,11 @@ export function StorefrontListView({
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold" data-testid="storefront-heading">
-          商店配置
+          商品展示
         </h2>
         <Button onClick={onCreate} data-testid="storefront-create-btn">
           <Plus className="mr-2 h-4 w-4" />
-          新建商店
+          新建展示页
         </Button>
       </div>
 
@@ -31,4 +31,3 @@ export function StorefrontListView({
     </div>
   );
 }
-

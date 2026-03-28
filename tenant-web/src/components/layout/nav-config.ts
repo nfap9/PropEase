@@ -139,7 +139,7 @@ export const SETTINGS_ITEMS: NavItem[] = [
   },
   {
     href: '/settings/permissions',
-    label: '权限管理',
+    label: '功能分配',
     icon: Shield,
     permission: PERMISSIONS.SETTINGS_VIEW,
     id: 'permissions',

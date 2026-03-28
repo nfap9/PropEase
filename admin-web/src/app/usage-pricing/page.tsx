@@ -82,11 +82,11 @@ export default function AdminUsagePricingPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-pricing-heading">按量定价</h2>
+      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-pricing-heading">用量计费</h2>
       <Card>
         <CardHeader>
-          <CardTitle>组织 / 公寓 / 房间 / 成员单价</CardTitle>
-          <CardDescription>单位：元/个/年，用户按量购买时按此价格计费</CardDescription>
+          <CardTitle>团队 / 公寓 / 房间 / 成员单价</CardTitle>
+          <CardDescription>单位：元/个/年，系统会按使用规模应用这组计费标准</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -99,7 +99,7 @@ export default function AdminUsagePricingPage() {
                 name="price_per_org"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>组织单价（元/个/年）</FormLabel>
+                    <FormLabel>团队单价（元/个/年）</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" data-testid="admin-pricing-price-per-org" {...field} />
                     </FormControl>

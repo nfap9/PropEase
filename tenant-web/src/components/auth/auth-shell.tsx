@@ -123,7 +123,11 @@ export function AuthShell({
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-6">{children}</CardContent>
+              <CardContent className="space-y-6">
+                <div className="rounded-[28px] border border-white/70 bg-white/72 p-5 shadow-[0_18px_36px_-30px_rgba(15,23,42,0.24)] sm:p-6">
+                  {children}
+                </div>
+              </CardContent>
 
               {footer ? (
                 <div className="border-t border-border/70 px-5 pb-5 pt-5 text-sm text-muted-foreground sm:px-6 sm:pb-6">

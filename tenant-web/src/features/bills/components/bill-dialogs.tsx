@@ -231,7 +231,7 @@ export function BillGenerateDialog({
       <DialogContent className="max-w-md" data-testid={BILLS.GENERATE_DIALOG}>
         <DialogHeader>
           <DialogTitle>手动出账</DialogTitle>
-          <DialogDescription>为当前组织在租房间生成指定月份的账单。已有账单的租约将被跳过。</DialogDescription>
+          <DialogDescription>为当前团队的在租房间生成指定月份的账单。已有账单的租约将被跳过。</DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">

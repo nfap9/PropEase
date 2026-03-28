@@ -94,9 +94,9 @@ export function StorefrontFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{mode === 'create' ? '新建商店配置' : '编辑商店配置'}</DialogTitle>
+          <DialogTitle>{mode === 'create' ? '新建商品展示' : '编辑商品展示'}</DialogTitle>
           <DialogDescription>
-            {mode === 'create' ? '创建新的商店配置' : storefront?.name}
+            {mode === 'create' ? '创建新的商品展示页' : storefront?.name}
           </DialogDescription>
         </DialogHeader>
 
@@ -190,7 +190,7 @@ export function StorefrontDeleteDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>确认删除</AlertDialogTitle>
           <AlertDialogDescription>
-            确定要删除商店配置「{storefront?.name}」吗？此操作将同时删除所有商品配置。
+            确定要删除商品展示「{storefront?.name}」吗？此操作将同时删除其中的商品内容。
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -312,7 +312,7 @@ export function StorefrontItemFormDialog({
                   <FormControl>
                     <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
                   </FormControl>
-                  <FormLabel className="!mt-0">在客户端显示</FormLabel>
+                  <FormLabel className="!mt-0">在用户界面显示</FormLabel>
                 </FormItem>
               )}
             />

@@ -82,8 +82,8 @@ export function CreateUserDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>新建运营账号</DialogTitle>
-          <DialogDescription>创建新的运营后台登录账号</DialogDescription>
+          <DialogTitle>新建管理账号</DialogTitle>
+          <DialogDescription>创建新的管理平台登录账号</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -144,11 +144,11 @@ export function CreateUserDialog({
               name="role_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>角色</FormLabel>
+                  <FormLabel>账号分工</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="选择角色" />
+                        <SelectValue placeholder="选择分工" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -207,7 +207,7 @@ export function EditUserDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>编辑运营账号</DialogTitle>
+          <DialogTitle>编辑管理账号</DialogTitle>
           <DialogDescription>{user ? `编辑 ${user.username}` : ''}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -243,11 +243,11 @@ export function EditUserDialog({
               name="role_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>角色</FormLabel>
+                  <FormLabel>账号分工</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="选择角色" />
+                        <SelectValue placeholder="选择分工" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -390,9 +390,9 @@ export function DeleteUserDialog({
           <AlertDialogTitle>确认删除</AlertDialogTitle>
           <AlertDialogDescription>
             {user?.is_system ? (
-              <>系统预置账号「{user?.username}」不可删除。</>
+              <>内置账号「{user?.username}」不可删除。</>
             ) : (
-              <>确定要删除运营账号「{user?.username}」吗？此操作不可恢复。</>
+              <>确定要删除管理账号「{user?.username}」吗？此操作不可恢复。</>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>

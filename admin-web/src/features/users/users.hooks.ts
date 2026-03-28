@@ -44,7 +44,7 @@ export function useAdminUsersData({
     onSuccess: () => {
       invalidateUsers();
       onCreateSuccess();
-      toast.success('运营账号创建成功');
+      toast.success('管理账号创建成功');
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
@@ -55,7 +55,7 @@ export function useAdminUsersData({
     onSuccess: () => {
       invalidateUsers();
       onUpdateSuccess();
-      toast.success('运营账号已更新');
+      toast.success('管理账号已更新');
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
@@ -76,7 +76,7 @@ export function useAdminUsersData({
     onSuccess: () => {
       invalidateUsers();
       onDeleteSuccess();
-      toast.success('运营账号已删除');
+      toast.success('管理账号已删除');
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });

@@ -39,9 +39,9 @@ export function AdminRoleDeleteDialog({
           <AlertDialogTitle>确认删除</AlertDialogTitle>
           <AlertDialogDescription>
             {isSystemRole ? (
-              <>系统预置角色「{role?.name}」不可删除。</>
+              <>内置分工「{role?.name}」不可删除。</>
             ) : (
-              <>确定要删除角色「{role?.name}」吗？此操作不可恢复。</>
+              <>确定要删除分工「{role?.name}」吗？此操作不可恢复。</>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>

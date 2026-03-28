@@ -60,7 +60,7 @@ export function OrgSelector() {
         className="gap-2"
       >
         <Plus className="h-4 w-4" />
-        创建组织
+        创建团队
       </Button>
     );
   }
@@ -70,7 +70,7 @@ export function OrgSelector() {
       <Select value={organization?.id?.toString() || ''} onValueChange={handleSelectOrg}>
         <SelectTrigger className="h-9 w-[200px]">
           <Building2 className="mr-2 h-4 w-4" />
-          <SelectValue placeholder="选择组织" />
+          <SelectValue placeholder="选择团队" />
         </SelectTrigger>
         <SelectContent>
           {organizations.map((org) => (
@@ -84,9 +84,9 @@ export function OrgSelector() {
       <AlertDialog open={!!pendingOrg} onOpenChange={(open) => !open && handleCancelSwitch()}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认切换组织</AlertDialogTitle>
+            <AlertDialogTitle>确认切换团队</AlertDialogTitle>
             <AlertDialogDescription>
-              确定要切换到组织「{pendingOrg?.name}」吗？切换后页面将刷新以加载新组织的数据。
+              确定要切换到团队「{pendingOrg?.name}」吗？切换后页面将刷新以加载新团队的数据。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

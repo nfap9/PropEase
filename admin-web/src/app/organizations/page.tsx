@@ -56,7 +56,7 @@ export default function AdminOrganizationsPage() {
   const columns: ColumnDef<AdminOrganization>[] = [
     {
       accessorKey: 'name',
-      header: '组织名称',
+      header: '团队名称',
       cell: ({ row }) => (
         <Link
           href={`/organizations/${row.original.id}`}
@@ -149,7 +149,7 @@ export default function AdminOrganizationsPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold" data-testid="admin-organizations-heading">组织管理</h2>
+        <h2 className="text-xl font-semibold" data-testid="admin-organizations-heading">团队管理</h2>
         <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as FilterActive)}>
           <SelectTrigger className="w-36">
             <SelectValue placeholder="状态筛选" />

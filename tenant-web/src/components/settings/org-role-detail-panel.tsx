@@ -9,10 +9,10 @@ import type { MemberRole, Permission } from '@/types';
 import { ChevronDown, ChevronRight, Shield, Save } from 'lucide-react';
 
 const ROLE_LABELS: Record<MemberRole, string> = {
-  owner: '所有者',
-  admin: '管理员',
-  member: '成员',
-  viewer: '查看者',
+  owner: '创建者',
+  admin: '管理成员',
+  member: '协作成员',
+  viewer: '只读成员',
 };
 
 const RESOURCE_LABELS: Record<string, string> = {
@@ -22,7 +22,7 @@ const RESOURCE_LABELS: Record<string, string> = {
   lease: '租约管理',
   bill: '账单管理',
   utility: '水电管理',
-  member: '成员管理',
+  member: '团队成员',
   settings: '系统设置',
   report: '报表分析',
 };
@@ -48,7 +48,7 @@ export interface OrgRoleDetailPanelProps {
 }
 
 /**
- * 组织角色权限详情：右侧树形面板。每个模块可展开显示权限列表；勾选模块内全部即表示该模块全部权限。
+ * 成员身份功能详情：右侧树形面板。每个模块可展开显示功能列表；勾选模块内全部即表示该模块全部功能。
  */
 export function OrgRoleDetailPanel({
   role,
@@ -80,7 +80,7 @@ export function OrgRoleDetailPanel({
         <h3 className="font-semibold">{ROLE_LABELS[role]}</h3>
         {readOnly && (
           <p className="mt-1 text-sm text-muted-foreground">
-            所有者拥有组织内全部操作权限，无需配置
+            创建者默认可使用团队内全部功能，无需单独设置
           </p>
         )}
       </div>
@@ -90,9 +90,9 @@ export function OrgRoleDetailPanel({
           <Card>
             <CardContent className="py-12 text-center">
               <Shield className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">所有者拥有全部权限</h3>
+              <h3 className="mt-4 text-lg font-semibold">创建者默认可使用全部功能</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                所有者角色无需配置，始终拥有所有操作权限
+                创建者身份无需配置，系统会自动开放全部功能
               </p>
             </CardContent>
           </Card>
@@ -100,9 +100,9 @@ export function OrgRoleDetailPanel({
           <Card>
             <CardContent className="py-12 text-center">
               <Shield className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">您无法修改权限</h3>
+              <h3 className="mt-4 text-lg font-semibold">您无法调整功能分配</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                仅组织所有者可以在此页面调整角色权限
+                仅团队创建者可以在此页面调整各身份可使用的功能
               </p>
             </CardContent>
           </Card>
@@ -114,7 +114,7 @@ export function OrgRoleDetailPanel({
           </div>
         ) : entries.length > 0 ? (
           <div className="space-y-0.5 rounded-md border p-3">
-            <p className="mb-2 text-sm font-medium leading-none">权限</p>
+            <p className="mb-2 text-sm font-medium leading-none">可用功能</p>
             <ul className="space-y-0.5">
               {entries.map(([resource, permissions]) => {
                 const isOpen = expanded.has(resource);

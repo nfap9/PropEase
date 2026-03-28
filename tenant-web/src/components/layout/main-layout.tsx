@@ -58,7 +58,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
           <div className="flex min-w-0 items-center gap-3">
             <SidebarTrigger className="lg:hidden" />
             <div className="flex min-w-0 items-center gap-2">
-              <h1 className="truncate text-base font-semibold text-foreground">{organization?.name ?? '组织空间'}</h1>
+              <h1 className="truncate text-base font-semibold text-foreground">{organization?.name ?? '团队空间'}</h1>
               {planLabel ? <Badge variant="outline">{planLabel}</Badge> : null}
             </div>
           </div>
@@ -100,7 +100,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
                       <p className="text-xs leading-none text-muted-foreground">当前服务：{planLabel}</p>
                     )}
                     {organization && (
-                      <p className="text-xs leading-none text-muted-foreground">当前组织：{organization.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">当前团队：{organization.name}</p>
                     )}
                   </div>
                 </DropdownMenuLabel>
@@ -108,7 +108,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
                 <DropdownMenuItem asChild>
                   <Link href="/organizations">
                     <Building2 className="mr-2 h-4 w-4" />
-                    <span>切换组织</span>
+                    <span>切换团队</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

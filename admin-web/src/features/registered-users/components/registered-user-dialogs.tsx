@@ -259,7 +259,7 @@ export function GiftSubscriptionDialog({
         <DialogHeader>
           <DialogTitle>赠送服务</DialogTitle>
           <DialogDescription>
-            为该用户所属组织发起 0 元赠送订单。若组织当前已有同服务生效订阅，会在现有到期日后顺延；不同服务切换仍需走正常订阅调整流程。
+            为该用户所属团队发起 0 元赠送订单。若团队当前已有同服务生效订阅，会在现有到期日后顺延；不同服务切换仍需走正常订阅调整流程。
           </DialogDescription>
         </DialogHeader>
         {detail ? (
@@ -270,11 +270,11 @@ export function GiftSubscriptionDialog({
                 name="organization_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>目标组织</FormLabel>
+                    <FormLabel>目标团队</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="请选择组织" />
+                          <SelectValue placeholder="请选择团队" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

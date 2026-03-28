@@ -25,7 +25,7 @@ import { DEFAULT_ORGANIZATION_HOME_PATH } from '@/lib/auth/redirect';
 import { Organization } from '@/types';
 
 const createOrganizationSchema = z.object({
-  name: z.string().trim().min(1, '请输入组织名称'),
+  name: z.string().trim().min(1, '请输入团队名称'),
   notes: z.string().optional(),
 });
 
@@ -77,17 +77,17 @@ export default function OrganizationsPage() {
     onSuccess: async (createdOrganization) => {
       await refreshOrganizations(createdOrganization.id);
       setOrganization(createdOrganization);
-      toast.success('组织创建成功');
+      toast.success('团队创建成功');
       router.replace(DEFAULT_ORGANIZATION_HOME_PATH);
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error, '创建组织失败，请重试'));
+      toast.error(getErrorMessage(error, '创建团队失败，请重试'));
     },
   });
 
   const handleSelectOrganization = (org: Organization) => {
     setOrganization(org);
-    toast.success('组织切换成功');
+    toast.success('团队切换成功');
     router.replace(DEFAULT_ORGANIZATION_HOME_PATH);
   };
 
@@ -110,10 +110,10 @@ export default function OrganizationsPage() {
             </div>
             <div className="space-y-1">
               <CardTitle className="text-3xl font-semibold">
-                欢迎使用！创建你的第一个组织开始管理公寓
+                欢迎使用！创建你的第一个团队开始管理公寓
               </CardTitle>
               <CardDescription className="text-base">
-                创建第一个组织后，你可以在此管理房源、租客、账单等
+                创建第一个团队后，你可以在此管理房源、租客、账单等
               </CardDescription>
             </div>
           </CardHeader>
@@ -124,7 +124,7 @@ export default function OrganizationsPage() {
             >
               <div className="space-y-2">
                 <Label htmlFor="organization-name">
-                  组织名称 <span aria-hidden="true">*</span>
+                  团队名称 <span aria-hidden="true">*</span>
                 </Label>
                 <Input
                   id="organization-name"
@@ -147,7 +147,7 @@ export default function OrganizationsPage() {
                 />
               </div>
               <Button type="submit" className="w-full" disabled={createOrgMutation.isPending}>
-                {createOrgMutation.isPending ? '创建中...' : '创建第一个组织'}
+                {createOrgMutation.isPending ? '创建中...' : '创建第一个团队'}
               </Button>
             </form>
           </CardContent>
@@ -161,7 +161,7 @@ export default function OrganizationsPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-8">
       <div className="w-full max-w-lg space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-semibold">我的组织</h1>
+          <h1 className="text-3xl font-semibold">我的团队</h1>
         </div>
         <div className="space-y-3">
           {organizations.map((org) => {

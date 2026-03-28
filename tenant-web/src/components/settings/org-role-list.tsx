@@ -4,24 +4,24 @@ import type { MemberRole } from '@/types';
 import { cn } from '@/lib/utils';
 
 const ROLE_LABELS: Record<MemberRole, string> = {
-  owner: '所有者',
-  admin: '管理员',
-  member: '成员',
-  viewer: '查看者',
+  owner: '创建者',
+  admin: '管理成员',
+  member: '协作成员',
+  viewer: '只读成员',
 };
 
-/** 可配置权限的角色（不含 owner） */
+/** 可配置身份（不含 owner） */
 export const EDITABLE_ORG_ROLES: MemberRole[] = ['admin', 'member', 'viewer'];
 
 export interface OrgRoleListProps {
   selectedRole: MemberRole;
   onSelectRole: (role: MemberRole) => void;
-  /** 是否展示所有者（仅作说明，选中时右侧显示“拥有全部权限”） */
+  /** 是否展示创建者（仅作说明，选中时右侧显示“拥有全部权限”） */
   showOwner?: boolean;
 }
 
 /**
- * 业务系统组织角色列表（左侧栏）：展示管理员、成员、查看者，可选展示所有者。
+ * 团队身份列表（左侧栏）：展示管理成员、协作成员、只读成员，可选展示创建者。
  * 参考运营端 AdminRoleList 的布局与样式，无新建/删除。
  */
 export function OrgRoleList({ selectedRole, onSelectRole, showOwner = true }: OrgRoleListProps) {
@@ -30,7 +30,7 @@ export function OrgRoleList({ selectedRole, onSelectRole, showOwner = true }: Or
   return (
     <div className="flex h-full flex-col border-r bg-muted/30">
       <div className="border-b p-3">
-        <p className="text-sm font-medium text-muted-foreground">组织角色</p>
+        <p className="text-sm font-medium text-muted-foreground">成员身份</p>
       </div>
       <ul className="flex-1 space-y-1 overflow-y-auto p-2">
         {roles.map((role) => (

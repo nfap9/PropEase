@@ -67,7 +67,7 @@ export default function PermissionsPage() {
         permission_codes: data.codes,
       }),
     onSuccess: () => {
-      toast.success('权限更新成功');
+      toast.success('功能分配已更新');
       queryClient.invalidateQueries({
         queryKey: ['role-permissions', organization?.id],
       });
@@ -108,7 +108,7 @@ export default function PermissionsPage() {
   if (!organization) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <p className="text-muted-foreground">请先选择一个组织</p>
+        <p className="text-muted-foreground">请先选择一个团队</p>
       </div>
     );
   }
@@ -141,9 +141,9 @@ export default function PermissionsPage() {
               <Shield className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight" data-testid={PERMISSIONS.HEADING}>权限管理</h1>
+              <h1 className="text-2xl font-bold tracking-tight" data-testid={PERMISSIONS.HEADING}>功能分配</h1>
               <p className="text-sm text-muted-foreground">
-                为「{organization.name}」下的管理员、成员、查看者配置可执行的操作；仅所有者可修改。
+                为「{organization.name}」下的管理成员、协作成员、只读成员设置可使用的功能；仅创建者可修改。
               </p>
             </div>
           </div>

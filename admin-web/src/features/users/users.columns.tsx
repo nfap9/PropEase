@@ -29,7 +29,7 @@ export function createAdminUsersColumns({
     },
     {
       accessorKey: 'role_name',
-      header: '角色',
+      header: '分工',
       cell: ({ row }) => row.original.role_name ?? '—',
     },
     {

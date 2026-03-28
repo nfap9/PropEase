@@ -25,7 +25,7 @@ import {
 import { AdminPermissionCheckboxGroup } from './admin-permission-checkbox-group';
 
 const schema = z.object({
-  name: z.string().min(1, '请输入角色名称'),
+  name: z.string().min(1, '请输入分工名称'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -68,8 +68,8 @@ export function AdminRoleCreateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto overscroll-contain">
         <DialogHeader>
-          <DialogTitle>新建角色</DialogTitle>
-          <DialogDescription>填写角色名称并勾选该角色可执行的权限</DialogDescription>
+          <DialogTitle>新建分工</DialogTitle>
+          <DialogDescription>填写分工名称，并勾选该分工可使用的功能</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -78,9 +78,9 @@ export function AdminRoleCreateDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>角色名称</FormLabel>
+                  <FormLabel>分工名称</FormLabel>
                   <FormControl>
-                    <Input placeholder="如：运营专员" {...field} />
+                    <Input placeholder="如：平台协作" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

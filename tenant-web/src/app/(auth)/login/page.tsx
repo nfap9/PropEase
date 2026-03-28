@@ -32,6 +32,9 @@ const passwordLoginSchema = z.object({
 
 type PasswordLoginFormValues = z.infer<typeof passwordLoginSchema>;
 
+const AUTH_INPUT_CLASSNAME =
+  'h-11 rounded-xl border-border/80 bg-background/80 px-3.5 shadow-none focus-visible:ring-2 focus-visible:ring-ring/15 focus-visible:ring-offset-0';
+
 export default function LoginPage() {
   const { login, isAuthenticated, isLoading: isAuthLoading, organizations, organization } = useAuth();
   const brandConfig = useBrandConfig();
@@ -110,6 +113,7 @@ export default function LoginPage() {
                       type="tel"
                       placeholder="请输入手机号"
                       autoComplete="tel"
+                      className={AUTH_INPUT_CLASSNAME}
                       {...field}
                       data-testid="auth-phone-input"
                     />
@@ -129,6 +133,7 @@ export default function LoginPage() {
                       type="password"
                       placeholder="请输入密码"
                       autoComplete="current-password"
+                      className={AUTH_INPUT_CLASSNAME}
                       {...field}
                       data-testid="auth-password-input"
                     />

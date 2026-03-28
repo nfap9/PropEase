@@ -174,9 +174,9 @@ export function DashboardContent() {
       <div className="flex flex-col items-center justify-center py-12">
         <Building2 className="mb-4 h-16 w-16 text-muted-foreground" />
         <h2 className="mb-2 text-xl font-semibold">欢迎使用{brandConfig.app_name}</h2>
-        <p className="mb-4 text-muted-foreground">您还没有加入任何组织，请先创建一个组织开始使用</p>
+        <p className="mb-4 text-muted-foreground">您还没有加入任何团队，请先创建一个团队开始使用</p>
         <a href="/organizations/new" className="text-primary hover:underline">
-          前往创建组织
+          前往创建团队
         </a>
       </div>
     );
@@ -186,8 +186,8 @@ export function DashboardContent() {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <Building2 className="mb-4 h-16 w-16 text-muted-foreground" />
-        <h2 className="mb-2 text-xl font-semibold">请选择组织</h2>
-        <p className="mb-4 text-muted-foreground">请在顶部导航栏选择一个组织开始使用</p>
+        <h2 className="mb-2 text-xl font-semibold">请选择团队</h2>
+        <p className="mb-4 text-muted-foreground">请在顶部导航栏选择一个团队开始使用</p>
       </div>
     );
   }
@@ -272,7 +272,7 @@ export function DashboardContent() {
                 </CardDescription>
               </div>
               <div className="rounded-2xl border border-primary/10 bg-background/85 px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">当前组织</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">当前团队</p>
                 <p className="mt-2 text-base font-semibold">{organization.name}</p>
                 <p className="mt-1 text-xs text-muted-foreground">已接入 {totalApartments} 个公寓主体</p>
               </div>
@@ -326,7 +326,7 @@ export function DashboardContent() {
           title="公寓数量"
           value={totalApartments}
           description="覆盖的公寓主体"
-          helper={`当前组织已管理 ${totalApartments} 个公寓`}
+          helper={`当前团队已管理 ${totalApartments} 个公寓`}
           icon={Building2}
           toneClassName="bg-sky-100 text-sky-700"
           testid="dashboard-apartment-count"

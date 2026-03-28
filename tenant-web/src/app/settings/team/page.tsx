@@ -68,7 +68,7 @@ const TEAM_SETTINGS = {
 } as const;
 
 const organizationSchema = z.object({
-  name: z.string().min(1, '请输入组织名称'),
+  name: z.string().min(1, '请输入团队名称'),
 });
 
 type OrganizationFormData = z.infer<typeof organizationSchema>;
@@ -83,10 +83,10 @@ const inviteSchema = z.object({
 type InviteFormData = z.infer<typeof inviteSchema>;
 
 const ROLE_LABELS: Record<MemberRole, string> = {
-  owner: '所有者',
-  admin: '管理员',
-  member: '成员',
-  viewer: '查看者',
+  owner: '创建者',
+  admin: '管理成员',
+  member: '协作成员',
+  viewer: '只读成员',
 };
 
 const ROLE_COLORS: Record<MemberRole, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -133,7 +133,7 @@ export default function TeamSettingsPage() {
       queryClient.invalidateQueries({ queryKey: ['organization-members', updatedOrg.id] });
       setOrganization(updatedOrg);
       setIsEditOrgOpen(false);
-      toast.success('组织更新成功');
+      toast.success('团队信息已更新');
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
@@ -163,7 +163,7 @@ export default function TeamSettingsPage() {
       });
       setIsRemoveMemberOpen(false);
       setSelectedMember(null);
-      toast.success('成员已移除');
+      toast.success('团队成员已移除');
     },
     onError: (error) => toast.error(getErrorMessage(error, '移除失败，请重试')),
   });
@@ -204,7 +204,7 @@ export default function TeamSettingsPage() {
     },
     {
       accessorKey: 'role',
-      header: '角色',
+      header: '身份',
       cell: ({ row }) => (
         <Badge variant={ROLE_COLORS[row.original.role]}>{ROLE_LABELS[row.original.role]}</Badge>
       ),
@@ -232,7 +232,7 @@ export default function TeamSettingsPage() {
                 className="text-destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                移除成员
+                移除团队成员
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -248,7 +248,7 @@ export default function TeamSettingsPage() {
             <Users className="h-8 w-8" />
             <div>
               <h1 className="text-3xl font-bold" data-testid={TEAM_SETTINGS.HEADING}>团队设置</h1>
-              <p className="text-muted-foreground">管理组织成员和权限</p>
+              <p className="text-muted-foreground">管理团队成员与协作分工</p>
             </div>
           </div>
 
@@ -256,11 +256,11 @@ export default function TeamSettingsPage() {
             <TabsList>
               <TabsTrigger value="organizations">
                 <Building2 className="mr-2 h-4 w-4" />
-                组织信息
+                团队信息
               </TabsTrigger>
               <TabsTrigger value="members" disabled={!organization}>
                 <Users className="mr-2 h-4 w-4" />
-                成员管理
+                团队成员
               </TabsTrigger>
             </TabsList>
 
@@ -291,15 +291,15 @@ export default function TeamSettingsPage() {
                           <p className="font-mono text-muted-foreground">{organization.slug}</p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground">组织类型</p>
-                          <p className="font-medium">{organization.is_personal ? '个人组织' : '团队组织'}</p>
+                          <p className="text-muted-foreground">团队类型</p>
+                          <p className="font-medium">{organization.is_personal ? '个人团队' : '协作团队'}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground">创建时间</p>
                           <p className="font-medium">{formatDate(organization.created_at)}</p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground">你的角色</p>
+                          <p className="text-muted-foreground">你的身份</p>
                           {organization.role ? (
                             <Badge variant={ROLE_COLORS[organization.role]}>
                               {ROLE_LABELS[organization.role]}
@@ -340,7 +340,7 @@ export default function TeamSettingsPage() {
                           <div className="flex flex-col items-center">
                             <Users className="mb-1 h-5 w-5 text-muted-foreground" />
                             <p className="text-2xl font-bold">{usage?.members_used ?? 0}</p>
-                            <p className="text-xs text-muted-foreground">成员</p>
+                            <p className="text-xs text-muted-foreground">团队成员</p>
                           </div>
                         </div>
                       )}
@@ -348,7 +348,7 @@ export default function TeamSettingsPage() {
                   </Card>
                 </>
               ) : (
-                <p className="text-sm text-muted-foreground">暂无组织信息</p>
+                <p className="text-sm text-muted-foreground">暂无团队信息</p>
               )}
             </TabsContent>
 
@@ -357,13 +357,13 @@ export default function TeamSettingsPage() {
                 <>
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-xl font-semibold">{organization.name} - 成员</h2>
-                      <p className="text-sm text-muted-foreground">管理组织成员和权限</p>
+                      <h2 className="text-xl font-semibold">{organization.name} - 团队成员</h2>
+                      <p className="text-sm text-muted-foreground">管理团队成员与协作分工</p>
                     </div>
                     {canManage && (
                       <Button onClick={() => setIsInviteOpen(true)} data-testid={TEAM_SETTINGS.INVITE_BTN}>
                         <UserPlus className="mr-2 h-4 w-4" />
-                        邀请成员
+                        邀请团队成员
                       </Button>
                     )}
                   </div>
@@ -383,8 +383,8 @@ export default function TeamSettingsPage() {
         <Dialog open={isEditOrgOpen} onOpenChange={setIsEditOrgOpen}>
           <DialogContent data-testid={TEAM_SETTINGS.EDIT_ORG_DIALOG}>
             <DialogHeader>
-              <DialogTitle>编辑组织</DialogTitle>
-              <DialogDescription>修改组织信息</DialogDescription>
+              <DialogTitle>编辑团队</DialogTitle>
+              <DialogDescription>修改团队信息</DialogDescription>
             </DialogHeader>
             <form
               onSubmit={editOrgForm.handleSubmit(
@@ -394,7 +394,7 @@ export default function TeamSettingsPage() {
             >
               <div className="space-y-2">
                 <Label htmlFor="edit-name">
-                  组织名称 <span aria-hidden="true">*</span>
+                  团队名称 <span aria-hidden="true">*</span>
                 </Label>
                 <Input id="edit-name" aria-required {...editOrgForm.register('name')} />
               </div>
@@ -414,8 +414,8 @@ export default function TeamSettingsPage() {
         <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
           <DialogContent data-testid={TEAM_SETTINGS.INVITE_DIALOG}>
             <DialogHeader>
-              <DialogTitle>邀请成员</DialogTitle>
-              <DialogDescription>邀请新成员加入组织</DialogDescription>
+              <DialogTitle>邀请团队成员</DialogTitle>
+              <DialogDescription>邀请新成员加入团队</DialogDescription>
             </DialogHeader>
             <form
               onSubmit={inviteForm.handleSubmit((data) => inviteMutation.mutate(data))}
@@ -440,7 +440,7 @@ export default function TeamSettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="role">
-                  角色 <span aria-hidden="true">*</span>
+                  加入身份 <span aria-hidden="true">*</span>
                 </Label>
                 <Select
                   value={inviteForm.watch('role')}
@@ -450,9 +450,9 @@ export default function TeamSettingsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">管理员</SelectItem>
-                    <SelectItem value="member">成员</SelectItem>
-                    <SelectItem value="viewer">查看者</SelectItem>
+                    <SelectItem value="admin">管理成员</SelectItem>
+                    <SelectItem value="member">协作成员</SelectItem>
+                    <SelectItem value="viewer">只读成员</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -474,7 +474,7 @@ export default function TeamSettingsPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>确认移除</AlertDialogTitle>
               <AlertDialogDescription>
-                确定要从组织中移除成员 &ldquo;{selectedMember?.user_full_name}&rdquo; 吗？
+                确定要从团队中移除成员 &ldquo;{selectedMember?.user_full_name}&rdquo; 吗？
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

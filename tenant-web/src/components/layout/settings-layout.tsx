@@ -17,7 +17,7 @@ import { ChevronRight } from 'lucide-react';
 const PAGE_TITLES: Record<string, string> = {
   '/settings': '设置',
   '/settings/team': '团队设置',
-  '/settings/permissions': '权限管理',
+  '/settings/permissions': '功能分配',
   '/settings/notifications': '租客消息触达',
   '/settings/subscription': '我的订阅',
   '/settings/subscription/purchase': '服务购买',

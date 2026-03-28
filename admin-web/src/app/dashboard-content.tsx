@@ -51,7 +51,7 @@ export function DashboardContent() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold" data-testid="admin-overview-heading">平台概览</h1>
+          <h1 className="text-2xl font-semibold" data-testid="admin-overview-heading">工作台</h1>
         </div>
         <StatCardsSkeleton />
         <div className="h-96 rounded-xl bg-muted/20 animate-pulse" />
@@ -74,7 +74,7 @@ export function DashboardContent() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold" data-testid="admin-overview-heading">平台概览</h1>
+        <h1 className="text-2xl font-semibold" data-testid="admin-overview-heading">工作台</h1>
         <RefreshButton onRefresh={handleRefresh} isLoading={statsLoading} />
       </div>
 

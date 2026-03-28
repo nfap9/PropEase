@@ -22,16 +22,16 @@ import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@apartment-ultra/shared-ui/components/ui';
 
 const ADMIN_NAV = [
-  { href: '/', label: '概览', icon: LayoutDashboard },
-  { href: '/brand', label: '品牌配置', icon: Palette },
-  { href: '/users', label: '运营账号', icon: Users },
+  { href: '/', label: '工作台', icon: LayoutDashboard },
+  { href: '/brand', label: '界面信息', icon: Palette },
+  { href: '/users', label: '管理账号', icon: Users },
   { href: '/registered-users', label: '用户管理', icon: UserCircle },
-  { href: '/roles', label: '运营角色', icon: Shield },
-  { href: '/organizations', label: '组织管理', icon: Building2 },
-  { href: '/service-pricing', label: '服务定价', icon: DollarSign },
-  { href: '/storefront', label: '商店配置', icon: Store },
-  { href: '/usage-pricing', label: '按量定价', icon: Package },
-  { href: '/subscriptions', label: '订阅管理', icon: CreditCard },
+  { href: '/roles', label: '分工设置', icon: Shield },
+  { href: '/organizations', label: '团队管理', icon: Building2 },
+  { href: '/service-pricing', label: '服务方案', icon: DollarSign },
+  { href: '/storefront', label: '商品展示', icon: Store },
+  { href: '/usage-pricing', label: '用量计费', icon: Package },
+  { href: '/subscriptions', label: '已购服务', icon: CreditCard },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -46,7 +46,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const NavContent = () => (
     <>
       <div className="flex h-16 items-center border-b px-4">
-        <span className="font-semibold">运营后台</span>
+        <span className="font-semibold">管理平台</span>
       </div>
       <nav className="flex-1 space-y-1 p-4">
         {ADMIN_NAV.map((item) => {
@@ -88,7 +88,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0">
-              <SheetTitle className="sr-only">运营后台导航</SheetTitle>
+              <SheetTitle className="sr-only">管理平台导航</SheetTitle>
               <NavContent />
             </SheetContent>
           </Sheet>

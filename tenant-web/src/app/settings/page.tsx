@@ -20,7 +20,7 @@ const getOrganizationSwitchItem = (orgName: string | undefined) => {
   if (!orgName) return null;
   return {
     title: orgName,
-    description: '管理组织成员和权限',
+    description: '管理团队成员与协作分工',
     href: '/settings/team',
     icon: Building2,
     testId: SETTINGS.ORG_SWITCH_BUTTON,
@@ -30,8 +30,8 @@ const getOrganizationSwitchItem = (orgName: string | undefined) => {
 
 const BASE_SETTINGS_ITEMS = [
   {
-    title: '团队与权限',
-    description: '管理团队成员和角色权限',
+    title: '团队与分工',
+    description: '管理团队成员与协作分工',
     href: '/settings/team',
     icon: Users,
     testId: SETTINGS.TEAM_LINK,
@@ -69,7 +69,7 @@ export default function SettingsPage() {
           <SettingsIcon className="h-8 w-8" />
           <div>
             <h1 className="text-3xl font-bold" data-testid={SETTINGS.HEADING}>设置</h1>
-            <p className="text-muted-foreground">管理您的账户和组织设置</p>
+            <p className="text-muted-foreground">管理您的账户与团队设置</p>
           </div>
         </div>
 

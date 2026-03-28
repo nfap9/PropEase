@@ -181,8 +181,8 @@ export default function UtilitiesHistoryPage() {
       <MainLayout>
         <div className="flex h-full flex-col items-center justify-center space-y-4">
           <Building2 className="h-16 w-16 text-muted-foreground" />
-          <h2 className="text-xl font-semibold">请先创建或加入组织</h2>
-          <p className="text-muted-foreground">在顶部导航栏选择或创建一个组织开始使用</p>
+          <h2 className="text-xl font-semibold">请先创建或加入团队</h2>
+          <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
         </div>
       </MainLayout>
     );

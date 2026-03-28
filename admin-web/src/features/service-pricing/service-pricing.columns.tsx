@@ -37,7 +37,7 @@ export function createServicePricingColumns({
       cell: ({ row }) => {
         const service = row.original;
         const orgs = service.max_organizations == null ? '∞' : service.max_organizations;
-        return `组织${orgs} / 公寓${service.max_apartments} / 房间${service.max_rooms} / 成员${service.max_members}`;
+        return `团队${orgs} / 公寓${service.max_apartments} / 房间${service.max_rooms} / 团队成员${service.max_members}`;
       },
     },
     {
@@ -68,4 +68,3 @@ export function createServicePricingColumns({
     },
   ];
 }
-

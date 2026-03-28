@@ -47,7 +47,7 @@ export default function AdminRolesPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
       setIsCreateOpen(false);
       setCreatePermissionCodes([]);
-      toast.success('角色创建成功');
+      toast.success('分工创建成功');
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
@@ -57,7 +57,7 @@ export default function AdminRolesPage() {
       adminApiEndpoints.updateRole(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
-      toast.success('权限已保存');
+      toast.success('功能设置已保存');
     },
     onError: (error) => toast.error(getErrorMessage(error, '保存失败，请重试')),
   });
@@ -68,7 +68,7 @@ export default function AdminRolesPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
       setIsDeleteOpen(false);
       setSelectedRole(null);
-      toast.success('角色已删除');
+      toast.success('分工已删除');
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });

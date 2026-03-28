@@ -55,7 +55,7 @@ export default function AdminOrganizationDetailPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h2 className="text-xl font-semibold">组织详情</h2>
+        <h2 className="text-xl font-semibold">团队详情</h2>
       </div>
 
       <Card>
@@ -81,7 +81,7 @@ export default function AdminOrganizationDetailPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">服务</span>
-              <span className="text-muted-foreground">详见订阅管理</span>
+              <span className="text-muted-foreground">详见已购服务</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">个人团队</span>
@@ -108,7 +108,7 @@ export default function AdminOrganizationDetailPage() {
                 disabled={setActiveMutation.isPending}
               >
                 <PowerOff className="mr-2 h-4 w-4" />
-                停用组织
+                停用团队
               </Button>
             ) : (
               <Button
@@ -117,7 +117,7 @@ export default function AdminOrganizationDetailPage() {
                 disabled={setActiveMutation.isPending}
               >
                 <Power className="mr-2 h-4 w-4" />
-                启用组织
+                启用团队
               </Button>
             )}
           </div>
@@ -125,7 +125,7 @@ export default function AdminOrganizationDetailPage() {
       </Card>
 
       <p className="mt-4 text-sm text-muted-foreground">
-        订阅信息可在「订阅管理」中按组织筛选查看。
+        订阅信息可在「已购服务」中按团队筛选查看。
       </p>
     </div>
   );

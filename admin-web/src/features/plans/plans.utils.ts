@@ -107,5 +107,5 @@ export function formatPlanLimits(plan: AdminPlan) {
   const rooms = plan.max_rooms < 0 ? '∞' : plan.max_rooms;
   const members = plan.max_members < 0 ? '∞' : plan.max_members;
 
-  return `组织${organizations} / 公寓${apartments} / 房间${rooms} / 成员${members}`;
+  return `团队${organizations} / 公寓${apartments} / 房间${rooms} / 团队成员${members}`;
 }

@@ -39,7 +39,7 @@ export function useServicePricingData({
     onSuccess: () => {
       invalidateServices();
       onCreateSuccess();
-      toast.success('服务产品创建成功');
+      toast.success('服务方案已创建');
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
@@ -50,7 +50,7 @@ export function useServicePricingData({
     onSuccess: () => {
       invalidateServices();
       onUpdateSuccess();
-      toast.success('服务产品已更新');
+      toast.success('服务方案已更新');
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
@@ -60,7 +60,7 @@ export function useServicePricingData({
       adminApiEndpoints.updateServiceProductPricing(id, { pricing }),
     onSuccess: () => {
       invalidateServices();
-      toast.success('定价已更新');
+      toast.success('价格设置已更新');
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新定价失败，请重试')),
   });
@@ -70,7 +70,7 @@ export function useServicePricingData({
     onSuccess: () => {
       invalidateServices();
       onDeleteSuccess();
-      toast.success('服务产品已删除');
+      toast.success('服务方案已删除');
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
@@ -84,4 +84,3 @@ export function useServicePricingData({
     deleteMutation,
   };
 }
-

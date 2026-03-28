@@ -14,7 +14,7 @@ export const serviceProductCreateSchema = z.object({
   max_organizations: z.coerce.number().nullable(),
   max_apartments: z.coerce.number().min(1, '公寓数最小为1'),
   max_rooms: z.coerce.number().min(1, '房间数最小为1'),
-  max_members: z.coerce.number().min(1, '成员数最小为1'),
+  max_members: z.coerce.number().min(1, '团队成员数最小为1'),
   is_active: z.boolean(),
   sort_order: z.coerce.number().min(0),
   pricing: z.array(pricingItemSchema),
@@ -23,4 +23,3 @@ export const serviceProductCreateSchema = z.object({
 export const serviceProductUpdateSchema = serviceProductCreateSchema;
 
 export type ServiceProductForm = z.infer<typeof serviceProductCreateSchema>;
-

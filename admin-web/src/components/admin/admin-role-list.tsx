@@ -29,7 +29,7 @@ export function AdminRoleList({
   return (
     <div className="flex h-full flex-col border-r bg-muted/30">
       <div className="border-b p-3">
-        <h2 className="mb-2 text-sm font-semibold" data-testid="admin-roles-heading">运营角色</h2>
+        <h2 className="mb-2 text-sm font-semibold" data-testid="admin-roles-heading">分工设置</h2>
         <Button
           variant="outline"
           size="sm"
@@ -39,7 +39,7 @@ export function AdminRoleList({
           data-testid="admin-roles-create-btn"
         >
           <Plus className="mr-2 h-4 w-4" />
-          新建角色
+          新建分工
         </Button>
       </div>
       <ul className="flex-1 space-y-1 overflow-y-auto p-2">
@@ -64,7 +64,7 @@ export function AdminRoleList({
               <span className="flex-1 truncate text-left">{role.name}</span>
               {role.is_system && (
                 <Badge variant="secondary" className="shrink-0 text-xs">
-                  系统预置
+                  内置
                 </Badge>
               )}
               {!role.is_system && (
@@ -76,7 +76,7 @@ export function AdminRoleList({
                     e.stopPropagation();
                     onDeleteRole(role);
                   }}
-                  aria-label={`删除角色 ${role.name}`}
+                  aria-label={`删除分工 ${role.name}`}
                 >
                   <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
