@@ -13,7 +13,6 @@ import {
   CreditCard,
   Menu,
   LogOut,
-  ExternalLink,
   Palette,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -95,12 +94,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Link href="/">
-              <Button variant="ghost" size="sm">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                业务端
-              </Button>
-            </Link>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               退出登录

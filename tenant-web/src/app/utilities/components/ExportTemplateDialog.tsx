@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Download, Loader2 } from 'lucide-react';
-import ExcelJS from 'exceljs';
 import { toast } from 'sonner';
 import { utilitiesApi, UtilityExportRoom } from '@/lib/api/utilities';
 import { getErrorMessage } from '@/lib/utils/error';
@@ -43,6 +42,11 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
   const [exportMonth, setExportMonth] = useState(currentMonth);
   const [daysRange, setDaysRange] = useState<number>(0);
   const [isExporting, setIsExporting] = useState(false);
+
+  const createWorkbook = async () => {
+    const ExcelJS = (await import('exceljs')).default;
+    return new ExcelJS.Workbook();
+  };
 
   const getDateRangeDescription = () => {
     if (daysRange <= 0) return '';
@@ -87,7 +91,7 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
         '',
       ]);
 
-      const wb = new ExcelJS.Workbook();
+      const wb = await createWorkbook();
       const ws = wb.addWorksheet('水电读数导入', {
         views: [{ state: 'frozen', ySplit: 1 }],
       });
@@ -128,7 +132,7 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
       ['示例公寓', '101', '张三', '15', '', '', ''],
       ['示例公寓', '102', '李四', '20', '', '', ''],
     ];
-    const wb = new ExcelJS.Workbook();
+    const wb = await createWorkbook();
     const ws = wb.addWorksheet('水电读数导入');
     ws.addRows(templateData);
     const buffer = await wb.xlsx.writeBuffer();

@@ -6,7 +6,7 @@ import { configApi, type BrandConfig } from '@/lib/api/config';
 
 const DEFAULT_BRAND: BrandConfig = {
   app_name: '公寓管理系统',
-  app_description: '多租户 SaaS 公寓/物业管理系统',
+  app_description: '公寓、租客与账单的一体化管理系统',
   logo_url: '',
   favicon_url: '',
   login_subtitle: '用户登录，管理公寓、租客与账单',

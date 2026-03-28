@@ -52,7 +52,7 @@ export default function AdminBrandPage() {
       config && !isError
         ? {
             app_name: config.app_name ?? '公寓管理系统',
-            app_description: config.app_description ?? '多租户 SaaS 公寓/物业管理系统',
+            app_description: config.app_description ?? '公寓、租客与账单的一体化管理系统',
             logo_url: config.logo_url ?? '',
             favicon_url: config.favicon_url ?? '',
             login_subtitle: config.login_subtitle ?? '用户登录，管理公寓、租客与账单',
@@ -61,7 +61,7 @@ export default function AdminBrandPage() {
         : undefined,
     defaultValues: {
       app_name: '公寓管理系统',
-      app_description: '多租户 SaaS 公寓/物业管理系统',
+      app_description: '公寓、租客与账单的一体化管理系统',
       logo_url: '',
       favicon_url: '',
       login_subtitle: '用户登录，管理公寓、租客与账单',
@@ -131,7 +131,7 @@ export default function AdminBrandPage() {
                   <FormItem>
                     <FormLabel>系统描述</FormLabel>
                     <FormControl>
-                      <Input placeholder="多租户 SaaS 公寓/物业管理系统" data-testid="admin-brand-description-input" {...field} />
+                      <Input placeholder="公寓、租客与账单的一体化管理系统" data-testid="admin-brand-description-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

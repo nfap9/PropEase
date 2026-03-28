@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -16,9 +17,28 @@ import { getErrorMessage } from '@/lib/utils/error';
 import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
 import { Plus, Upload, Download, Building2, AlertCircle, History } from 'lucide-react';
-import { CreateUtilityDialog, ExportTemplateDialog, BatchImportDialog } from './components';
-import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 import type { RoomMissingInitialReading } from '@/lib/api/utilities';
+
+const CreateUtilityDialog = dynamic(
+  () => import('./components/CreateUtilityDialog').then((mod) => mod.CreateUtilityDialog),
+  { ssr: false }
+);
+
+const ExportTemplateDialog = dynamic(
+  () => import('./components/ExportTemplateDialog').then((mod) => mod.ExportTemplateDialog),
+  { ssr: false }
+);
+
+const BatchImportDialog = dynamic(
+  () => import('./components/BatchImportDialog').then((mod) => mod.BatchImportDialog),
+  { ssr: false }
+);
+
+const InitialReadingDialog = dynamic(
+  () =>
+    import('@/components/common/initial-reading-dialog').then((mod) => mod.InitialReadingDialog),
+  { ssr: false }
+);
 
 // 注意: 实际使用时从 testids 导入 UTILITIES 常量
 const UTILITIES = {
@@ -418,25 +438,34 @@ export default function UtilitiesPage() {
           )}
         </div>
 
-        <CreateUtilityDialog
-          open={isCreateOpen}
-          onOpenChange={setIsCreateOpen}
-          onSubmit={(data) => createMutation.mutate(data)}
-          isPending={createMutation.isPending}
-          apartmentRooms={apartmentRooms}
-          orgId={orgId!}
-        />
+        {isCreateOpen ? (
+          <CreateUtilityDialog
+            open={isCreateOpen}
+            onOpenChange={setIsCreateOpen}
+            onSubmit={(data) => createMutation.mutate(data)}
+            isPending={createMutation.isPending}
+            apartmentRooms={apartmentRooms}
+            orgId={orgId!}
+          />
+        ) : null}
 
-        <ExportTemplateDialog open={isExportTemplateOpen} onOpenChange={setIsExportTemplateOpen} />
+        {isExportTemplateOpen ? (
+          <ExportTemplateDialog
+            open={isExportTemplateOpen}
+            onOpenChange={setIsExportTemplateOpen}
+          />
+        ) : null}
 
-        <BatchImportDialog
-          open={isBatchImportOpen}
-          onOpenChange={setIsBatchImportOpen}
-          onImport={handleBatchImport}
-          isPending={batchImportMutation.isPending}
-          allRooms={allRooms}
-          apartments={apartments}
-        />
+        {isBatchImportOpen ? (
+          <BatchImportDialog
+            open={isBatchImportOpen}
+            onOpenChange={setIsBatchImportOpen}
+            onImport={handleBatchImport}
+            isPending={batchImportMutation.isPending}
+            allRooms={allRooms}
+            apartments={apartments}
+          />
+        ) : null}
 
         {initialReadingRoom && (
           <InitialReadingDialog

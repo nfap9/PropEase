@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,7 +12,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
@@ -32,8 +30,6 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
-
-const APP_NAME = '公寓管理系统';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -118,7 +114,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>管理后台登录</CardTitle>
-          <CardDescription>仅限运营账号登录，普通用户请前往{APP_NAME}</CardDescription>
+          <CardDescription>请输入运营账号信息后登录后台。</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -162,11 +158,6 @@ export default function AdminLoginPage() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center border-t pt-4">
-          <Link href="/login" className="text-sm text-muted-foreground hover:underline">
-            普通用户？返回{APP_NAME}
-          </Link>
-        </CardFooter>
       </Card>
     </div>
   );

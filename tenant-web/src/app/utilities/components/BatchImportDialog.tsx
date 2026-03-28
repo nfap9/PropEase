@@ -19,7 +19,6 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Upload, FileSpreadsheet } from 'lucide-react';
-import ExcelJS from 'exceljs';
 import { toast } from 'sonner';
 import { Apartment, Room } from '@/types';
 import { getErrorMessage } from '@/lib/utils/error';
@@ -83,6 +82,7 @@ export function BatchImportDialog({
       reader.readAsArrayBuffer(file);
     });
 
+    const ExcelJS = (await import('exceljs')).default;
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(arrayBuffer);
     const worksheet = workbook.worksheets[0];

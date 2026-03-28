@@ -12,14 +12,6 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { useBrandConfig } from '@/lib/brand-config-context';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
   Form,
   FormControl,
   FormField,
@@ -27,6 +19,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
+import { AuthLoadingScreen } from '@/components/auth/auth-loading-screen';
+import { AuthShell } from '@/components/auth/auth-shell';
 
 // 手机号验证正则
 const phoneRegex = /^1[3-9]\d{9}$/;
@@ -89,107 +83,112 @@ export default function RegisterPage() {
 
   // 检查认证状态或已认证正在跳转时显示加载
   if (isAuthLoading || isAuthenticated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center"
-        style={{
-          background: 'linear-gradient(135deg, hsl(210 40% 96.1%) 0%, hsl(0 0% 100%) 50%, hsl(210 40% 96.1%) 100%)',
-        }}>
-        <div className="text-muted-foreground">加载中...</div>
-      </div>
-    );
+    return <AuthLoadingScreen label="正在准备你的工作台..." />;
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4"
-      style={{
-        background: 'linear-gradient(135deg, hsl(210 40% 96.1%) 0%, hsl(0 0% 100%) 50%, hsl(210 40% 96.1%) 100%)',
-      }}
-      data-testid="auth-register-page">
-      <Card className="w-full max-w-md shadow-xl shadow-gray-200/50 dark:shadow-gray-900/50 rounded-xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-xl font-semibold">{brandConfig.app_name}</CardTitle>
-          <CardDescription>{brandConfig.register_subtitle}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {error && (
-                <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
-                  {error}
-                </div>
+    <div data-testid="auth-register-page">
+      <AuthShell
+        mode="register"
+        app_name={brandConfig.app_name}
+        app_description={brandConfig.app_description}
+        form_title="创建账户"
+        form_description={brandConfig.register_subtitle}
+        footer={
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              已有账户？{' '}
+              <Link href="/login" className="font-medium text-primary hover:underline">
+                去登录
+              </Link>
+            </p>
+            <span>注册成功后会自动登录并进入工作台</span>
+          </div>
+        }
+      >
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            {error && (
+              <div className="rounded-2xl border border-destructive/15 bg-destructive/10 p-3 text-sm text-destructive">
+                {error}
+              </div>
+            )}
+            <FormField
+              control={form.control}
+              name="full_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>姓名</FormLabel>
+                  <FormControl>
+                    <Input placeholder="请输入姓名" autoComplete="name" {...field} data-testid="auth-name-input" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-              <FormField
-                control={form.control}
-                name="full_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>姓名</FormLabel>
-                    <FormControl>
-                      <Input placeholder="请输入姓名" {...field} data-testid="auth-name-input" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>手机号</FormLabel>
-                    <FormControl>
-                      <Input type="tel" placeholder="请输入手机号" {...field} data-testid="auth-phone-input" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>密码</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="请输入密码（至少8位，包含字母和数字）"
-                        {...field}
-                        data-testid="auth-password-input"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="confirm_password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>确认密码</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="请再次输入密码" {...field} data-testid="auth-confirm-password-input" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full" disabled={isLoading} data-testid="auth-register-button">
-                {isLoading ? '注册并登录中...' : '注册并登录'}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            已有账户？{' '}
-            <Link href="/login" className="text-primary hover:underline">
-              登录
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>手机号</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="tel"
+                      placeholder="请输入手机号"
+                      autoComplete="tel"
+                      {...field}
+                      data-testid="auth-phone-input"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>密码</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="请输入密码（至少8位，包含字母和数字）"
+                      autoComplete="new-password"
+                      {...field}
+                      data-testid="auth-password-input"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirm_password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>确认密码</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="请再次输入密码"
+                      autoComplete="new-password"
+                      {...field}
+                      data-testid="auth-confirm-password-input"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="h-11 w-full text-sm" disabled={isLoading} data-testid="auth-register-button">
+              {isLoading ? '注册并登录中...' : '创建账户并进入系统'}
+            </Button>
+          </form>
+        </Form>
+      </AuthShell>
     </div>
   );
 }

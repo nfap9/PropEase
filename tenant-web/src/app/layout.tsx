@@ -27,7 +27,7 @@ async function getBrandConfig(): Promise<{ app_name: string; app_description: st
   } catch {
     // ignore
   }
-  return { app_name: '公寓管理系统', app_description: '多租户 SaaS 公寓/物业管理系统' };
+  return { app_name: '公寓管理系统', app_description: '公寓、租客与账单的一体化管理系统' };
 }
 
 export async function generateMetadata(): Promise<Metadata> {

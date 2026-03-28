@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -31,7 +32,11 @@ import { useAuth } from '@/lib/auth/context';
 import { formatDate } from '@/lib/date-utils';
 import { UtilityReading } from '@/types';
 import { Building2, Droplets, History, Pencil, Zap } from 'lucide-react';
-import { EditUtilityDialog } from '../components';
+
+const EditUtilityDialog = dynamic(
+  () => import('../components/EditUtilityDialog').then((mod) => mod.EditUtilityDialog),
+  { ssr: false }
+);
 
 /** 生成租约起止月之间的所有月份（含起止月） */
 function getMonthsInLeasePeriod(
@@ -359,17 +364,17 @@ export default function UtilitiesHistoryPage() {
           </Card>
         </div>
 
-        <EditUtilityDialog
-          open={isEditOpen}
-          onOpenChange={setIsEditOpen}
-          onSubmit={(data) => {
-            if (selectedUtility) {
+        {isEditOpen && selectedUtility ? (
+          <EditUtilityDialog
+            open={isEditOpen}
+            onOpenChange={setIsEditOpen}
+            onSubmit={(data) => {
               updateMutation.mutate({ id: selectedUtility.id, data });
-            }
-          }}
-          isPending={updateMutation.isPending}
-          utility={selectedUtility}
-        />
+            }}
+            isPending={updateMutation.isPending}
+            utility={selectedUtility}
+          />
+        ) : null}
       </MainLayout>
     </PermissionPageGuard>
   );
