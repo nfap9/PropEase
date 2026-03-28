@@ -12,7 +12,7 @@ import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/lib/auth/context';
 import type { Room, RoomFacilities } from '@/types';
-import { UtilityConfigDialog } from './components/UtilityConfigDialog';
+import { UtilityConfigDialog } from '@/features/apartment-detail/components/UtilityConfigDialog';
 import {
   apartmentFormDefaultValues,
   apartmentSchema,
@@ -21,17 +21,17 @@ import {
   roomSchema,
   type BatchEditFormData,
   type RoomFormData,
-} from './apartment-detail.schemas';
+} from '@/features/apartment-detail/apartment-detail.schemas';
 import {
   useApartmentDetailData,
   useApartmentFormSync,
   useApartmentRoomMetrics,
   useGeneratedRoomSelection,
   useRoomBatchSelection,
-} from './apartment-detail.hooks';
-import { ApartmentDetailHeader } from './components/apartment-detail-header';
-import { ApartmentOverviewTab } from './components/apartment-overview-tab';
-import { ApartmentUpstreamTab } from './components/apartment-upstream-tab';
+} from '@/features/apartment-detail/apartment-detail.hooks';
+import { ApartmentDetailHeader } from '@/features/apartment-detail/components/apartment-detail-header';
+import { ApartmentOverviewTab } from '@/features/apartment-detail/components/apartment-overview-tab';
+import { ApartmentUpstreamTab } from '@/features/apartment-detail/components/apartment-upstream-tab';
 import {
   ApartmentEditDialog,
   BatchCreateRoomDialog,
@@ -39,7 +39,7 @@ import {
   CreateRoomDialog,
   DeleteRoomDialog,
   RoomEditDialog,
-} from './components/apartment-detail-dialogs';
+} from '@/features/apartment-detail/components/apartment-detail-dialogs';
 
 export default function ApartmentDetailPage({ params }: { params: { id: string } }) {
   const apartmentId = params.id;
