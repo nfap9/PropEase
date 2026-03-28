@@ -7,14 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Separator } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { CommonDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import { leaseSigningSchema, type LeaseSigningFormData } from '../leases.schemas';
 import { leasesApi, apartmentsApi, roomsApi, tenantsApi, utilityConfigApi, feeTypesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
@@ -289,64 +282,63 @@ export function LeaseSigningDrawer({
   const getDialogDescription = () =>
     isRoomSpecified && room ? `为房间 ${room.room_number} 创建租约` : '创建新的租约';
 
+  const drawerHeader = (
+    <div>
+      <h2 className="text-lg font-semibold">{getDialogTitle()}</h2>
+      <p className="text-sm text-muted-foreground">{getDialogDescription()}</p>
+    </div>
+  );
+
+  const drawerFooter = (
+    <div className="flex justify-end gap-3">
+      <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+        取消
+      </Button>
+      <Button
+        type="button"
+        disabled={createMutation.isPending}
+        onClick={form.handleSubmit(handleSubmit)}
+      >
+        {createMutation.isPending ? '创建中...' : '确认签约'}
+      </Button>
+    </div>
+  );
+
   return (
     <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="flex flex-col h-screen w-full sm:w-[600px]">
-          {/* 固定头部 */}
-          <div className="flex-shrink-0 sticky top-0 z-10 bg-background pb-4 border-b">
-            <SheetHeader>
-              <SheetTitle>{getDialogTitle()}</SheetTitle>
-              <SheetDescription>{getDialogDescription()}</SheetDescription>
-            </SheetHeader>
-          </div>
+      <CommonDrawer
+        open={open}
+        onOpenChange={onOpenChange}
+        header={drawerHeader}
+        footer={drawerFooter}
+        width="w-full sm:w-[600px]"
+      >
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <RoomInfoSection
+            form={form}
+            room={room}
+            isRoomSpecified={isRoomSpecified}
+            apartments={apartments}
+            rooms={rooms}
+            selectedApartmentId={selectedApartmentId}
+            onApartmentChange={setSelectedApartmentId}
+          />
 
-          {/* 可滚动内容区 */}
-          <div className="flex-1 overflow-y-auto py-6">
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-              <RoomInfoSection
-                form={form}
-                room={room}
-                isRoomSpecified={isRoomSpecified}
-                apartments={apartments}
-                rooms={rooms}
-                selectedApartmentId={selectedApartmentId}
-                onApartmentChange={setSelectedApartmentId}
-              />
+          <Separator />
 
-              <Separator />
+          <TenantInfoSection form={form} onSearchTenant={() => setTenantSearchOpen(true)} />
 
-              <TenantInfoSection form={form} onSearchTenant={() => setTenantSearchOpen(true)} />
+          <Separator />
 
-              <Separator />
-
-              <ContractInfoSection
-                form={form}
-                feeTypes={feeTypes}
-                selectedFees={selectedFees}
-                onAddFee={handleAddFee}
-                onUpdateFeePrice={handleUpdateFeePrice}
-              />
-            </form>
-          </div>
-
-          {/* 固定底部操作区 */}
-          <div className="flex-shrink-0 sticky bottom-0 z-10 bg-background pt-4 border-t">
-            <SheetFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                取消
-              </Button>
-              <Button
-                type="button"
-                disabled={createMutation.isPending}
-                onClick={form.handleSubmit(handleSubmit)}
-              >
-                {createMutation.isPending ? '创建中...' : '确认签约'}
-              </Button>
-            </SheetFooter>
-          </div>
-        </SheetContent>
-      </Sheet>
+          <ContractInfoSection
+            form={form}
+            feeTypes={feeTypes}
+            selectedFees={selectedFees}
+            onAddFee={handleAddFee}
+            onUpdateFeePrice={handleUpdateFeePrice}
+          />
+        </form>
+      </CommonDrawer>
 
       <TenantSearchDrawer
         orgId={orgId}

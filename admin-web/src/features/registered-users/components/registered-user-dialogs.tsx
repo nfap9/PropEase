@@ -32,6 +32,7 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { CommonDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
   SelectContent,
@@ -137,97 +138,101 @@ export function RegisteredUserDetailSheet({
   isSetActivePending: boolean;
   isDeletePending: boolean;
 }) {
+  const header = (
+    <h2 className="text-lg font-semibold">{adminMessages.registeredUsers.dialogs.detailTitle}</h2>
+  );
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>{adminMessages.registeredUsers.dialogs.detailTitle}</SheetTitle>
-        </SheetHeader>
-        {detailUserId && (
-          <div className="mt-6">
-            {detailLoading ? (
-              <Skeleton className="h-32 w-full" />
-            ) : detail ? (
-              <div className="space-y-4">
-                <div>
-                  <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.phone}</span>
-                  <p className="font-medium">{detail.phone}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.name}</span>
-                  <p className="font-medium">{detail.full_name}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.status}</span>
-                  <p>
-                    <Badge
-                      variant={
-                        detail.is_active ? ORG_STATUS_CONFIG.active.variant : ORG_STATUS_CONFIG.inactive.variant
-                      }
-                    >
-                      {detail.is_active ? ORG_STATUS_CONFIG.active.label : ORG_STATUS_CONFIG.inactive.label}
-                    </Badge>
-                  </p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.createdAt}</span>
-                  <p className="font-medium">{formatDateTime(detail.created_at)}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.organizations}</span>
-                  {detail.organizations.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">{adminMessages.registeredUsers.dialogs.emptyOrganizations}</p>
-                  ) : (
-                    <ul className="mt-1 space-y-1">
-                      {detail.organizations.map((organization) => (
-                        <li
-                          key={organization.id}
-                          className="flex items-center justify-between rounded border px-2 py-1 text-sm"
-                        >
-                          <span>{organization.name}</span>
-                          <Badge variant="outline">{organization.role}</Badge>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-2 pt-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={onOpenGift}
-                    disabled={detail.organizations.length === 0}
-                  >
-                    <Gift className="mr-2 h-4 w-4" />
-                    {adminMessages.registeredUsers.dialogs.giftService}
-                  </Button>
-                  {detail.is_active ? (
-                    <Button variant="destructive" size="sm" onClick={onDisable} disabled={isSetActivePending}>
-                      {adminMessages.registeredUsers.dialogs.disableAccount}
-                    </Button>
-                  ) : (
-                    <Button variant="default" size="sm" onClick={onEnable} disabled={isSetActivePending}>
-                      {adminMessages.registeredUsers.dialogs.enableAccount}
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                    onClick={onDelete}
-                    disabled={isDeletePending}
-                  >
-                    {adminMessages.registeredUsers.dialogs.deleteAccount}
-                  </Button>
-                </div>
+    <CommonDrawer
+      open={open}
+      onOpenChange={onOpenChange}
+      header={header}
+      width="w-full sm:w-[400px]"
+    >
+      {detailUserId ? (
+        <div>
+          {detailLoading ? (
+            <Skeleton className="h-32 w-full" />
+          ) : detail ? (
+            <div className="space-y-4">
+              <div>
+                <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.phone}</span>
+                <p className="font-medium">{detail.phone}</p>
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">{adminMessages.registeredUsers.dialogs.loadFailed}</p>
-            )}
-          </div>
-        )}
-      </SheetContent>
-    </Sheet>
+              <div>
+                <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.name}</span>
+                <p className="font-medium">{detail.full_name}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.status}</span>
+                <p>
+                  <Badge
+                    variant={
+                      detail.is_active ? ORG_STATUS_CONFIG.active.variant : ORG_STATUS_CONFIG.inactive.variant
+                    }
+                  >
+                    {detail.is_active ? ORG_STATUS_CONFIG.active.label : ORG_STATUS_CONFIG.inactive.label}
+                  </Badge>
+                </p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.createdAt}</span>
+                <p className="font-medium">{formatDateTime(detail.created_at)}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.organizations}</span>
+                {detail.organizations.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">{adminMessages.registeredUsers.dialogs.emptyOrganizations}</p>
+                ) : (
+                  <ul className="mt-1 space-y-1">
+                    {detail.organizations.map((organization) => (
+                      <li
+                        key={organization.id}
+                        className="flex items-center justify-between rounded border px-2 py-1 text-sm"
+                      >
+                        <span>{organization.name}</span>
+                        <Badge variant="outline">{organization.role}</Badge>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={onOpenGift}
+                  disabled={detail.organizations.length === 0}
+                >
+                  <Gift className="mr-2 h-4 w-4" />
+                  {adminMessages.registeredUsers.dialogs.giftService}
+                </Button>
+                {detail.is_active ? (
+                  <Button variant="destructive" size="sm" onClick={onDisable} disabled={isSetActivePending}>
+                    {adminMessages.registeredUsers.dialogs.disableAccount}
+                  </Button>
+                ) : (
+                  <Button variant="default" size="sm" onClick={onEnable} disabled={isSetActivePending}>
+                    {adminMessages.registeredUsers.dialogs.enableAccount}
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  onClick={onDelete}
+                  disabled={isDeletePending}
+                >
+                  {adminMessages.registeredUsers.dialogs.deleteAccount}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">{adminMessages.registeredUsers.dialogs.loadFailed}</p>
+          )}
+        </div>
+      ) : null}
+    </CommonDrawer>
   );
 }
 

@@ -42,6 +42,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
+import { CommonDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import {
   serviceProductCreateSchema,
@@ -302,33 +303,43 @@ export function ServicePricingEditSheet({
     }
   }, [form, open, service]);
 
+  const header = (
+    <div>
+      <h2 className="text-lg font-semibold">{adminMessages.servicePricing.dialogs.editTitle}</h2>
+      <p className="text-sm text-muted-foreground">{service?.name}</p>
+    </div>
+  );
+
+  const footer = (
+    <div className="flex justify-end gap-3">
+      <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+        {adminMessages.common.cancel}
+      </Button>
+      <Button type="button" disabled={isPending} onClick={form.handleSubmit((data) => onSubmit(data, editTab))}>
+        {isPending ? adminMessages.common.saving : adminMessages.common.save}
+      </Button>
+    </div>
+  );
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="max-h-screen w-full overflow-y-auto sm:max-w-xl">
-        <SheetHeader>
-          <SheetTitle>{adminMessages.servicePricing.dialogs.editTitle}</SheetTitle>
-          <SheetDescription>{service?.name}</SheetDescription>
-        </SheetHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit((data) => onSubmit(data, editTab))} className="mt-4 space-y-4">
-            <ServiceProductFormSections
-              form={form}
-              mode="edit"
-              editTab={editTab}
-              onEditTabChange={setEditTab}
-            />
-            <SheetFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                {adminMessages.common.cancel}
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? adminMessages.common.saving : adminMessages.common.save}
-              </Button>
-            </SheetFooter>
-          </form>
-        </Form>
-      </SheetContent>
-    </Sheet>
+    <CommonDrawer
+      open={open}
+      onOpenChange={onOpenChange}
+      header={header}
+      footer={footer}
+      width="w-full sm:w-[600px]"
+    >
+      <Form {...form}>
+        <div className="space-y-4">
+          <ServiceProductFormSections
+            form={form}
+            mode="edit"
+            editTab={editTab}
+            onEditTabChange={setEditTab}
+          />
+        </div>
+      </Form>
+    </CommonDrawer>
   );
 }
 

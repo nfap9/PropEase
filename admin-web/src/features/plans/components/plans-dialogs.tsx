@@ -41,6 +41,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
+import { CommonDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminPlan } from '@/lib/api/admin-client';
 import { planCreateSchema, planUpdateSchema, type PlanCreateForm, type PlanUpdateForm } from '../plans.schemas';
@@ -305,31 +306,38 @@ export function PlanEditSheet({
     }
   }, [form, open, plan]);
 
+  const header = (
+    <div>
+      <h2 className="text-lg font-semibold">{adminMessages.plans.dialogs.editTitle}</h2>
+      <p className="text-sm text-muted-foreground">{plan?.name}</p>
+    </div>
+  );
+
+  const footer = (
+    <div className="flex justify-end gap-3">
+      <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+        {adminMessages.common.cancel}
+      </Button>
+      <Button type="button" disabled={isPending} onClick={form.handleSubmit((data) => onSubmit(data, activeTab))}>
+        {isPending ? adminMessages.common.saving : adminMessages.common.save}
+      </Button>
+    </div>
+  );
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="max-h-screen w-full overflow-y-auto sm:max-w-xl">
-        <SheetHeader>
-          <SheetTitle>{adminMessages.plans.dialogs.editTitle}</SheetTitle>
-          <SheetDescription>{plan?.name}</SheetDescription>
-        </SheetHeader>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit((data) => onSubmit(data, activeTab))}
-            className="mt-4 space-y-4"
-          >
-            <PlanFormSections form={form as UseFormReturn<PlanForm>} mode="edit" activeTab={activeTab} onTabChange={setActiveTab} />
-            <SheetFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                {adminMessages.common.cancel}
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? adminMessages.common.saving : adminMessages.common.save}
-              </Button>
-            </SheetFooter>
-          </form>
-        </Form>
-      </SheetContent>
-    </Sheet>
+    <CommonDrawer
+      open={open}
+      onOpenChange={onOpenChange}
+      header={header}
+      footer={footer}
+      width="w-full sm:w-[600px]"
+    >
+      <Form {...form}>
+        <div className="space-y-4">
+          <PlanFormSections form={form as UseFormReturn<PlanForm>} mode="edit" activeTab={activeTab} onTabChange={setActiveTab} />
+        </div>
+      </Form>
+    </CommonDrawer>
   );
 }
 
