@@ -11,6 +11,7 @@ export * from './checkbox';
 export * from './common-drawer';
 export * from './confirm-dialog';
 export * from './data-table';
+export * from './date-range-picker';
 export * from './detail-drawer';
 export * from './dialog';
 export * from './dropdown-menu';

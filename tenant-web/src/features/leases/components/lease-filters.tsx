@@ -2,6 +2,7 @@
 
 import { Search, X } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { DateRangePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -20,12 +21,7 @@ interface LeaseFiltersProps {
   onClearFilters: () => void;
 }
 
-export function LeaseFilters({
-  apartments,
-  filters,
-  onFilterChange,
-  onClearFilters,
-}: LeaseFiltersProps) {
+export function LeaseFilters({ apartments, filters, onFilterChange, onClearFilters }: LeaseFiltersProps) {
   const hasApartment = Boolean(filters.apartmentId);
   const hasKeyword = Boolean(filters.keyword?.trim());
   const hasDates =
@@ -72,38 +68,24 @@ export function LeaseFilters({
 
       <div className="flex flex-wrap gap-4">
         <FilterField label="开始日期范围">
-          <div className="flex items-center gap-1">
-            <Input
-              type="date"
-              className="h-9 min-w-0 flex-1"
-              value={filters.startDateFrom ?? ''}
-              onChange={(event) => onFilterChange('startDateFrom', event.target.value || null)}
-            />
-            <span className="text-muted-foreground">至</span>
-            <Input
-              type="date"
-              className="h-9 min-w-0 flex-1"
-              value={filters.startDateTo ?? ''}
-              onChange={(event) => onFilterChange('startDateTo', event.target.value || null)}
-            />
-          </div>
+          <DateRangePicker
+            value={{ from: filters.startDateFrom, to: filters.startDateTo }}
+            placeholder="选择开始日期范围"
+            onChange={(range) => {
+              onFilterChange('startDateFrom', range.from);
+              onFilterChange('startDateTo', range.to);
+            }}
+          />
         </FilterField>
         <FilterField label="结束日期范围">
-          <div className="flex items-center gap-1">
-            <Input
-              type="date"
-              className="h-9 min-w-0 flex-1"
-              value={filters.endDateFrom ?? ''}
-              onChange={(event) => onFilterChange('endDateFrom', event.target.value || null)}
-            />
-            <span className="text-muted-foreground">至</span>
-            <Input
-              type="date"
-              className="h-9 min-w-0 flex-1"
-              value={filters.endDateTo ?? ''}
-              onChange={(event) => onFilterChange('endDateTo', event.target.value || null)}
-            />
-          </div>
+          <DateRangePicker
+            value={{ from: filters.endDateFrom, to: filters.endDateTo }}
+            placeholder="选择结束日期范围"
+            onChange={(range) => {
+              onFilterChange('endDateFrom', range.from);
+              onFilterChange('endDateTo', range.to);
+            }}
+          />
         </FilterField>
       </div>
 
