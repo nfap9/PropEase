@@ -278,6 +278,18 @@ export function useGeneratedRoomSelection(batchCreateRoomForm: UseFormReturn<Roo
 export function useRoomBatchSelection(rooms: Room[] | undefined) {
   const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(new Set());
 
+  useEffect(() => {
+    if (!rooms) {
+      return;
+    }
+
+    const roomIds = new Set(rooms.map((room) => room.id));
+    setSelectedRoomIds((prev) => {
+      const next = new Set(Array.from(prev).filter((roomId) => roomIds.has(roomId)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [rooms]);
+
   const toggleRoomSelection = (roomId: string) => {
     setSelectedRoomIds((prev) => {
       const next = new Set(prev);
@@ -327,4 +339,3 @@ export function useApartmentRoomMetrics(rooms: Room[] | undefined) {
 
   return { stats, roomGroups };
 }
-

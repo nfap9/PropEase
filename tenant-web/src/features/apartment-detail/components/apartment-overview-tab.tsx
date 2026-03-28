@@ -11,11 +11,8 @@ interface ApartmentOverviewTabProps {
   roomsLoading: boolean;
   stats: RoomStats;
   roomGroups: FloorRoomGroup[];
-  isBatchEditMode: boolean;
   selectedRoomIds: Set<string>;
   isBatchDeletePending: boolean;
-  onOpenBatchMode: () => void;
-  onExitBatchMode: () => void;
   onOpenCreateRoom: () => void;
   onOpenBatchCreate: () => void;
   onOpenBatchEdit: () => void;
@@ -23,7 +20,7 @@ interface ApartmentOverviewTabProps {
   onSelectAllRooms: (select: boolean) => void;
   onToggleFloorSelection: (rooms: Room[], select: boolean) => void;
   onToggleRoomSelection: (roomId: string) => void;
-  onRoomClick: (room: Room) => void;
+  onEditRoom: (room: Room) => void;
   onDeleteRoom: (room: Room) => void;
 }
 
@@ -33,11 +30,8 @@ export function ApartmentOverviewTab({
   roomsLoading,
   stats,
   roomGroups,
-  isBatchEditMode,
   selectedRoomIds,
   isBatchDeletePending,
-  onOpenBatchMode,
-  onExitBatchMode,
   onOpenCreateRoom,
   onOpenBatchCreate,
   onOpenBatchEdit,
@@ -45,44 +39,56 @@ export function ApartmentOverviewTab({
   onSelectAllRooms,
   onToggleFloorSelection,
   onToggleRoomSelection,
-  onRoomClick,
+  onEditRoom,
   onDeleteRoom,
 }: ApartmentOverviewTabProps) {
   const hasPropertyInfo = apartment.floors || apartment.land_area || apartment.total_area;
 
   return (
     <div className="space-y-4">
-      {hasPropertyInfo && (
+      <div className="grid gap-4 md:grid-cols-2">
+        {hasPropertyInfo && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle>物业信息</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-3 gap-4">
+                <PropertyInfoItem label="楼层数" value={`${apartment.floors ?? '-'} 层`} />
+                <PropertyInfoItem
+                  label="用地面积"
+                  value={apartment.land_area ? `${apartment.land_area} 亩` : '-'}
+                />
+                <PropertyInfoItem
+                  label="总面积"
+                  value={apartment.total_area ? `${apartment.total_area} ㎡` : '-'}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
-          <CardHeader>
-            <CardTitle>物业信息</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle>房间状态</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-4">
-              <PropertyInfoItem label="楼层数" value={`${apartment.floors ?? '-'} 层`} />
-              <PropertyInfoItem
-                label="用地面积"
-                value={apartment.land_area ? `${apartment.land_area} 亩` : '-'}
-              />
-              <PropertyInfoItem
-                label="总面积"
-                value={apartment.total_area ? `${apartment.total_area} ㎡` : '-'}
-              />
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <PropertyInfoItem label="总房间数" value={String(stats.total)} valueClassName="text-2xl font-bold" />
+              <PropertyInfoItem label="已出租" value={String(stats.occupied)} valueClassName="text-2xl font-bold text-blue-600" />
+              <PropertyInfoItem label="空置" value={String(stats.available)} valueClassName="text-2xl font-bold text-green-600" />
+              <PropertyInfoItem label="维修中" value={String(stats.maintenance)} valueClassName="text-2xl font-bold text-orange-600" />
             </div>
           </CardContent>
         </Card>
-      )}
+      </div>
 
       <ApartmentRoomListCard
         rooms={rooms}
         roomsLoading={roomsLoading}
-        stats={stats}
         roomGroups={roomGroups}
-        isBatchEditMode={isBatchEditMode}
         selectedRoomIds={selectedRoomIds}
         isBatchDeletePending={isBatchDeletePending}
-        onOpenBatchMode={onOpenBatchMode}
-        onExitBatchMode={onExitBatchMode}
         onOpenCreateRoom={onOpenCreateRoom}
         onOpenBatchCreate={onOpenBatchCreate}
         onOpenBatchEdit={onOpenBatchEdit}
@@ -90,19 +96,26 @@ export function ApartmentOverviewTab({
         onSelectAllRooms={onSelectAllRooms}
         onToggleFloorSelection={onToggleFloorSelection}
         onToggleRoomSelection={onToggleRoomSelection}
-        onRoomClick={onRoomClick}
+        onEditRoom={onEditRoom}
         onDeleteRoom={onDeleteRoom}
       />
     </div>
   );
 }
 
-function PropertyInfoItem({ label, value }: { label: string; value: string }) {
+function PropertyInfoItem({
+  label,
+  value,
+  valueClassName,
+}: {
+  label: string;
+  value: string;
+  valueClassName?: string;
+}) {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-1">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="font-medium">{value}</span>
+      <span className={valueClassName ?? 'font-medium'}>{value}</span>
     </div>
   );
 }
-

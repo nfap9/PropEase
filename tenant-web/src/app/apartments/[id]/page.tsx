@@ -56,7 +56,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [newRoomFacilities, setNewRoomFacilities] = useState<RoomFacilities | null>(null);
   const [facilityDialogOpen, setFacilityDialogOpen] = useState(false);
-  const [isBatchEditMode, setIsBatchEditMode] = useState(false);
   const [isBatchEditOpen, setIsBatchEditOpen] = useState(false);
   const [isUtilityConfigOpen, setIsUtilityConfigOpen] = useState(false);
 
@@ -132,12 +131,10 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     },
     onBatchUpdated: () => {
       setIsBatchEditOpen(false);
-      setIsBatchEditMode(false);
       clearRoomSelection();
       batchEditForm.reset();
     },
     onBatchDeleted: () => {
-      setIsBatchEditMode(false);
       clearRoomSelection();
     },
   });
@@ -170,7 +167,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
     }
   };
 
-  const handleRoomClick = (room: Room) => {
+  const handleEditRoom = (room: Room) => {
     setSelectedRoom(room);
     setIsEditRoomOpen(true);
   };
@@ -178,11 +175,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   const handleDeleteRoom = (room: Room) => {
     setSelectedRoom(room);
     setIsDeleteRoomOpen(true);
-  };
-
-  const handleExitBatchMode = () => {
-    setIsBatchEditMode(false);
-    clearRoomSelection();
   };
 
   const handleDeleteSelectedRooms = () => {
@@ -243,11 +235,8 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                 roomsLoading={roomsLoading}
                 stats={stats}
                 roomGroups={roomGroups}
-                isBatchEditMode={isBatchEditMode}
                 selectedRoomIds={selectedRoomIds}
                 isBatchDeletePending={batchDeleteMutation.isPending}
-                onOpenBatchMode={() => setIsBatchEditMode(true)}
-                onExitBatchMode={handleExitBatchMode}
                 onOpenCreateRoom={() => setIsCreateRoomOpen(true)}
                 onOpenBatchCreate={() => setIsBatchCreateRoomOpen(true)}
                 onOpenBatchEdit={() => setIsBatchEditOpen(true)}
@@ -255,7 +244,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                 onSelectAllRooms={toggleAllRoomSelection}
                 onToggleFloorSelection={toggleFloorSelection}
                 onToggleRoomSelection={toggleRoomSelection}
-                onRoomClick={handleRoomClick}
+                onEditRoom={handleEditRoom}
                 onDeleteRoom={handleDeleteRoom}
               />
             </TabsContent>
