@@ -130,21 +130,24 @@ export function DataTable<TData, TValue>({
   const currentPage = enablePagination ? Math.min(table.getState().pagination.pageIndex + 1, pageCount) : 1;
   const visibleRows = enablePagination ? table.getRowModel().rows : table.getPrePaginationRowModel().rows;
   const shouldShowEmpty = !isLoading && visibleRows.length === 0;
+  const hasHeaderText = Boolean(title || description);
 
   return (
     <Card className={cn('overflow-hidden', className)} data-testid={testid}>
       {title || description || toolbar ? (
-        <CardHeader className="border-border/60 from-primary/[0.03] gap-4 border-b bg-gradient-to-r to-transparent pb-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-1">
-            {title ? <CardTitle className="text-base sm:text-lg">{title}</CardTitle> : null}
-            {description ? <CardDescription>{description}</CardDescription> : null}
-          </div>
-          {toolbar ? <div className="shrink-0">{toolbar}</div> : null}
+        <CardHeader className="border-border/60 from-primary/[0.03] gap-3 border-b bg-gradient-to-r px-4 py-3 to-transparent sm:flex-row sm:items-start sm:justify-between sm:px-5 sm:py-4">
+          {hasHeaderText ? (
+            <div className="space-y-1">
+              {title ? <CardTitle className="text-base sm:text-lg">{title}</CardTitle> : null}
+              {description ? <CardDescription>{description}</CardDescription> : null}
+            </div>
+          ) : null}
+          {toolbar ? <div className={cn(!hasHeaderText && 'w-full', hasHeaderText && 'shrink-0')}>{toolbar}</div> : null}
         </CardHeader>
       ) : null}
 
-      <CardContent className="space-y-4 p-5 sm:p-6">
-        <div className="border-border/70 bg-background/80 overflow-hidden rounded-2xl border">
+      <CardContent className="p-0 sm:p-0">
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -197,7 +200,7 @@ export function DataTable<TData, TValue>({
           </Table>
         </div>
 
-        <div className="border-border/70 bg-muted/[0.18] flex flex-col gap-3 rounded-2xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 px-4 py-4 sm:px-5 sm:py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
             <span>
               共 <span className="text-foreground font-semibold">{table.getFilteredRowModel().rows.length}</span> 条记录

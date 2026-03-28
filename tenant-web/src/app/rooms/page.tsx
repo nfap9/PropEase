@@ -9,13 +9,12 @@ import { DataTable } from '@/components/common/data-table';
 import { LeaseSigningDrawer } from '@/features/leases/components/lease-signing-drawer';
 import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { roomsApi, apartmentsApi, leasesApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import { Room, RoomStatus } from '@/types';
-import { Building2, Search } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import {
   RoomStatsCards,
   RoomFilters,
@@ -231,35 +230,27 @@ export default function RoomsPage() {
 
           {allRooms && <RoomStatsCards rooms={allRooms} />}
 
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              data-testid={ROOMS.SEARCH_INPUT}
-              placeholder="搜索房间号或备注..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          {apartments && apartments.length > 0 && (
-            <RoomFilters
-              testids={ROOMS}
-              apartments={apartments}
-              filters={filters}
-              onFilterChange={handleFilterChange}
-              onClearFilters={handleClearFilters}
-            />
-          )}
-
-          <div className="text-sm text-muted-foreground">
-            显示 {filteredRooms.length} / {allRooms?.length || 0} 个房间
-          </div>
-
           {roomsLoading || apartmentsLoading ? (
             <Skeleton className="h-96" />
           ) : (
-            <DataTable columns={columns} data={filteredRooms} testid={ROOMS.LIST} />
+            <DataTable
+              columns={columns}
+              data={filteredRooms}
+              testid={ROOMS.LIST}
+              toolbar={
+                apartments && apartments.length > 0 ? (
+                  <RoomFilters
+                    testids={ROOMS}
+                    apartments={apartments}
+                    filters={filters}
+                    search={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    onFilterChange={handleFilterChange}
+                    onClearFilters={handleClearFilters}
+                  />
+                ) : null
+              }
+            />
           )}
         </div>
 

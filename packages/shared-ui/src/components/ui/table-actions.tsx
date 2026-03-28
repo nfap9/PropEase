@@ -82,7 +82,7 @@ export function TableActions({ actions, maxInline = 2, moreLabel = '更多操作
 
   return (
     <TooltipProvider>
-      <div className="flex items-center justify-end gap-1">
+      <div className="flex items-center justify-start gap-1">
         {inlineActions.map((action, index) => (
           <Tooltip key={`${action.label}-${index}`}>
             <TooltipTrigger asChild>

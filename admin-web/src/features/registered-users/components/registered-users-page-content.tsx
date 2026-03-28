@@ -113,17 +113,21 @@ export function RegisteredUsersPageContent() {
       title={adminMessages.registeredUsers.heading}
       titleTestId="admin-registered-users-heading"
       maxWidth="6xl"
-      toolbar={
-        <RegisteredUsersToolbar
-          activeFilter={filters.activeFilter}
-          search={filters.search}
-          onSearchChange={(value) => setFilter('search', value)}
-          onSearchSubmit={handleSearchSubmit}
-          onActiveFilterChange={(value) => setFilter('activeFilter', value)}
-        />
-      }
     >
-      <DataTable columns={columns} data={users ?? []} testid="admin-registered-users-list" />
+      <DataTable
+        columns={columns}
+        data={users ?? []}
+        testid="admin-registered-users-list"
+        toolbar={
+          <RegisteredUsersToolbar
+            activeFilter={filters.activeFilter}
+            search={filters.search}
+            onSearchChange={(value) => setFilter('search', value)}
+            onSearchSubmit={handleSearchSubmit}
+            onActiveFilterChange={(value) => setFilter('activeFilter', value)}
+          />
+        }
+      />
 
       <DisableRegisteredUserDialog
         {...disableConfirm.dialogProps}

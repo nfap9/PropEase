@@ -4,10 +4,10 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { AlertCircle, Building2, ChevronDown, Download, FilePlus, FileSpreadsheet } from 'lucide-react';
 import { DataTable } from '@/components/common/data-table';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { KpiSection } from '@apartment-ultra/shared-ui/components/ui';
+import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
 import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
 import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
-import { StatCard } from '@apartment-ultra/shared-ui/components/ui';
+import { Card, CardContent } from '@apartment-ultra/shared-ui/components/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,68 +66,90 @@ export function BillsListView({
       titleTestId={BILLS.HEADING}
       maxWidth="full"
       className="w-full"
-      toolbar={
-        <PageToolbar className="justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Button onClick={onGenerate} data-testid={BILLS.GENERATE_BUTTON}>
-              <FilePlus className="mr-2 h-4 w-4" />
-              {tenantMessages.bills.list.generate}
-            </Button>
-            <Select value={statusFilter} onValueChange={(value) => onStatusFilterChange(value as BillStatus | 'all')}>
-              <SelectTrigger className="w-[150px]" data-testid={BILLS.STATUS_FILTER}>
-                <SelectValue placeholder={tenantMessages.bills.list.statusPlaceholder} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{tenantMessages.bills.list.all}</SelectItem>
-                <SelectItem value="pending">{tenantMessages.bills.list.pending}</SelectItem>
-                <SelectItem value="partial">{tenantMessages.bills.list.partial}</SelectItem>
-                <SelectItem value="paid">{tenantMessages.bills.list.paid}</SelectItem>
-                <SelectItem value="overdue">{tenantMessages.bills.list.overdue}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" disabled={bills.length === 0} data-testid={BILLS.EXPORT_BUTTON}>
-                <Download className="mr-2 h-4 w-4" />
-                {tenantMessages.bills.list.export}
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => onExport('all')}>
-                <FileSpreadsheet className="mr-2 h-4 w-4" />
-                {tenantMessages.bills.list.exportAll}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onExport('unfinished')}>
-                <AlertCircle className="mr-2 h-4 w-4" />
-                {tenantMessages.bills.list.exportUnfinished}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </PageToolbar>
-      }
     >
-      <KpiSection columns={4}>
-        <StatCard title={tenantMessages.bills.list.total} value={stats.total} />
-        <StatCard
-          title={tenantMessages.bills.list.pendingAmount}
-          value={stats.totalAmount - stats.paidAmount}
-          format="currency"
-          tone="warning"
-          description={`${stats.pending + stats.partial + stats.overdue} 笔`}
-        />
-        <StatCard
-          title={tenantMessages.bills.list.paidAmount}
-          value={stats.paidAmount}
-          format="currency"
-          tone="success"
-        />
-        <StatCard title={tenantMessages.bills.list.overdueCount} value={stats.overdue} tone="danger" />
-      </KpiSection>
+      <div className="space-y-4">
+        <Card>
+          <CardContent className="px-5 py-4 sm:px-6">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+              <div className="min-w-[104px]">
+                <div className="text-sm text-muted-foreground">{tenantMessages.bills.list.total}</div>
+                <div className="mt-2 text-2xl font-semibold tracking-tight">{stats.total}</div>
+              </div>
+              <div className="min-w-[140px]">
+                <div className="text-sm text-muted-foreground">{tenantMessages.bills.list.pendingAmount}</div>
+                <div className="mt-2 text-2xl font-semibold tracking-tight text-amber-600">
+                  ¥{(stats.totalAmount - stats.paidAmount).toLocaleString('zh-CN')}
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">{stats.pending + stats.partial + stats.overdue} 笔</div>
+              </div>
+              <div className="min-w-[140px]">
+                <div className="text-sm text-muted-foreground">{tenantMessages.bills.list.paidAmount}</div>
+                <div className="mt-2 text-2xl font-semibold tracking-tight text-green-600">
+                  ¥{stats.paidAmount.toLocaleString('zh-CN')}
+                </div>
+              </div>
+              <div className="min-w-[104px]">
+                <div className="text-sm text-muted-foreground">{tenantMessages.bills.list.overdueCount}</div>
+                <div className="mt-2 text-2xl font-semibold tracking-tight text-destructive">{stats.overdue}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-      {billsLoading ? <Skeleton className="h-96" /> : <DataTable columns={columns} data={bills} testid={BILLS.LIST} />}
+        {billsLoading ? (
+          <Skeleton className="h-96" />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={bills}
+            testid={BILLS.LIST}
+            toolbar={
+              <PageToolbar className="justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <Button onClick={onGenerate} data-testid={BILLS.GENERATE_BUTTON}>
+                    <FilePlus className="mr-2 h-4 w-4" />
+                    {tenantMessages.bills.list.generate}
+                  </Button>
+                  <FilterField label="状态">
+                    <Select value={statusFilter} onValueChange={(value) => onStatusFilterChange(value as BillStatus | 'all')}>
+                      <SelectTrigger className="w-full" data-testid={BILLS.STATUS_FILTER}>
+                        <SelectValue placeholder={tenantMessages.bills.list.statusPlaceholder} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{tenantMessages.bills.list.all}</SelectItem>
+                        <SelectItem value="pending">{tenantMessages.bills.list.pending}</SelectItem>
+                        <SelectItem value="partial">{tenantMessages.bills.list.partial}</SelectItem>
+                        <SelectItem value="paid">{tenantMessages.bills.list.paid}</SelectItem>
+                        <SelectItem value="overdue">{tenantMessages.bills.list.overdue}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FilterField>
+                </div>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" disabled={bills.length === 0} data-testid={BILLS.EXPORT_BUTTON}>
+                      <Download className="mr-2 h-4 w-4" />
+                      {tenantMessages.bills.list.export}
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => onExport('all')}>
+                      <FileSpreadsheet className="mr-2 h-4 w-4" />
+                      {tenantMessages.bills.list.exportAll}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onExport('unfinished')}>
+                      <AlertCircle className="mr-2 h-4 w-4" />
+                      {tenantMessages.bills.list.exportUnfinished}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </PageToolbar>
+            }
+          />
+        )}
+      </div>
     </ListPageLayout>
   );
 }

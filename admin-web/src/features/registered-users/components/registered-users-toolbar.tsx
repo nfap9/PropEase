@@ -2,6 +2,7 @@
 
 import type { FormEvent } from 'react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -30,28 +31,34 @@ export function RegisteredUsersToolbar({
   onActiveFilterChange,
 }: RegisteredUsersToolbarProps) {
   return (
-    <PageToolbar className="justify-between sm:justify-end">
-      <form onSubmit={onSearchSubmit} className="flex gap-2">
-        <Input
-          placeholder={adminMessages.registeredUsers.toolbar.searchPlaceholder}
-          value={search}
-          onChange={(event) => onSearchChange(event.target.value)}
-          className="w-40"
-        />
-        <Button type="submit" variant="secondary" size="sm">
-          {adminMessages.registeredUsers.toolbar.search}
-        </Button>
+    <PageToolbar className="justify-between gap-4 sm:justify-start">
+      <form onSubmit={onSearchSubmit} className="w-full sm:flex-[1_1_320px]">
+        <FilterField label="搜索">
+          <div className="flex gap-2">
+            <Input
+              placeholder={adminMessages.registeredUsers.toolbar.searchPlaceholder}
+              value={search}
+              onChange={(event) => onSearchChange(event.target.value)}
+              className="w-full"
+            />
+            <Button type="submit" variant="secondary" size="sm">
+              {adminMessages.registeredUsers.toolbar.search}
+            </Button>
+          </div>
+        </FilterField>
       </form>
-      <Select value={activeFilter} onValueChange={(value) => onActiveFilterChange(value as FilterActive)}>
-        <SelectTrigger className="w-36">
-          <SelectValue placeholder={adminMessages.registeredUsers.toolbar.statusPlaceholder} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{adminMessages.registeredUsers.toolbar.all}</SelectItem>
-          <SelectItem value="active">{adminMessages.registeredUsers.toolbar.active}</SelectItem>
-          <SelectItem value="inactive">{adminMessages.registeredUsers.toolbar.inactive}</SelectItem>
-        </SelectContent>
-      </Select>
+      <FilterField label="状态">
+        <Select value={activeFilter} onValueChange={(value) => onActiveFilterChange(value as FilterActive)}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={adminMessages.registeredUsers.toolbar.statusPlaceholder} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{adminMessages.registeredUsers.toolbar.all}</SelectItem>
+            <SelectItem value="active">{adminMessages.registeredUsers.toolbar.active}</SelectItem>
+            <SelectItem value="inactive">{adminMessages.registeredUsers.toolbar.inactive}</SelectItem>
+          </SelectContent>
+        </Select>
+      </FilterField>
     </PageToolbar>
   );
 }

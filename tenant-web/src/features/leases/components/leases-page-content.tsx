@@ -145,19 +145,23 @@ export function LeasesPageContent() {
               </Button>
             </PageToolbar>
           }
-          toolbar={
-            <LeaseFilters
-              apartments={apartments?.map((apartment) => ({ id: apartment.id, name: apartment.name })) ?? []}
-              filters={filters}
-              onFilterChange={handleFilterChange}
-              onClearFilters={resetFilters}
-            />
-          }
         >
           {leasesLoading ? (
             <Skeleton className="h-96" />
           ) : (
-            <DataTable columns={columns} data={filteredLeases} testid={LEASES.LIST} />
+            <DataTable
+              columns={columns}
+              data={filteredLeases}
+              testid={LEASES.LIST}
+              toolbar={
+                <LeaseFilters
+                  apartments={apartments?.map((apartment) => ({ id: apartment.id, name: apartment.name })) ?? []}
+                  filters={filters}
+                  onFilterChange={handleFilterChange}
+                  onClearFilters={resetFilters}
+                />
+              }
+            />
           )}
         </ListPageLayout>
 

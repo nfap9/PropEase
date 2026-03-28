@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Fragment, useState, useEffect, useCallback } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { Card, CardContent } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,32 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { Plus, Pencil, Trash2, DollarSign, ChevronDown, ChevronRight } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  DollarSign,
+  ChevronDown,
+  ChevronRight,
+  ChevronLeft,
+  ChevronsLeft,
+  ChevronsRight,
+} from 'lucide-react';
 import { feeTypesApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
@@ -22,6 +47,7 @@ import { canAccessRule } from '@/lib/permission-access';
 import type { FeeType, FeeSpecification } from '@apartment-ultra/api-contract';
 
 export default function FeeConfigPage() {
+  const pageSizeOptions = [5, 10, 20];
   const { organization } = useAuth();
   const { permissions, hasPermission, isSuperAdmin } = usePermissions();
   const orgId = organization?.id;
@@ -51,6 +77,8 @@ export default function FeeConfigPage() {
 
   // 展开状态
   const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
+  const [pageSize, setPageSize] = useState(10);
+  const [pageIndex, setPageIndex] = useState(0);
 
   const loadData = useCallback(async () => {
     if (!orgId || !canAccessFeeConfigs) return;
@@ -68,6 +96,10 @@ export default function FeeConfigPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    setPageIndex(0);
+  }, [pageSize]);
 
   // 切换展开
   const toggleExpand = (typeId: string) => {
@@ -177,6 +209,10 @@ export default function FeeConfigPage() {
     }
   };
 
+  const pageCount = Math.max(Math.ceil(feeTypes.length / pageSize), 1);
+  const safePageIndex = Math.min(pageIndex, pageCount - 1);
+  const pagedFeeTypes = feeTypes.slice(safePageIndex * pageSize, safePageIndex * pageSize + pageSize);
+
   return (
     <PermissionPageGuard>
       {canAccessFeeConfigs ? (
@@ -206,98 +242,152 @@ export default function FeeConfigPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4" data-testid="fee-types-list">
-            {feeTypes.map((type) => {
-              const isExpanded = expandedTypes.has(type.id);
-              const specs = type.specifications || [];
+            <Card className="overflow-hidden" data-testid="fee-types-list">
+              <CardContent className="p-0 sm:p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[40%] text-left">名称</TableHead>
+                      <TableHead className="w-[16%]">层级</TableHead>
+                      <TableHead className="w-[18%]">月价格</TableHead>
+                      <TableHead className="w-[14%]">规格数</TableHead>
+                      <TableHead className="text-right">操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pagedFeeTypes.map((type) => {
+                      const isExpanded = expandedTypes.has(type.id);
+                      const specs = type.specifications || [];
 
-              return (
-                <Card key={type.id}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div
-                        className="flex items-center gap-2 cursor-pointer flex-1"
-                        onClick={() => toggleExpand(type.id)}
-                      >
-                        {isExpanded ? (
-                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                        ) : (
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        )}
-                        <CardTitle className="text-lg">{type.name}</CardTitle>
-                        <span className="text-sm text-muted-foreground">
-                          ({specs.length} 个规格)
-                        </span>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openTypeDialog(type)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteType(type.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  {isExpanded && (
-                    <CardContent className="pt-0">
-                      {specs.length > 0 ? (
-                        <div className="space-y-2 mb-3">
-                          {specs.map((spec) => (
-                            <div
-                              key={spec.id}
-                              className="flex items-center justify-between rounded-lg border p-3"
-                            >
-                              <div>
-                                <span className="font-medium">{spec.name}</span>
-                                <span className="ml-3 text-muted-foreground">
-                                  ¥{Number(spec.price_monthly)}
-                                </span>
-                              </div>
-                              <div className="flex gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => openSpecDialog(type, spec)}
-                                >
-                                  <Pencil className="h-3 w-3" />
+                      return (
+                        <Fragment key={type.id}>
+                          <TableRow key={type.id} className="bg-muted/15">
+                            <TableCell className="text-left">
+                              <button
+                                type="button"
+                                className="mx-0 flex items-center gap-2 text-left"
+                                onClick={() => toggleExpand(type.id)}
+                              >
+                                {isExpanded ? (
+                                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                )}
+                                <span className="font-medium">{type.name}</span>
+                              </button>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">费用类型</TableCell>
+                            <TableCell className="text-muted-foreground">-</TableCell>
+                            <TableCell className="text-muted-foreground">{specs.length} 个</TableCell>
+                            <TableCell>
+                              <div className="flex justify-end gap-1">
+                                <Button variant="ghost" size="sm" onClick={() => openSpecDialog(type)}>
+                                  <Plus className="h-4 w-4" />
                                 </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => deleteSpec(spec.id)}
-                                >
-                                  <Trash2 className="h-3 w-3" />
+                                <Button variant="ghost" size="sm" onClick={() => openTypeDialog(type)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => deleteType(type.id)}>
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
-                            </div>
+                            </TableCell>
+                          </TableRow>
+                          {isExpanded ? (
+                            specs.length > 0 ? (
+                              specs.map((spec) => (
+                                <TableRow key={spec.id}>
+                                  <TableCell className="text-left">
+                                    <div className="mx-0 flex items-center gap-2 pl-8">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/70" />
+                                      <span>{spec.name}</span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="text-muted-foreground">规格</TableCell>
+                                  <TableCell>¥{Number(spec.price_monthly)}</TableCell>
+                                  <TableCell className="text-muted-foreground">-</TableCell>
+                                  <TableCell>
+                                    <div className="flex justify-end gap-1">
+                                      <Button variant="ghost" size="sm" onClick={() => openSpecDialog(type, spec)}>
+                                        <Pencil className="h-3.5 w-3.5" />
+                                      </Button>
+                                      <Button variant="ghost" size="sm" onClick={() => deleteSpec(spec.id)}>
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            ) : (
+                              <TableRow key={`${type.id}-empty`}>
+                                <TableCell colSpan={5} className="pl-14 text-sm text-muted-foreground">
+                                  暂无规格，点击右侧 + 添加规格
+                                </TableCell>
+                              </TableRow>
+                            )
+                          ) : null}
+                        </Fragment>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+                <div className="flex flex-col gap-3 px-4 py-3 sm:px-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
+                    <span>
+                      共 <span className="text-foreground font-semibold">{feeTypes.length}</span> 个费用类型
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span>每页</span>
+                      <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
+                        <SelectTrigger className="h-8 w-[92px] bg-background">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {pageSizeOptions.map((size) => (
+                            <SelectItem key={size} value={String(size)}>
+                              {size} 条
+                            </SelectItem>
                           ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground mb-3">暂无规格</p>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openSpecDialog(type)}
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        添加规格
-                      </Button>
-                    </CardContent>
-                  )}
-                </Card>
-              );
-            })}
-            </div>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-muted-foreground text-sm">
+                      第 <span className="text-foreground font-semibold">{safePageIndex + 1}</span> /{' '}
+                      <span className="text-foreground font-semibold">{pageCount}</span> 页
+                    </span>
+                    <Button variant="outline" size="sm" onClick={() => setPageIndex(0)} disabled={safePageIndex === 0}>
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPageIndex((current) => Math.max(current - 1, 0))}
+                      disabled={safePageIndex === 0}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPageIndex((current) => Math.min(current + 1, pageCount - 1))}
+                      disabled={safePageIndex >= pageCount - 1}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPageIndex(pageCount - 1)}
+                      disabled={safePageIndex >= pageCount - 1}
+                    >
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {/* 费用类型对话框 */}

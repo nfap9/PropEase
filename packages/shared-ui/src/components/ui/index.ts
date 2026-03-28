@@ -16,6 +16,7 @@ export * from './dialog';
 export * from './dropdown-menu';
 export * from './empty-state';
 export * from './form';
+export * from './filter-field';
 export * from './form-dialog';
 export * from './input';
 export * from './label';

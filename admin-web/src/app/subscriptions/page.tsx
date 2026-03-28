@@ -11,6 +11,7 @@ import { useAsyncDialogSubmit, usePageQueryState } from '@apartment-ultra/shared
 import { DataTable } from '@/components/common/data-table';
 import { TableActions } from '@/components/common/table-actions';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { SUBSCRIPTION_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
@@ -215,36 +216,44 @@ export default function AdminSubscriptionsPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="text-xl font-semibold" data-testid="admin-subscriptions-heading">
-          {adminMessages.subscriptions.heading}
-        </h2>
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder={adminMessages.subscriptions.teamIdPlaceholder}
-            value={orgIdFilterQuery.value}
-            onChange={(e) => orgIdFilterQuery.setValue(e.target.value)}
-            className="w-48"
-          />
-          <Select
-            value={statusFilterQuery.value || 'all'}
-            onValueChange={(v) => statusFilterQuery.setValue(v === 'all' ? '' : v)}
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder={adminMessages.subscriptions.filters.statusPlaceholder} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{adminMessages.subscriptions.filters.all}</SelectItem>
-              <SelectItem value="active">{adminMessages.subscriptions.filters.active}</SelectItem>
-              <SelectItem value="expired">{adminMessages.subscriptions.filters.expired}</SelectItem>
-              <SelectItem value="cancelled">{adminMessages.subscriptions.filters.cancelled}</SelectItem>
-              <SelectItem value="trial">{adminMessages.subscriptions.filters.trial}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-subscriptions-heading">
+        {adminMessages.subscriptions.heading}
+      </h2>
 
-      <DataTable columns={columns} data={subscriptions ?? []} testid="admin-subscriptions-list" />
+      <DataTable
+        columns={columns}
+        data={subscriptions ?? []}
+        testid="admin-subscriptions-list"
+        toolbar={
+          <div className="flex flex-wrap gap-4">
+            <FilterField label="团队 ID">
+              <Input
+                placeholder={adminMessages.subscriptions.teamIdPlaceholder}
+                value={orgIdFilterQuery.value}
+                onChange={(e) => orgIdFilterQuery.setValue(e.target.value)}
+                className="w-full"
+              />
+            </FilterField>
+            <FilterField label="状态">
+              <Select
+                value={statusFilterQuery.value || 'all'}
+                onValueChange={(v) => statusFilterQuery.setValue(v === 'all' ? '' : v)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={adminMessages.subscriptions.filters.statusPlaceholder} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{adminMessages.subscriptions.filters.all}</SelectItem>
+                  <SelectItem value="active">{adminMessages.subscriptions.filters.active}</SelectItem>
+                  <SelectItem value="expired">{adminMessages.subscriptions.filters.expired}</SelectItem>
+                  <SelectItem value="cancelled">{adminMessages.subscriptions.filters.cancelled}</SelectItem>
+                  <SelectItem value="trial">{adminMessages.subscriptions.filters.trial}</SelectItem>
+                </SelectContent>
+              </Select>
+            </FilterField>
+          </div>
+        }
+      />
 
       {/* 续期 */}
       <Dialog open={isRenewOpen} onOpenChange={setIsRenewOpen}>

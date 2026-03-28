@@ -8,6 +8,7 @@ import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions } from '@/components/common/table-actions';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
 import { ORG_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import {
   Select,
@@ -149,21 +150,27 @@ export default function AdminOrganizationsPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold" data-testid="admin-organizations-heading">{adminMessages.organizations.heading}</h2>
-        <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as FilterActive)}>
-          <SelectTrigger className="w-36">
-            <SelectValue placeholder={adminMessages.organizations.filters.statusPlaceholder} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{adminMessages.organizations.filters.all}</SelectItem>
-            <SelectItem value="active">{adminMessages.organizations.filters.active}</SelectItem>
-            <SelectItem value="inactive">{adminMessages.organizations.filters.inactive}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-organizations-heading">{adminMessages.organizations.heading}</h2>
 
-      <DataTable columns={columns} data={organizations ?? []} testid="admin-organizations-list" />
+      <DataTable
+        columns={columns}
+        data={organizations ?? []}
+        testid="admin-organizations-list"
+        toolbar={
+          <FilterField label="状态">
+            <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as FilterActive)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={adminMessages.organizations.filters.statusPlaceholder} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{adminMessages.organizations.filters.all}</SelectItem>
+                <SelectItem value="active">{adminMessages.organizations.filters.active}</SelectItem>
+                <SelectItem value="inactive">{adminMessages.organizations.filters.inactive}</SelectItem>
+              </SelectContent>
+            </Select>
+          </FilterField>
+        }
+      />
     </div>
   );
 }
