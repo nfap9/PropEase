@@ -8,7 +8,7 @@ import { useAuth } from '@/lib/auth/context';
 import { usePermissions } from '@/hooks/use-permissions';
 import { canAccessRule } from '@/lib/permission-access';
 import { NAV_ITEMS } from './nav-config';
-import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
+import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@apartment-ultra/shared-ui/components/ui';
 
 interface NavContentProps {
   onNavClick?: () => void;

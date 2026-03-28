@@ -21,7 +21,7 @@ import { usePermissions } from '@/hooks/use-permissions';
 import { canAccessRule } from '@/lib/permission-access';
 import { NavContent } from './nav-content';
 import { NAV_ITEMS, SETTINGS_ITEMS } from './nav-config';
-import { Sidebar, SidebarContent, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarProvider, SidebarTrigger } from '@apartment-ultra/shared-ui/components/ui';
 
 function MainContent({ children }: { children: React.ReactNode }) {
   const { user, organization, logout } = useAuth();
