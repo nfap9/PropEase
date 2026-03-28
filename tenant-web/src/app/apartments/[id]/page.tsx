@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -54,11 +53,6 @@ import {
   Pencil,
   Trash2,
   Home,
-  Users,
-  Wrench,
-  FileText,
-  Receipt,
-  Zap,
   Loader2,
   Layers,
   Check,
@@ -66,7 +60,6 @@ import {
   ArrowLeft as ArrowLeftIcon,
   CheckCircle,
   X,
-  Settings,
   Settings2,
 } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';

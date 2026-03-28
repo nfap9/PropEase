@@ -19,7 +19,7 @@ interface IncomeChartProps {
 }
 
 function monthFormatter(period: string): string {
-  const [year, month] = period.split('-');
+  const [, month] = period.split('-');
   return `${month}月`;
 }
 
