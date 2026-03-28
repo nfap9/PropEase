@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
+import { useAsyncDialogSubmit, usePageQueryState } from '@apartment-ultra/shared-ui';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
@@ -36,12 +36,15 @@ function BillsFallback() {
 }
 
 export function BillsPageContent() {
-  const searchParams = useSearchParams();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
 
-  const initialStatus = getBillStatusFilter(searchParams.get('status'));
-  const [statusFilter, setStatusFilter] = useState<BillStatus | 'all'>(initialStatus ?? 'all');
+  const statusFilterQuery = usePageQueryState<BillStatus | 'all'>({
+    queryKey: 'status',
+    defaultValue: 'all',
+    parse: (value) => getBillStatusFilter(value) ?? 'all',
+    serialize: (value) => (value === 'all' ? null : value),
+  });
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -56,6 +59,18 @@ export function BillsPageContent() {
   const generateForm = useForm<GenerateBillsFormData>({
     resolver: zodResolver(generateBillsSchema),
     defaultValues: getDefaultGenerateValues(),
+  });
+  const paymentSubmit = useAsyncDialogSubmit({
+    close: () => setIsPaymentOpen(false),
+    reset: () => paymentForm.reset(getDefaultPaymentValues()),
+    clear: () => setSelectedBill(null),
+  });
+  const generateSubmit = useAsyncDialogSubmit<[number, number]>({
+    close: () => setIsGenerateOpen(false),
+    reset: () => generateForm.reset(getDefaultGenerateValues()),
+    afterSuccess: (created, skipped) => {
+      appToast.success(`出账完成：新增 ${created} 笔，跳过 ${skipped} 笔`);
+    },
   });
 
   const { sharingBillId, handleShareBill } = useBillShare(organization?.name);
@@ -74,19 +89,14 @@ export function BillsPageContent() {
     orgId,
     selectedBillId,
     isDetailOpen,
-    onPaymentSuccess: () => {
-      setIsPaymentOpen(false);
-      paymentForm.reset(getDefaultPaymentValues());
-      setSelectedBill(null);
-    },
-    onGenerateSuccess: (created, skipped) => {
-      setIsGenerateOpen(false);
-      generateForm.reset(getDefaultGenerateValues());
-      toast.success(`出账完成：新增 ${created} 笔，跳过 ${skipped} 笔`);
-    },
+    onPaymentSuccess: paymentSubmit.handleSuccess,
+    onGenerateSuccess: generateSubmit.handleSuccess,
   });
 
-  const filteredBills = useMemo(() => filterBillsByStatus(bills, statusFilter), [bills, statusFilter]);
+  const filteredBills = useMemo(
+    () => filterBillsByStatus(bills, statusFilterQuery.value),
+    [bills, statusFilterQuery.value]
+  );
   const stats = useMemo(() => buildBillStats(bills), [bills]);
 
   const handleViewDetail = useCallback((bill: Bill) => {
@@ -94,11 +104,14 @@ export function BillsPageContent() {
     setIsDetailOpen(true);
   }, []);
 
-  const handlePayment = useCallback((bill: Bill) => {
-    setSelectedBill(bill);
-    paymentForm.reset(getDefaultPaymentValues(bill.total_amount - bill.paid_amount));
-    setIsPaymentOpen(true);
-  }, [paymentForm]);
+  const handlePayment = useCallback(
+    (bill: Bill) => {
+      setSelectedBill(bill);
+      paymentForm.reset(getDefaultPaymentValues(bill.total_amount - bill.paid_amount));
+      setIsPaymentOpen(true);
+    },
+    [paymentForm]
+  );
 
   const handlePaymentFromDetail = () => {
     if (!billDetail) {
@@ -135,10 +148,10 @@ export function BillsPageContent() {
           bills={filteredBills}
           columns={columns}
           stats={stats}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
+          statusFilter={statusFilterQuery.value}
+          onStatusFilterChange={statusFilterQuery.setValue}
           onGenerate={() => setIsGenerateOpen(true)}
-          onExport={(type) => exportExcel(type, statusFilter)}
+          onExport={(type) => exportExcel(type, statusFilterQuery.value)}
         />
 
         <BillDetailDialog

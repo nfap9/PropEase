@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Download, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { utilitiesApi, UtilityExportRoom } from '@/lib/api/utilities';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
@@ -68,19 +68,11 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
       const rooms = await utilitiesApi.exportRooms(orgId, exportYear, exportMonth, range);
 
       if (rooms.length === 0) {
-        toast.warning('没有待录入的房间');
+        appToast.warning('没有待录入的房间');
         return;
       }
 
-      const header = [
-        '公寓名称',
-        '房间号',
-        '租客姓名',
-        '账单日',
-        '当前水表(m³)',
-        '当前电表(kWh)',
-        '备注',
-      ];
+      const header = ['公寓名称', '房间号', '租客姓名', '账单日', '当前水表(m³)', '当前电表(kWh)', '备注'];
       const data = rooms.map((room: UtilityExportRoom) => [
         room.apartment_name,
         room.room_number,
@@ -117,10 +109,10 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
       a.click();
       window.URL.revokeObjectURL(url);
 
-      toast.success(`已导出 ${rooms.length} 个待录入房间`);
+      appToast.success(`已导出 ${rooms.length} 个待录入房间`);
       onOpenChange(false);
     } catch (err) {
-      toast.error(getErrorMessage(err, '导出失败，请重试'));
+      appToast.error(getErrorMessage(err, '导出失败，请重试'));
     } finally {
       setIsExporting(false);
     }
@@ -145,7 +137,7 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
     a.download = '水电读数空白模板.xlsx';
     a.click();
     window.URL.revokeObjectURL(url);
-    toast.success('已下载空白模板');
+    appToast.success('已下载空白模板');
   };
 
   return (
@@ -177,10 +169,7 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
             </div>
             <div className="space-y-2">
               <Label>月份</Label>
-              <Select
-                value={exportMonth.toString()}
-                onValueChange={(v) => setExportMonth(Number(v))}
-              >
+              <Select value={exportMonth.toString()} onValueChange={(v) => setExportMonth(Number(v))}>
                 <SelectTrigger className="min-w-[120px]">
                   <SelectValue />
                 </SelectTrigger>
@@ -211,9 +200,7 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
                 className="w-24"
               />
               <span className="text-sm text-muted-foreground">
-                {daysRange <= 0
-                  ? '全部待录入房间'
-                  : `近期 ${daysRange} 天内应出账${getDateRangeDescription()}`}
+                {daysRange <= 0 ? '全部待录入房间' : `近期 ${daysRange} 天内应出账${getDateRangeDescription()}`}
               </span>
             </div>
           </div>
@@ -230,11 +217,7 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
             取消
           </Button>
           <Button onClick={handleExport} disabled={isExporting}>
-            {isExporting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="mr-2 h-4 w-4" />
-            )}
+            {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
             {isExporting ? '导出中...' : '导出模板'}
           </Button>
         </DialogFooter>

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -83,9 +83,9 @@ export default function AdminBrandPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'platform-config'] });
       queryClient.invalidateQueries({ queryKey: ['config', 'public'] });
-      toast.success(adminMessages.brand.toast.saved);
+      appToast.success(adminMessages.brand.toast.saved);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '保存失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '保存失败，请重试')),
   });
 
   if (isLoading && !config && !isError) {

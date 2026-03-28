@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
@@ -90,7 +90,7 @@ export default function SubscriptionPurchasePage() {
       router.push(`/settings/subscription/pay?order_id=${order.id}`);
     },
     onError: (error) =>
-      toast.error(
+      appToast.error(
         getErrorMessage(error, tenantMessages.settings.subscriptionPage.purchase.createOrderFailed)
       ),
   });
@@ -104,14 +104,14 @@ export default function SubscriptionPurchasePage() {
         auto_renew: true,
       }),
     onSuccess: () => {
-      toast.success(tenantMessages.settings.subscriptionPage.purchase.subscribeSuccess);
+      appToast.success(tenantMessages.settings.subscriptionPage.purchase.subscribeSuccess);
       queryClient.invalidateQueries({ queryKey: ['subscription-status', orgId] });
       queryClient.invalidateQueries({ queryKey: ['organization-usage', orgId] });
       setSelectedService(null);
       router.push('/settings/subscription');
     },
     onError: (error) =>
-      toast.error(
+      appToast.error(
         getErrorMessage(error, tenantMessages.settings.subscriptionPage.purchase.subscribeFailed)
       ),
   });
@@ -166,13 +166,12 @@ export default function SubscriptionPurchasePage() {
           </Button>
           <div className="flex-1">
             <h1
-              className="flex items-center gap-2 text-3xl font-bold"
+              className="flex items-center gap-2 text-2xl font-semibold tracking-tight"
               data-testid={SUBSCRIPTION.HEADING}
             >
               <ShoppingCart className="h-8 w-8" />
               {tenantMessages.settings.subscriptionPage.purchase.heading}
             </h1>
-            <p className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.purchase.description}</p>
           </div>
         </div>
 

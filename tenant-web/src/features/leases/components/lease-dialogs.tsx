@@ -4,16 +4,7 @@ import type { UseFormReturn } from 'react-hook-form';
 import { Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -62,11 +53,7 @@ export function LeaseEditDialog({
           <AlertDescription>已出账单不受影响；后续生成的账单将按新的租约信息计算。</AlertDescription>
         </Alert>
         <Form {...form}>
-          <form
-            id="edit-lease-form"
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4"
-          >
+          <form id="edit-lease-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <input type="hidden" {...form.register('room_id')} />
             <input type="hidden" {...form.register('tenant_id')} />
             <div className="grid grid-cols-2 gap-4">
@@ -171,7 +158,12 @@ export function LeaseEditDialog({
               )}
             />
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} data-testid={LEASES.CANCEL_BUTTON}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                data-testid={LEASES.CANCEL_BUTTON}
+              >
                 取消
               </Button>
               <Button type="submit" disabled={isPending} data-testid={LEASES.CONFIRM_BUTTON}>
@@ -197,20 +189,19 @@ export function LeaseTerminateDialog({
   isPending: boolean;
 }) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent data-testid={LEASES.TERMINATE_DIALOG}>
-        <AlertDialogHeader>
-          <AlertDialogTitle>确认终止租约</AlertDialogTitle>
-          <AlertDialogDescription>确定要终止此租约吗？终止后房间将变为空置状态。</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel data-testid={LEASES.CANCEL_BUTTON}>取消</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} data-testid={LEASES.CONFIRM_TERMINATE_BTN}>
-            {isPending ? '处理中...' : '确认终止'}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="确认终止租约"
+      description="确定要终止此租约吗？终止后房间将变为空置状态。"
+      cancelLabel="取消"
+      confirmLabel={isPending ? '处理中...' : '确认终止'}
+      onConfirm={onConfirm}
+      isPending={isPending}
+      contentTestId={LEASES.TERMINATE_DIALOG}
+      cancelTestId={LEASES.CANCEL_BUTTON}
+      confirmTestId={LEASES.CONFIRM_TERMINATE_BTN}
+    />
   );
 }
 
@@ -226,23 +217,19 @@ export function LeaseDeleteDialog({
   isPending: boolean;
 }) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent data-testid={LEASES.DELETE_DIALOG}>
-        <AlertDialogHeader>
-          <AlertDialogTitle>确认删除</AlertDialogTitle>
-          <AlertDialogDescription>确定要删除此租约吗？此操作不可撤销。</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel data-testid={LEASES.CANCEL_BUTTON}>取消</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            data-testid={LEASES.CONFIRM_DELETE_BTN}
-          >
-            {isPending ? '删除中...' : '删除'}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="确认删除"
+      description="确定要删除此租约吗？此操作不可撤销。"
+      cancelLabel="取消"
+      confirmLabel={isPending ? '删除中...' : '删除'}
+      onConfirm={onConfirm}
+      isPending={isPending}
+      intent="destructive"
+      contentTestId={LEASES.DELETE_DIALOG}
+      cancelTestId={LEASES.CANCEL_BUTTON}
+      confirmTestId={LEASES.CONFIRM_DELETE_BTN}
+    />
   );
 }

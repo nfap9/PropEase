@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { billsApi, billFeeItemsApi } from '@/lib/api';
 import { shareBillSummary } from '@/lib/bills/share';
 import { getErrorMessage } from '@/lib/utils/error';
@@ -55,9 +55,9 @@ export function useBillsData({
     onSuccess: () => {
       invalidateBills();
       onPaymentSuccess();
-      toast.success(tenantMessages.bills.toast.paymentRecorded);
+      appToast.success(tenantMessages.bills.toast.paymentRecorded);
     },
-    onError: (error) => toast.error(getErrorMessage(error, tenantMessages.bills.errors.payment)),
+    onError: (error) => appToast.error(getErrorMessage(error, tenantMessages.bills.errors.payment)),
   });
 
   const generateMutation = useMutation({
@@ -67,7 +67,7 @@ export function useBillsData({
       queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
       onGenerateSuccess(result.created, result.skipped);
     },
-    onError: (error) => toast.error(getErrorMessage(error, tenantMessages.bills.errors.generate)),
+    onError: (error) => appToast.error(getErrorMessage(error, tenantMessages.bills.errors.generate)),
   });
 
   const exportPdf = async (billId: string) => {
@@ -84,9 +84,9 @@ export function useBillsData({
 
       const blob = await billsApi.exportExcel(orgId!, { ...filters, exportType });
       downloadBlob(blob, buildBillsExcelFilename(exportType));
-      toast.success(tenantMessages.bills.toast.exportSuccess);
+      appToast.success(tenantMessages.bills.toast.exportSuccess);
     } catch (error) {
-      toast.error(getErrorMessage(error, tenantMessages.bills.errors.export));
+      appToast.error(getErrorMessage(error, tenantMessages.bills.errors.export));
     }
   };
 
@@ -115,15 +115,13 @@ export function useBillShare(organizationName?: string) {
         organizationName,
         feeItems,
       });
-      toast.success(
-        result === 'shared' ? tenantMessages.bills.toast.shared : tenantMessages.bills.toast.downloaded
-      );
+      appToast.success(result === 'shared' ? tenantMessages.bills.toast.shared : tenantMessages.bills.toast.downloaded);
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         return;
       }
 
-      toast.error(getErrorMessage(error, tenantMessages.bills.errors.share));
+      appToast.error(getErrorMessage(error, tenantMessages.bills.errors.share));
     } finally {
       setSharingBillId((current) => (current === bill.id ? null : current));
     }

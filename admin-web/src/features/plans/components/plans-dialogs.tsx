@@ -7,16 +7,7 @@ import { DollarSign, Settings } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
+  ConfirmDialog,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -45,10 +36,7 @@ import { CommonDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminPlan } from '@/lib/api/admin-client';
 import { planCreateSchema, planUpdateSchema, type PlanCreateForm, type PlanUpdateForm } from '../plans.schemas';
-import {
-  getDefaultPlanCreateFormValues,
-  getPlanUpdateFormValues,
-} from '../plans.utils';
+import { getDefaultPlanCreateFormValues, getPlanUpdateFormValues } from '../plans.utils';
 import { PlanPricingFields } from './plan-pricing-fields';
 import { adminI18n, adminMessages } from '@/lib/i18n';
 
@@ -105,7 +93,11 @@ function PlanFormSections({
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{mode === 'create' ? adminMessages.plans.fields.optionalDescription : adminMessages.plans.fields.description}</FormLabel>
+            <FormLabel>
+              {mode === 'create'
+                ? adminMessages.plans.fields.optionalDescription
+                : adminMessages.plans.fields.description}
+            </FormLabel>
             <FormControl>
               <Input {...field} />
             </FormControl>
@@ -151,7 +143,11 @@ function PlanFormSections({
                 <FormItem>
                   <FormLabel>{adminMessages.plans.fields.maxOrganizations}</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder={adminMessages.plans.fields.maxOrganizationsPlaceholder} {...field} />
+                    <Input
+                      type="number"
+                      placeholder={adminMessages.plans.fields.maxOrganizationsPlaceholder}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -265,7 +261,12 @@ export function PlanCreateDialog({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <PlanFormSections form={form as UseFormReturn<PlanForm>} mode="create" activeTab={activeTab} onTabChange={setActiveTab} />
+            <PlanFormSections
+              form={form as UseFormReturn<PlanForm>}
+              mode="create"
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+            />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 {adminMessages.common.cancel}
@@ -325,16 +326,15 @@ export function PlanEditSheet({
   );
 
   return (
-    <CommonDrawer
-      open={open}
-      onOpenChange={onOpenChange}
-      header={header}
-      footer={footer}
-      width="w-full sm:w-[600px]"
-    >
+    <CommonDrawer open={open} onOpenChange={onOpenChange} header={header} footer={footer} width="w-full sm:w-[600px]">
       <Form {...form}>
         <div className="space-y-4">
-          <PlanFormSections form={form as UseFormReturn<PlanForm>} mode="edit" activeTab={activeTab} onTabChange={setActiveTab} />
+          <PlanFormSections
+            form={form as UseFormReturn<PlanForm>}
+            mode="edit"
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
         </div>
       </Form>
     </CommonDrawer>
@@ -355,24 +355,16 @@ export function PlanDeleteDialog({
   isPending: boolean;
 }) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{adminMessages.plans.dialogs.deleteTitle}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {adminI18n.t('plans.dialogs.deleteDescription', { name: plan?.name ?? '' })}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {isPending ? adminMessages.common.deleting : adminMessages.common.delete}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={adminMessages.plans.dialogs.deleteTitle}
+      description={adminI18n.t('plans.dialogs.deleteDescription', { name: plan?.name ?? '' })}
+      cancelLabel={adminMessages.common.cancel}
+      confirmLabel={isPending ? adminMessages.common.deleting : adminMessages.common.delete}
+      onConfirm={onConfirm}
+      isPending={isPending}
+      intent="destructive"
+    />
   );
 }

@@ -8,6 +8,7 @@
     ".": "./src/index.ts",
     "./components": "./src/components/index.ts",
     "./components/ui": "./src/components/ui/index.ts",
+    "./hooks": "./src/hooks/index.ts",
     "./lib/utils": "./src/lib/utils/index.ts",
     "./lib/i18n": "./src/lib/i18n/index.ts"
   },
@@ -38,14 +39,17 @@
     "clsx": "catalog:",
     "date-fns": "catalog:",
     "lucide-react": "catalog:",
+    "next-themes": "catalog:",
     "react": "catalog:",
     "react-hook-form": "catalog:",
+    "recharts": "catalog:",
     "sonner": "catalog:",
     "tailwind-merge": "catalog:",
     "tailwindcss-animate": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "next": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
@@ -54,6 +58,7 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
+    "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
   }

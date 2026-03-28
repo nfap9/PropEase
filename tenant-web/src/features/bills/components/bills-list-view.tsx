@@ -4,7 +4,10 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { AlertCircle, Building2, ChevronDown, Download, FilePlus, FileSpreadsheet } from 'lucide-react';
 import { DataTable } from '@/components/common/data-table';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { KpiSection } from '@apartment-ultra/shared-ui/components/ui';
+import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
+import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
+import { StatCard } from '@apartment-ultra/shared-ui/components/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,96 +61,73 @@ export function BillsListView({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold" data-testid={BILLS.HEADING}>
-          {tenantMessages.bills.list.heading}
-        </h1>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">{tenantMessages.bills.list.total}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">{tenantMessages.bills.list.pendingAmount}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              ¥{(stats.totalAmount - stats.paidAmount).toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">{stats.pending + stats.partial + stats.overdue} 笔</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">{tenantMessages.bills.list.paidAmount}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">¥{stats.paidAmount.toLocaleString()}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">{tenantMessages.bills.list.overdueCount}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button onClick={onGenerate} data-testid={BILLS.GENERATE_BUTTON}>
-            <FilePlus className="mr-2 h-4 w-4" />
-            {tenantMessages.bills.list.generate}
-          </Button>
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => onStatusFilterChange(value as BillStatus | 'all')}
-          >
-            <SelectTrigger className="w-[150px]" data-testid={BILLS.STATUS_FILTER}>
-              <SelectValue placeholder={tenantMessages.bills.list.statusPlaceholder} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{tenantMessages.bills.list.all}</SelectItem>
-              <SelectItem value="pending">{tenantMessages.bills.list.pending}</SelectItem>
-              <SelectItem value="partial">{tenantMessages.bills.list.partial}</SelectItem>
-              <SelectItem value="paid">{tenantMessages.bills.list.paid}</SelectItem>
-              <SelectItem value="overdue">{tenantMessages.bills.list.overdue}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" disabled={bills.length === 0} data-testid={BILLS.EXPORT_BUTTON}>
-              <Download className="mr-2 h-4 w-4" />
-              {tenantMessages.bills.list.export}
-              <ChevronDown className="ml-2 h-4 w-4" />
+    <ListPageLayout
+      title={tenantMessages.bills.list.heading}
+      titleTestId={BILLS.HEADING}
+      maxWidth="full"
+      className="w-full"
+      toolbar={
+        <PageToolbar className="justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button onClick={onGenerate} data-testid={BILLS.GENERATE_BUTTON}>
+              <FilePlus className="mr-2 h-4 w-4" />
+              {tenantMessages.bills.list.generate}
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => onExport('all')}>
-              <FileSpreadsheet className="mr-2 h-4 w-4" />
-              {tenantMessages.bills.list.exportAll}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onExport('unfinished')}>
-              <AlertCircle className="mr-2 h-4 w-4" />
-              {tenantMessages.bills.list.exportUnfinished}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+            <Select value={statusFilter} onValueChange={(value) => onStatusFilterChange(value as BillStatus | 'all')}>
+              <SelectTrigger className="w-[150px]" data-testid={BILLS.STATUS_FILTER}>
+                <SelectValue placeholder={tenantMessages.bills.list.statusPlaceholder} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{tenantMessages.bills.list.all}</SelectItem>
+                <SelectItem value="pending">{tenantMessages.bills.list.pending}</SelectItem>
+                <SelectItem value="partial">{tenantMessages.bills.list.partial}</SelectItem>
+                <SelectItem value="paid">{tenantMessages.bills.list.paid}</SelectItem>
+                <SelectItem value="overdue">{tenantMessages.bills.list.overdue}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" disabled={bills.length === 0} data-testid={BILLS.EXPORT_BUTTON}>
+                <Download className="mr-2 h-4 w-4" />
+                {tenantMessages.bills.list.export}
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => onExport('all')}>
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                {tenantMessages.bills.list.exportAll}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onExport('unfinished')}>
+                <AlertCircle className="mr-2 h-4 w-4" />
+                {tenantMessages.bills.list.exportUnfinished}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </PageToolbar>
+      }
+    >
+      <KpiSection columns={4}>
+        <StatCard title={tenantMessages.bills.list.total} value={stats.total} />
+        <StatCard
+          title={tenantMessages.bills.list.pendingAmount}
+          value={stats.totalAmount - stats.paidAmount}
+          format="currency"
+          tone="warning"
+          description={`${stats.pending + stats.partial + stats.overdue} 笔`}
+        />
+        <StatCard
+          title={tenantMessages.bills.list.paidAmount}
+          value={stats.paidAmount}
+          format="currency"
+          tone="success"
+        />
+        <StatCard title={tenantMessages.bills.list.overdueCount} value={stats.overdue} tone="danger" />
+      </KpiSection>
 
       {billsLoading ? <Skeleton className="h-96" /> : <DataTable columns={columns} data={bills} testid={BILLS.LIST} />}
-    </div>
+    </ListPageLayout>
   );
 }

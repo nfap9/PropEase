@@ -5,8 +5,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import Link from 'next/link';
+import { useAsyncDialogSubmit, usePageQueryState } from '@apartment-ultra/shared-ui';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions } from '@/components/common/table-actions';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
@@ -21,16 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Form,
   FormControl,
@@ -62,27 +54,45 @@ type RenewForm = z.infer<typeof renewSchema>;
 
 export default function AdminSubscriptionsPage() {
   const queryClient = useQueryClient();
-  const [orgIdFilter, setOrgIdFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
   const [isRenewOpen, setIsRenewOpen] = useState(false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [selectedSub, setSelectedSub] = useState<AdminSubscription | null>(null);
-
-  const { data: subscriptions, isLoading } = useQuery({
-    queryKey: ['admin', 'subscriptions', orgIdFilter || undefined, statusFilter || undefined],
-    queryFn: async () => {
-      const res = await adminApiEndpoints.listSubscriptions({
-        limit: 200,
-        organization_id: orgIdFilter || undefined,
-        status_filter: statusFilter || undefined,
-      });
-      return (res.data ?? []) as AdminSubscription[];
-    },
+  const orgIdFilterQuery = usePageQueryState<string>({
+    queryKey: 'organization_id',
+    defaultValue: '',
+    parse: (value) => value ?? '',
+    serialize: (value) => value.trim() || null,
   });
-
+  const statusFilterQuery = usePageQueryState<string>({
+    queryKey: 'status',
+    defaultValue: '',
+    parse: (value) => value ?? '',
+    serialize: (value) => value || null,
+  });
   const renewForm = useForm<RenewForm>({
     resolver: zodResolver(renewSchema),
     defaultValues: { extend_days: 30 },
+  });
+  const renewSubmit = useAsyncDialogSubmit({
+    close: () => setIsRenewOpen(false),
+    reset: () => renewForm.reset({ extend_days: 30 }),
+    clear: () => setSelectedSub(null),
+  });
+  const cancelSubmit = useAsyncDialogSubmit({
+    close: () => setIsCancelOpen(false),
+    clear: () => setSelectedSub(null),
+  });
+
+  const { data: subscriptions, isLoading } = useQuery({
+    queryKey: ['admin', 'subscriptions', orgIdFilterQuery.value || undefined, statusFilterQuery.value || undefined],
+    queryFn: async () => {
+      const res = await adminApiEndpoints.listSubscriptions({
+        limit: 200,
+        organization_id: orgIdFilterQuery.value || undefined,
+        status_filter: statusFilterQuery.value || undefined,
+      });
+      return (res.data ?? []) as AdminSubscription[];
+    },
   });
 
   const renewMutation = useMutation({
@@ -90,25 +100,20 @@ export default function AdminSubscriptionsPage() {
       adminApiEndpoints.renewSubscription(id, { extend_days }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'subscriptions'] });
-      setIsRenewOpen(false);
-      setSelectedSub(null);
-      renewForm.reset({ extend_days: 30 });
-      toast.success(adminMessages.subscriptions.toast.renewed);
+      renewSubmit.handleSuccess();
+      appToast.success(adminMessages.subscriptions.toast.renewed);
     },
-    onError: (error) =>
-      toast.error(getErrorMessage(error, adminMessages.subscriptions.errors.renew)),
+    onError: (error) => appToast.error(getErrorMessage(error, adminMessages.subscriptions.errors.renew)),
   });
 
   const cancelMutation = useMutation({
     mutationFn: (id: string) => adminApiEndpoints.cancelSubscription(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'subscriptions'] });
-      setIsCancelOpen(false);
-      setSelectedSub(null);
-      toast.success(adminMessages.subscriptions.toast.cancelled);
+      cancelSubmit.handleSuccess();
+      appToast.success(adminMessages.subscriptions.toast.cancelled);
     },
-    onError: (error) =>
-      toast.error(getErrorMessage(error, adminMessages.subscriptions.errors.cancel)),
+    onError: (error) => appToast.error(getErrorMessage(error, adminMessages.subscriptions.errors.cancel)),
   });
 
   const handleRenew = (sub: AdminSubscription) => {
@@ -127,10 +132,7 @@ export default function AdminSubscriptionsPage() {
       accessorKey: 'organization_id',
       header: adminMessages.subscriptions.columns.teamId,
       cell: ({ row }) => (
-        <Link
-          href={`/organizations/${row.original.organization_id}`}
-          className="text-primary hover:underline"
-        >
+        <Link href={`/organizations/${row.original.organization_id}`} className="text-primary hover:underline">
           {row.original.organization_id}
         </Link>
       ),
@@ -167,9 +169,7 @@ export default function AdminSubscriptionsPage() {
       accessorKey: 'auto_renew',
       header: adminMessages.subscriptions.columns.autoRenew,
       cell: ({ row }) => {
-        const config = row.original.auto_renew
-          ? BOOLEAN_YES_NO_CONFIG.yes
-          : BOOLEAN_YES_NO_CONFIG.no;
+        const config = row.original.auto_renew ? BOOLEAN_YES_NO_CONFIG.yes : BOOLEAN_YES_NO_CONFIG.no;
         return <Badge variant={config.variant}>{config.label}</Badge>;
       },
     },
@@ -216,17 +216,19 @@ export default function AdminSubscriptionsPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <div className="mb-4 flex items-center justify-between gap-4">
-        <h2 className="text-xl font-semibold" data-testid="admin-subscriptions-heading">{adminMessages.subscriptions.heading}</h2>
+        <h2 className="text-xl font-semibold" data-testid="admin-subscriptions-heading">
+          {adminMessages.subscriptions.heading}
+        </h2>
         <div className="flex items-center gap-2">
           <Input
             placeholder={adminMessages.subscriptions.teamIdPlaceholder}
-            value={orgIdFilter}
-            onChange={(e) => setOrgIdFilter(e.target.value)}
+            value={orgIdFilterQuery.value}
+            onChange={(e) => orgIdFilterQuery.setValue(e.target.value)}
             className="w-48"
           />
           <Select
-            value={statusFilter || 'all'}
-            onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}
+            value={statusFilterQuery.value || 'all'}
+            onValueChange={(v) => statusFilterQuery.setValue(v === 'all' ? '' : v)}
           >
             <SelectTrigger className="w-32">
               <SelectValue placeholder={adminMessages.subscriptions.filters.statusPlaceholder} />
@@ -287,7 +289,9 @@ export default function AdminSubscriptionsPage() {
                   {adminMessages.common.cancel}
                 </Button>
                 <Button type="submit" disabled={renewMutation.isPending}>
-                  {renewMutation.isPending ? adminMessages.common.submitting : adminMessages.subscriptions.renewDialog.submit}
+                  {renewMutation.isPending
+                    ? adminMessages.common.submitting
+                    : adminMessages.subscriptions.renewDialog.submit}
                 </Button>
               </DialogFooter>
             </form>
@@ -295,28 +299,21 @@ export default function AdminSubscriptionsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* 取消确认 */}
-      <AlertDialog open={isCancelOpen} onOpenChange={setIsCancelOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{adminMessages.subscriptions.cancelDialog.title}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {adminI18n.t('subscriptions.cancelDialog.description', {
-                organizationId: selectedSub?.organization_id ?? '',
-              })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{adminMessages.subscriptions.cancelDialog.back}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => selectedSub && cancelMutation.mutate(selectedSub.id)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {cancelMutation.isPending ? adminMessages.common.processing : adminMessages.subscriptions.cancelDialog.submit}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={isCancelOpen}
+        onOpenChange={setIsCancelOpen}
+        title={adminMessages.subscriptions.cancelDialog.title}
+        description={adminI18n.t('subscriptions.cancelDialog.description', {
+          organizationId: selectedSub?.organization_id ?? '',
+        })}
+        cancelLabel={adminMessages.subscriptions.cancelDialog.back}
+        confirmLabel={
+          cancelMutation.isPending ? adminMessages.common.processing : adminMessages.subscriptions.cancelDialog.submit
+        }
+        onConfirm={() => selectedSub && cancelMutation.mutate(selectedSub.id)}
+        isPending={cancelMutation.isPending}
+        intent="destructive"
+      />
     </div>
   );
 }

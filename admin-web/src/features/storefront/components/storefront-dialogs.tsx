@@ -13,16 +13,7 @@ import type {
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
+  ConfirmDialog,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -95,7 +86,11 @@ export function StorefrontFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{mode === 'create' ? adminMessages.storefront.dialog.createTitle : adminMessages.storefront.dialog.editTitle}</DialogTitle>
+          <DialogTitle>
+            {mode === 'create'
+              ? adminMessages.storefront.dialog.createTitle
+              : adminMessages.storefront.dialog.editTitle}
+          </DialogTitle>
           <DialogDescription>
             {mode === 'create' ? adminMessages.storefront.dialog.createDescription : storefront?.name}
           </DialogDescription>
@@ -124,7 +119,11 @@ export function StorefrontFormDialog({
                 <FormItem>
                   <FormLabel>{adminMessages.storefront.fields.code}</FormLabel>
                   <FormControl>
-                    <Input placeholder={adminMessages.storefront.fields.codePlaceholder} {...field} disabled={mode === 'edit'} />
+                    <Input
+                      placeholder={adminMessages.storefront.fields.codePlaceholder}
+                      {...field}
+                      disabled={mode === 'edit'}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -192,25 +191,17 @@ export function StorefrontDeleteDialog({
   isPending: boolean;
 }) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{adminMessages.servicePricing.dialogs.deleteTitle}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {adminI18n.t('storefront.dialog.deleteDescription', { name: storefront?.name ?? '' })}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {isPending ? adminMessages.common.deleting : adminMessages.common.delete}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={adminMessages.servicePricing.dialogs.deleteTitle}
+      description={adminI18n.t('storefront.dialog.deleteDescription', { name: storefront?.name ?? '' })}
+      cancelLabel={adminMessages.common.cancel}
+      confirmLabel={isPending ? adminMessages.common.deleting : adminMessages.common.delete}
+      onConfirm={onConfirm}
+      isPending={isPending}
+      intent="destructive"
+    />
   );
 }
 
@@ -274,7 +265,11 @@ export function StorefrontItemFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{mode === 'create' ? adminMessages.storefront.dialog.itemCreateTitle : adminMessages.storefront.dialog.itemEditTitle}</DialogTitle>
+          <DialogTitle>
+            {mode === 'create'
+              ? adminMessages.storefront.dialog.itemCreateTitle
+              : adminMessages.storefront.dialog.itemEditTitle}
+          </DialogTitle>
           <DialogDescription>
             {mode === 'create'
               ? adminI18n.t('storefront.dialog.itemCreateDescription', {
@@ -333,11 +328,7 @@ export function StorefrontItemFormDialog({
                 <FormItem>
                   <FormLabel>{adminMessages.storefront.fields.sortOrder}</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      {...field}
-                      onChange={(event) => field.onChange(Number(event.target.value))}
-                    />
+                    <Input type="number" {...field} onChange={(event) => field.onChange(Number(event.target.value))} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -381,24 +372,18 @@ export function StorefrontItemDeleteDialog({
   isPending: boolean;
 }) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{adminMessages.storefront.dialog.itemDeleteTitle}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {adminI18n.t('storefront.dialog.itemDeleteDescription', { name: item?.service?.name ?? '' })}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {isPending ? adminMessages.common.deleting : adminMessages.common.delete}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={adminMessages.storefront.dialog.itemDeleteTitle}
+      description={adminI18n.t('storefront.dialog.itemDeleteDescription', {
+        name: item?.service?.name ?? '',
+      })}
+      cancelLabel={adminMessages.common.cancel}
+      confirmLabel={isPending ? adminMessages.common.deleting : adminMessages.common.delete}
+      onConfirm={onConfirm}
+      isPending={isPending}
+      intent="destructive"
+    />
   );
 }

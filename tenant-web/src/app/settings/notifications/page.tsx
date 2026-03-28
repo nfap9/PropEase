@@ -2,14 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type {
-  NotificationDeliveryStatus,
-  TenantNotificationDelivery,
-  TenantReachabilityEventType,
-} from '@/types';
-import { toast } from 'sonner';
+import type { NotificationDeliveryStatus, TenantNotificationDelivery, TenantReachabilityEventType } from '@/types';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/common/data-table';
+import { KpiSection } from '@apartment-ultra/shared-ui/components/ui';
+import { StatCard as SharedStatCard } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -74,19 +72,15 @@ export default function ReachabilitySettingsPage() {
     setEditableTemplates({
       bill_generated: {
         content: templates.find((item) => item.event_type === 'bill_generated')?.content ?? '',
-        is_enabled:
-          templates.find((item) => item.event_type === 'bill_generated')?.is_enabled ?? true,
+        is_enabled: templates.find((item) => item.event_type === 'bill_generated')?.is_enabled ?? true,
       },
       rent_due_reminder: {
-        content:
-          templates.find((item) => item.event_type === 'rent_due_reminder')?.content ?? '',
-        is_enabled:
-          templates.find((item) => item.event_type === 'rent_due_reminder')?.is_enabled ?? true,
+        content: templates.find((item) => item.event_type === 'rent_due_reminder')?.content ?? '',
+        is_enabled: templates.find((item) => item.event_type === 'rent_due_reminder')?.is_enabled ?? true,
       },
       bill_overdue: {
         content: templates.find((item) => item.event_type === 'bill_overdue')?.content ?? '',
-        is_enabled:
-          templates.find((item) => item.event_type === 'bill_overdue')?.is_enabled ?? true,
+        is_enabled: templates.find((item) => item.event_type === 'bill_overdue')?.is_enabled ?? true,
       },
     });
   }, [templates]);
@@ -103,16 +97,15 @@ export default function ReachabilitySettingsPage() {
     }) => tenantReachabilityApi.updateTemplate(orgId!, eventType, { content, is_enabled }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['tenant-reachability', 'templates', orgId] });
-      toast.success(
+      appToast.success(
         tenantI18n.t('settings.notificationsPage.saved', {
           event: getTenantReachabilityEventLabel(variables.eventType),
         })
       );
     },
     onError: (error) => {
-      const message =
-        error instanceof Error ? error.message : tenantMessages.settings.notificationsPage.saveFailed;
-      toast.error(message);
+      const message = error instanceof Error ? error.message : tenantMessages.settings.notificationsPage.saveFailed;
+      appToast.error(message);
     },
   });
 
@@ -189,179 +182,190 @@ export default function ReachabilitySettingsPage() {
 
   return (
     <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <BellRing className="h-8 w-8" />
-          <div>
-            <h1 className="text-3xl font-bold">{tenantMessages.settings.notificationsPage.heading}</h1>
-            <p className="text-muted-foreground">{tenantMessages.settings.notificationsPage.description}</p>
-          </div>
+      <div className="flex items-center gap-3">
+        <BellRing className="h-8 w-8" />
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">{tenantMessages.settings.notificationsPage.heading}</h1>
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{tenantMessages.settings.notificationsPage.boundaryTitle}</CardTitle>
-            <CardDescription>{tenantMessages.settings.notificationsPage.boundaryDescription}</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-3">
-            <SummaryCard
-              title={tenantMessages.settings.notificationsPage.summaries.channelTitle}
-              value={tenantMessages.settings.notificationsPage.summaries.channelValue}
-              icon={MessageSquare}
-            />
-            <SummaryCard
-              title={tenantMessages.settings.notificationsPage.summaries.totalTitle}
-              value={String(summary.total)}
-              icon={Send}
-            />
-            <SummaryCard
-              title={tenantMessages.settings.notificationsPage.summaries.failedSkippedTitle}
-              value={`${summary.failed}/${summary.skipped}`}
-              icon={ShieldOff}
-            />
-          </CardContent>
-        </Card>
-
-        <Tabs defaultValue="templates" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="templates">{tenantMessages.settings.notificationsPage.tabs.templates}</TabsTrigger>
-            <TabsTrigger value="deliveries">{tenantMessages.settings.notificationsPage.tabs.deliveries}</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="templates" className="space-y-4">
-            {templatesLoading ? (
-              <Skeleton className="h-96" />
-            ) : (
-              templates.map((template) => {
-                const editable = editableTemplates[template.event_type];
-                return (
-                  <Card key={template.event_type}>
-                    <CardHeader>
-                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                        <div>
-                          <CardTitle>{template.name}</CardTitle>
-                          <CardDescription>{tenantMessages.settings.notificationsPage.templateVariables}</CardDescription>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Label htmlFor={`template-enabled-${template.event_type}`}>
-                            {tenantMessages.settings.notificationsPage.enableTemplate}
-                          </Label>
-                          <Switch
-                            id={`template-enabled-${template.event_type}`}
-                            checked={editable?.is_enabled ?? true}
-                            onCheckedChange={(checked) =>
-                              setEditableTemplates((prev) => ({
-                                ...prev,
-                                [template.event_type]: {
-                                  ...(prev[template.event_type] ?? {
-                                    content: template.content,
-                                    is_enabled: template.is_enabled,
-                                  }),
-                                  is_enabled: checked,
-                                },
-                              }))
-                            }
-                          />
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <textarea
-                        className="min-h-32 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        value={editable?.content ?? ''}
-                        onChange={(event) =>
-                          setEditableTemplates((prev) => ({
-                            ...prev,
-                            [template.event_type]: {
-                              ...(prev[template.event_type] ?? {
-                                content: template.content,
-                                is_enabled: template.is_enabled,
-                              }),
-                              content: event.target.value,
-                            },
-                          }))
-                        }
-                      />
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-muted-foreground">
-                          {tenantMessages.settings.notificationsPage.unsubscribeHint}
-                        </p>
-                        <Button
-                          onClick={() =>
-                            updateTemplateMutation.mutate({
-                              eventType: template.event_type,
-                              content: editable?.content ?? template.content,
-                              is_enabled: editable?.is_enabled ?? template.is_enabled,
-                            })
-                          }
-                          disabled={updateTemplateMutation.isPending}
-                        >
-                          {tenantMessages.settings.notificationsPage.saveTemplate}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })
-            )}
-          </TabsContent>
-
-          <TabsContent value="deliveries" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>{tenantMessages.settings.notificationsPage.deliveriesTitle}</CardTitle>
-                <CardDescription>{tenantMessages.settings.notificationsPage.deliveriesDescription}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex flex-col gap-4 md:flex-row">
-                  <div className="space-y-2">
-                    <Label>{tenantMessages.settings.notificationsPage.eventFilterLabel}</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {tenantReachabilityEventOptions.map((option) => (
-                        <Button
-                          key={option.value}
-                          variant={eventFilter === option.value ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setEventFilter(option.value)}
-                        >
-                          {option.label}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{tenantMessages.settings.notificationsPage.statusFilterLabel}</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {tenantReachabilityStatusOptions.map((option) => (
-                        <Button
-                          key={option.value}
-                          variant={statusFilter === option.value ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => setStatusFilter(option.value)}
-                        >
-                          {option.label}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-4">
-                  <StatCard title={tenantMessages.settings.notificationsPage.stats.total} value={String(summary.total)} />
-                  <StatCard title={tenantMessages.settings.notificationsPage.stats.sent} value={String(summary.sent)} />
-                  <StatCard title={tenantMessages.settings.notificationsPage.stats.failed} value={String(summary.failed)} />
-                  <StatCard title={tenantMessages.settings.notificationsPage.stats.skipped} value={String(summary.skipped)} />
-                </div>
-
-                {deliveriesLoading ? (
-                  <Skeleton className="h-96" />
-                ) : (
-                  <DataTable columns={deliveryColumns} data={deliveries} />
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">{tenantMessages.settings.notificationsPage.boundaryTitle}</CardTitle>
+          <CardDescription>{tenantMessages.settings.notificationsPage.boundaryDescription}</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-3">
+          <SummaryCard
+            title={tenantMessages.settings.notificationsPage.summaries.channelTitle}
+            value={tenantMessages.settings.notificationsPage.summaries.channelValue}
+            icon={MessageSquare}
+          />
+          <SummaryCard
+            title={tenantMessages.settings.notificationsPage.summaries.totalTitle}
+            value={String(summary.total)}
+            icon={Send}
+          />
+          <SummaryCard
+            title={tenantMessages.settings.notificationsPage.summaries.failedSkippedTitle}
+            value={`${summary.failed}/${summary.skipped}`}
+            icon={ShieldOff}
+          />
+        </CardContent>
+      </Card>
+
+      <Tabs defaultValue="templates" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="templates">{tenantMessages.settings.notificationsPage.tabs.templates}</TabsTrigger>
+          <TabsTrigger value="deliveries">{tenantMessages.settings.notificationsPage.tabs.deliveries}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="templates" className="space-y-4">
+          {templatesLoading ? (
+            <Skeleton className="h-96" />
+          ) : (
+            templates.map((template) => {
+              const editable = editableTemplates[template.event_type];
+              return (
+                <Card key={template.event_type}>
+                  <CardHeader>
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <CardTitle>{template.name}</CardTitle>
+                        <CardDescription>{tenantMessages.settings.notificationsPage.templateVariables}</CardDescription>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor={`template-enabled-${template.event_type}`}>
+                          {tenantMessages.settings.notificationsPage.enableTemplate}
+                        </Label>
+                        <Switch
+                          id={`template-enabled-${template.event_type}`}
+                          checked={editable?.is_enabled ?? true}
+                          onCheckedChange={(checked) =>
+                            setEditableTemplates((prev) => ({
+                              ...prev,
+                              [template.event_type]: {
+                                ...(prev[template.event_type] ?? {
+                                  content: template.content,
+                                  is_enabled: template.is_enabled,
+                                }),
+                                is_enabled: checked,
+                              },
+                            }))
+                          }
+                        />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <textarea
+                      className="min-h-32 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      value={editable?.content ?? ''}
+                      onChange={(event) =>
+                        setEditableTemplates((prev) => ({
+                          ...prev,
+                          [template.event_type]: {
+                            ...(prev[template.event_type] ?? {
+                              content: template.content,
+                              is_enabled: template.is_enabled,
+                            }),
+                            content: event.target.value,
+                          },
+                        }))
+                      }
+                    />
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">
+                        {tenantMessages.settings.notificationsPage.unsubscribeHint}
+                      </p>
+                      <Button
+                        onClick={() =>
+                          updateTemplateMutation.mutate({
+                            eventType: template.event_type,
+                            content: editable?.content ?? template.content,
+                            is_enabled: editable?.is_enabled ?? template.is_enabled,
+                          })
+                        }
+                        disabled={updateTemplateMutation.isPending}
+                      >
+                        {tenantMessages.settings.notificationsPage.saveTemplate}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
+        </TabsContent>
+
+        <TabsContent value="deliveries" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>{tenantMessages.settings.notificationsPage.deliveriesTitle}</CardTitle>
+              <CardDescription>{tenantMessages.settings.notificationsPage.deliveriesDescription}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col gap-4 md:flex-row">
+                <div className="space-y-2">
+                  <Label>{tenantMessages.settings.notificationsPage.eventFilterLabel}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {tenantReachabilityEventOptions.map((option) => (
+                      <Button
+                        key={option.value}
+                        variant={eventFilter === option.value ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setEventFilter(option.value)}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>{tenantMessages.settings.notificationsPage.statusFilterLabel}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {tenantReachabilityStatusOptions.map((option) => (
+                      <Button
+                        key={option.value}
+                        variant={statusFilter === option.value ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setStatusFilter(option.value)}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <KpiSection columns={4}>
+                <SharedStatCard title={tenantMessages.settings.notificationsPage.stats.total} value={summary.total} />
+                <SharedStatCard
+                  title={tenantMessages.settings.notificationsPage.stats.sent}
+                  value={summary.sent}
+                  tone="success"
+                />
+                <SharedStatCard
+                  title={tenantMessages.settings.notificationsPage.stats.failed}
+                  value={summary.failed}
+                  tone="danger"
+                />
+                <SharedStatCard
+                  title={tenantMessages.settings.notificationsPage.stats.skipped}
+                  value={summary.skipped}
+                  tone="warning"
+                />
+              </KpiSection>
+
+              {deliveriesLoading ? (
+                <Skeleton className="h-96" />
+              ) : (
+                <DataTable columns={deliveryColumns} data={deliveries} />
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
 
@@ -381,15 +385,6 @@ function SummaryCard({
         {title}
       </div>
       <div className="mt-2 text-2xl font-semibold">{value}</div>
-    </div>
-  );
-}
-
-function StatCard({ title, value }: { title: string; value: string }) {
-  return (
-    <div className="rounded-lg border p-4">
-      <div className="text-sm text-muted-foreground">{title}</div>
-      <div className="mt-1 text-2xl font-semibold">{value}</div>
     </div>
   );
 }

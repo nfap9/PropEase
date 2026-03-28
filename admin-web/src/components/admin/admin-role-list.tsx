@@ -2,8 +2,8 @@
 
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { SelectableSideList } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminRole } from '@/lib/api/admin-client';
-import { cn } from '@/lib/utils';
 import { Plus, Trash2 } from 'lucide-react';
 import { adminI18n, adminMessages } from '@/lib/i18n';
 
@@ -27,10 +27,32 @@ export function AdminRoleList({
   onDeleteRole,
   isLoading,
 }: AdminRoleListProps) {
+  const items = roles.map((role) => ({
+    id: role.id,
+    value: role,
+    label: role.name,
+    badge: role.is_system ? (
+      <Badge variant="secondary" className="shrink-0 text-xs">
+        {adminMessages.roles.builtin}
+      </Badge>
+    ) : null,
+    trailing: !role.is_system ? (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7"
+        onClick={() => onDeleteRole(role)}
+        aria-label={adminI18n.t('roles.deleteAriaLabel', { name: role.name })}
+      >
+        <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+      </Button>
+    ) : null,
+  }));
+
   return (
-    <div className="flex h-full flex-col border-r bg-muted/30">
-      <div className="border-b p-3">
-        <h2 className="mb-2 text-sm font-semibold" data-testid="admin-roles-heading">{adminMessages.roles.heading}</h2>
+    <SelectableSideList
+      title={<span data-testid="admin-roles-heading">{adminMessages.roles.heading}</span>}
+      headerAction={
         <Button
           variant="outline"
           size="sm"
@@ -42,50 +64,10 @@ export function AdminRoleList({
           <Plus className="mr-2 h-4 w-4" />
           {adminMessages.roles.createButton}
         </Button>
-      </div>
-      <ul className="flex-1 space-y-1 overflow-y-auto p-2">
-        {roles.map((role) => (
-          <li key={role.id}>
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={() => onSelectRole(role)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSelectRole(role);
-                }
-              }}
-              className={cn(
-                'flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-                'hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                selectedRoleId === role.id && 'bg-muted font-medium'
-              )}
-            >
-              <span className="flex-1 truncate text-left">{role.name}</span>
-              {role.is_system && (
-                <Badge variant="secondary" className="shrink-0 text-xs">
-                  {adminMessages.roles.builtin}
-                </Badge>
-              )}
-              {!role.is_system && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 shrink-0"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteRole(role);
-                  }}
-                  aria-label={adminI18n.t('roles.deleteAriaLabel', { name: role.name })}
-                >
-                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                </Button>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+      }
+      items={items}
+      selectedId={selectedRoleId}
+      onSelect={onSelectRole}
+    />
   );
 }

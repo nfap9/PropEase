@@ -3,15 +3,15 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useConfirmAction, useListFilters } from '@apartment-ultra/shared-ui';
 import { DataTable } from '@/components/common/data-table';
+import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { adminMessages } from '@/lib/i18n';
 import { giftSubscriptionSchema, type FilterActive, type GiftSubscriptionForm } from '../registered-users.schemas';
 import { createRegisteredUsersColumns } from '../registered-users.columns';
 import { useRegisteredUsersData } from '../registered-users.hooks';
-import {
-  getDefaultGiftFormValues,
-  getSelectedGiftPlan,
-} from '../registered-users.utils';
+import { getDefaultGiftFormValues, getSelectedGiftPlan } from '../registered-users.utils';
 import {
   DeleteRegisteredUserDialog,
   DisableRegisteredUserDialog,
@@ -20,14 +20,22 @@ import {
 } from './registered-user-dialogs';
 import { RegisteredUsersToolbar } from './registered-users-toolbar';
 
+interface RegisteredUsersFiltersState {
+  activeFilter: FilterActive;
+  search: string;
+  searchSubmitted: string;
+}
+
 export function RegisteredUsersPageContent() {
-  const [activeFilter, setActiveFilter] = useState<FilterActive>('all');
-  const [search, setSearch] = useState('');
-  const [searchSubmitted, setSearchSubmitted] = useState('');
   const [detailUserId, setDetailUserId] = useState<string | null>(null);
-  const [disableConfirmUserId, setDisableConfirmUserId] = useState<string | null>(null);
-  const [deleteConfirmUserId, setDeleteConfirmUserId] = useState<string | null>(null);
   const [isGiftOpen, setIsGiftOpen] = useState(false);
+  const { filters, setFilter, patchFilters } = useListFilters<RegisteredUsersFiltersState>({
+    activeFilter: 'all',
+    search: '',
+    searchSubmitted: '',
+  });
+  const disableConfirm = useConfirmAction<string>();
+  const deleteConfirm = useConfirmAction<string>();
 
   const giftForm = useForm<GiftSubscriptionForm>({
     resolver: zodResolver(giftSubscriptionSchema),
@@ -45,16 +53,16 @@ export function RegisteredUsersPageContent() {
     deleteUserMutation,
     giftSubscriptionMutation,
   } = useRegisteredUsersData({
-    activeFilter,
-    searchSubmitted,
+    activeFilter: filters.activeFilter,
+    searchSubmitted: filters.searchSubmitted,
     detailUserId,
     isGiftOpen,
-    onUserDisabled: () => setDisableConfirmUserId(null),
+    onUserDisabled: disableConfirm.close,
     onUserDeleted: (deletedUserId) => {
       if (detailUserId === deletedUserId) {
         setDetailUserId(null);
       }
-      setDeleteConfirmUserId(null);
+      deleteConfirm.close();
     },
     onGiftSuccess: () => {
       setIsGiftOpen(false);
@@ -62,26 +70,24 @@ export function RegisteredUsersPageContent() {
     },
   });
 
-  const selectedGiftPlan = useMemo(
-    () => getSelectedGiftPlan(plans, giftForm.watch('service_id')),
-    [plans, giftForm]
-  );
-  const selectedPricing = selectedGiftPlan?.pricing?.find((pricing) => pricing.id === giftForm.watch('pricing_id')) ?? null;
+  const selectedGiftPlan = useMemo(() => getSelectedGiftPlan(plans, giftForm.watch('service_id')), [plans, giftForm]);
+  const selectedPricing =
+    selectedGiftPlan?.pricing?.find((pricing) => pricing.id === giftForm.watch('pricing_id')) ?? null;
 
   const columns = useMemo(
     () =>
       createRegisteredUsersColumns({
         onView: setDetailUserId,
         onEnable: (userId) => setActiveMutation.mutate({ id: userId, is_active: true }),
-        onDisable: setDisableConfirmUserId,
-        onDelete: setDeleteConfirmUserId,
+        onDisable: disableConfirm.openFor,
+        onDelete: deleteConfirm.openFor,
       }),
-    [setActiveMutation]
+    [deleteConfirm.openFor, disableConfirm.openFor, setActiveMutation]
   );
 
   const handleSearchSubmit = (event: FormEvent) => {
     event.preventDefault();
-    setSearchSubmitted(search);
+    patchFilters({ searchSubmitted: filters.search });
   };
 
   const openGiftDialog = () => {
@@ -103,24 +109,28 @@ export function RegisteredUsersPageContent() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <RegisteredUsersToolbar
-        activeFilter={activeFilter}
-        search={search}
-        onSearchChange={setSearch}
-        onSearchSubmit={handleSearchSubmit}
-        onActiveFilterChange={setActiveFilter}
-      />
-
+    <ListPageLayout
+      title={adminMessages.registeredUsers.heading}
+      titleTestId="admin-registered-users-heading"
+      maxWidth="6xl"
+      toolbar={
+        <RegisteredUsersToolbar
+          activeFilter={filters.activeFilter}
+          search={filters.search}
+          onSearchChange={(value) => setFilter('search', value)}
+          onSearchSubmit={handleSearchSubmit}
+          onActiveFilterChange={(value) => setFilter('activeFilter', value)}
+        />
+      }
+    >
       <DataTable columns={columns} data={users ?? []} testid="admin-registered-users-list" />
 
       <DisableRegisteredUserDialog
-        open={Boolean(disableConfirmUserId)}
-        onOpenChange={(open) => !open && setDisableConfirmUserId(null)}
+        {...disableConfirm.dialogProps}
         onConfirm={() => {
-          if (disableConfirmUserId) {
+          if (disableConfirm.selectedItem) {
             setActiveMutation.mutate({
-              id: disableConfirmUserId,
+              id: disableConfirm.selectedItem,
               is_active: false,
             });
           }
@@ -129,11 +139,10 @@ export function RegisteredUsersPageContent() {
       />
 
       <DeleteRegisteredUserDialog
-        open={Boolean(deleteConfirmUserId)}
-        onOpenChange={(open) => !open && setDeleteConfirmUserId(null)}
+        {...deleteConfirm.dialogProps}
         onConfirm={() => {
-          if (deleteConfirmUserId) {
-            deleteUserMutation.mutate(deleteConfirmUserId);
+          if (deleteConfirm.selectedItem) {
+            deleteUserMutation.mutate(deleteConfirm.selectedItem);
           }
         }}
         isPending={deleteUserMutation.isPending}
@@ -146,9 +155,9 @@ export function RegisteredUsersPageContent() {
         detail={detail}
         detailLoading={detailLoading}
         onOpenGift={openGiftDialog}
-        onDisable={() => detail && setDisableConfirmUserId(detail.id)}
+        onDisable={() => detail && disableConfirm.openFor(detail.id)}
         onEnable={() => detail && setActiveMutation.mutate({ id: detail.id, is_active: true })}
-        onDelete={() => detail && setDeleteConfirmUserId(detail.id)}
+        onDelete={() => detail && deleteConfirm.openFor(detail.id)}
         isSetActivePending={setActiveMutation.isPending}
         isDeletePending={deleteUserMutation.isPending}
       />
@@ -165,6 +174,6 @@ export function RegisteredUsersPageContent() {
         onSubmit={(values) => giftSubscriptionMutation.mutate(values)}
         isPending={giftSubscriptionMutation.isPending}
       />
-    </div>
+    </ListPageLayout>
   );
 }

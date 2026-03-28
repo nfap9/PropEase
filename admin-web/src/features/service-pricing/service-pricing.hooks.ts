@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import {
   adminApiEndpoints,
   type ServicePricingCreate,
@@ -40,9 +40,9 @@ export function useServicePricingData({
     onSuccess: () => {
       invalidateServices();
       onCreateSuccess();
-      toast.success(adminMessages.servicePricing.toast.created);
+      appToast.success(adminMessages.servicePricing.toast.created);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
@@ -51,9 +51,9 @@ export function useServicePricingData({
     onSuccess: () => {
       invalidateServices();
       onUpdateSuccess();
-      toast.success(adminMessages.servicePricing.toast.updated);
+      appToast.success(adminMessages.servicePricing.toast.updated);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const updatePricingMutation = useMutation({
@@ -61,9 +61,9 @@ export function useServicePricingData({
       adminApiEndpoints.updateServiceProductPricing(id, { pricing }),
     onSuccess: () => {
       invalidateServices();
-      toast.success(adminMessages.servicePricing.toast.pricingUpdated);
+      appToast.success(adminMessages.servicePricing.toast.pricingUpdated);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '更新定价失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '更新定价失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -71,9 +71,9 @@ export function useServicePricingData({
     onSuccess: () => {
       invalidateServices();
       onDeleteSuccess();
-      toast.success(adminMessages.servicePricing.toast.deleted);
+      appToast.success(adminMessages.servicePricing.toast.deleted);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   return {

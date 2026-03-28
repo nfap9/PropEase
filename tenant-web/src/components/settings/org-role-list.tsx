@@ -1,7 +1,7 @@
 'use client';
 
+import { SelectableSideList } from '@apartment-ultra/shared-ui/components/ui';
 import type { MemberRole } from '@/types';
-import { cn } from '@/lib/utils';
 import { tenantMessages } from '@/lib/i18n';
 
 const ROLE_LABELS: Record<MemberRole, string> = {
@@ -27,36 +27,18 @@ export interface OrgRoleListProps {
  */
 export function OrgRoleList({ selectedRole, onSelectRole, showOwner = true }: OrgRoleListProps) {
   const roles: MemberRole[] = showOwner ? ['owner', ...EDITABLE_ORG_ROLES] : EDITABLE_ORG_ROLES;
+  const items = roles.map((role) => ({
+    id: role,
+    value: role,
+    label: ROLE_LABELS[role],
+  }));
 
   return (
-    <div className="flex h-full flex-col border-r bg-muted/30">
-      <div className="border-b p-3">
-        <p className="text-sm font-medium text-muted-foreground">{tenantMessages.settings.team.labels.teamRoles}</p>
-      </div>
-      <ul className="flex-1 space-y-1 overflow-y-auto p-2">
-        {roles.map((role) => (
-          <li key={role}>
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={() => onSelectRole(role)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSelectRole(role);
-                }
-              }}
-              className={cn(
-                'flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-                'hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                selectedRole === role && 'bg-muted font-medium'
-              )}
-            >
-              <span className="flex-1 truncate text-left">{ROLE_LABELS[role]}</span>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <SelectableSideList
+      title={<span className="font-medium text-muted-foreground">{tenantMessages.settings.team.labels.teamRoles}</span>}
+      items={items}
+      selectedId={selectedRole}
+      onSelect={onSelectRole}
+    />
   );
 }

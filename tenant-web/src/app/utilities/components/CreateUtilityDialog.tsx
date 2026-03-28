@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle } from 'lucide-react';
+import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -26,23 +27,11 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { RadioGroup, RadioGroupItem } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from '@apartment-ultra/shared-ui/components/ui';
 import { Apartment, Room, UtilityReading } from '@/types';
 import { Droplets, Zap } from 'lucide-react';
 import { utilitiesApi } from '@/lib/api';
 
-const optionalNumberField = z
-  .union([z.number().min(0), z.nan().transform(() => undefined)])
-  .optional();
+const optionalNumberField = z.union([z.number().min(0), z.nan().transform(() => undefined)]).optional();
 
 const utilitySchema = z.object({
   room_id: z.string().min(1, '请选择房间'),
@@ -118,12 +107,20 @@ export function CreateUtilityDialog({
   };
 
   const { data: existingReadings = [] } = useQuery({
-    queryKey: ['utilities', 'check', orgId, form.watch('room_id'), form.watch('period_year'), form.watch('period_month')],
-    queryFn: () => utilitiesApi.list(orgId, {
-      room_id: form.watch('room_id') || undefined,
-      period_year: form.watch('period_year'),
-      period_month: form.watch('period_month'),
-    }),
+    queryKey: [
+      'utilities',
+      'check',
+      orgId,
+      form.watch('room_id'),
+      form.watch('period_year'),
+      form.watch('period_month'),
+    ],
+    queryFn: () =>
+      utilitiesApi.list(orgId, {
+        room_id: form.watch('room_id') || undefined,
+        period_year: form.watch('period_year'),
+        period_month: form.watch('period_month'),
+      }),
     enabled: !!orgId && !!form.watch('room_id') && form.watch('period_year') > 0 && form.watch('period_month') > 0,
   });
 
@@ -153,10 +150,7 @@ export function CreateUtilityDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="apartment_selector">公寓</Label>
-              <Select
-                value={selectedApartmentId || ''}
-                onValueChange={handleApartmentChange}
-              >
+              <Select value={selectedApartmentId || ''} onValueChange={handleApartmentChange}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="选择公寓" />
                 </SelectTrigger>
@@ -177,7 +171,7 @@ export function CreateUtilityDialog({
                 disabled={!selectedApartmentId}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder={selectedApartmentId ? "选择房间" : "先选公寓"} />
+                  <SelectValue placeholder={selectedApartmentId ? '选择房间' : '先选公寓'} />
                 </SelectTrigger>
                 <SelectContent>
                   {roomsForSelectedApartment.map((room) => (
@@ -235,22 +229,26 @@ export function CreateUtilityDialog({
             <Label>录入场景</Label>
             <RadioGroup
               value={readingContext}
-              onValueChange={(value: UtilityFormData['reading_context']) =>
-                form.setValue('reading_context', value)
-              }
+              onValueChange={(value: UtilityFormData['reading_context']) => form.setValue('reading_context', value)}
               className="flex flex-row space-x-4"
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="normal" id="ctx-normal" />
-                <Label htmlFor="ctx-normal" className="font-normal cursor-pointer">正常抄表</Label>
+                <Label htmlFor="ctx-normal" className="cursor-pointer font-normal">
+                  正常抄表
+                </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="initial" id="ctx-initial" />
-                <Label htmlFor="ctx-initial" className="font-normal cursor-pointer">首次录入</Label>
+                <Label htmlFor="ctx-initial" className="cursor-pointer font-normal">
+                  首次录入
+                </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="meter_reset" id="ctx-meter_reset" />
-                <Label htmlFor="ctx-meter_reset" className="font-normal cursor-pointer">更换新表</Label>
+                <Label htmlFor="ctx-meter_reset" className="cursor-pointer font-normal">
+                  更换新表
+                </Label>
               </div>
             </RadioGroup>
           </div>
@@ -354,30 +352,22 @@ export function CreateUtilityDialog({
         </form>
       </DialogContent>
       {existingReading && (
-        <AlertDialog open={!!existingReading} onOpenChange={() => setExistingReading(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>该账期已有读数</AlertDialogTitle>
-              <AlertDialogDescription>
-                {existingReading.room?.apartment?.name} - {existingReading.room?.room_number}
-                {existingReading.period_year}年{existingReading.period_month}月已有读数记录。
-                确定要覆盖吗？
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setExistingReading(null)}>取消</AlertDialogCancel>
-              <AlertDialogAction onClick={() => {
-                // Proceed with overwrite
-                onSubmit({
-                  ...form.getValues(),
-                  anomaly_reason: form.getValues('anomaly_reason')?.trim() || undefined,
-                });
-                form.reset();
-                setExistingReading(null);
-              }}>确认覆盖</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <ConfirmDialog
+          open={!!existingReading}
+          onOpenChange={() => setExistingReading(null)}
+          title="该账期已有读数"
+          description={`${existingReading.room?.apartment?.name} - ${existingReading.room?.room_number} ${existingReading.period_year}年${existingReading.period_month}月已有读数记录。确定要覆盖吗？`}
+          cancelLabel="取消"
+          confirmLabel="确认覆盖"
+          onConfirm={() => {
+            onSubmit({
+              ...form.getValues(),
+              anomaly_reason: form.getValues('anomaly_reason')?.trim() || undefined,
+            });
+            form.reset();
+            setExistingReading(null);
+          }}
+        />
       )}
     </Dialog>
   );

@@ -1,15 +1,6 @@
 'use client';
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Room } from '@/types';
 
 interface TerminateDialogProps {
@@ -21,30 +12,19 @@ interface TerminateDialogProps {
   room: Room | null;
 }
 
-export function TerminateDialog({
-  testids,
-  open,
-  onOpenChange,
-  onConfirm,
-  isPending,
-  room,
-}: TerminateDialogProps) {
+export function TerminateDialog({ testids, open, onOpenChange, onConfirm, isPending, room }: TerminateDialogProps) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent data-testid={testids?.TERMINATE_DIALOG}>
-        <AlertDialogHeader>
-          <AlertDialogTitle>确认退租</AlertDialogTitle>
-          <AlertDialogDescription>
-            确定要为房间 &ldquo;{room?.room_number}&rdquo; 办理退租吗？退租后房间将变为空置状态。
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} data-testid={testids?.CONFIRM_TERMINATE_BTN}>
-            {isPending ? '处理中...' : '确认退租'}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="确认退租"
+      description={`确定要为房间 "${room?.room_number ?? ''}" 办理退租吗？退租后房间将变为空置状态。`}
+      cancelLabel="取消"
+      confirmLabel={isPending ? '处理中...' : '确认退租'}
+      onConfirm={onConfirm}
+      isPending={isPending}
+      contentTestId={testids?.TERMINATE_DIALOG}
+      confirmTestId={testids?.CONFIRM_TERMINATE_BTN}
+    />
   );
 }

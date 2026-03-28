@@ -63,11 +63,10 @@ export default function SubscriptionPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <div className="flex-1">
-            <h1 className="flex items-center gap-2 text-3xl font-bold" data-testid={SUBSCRIPTION.HEADING}>
+            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight" data-testid={SUBSCRIPTION.HEADING}>
               <ShoppingBag className="h-8 w-8" />
               {tenantMessages.settings.subscriptionPage.heading}
             </h1>
-            <p className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.description}</p>
           </div>
           <Button onClick={() => router.push('/settings/subscription/purchase')} data-testid={SUBSCRIPTION.UPGRADE_BUTTON}>
             <ShoppingCart className="mr-2 h-4 w-4" />

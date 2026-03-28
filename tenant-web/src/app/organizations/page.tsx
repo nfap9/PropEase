@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Building2, Check } from 'lucide-react';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/lib/auth/context';
 import { organizationsApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
@@ -77,17 +77,17 @@ export default function OrganizationsPage() {
     onSuccess: async (createdOrganization) => {
       await refreshOrganizations(createdOrganization.id);
       setOrganization(createdOrganization);
-      toast.success('团队创建成功');
+      appToast.success('团队创建成功');
       router.replace(DEFAULT_ORGANIZATION_HOME_PATH);
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error, '创建团队失败，请重试'));
+      appToast.error(getErrorMessage(error, '创建团队失败，请重试'));
     },
   });
 
   const handleSelectOrganization = (org: Organization) => {
     setOrganization(org);
-    toast.success('团队切换成功');
+    appToast.success('团队切换成功');
     router.replace(DEFAULT_ORGANIZATION_HOME_PATH);
   };
 
@@ -161,7 +161,7 @@ export default function OrganizationsPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-8">
       <div className="w-full max-w-lg space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-semibold">我的团队</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">我的团队</h1>
         </div>
         <div className="space-y-3">
           {organizations.map((org) => {

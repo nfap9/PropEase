@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
@@ -39,10 +39,7 @@ const EditUtilityDialog = dynamic(
 );
 
 /** 生成租约起止月之间的所有月份（含起止月） */
-function getMonthsInLeasePeriod(
-  startDate: string,
-  endDate: string | null
-): { year: number; month: number }[] {
+function getMonthsInLeasePeriod(startDate: string, endDate: string | null): { year: number; month: number }[] {
   const start = new Date(startDate);
   const end = endDate ? new Date(endDate) : new Date();
   if (end < start) return [];
@@ -155,9 +152,9 @@ export default function UtilitiesHistoryPage() {
       queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
       setIsEditOpen(false);
       setSelectedUtility(null);
-      toast.success('水电读数更新成功');
+      appToast.success('水电读数更新成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const handleEdit = (utility: UtilityReading) => {
@@ -193,7 +190,7 @@ export default function UtilitiesHistoryPage() {
       <MainLayout>
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">历史水电记录</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">历史水电记录</h1>
             <div className="flex gap-2">
               <Button variant="outline" asChild>
                 <Link href="/utilities">
@@ -207,9 +204,7 @@ export default function UtilitiesHistoryPage() {
           <Card>
             <CardHeader>
               <CardTitle>生效中租约列表</CardTitle>
-              <CardDescription>
-                先选择公寓，再从该公寓下的生效租约中选择一个查看租期内历史水电记录
-              </CardDescription>
+              <CardDescription>先选择公寓，再从该公寓下的生效租约中选择一个查看租期内历史水电记录</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-wrap items-center gap-4">
@@ -260,9 +255,7 @@ export default function UtilitiesHistoryPage() {
                             className={isSelected ? 'bg-muted/50' : 'cursor-pointer'}
                             onClick={() => setSelectedLeaseId(l.id)}
                           >
-                            <TableCell className="font-medium">
-                              {l.room?.room_number ?? '-'}
-                            </TableCell>
+                            <TableCell className="font-medium">{l.room?.room_number ?? '-'}</TableCell>
                             <TableCell>{l.tenant?.name ?? '-'}</TableCell>
                             <TableCell>{formatDate(l.start_date)}</TableCell>
                             <TableCell>{l.end_date ? formatDate(l.end_date) : '至今'}</TableCell>
@@ -322,23 +315,15 @@ export default function UtilitiesHistoryPage() {
                       {leaseMonthRows.map((row) => (
                         <TableRow key={`${row.year}-${row.month}`}>
                           <TableCell className="font-medium">{row.label}</TableCell>
+                          <TableCell>{row.reading ? formatDate(row.reading.reading_date) : '—'}</TableCell>
                           <TableCell>
-                            {row.reading ? formatDate(row.reading.reading_date) : '—'}
+                            {row.reading?.water_reading != null ? String(row.reading.water_reading) : '—'}
                           </TableCell>
                           <TableCell>
-                            {row.reading?.water_reading != null
-                              ? String(row.reading.water_reading)
-                              : '—'}
-                          </TableCell>
-                          <TableCell>
-                            {row.reading?.electricity_reading != null
-                              ? String(row.reading.electricity_reading)
-                              : '—'}
+                            {row.reading?.electricity_reading != null ? String(row.reading.electricity_reading) : '—'}
                           </TableCell>
                           <TableCell>{row.waterFee > 0 ? row.waterFee.toFixed(2) : '—'}</TableCell>
-                          <TableCell>
-                            {row.electricityFee > 0 ? row.electricityFee.toFixed(2) : '—'}
-                          </TableCell>
+                          <TableCell>{row.electricityFee > 0 ? row.electricityFee.toFixed(2) : '—'}</TableCell>
                           <TableCell>
                             {row.reading ? (
                               <Button

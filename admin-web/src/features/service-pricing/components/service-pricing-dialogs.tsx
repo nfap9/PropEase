@@ -8,16 +8,7 @@ import type { ServiceProduct } from '@/lib/api/admin-client';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
+  ConfirmDialog,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -49,10 +40,7 @@ import {
   serviceProductUpdateSchema,
   type ServiceProductForm,
 } from '../service-pricing.schemas';
-import {
-  getDefaultServiceProductFormValues,
-  getServiceProductFormValues,
-} from '../service-pricing.utils';
+import { getDefaultServiceProductFormValues, getServiceProductFormValues } from '../service-pricing.utils';
 import { ServiceProductPricingFields } from './service-product-pricing-fields';
 import { adminI18n, adminMessages } from '@/lib/i18n';
 
@@ -95,7 +83,11 @@ function ServiceProductFormSections({
           <FormItem>
             <FormLabel>{adminMessages.servicePricing.fields.code}</FormLabel>
             <FormControl>
-              <Input placeholder={adminMessages.servicePricing.fields.codePlaceholder} {...field} disabled={mode === 'edit'} />
+              <Input
+                placeholder={adminMessages.servicePricing.fields.codePlaceholder}
+                {...field}
+                disabled={mode === 'edit'}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -107,7 +99,11 @@ function ServiceProductFormSections({
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{mode === 'create' ? adminMessages.servicePricing.fields.optionalDescription : adminMessages.servicePricing.fields.description}</FormLabel>
+            <FormLabel>
+              {mode === 'create'
+                ? adminMessages.servicePricing.fields.optionalDescription
+                : adminMessages.servicePricing.fields.description}
+            </FormLabel>
             <FormControl>
               <Input {...field} />
             </FormControl>
@@ -322,21 +318,10 @@ export function ServicePricingEditSheet({
   );
 
   return (
-    <CommonDrawer
-      open={open}
-      onOpenChange={onOpenChange}
-      header={header}
-      footer={footer}
-      width="w-full sm:w-[600px]"
-    >
+    <CommonDrawer open={open} onOpenChange={onOpenChange} header={header} footer={footer} width="w-full sm:w-[600px]">
       <Form {...form}>
         <div className="space-y-4">
-          <ServiceProductFormSections
-            form={form}
-            mode="edit"
-            editTab={editTab}
-            onEditTabChange={setEditTab}
-          />
+          <ServiceProductFormSections form={form} mode="edit" editTab={editTab} onEditTabChange={setEditTab} />
         </div>
       </Form>
     </CommonDrawer>
@@ -357,24 +342,16 @@ export function ServicePricingDeleteDialog({
   isPending: boolean;
 }) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{adminMessages.servicePricing.dialogs.deleteTitle}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {adminI18n.t('servicePricing.dialogs.deleteDescription', { name: service?.name ?? '' })}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {isPending ? adminMessages.common.deleting : adminMessages.common.delete}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={adminMessages.servicePricing.dialogs.deleteTitle}
+      description={adminI18n.t('servicePricing.dialogs.deleteDescription', { name: service?.name ?? '' })}
+      cancelLabel={adminMessages.common.cancel}
+      confirmLabel={isPending ? adminMessages.common.deleting : adminMessages.common.delete}
+      onConfirm={onConfirm}
+      isPending={isPending}
+      intent="destructive"
+    />
   );
 }

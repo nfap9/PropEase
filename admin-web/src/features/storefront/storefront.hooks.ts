@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import {
   adminApiEndpoints,
   type ServiceProduct,
@@ -73,14 +73,13 @@ export function useStorefrontData({
   };
 
   const createStorefrontMutation = useMutation({
-    mutationFn: (data: StorefrontForm) =>
-      adminApiEndpoints.createStorefront(data as StorefrontConfigCreate),
+    mutationFn: (data: StorefrontForm) => adminApiEndpoints.createStorefront(data as StorefrontConfigCreate),
     onSuccess: () => {
       invalidateStorefrontList();
       onStorefrontCreated();
-      toast.success(adminMessages.storefront.toast.created);
+      appToast.success(adminMessages.storefront.toast.created);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateStorefrontMutation = useMutation({
@@ -89,9 +88,9 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontList();
       onStorefrontUpdated();
-      toast.success(adminMessages.storefront.toast.updated);
+      appToast.success(adminMessages.storefront.toast.updated);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const deleteStorefrontMutation = useMutation({
@@ -99,25 +98,20 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontList();
       onStorefrontDeleted();
-      toast.success(adminMessages.storefront.toast.deleted);
+      appToast.success(adminMessages.storefront.toast.deleted);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const addItemMutation = useMutation({
-    mutationFn: ({
-      storefrontId,
-      data,
-    }: {
-      storefrontId: string;
-      data: StorefrontItemCreate;
-    }) => adminApiEndpoints.addStorefrontItem(storefrontId, data),
+    mutationFn: ({ storefrontId, data }: { storefrontId: string; data: StorefrontItemCreate }) =>
+      adminApiEndpoints.addStorefrontItem(storefrontId, data),
     onSuccess: () => {
       invalidateStorefrontDetail();
       onItemCreated();
-      toast.success(adminMessages.storefront.toast.itemCreated);
+      appToast.success(adminMessages.storefront.toast.itemCreated);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '添加失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '添加失败，请重试')),
   });
 
   const updateItemMutation = useMutation({
@@ -133,25 +127,20 @@ export function useStorefrontData({
     onSuccess: () => {
       invalidateStorefrontDetail();
       onItemUpdated();
-      toast.success(adminMessages.storefront.toast.itemUpdated);
+      appToast.success(adminMessages.storefront.toast.itemUpdated);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const deleteItemMutation = useMutation({
-    mutationFn: ({
-      storefrontId,
-      itemId,
-    }: {
-      storefrontId: string;
-      itemId: string;
-    }) => adminApiEndpoints.deleteStorefrontItem(storefrontId, itemId),
+    mutationFn: ({ storefrontId, itemId }: { storefrontId: string; itemId: string }) =>
+      adminApiEndpoints.deleteStorefrontItem(storefrontId, itemId),
     onSuccess: () => {
       invalidateStorefrontDetail();
       onItemDeleted();
-      toast.success(adminMessages.storefront.toast.itemDeleted);
+      appToast.success(adminMessages.storefront.toast.itemDeleted);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   return {

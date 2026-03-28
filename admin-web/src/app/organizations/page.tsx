@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions } from '@/components/common/table-actions';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
@@ -49,9 +49,9 @@ export default function AdminOrganizationsPage() {
       adminApiEndpoints.setOrganizationActive(id, { is_active }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'organizations'] });
-      toast.success(adminMessages.organizations.toast.updated);
+      appToast.success(adminMessages.organizations.toast.updated);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '操作失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '操作失败，请重试')),
   });
 
   const columns: ColumnDef<AdminOrganization>[] = [

@@ -4,17 +4,9 @@ import type { UseFormReturn } from 'react-hook-form';
 import { Gift } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
+  DetailDrawer,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -31,8 +23,6 @@ import {
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { CommonDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
   SelectContent,
@@ -61,23 +51,17 @@ export function DisableRegisteredUserDialog({
   isPending: boolean;
 }) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{adminMessages.registeredUsers.dialogs.disableTitle}</AlertDialogTitle>
-          <AlertDialogDescription>{adminMessages.registeredUsers.dialogs.disableDescription}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {isPending ? adminMessages.common.processing : adminMessages.registeredUsers.dialogs.disableConfirm}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={adminMessages.registeredUsers.dialogs.disableTitle}
+      description={adminMessages.registeredUsers.dialogs.disableDescription}
+      cancelLabel={adminMessages.common.cancel}
+      confirmLabel={isPending ? adminMessages.common.processing : adminMessages.registeredUsers.dialogs.disableConfirm}
+      onConfirm={onConfirm}
+      isPending={isPending}
+      intent="destructive"
+    />
   );
 }
 
@@ -93,23 +77,17 @@ export function DeleteRegisteredUserDialog({
   isPending: boolean;
 }) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{adminMessages.registeredUsers.dialogs.deleteTitle}</AlertDialogTitle>
-          <AlertDialogDescription>{adminMessages.registeredUsers.dialogs.deleteDescription}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {isPending ? adminMessages.common.processing : adminMessages.registeredUsers.dialogs.deleteConfirm}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={adminMessages.registeredUsers.dialogs.deleteTitle}
+      description={adminMessages.registeredUsers.dialogs.deleteDescription}
+      cancelLabel={adminMessages.common.cancel}
+      confirmLabel={isPending ? adminMessages.common.processing : adminMessages.registeredUsers.dialogs.deleteConfirm}
+      onConfirm={onConfirm}
+      isPending={isPending}
+      intent="destructive"
+    />
   );
 }
 
@@ -138,16 +116,12 @@ export function RegisteredUserDetailSheet({
   isSetActivePending: boolean;
   isDeletePending: boolean;
 }) {
-  const header = (
-    <h2 className="text-lg font-semibold">{adminMessages.registeredUsers.dialogs.detailTitle}</h2>
-  );
-
   return (
-    <CommonDrawer
+    <DetailDrawer
       open={open}
       onOpenChange={onOpenChange}
-      header={header}
-      width="w-full sm:w-[400px]"
+      title={adminMessages.registeredUsers.dialogs.detailTitle}
+      size="sm"
     >
       {detailUserId ? (
         <div>
@@ -167,9 +141,7 @@ export function RegisteredUserDetailSheet({
                 <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.status}</span>
                 <p>
                   <Badge
-                    variant={
-                      detail.is_active ? ORG_STATUS_CONFIG.active.variant : ORG_STATUS_CONFIG.inactive.variant
-                    }
+                    variant={detail.is_active ? ORG_STATUS_CONFIG.active.variant : ORG_STATUS_CONFIG.inactive.variant}
                   >
                     {detail.is_active ? ORG_STATUS_CONFIG.active.label : ORG_STATUS_CONFIG.inactive.label}
                   </Badge>
@@ -182,7 +154,9 @@ export function RegisteredUserDetailSheet({
               <div>
                 <span className="text-muted-foreground">{adminMessages.registeredUsers.dialogs.organizations}</span>
                 {detail.organizations.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">{adminMessages.registeredUsers.dialogs.emptyOrganizations}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {adminMessages.registeredUsers.dialogs.emptyOrganizations}
+                  </p>
                 ) : (
                   <ul className="mt-1 space-y-1">
                     {detail.organizations.map((organization) => (
@@ -198,12 +172,7 @@ export function RegisteredUserDetailSheet({
                 )}
               </div>
               <div className="flex flex-wrap gap-2 pt-2">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={onOpenGift}
-                  disabled={detail.organizations.length === 0}
-                >
+                <Button variant="secondary" size="sm" onClick={onOpenGift} disabled={detail.organizations.length === 0}>
                   <Gift className="mr-2 h-4 w-4" />
                   {adminMessages.registeredUsers.dialogs.giftService}
                 </Button>
@@ -232,7 +201,7 @@ export function RegisteredUserDetailSheet({
           )}
         </div>
       ) : null}
-    </CommonDrawer>
+    </DetailDrawer>
   );
 }
 
@@ -278,7 +247,9 @@ export function GiftSubscriptionDialog({
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={adminMessages.registeredUsers.dialogs.targetOrganizationPlaceholder} />
+                          <SelectValue
+                            placeholder={adminMessages.registeredUsers.dialogs.targetOrganizationPlaceholder}
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -311,7 +282,13 @@ export function GiftSubscriptionDialog({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={plansLoading ? adminMessages.registeredUsers.dialogs.loadingPlans : adminMessages.registeredUsers.dialogs.targetServicePlaceholder} />
+                          <SelectValue
+                            placeholder={
+                              plansLoading
+                                ? adminMessages.registeredUsers.dialogs.loadingPlans
+                                : adminMessages.registeredUsers.dialogs.targetServicePlaceholder
+                            }
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -387,7 +364,9 @@ export function GiftSubscriptionDialog({
                   {adminMessages.common.cancel}
                 </Button>
                 <Button type="submit" disabled={isPending || detail.organizations.length === 0}>
-                  {isPending ? adminMessages.registeredUsers.dialogs.gifting : adminMessages.registeredUsers.dialogs.confirmGift}
+                  {isPending
+                    ? adminMessages.registeredUsers.dialogs.gifting
+                    : adminMessages.registeredUsers.dialogs.confirmGift}
                 </Button>
               </DialogFooter>
             </form>

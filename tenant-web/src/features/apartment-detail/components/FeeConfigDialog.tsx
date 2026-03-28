@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -48,13 +48,13 @@ export function FeeConfigDialog({ open, onOpenChange, orgId, apartmentId }: FeeC
         effective_from: new Date().toISOString().split('T')[0],
       }),
     onSuccess: () => {
-      toast.success('费用配置已添加');
+      appToast.success('费用配置已添加');
       queryClient.invalidateQueries({ queryKey: ['apartment-fee-configs', orgId, apartmentId] });
       setSelectedFeeTypeId('');
       setSelectedSpecId('');
     },
     onError: (error) => {
-      toast.error(`添加失败: ${getErrorMessage(error)}`);
+      appToast.error(`添加失败: ${getErrorMessage(error)}`);
     },
   });
 
@@ -62,11 +62,11 @@ export function FeeConfigDialog({ open, onOpenChange, orgId, apartmentId }: FeeC
     mutationFn: (configId: string) =>
       apartmentFeeConfigApi.delete(orgId, apartmentId, configId),
     onSuccess: () => {
-      toast.success('费用配置已删除');
+      appToast.success('费用配置已删除');
       queryClient.invalidateQueries({ queryKey: ['apartment-fee-configs', orgId, apartmentId] });
     },
     onError: (error) => {
-      toast.error(`删除失败: ${getErrorMessage(error)}`);
+      appToast.error(`删除失败: ${getErrorMessage(error)}`);
     },
   });
 

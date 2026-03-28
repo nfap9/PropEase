@@ -1,63 +1,36 @@
 'use client';
 
-import { useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
+import { useManagedItem } from '@apartment-ultra/shared-ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
+import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { DataTable } from '@/components/common/data-table';
 import type { AdminUser } from '@/lib/api/admin-client';
 import { createAdminUsersColumns } from '../users.columns';
 import { useAdminUsersData } from '../users.hooks';
 import { toCreateUserPayload, toResetPasswordPayload, toUpdateUserPayload } from '../users.utils';
-import {
-  CreateUserDialog,
-  DeleteUserDialog,
-  EditUserDialog,
-  ResetPasswordDialog,
-} from './user-dialogs';
+import { CreateUserDialog, DeleteUserDialog, EditUserDialog, ResetPasswordDialog } from './user-dialogs';
+
+type UserDialogAction = 'create' | 'edit' | 'reset' | 'delete';
 
 export function UsersPageContent() {
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isResetOpen, setIsResetOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const dialogState = useManagedItem<AdminUser, UserDialogAction>();
 
   const { users, usersLoading, roles, createMutation, updateMutation, resetMutation, deleteMutation } =
     useAdminUsersData({
-      onCreateSuccess: () => setIsCreateOpen(false),
-      onUpdateSuccess: () => {
-        setIsEditOpen(false);
-        setSelectedUser(null);
-      },
-      onResetSuccess: () => {
-        setIsResetOpen(false);
-        setSelectedUser(null);
-      },
-      onDeleteSuccess: () => {
-        setIsDeleteOpen(false);
-        setSelectedUser(null);
-      },
+      onCreateSuccess: dialogState.close,
+      onUpdateSuccess: dialogState.close,
+      onResetSuccess: dialogState.close,
+      onDeleteSuccess: dialogState.close,
     });
 
-  const columns = useMemo(
-    () =>
-      createAdminUsersColumns({
-        onEdit: (user) => {
-          setSelectedUser(user);
-          setIsEditOpen(true);
-        },
-        onResetPassword: (user) => {
-          setSelectedUser(user);
-          setIsResetOpen(true);
-        },
-        onDelete: (user) => {
-          setSelectedUser(user);
-          setIsDeleteOpen(true);
-        },
-      }),
-    []
-  );
+  const columns = createAdminUsersColumns({
+    onEdit: (user) => dialogState.openFor('edit', user),
+    onResetPassword: (user) => dialogState.openFor('reset', user),
+    onDelete: (user) => dialogState.openFor('delete', user),
+  });
 
   if (usersLoading) {
     return (
@@ -69,39 +42,39 @@ export function UsersPageContent() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold" data-testid="admin-users-heading">
-          管理账号
-        </h2>
-        <Button onClick={() => setIsCreateOpen(true)} data-testid="admin-users-create-btn">
-          <Plus className="mr-2 h-4 w-4" />
-          新建账号
-        </Button>
-      </div>
-
+    <ListPageLayout
+      title="管理账号"
+      titleTestId="admin-users-heading"
+      maxWidth="6xl"
+      actions={
+        <PageToolbar>
+          <Button onClick={() => dialogState.openAction('create')} data-testid="admin-users-create-btn">
+            <Plus className="mr-2 h-4 w-4" />
+            新建账号
+          </Button>
+        </PageToolbar>
+      }
+    >
       <DataTable columns={columns} data={users ?? []} testid="admin-users-list" />
 
       <CreateUserDialog
-        open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
+        {...dialogState.dialogProps('create')}
         roles={roles}
         onSubmit={(data) => createMutation.mutate(toCreateUserPayload(data))}
         isPending={createMutation.isPending}
       />
 
       <EditUserDialog
-        open={isEditOpen}
-        onOpenChange={setIsEditOpen}
-        user={selectedUser}
+        {...dialogState.dialogProps('edit')}
+        user={dialogState.selectedItem}
         roles={roles}
         onSubmit={(data) => {
-          if (!selectedUser) {
+          if (!dialogState.selectedItem) {
             return;
           }
 
           updateMutation.mutate({
-            id: selectedUser.id,
+            id: dialogState.selectedItem.id,
             data: toUpdateUserPayload(data),
           });
         }}
@@ -109,16 +82,15 @@ export function UsersPageContent() {
       />
 
       <ResetPasswordDialog
-        open={isResetOpen}
-        onOpenChange={setIsResetOpen}
-        user={selectedUser}
+        {...dialogState.dialogProps('reset')}
+        user={dialogState.selectedItem}
         onSubmit={(data) => {
-          if (!selectedUser) {
+          if (!dialogState.selectedItem) {
             return;
           }
 
           resetMutation.mutate({
-            id: selectedUser.id,
+            id: dialogState.selectedItem.id,
             data: toResetPasswordPayload(data.new_password),
           });
         }}
@@ -126,12 +98,11 @@ export function UsersPageContent() {
       />
 
       <DeleteUserDialog
-        open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
-        user={selectedUser}
-        onConfirm={() => selectedUser && deleteMutation.mutate(selectedUser.id)}
+        {...dialogState.dialogProps('delete')}
+        user={dialogState.selectedItem}
+        onConfirm={() => dialogState.selectedItem && deleteMutation.mutate(dialogState.selectedItem.id)}
         isPending={deleteMutation.isPending}
       />
-    </div>
+    </ListPageLayout>
   );
 }

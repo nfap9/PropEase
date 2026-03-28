@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { DataTable } from '@/components/common/data-table';
@@ -158,9 +158,9 @@ export default function RoomsPage() {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsTerminateOpen(false);
       setSelectedRoom(null);
-      toast.success('退租成功');
+      appToast.success('退租成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '退租失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '退租失败，请重试')),
   });
 
   const updateStatusMutation = useMutation({
@@ -169,9 +169,9 @@ export default function RoomsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
-      toast.success('状态更新成功');
+      appToast.success('状态更新成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '状态更新失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '状态更新失败，请重试')),
   });
 
   const handleLease = (room: Room) => {
@@ -226,8 +226,7 @@ export default function RoomsPage() {
       <MainLayout>
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold" data-testid={ROOMS.HEADING}>全部房间</h1>
-            <p className="mt-1 text-muted-foreground">查看和管理所有公寓的房间</p>
+            <h1 className="text-2xl font-semibold tracking-tight" data-testid={ROOMS.HEADING}>全部房间</h1>
           </div>
 
           {allRooms && <RoomStatsCards rooms={allRooms} />}

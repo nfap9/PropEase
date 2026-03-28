@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { useConfirmAction } from '@apartment-ultra/shared-ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -15,16 +17,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { apartmentsApi } from '@/lib/api';
@@ -51,9 +43,9 @@ export default function ApartmentsPage() {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedApartment, setSelectedApartment] = useState<ApartmentWithStats | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const deleteConfirm = useConfirmAction<ApartmentWithStats>();
 
   const { data: apartments, isLoading: apartmentsLoading } = useQuery({
     queryKey: ['apartments', orgId],
@@ -89,9 +81,9 @@ export default function ApartmentsPage() {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsCreateOpen(false);
       createForm.reset();
-      toast.success('公寓创建成功');
+      appToast.success('公寓创建成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
@@ -101,20 +93,19 @@ export default function ApartmentsPage() {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsEditOpen(false);
       setSelectedApartment(null);
-      toast.success('公寓更新成功');
+      appToast.success('公寓更新成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apartmentsApi.delete(orgId!, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
-      setIsDeleteOpen(false);
-      setSelectedApartment(null);
-      toast.success('公寓删除成功');
+      deleteConfirm.close();
+      appToast.success('公寓删除成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const handleEdit = (apartment: ApartmentWithStats) => {
@@ -128,30 +119,20 @@ export default function ApartmentsPage() {
       total_area: apartment.total_area ?? undefined,
       landlord_name: apartment.landlord_name ?? '',
       landlord_contact: apartment.landlord_contact ?? '',
-      contract_start: apartment.contract_start
-        ? new Date(apartment.contract_start).toISOString().split('T')[0]
-        : '',
-      contract_end: apartment.contract_end
-        ? new Date(apartment.contract_end).toISOString().split('T')[0]
-        : '',
+      contract_start: apartment.contract_start ? new Date(apartment.contract_start).toISOString().split('T')[0] : '',
+      contract_end: apartment.contract_end ? new Date(apartment.contract_end).toISOString().split('T')[0] : '',
       landlord_rent: apartment.landlord_rent ?? undefined,
       operating_cost: apartment.operating_cost ?? undefined,
     });
     setIsEditOpen(true);
   };
 
-  const handleDelete = (apartment: ApartmentWithStats) => {
-    setSelectedApartment(apartment);
-    setIsDeleteOpen(true);
-  };
+  const handleDelete = deleteConfirm.openFor;
 
   const filteredApartments = apartments?.filter((apartment) => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
-    return (
-      apartment.name.toLowerCase().includes(query) ||
-      (apartment.address?.toLowerCase().includes(query) ?? false)
-    );
+    return apartment.name.toLowerCase().includes(query) || (apartment.address?.toLowerCase().includes(query) ?? false);
   });
 
   if (authLoading) {
@@ -187,16 +168,12 @@ export default function ApartmentsPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold" data-testid="apartments-heading">
+              <h1 className="text-2xl font-semibold tracking-tight" data-testid="apartments-heading">
                 公寓管理
               </h1>
-              <p className="mt-1 text-muted-foreground">管理您的所有公寓和房间</p>
             </div>
             <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
-              <Button
-                onClick={() => setIsCreateOpen(true)}
-                data-testid="apartments-new-btn"
-              >
+              <Button onClick={() => setIsCreateOpen(true)} data-testid="apartments-new-btn">
                 <Plus className="mr-2 h-4 w-4" />
                 新增公寓
               </Button>
@@ -214,12 +191,7 @@ export default function ApartmentsPage() {
           ) : filteredApartments && filteredApartments.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-testid="apartments-list">
               {filteredApartments.map((apartment) => (
-                <ApartmentCard
-                  key={apartment.id}
-                  apartment={apartment}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
+                <ApartmentCard key={apartment.id} apartment={apartment} onEdit={handleEdit} onDelete={handleDelete} />
               ))}
             </div>
           ) : (
@@ -298,28 +270,19 @@ export default function ApartmentsPage() {
           </DialogContent>
         </Dialog>
 
-        {/* Delete Alert Dialog */}
-        <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-          <AlertDialogContent data-testid="apartments-delete-confirm-dialog">
-            <AlertDialogHeader>
-              <AlertDialogTitle>确认删除</AlertDialogTitle>
-              <AlertDialogDescription>
-                确定要删除公寓 &quot;{selectedApartment?.name}&quot;
-                吗？此操作不可撤销，关联的房间数据也将被删除。
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel data-testid="apartments-cancel-btn">取消</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => deleteMutation.mutate(selectedApartment!.id)}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                data-testid="apartments-confirm-delete-btn"
-              >
-                {deleteMutation.isPending ? '删除中...' : '删除'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <ConfirmDialog
+          {...deleteConfirm.dialogProps}
+          title="确认删除"
+          description={`确定要删除公寓 "${deleteConfirm.selectedItem?.name ?? ''}" 吗？此操作不可撤销，关联的房间数据也将被删除。`}
+          cancelLabel="取消"
+          confirmLabel={deleteMutation.isPending ? '删除中...' : '删除'}
+          onConfirm={() => deleteMutation.mutate(deleteConfirm.selectedItem!.id)}
+          isPending={deleteMutation.isPending}
+          intent="destructive"
+          contentTestId="apartments-delete-confirm-dialog"
+          cancelTestId="apartments-cancel-btn"
+          confirmTestId="apartments-confirm-delete-btn"
+        />
       </MainLayout>
     </PermissionPageGuard>
   );

@@ -3,13 +3,16 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApiEndpoints } from '@/lib/api/admin-client';
-import { StatCard } from '@/components/dashboard/stat-card';
 import { ChartCard } from '@/components/dashboard/chart-card';
 import { IncomeChart } from '@/components/dashboard/income-chart';
 import { YearFilter } from '@/components/dashboard/year-filter';
 import { RefreshButton } from '@/components/dashboard/refresh-button';
 import { StatCardsSkeleton } from '@/components/dashboard/skeleton';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { KpiSection } from '@apartment-ultra/shared-ui/components/ui';
+import { PageHeader } from '@apartment-ultra/shared-ui/components/ui';
+import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
+import { StatCard } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminPlatformStats } from '@apartment-ultra/api-contract';
 import type { AxiosResponse } from 'axios';
 import type { IncomeReport } from '@apartment-ultra/api-contract';
@@ -31,9 +34,7 @@ export function DashboardContent() {
     },
   });
 
-  const {
-    data: incomeResponse,
-  } = useQuery({
+  const { data: incomeResponse } = useQuery({
     queryKey: ['admin', 'income', selectedYear],
     queryFn: async () => {
       const res = await adminApiEndpoints.getAdminIncome(selectedYear);
@@ -51,11 +52,9 @@ export function DashboardContent() {
   if (statsLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold" data-testid="admin-overview-heading">{adminMessages.dashboard.heading}</h1>
-        </div>
+        <PageHeader title={adminMessages.dashboard.heading} titleTestId="admin-overview-heading" />
         <StatCardsSkeleton />
-        <div className="h-96 rounded-xl bg-muted/20 animate-pulse" />
+        <div className="h-96 animate-pulse rounded-xl bg-muted/20" />
       </div>
     );
   }
@@ -73,26 +72,36 @@ export function DashboardContent() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold" data-testid="admin-overview-heading">{adminMessages.dashboard.heading}</h1>
-        <RefreshButton onRefresh={handleRefresh} isLoading={statsLoading} />
-      </div>
+      <PageHeader
+        title={adminMessages.dashboard.heading}
+        titleTestId="admin-overview-heading"
+        actions={<RefreshButton onRefresh={handleRefresh} isLoading={statsLoading} />}
+      />
 
-      {/* Stat Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <KpiSection columns={6}>
         <StatCard title={adminMessages.dashboard.stats.apartments} value={stats.apartments_count ?? 0} />
         <StatCard title={adminMessages.dashboard.stats.rooms} value={stats.rooms_count ?? 0} />
-        <StatCard title={adminMessages.dashboard.stats.occupancy} value={stats.occupancy_rate ?? 0} isPercentage />
-        <StatCard title={adminMessages.dashboard.stats.monthlyRevenue} value={(stats.monthly_revenue ?? 0) * 100} isCurrency />
-        <StatCard title={adminMessages.dashboard.stats.pendingBills} value={stats.pending_bills ?? 0} />
-        <StatCard title={adminMessages.dashboard.stats.overdueBills} value={stats.overdue_bills ?? 0} />
-      </div>
+        <StatCard
+          title={adminMessages.dashboard.stats.occupancy}
+          value={stats.occupancy_rate ?? 0}
+          format="percent"
+          precision={1}
+          tone="primary"
+        />
+        <StatCard
+          title={adminMessages.dashboard.stats.monthlyRevenue}
+          value={stats.monthly_revenue ?? 0}
+          format="currency"
+          precision={2}
+          tone="success"
+        />
+        <StatCard title={adminMessages.dashboard.stats.pendingBills} value={stats.pending_bills ?? 0} tone="warning" />
+        <StatCard title={adminMessages.dashboard.stats.overdueBills} value={stats.overdue_bills ?? 0} tone="danger" />
+      </KpiSection>
 
-      {/* Year Filter */}
-      <div className="flex items-center gap-4">
+      <PageToolbar className="justify-start">
         <YearFilter value={selectedYear} onChange={setSelectedYear} />
-      </div>
+      </PageToolbar>
 
       {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-1">

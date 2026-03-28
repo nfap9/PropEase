@@ -262,7 +262,7 @@ importers:
         version: 18.3.7(@types/react@18.3.28)
       '@vitejs/plugin-react':
         specifier: 'catalog:'
-        version: 5.1.4(vite@7.3.1(@types/node@20.19.35)(jiti@2.6.1)(less@4.5.1)(lightningcss@1.31.1)(sass@1.97.3)(stylus@0.55.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 5.1.4(vite@7.3.1(@types/node@20.19.35)(jiti@1.21.7)(less@4.5.1)(lightningcss@1.31.1)(sass@1.97.3)(stylus@0.55.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -283,7 +283,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@20.19.35)(jiti@2.6.1)(jsdom@28.1.0)(less@4.5.1)(lightningcss@1.31.1)(sass@1.97.3)(stylus@0.55.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@20.19.35)(jiti@1.21.7)(jsdom@28.1.0)(less@4.5.1)(lightningcss@1.31.1)(sass@1.97.3)(stylus@0.55.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   api:
     dependencies:
@@ -583,6 +583,9 @@ importers:
       lucide-react:
         specifier: ^0.575.0
         version: 0.575.0(react@18.3.1)
+      next-themes:
+        specifier: 'catalog:'
+        version: 0.4.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: ^18
         version: 18.3.1
@@ -592,6 +595,9 @@ importers:
       react-hook-form:
         specifier: ^7.71.2
         version: 7.71.2(react@18.3.1)
+      recharts:
+        specifier: 'catalog:'
+        version: 3.7.0(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react-is@19.2.4)(react@18.3.1)(redux@5.0.1)
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -614,6 +620,9 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.28)
+      next:
+        specifier: 14.2.35
+        version: 14.2.35(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.97.3)
       tailwindcss:
         specifier: 'catalog:'
         version: 3.4.19(tsx@4.21.0)(yaml@2.8.2)
@@ -622,7 +631,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 'catalog:'
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@20.19.35)(jiti@1.21.7)(jsdom@28.1.0)(less@4.5.1)(lightningcss@1.31.1)(sass@1.97.3)(stylus@0.55.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@20.19.35)(jiti@2.6.1)(jsdom@28.1.0)(less@4.5.1)(lightningcss@1.31.1)(sass@1.97.3)(stylus@0.55.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/web-api-client:
     dependencies:
@@ -14164,6 +14173,18 @@ snapshots:
 
   '@unrs/resolver-binding-win32-x64-msvc@1.11.1':
     optional: true
+
+  '@vitejs/plugin-react@5.1.4(vite@7.3.1(@types/node@20.19.35)(jiti@1.21.7)(less@4.5.1)(lightningcss@1.31.1)(sass@1.97.3)(stylus@0.55.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.29.0)
+      '@babel/plugin-transform-react-jsx-source': 7.27.1(@babel/core@7.29.0)
+      '@rolldown/pluginutils': 1.0.0-rc.3
+      '@types/babel__core': 7.20.5
+      react-refresh: 0.18.0
+      vite: 7.3.1(@types/node@20.19.35)(jiti@1.21.7)(less@4.5.1)(lightningcss@1.31.1)(sass@1.97.3)(stylus@0.55.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+    transitivePeerDependencies:
+      - supports-color
 
   '@vitejs/plugin-react@5.1.4(vite@7.3.1(@types/node@20.19.35)(jiti@2.6.1)(less@4.5.1)(lightningcss@1.31.1)(sass@1.97.3)(stylus@0.55.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:

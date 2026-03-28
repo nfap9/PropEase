@@ -5,16 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -49,11 +40,7 @@ import {
   type EditUserForm,
   type ResetPasswordForm,
 } from '../users.schemas';
-import {
-  getDefaultCreateUserFormValues,
-  getDefaultResetPasswordValues,
-  getEditUserFormValues,
-} from '../users.utils';
+import { getDefaultCreateUserFormValues, getDefaultResetPasswordValues, getEditUserFormValues } from '../users.utils';
 
 export function CreateUserDialog({
   open,
@@ -352,7 +339,11 @@ export function ResetPasswordDialog({
                 <FormItem>
                   <FormLabel>{adminMessages.users.fields.confirmPassword}</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder={adminMessages.users.fields.confirmPasswordPlaceholder} {...field} />
+                    <Input
+                      type="password"
+                      placeholder={adminMessages.users.fields.confirmPasswordPlaceholder}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -387,30 +378,21 @@ export function DeleteUserDialog({
   isPending: boolean;
 }) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{adminMessages.users.deleteDialog.title}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {user?.is_system ? (
-              <>{adminI18n.t('users.deleteDialog.builtinDescription', { username: user?.username ?? '' })}</>
-            ) : (
-              <>{adminI18n.t('users.deleteDialog.confirmDescription', { username: user?.username ?? '' })}</>
-            )}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
-          {!user?.is_system && (
-            <AlertDialogAction
-              onClick={onConfirm}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isPending ? adminMessages.common.deleting : adminMessages.common.delete}
-            </AlertDialogAction>
-          )}
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={adminMessages.users.deleteDialog.title}
+      description={
+        user?.is_system
+          ? adminI18n.t('users.deleteDialog.builtinDescription', { username: user?.username ?? '' })
+          : adminI18n.t('users.deleteDialog.confirmDescription', { username: user?.username ?? '' })
+      }
+      cancelLabel={adminMessages.common.cancel}
+      confirmLabel={isPending ? adminMessages.common.deleting : adminMessages.common.delete}
+      onConfirm={onConfirm}
+      isPending={isPending}
+      intent="destructive"
+      hideConfirm={user?.is_system}
+    />
   );
 }

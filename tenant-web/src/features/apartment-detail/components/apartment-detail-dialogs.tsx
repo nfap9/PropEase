@@ -1,21 +1,13 @@
 'use client';
 
-import { ArrowLeft, ArrowRight, Check, Loader2, Settings2 } from 'lucide-react';
+import { Check, Loader2, Settings2 } from 'lucide-react';
 import type { UseFormReturn } from 'react-hook-form';
 import { ApartmentForm } from '@/components/apartments';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
 import { EditRoomDialog } from '@/app/rooms/components/EditRoomDialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { WizardDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -43,6 +35,19 @@ import {
 } from '../apartment-detail.schemas';
 import type { GeneratedFloorRooms } from '../apartment-detail.utils';
 import { getFacilitiesSummary } from '../apartment-detail.utils';
+
+const batchCreateRoomSteps = [
+  {
+    id: 'config',
+    title: '批量配置',
+    description: '设置楼层、房号范围和默认属性。',
+  },
+  {
+    id: 'confirm',
+    title: '确认房间',
+    description: '确认要创建的房间，并支持整层勾选。',
+  },
+] as const;
 
 export function ApartmentEditDialog({
   open,
@@ -116,10 +121,7 @@ export function CreateRoomDialog({
               </FormField>
               <div className="space-y-2">
                 <Label htmlFor="layout">户型</Label>
-                <Select
-                  value={form.watch('layout') || ''}
-                  onValueChange={(value) => form.setValue('layout', value)}
-                >
+                <Select value={form.watch('layout') || ''} onValueChange={(value) => form.setValue('layout', value)}>
                   <SelectTrigger className="min-w-[120px]">
                     <SelectValue placeholder="选择户型" />
                   </SelectTrigger>
@@ -136,18 +138,9 @@ export function CreateRoomDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <FormField label="面积 (m²)" htmlFor="area">
-                <Input
-                  id="area"
-                  type="number"
-                  step="0.01"
-                  {...form.register('area', { valueAsNumber: true })}
-                />
+                <Input id="area" type="number" step="0.01" {...form.register('area', { valueAsNumber: true })} />
               </FormField>
-              <FormField
-                label="月租 (元) *"
-                htmlFor="monthly_rent"
-                error={form.formState.errors.monthly_rent?.message}
-              >
+              <FormField label="月租 (元) *" htmlFor="monthly_rent" error={form.formState.errors.monthly_rent?.message}>
                 <Input
                   id="monthly_rent"
                   type="number"
@@ -232,7 +225,7 @@ export function BatchCreateRoomDialog({
   const totalGeneratedRooms = generatedRooms.reduce((sum, floorGroup) => sum + floorGroup.rooms.length, 0);
 
   return (
-    <Dialog
+    <WizardDialog
       open={open}
       onOpenChange={(nextOpen) => {
         onOpenChange(nextOpen);
@@ -241,36 +234,56 @@ export function BatchCreateRoomDialog({
           onResetSelection();
         }
       }}
+      title="批量添加房间"
+      description={
+        step === 'config'
+          ? '设置楼层和房间号范围，支持多楼层（如 1,2,3 或 1-5）'
+          : '点击房间号切换选中状态，只添加激活的房间'
+      }
+      steps={batchCreateRoomSteps}
+      currentStep={step === 'config' ? 0 : 1}
+      onPrevious={() => onStepChange('config')}
+      onNext={form.handleSubmit(() => {
+        onInitializeSelection();
+        onSubmitConfig();
+      })}
+      onComplete={onSubmitRooms}
+      nextLabel="下一步"
+      completeLabel={
+        isPending ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            创建中...
+          </>
+        ) : (
+          <>确认添加 ({selectedRooms.size} 个房间)</>
+        )
+      }
+      completeDisabled={selectedRooms.size === 0 || isPending}
+      size="lg"
+      contentTestId="batch-create-room-dialog"
+      bodyClassName="max-h-[70vh]"
+      footerExtra={
+        step === 'confirm' ? (
+          <p className="text-sm text-muted-foreground">
+            已选择 <span className="font-medium text-foreground">{selectedRooms.size}</span> 个房间
+          </p>
+        ) : null
+      }
     >
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {step === 'config' ? '批量添加房间 - 配置' : '批量添加房间 - 确认选择'}
-          </DialogTitle>
-          <DialogDescription>
-            {step === 'config'
-              ? '设置楼层和房间号范围，支持多楼层（如 1,2,3 或 1-5）'
-              : '点击房间号切换选中状态，只添加激活的房间'}
-          </DialogDescription>
-        </DialogHeader>
-
-        {step === 'config' ? (
-          <form
-            onSubmit={form.handleSubmit(() => {
-              onInitializeSelection();
-              onSubmitConfig();
-            })}
-            className="space-y-4"
-          >
+      {step === 'config' ? (
+        <form
+          onSubmit={form.handleSubmit(() => {
+            onInitializeSelection();
+            onSubmitConfig();
+          })}
+          className="space-y-4"
+        >
             <div className="grid grid-cols-3 gap-4">
               <FormField label="楼层" htmlFor="floors" error={form.formState.errors.floors?.message}>
                 <Input id="floors" placeholder="如: 1,2,3 或 1-5" {...form.register('floors')} />
               </FormField>
-              <FormField
-                label="起始号"
-                htmlFor="start_number"
-                error={form.formState.errors.start_number?.message}
-              >
+              <FormField label="起始号" htmlFor="start_number" error={form.formState.errors.start_number?.message}>
                 <Input
                   id="start_number"
                   type="number"
@@ -279,11 +292,7 @@ export function BatchCreateRoomDialog({
                   {...form.register('start_number', { valueAsNumber: true })}
                 />
               </FormField>
-              <FormField
-                label="结束号"
-                htmlFor="end_number"
-                error={form.formState.errors.end_number?.message}
-              >
+              <FormField label="结束号" htmlFor="end_number" error={form.formState.errors.end_number?.message}>
                 <Input
                   id="end_number"
                   type="number"
@@ -296,8 +305,8 @@ export function BatchCreateRoomDialog({
 
             <div className="rounded-md bg-muted p-3">
               <p className="mb-2 text-sm text-muted-foreground">
-                将生成 {totalGeneratedRooms} 个房间（{generatedRooms.length} 层 ×{' '}
-                {generatedRooms[0]?.rooms.length || 0} 间/层）
+                将生成 {totalGeneratedRooms} 个房间（{generatedRooms.length} 层 × {generatedRooms[0]?.rooms.length || 0}{' '}
+                间/层）
               </p>
               <div className="max-h-24 space-y-1 overflow-y-auto font-mono text-sm">
                 {generatedRooms.map(({ floor, rooms }) => (
@@ -311,10 +320,7 @@ export function BatchCreateRoomDialog({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="batch-layout">户型</Label>
-                <Select
-                  value={form.watch('layout') || ''}
-                  onValueChange={(value) => form.setValue('layout', value)}
-                >
+                <Select value={form.watch('layout') || ''} onValueChange={(value) => form.setValue('layout', value)}>
                   <SelectTrigger className="min-w-[120px]">
                     <SelectValue placeholder="选择户型" />
                   </SelectTrigger>
@@ -328,12 +334,7 @@ export function BatchCreateRoomDialog({
                 </Select>
               </div>
               <FormField label="面积 (m²)" htmlFor="batch-area">
-                <Input
-                  id="batch-area"
-                  type="number"
-                  step="0.01"
-                  {...form.register('area', { valueAsNumber: true })}
-                />
+                <Input id="batch-area" type="number" step="0.01" {...form.register('area', { valueAsNumber: true })} />
               </FormField>
               <FormField
                 label="月租 (元) *"
@@ -352,115 +353,82 @@ export function BatchCreateRoomDialog({
             <FormField label="备注" htmlFor="batch-notes">
               <Input id="batch-notes" {...form.register('notes')} />
             </FormField>
+        </form>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => onToggleAll(true)}>
+              全选
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => onToggleAll(false)}>
+              取消全选
+            </Button>
+          </div>
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                取消
-              </Button>
-              <Button type="submit">
-                下一步
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </DialogFooter>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => onToggleAll(true)}>
-                  全选
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => onToggleAll(false)}>
-                  取消全选
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                已选择 <span className="font-medium text-foreground">{selectedRooms.size}</span> 个房间
-              </p>
-            </div>
+          <div className="max-h-[420px] space-y-4 overflow-y-auto">
+            {generatedRooms.map(({ floor, rooms }) => {
+              const selectedCount = rooms.filter((roomNumber) => selectedRooms.has(roomNumber)).length;
+              const allSelected = selectedCount === rooms.length;
+              const someSelected = selectedCount > 0 && !allSelected;
 
-            <div className="max-h-[400px] space-y-4 overflow-y-auto">
-              {generatedRooms.map(({ floor, rooms }) => {
-                const selectedCount = rooms.filter((roomNumber) => selectedRooms.has(roomNumber)).length;
-                const allSelected = selectedCount === rooms.length;
-                const someSelected = selectedCount > 0 && !allSelected;
-
-                return (
-                  <div key={floor} className="rounded-lg border p-3">
-                    <div className="mb-2 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant={allSelected ? 'default' : 'outline'}
-                          size="sm"
-                          className="h-7"
-                          onClick={() => onToggleFloor(rooms, !allSelected)}
-                        >
-                          {allSelected ? (
-                            <Check className="mr-1 h-4 w-4" />
-                          ) : someSelected ? (
-                            <span className="mr-1 flex h-4 w-4 items-center justify-center text-xs">-</span>
-                          ) : (
-                            <span className="mr-1 h-4 w-4" />
-                          )}
-                          {floor}楼
-                        </Button>
-                        <span className="text-sm text-muted-foreground">
-                          ({selectedCount}/{rooms.length})
-                        </span>
-                      </div>
+              return (
+                <div key={floor} className="rounded-lg border p-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                       <Button
-                        variant="ghost"
+                        variant={allSelected ? 'default' : 'outline'}
                         size="sm"
-                        className="h-7 text-xs"
+                        className="h-7"
                         onClick={() => onToggleFloor(rooms, !allSelected)}
                       >
-                        {allSelected ? '取消整层' : '选择整层'}
+                        {allSelected ? (
+                          <Check className="mr-1 h-4 w-4" />
+                        ) : someSelected ? (
+                          <span className="mr-1 flex h-4 w-4 items-center justify-center text-xs">-</span>
+                        ) : (
+                          <span className="mr-1 h-4 w-4" />
+                        )}
+                        {floor}楼
                       </Button>
+                      <span className="text-sm text-muted-foreground">
+                        ({selectedCount}/{rooms.length})
+                      </span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {rooms.map((roomNumber) => {
-                        const isSelected = selectedRooms.has(roomNumber);
-                        return (
-                          <button
-                            key={roomNumber}
-                            type="button"
-                            onClick={() => onToggleRoom(roomNumber)}
-                            className={`rounded-md px-3 py-1.5 font-mono text-sm transition-colors ${
-                              isSelected
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                            }`}
-                          >
-                            {roomNumber}
-                          </button>
-                        );
-                      })}
-                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => onToggleFloor(rooms, !allSelected)}
+                    >
+                      {allSelected ? '取消整层' : '选择整层'}
+                    </Button>
                   </div>
-                );
-              })}
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onStepChange('config')}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                上一步
-              </Button>
-              <Button type="button" disabled={selectedRooms.size === 0 || isPending} onClick={onSubmitRooms}>
-                {isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    创建中...
-                  </>
-                ) : (
-                  <>确认添加 ({selectedRooms.size} 个房间)</>
-                )}
-              </Button>
-            </DialogFooter>
+                  <div className="flex flex-wrap gap-2">
+                    {rooms.map((roomNumber) => {
+                      const isSelected = selectedRooms.has(roomNumber);
+                      return (
+                        <button
+                          key={roomNumber}
+                          type="button"
+                          onClick={() => onToggleRoom(roomNumber)}
+                          className={`rounded-md px-3 py-1.5 font-mono text-sm transition-colors ${
+                            isSelected
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                          }`}
+                        >
+                          {roomNumber}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        )}
-      </DialogContent>
-    </Dialog>
+        </div>
+      )}
+    </WizardDialog>
   );
 }
 
@@ -478,32 +446,26 @@ export function DeleteRoomDialog({
   isPending: boolean;
 }) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>确认删除</AlertDialogTitle>
-          <AlertDialogDescription>
-            确定要删除房间 &ldquo;{room?.room_number}&rdquo; 吗？此操作不可撤销。
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={onConfirm}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                删除中...
-              </>
-            ) : (
-              '删除'
-            )}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="确认删除"
+      description={`确定要删除房间 "${room?.room_number ?? ''}" 吗？此操作不可撤销。`}
+      cancelLabel="取消"
+      confirmLabel={
+        isPending ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            删除中...
+          </>
+        ) : (
+          '删除'
+        )
+      }
+      onConfirm={onConfirm}
+      isPending={isPending}
+      intent="destructive"
+    />
   );
 }
 
@@ -625,13 +587,7 @@ export function RoomEditDialog({
   isPending: boolean;
 }) {
   return (
-    <EditRoomDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      onSubmit={onSubmit}
-      isPending={isPending}
-      room={room}
-    />
+    <EditRoomDialog open={open} onOpenChange={onOpenChange} onSubmit={onSubmit} isPending={isPending} room={room} />
   );
 }
 

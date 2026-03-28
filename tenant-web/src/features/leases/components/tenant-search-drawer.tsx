@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Search, User } from 'lucide-react';
-import { CommonDrawer } from '@apartment-ultra/shared-ui/components/ui';
+import { DetailDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantsApi } from '@/lib/api';
@@ -17,12 +17,7 @@ interface TenantSearchDrawerProps {
   onSelect: (tenant: Tenant) => void;
 }
 
-export function TenantSearchDrawer({
-  orgId,
-  open,
-  onOpenChange,
-  onSelect,
-}: TenantSearchDrawerProps) {
+export function TenantSearchDrawer({ orgId, open, onOpenChange, onSelect }: TenantSearchDrawerProps) {
   const [search, setSearch] = useState('');
 
   const { data: tenants, isLoading } = useQuery({
@@ -37,13 +32,6 @@ export function TenantSearchDrawer({
     setSearch('');
   };
 
-  const header = (
-    <div>
-      <h2 className="text-lg font-semibold">选择已有租客</h2>
-      <p className="text-sm text-muted-foreground">搜索并选择已有租客，信息将自动回填到表单</p>
-    </div>
-  );
-
   const footer = (
     <div className="flex justify-end">
       <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -53,17 +41,18 @@ export function TenantSearchDrawer({
   );
 
   return (
-    <CommonDrawer
+    <DetailDrawer
       open={open}
       onOpenChange={onOpenChange}
-      header={header}
+      title="选择已有租客"
+      description="搜索并选择已有租客，信息将自动回填到表单"
       footer={footer}
-      width="w-full sm:w-[400px]"
+      size="sm"
     >
       <div className="space-y-4">
         {/* 搜索框 */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="搜索姓名或电话..."
             value={search}
@@ -73,28 +62,28 @@ export function TenantSearchDrawer({
         </div>
 
         {/* 租客列表 */}
-        <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto">
+        <div className="max-h-[calc(100vh-200px)] space-y-2 overflow-y-auto">
           {isLoading ? (
-            <p className="text-sm text-muted-foreground text-center py-4">加载中...</p>
+            <p className="py-4 text-center text-sm text-muted-foreground">加载中...</p>
           ) : tenants?.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">未找到租客</p>
+            <p className="py-4 text-center text-sm text-muted-foreground">未找到租客</p>
           ) : (
             tenants?.map((tenant) => (
               <button
                 key={tenant.id}
                 onClick={() => handleSelect(tenant)}
                 className={cn(
-                  'w-full text-left p-3 rounded-lg border hover:bg-muted/50 transition-colors',
+                  'w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted/50',
                   'focus:outline-none focus:ring-2 focus:ring-ring'
                 )}
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-muted">
                     <User className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium truncate">{tenant.name}</p>
-                    <p className="text-sm text-muted-foreground truncate">
+                    <p className="truncate font-medium">{tenant.name}</p>
+                    <p className="truncate text-sm text-muted-foreground">
                       {tenant.phone || '无电话'} {tenant.id_card ? `· ${tenant.id_card}` : ''}
                     </p>
                   </div>
@@ -104,6 +93,6 @@ export function TenantSearchDrawer({
           )}
         </div>
       </div>
-    </CommonDrawer>
+    </DetailDrawer>
   );
 }

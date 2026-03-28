@@ -5,8 +5,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import Link from 'next/link';
+import { useConfirmAction } from '@apartment-ultra/shared-ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { DataTable } from '@/components/common/data-table';
@@ -22,16 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { ColumnDef } from '@tanstack/react-table';
 import { tenantsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
@@ -81,8 +73,8 @@ export default function TenantsPage() {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  const deleteConfirm = useConfirmAction<Tenant>();
 
   const { data: tenants, isLoading: tenantsLoading } = useQuery({
     queryKey: ['tenants', orgId],
@@ -112,9 +104,9 @@ export default function TenantsPage() {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsCreateOpen(false);
       createForm.reset();
-      toast.success('租客创建成功');
+      appToast.success('租客创建成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
@@ -124,20 +116,19 @@ export default function TenantsPage() {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsEditOpen(false);
       setSelectedTenant(null);
-      toast.success('租客信息更新成功');
+      appToast.success('租客信息更新成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => tenantsApi.delete(orgId!, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
-      setIsDeleteOpen(false);
-      setSelectedTenant(null);
-      toast.success('租客删除成功');
+      deleteConfirm.close();
+      appToast.success('租客删除成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const handleEdit = (tenant: Tenant) => {
@@ -153,10 +144,7 @@ export default function TenantsPage() {
     setIsEditOpen(true);
   };
 
-  const handleDelete = (tenant: Tenant) => {
-    setSelectedTenant(tenant);
-    setIsDeleteOpen(true);
-  };
+  const handleDelete = deleteConfirm.openFor;
 
   const columns: ColumnDef<Tenant>[] = [
     {
@@ -245,7 +233,9 @@ export default function TenantsPage() {
       <MainLayout>
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold" data-testid={TENANTS.HEADING}>租客管理</h1>
+            <h1 className="text-2xl font-semibold tracking-tight" data-testid={TENANTS.HEADING}>
+              租客管理
+            </h1>
             <Button onClick={() => setIsCreateOpen(true)} data-testid={TENANTS.NEW_BUTTON}>
               <Plus className="mr-2 h-4 w-4" />
               新增租客
@@ -266,10 +256,7 @@ export default function TenantsPage() {
               <DialogTitle>新增租客</DialogTitle>
               <DialogDescription>填写租客信息</DialogDescription>
             </DialogHeader>
-            <form
-              onSubmit={createForm.handleSubmit((data) => createMutation.mutate(data))}
-              className="space-y-4"
-            >
+            <form onSubmit={createForm.handleSubmit((data) => createMutation.mutate(data))} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">
@@ -277,9 +264,7 @@ export default function TenantsPage() {
                   </Label>
                   <Input id="name" aria-required {...createForm.register('name')} data-testid={TENANTS.NAME_INPUT} />
                   {createForm.formState.errors.name && (
-                    <p className="text-sm text-destructive">
-                      {createForm.formState.errors.name.message}
-                    </p>
+                    <p className="text-sm text-destructive">{createForm.formState.errors.name.message}</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -288,9 +273,7 @@ export default function TenantsPage() {
                   </Label>
                   <Input id="phone" aria-required {...createForm.register('phone')} data-testid={TENANTS.PHONE_INPUT} />
                   {createForm.formState.errors.phone && (
-                    <p className="text-sm text-destructive">
-                      {createForm.formState.errors.phone.message}
-                    </p>
+                    <p className="text-sm text-destructive">{createForm.formState.errors.phone.message}</p>
                   )}
                 </div>
               </div>
@@ -303,11 +286,19 @@ export default function TenantsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="emergency_contact">紧急联系人</Label>
-                  <Input id="emergency_contact" {...createForm.register('emergency_contact')} data-testid={TENANTS.EMERGENCY_CONTACT_INPUT} />
+                  <Input
+                    id="emergency_contact"
+                    {...createForm.register('emergency_contact')}
+                    data-testid={TENANTS.EMERGENCY_CONTACT_INPUT}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="emergency_phone">紧急联系电话</Label>
-                  <Input id="emergency_phone" {...createForm.register('emergency_phone')} data-testid={TENANTS.EMERGENCY_PHONE_INPUT} />
+                  <Input
+                    id="emergency_phone"
+                    {...createForm.register('emergency_phone')}
+                    data-testid={TENANTS.EMERGENCY_PHONE_INPUT}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
@@ -315,7 +306,12 @@ export default function TenantsPage() {
                 <Input id="notes" {...createForm.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)} data-testid={TENANTS.CANCEL_BUTTON}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsCreateOpen(false)}
+                  data-testid={TENANTS.CANCEL_BUTTON}
+                >
                   取消
                 </Button>
                 <Button type="submit" disabled={createMutation.isPending} data-testid={TENANTS.CONFIRM_BUTTON}>
@@ -334,9 +330,7 @@ export default function TenantsPage() {
               <DialogDescription>修改租客信息</DialogDescription>
             </DialogHeader>
             <form
-              onSubmit={editForm.handleSubmit((data) =>
-                updateMutation.mutate({ id: selectedTenant!.id, data })
-              )}
+              onSubmit={editForm.handleSubmit((data) => updateMutation.mutate({ id: selectedTenant!.id, data }))}
               className="space-y-4"
             >
               <div className="grid grid-cols-2 gap-4">
@@ -350,7 +344,12 @@ export default function TenantsPage() {
                   <Label htmlFor="edit-phone">
                     联系电话 <span aria-hidden="true">*</span>
                   </Label>
-                  <Input id="edit-phone" aria-required {...editForm.register('phone')} data-testid={TENANTS.PHONE_INPUT} />
+                  <Input
+                    id="edit-phone"
+                    aria-required
+                    {...editForm.register('phone')}
+                    data-testid={TENANTS.PHONE_INPUT}
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -362,11 +361,19 @@ export default function TenantsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-emergency_contact">紧急联系人</Label>
-                  <Input id="edit-emergency_contact" {...editForm.register('emergency_contact')} data-testid={TENANTS.EMERGENCY_CONTACT_INPUT} />
+                  <Input
+                    id="edit-emergency_contact"
+                    {...editForm.register('emergency_contact')}
+                    data-testid={TENANTS.EMERGENCY_CONTACT_INPUT}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-emergency_phone">紧急联系电话</Label>
-                  <Input id="edit-emergency_phone" {...editForm.register('emergency_phone')} data-testid={TENANTS.EMERGENCY_PHONE_INPUT} />
+                  <Input
+                    id="edit-emergency_phone"
+                    {...editForm.register('emergency_phone')}
+                    data-testid={TENANTS.EMERGENCY_PHONE_INPUT}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
@@ -374,7 +381,12 @@ export default function TenantsPage() {
                 <Input id="edit-notes" {...editForm.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} data-testid={TENANTS.CANCEL_BUTTON}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditOpen(false)}
+                  data-testid={TENANTS.CANCEL_BUTTON}
+                >
                   取消
                 </Button>
                 <Button type="submit" disabled={updateMutation.isPending} data-testid={TENANTS.CONFIRM_BUTTON}>
@@ -385,27 +397,19 @@ export default function TenantsPage() {
           </DialogContent>
         </Dialog>
 
-        {/* Delete Alert Dialog */}
-        <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-          <AlertDialogContent data-testid={TENANTS.DELETE_DIALOG}>
-            <AlertDialogHeader>
-              <AlertDialogTitle>确认删除</AlertDialogTitle>
-              <AlertDialogDescription>
-                确定要删除租客 &ldquo;{selectedTenant?.name}&rdquo; 吗？此操作不可撤销。
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel data-testid={TENANTS.CANCEL_BUTTON}>取消</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => deleteMutation.mutate(selectedTenant!.id)}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                data-testid={TENANTS.CONFIRM_DELETE_BTN}
-              >
-                {deleteMutation.isPending ? '删除中...' : '删除'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <ConfirmDialog
+          {...deleteConfirm.dialogProps}
+          title="确认删除"
+          description={`确定要删除租客 "${deleteConfirm.selectedItem?.name ?? ''}" 吗？此操作不可撤销。`}
+          cancelLabel="取消"
+          confirmLabel={deleteMutation.isPending ? '删除中...' : '删除'}
+          onConfirm={() => deleteMutation.mutate(deleteConfirm.selectedItem!.id)}
+          isPending={deleteMutation.isPending}
+          intent="destructive"
+          contentTestId={TENANTS.DELETE_DIALOG}
+          cancelTestId={TENANTS.CANCEL_BUTTON}
+          confirmTestId={TENANTS.CONFIRM_DELETE_BTN}
+        />
       </MainLayout>
     </PermissionPageGuard>
   );

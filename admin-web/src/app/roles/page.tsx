@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { SplitSettingsPanel } from '@apartment-ultra/shared-ui/components/ui';
 import { adminApiEndpoints, AdminRole, AdminRoleUpdate } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import { AdminRoleList } from '@/components/admin/admin-role-list';
@@ -12,7 +13,6 @@ import { AdminRoleDeleteDialog } from '@/components/admin/admin-role-delete-dial
 import { getAllAdminPermissionCodes } from '@/lib/constants/admin-permissions';
 import { togglePermissionCode } from './utils';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { cn } from '@/lib/utils';
 import { adminMessages } from '@/lib/i18n';
 
 export default function AdminRolesPage() {
@@ -48,19 +48,18 @@ export default function AdminRolesPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
       setIsCreateOpen(false);
       setCreatePermissionCodes([]);
-      toast.success(adminMessages.roles.toast.created);
+      appToast.success(adminMessages.roles.toast.created);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: AdminRoleUpdate }) =>
-      adminApiEndpoints.updateRole(id, data),
+    mutationFn: ({ id, data }: { id: string; data: AdminRoleUpdate }) => adminApiEndpoints.updateRole(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
-      toast.success(adminMessages.roles.toast.saved);
+      appToast.success(adminMessages.roles.toast.saved);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '保存失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '保存失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -69,9 +68,9 @@ export default function AdminRolesPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
       setIsDeleteOpen(false);
       setSelectedRole(null);
-      toast.success(adminMessages.roles.toast.deleted);
+      appToast.success(adminMessages.roles.toast.deleted);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const handleSelectRole = (role: AdminRole) => {
@@ -117,24 +116,27 @@ export default function AdminRolesPage() {
     return (
       <div className="flex h-[60vh]">
         <Skeleton className="w-56 shrink-0" />
-        <Skeleton className={cn('flex-1')} />
+        <Skeleton className="flex-1" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] min-h-[400px] rounded-lg border bg-card">
-      <aside className="w-56 shrink-0" data-testid="admin-roles-list">
-        <AdminRoleList
-          roles={roles}
-          selectedRoleId={selectedRole?.id ?? null}
-          onSelectRole={handleSelectRole}
-          onAddRole={() => setIsCreateOpen(true)}
-          onDeleteRole={handleDeleteRole}
-          isLoading={rolesLoading}
-        />
-      </aside>
-      <main className="flex min-w-0 flex-1 flex-col">
+    <>
+      <SplitSettingsPanel
+        className="h-[calc(100vh-8rem)]"
+        sidebarTestId="admin-roles-list"
+        sidebar={
+          <AdminRoleList
+            roles={roles}
+            selectedRoleId={selectedRole?.id ?? null}
+            onSelectRole={handleSelectRole}
+            onAddRole={() => setIsCreateOpen(true)}
+            onDeleteRole={handleDeleteRole}
+            isLoading={rolesLoading}
+          />
+        }
+      >
         <AdminRoleDetailPanel
           role={selectedRole}
           draftPermissionCodes={draftPermissionCodes}
@@ -142,7 +144,7 @@ export default function AdminRolesPage() {
           onSave={handleSave}
           isSaving={updateMutation.isPending}
         />
-      </main>
+      </SplitSettingsPanel>
 
       <AdminRoleCreateDialog
         open={isCreateOpen}
@@ -160,6 +162,6 @@ export default function AdminRolesPage() {
         onConfirm={handleDeleteConfirm}
         isPending={deleteMutation.isPending}
       />
-    </div>
+    </>
   );
 }

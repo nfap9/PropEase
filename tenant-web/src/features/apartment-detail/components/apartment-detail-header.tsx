@@ -23,8 +23,7 @@ export function ApartmentDetailHeader({
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">{apartmentName}</h1>
-          <p className="text-muted-foreground">{apartmentAddress}</p>
+          <h1 className="text-2xl font-semibold tracking-tight">{apartmentName}</h1>
         </div>
       </div>
       <Button variant="outline" size="sm" onClick={onEdit}>
@@ -34,4 +33,3 @@ export function ApartmentDetailHeader({
     </div>
   );
 }
-

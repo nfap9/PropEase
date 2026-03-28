@@ -94,10 +94,9 @@ export default function NotificationsPage() {
               <div className="flex items-center gap-2">
                 <Bell className="h-8 w-8" />
                 <div>
-                  <h1 className="text-3xl font-bold" data-testid={NOTIFICATIONS.HEADING}>
+                  <h1 className="text-2xl font-semibold tracking-tight" data-testid={NOTIFICATIONS.HEADING}>
                     {tenantMessages.notificationsPage.heading}
                   </h1>
-                  <p className="text-muted-foreground">{tenantMessages.notificationsPage.description}</p>
                 </div>
               </div>
               {unreadCount > 0 && (

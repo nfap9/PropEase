@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { adminApiEndpoints, type AdminRole, type AdminUser } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import type { AdminPasswordReset, AdminUserCreate, AdminUserUpdate } from '@/lib/api/admin-client';
@@ -45,20 +45,19 @@ export function useAdminUsersData({
     onSuccess: () => {
       invalidateUsers();
       onCreateSuccess();
-      toast.success(adminMessages.users.toast.created);
+      appToast.success(adminMessages.users.toast.created);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: AdminUserUpdate }) =>
-      adminApiEndpoints.updateUser(id, data),
+    mutationFn: ({ id, data }: { id: string; data: AdminUserUpdate }) => adminApiEndpoints.updateUser(id, data),
     onSuccess: () => {
       invalidateUsers();
       onUpdateSuccess();
-      toast.success(adminMessages.users.toast.updated);
+      appToast.success(adminMessages.users.toast.updated);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const resetMutation = useMutation({
@@ -67,9 +66,9 @@ export function useAdminUsersData({
     onSuccess: () => {
       invalidateUsers();
       onResetSuccess();
-      toast.success(adminMessages.users.toast.resetPassword);
+      appToast.success(adminMessages.users.toast.resetPassword);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '重置失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '重置失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -77,9 +76,9 @@ export function useAdminUsersData({
     onSuccess: () => {
       invalidateUsers();
       onDeleteSuccess();
-      toast.success(adminMessages.users.toast.deleted);
+      appToast.success(adminMessages.users.toast.deleted);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   return {

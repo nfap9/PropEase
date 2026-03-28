@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
@@ -204,7 +204,7 @@ export function LeaseFormDialog({
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       onOpenChange(false);
       form.reset();
-      toast.success('签约成功');
+      appToast.success('签约成功');
       const roomId = createdLease.room_id;
       const startDate = createdLease.start_date;
       const matchedRoom = room ?? rooms?.find((r) => r.id === variables.room_id);
@@ -216,7 +216,7 @@ export function LeaseFormDialog({
       onLeaseCreated?.({ room_id: roomId, room_display: roomDisplay, start_date: startDate });
       onSuccess?.();
     },
-    onError: (error) => toast.error(getErrorMessage(error, '签约失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '签约失败，请重试')),
   });
 
   const handleSubmit = (data: LeaseFormData) => {

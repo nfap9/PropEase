@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -68,9 +68,9 @@ export default function AdminUsagePricingPage() {
     mutationFn: (data: FormData) => adminApiEndpoints.updateUsagePricing(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'usage-pricing'] });
-      toast.success('已保存');
+      appToast.success('已保存');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '保存失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '保存失败，请重试')),
   });
 
   if (isLoading && !pricing && !isError) {

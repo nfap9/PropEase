@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import {
   adminApiEndpoints,
   type AdminPlan,
@@ -16,11 +16,7 @@ interface UsePlansDataOptions {
   onDeleteSuccess: () => void;
 }
 
-export function usePlansData({
-  onCreateSuccess,
-  onUpdateSuccess,
-  onDeleteSuccess,
-}: UsePlansDataOptions) {
+export function usePlansData({ onCreateSuccess, onUpdateSuccess, onDeleteSuccess }: UsePlansDataOptions) {
   const queryClient = useQueryClient();
 
   const plansQuery = useQuery({
@@ -40,20 +36,19 @@ export function usePlansData({
     onSuccess: () => {
       invalidatePlans();
       onCreateSuccess();
-      toast.success(adminMessages.plans.toast.created);
+      appToast.success(adminMessages.plans.toast.created);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: AdminPlanUpdate }) =>
-      adminApiEndpoints.updatePlan(id, data),
+    mutationFn: ({ id, data }: { id: string; data: AdminPlanUpdate }) => adminApiEndpoints.updatePlan(id, data),
     onSuccess: () => {
       invalidatePlans();
       onUpdateSuccess();
-      toast.success(adminMessages.plans.toast.updated);
+      appToast.success(adminMessages.plans.toast.updated);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const updatePricingMutation = useMutation({
@@ -61,9 +56,9 @@ export function usePlansData({
       adminApiEndpoints.updatePlanPricing(planId, pricing),
     onSuccess: () => {
       invalidatePlans();
-      toast.success(adminMessages.plans.toast.pricingUpdated);
+      appToast.success(adminMessages.plans.toast.pricingUpdated);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '更新定价失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '更新定价失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -71,9 +66,9 @@ export function usePlansData({
     onSuccess: () => {
       invalidatePlans();
       onDeleteSuccess();
-      toast.success(adminMessages.plans.toast.deleted);
+      appToast.success(adminMessages.plans.toast.deleted);
     },
-    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   return {

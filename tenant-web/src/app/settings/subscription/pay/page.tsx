@@ -12,7 +12,7 @@ import { ArrowLeft, Loader2, Smartphone, FlaskConical } from 'lucide-react';
 import { subscriptionsApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantI18n, tenantMessages } from '@/lib/i18n';
 
 const POLL_INTERVAL_MS = 2500;
@@ -49,7 +49,7 @@ function SubscriptionPayContent() {
       }
     },
     onError: (err) =>
-      toast.error(getErrorMessage(err, tenantMessages.settings.subscriptionPage.pay.simulateFailed)),
+      appToast.error(getErrorMessage(err, tenantMessages.settings.subscriptionPage.pay.simulateFailed)),
   });
 
   const handleBack = useCallback(() => {
@@ -157,11 +157,10 @@ function SubscriptionPayContent() {
             {tenantMessages.settings.subscriptionPage.pay.back}
           </Button>
           <div>
-            <h1 className="flex items-center gap-2 text-2xl font-bold">
+            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
               <Smartphone className="h-7 w-7" />
               {tenantMessages.settings.subscriptionPage.pay.heading}
             </h1>
-            <p className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.pay.description}</p>
           </div>
         </div>
 

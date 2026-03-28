@@ -1,14 +1,6 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -18,10 +10,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
+import { WizardDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Upload, FileSpreadsheet } from 'lucide-react';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { Apartment, Room } from '@/types';
 import { getErrorMessage } from '@/lib/utils/error';
+
+const batchImportSteps = [
+  {
+    id: 'period',
+    title: '导入周期',
+    description: '先确认本次导入要写入的年月。',
+  },
+  {
+    id: 'upload',
+    title: '上传模板',
+    description: '上传已填写的 Excel 模板并执行导入。',
+  },
+] as const;
 
 export interface BatchImportPayload {
   period_year: number;
@@ -59,10 +65,20 @@ export function BatchImportDialog({
 
   const [importYear, setImportYear] = useState(currentYear);
   const [importMonth, setImportMonth] = useState(currentMonth);
+  const [currentStep, setCurrentStep] = useState(0);
 
   const apartmentMap = new Map(apartments?.map((a) => [a.id, a.name]) ?? []);
-  const roomMatchKey = (room: Room) =>
-    `${apartmentMap.get(room.apartment_id) ?? ''}|${room.room_number}`;
+  const roomMatchKey = (room: Room) => `${apartmentMap.get(room.apartment_id) ?? ''}|${room.room_number}`;
+
+  const handleDialogOpenChange = (nextOpen: boolean) => {
+    onOpenChange(nextOpen);
+    if (!nextOpen) {
+      setCurrentStep(0);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   const parseExcelFile = async (
     file: File
@@ -145,14 +161,14 @@ export function BatchImportDialog({
 
     const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
     if (ext === '.numbers') {
-      toast.error(
+      appToast.error(
         '请上传 .xlsx 格式的 Excel 文件，不支持 Apple Numbers (.numbers) 格式。请在 Numbers 中通过「文件 → 导出为 → Excel」另存为 .xlsx 后上传'
       );
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
     if (ext !== '.xlsx' && ext !== '.xls') {
-      toast.error('请上传 .xlsx 或 .xls 格式的 Excel 文件');
+      appToast.error('请上传 .xlsx 或 .xls 格式的 Excel 文件');
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -161,7 +177,7 @@ export function BatchImportDialog({
       const records = await parseExcelFile(file);
 
       if (records.length === 0) {
-        toast.error('Excel 文件中没有有效数据');
+        appToast.error('Excel 文件中没有有效数据');
         return;
       }
 
@@ -183,9 +199,7 @@ export function BatchImportDialog({
         const room = roomMap.get(key);
         if (room) {
           const water =
-            record.water_reading != null && !Number.isNaN(record.water_reading)
-              ? record.water_reading
-              : undefined;
+            record.water_reading != null && !Number.isNaN(record.water_reading) ? record.water_reading : undefined;
           const electricity =
             record.electricity_reading != null && !Number.isNaN(record.electricity_reading)
               ? record.electricity_reading
@@ -203,11 +217,11 @@ export function BatchImportDialog({
       }
 
       if (unmatchedKeys.length > 0) {
-        toast.warning(`以下房间未找到匹配: ${unmatchedKeys.join(', ')}`);
+        appToast.warning(`以下房间未找到匹配: ${unmatchedKeys.join(', ')}`);
       }
 
       if (matchedRecords.length === 0) {
-        toast.error('没有匹配到任何房间');
+        appToast.error('没有匹配到任何房间');
         return;
       }
 
@@ -219,10 +233,8 @@ export function BatchImportDialog({
       });
     } catch (err) {
       const msg = String(err);
-      const hint = msg.includes('解析失败')
-        ? '请确认文件为 .xlsx 格式（若使用 Numbers，需先导出为 Excel）'
-        : undefined;
-      toast.error(hint ?? getErrorMessage(err, '导入失败，请重试'));
+      const hint = msg.includes('解析失败') ? '请确认文件为 .xlsx 格式（若使用 Numbers，需先导出为 Excel）' : undefined;
+      appToast.error(hint ?? getErrorMessage(err, '导入失败，请重试'));
     }
 
     if (fileInputRef.current) {
@@ -231,23 +243,34 @@ export function BatchImportDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>批量导入水电读数</DialogTitle>
-          <DialogDescription>选择导入月份后上传已填写的 Excel 模板，完成批量录入</DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-6">
+    <WizardDialog
+      open={open}
+      onOpenChange={handleDialogOpenChange}
+      title="批量导入水电读数"
+      description="按步骤选择导入月份并上传已填写的 Excel 模板。"
+      steps={batchImportSteps}
+      currentStep={currentStep}
+      onPrevious={() => setCurrentStep(0)}
+      onNext={() => setCurrentStep(1)}
+      nextLabel="下一步"
+      completeLabel="上传后自动导入"
+      completeDisabled
+      size="md"
+      contentTestId="utilities-batch-import-dialog"
+      footerExtra={
+        currentStep === 1 ? (
+          <p className="text-sm text-muted-foreground">支持 `.xlsx` / `.xls`，导入日期默认使用今天。</p>
+        ) : null
+      }
+    >
+      <div className="space-y-6">
+        {currentStep === 0 ? (
           <div className="space-y-4">
             <h4 className="text-sm font-medium">导入月份</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>年份</Label>
-                <Select
-                  value={importYear.toString()}
-                  onValueChange={(v) => setImportYear(Number(v))}
-                >
+                <Select value={importYear.toString()} onValueChange={(v) => setImportYear(Number(v))}>
                   <SelectTrigger className="min-w-[120px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -262,10 +285,7 @@ export function BatchImportDialog({
               </div>
               <div className="space-y-2">
                 <Label>月份</Label>
-                <Select
-                  value={importMonth.toString()}
-                  onValueChange={(v) => setImportMonth(Number(v))}
-                >
+                <Select value={importMonth.toString()} onValueChange={(v) => setImportMonth(Number(v))}>
                   <SelectTrigger className="min-w-[120px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -280,7 +300,9 @@ export function BatchImportDialog({
               </div>
             </div>
           </div>
+        ) : null}
 
+        {currentStep === 1 ? (
           <div className="rounded-lg border border-dashed border-muted p-6 text-center">
             <FileSpreadsheet className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <div className="space-y-2">
@@ -305,20 +327,15 @@ export function BatchImportDialog({
               {isPending ? '导入中...' : '选择文件上传'}
             </Button>
           </div>
+        ) : null}
 
-          {/* 提示信息 */}
+        {currentStep === 1 ? (
           <div className="space-y-1 text-xs text-muted-foreground">
             <p>• 使用「导出模版」获取待录入房间列表，填写「当前水表」和「当前电表」列后上传</p>
             <p>• 导入将写入所选的导入月份，记录日期为今天</p>
           </div>
-        </div>
-
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            关闭
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        ) : null}
+      </div>
+    </WizardDialog>
   );
 }

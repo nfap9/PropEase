@@ -4,7 +4,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Building2 } from 'lucide-react';
+import { useConfirmAction, useListFilters, useSelection } from '@apartment-ultra/shared-ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
+import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
@@ -35,10 +38,10 @@ export function LeasesPageContent() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [pendingInitialReading, setPendingInitialReading] = useState<LeaseCreatedParams | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isTerminateOpen, setIsTerminateOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedLease, setSelectedLease] = useState<Lease | null>(null);
-  const [filters, setFilters] = useState<LeaseFiltersState>(getDefaultLeaseFilters());
+  const editLease = useSelection<Lease>();
+  const terminateConfirm = useConfirmAction<Lease>();
+  const deleteConfirm = useConfirmAction<Lease>();
+  const { filters, setFilter, resetFilters } = useListFilters<LeaseFiltersState>(getDefaultLeaseFilters);
 
   const editForm = useForm<LeaseEditFormData>({
     resolver: zodResolver(leaseSchema),
@@ -48,55 +51,60 @@ export function LeasesPageContent() {
     orgId,
     onUpdateSuccess: () => {
       setIsEditOpen(false);
-      setSelectedLease(null);
+      editLease.clear();
     },
-    onTerminateSuccess: () => {
-      setIsTerminateOpen(false);
-      setSelectedLease(null);
-    },
-    onDeleteSuccess: () => {
-      setIsDeleteOpen(false);
-      setSelectedLease(null);
-    },
+    onTerminateSuccess: terminateConfirm.close,
+    onDeleteSuccess: deleteConfirm.close,
   });
 
   const filteredLeases = useMemo(() => filterLeases(leases, filters), [leases, filters]);
 
-  const handleEdit = useCallback((lease: Lease) => {
-    setSelectedLease(lease);
-    editForm.reset({
-      room_id: lease.room_id,
-      tenant_id: lease.tenant_id,
-      start_date: toDateInputValue(lease.start_date),
-      end_date: toDateInputValue(lease.end_date),
-      monthly_rent: lease.monthly_rent,
-      deposit: lease.deposit ?? 0,
-      water_rate: lease.water_rate ?? 0,
-      electricity_rate: lease.electricity_rate ?? 0,
-      notes: lease.notes ?? '',
-    });
-    setIsEditOpen(true);
-  }, [editForm]);
+  const handleEdit = useCallback(
+    (lease: Lease) => {
+      editLease.select(lease);
+      editForm.reset({
+        room_id: lease.room_id,
+        tenant_id: lease.tenant_id,
+        start_date: toDateInputValue(lease.start_date),
+        end_date: toDateInputValue(lease.end_date),
+        monthly_rent: lease.monthly_rent,
+        deposit: lease.deposit ?? 0,
+        water_rate: lease.water_rate ?? 0,
+        electricity_rate: lease.electricity_rate ?? 0,
+        notes: lease.notes ?? '',
+      });
+      setIsEditOpen(true);
+    },
+    [editForm, editLease]
+  );
 
   const columns = useMemo(
     () =>
       createLeaseColumns({
         onEdit: handleEdit,
-        onTerminate: (lease) => {
-          setSelectedLease(lease);
-          setIsTerminateOpen(true);
-        },
-        onDelete: (lease) => {
-          setSelectedLease(lease);
-          setIsDeleteOpen(true);
-        },
+        onTerminate: terminateConfirm.openFor,
+        onDelete: deleteConfirm.openFor,
       }),
-    [handleEdit]
+    [deleteConfirm.openFor, handleEdit, terminateConfirm.openFor]
   );
 
-  const handleFilterChange = (key: keyof LeaseFiltersState, value: unknown) => {
-    setFilters((current) => ({ ...current, [key]: value as LeaseFiltersState[typeof key] }));
-  };
+  const handleFilterChange = useCallback(
+    (key: keyof LeaseFiltersState, value: unknown) => {
+      setFilter(key, value as LeaseFiltersState[typeof key]);
+    },
+    [setFilter]
+  );
+
+  const handleEditDialogOpenChange = useCallback(
+    (open: boolean) => {
+      setIsEditOpen(open);
+
+      if (!open) {
+        editLease.clear();
+      }
+    },
+    [editLease]
+  );
 
   if (authLoading) {
     return (
@@ -124,30 +132,34 @@ export function LeasesPageContent() {
   return (
     <PermissionPageGuard>
       <MainLayout>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold" data-testid={LEASES.HEADING}>
-              租约管理
-            </h1>
-            <Button onClick={() => setIsCreateOpen(true)} data-testid={LEASES.NEW_BUTTON}>
-              <Plus className="mr-2 h-4 w-4" />
-              新增租约
-            </Button>
-          </div>
-
-          <LeaseFilters
-            apartments={apartments?.map((apartment) => ({ id: apartment.id, name: apartment.name })) ?? []}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-            onClearFilters={() => setFilters(getDefaultLeaseFilters())}
-          />
-
+        <ListPageLayout
+          title="租约管理"
+          titleTestId={LEASES.HEADING}
+          maxWidth="full"
+          className="w-full"
+          actions={
+            <PageToolbar>
+              <Button onClick={() => setIsCreateOpen(true)} data-testid={LEASES.NEW_BUTTON}>
+                <Plus className="mr-2 h-4 w-4" />
+                新增租约
+              </Button>
+            </PageToolbar>
+          }
+          toolbar={
+            <LeaseFilters
+              apartments={apartments?.map((apartment) => ({ id: apartment.id, name: apartment.name })) ?? []}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onClearFilters={resetFilters}
+            />
+          }
+        >
           {leasesLoading ? (
             <Skeleton className="h-96" />
           ) : (
             <DataTable columns={columns} data={filteredLeases} testid={LEASES.LIST} />
           )}
-        </div>
+        </ListPageLayout>
 
         <LeaseSigningDrawer
           orgId={orgId}
@@ -170,24 +182,22 @@ export function LeasesPageContent() {
 
         <LeaseEditDialog
           open={isEditOpen}
-          onOpenChange={setIsEditOpen}
-          selectedLease={selectedLease}
+          onOpenChange={handleEditDialogOpenChange}
+          selectedLease={editLease.selected}
           form={editForm}
-          onSubmit={(data) => updateMutation.mutate({ id: selectedLease!.id, data })}
+          onSubmit={(data) => updateMutation.mutate({ id: editLease.selected!.id, data })}
           isPending={updateMutation.isPending}
         />
 
         <LeaseTerminateDialog
-          open={isTerminateOpen}
-          onOpenChange={setIsTerminateOpen}
-          onConfirm={() => selectedLease && terminateMutation.mutate(selectedLease.id)}
+          {...terminateConfirm.dialogProps}
+          onConfirm={() => terminateConfirm.selectedItem && terminateMutation.mutate(terminateConfirm.selectedItem.id)}
           isPending={terminateMutation.isPending}
         />
 
         <LeaseDeleteDialog
-          open={isDeleteOpen}
-          onOpenChange={setIsDeleteOpen}
-          onConfirm={() => selectedLease && deleteMutation.mutate(selectedLease.id)}
+          {...deleteConfirm.dialogProps}
+          onConfirm={() => deleteConfirm.selectedItem && deleteMutation.mutate(deleteConfirm.selectedItem.id)}
           isPending={deleteMutation.isPending}
         />
       </MainLayout>

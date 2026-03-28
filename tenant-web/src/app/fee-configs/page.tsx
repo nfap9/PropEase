@@ -186,8 +186,7 @@ export default function FeeConfigPage() {
             <div className="flex items-center gap-4">
               <DollarSign className="h-8 w-8" />
               <div>
-                <h1 className="text-3xl font-bold" data-testid="fee-types-heading">费用配置</h1>
-                <p className="text-muted-foreground">管理费用类型和规格定价</p>
+                <h1 className="text-2xl font-semibold tracking-tight" data-testid="fee-types-heading">费用配置</h1>
               </div>
             </div>
             <Button onClick={() => openTypeDialog()} data-testid="fee-types-new-btn">

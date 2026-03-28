@@ -4,7 +4,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
@@ -29,14 +29,12 @@ const ExportTemplateDialog = dynamic(
   { ssr: false }
 );
 
-const BatchImportDialog = dynamic(
-  () => import('./components/BatchImportDialog').then((mod) => mod.BatchImportDialog),
-  { ssr: false }
-);
+const BatchImportDialog = dynamic(() => import('./components/BatchImportDialog').then((mod) => mod.BatchImportDialog), {
+  ssr: false,
+});
 
 const InitialReadingDialog = dynamic(
-  () =>
-    import('@/components/common/initial-reading-dialog').then((mod) => mod.InitialReadingDialog),
+  () => import('@/components/common/initial-reading-dialog').then((mod) => mod.InitialReadingDialog),
   { ssr: false }
 );
 
@@ -105,9 +103,7 @@ export default function UtilitiesPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isExportTemplateOpen, setIsExportTemplateOpen] = useState(false);
   const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
-  const [initialReadingRoom, setInitialReadingRoom] = useState<RoomMissingInitialReading | null>(
-    null
-  );
+  const [initialReadingRoom, setInitialReadingRoom] = useState<RoomMissingInitialReading | null>(null);
 
   const { data: apartments } = useQuery({
     queryKey: ['apartments', orgId],
@@ -146,16 +142,15 @@ export default function UtilitiesPage() {
   const scopeRooms = allRooms;
   const apartmentRooms = useMemo(() => {
     if (!apartments || !allRooms) return [];
-    return apartments.map((apt) => ({
-      apartment: apt,
-      rooms: allRooms.filter((r) => r.apartment_id === apt.id && r.status === 'occupied'),
-    })).filter((group) => group.rooms.length > 0);
+    return apartments
+      .map((apt) => ({
+        apartment: apt,
+        rooms: allRooms.filter((r) => r.apartment_id === apt.id && r.status === 'occupied'),
+      }))
+      .filter((group) => group.rooms.length > 0);
   }, [apartments, allRooms]);
 
-  const activeLeaseRoomIds = useMemo(
-    () => new Set(activeLeases.map((l) => l.room_id)),
-    [activeLeases]
-  );
+  const activeLeaseRoomIds = useMemo(() => new Set(activeLeases.map((l) => l.room_id)), [activeLeases]);
 
   const monthRoomsNeedInputCount = useMemo(() => {
     if (!scopeRooms) return null;
@@ -165,9 +160,7 @@ export default function UtilitiesPage() {
   const monthRoomsRecordedCount = useMemo(() => {
     if (!scopeRooms) return null;
     const needRoomIds = new Set(
-      scopeRooms
-        .filter((r) => r.status === 'occupied' && activeLeaseRoomIds.has(r.id))
-        .map((r) => r.id)
+      scopeRooms.filter((r) => r.status === 'occupied' && activeLeaseRoomIds.has(r.id)).map((r) => r.id)
     );
     const recordedRoomIds = new Set(monthUtilities.map((u) => u.room_id));
     let cnt = 0;
@@ -186,9 +179,7 @@ export default function UtilitiesPage() {
   const monthMissingLeases = useMemo(() => {
     if (!scopeRooms || !activeLeases.length) return [];
     const recordedRoomIds = new Set(monthUtilities.map((u) => u.room_id));
-    const occupiedRoomIds = new Set(
-      scopeRooms.filter((r) => r.status === 'occupied').map((r) => r.id)
-    );
+    const occupiedRoomIds = new Set(scopeRooms.filter((r) => r.status === 'occupied').map((r) => r.id));
 
     return activeLeases
       .filter((lease) => occupiedRoomIds.has(lease.room_id) && !recordedRoomIds.has(lease.room_id))
@@ -208,22 +199,21 @@ export default function UtilitiesPage() {
       queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
       setIsCreateOpen(false);
-      toast.success('水电读数录入成功');
+      appToast.success('水电读数录入成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '录入失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '录入失败，请重试')),
   });
 
   const batchImportMutation = useMutation({
-    mutationFn: (data: Parameters<typeof utilitiesApi.batchCreate>[1]) =>
-      utilitiesApi.batchCreate(orgId!, data),
+    mutationFn: (data: Parameters<typeof utilitiesApi.batchCreate>[1]) => utilitiesApi.batchCreate(orgId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
       setIsBatchImportOpen(false);
-      toast.success('批量导入成功');
+      appToast.success('批量导入成功');
     },
-    onError: (error) => toast.error(getErrorMessage(error, '批量导入失败，请重试')),
+    onError: (error) => appToast.error(getErrorMessage(error, '批量导入失败，请重试')),
   });
 
   const handleBatchImport = (payload: Parameters<typeof utilitiesApi.batchCreate>[1]) => {
@@ -258,7 +248,9 @@ export default function UtilitiesPage() {
       <MainLayout>
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold" data-testid={UTILITIES.HEADING}>水电记录</h1>
+            <h1 className="text-2xl font-semibold tracking-tight" data-testid={UTILITIES.HEADING}>
+              水电记录
+            </h1>
             <div className="flex gap-2">
               <Button variant="outline" asChild>
                 <Link href="/utilities/history">
@@ -305,18 +297,20 @@ export default function UtilitiesPage() {
                 monthRoomsMissingCount == null ? (
                 <p className="py-6 text-sm text-muted-foreground">暂无数据</p>
               ) : (
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="rounded-md border p-4">
-                    <div className="text-sm text-muted-foreground">需要录入房间</div>
-                    <div className="mt-1 text-2xl font-bold">{monthRoomsNeedInputCount}</div>
-                  </div>
-                  <div className="rounded-md border p-4">
-                    <div className="text-sm text-muted-foreground">已记录房间</div>
-                    <div className="mt-1 text-2xl font-bold">{monthRoomsRecordedCount}</div>
-                  </div>
-                  <div className="rounded-md border p-4">
-                    <div className="text-sm text-muted-foreground">未记录房间</div>
-                    <div className="mt-1 text-2xl font-bold">{monthRoomsMissingCount}</div>
+                <div className="rounded-xl border bg-muted/20 px-5 py-4">
+                  <div className="flex flex-wrap items-start gap-8">
+                    <div className="min-w-[120px]">
+                      <div className="text-sm text-muted-foreground">需要录入房间</div>
+                      <div className="mt-2 text-2xl font-bold">{monthRoomsNeedInputCount}</div>
+                    </div>
+                    <div className="min-w-[120px]">
+                      <div className="text-sm text-muted-foreground">已记录房间</div>
+                      <div className="mt-2 text-2xl font-bold text-foreground">{monthRoomsRecordedCount}</div>
+                    </div>
+                    <div className="min-w-[120px]">
+                      <div className="text-sm text-muted-foreground">未记录房间</div>
+                      <div className="mt-2 text-2xl font-bold text-amber-600">{monthRoomsMissingCount}</div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -369,9 +363,7 @@ export default function UtilitiesPage() {
                                 </Badge>
                               </div>
                             </td>
-                            <td className="px-4 py-2">
-                              {formatLeasePeriod(lease.start_date, lease.end_date)}
-                            </td>
+                            <td className="px-4 py-2">{formatLeasePeriod(lease.start_date, lease.end_date)}</td>
                           </tr>
                         );
                       })}
@@ -384,18 +376,13 @@ export default function UtilitiesPage() {
 
           {/* 未录入初始读数的房间 */}
           {roomsMissingInitial.length > 0 && (
-            <Card
-              className="border-amber-500/50"
-              data-testid={UTILITIES.MISSING_INITIAL_CARD}
-            >
+            <Card className="border-amber-500/50" data-testid={UTILITIES.MISSING_INITIAL_CARD}>
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <AlertCircle className="h-4 w-4 text-amber-600" />
                   未录入签约月初始读数的房间
                 </CardTitle>
-                <CardDescription>
-                  以下房间已签约但尚未录入签约月的初始水电读数，请及时补录
-                </CardDescription>
+                <CardDescription>以下房间已签约但尚未录入签约月的初始水电读数，请及时补录</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
@@ -417,11 +404,7 @@ export default function UtilitiesPage() {
                           <td className="px-4 py-2">{r.tenant_name}</td>
                           <td className="px-4 py-2">{r.lease_start_date}</td>
                           <td className="px-4 py-2 text-right">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setInitialReadingRoom(r)}
-                            >
+                            <Button variant="outline" size="sm" onClick={() => setInitialReadingRoom(r)}>
                               录入
                             </Button>
                           </td>
@@ -450,10 +433,7 @@ export default function UtilitiesPage() {
         ) : null}
 
         {isExportTemplateOpen ? (
-          <ExportTemplateDialog
-            open={isExportTemplateOpen}
-            onOpenChange={setIsExportTemplateOpen}
-          />
+          <ExportTemplateDialog open={isExportTemplateOpen} onOpenChange={setIsExportTemplateOpen} />
         ) : null}
 
         {isBatchImportOpen ? (

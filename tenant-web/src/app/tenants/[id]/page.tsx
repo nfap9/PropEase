@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
@@ -77,11 +77,11 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
     onSuccess: (_tenant, nextOptOut) => {
       queryClient.invalidateQueries({ queryKey: ['tenant', orgId, tenantId] });
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
-      toast.success(nextOptOut ? '已暂停短信触达' : '已恢复短信触达');
+      appToast.success(nextOptOut ? '已暂停短信触达' : '已恢复短信触达');
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : '操作失败，请稍后重试';
-      toast.error(message);
+      appToast.error(message);
     },
   });
 
@@ -189,8 +189,7 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">{tenant.name}</h1>
-              <p className="text-muted-foreground">租客详情</p>
+              <h1 className="text-2xl font-semibold tracking-tight">{tenant.name}</h1>
             </div>
           </div>
 
