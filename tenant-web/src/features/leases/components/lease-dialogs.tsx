@@ -22,6 +22,7 @@ import {
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import type { Lease } from '@/types';
 import { LEASES, type LeaseEditFormData } from '../leases.schemas';
 
@@ -58,7 +59,7 @@ export function LeaseEditDialog({
             <input type="hidden" {...form.register('tenant_id')} />
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <FormLabel htmlFor="edit-room">房间</FormLabel>
+                <Label htmlFor="edit-room">房间</Label>
                 <Input
                   id="edit-room"
                   value={
@@ -70,7 +71,7 @@ export function LeaseEditDialog({
                 />
               </div>
               <div className="space-y-2">
-                <FormLabel htmlFor="edit-tenant">租客</FormLabel>
+                <Label htmlFor="edit-tenant">租客</Label>
                 <Input id="edit-tenant" value={selectedLease?.tenant?.name || ''} disabled />
               </div>
             </div>

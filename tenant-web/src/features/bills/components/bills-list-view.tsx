@@ -50,6 +50,8 @@ export function BillsListView({
   onGenerate,
   onExport,
 }: BillsListViewProps) {
+  const pendingBillCount = stats.pending + stats.partial + stats.overdue;
+
   if (!orgId) {
     return (
       <div className="flex h-full flex-col items-center justify-center space-y-4">
@@ -69,26 +71,28 @@ export function BillsListView({
     >
       <div className="space-y-4">
         <Card>
-          <CardContent className="px-5 py-4 sm:px-6">
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-              <div className="min-w-[104px]">
+          <CardContent className="p-5 sm:p-6">
+            <div className="grid grid-cols-4 gap-4">
+              <div className="min-w-0">
                 <div className="text-sm text-muted-foreground">{tenantMessages.bills.list.total}</div>
                 <div className="mt-2 text-2xl font-semibold tracking-tight">{stats.total}</div>
               </div>
-              <div className="min-w-[140px]">
-                <div className="text-sm text-muted-foreground">{tenantMessages.bills.list.pendingAmount}</div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>{tenantMessages.bills.list.pendingAmount}</span>
+                  <span>{pendingBillCount} 笔</span>
+                </div>
                 <div className="mt-2 text-2xl font-semibold tracking-tight text-amber-600">
                   ¥{(stats.totalAmount - stats.paidAmount).toLocaleString('zh-CN')}
                 </div>
-                <div className="mt-1 text-xs text-muted-foreground">{stats.pending + stats.partial + stats.overdue} 笔</div>
               </div>
-              <div className="min-w-[140px]">
+              <div className="min-w-0">
                 <div className="text-sm text-muted-foreground">{tenantMessages.bills.list.paidAmount}</div>
                 <div className="mt-2 text-2xl font-semibold tracking-tight text-green-600">
                   ¥{stats.paidAmount.toLocaleString('zh-CN')}
                 </div>
               </div>
-              <div className="min-w-[104px]">
+              <div className="min-w-0">
                 <div className="text-sm text-muted-foreground">{tenantMessages.bills.list.overdueCount}</div>
                 <div className="mt-2 text-2xl font-semibold tracking-tight text-destructive">{stats.overdue}</div>
               </div>
@@ -111,7 +115,10 @@ export function BillsListView({
                     {tenantMessages.bills.list.generate}
                   </Button>
                   <FilterField label="状态">
-                    <Select value={statusFilter} onValueChange={(value) => onStatusFilterChange(value as BillStatus | 'all')}>
+                    <Select
+                      value={statusFilter}
+                      onValueChange={(value) => onStatusFilterChange(value as BillStatus | 'all')}
+                    >
                       <SelectTrigger className="w-full" data-testid={BILLS.STATUS_FILTER}>
                         <SelectValue placeholder={tenantMessages.bills.list.statusPlaceholder} />
                       </SelectTrigger>
