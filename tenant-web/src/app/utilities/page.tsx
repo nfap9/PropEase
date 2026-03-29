@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useState, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { type ColumnDef } from '@tanstack/react-table';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
@@ -12,14 +13,7 @@ import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Table,
-  TableHeader,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { DataTable } from '@/components/common/data-table';
 import { apartmentsApi, roomsApi, utilitiesApi, leasesApi, billsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
@@ -127,6 +121,107 @@ interface PendingUtilityBillRow {
   currentReading: UtilityReading | null;
 }
 
+const pendingUtilityBillColumns: ColumnDef<PendingUtilityBillRow>[] = [
+  {
+    id: 'room',
+    header: '房间',
+    size: 180,
+    minSize: 150,
+    meta: { sticky: 'left' as const },
+    cell: ({ row }) => (
+      <div>
+        <div>{row.original.apartmentName}</div>
+        <div className="font-medium">{row.original.roomNumber}</div>
+      </div>
+    ),
+  },
+  {
+    accessorKey: 'tenantName',
+    header: '租客',
+    size: 100,
+    minSize: 80,
+  },
+  {
+    accessorKey: 'periodLabel',
+    header: '账期',
+    size: 100,
+    minSize: 80,
+  },
+  {
+    id: 'previousReadings',
+    header: '上月水电读数',
+    size: 120,
+    minSize: 100,
+    cell: ({ row }) => (
+      <div>
+        <div>水 {formatMeterValue(row.original.waterPrevious)}</div>
+        <div className="text-muted-foreground">电 {formatMeterValue(row.original.electricityPrevious)}</div>
+      </div>
+    ),
+  },
+  {
+    id: 'currentReadings',
+    header: '本月水电读数',
+    size: 120,
+    minSize: 100,
+    cell: ({ row }) => (
+      <div>
+        <div>水 {formatMeterValue(row.original.waterCurrent)}</div>
+        <div className="text-muted-foreground">电 {formatMeterValue(row.original.electricityCurrent)}</div>
+      </div>
+    ),
+  },
+  {
+    id: 'usage',
+    header: '水电用量',
+    size: 120,
+    minSize: 100,
+    cell: ({ row }) => (
+      <div>
+        <div>水 {formatMeterValue(row.original.waterUsage)}</div>
+        <div className="text-muted-foreground">电 {formatMeterValue(row.original.electricityUsage)}</div>
+      </div>
+    ),
+  },
+  {
+    id: 'fees',
+    header: '水电费',
+    size: 140,
+    minSize: 120,
+    cell: ({ row }) => (
+      <div>
+        <div>{formatCurrencyValue(row.original.totalUtilityFee)}</div>
+        <div className="text-muted-foreground">
+          水 {formatCurrencyValue(row.original.waterFee)} / 电 {formatCurrencyValue(row.original.electricityFee)}
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'status',
+    header: '状态',
+    size: 100,
+    minSize: 80,
+    cell: ({ row }) => {
+      const statusConfig = UTILITY_BILL_STATUS_CONFIG[row.original.status];
+      return <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>;
+    },
+  },
+  {
+    accessorKey: 'deadline',
+    header: '出账截止时间',
+    size: 140,
+    minSize: 120,
+  },
+  {
+    id: 'actions',
+    header: '操作',
+    size: 100,
+    minSize: 80,
+    meta: { sticky: 'right' as const },
+  },
+];
+
 export default function UtilitiesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -153,6 +248,46 @@ export default function UtilitiesPage() {
     electricityPrevious?: number | null;
   } | null>(null);
   const [editingUtility, setEditingUtility] = useState<UtilityReading | null>(null);
+
+  const columns = useMemo<ColumnDef<PendingUtilityBillRow>[]>(() => {
+    const baseColumns: ColumnDef<PendingUtilityBillRow>[] = pendingUtilityBillColumns.map((col) => {
+      if (col.id === 'actions') {
+        return {
+          ...col,
+          cell: ({ row }) => {
+            const { currentReading, apartmentId, roomId, waterPrevious, electricityPrevious } = row.original;
+            return currentReading ? (
+              <Button variant="outline" size="sm" onClick={() => setEditingUtility(currentReading)}>
+                更新
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (!apartmentId) return;
+                  setCreatePreset({
+                    apartmentId,
+                    roomId,
+                    periodYear: currentYear,
+                    periodMonth: currentMonth,
+                    readingDate: today.toISOString().split('T')[0],
+                    waterPrevious,
+                    electricityPrevious,
+                  });
+                  setIsCreateOpen(true);
+                }}
+              >
+                录入
+              </Button>
+            );
+          },
+        };
+      }
+      return col;
+    });
+    return baseColumns;
+  }, [currentYear, currentMonth, today]);
 
   const { data: apartments } = useQuery({
     queryKey: ['apartments', orgId],
@@ -483,111 +618,18 @@ export default function UtilitiesPage() {
               </Card>
 
               <Card data-testid={UTILITIES.PENDING_BILLS_CARD}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">待出账水电账单</CardTitle>
-                    <CardDescription>按本月账期展示活跃租约的水电录入、出账准备和更新状态</CardDescription>
-                  </CardHeader>
-                  <CardContent className="!p-0">
-                    <Table data-testid={UTILITIES.LIST}>
-                      <colgroup>
-                        <col style={{ minWidth: 120 }} />
-                        <col style={{ minWidth: 80 }} />
-                        <col style={{ minWidth: 80 }} />
-                        <col style={{ minWidth: 100 }} />
-                        <col style={{ minWidth: 100 }} />
-                        <col style={{ minWidth: 100 }} />
-                        <col style={{ minWidth: 100 }} />
-                        <col style={{ minWidth: 80 }} />
-                        <col style={{ minWidth: 100 }} />
-                        <col style={{ minWidth: 80 }} />
-                      </colgroup>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="sticky left-0 z-10 bg-primary/10 before:absolute before:inset-0 before:-z-10 before:bg-primary/10">房间</TableHead>
-                          <TableHead>租客</TableHead>
-                          <TableHead>账期</TableHead>
-                          <TableHead>上月水电读数</TableHead>
-                          <TableHead>本月水电读数</TableHead>
-                          <TableHead>水电用量</TableHead>
-                          <TableHead>水电费</TableHead>
-                          <TableHead>状态</TableHead>
-                          <TableHead>出账截止时间</TableHead>
-                          <TableHead className="sticky right-0 z-10 bg-primary/10 before:absolute before:inset-0 before:-z-10 before:bg-primary/10 text-right">操作</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {pendingUtilityBills.map((row) => {
-                          const statusConfig = UTILITY_BILL_STATUS_CONFIG[row.status];
-                          return (
-                            <TableRow key={row.leaseId}>
-                              <TableCell className="sticky left-0 z-10 bg-card before:absolute before:inset-0 before:-z-10 before:bg-card">
-                                <div>{row.apartmentName}</div>
-                                <div className="font-medium">{row.roomNumber}</div>
-                              </TableCell>
-                              <TableCell>{row.tenantName}</TableCell>
-                              <TableCell>{row.periodLabel}</TableCell>
-                              <TableCell>
-                                <div>水 {formatMeterValue(row.waterPrevious)}</div>
-                                <div className="text-muted-foreground">电 {formatMeterValue(row.electricityPrevious)}</div>
-                              </TableCell>
-                              <TableCell>
-                                <div>水 {formatMeterValue(row.waterCurrent)}</div>
-                                <div className="text-muted-foreground">电 {formatMeterValue(row.electricityCurrent)}</div>
-                              </TableCell>
-                              <TableCell>
-                                <div>水 {formatMeterValue(row.waterUsage)}</div>
-                                <div className="text-muted-foreground">电 {formatMeterValue(row.electricityUsage)}</div>
-                              </TableCell>
-                              <TableCell>
-                                <div>{formatCurrencyValue(row.totalUtilityFee)}</div>
-                                <div className="text-muted-foreground">
-                                  水 {formatCurrencyValue(row.waterFee)} / 电 {formatCurrencyValue(row.electricityFee)}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant={statusConfig.variant}>
-                                  {statusConfig.label}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>{row.deadline}</TableCell>
-                              <TableCell className="sticky right-0 z-10 bg-card before:absolute before:inset-0 before:-z-10 before:bg-card text-right">
-                                {row.currentReading ? (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setEditingUtility(row.currentReading)}
-                                  >
-                                    更新
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                      if (!row.apartmentId) return;
-                                      setCreatePreset({
-                                        apartmentId: row.apartmentId,
-                                        roomId: row.roomId,
-                                        periodYear: currentYear,
-                                        periodMonth: currentMonth,
-                                        readingDate: today.toISOString().split('T')[0],
-                                        waterPrevious: row.waterPrevious,
-                                        electricityPrevious: row.electricityPrevious,
-                                      });
-                                      setIsCreateOpen(true);
-                                    }}
-                                  >
-                                    录入
-                                  </Button>
-                                )}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">待出账水电账单</CardTitle>
+                  <CardDescription>按本月账期展示活跃租约的水电录入、出账准备和更新状态</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <DataTable
+                    columns={columns}
+                    data={pendingUtilityBills}
+                    testid={UTILITIES.LIST}
+                  />
+                </CardContent>
+              </Card>
 
               {roomsMissingInitial.length > 0 && (
                 <Card className="border-amber-500/50" data-testid={UTILITIES.MISSING_INITIAL_CARD}>

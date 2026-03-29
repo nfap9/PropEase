@@ -59,6 +59,8 @@ export default function AdminOrganizationsPage() {
     {
       accessorKey: 'name',
       header: adminMessages.organizations.columns.name,
+      size: 200,
+      minSize: 150,
       cell: ({ row }) => (
         <Link
           href={`/organizations/${row.original.id}`}
@@ -68,11 +70,13 @@ export default function AdminOrganizationsPage() {
         </Link>
       ),
     },
-    { accessorKey: 'slug', header: 'Slug' },
-    { accessorKey: 'plan', header: adminMessages.organizations.columns.service },
+    { accessorKey: 'slug', header: 'Slug', size: 150, minSize: 120 },
+    { accessorKey: 'plan', header: adminMessages.organizations.columns.service, size: 140, minSize: 100 },
     {
       accessorKey: 'is_personal',
       header: adminMessages.organizations.columns.personal,
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_personal
           ? BOOLEAN_YES_NO_CONFIG.yes
@@ -83,6 +87,8 @@ export default function AdminOrganizationsPage() {
     {
       accessorKey: 'is_active',
       header: adminMessages.organizations.columns.status,
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_active
           ? ORG_STATUS_CONFIG.active
@@ -93,11 +99,15 @@ export default function AdminOrganizationsPage() {
     {
       accessorKey: 'created_at',
       header: adminMessages.organizations.columns.createdAt,
+      size: 180,
+      minSize: 150,
       cell: ({ row }) => formatDateTime(row.original.created_at),
     },
     {
       id: 'actions',
       header: adminMessages.organizations.columns.actions,
+      size: 140,
+      minSize: 120,
       cell: ({ row }) => {
         const org = row.original;
         return (

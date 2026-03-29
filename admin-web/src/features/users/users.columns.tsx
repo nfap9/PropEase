@@ -21,21 +21,27 @@ export function createAdminUsersColumns({
   onDelete,
 }: CreateAdminUsersColumnsOptions): ColumnDef<AdminUser>[] {
   return [
-    { accessorKey: 'username', header: '用户名' },
-    { accessorKey: 'name', header: '姓名' },
+    { accessorKey: 'username', header: '用户名', size: 140, minSize: 100 },
+    { accessorKey: 'name', header: '姓名', size: 120, minSize: 80 },
     {
       accessorKey: 'email',
       header: '邮箱',
+      size: 200,
+      minSize: 150,
       cell: ({ row }) => row.original.email ?? '—',
     },
     {
       accessorKey: 'role_name',
       header: adminMessages.users.columns.role,
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => row.original.role_name ?? '—',
     },
     {
       accessorKey: 'is_active',
       header: '状态',
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_active ? ORG_STATUS_CONFIG.active : ORG_STATUS_CONFIG.inactive;
         return <Badge variant={config.variant}>{config.label}</Badge>;
@@ -44,11 +50,15 @@ export function createAdminUsersColumns({
     {
       accessorKey: 'last_login_at',
       header: '最后登录',
+      size: 180,
+      minSize: 150,
       cell: ({ row }) => (row.original.last_login_at ? formatDateTime(row.original.last_login_at) : '—'),
     },
     {
       id: 'actions',
       header: '操作',
+      size: 140,
+      minSize: 120,
       cell: ({ row }) => (
         <TableActions
           actions={[

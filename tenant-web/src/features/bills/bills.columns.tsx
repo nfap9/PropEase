@@ -29,11 +29,15 @@ export function createBillsColumns({
     {
       accessorKey: 'bill_month',
       header: tenantMessages.bills.columns.month,
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => formatBillPeriod(row.original),
     },
     {
       accessorKey: 'lease',
       header: tenantMessages.bills.columns.roomTenant,
+      size: 200,
+      minSize: 160,
       cell: ({ row }) => (
         <div>
           <div>{formatBillLocation(row.original)}</div>
@@ -44,11 +48,15 @@ export function createBillsColumns({
     {
       accessorKey: 'total_amount',
       header: tenantMessages.bills.columns.totalAmount,
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => `¥${row.original.total_amount.toLocaleString()}`,
     },
     {
       accessorKey: 'paid_amount',
       header: tenantMessages.bills.columns.paidAmount,
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => (
         <span className={row.original.paid_amount < row.original.total_amount ? 'text-orange-600' : 'text-green-600'}>
           ¥{row.original.paid_amount.toLocaleString()}
@@ -58,11 +66,15 @@ export function createBillsColumns({
     {
       accessorKey: 'due_date',
       header: tenantMessages.bills.columns.dueDate,
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => formatDate(row.original.due_date),
     },
     {
       accessorKey: 'status',
       header: tenantMessages.bills.columns.status,
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => {
         const config = BILL_STATUS_CONFIG[row.original.status];
         const Icon = config.icon;
@@ -77,6 +89,8 @@ export function createBillsColumns({
     },
     {
       id: 'actions',
+      size: 140,
+      minSize: 120,
       cell: ({ row }) => {
         const bill = row.original;
         const actions: TableAction[] = [

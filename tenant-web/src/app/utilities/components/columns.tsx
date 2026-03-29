@@ -15,11 +15,15 @@ export function useColumns({ onEdit }: UseColumnsOptions): ColumnDef<UtilityRead
     {
       accessorKey: 'period_month',
       header: '月份',
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => `${row.original.period_year}年${row.original.period_month}月`,
     },
     {
       accessorKey: 'room',
       header: '房间',
+      size: 200,
+      minSize: 160,
       cell: ({ row }) => {
         const room = row.original.room;
         return room ? `${room.apartment?.name || ''} - ${room.room_number}` : '-';
@@ -28,11 +32,15 @@ export function useColumns({ onEdit }: UseColumnsOptions): ColumnDef<UtilityRead
     {
       accessorKey: 'reading_date',
       header: '记录日期',
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => formatDate(row.original.reading_date),
     },
     {
       accessorKey: 'water_reading',
       header: '水表读数',
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Droplets className="h-4 w-4 text-blue-500" />
@@ -45,6 +53,8 @@ export function useColumns({ onEdit }: UseColumnsOptions): ColumnDef<UtilityRead
     {
       accessorKey: 'electricity_reading',
       header: '电表读数',
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Zap className="h-4 w-4 text-yellow-500" />
@@ -57,6 +67,8 @@ export function useColumns({ onEdit }: UseColumnsOptions): ColumnDef<UtilityRead
     },
     {
       id: 'actions',
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => {
         const utility = row.original;
         const actions: TableAction[] = [

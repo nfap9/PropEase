@@ -24,11 +24,15 @@ export function useColumns({
       accessorKey: 'room_number',
       header: '房间号',
       enableSorting: true,
+      size: 120,
+      minSize: 100,
     },
     {
       accessorKey: 'apartment_name',
       header: '所属公寓',
       enableSorting: true,
+      size: 180,
+      minSize: 150,
       cell: ({ row }) => {
         const apartment = row.original.apartment;
         return apartment ? (
@@ -44,24 +48,32 @@ export function useColumns({
       accessorKey: 'layout',
       header: '户型',
       enableSorting: true,
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => row.original.layout || '-',
     },
     {
       accessorKey: 'area',
       header: '面积',
       enableSorting: true,
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => (row.original.area ? `${row.original.area} m²` : '-'),
     },
     {
       accessorKey: 'monthly_rent',
       header: '月租',
       enableSorting: true,
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => `¥${row.original.monthly_rent.toLocaleString()}`,
     },
     {
       accessorKey: 'status',
       header: '状态',
       enableSorting: true,
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => {
         const status = ROOM_STATUS_CONFIG[row.original.status];
         return <Badge variant={status.variant}>{status.label}</Badge>;
@@ -70,10 +82,14 @@ export function useColumns({
     {
       accessorKey: 'notes',
       header: '备注',
+      size: 200,
+      minSize: 120,
       cell: ({ row }) => <span className="text-muted-foreground">{row.original.notes || '-'}</span>,
     },
     {
       id: 'actions',
+      size: 140,
+      minSize: 120,
       cell: ({ row }) => {
         const room = row.original;
         const isAvailable = room.status === 'available';

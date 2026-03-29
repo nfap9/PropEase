@@ -150,6 +150,8 @@ export default function TenantsPage() {
     {
       accessorKey: 'name',
       header: '姓名',
+      size: 140,
+      minSize: 120,
       cell: ({ row }) => (
         <Link
           href={`/tenants/${row.original.id}`}
@@ -163,6 +165,8 @@ export default function TenantsPage() {
     {
       accessorKey: 'phone',
       header: '电话',
+      size: 140,
+      minSize: 120,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Phone className="h-4 w-4 text-muted-foreground" />
@@ -173,15 +177,21 @@ export default function TenantsPage() {
     {
       accessorKey: 'id_card',
       header: '身份证号',
+      size: 180,
+      minSize: 150,
       cell: ({ row }) => row.original.id_card || '-',
     },
     {
       accessorKey: 'emergency_contact',
       header: '紧急联系人',
+      size: 140,
+      minSize: 100,
       cell: ({ row }) => row.original.emergency_contact || '-',
     },
     {
       id: 'actions',
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => {
         const tenant = row.original;
         const actions: TableAction[] = [

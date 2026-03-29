@@ -132,6 +132,8 @@ export default function AdminSubscriptionsPage() {
     {
       accessorKey: 'organization_id',
       header: adminMessages.subscriptions.columns.teamId,
+      size: 200,
+      minSize: 150,
       cell: ({ row }) => (
         <Link href={`/organizations/${row.original.organization_id}`} className="text-primary hover:underline">
           {row.original.organization_id}
@@ -141,12 +143,16 @@ export default function AdminSubscriptionsPage() {
     {
       id: 'plan_name',
       header: adminMessages.subscriptions.columns.service,
+      size: 140,
+      minSize: 100,
       cell: ({ row }) => row.original.plan?.name ?? '—',
     },
-    { accessorKey: 'billing_cycle', header: adminMessages.subscriptions.columns.billingCycle },
+    { accessorKey: 'billing_cycle', header: adminMessages.subscriptions.columns.billingCycle, size: 120, minSize: 100 },
     {
       accessorKey: 'status',
       header: adminMessages.subscriptions.columns.status,
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => {
         const s = row.original.status;
         const config = SUBSCRIPTION_STATUS_CONFIG[s] ?? {
@@ -159,16 +165,22 @@ export default function AdminSubscriptionsPage() {
     {
       accessorKey: 'start_date',
       header: adminMessages.subscriptions.columns.startDate,
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => formatDate(row.original.start_date),
     },
     {
       accessorKey: 'end_date',
       header: adminMessages.subscriptions.columns.endDate,
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => formatDate(row.original.end_date),
     },
     {
       accessorKey: 'auto_renew',
       header: adminMessages.subscriptions.columns.autoRenew,
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => {
         const config = row.original.auto_renew ? BOOLEAN_YES_NO_CONFIG.yes : BOOLEAN_YES_NO_CONFIG.no;
         return <Badge variant={config.variant}>{config.label}</Badge>;
@@ -177,6 +189,8 @@ export default function AdminSubscriptionsPage() {
     {
       id: 'actions',
       header: adminMessages.subscriptions.columns.actions,
+      size: 140,
+      minSize: 120,
       cell: ({ row }) => {
         const sub = row.original;
         const isActive = sub.status === 'active';

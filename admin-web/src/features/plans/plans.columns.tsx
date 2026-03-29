@@ -19,21 +19,27 @@ export function createPlanColumns({
   onDelete,
 }: CreatePlanColumnsOptions): ColumnDef<AdminPlan>[] {
   return [
-    { accessorKey: 'name', header: adminMessages.plans.columns.name },
-    { accessorKey: 'code', header: adminMessages.plans.columns.code },
+    { accessorKey: 'name', header: adminMessages.plans.columns.name, size: 160, minSize: 120 },
+    { accessorKey: 'code', header: adminMessages.plans.columns.code, size: 120, minSize: 100 },
     {
       id: 'pricing',
       header: adminMessages.plans.columns.pricing,
+      size: 200,
+      minSize: 160,
       cell: ({ row }) => formatPlanPricing(row.original),
     },
     {
       id: 'limits',
       header: adminMessages.plans.columns.limits,
+      size: 200,
+      minSize: 160,
       cell: ({ row }) => formatPlanLimits(row.original),
     },
     {
       accessorKey: 'is_purchasable',
       header: adminMessages.plans.columns.purchasable,
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_purchasable
           ? BOOLEAN_YES_NO_CONFIG.yes
@@ -44,15 +50,19 @@ export function createPlanColumns({
     {
       accessorKey: 'is_active',
       header: adminMessages.plans.columns.enabled,
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_active ? BOOLEAN_YES_NO_CONFIG.yes : BOOLEAN_YES_NO_CONFIG.no;
         return <Badge variant={config.variant}>{config.label}</Badge>;
       },
     },
-    { accessorKey: 'sort_order', header: adminMessages.plans.columns.sortOrder },
+    { accessorKey: 'sort_order', header: adminMessages.plans.columns.sortOrder, size: 80, minSize: 60 },
     {
       id: 'actions',
       header: adminMessages.plans.columns.actions,
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => (
         <TableActions
           actions={[

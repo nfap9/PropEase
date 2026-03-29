@@ -24,6 +24,8 @@ export function createLeaseColumns({
     {
       accessorKey: 'room',
       header: '房间',
+      size: 180,
+      minSize: 150,
       cell: ({ row }) => {
         const room = row.original.room;
         if (!room) {
@@ -48,26 +50,36 @@ export function createLeaseColumns({
     {
       accessorKey: 'tenant',
       header: '租客',
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => row.original.tenant?.name || '-',
     },
     {
       accessorKey: 'start_date',
       header: '开始日期',
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => formatDate(row.original.start_date),
     },
     {
       accessorKey: 'end_date',
       header: '结束日期',
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => (row.original.end_date ? formatDate(row.original.end_date) : '长期'),
     },
     {
       accessorKey: 'monthly_rent',
       header: '月租',
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => `¥${row.original.monthly_rent.toLocaleString()}`,
     },
     {
       accessorKey: 'is_active',
       header: '状态',
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_active ? LEASE_STATUS_CONFIG.active : LEASE_STATUS_CONFIG.inactive;
         return <Badge variant={config.variant}>{config.label}</Badge>;
@@ -75,6 +87,8 @@ export function createLeaseColumns({
     },
     {
       id: 'actions',
+      size: 140,
+      minSize: 120,
       cell: ({ row }) => {
         const lease = row.original;
         const actions: TableAction[] = [

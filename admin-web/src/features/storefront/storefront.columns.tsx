@@ -18,11 +18,13 @@ export function createStorefrontColumns({
   onDelete: (storefront: StorefrontConfig) => void;
 }): ColumnDef<StorefrontConfig>[] {
   return [
-    { accessorKey: 'name', header: '商店名称' },
-    { accessorKey: 'code', header: '代码' },
+    { accessorKey: 'name', header: '商店名称', size: 180, minSize: 150 },
+    { accessorKey: 'code', header: '代码', size: 120, minSize: 100 },
     {
       accessorKey: 'is_default',
       header: '默认',
+      size: 80,
+      minSize: 60,
       cell: ({ row }) => {
         const config = row.original.is_default ? BOOLEAN_YES_NO_CONFIG.yes : BOOLEAN_YES_NO_CONFIG.no;
         return <Badge variant={config.variant}>{config.label}</Badge>;
@@ -31,6 +33,8 @@ export function createStorefrontColumns({
     {
       accessorKey: 'is_active',
       header: '启用',
+      size: 80,
+      minSize: 60,
       cell: ({ row }) => {
         const config = row.original.is_active ? BOOLEAN_YES_NO_CONFIG.yes : BOOLEAN_YES_NO_CONFIG.no;
         return <Badge variant={config.variant}>{config.label}</Badge>;
@@ -39,11 +43,15 @@ export function createStorefrontColumns({
     {
       id: 'items_count',
       header: '服务数量',
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => row.original.items?.length ?? 0,
     },
     {
       id: 'actions',
       header: '操作',
+      size: 180,
+      minSize: 160,
       cell: ({ row }) => (
         <TableActions
           actions={[
@@ -73,16 +81,22 @@ export function createStorefrontItemColumns({
     {
       id: 'sort',
       header: '',
+      size: 50,
+      minSize: 40,
       cell: () => <GripVertical className="h-4 w-4 text-muted-foreground" />,
     },
     {
       id: 'service_name',
       header: '服务名称',
+      size: 200,
+      minSize: 150,
       cell: ({ row }) => row.original.service?.name ?? row.original.service_id,
     },
     {
       accessorKey: 'is_visible',
       header: '可见',
+      size: 80,
+      minSize: 60,
       cell: ({ row }) => {
         const config = row.original.is_visible ? BOOLEAN_YES_NO_CONFIG.yes : BOOLEAN_YES_NO_CONFIG.no;
         return <Badge variant={config.variant}>{config.label}</Badge>;
@@ -91,6 +105,8 @@ export function createStorefrontItemColumns({
     {
       id: 'discounts',
       header: '折扣配置',
+      size: 300,
+      minSize: 200,
       cell: ({ row }) => {
         const discounts = row.original.pricing_discounts;
         if (!discounts || discounts.length === 0) {
@@ -106,6 +122,8 @@ export function createStorefrontItemColumns({
     {
       id: 'actions',
       header: '操作',
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => (
         <TableActions
           actions={[

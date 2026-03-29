@@ -23,11 +23,13 @@ export function createRegisteredUsersColumns({
   onDelete,
 }: CreateRegisteredUsersColumnsOptions): ColumnDef<AdminRegisteredUser>[] {
   return [
-    { accessorKey: 'phone', header: adminMessages.registeredUsers.columns.phone },
-    { accessorKey: 'full_name', header: adminMessages.registeredUsers.columns.name },
+    { accessorKey: 'phone', header: adminMessages.registeredUsers.columns.phone, size: 140, minSize: 120 },
+    { accessorKey: 'full_name', header: adminMessages.registeredUsers.columns.name, size: 140, minSize: 100 },
     {
       accessorKey: 'is_active',
       header: adminMessages.registeredUsers.columns.status,
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_active ? ORG_STATUS_CONFIG.active : ORG_STATUS_CONFIG.inactive;
         return <Badge variant={config.variant}>{config.label}</Badge>;
@@ -36,11 +38,15 @@ export function createRegisteredUsersColumns({
     {
       accessorKey: 'created_at',
       header: adminMessages.registeredUsers.columns.createdAt,
+      size: 180,
+      minSize: 150,
       cell: ({ row }) => formatDateTime(row.original.created_at),
     },
     {
       id: 'actions',
       header: adminMessages.registeredUsers.columns.actions,
+      size: 180,
+      minSize: 160,
       cell: ({ row }) => {
         const user = row.original;
         return (
