@@ -15,7 +15,8 @@ import {
 import { Avatar, AvatarFallback } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Bell, Building2, ChevronDown } from 'lucide-react';
-import { notificationsApi, subscriptionsApi } from '@/lib/api';
+import { notificationsApi } from '@/lib/api/notifications';
+import { subscriptionsApi } from '@/lib/api/subscriptions';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { usePermissions } from '@/hooks/use-permissions';
 import { canAccessRule } from '@/lib/permission-access';

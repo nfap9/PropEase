@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
@@ -223,6 +224,14 @@ export function LeaseFormDialog({
     createMutation.mutate(data);
   };
 
+  const setDateFieldValue = (field: 'start_date' | 'end_date', value: string) => {
+    form.setValue(field, value, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+  };
+
   // 添加费用到选中列表（同一费用类型只能选择一个规格）
   const handleAddFee = (feeType: FeeType, spec: FeeSpecification) => {
     const exists = selectedFees.some((f) => f.specification_id === spec.id);
@@ -355,11 +364,25 @@ export function LeaseFormDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="start_date">开始日期 *</Label>
-              <Input id="start_date" type="date" {...form.register('start_date')} data-testid="leases-start-date-input" />
+              <DateTimePicker
+                id="start_date"
+                mode="date"
+                value={form.watch('start_date')}
+                onChange={(value) => setDateFieldValue('start_date', value)}
+                data-testid="leases-start-date-input"
+                placeholder="选择开始日期"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="end_date">结束日期</Label>
-              <Input id="end_date" type="date" {...form.register('end_date')} />
+              <DateTimePicker
+                id="end_date"
+                mode="date"
+                value={form.watch('end_date')}
+                onChange={(value) => setDateFieldValue('end_date', value)}
+                data-testid="leases-end-date-input"
+                placeholder="选择结束日期"
+              />
             </div>
           </div>
 

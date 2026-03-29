@@ -5,6 +5,7 @@ import { Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
+import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -83,7 +84,16 @@ export function LeaseEditDialog({
                   <FormItem>
                     <FormLabel>开始日期 *</FormLabel>
                     <FormControl>
-                      <Input id="edit-start_date" type="date" {...field} data-testid={LEASES.START_DATE_INPUT} />
+                      <DateTimePicker
+                        id="edit-start_date"
+                        mode="date"
+                        value={field.value}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        data-testid={LEASES.START_DATE_INPUT}
+                        placeholder="选择开始日期"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -96,7 +106,16 @@ export function LeaseEditDialog({
                   <FormItem>
                     <FormLabel>结束日期</FormLabel>
                     <FormControl>
-                      <Input id="edit-end_date" type="date" {...field} data-testid={LEASES.END_DATE_INPUT} />
+                      <DateTimePicker
+                        id="edit-end_date"
+                        mode="date"
+                        value={field.value}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        data-testid={LEASES.END_DATE_INPUT}
+                        placeholder="选择结束日期"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -2,8 +2,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from '@/components/layout/providers';
 
-export const dynamic = 'force-dynamic';
-
 // 使用系统字体栈，避免构建时网络请求 Google Fonts
 const fontFamily = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 

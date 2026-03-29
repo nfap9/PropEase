@@ -2,6 +2,7 @@
 
 import { UseFormReturn } from 'react-hook-form';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
@@ -31,20 +32,42 @@ export function ContractInfoSection({
   onAddFee,
   onUpdateFeePrice,
 }: ContractInfoSectionProps) {
+  const setDateFieldValue = (field: 'start_date' | 'end_date', value: string) => {
+    form.setValue(field, value, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-medium text-muted-foreground">合同信息</h3>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="start_date">开始日期 *</Label>
-          <Input id="start_date" type="date" {...form.register('start_date')} />
+          <DateTimePicker
+            id="start_date"
+            mode="date"
+            value={form.watch('start_date')}
+            onChange={(value) => setDateFieldValue('start_date', value)}
+            data-testid="leases-start-date-input"
+            placeholder="选择开始日期"
+          />
           {form.formState.errors.start_date && (
             <p className="text-sm text-destructive">{form.formState.errors.start_date.message}</p>
           )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="end_date">结束日期</Label>
-          <Input id="end_date" type="date" {...form.register('end_date')} />
+          <DateTimePicker
+            id="end_date"
+            mode="date"
+            value={form.watch('end_date')}
+            onChange={(value) => setDateFieldValue('end_date', value)}
+            data-testid="leases-end-date-input"
+            placeholder="选择结束日期"
+          />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
