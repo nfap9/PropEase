@@ -10,6 +10,11 @@ import { NotFoundMessages } from '../messages.js';
 import { logger } from '../utils/logger.js';
 import { prisma } from '../lib/prisma.js';
 import { defaultBillService, type CreateBillInput } from './bill.service.js';
+import {
+  compareBooleanDesc,
+  compareDateDesc,
+  compareNaturalText,
+} from '../utils/intuitiveSort.js';
 
 /**
  * 创建租约输入
@@ -128,9 +133,20 @@ async function notifyOrgAdmins(
 export function createLeaseService(
   getRepo: () => LeaseRepository = () => createLeaseRepository(prisma)
 ): LeaseService {
+  const sortLeases = (leases: LeaseWithRelations[]) =>
+    [...leases].sort(
+      (left, right) =>
+        compareBooleanDesc(left.is_active, right.is_active) ||
+        compareNaturalText(left.room.apartment.name, right.room.apartment.name) ||
+        compareNaturalText(left.room.room_number, right.room.room_number) ||
+        compareDateDesc(left.start_date, right.start_date) ||
+        compareNaturalText(left.tenant?.name, right.tenant?.name)
+    );
+
   return {
     list: async (orgId: string, isActive?: boolean) => {
-      return getRepo().findByOrgId(orgId, isActive);
+      const leases = await getRepo().findByOrgId(orgId, isActive);
+      return sortLeases(leases);
     },
 
     getById: async (orgId: string, id: string) => {

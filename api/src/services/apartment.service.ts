@@ -10,6 +10,7 @@ import {
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
+import { compareNaturalText } from '../utils/intuitiveSort.js';
 
 /**
  * 创建公寓输入
@@ -126,18 +127,25 @@ function buildUpdateData(
 export function createApartmentService(
   getRepo: () => ApartmentRepository = () => createApartmentRepository(prisma)
 ): ApartmentService {
+  const sortRooms = (rooms: ApartmentWithRooms['rooms']) =>
+    [...rooms].sort((left, right) => compareNaturalText(left.room_number, right.room_number));
+
   return {
     listByOrg: async (orgId: string) => {
       const apartments = await getRepo().findByOrgIdWithRooms(orgId);
-      return apartments.map((apt): ApartmentWithStats => {
+      return [...apartments]
+        .sort((left, right) => compareNaturalText(left.name, right.name))
+        .map((apt): ApartmentWithStats => {
+        const sortedRooms = sortRooms(apt.rooms);
         const { land_area, total_area, landlord_rent, operating_cost, ...rest } = apt;
         return {
           ...rest,
+          rooms: sortedRooms,
           land_area: land_area != null ? Number(land_area) : null,
           total_area: total_area != null ? Number(total_area) : null,
           landlord_rent: landlord_rent != null ? Number(landlord_rent) : null,
           operating_cost: operating_cost != null ? Number(operating_cost) : null,
-          room_stats: calculateRoomStats(apt.rooms),
+          room_stats: calculateRoomStats(sortedRooms),
         } as ApartmentWithStats;
       });
     },
@@ -148,8 +156,10 @@ export function createApartmentService(
         throw createAppError(404, NotFoundMessages.APARTMENT);
       }
       const { land_area, total_area, landlord_rent, operating_cost, ...rest } = apartment;
+      const sortedRooms = sortRooms(apartment.rooms);
       return {
         ...rest,
+        rooms: sortedRooms,
         land_area: land_area != null ? Number(land_area) : null,
         total_area: total_area != null ? Number(total_area) : null,
         landlord_rent: landlord_rent != null ? Number(landlord_rent) : null,

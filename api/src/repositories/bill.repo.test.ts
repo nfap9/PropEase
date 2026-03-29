@@ -61,6 +61,16 @@ describe('BillRepository', () => {
       const result = await repository.findByOrgId(orgId);
 
       expect(result).toHaveLength(1);
+      expect(mockDb.bill.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderBy: [
+            { bill_year: 'desc' },
+            { bill_month: 'desc' },
+            { due_date: 'desc' },
+            { created_at: 'desc' },
+          ],
+        })
+      );
     });
   });
 

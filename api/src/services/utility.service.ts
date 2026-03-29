@@ -9,6 +9,11 @@ import {
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
+import {
+  compareDateDesc,
+  compareNaturalText,
+  compareNumberDesc,
+} from '../utils/intuitiveSort.js';
 
 export type ReadingContext = 'normal' | 'initial' | 'meter_reset';
 
@@ -337,9 +342,20 @@ function buildUpdateData(data: UpdateReadingInput): Prisma.UtilityReadingUpdateI
 export function createUtilityService(
   getRepo: () => UtilityRepository = () => createUtilityRepository(prisma)
 ): UtilityService {
+  const sortReadings = (readings: ReadingWithRelations[]) =>
+    [...readings].sort(
+      (left, right) =>
+        compareNumberDesc(left.period_year, right.period_year) ||
+        compareNumberDesc(left.period_month, right.period_month) ||
+        compareNaturalText(left.room.apartment.name, right.room.apartment.name) ||
+        compareNaturalText(left.room.room_number, right.room.room_number) ||
+        compareDateDesc(left.reading_date, right.reading_date)
+    );
+
   return {
     list: async (orgId: string, filter?: ReadingFilter) => {
-      return getRepo().findByOrgId(orgId, filter);
+      const readings = await getRepo().findByOrgId(orgId, filter);
+      return sortReadings(readings);
     },
 
     getById: async (orgId: string, id: string) => {
@@ -503,7 +519,12 @@ export function createUtilityService(
         });
       }
 
-      return result;
+      return result.sort(
+        (left, right) =>
+          compareNaturalText(left.apartment_name, right.apartment_name) ||
+          compareNaturalText(left.room_number, right.room_number) ||
+          compareNaturalText(left.tenant_name, right.tenant_name)
+      );
     },
 
     getExportList: async (
@@ -616,7 +637,12 @@ export function createUtilityService(
         })
       );
 
-      return exportList;
+      return exportList.sort(
+        (left, right) =>
+          compareNaturalText(left.apartment_name, right.apartment_name) ||
+          compareNaturalText(left.room_number, right.room_number) ||
+          compareNaturalText(left.tenant_name, right.tenant_name)
+      );
     },
   };
 }

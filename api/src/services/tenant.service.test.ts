@@ -52,6 +52,17 @@ describe('TenantService', () => {
 
       expect(mockRepo.findByOrgId).toHaveBeenCalledWith(orgId, '张三');
     });
+
+    it('should sort tenants by name naturally', async () => {
+      const tenantA = { ...sampleTenant, id: 'tenant-a', name: '租客10号' };
+      const tenantB = { ...sampleTenant, id: 'tenant-b', name: '租客2号' };
+      const tenantC = { ...sampleTenant, id: 'tenant-c', name: '租客1号' };
+      vi.mocked(mockRepo.findByOrgId).mockResolvedValue([tenantA, tenantB, tenantC]);
+
+      const result = await service.list(orgId);
+
+      expect(result.map((tenant) => tenant.name)).toEqual(['租客1号', '租客2号', '租客10号']);
+    });
   });
 
   describe('getById', () => {

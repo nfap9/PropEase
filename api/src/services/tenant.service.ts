@@ -4,6 +4,7 @@ import { createTenantRepository, type TenantRepository } from '../repositories/t
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
+import { compareNaturalText } from '../utils/intuitiveSort.js';
 
 /**
  * 创建租客输入
@@ -98,7 +99,12 @@ export function createTenantService(
 ): TenantService {
   return {
     list: async (orgId: string, search?: string) => {
-      return getRepo().findByOrgId(orgId, search);
+      const tenants = await getRepo().findByOrgId(orgId, search);
+      return [...tenants].sort(
+        (left, right) =>
+          compareNaturalText(left.name, right.name) ||
+          compareNaturalText(left.phone, right.phone)
+      );
     },
 
     getById: async (orgId: string, id: string) => {

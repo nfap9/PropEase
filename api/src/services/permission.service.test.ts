@@ -28,13 +28,18 @@ describe('PermissionService', () => {
 
   // ===== listAll =====
   describe('listAll', () => {
-    it('returns all permissions', async () => {
+    it('returns all permissions sorted by resource and action', async () => {
       repo.findAll.mockResolvedValue(allPermissions);
 
       const service = createPermissionService(() => repo as any);
       const result = await service.listAll();
 
-      expect(result).toEqual(allPermissions);
+      expect(result.map((item) => item.code)).toEqual([
+        'apartment:edit',
+        'apartment:view',
+        'settings:view',
+        'tenant:view',
+      ]);
       expect(repo.findAll).toHaveBeenCalled();
     });
   });
@@ -49,11 +54,11 @@ describe('PermissionService', () => {
 
       expect(result).toEqual({
         apartment: [
-          expect.objectContaining({ code: 'apartment:view' }),
           expect.objectContaining({ code: 'apartment:edit' }),
+          expect.objectContaining({ code: 'apartment:view' }),
         ],
-        tenant: [expect.objectContaining({ code: 'tenant:view' })],
         settings: [expect.objectContaining({ code: 'settings:view' })],
+        tenant: [expect.objectContaining({ code: 'tenant:view' })],
       });
     });
 
@@ -97,7 +102,7 @@ describe('PermissionService', () => {
 
       expect(result.role).toBe('member');
       expect(result.permissions).toHaveLength(2);
-      expect(result.permissions.map(p => p.code)).toEqual(['tenant:view', 'settings:view']);
+      expect(result.permissions.map(p => p.code)).toEqual(['settings:view', 'tenant:view']);
     });
 
     it('falls back to default permissions when not customized', async () => {
@@ -307,7 +312,7 @@ describe('PermissionService', () => {
     const result = await service.getMyPermissions('user-1', 'org-1');
 
     expect(result).toEqual({
-      permissions: ['apartment:view', 'tenant:view', 'settings:view', 'apartment:edit'],
+      permissions: ['apartment:edit', 'apartment:view', 'settings:view', 'tenant:view'],
       system_roles: [],
       is_super_admin: false,
     });
@@ -344,7 +349,7 @@ describe('PermissionService', () => {
     const result = await service.getMyPermissions('user-1', 'org-1');
 
     expect(result).toEqual({
-      permissions: ['tenant:view', 'settings:view'],
+      permissions: ['settings:view', 'tenant:view'],
       system_roles: [],
       is_super_admin: false,
     });

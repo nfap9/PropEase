@@ -102,6 +102,20 @@ describe('RoomService', () => {
       expect(result).toHaveLength(1);
     });
 
+    it('should sort rooms by room number naturally', async () => {
+      const { prisma } = await import('../lib/prisma.js');
+      vi.mocked(prisma.apartment.findFirst).mockResolvedValue(mockApartment as any);
+      vi.mocked(mockRepo.findByApartmentId).mockResolvedValue([
+        { ...mockRoom, id: 'room-10', room_number: '10' } as any,
+        { ...mockRoom, id: 'room-2', room_number: '2' } as any,
+        { ...mockRoom, id: 'room-1', room_number: '1' } as any,
+      ]);
+
+      const result = await service.listByApartment(orgId, apartmentId);
+
+      expect(result.map((room) => room.room_number)).toEqual(['1', '2', '10']);
+    });
+
     it('should throw 404 when apartment not found', async () => {
       const { prisma } = await import('../lib/prisma.js');
       vi.mocked(prisma.apartment.findFirst).mockResolvedValue(null);

@@ -10,6 +10,7 @@ import { createAppError } from '../utils/appError.js';
 import { toPrismaInputJsonValue } from '../utils/json.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
+import { compareNaturalText } from '../utils/intuitiveSort.js';
 
 /** 设施项 */
 interface FacilityItem {
@@ -130,6 +131,9 @@ function buildUpdateData(existing: Room, data: UpdateRoomInput): Prisma.RoomUpda
 export function createRoomService(
   getRepo: () => RoomRepository = () => createRoomRepository(prisma)
 ): RoomService {
+  const sortRooms = (rooms: Room[]) =>
+    [...rooms].sort((left, right) => compareNaturalText(left.room_number, right.room_number));
+
   return {
     getById: async (orgId: string, roomId: string) => {
       const room = await getRepo().findByIdWithApartment(roomId);
@@ -147,7 +151,8 @@ export function createRoomService(
       if (!apartment) {
         throw createAppError(404, NotFoundMessages.APARTMENT);
       }
-      return getRepo().findByApartmentId(apartmentId);
+      const rooms = await getRepo().findByApartmentId(apartmentId);
+      return sortRooms(rooms);
     },
 
     create: async (orgId: string, apartmentId: string, data: CreateRoomInput) => {

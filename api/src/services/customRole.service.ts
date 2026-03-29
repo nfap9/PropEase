@@ -4,6 +4,7 @@ import { defaultCustomRoleRepo } from '../repositories/customRole.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { ulid } from 'ulid';
+import { compareBooleanDesc, compareNaturalText } from '../utils/intuitiveSort.js';
 
 /**
  * 创建角色输入
@@ -53,7 +54,12 @@ export function createCustomRoleService(
 ): CustomRoleService {
   return {
     list: async (orgId: string) => {
-      return getRepo().findByOrgId(orgId);
+      const roles = await getRepo().findByOrgId(orgId);
+      return [...roles].sort(
+        (left, right) =>
+          compareBooleanDesc(left.is_active, right.is_active) ||
+          compareNaturalText(left.name, right.name)
+      );
     },
 
     initDefaultRoles: async (orgId: string) => {

@@ -165,6 +165,7 @@ describe('AdminRepository', () => {
         expect(mockAdminUser.findMany).toHaveBeenCalledWith({
           skip: 0,
           take: 10,
+          orderBy: [{ is_active: 'desc' }, { created_at: 'desc' }],
           include: { role: true },
         });
         expect(result).toHaveLength(1);
@@ -247,6 +248,7 @@ describe('AdminRepository', () => {
           skip: 0,
           take: 10,
           where: { is_active: true },
+          orderBy: [{ is_active: 'desc' }, { created_at: 'desc' }],
         });
         expect(result).toEqual([sampleOrg]);
       });
@@ -288,6 +290,7 @@ describe('AdminRepository', () => {
           skip: 0,
           take: 10,
           where: undefined,
+          orderBy: [{ is_active: 'desc' }, { created_at: 'desc' }],
           select: {
             id: true,
             phone: true,

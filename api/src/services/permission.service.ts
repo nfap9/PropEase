@@ -6,11 +6,13 @@ import { ulid } from 'ulid';
 import {
   ORG_MEMBER_ROLES,
   DEFAULT_ORG_ROLE_PERMISSIONS,
+  SYSTEM_ROLES,
   toPermissionCodes,
   type SystemRole,
   type OrgMemberRole,
 } from '../constants/permissionDefaults.js';
 import type { Prisma } from '@prisma/client';
+import { compareNaturalText } from '../utils/intuitiveSort.js';
 
 /**
  * 权限响应
@@ -72,13 +74,30 @@ export interface PermissionService {
 export function createPermissionService(
   getRepo: () => PermissionRepository = () => defaultPermissionRepo
 ): PermissionService {
+  const sortPermissions = <T extends Pick<Permission, 'resource' | 'action' | 'code'>>(list: T[]) =>
+    [...list].sort(
+      (left, right) =>
+        compareNaturalText(left.resource, right.resource) ||
+        compareNaturalText(left.action, right.action) ||
+        compareNaturalText(left.code, right.code)
+    );
+
+  const sortPermissionCodes = (codes: string[]) =>
+    [...codes].sort((left, right) => compareNaturalText(left, right));
+
+  const systemRolePriority = (role?: string | null) => {
+    const index = SYSTEM_ROLES.findIndex((item) => item === role);
+    return index >= 0 ? index : SYSTEM_ROLES.length;
+  };
+
   return {
     listAll: async () => {
-      return getRepo().findAll();
+      const permissions = await getRepo().findAll();
+      return sortPermissions(permissions);
     },
 
     listGrouped: async () => {
-      const list = await getRepo().findAll();
+      const list = sortPermissions(await getRepo().findAll());
       const grouped: Record<string, Permission[]> = {};
       for (const p of list) {
         const key = p.resource;
@@ -107,7 +126,7 @@ export function createPermissionService(
           ? rolePermissions
           : toPermissionCodes(DEFAULT_ORG_ROLE_PERMISSIONS[role]);
 
-      const permissions = await getRepo().findByCodes(codes);
+      const permissions = sortPermissions(await getRepo().findByCodes(codes));
 
       return {
         role,
@@ -168,7 +187,7 @@ export function createPermissionService(
       if (isSuperAdmin) {
         const perms = await getRepo().findAll();
         return {
-          permissions: perms.map((p) => p.code),
+          permissions: sortPermissionCodes(perms.map((p) => p.code)),
           system_roles: systemRoles,
           is_super_admin: true,
         };
@@ -207,14 +226,21 @@ export function createPermissionService(
       }
 
       return {
-        permissions: [...new Set(permissionCodes)],
-        system_roles: systemRoles,
+        permissions: sortPermissionCodes([...new Set(permissionCodes)]),
+        system_roles: [...systemRoles].sort(
+          (left, right) => systemRolePriority(left) - systemRolePriority(right)
+        ),
         is_super_admin: false,
       };
     },
 
     listSystemRoleConfigs: async () => {
-      return getRepo().findAllSystemRoleConfigs();
+      const configs = await getRepo().findAllSystemRoleConfigs();
+      return [...configs].sort(
+        (left, right) =>
+          systemRolePriority(left.role) - systemRolePriority(right.role) ||
+          compareNaturalText(left.name, right.name)
+      );
     },
 
     grantSystemRole: async (userId: string, role: SystemRole, granterId: string) => {
@@ -233,7 +259,9 @@ export function createPermissionService(
 
     getMySystemRoles: async (userId: string) => {
       const roles = await getRepo().findUserSystemRoles(userId);
-      return roles.map((r) => r.role);
+      return roles
+        .map((r) => r.role)
+        .sort((left, right) => systemRolePriority(left) - systemRolePriority(right));
     },
 
     isSuperAdmin: async (userId: string) => {

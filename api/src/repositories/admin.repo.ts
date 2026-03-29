@@ -184,6 +184,7 @@ export function createAdminRepository(db: DbClient): AdminRepository {
       const admins: AdminUserWithRoleRecord[] = await db.adminUser.findMany({
         skip,
         take: limit,
+        orderBy: [{ is_active: 'desc' }, { created_at: 'desc' }],
         include: { role: true },
       });
       return admins;
@@ -210,7 +211,9 @@ export function createAdminRepository(db: DbClient): AdminRepository {
     },
 
     listAdminRoles: async () => {
-      return db.adminRole.findMany();
+      return db.adminRole.findMany({
+        orderBy: [{ is_system: 'desc' }, { name: 'asc' }],
+      });
     },
 
     createAdminRole: async (data: Prisma.AdminRoleCreateInput) => {
@@ -237,7 +240,12 @@ export function createAdminRepository(db: DbClient): AdminRepository {
       limit?: number,
       where?: Prisma.OrganizationWhereInput
     ) => {
-      return db.organization.findMany({ skip, take: limit, where });
+      return db.organization.findMany({
+        skip,
+        take: limit,
+        where,
+        orderBy: [{ is_active: 'desc' }, { created_at: 'desc' }],
+      });
     },
 
     findOrganizationById: async (id: string) => {
@@ -260,6 +268,7 @@ export function createAdminRepository(db: DbClient): AdminRepository {
         skip,
         take: limit,
         where,
+        orderBy: [{ is_active: 'desc' }, { created_at: 'desc' }],
         select: { id: true, phone: true, full_name: true, is_active: true, created_at: true },
       }) as Promise<UserListItem[]>;
     },
@@ -319,6 +328,7 @@ export function createAdminRepository(db: DbClient): AdminRepository {
         skip,
         take: limit,
         where,
+        orderBy: [{ created_at: 'desc' }],
         include: { service: true, organization: true },
       });
       return subscriptions;

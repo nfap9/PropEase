@@ -31,6 +31,49 @@ describe('UtilityService', () => {
     service = createUtilityService(() => mockRepo);
   });
 
+  it('should sort reading list by period desc and room number naturally', async () => {
+    vi.mocked(mockRepo.findByOrgId).mockResolvedValue([
+      {
+        id: 'reading-old',
+        room_id: 'room-10',
+        period_year: 2025,
+        period_month: 12,
+        room: {
+          room_number: '10',
+          apartment: { name: 'A栋', organization_id: '01org' },
+        },
+      },
+      {
+        id: 'reading-new',
+        room_id: 'room-2',
+        period_year: 2026,
+        period_month: 3,
+        room: {
+          room_number: '2',
+          apartment: { name: 'A栋', organization_id: '01org' },
+        },
+      },
+      {
+        id: 'reading-same-period',
+        room_id: 'room-1',
+        period_year: 2026,
+        period_month: 3,
+        room: {
+          room_number: '1',
+          apartment: { name: 'A栋', organization_id: '01org' },
+        },
+      },
+    ] as any);
+
+    const result = await service.list('01org');
+
+    expect(result.map((item) => item.id)).toEqual([
+      'reading-same-period',
+      'reading-new',
+      'reading-old',
+    ]);
+  });
+
   it('should auto-fill previous readings from latest history on create', async () => {
     const { prisma } = await import('../lib/prisma.js');
     vi.mocked(prisma.room.findFirst).mockResolvedValue({

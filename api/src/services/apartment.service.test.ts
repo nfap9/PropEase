@@ -102,7 +102,15 @@ describe('ApartmentService', () => {
       const result = await service.getById(orgId, sampleApartment.id);
 
       expect(mockRepo.findByIdAndOrgWithRooms).toHaveBeenCalledWith(sampleApartment.id, orgId);
-      expect(result).toEqual(aptWithRooms);
+      expect(result).toEqual(
+        expect.objectContaining({
+          ...aptWithRooms,
+          land_area: null,
+          total_area: null,
+          landlord_rent: null,
+          operating_cost: null,
+        })
+      );
     });
 
     it('should throw 404 when apartment not found', async () => {

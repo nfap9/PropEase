@@ -100,6 +100,12 @@ export function createBillRepository(db: DbClient): BillRepository {
 
       return db.bill.findMany({
         where,
+        orderBy: [
+          { bill_year: 'desc' },
+          { bill_month: 'desc' },
+          { due_date: 'desc' },
+          { created_at: 'desc' },
+        ],
         include: {
           lease: {
             include: {
@@ -155,7 +161,10 @@ export function createPaymentRepository(db: DbClient): PaymentRepository {
       return db.payment.create({ data });
     },
     findByBillId: async (billId: string) => {
-      return db.payment.findMany({ where: { bill_id: billId } });
+      return db.payment.findMany({
+        where: { bill_id: billId },
+        orderBy: [{ payment_date: 'desc' }, { created_at: 'desc' }],
+      });
     },
   };
 }

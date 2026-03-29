@@ -12,6 +12,12 @@ import {
   DEFAULT_ORG_ROLE_PERMISSIONS,
   toPermissionCodes,
 } from '../constants/permissionDefaults.js';
+import {
+  compareBooleanDesc,
+  compareDateAsc,
+  compareNaturalText,
+  compareNumberAsc,
+} from '../utils/intuitiveSort.js';
 
 /**
  * 创建组织输入
@@ -66,17 +72,39 @@ export interface OrganizationService {
 export function createOrganizationService(
   getRepo: () => OrganizationRepository = () => createOrganizationRepository(prisma)
 ): OrganizationService {
+  const memberRolePriority = (role?: string | null): number => {
+    switch (role) {
+      case 'owner':
+        return 0;
+      case 'admin':
+        return 1;
+      case 'member':
+        return 2;
+      case 'viewer':
+        return 3;
+      default:
+        return 99;
+    }
+  };
+
   return {
     listByUser: async (userId: string) => {
       const orgsWithMembers = await getRepo().findByUserId(userId);
-      return orgsWithMembers.map((org) => {
+      return orgsWithMembers
+        .map((org) => {
         const member = org.members.find((m) => m.user_id === userId);
         return {
           ...org,
           members: undefined,
           role: member?.role ?? 'member',
         } as Organization & { role: string };
-      });
+      })
+        .sort(
+          (left, right) =>
+            compareBooleanDesc(left.is_personal, right.is_personal) ||
+            compareBooleanDesc(left.is_active, right.is_active) ||
+            compareNaturalText(left.name, right.name)
+        );
     },
 
     getById: async (orgId: string, userId: string) => {
@@ -173,7 +201,14 @@ export function createOrganizationService(
     },
 
     getMembers: async (orgId: string) => {
-      return getRepo().findMembersByOrgId(orgId);
+      const members = await getRepo().findMembersByOrgId(orgId);
+      return [...members].sort(
+        (left, right) =>
+          compareNumberAsc(memberRolePriority(left.role), memberRolePriority(right.role)) ||
+          compareNaturalText(left.user?.full_name, right.user?.full_name) ||
+          compareNaturalText(left.user?.phone, right.user?.phone) ||
+          compareDateAsc(left.created_at, right.created_at)
+      );
     },
 
     addMember: async (orgId: string, data: AddMemberInput) => {

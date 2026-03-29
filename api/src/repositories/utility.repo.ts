@@ -101,6 +101,12 @@ export function createUtilityRepository(db: DbClient): UtilityRepository {
 
       return db.utilityReading.findMany({
         where,
+        orderBy: [
+          { period_year: 'desc' },
+          { period_month: 'desc' },
+          { reading_date: 'desc' },
+          { created_at: 'desc' },
+        ],
         include: { room: { include: { apartment: true } } },
       }) as Promise<ReadingWithRelations[]>;
     },

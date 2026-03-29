@@ -20,6 +20,10 @@ export type { Resource, Action };
 // UI 标签保留在 per-app（中文本地化）
 export { RESOURCE_NAMES, ACTION_NAMES };
 
+export function getPermissionName(resource: Resource, action: Action): string {
+  return `${RESOURCE_NAMES[resource]}${ACTION_NAMES[action]}`;
+}
+
 export const SYSTEM_ROLES = [
   'super_admin',
   'support',

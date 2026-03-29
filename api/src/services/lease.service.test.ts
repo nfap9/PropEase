@@ -104,6 +104,52 @@ describe('LeaseService', () => {
 
       expect(mockRepo.findByOrgId).toHaveBeenCalledWith(orgId, true);
     });
+
+    it('should sort leases with active ones first and by apartment room naturally', async () => {
+      const inactiveLease = {
+        ...mockLeaseWithRelations,
+        id: 'lease-inactive',
+        is_active: false,
+        room: {
+          ...mockRoom,
+          room_number: '1',
+          apartment: { ...mockRoom.apartment, id: 'apt-z', name: 'Z栋' },
+        },
+      };
+      const activeLease10 = {
+        ...mockLeaseWithRelations,
+        id: 'lease-active-10',
+        is_active: true,
+        room: {
+          ...mockRoom,
+          room_number: '10',
+          apartment: { ...mockRoom.apartment, id: 'apt-a', name: 'A栋' },
+        },
+      };
+      const activeLease2 = {
+        ...mockLeaseWithRelations,
+        id: 'lease-active-2',
+        is_active: true,
+        room: {
+          ...mockRoom,
+          room_number: '2',
+          apartment: { ...mockRoom.apartment, id: 'apt-a', name: 'A栋' },
+        },
+      };
+      vi.mocked(mockRepo.findByOrgId).mockResolvedValue([
+        inactiveLease,
+        activeLease10,
+        activeLease2,
+      ] as any);
+
+      const result = await service.list(orgId);
+
+      expect(result.map((lease) => lease.id)).toEqual([
+        'lease-active-2',
+        'lease-active-10',
+        'lease-inactive',
+      ]);
+    });
   });
 
   describe('getById', () => {
