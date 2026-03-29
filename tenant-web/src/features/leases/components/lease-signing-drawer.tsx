@@ -8,6 +8,7 @@ import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { WizardDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import { leaseSigningSchema, type LeaseSigningFormData } from '../leases.schemas';
 import { leasesApi, apartmentsApi, roomsApi, tenantsApi, utilityConfigApi, feeTypesApi } from '@/lib/api';
+import { toDateInputValue } from '@/lib/date-utils';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { TenantSearchDrawer } from './tenant-search-drawer';
@@ -55,7 +56,12 @@ interface LeaseSigningDrawerProps {
   room?: Room | null;
   onSuccess?: () => void;
   /** 签约成功回调，用于后续录入初始水电等 */
-  onLeaseCreated?: (params: { room_id: string; room_display: string; start_date: string }) => void;
+  onLeaseCreated?: (params: {
+    room_id: string;
+    room_display: string;
+    start_date: string;
+    is_historical_entry: boolean;
+  }) => void;
 }
 
 export function LeaseSigningDrawer({
@@ -271,11 +277,17 @@ export function LeaseSigningDrawer({
       appToast.success('签约成功');
       const roomId = createdLease.room_id;
       const startDate = createdLease.start_date;
+      const isHistoricalEntry = variables.start_date < toDateInputValue(new Date());
       const matchedRoom = room ?? rooms?.find((r) => r.id === variables.room_id);
       const aptName =
         matchedRoom?.apartment?.name ?? apartments?.find((a) => a.id === matchedRoom?.apartment_id)?.name ?? '';
       const roomDisplay = matchedRoom ? `${aptName} - ${matchedRoom.room_number}` : '';
-      onLeaseCreated?.({ room_id: roomId, room_display: roomDisplay, start_date: startDate });
+      onLeaseCreated?.({
+        room_id: roomId,
+        room_display: roomDisplay,
+        start_date: startDate,
+        is_historical_entry: isHistoricalEntry,
+      });
       onSuccess?.();
     },
     onError: (error) => appToast.error(getErrorMessage(error, '签约失败，请重试')),

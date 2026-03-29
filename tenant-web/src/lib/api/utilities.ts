@@ -36,6 +36,21 @@ export const utilitiesApi = {
     return response.data;
   },
 
+  getLatestBefore: async (
+    orgId: string,
+    periodYear: number,
+    periodMonth: number
+  ): Promise<Record<string, UtilityReading>> => {
+    const response = await api.get<Record<string, UtilityReading>>('/utilities/latest-before', {
+      params: {
+        org_id: orgId,
+        period_year: periodYear,
+        period_month: periodMonth,
+      },
+    });
+    return response.data;
+  },
+
   get: async (orgId: string, id: string): Promise<UtilityReading> => {
     const response = await api.get<UtilityReading>(`/utilities/${id}`, {
       params: { org_id: orgId },

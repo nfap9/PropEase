@@ -85,6 +85,9 @@ export function FormDialog({
   cancelTestId,
   submitTestId,
 }: FormDialogProps) {
+  const generatedFormId = React.useId();
+  const resolvedFormId = formId ?? `form-dialog-${generatedFormId.replace(/:/g, '')}`;
+
   const handleCancel = () => {
     onCancel?.();
     if (!onCancel) {
@@ -100,7 +103,7 @@ export function FormDialog({
       <Button
         type="submit"
         variant={submitVariant}
-        form={formId}
+        form={resolvedFormId}
         disabled={submitDisabled || isPending}
         data-testid={submitTestId}
       >
@@ -121,7 +124,12 @@ export function FormDialog({
       bodyClassName={cn('py-0', bodyClassName)}
       footer={footer}
     >
-      <form id={formId} onSubmit={onSubmit} className={cn('space-y-4 py-5', formClassName)} data-testid={formTestId}>
+      <form
+        id={resolvedFormId}
+        onSubmit={onSubmit}
+        className={cn('space-y-4 py-5', formClassName)}
+        data-testid={formTestId}
+      >
         {children}
       </form>
     </AppDialog>

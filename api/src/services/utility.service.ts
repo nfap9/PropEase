@@ -297,6 +297,11 @@ export interface UtilityService {
     periodMonth?: number,
     daysRange?: number
   ): Promise<RoomExportInfo[]>;
+  getLatestReadingsBefore(
+    orgId: string,
+    periodYear: number,
+    periodMonth: number
+  ): Promise<Record<string, UtilityReading>>;
 }
 
 /**
@@ -643,6 +648,12 @@ export function createUtilityService(
           compareNaturalText(left.room_number, right.room_number) ||
           compareNaturalText(left.tenant_name, right.tenant_name)
       );
+    },
+
+    getLatestReadingsBefore: async (orgId: string, periodYear: number, periodMonth: number) => {
+      const map = await getRepo().findLatestReadingsBeforeForOrg(orgId, periodYear, periodMonth);
+      // Convert Map to plain object for JSON serialization
+      return Object.fromEntries(map);
     },
   };
 }

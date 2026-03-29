@@ -10,7 +10,6 @@ import {
   Bell,
   Shield,
   CreditCard,
-  History,
   DollarSign,
   MessageSquareMore,
 } from 'lucide-react';
@@ -82,16 +81,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: Zap,
     requiresOrganization: true,
     permission: PERMISSIONS.UTILITY_VIEW,
-    exact: true,
     id: 'utilities',
-  },
-  {
-    href: '/utilities/history',
-    label: tenantMessages.layout.nav.utilityHistory,
-    icon: History,
-    requiresOrganization: true,
-    permission: PERMISSIONS.UTILITY_VIEW,
-    id: 'utilities-history',
   },
   {
     href: '/bills',

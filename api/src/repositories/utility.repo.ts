@@ -55,6 +55,11 @@ export interface UtilityRepository {
     periodYear: number,
     periodMonth: number
   ): Promise<UtilityReading | null>;
+  findLatestReadingsBeforeForOrg(
+    orgId: string,
+    periodYear: number,
+    periodMonth: number
+  ): Promise<Map<string, UtilityReading>>;
   getRoomIdsByOrg(orgId: string): Promise<string[]>;
 }
 
@@ -151,6 +156,41 @@ export function createUtilityRepository(db: DbClient): UtilityRepository {
         },
         orderBy: [{ period_year: 'desc' }, { period_month: 'desc' }],
       });
+    },
+
+    findLatestReadingsBeforeForOrg: async (orgId: string, periodYear: number, periodMonth: number) => {
+      // Get all room ids for this org
+      const rooms = await db.room.findMany({
+        where: { apartment: { organization_id: orgId } },
+        select: { id: true },
+      });
+      const roomIds = rooms.map((r) => r.id);
+
+      if (roomIds.length === 0) {
+        return new Map();
+      }
+
+      // PostgreSQL DISTINCT ON: for each room_id, get the latest reading before the given period
+      const readings = await db.utilityReading.findMany({
+        where: {
+          room_id: { in: roomIds },
+          OR: [
+            { period_year: { lt: periodYear } },
+            {
+              period_year: periodYear,
+              period_month: { lt: periodMonth },
+            },
+          ],
+        },
+        orderBy: [
+          { room_id: 'asc' },
+          { period_year: 'desc' },
+          { period_month: 'desc' },
+        ],
+        distinct: ['room_id'],
+      });
+
+      return new Map(readings.map((r) => [r.room_id, r]));
     },
 
     getRoomIdsByOrg: async (orgId: string) => {

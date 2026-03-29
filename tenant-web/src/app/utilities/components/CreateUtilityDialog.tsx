@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle } from 'lucide-react';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
@@ -61,6 +61,15 @@ interface CreateUtilityDialogProps {
   isPending: boolean;
   apartmentRooms: ApartmentRoomGroup[];
   orgId: string;
+  preset?: {
+    apartmentId: string;
+    roomId: string;
+    periodYear: number;
+    periodMonth: number;
+    readingDate: string;
+    waterPrevious?: number | null;
+    electricityPrevious?: number | null;
+  } | null;
 }
 
 export function CreateUtilityDialog({
@@ -70,10 +79,12 @@ export function CreateUtilityDialog({
   isPending,
   apartmentRooms,
   orgId,
+  preset,
 }: CreateUtilityDialogProps) {
   const today = new Date();
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
+  const todayDate = today.toISOString().split('T')[0];
 
   const [existingReading, setExistingReading] = useState<UtilityReading | null>(null);
   const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
@@ -84,7 +95,7 @@ export function CreateUtilityDialog({
       room_id: '',
       period_year: currentYear,
       period_month: currentMonth,
-      reading_date: today.toISOString().split('T')[0],
+      reading_date: todayDate,
       water_reading: 0,
       electricity_reading: 0,
       reading_context: 'normal',
@@ -93,6 +104,41 @@ export function CreateUtilityDialog({
   });
 
   const readingContext = form.watch('reading_context');
+
+  useEffect(() => {
+    if (!open) return;
+
+    if (preset) {
+      setSelectedApartmentId(preset.apartmentId);
+      form.reset({
+        room_id: preset.roomId,
+        period_year: preset.periodYear,
+        period_month: preset.periodMonth,
+        reading_date: preset.readingDate,
+        water_reading: 0,
+        electricity_reading: 0,
+        water_previous: preset.waterPrevious ?? undefined,
+        electricity_previous: preset.electricityPrevious ?? undefined,
+        reading_context: 'normal',
+        notes: '',
+      });
+      return;
+    }
+
+    setSelectedApartmentId(null);
+    form.reset({
+      room_id: '',
+      period_year: currentYear,
+      period_month: currentMonth,
+      reading_date: todayDate,
+      water_reading: 0,
+      electricity_reading: 0,
+      water_previous: undefined,
+      electricity_previous: undefined,
+      reading_context: 'normal',
+      notes: '',
+    });
+  }, [currentMonth, currentYear, form, open, preset, todayDate]);
 
   // Filter rooms based on selected apartment
   const roomsForSelectedApartment = useMemo(() => {

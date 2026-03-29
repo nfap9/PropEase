@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useState, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -11,13 +11,23 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { apartmentsApi, roomsApi, utilitiesApi, leasesApi } from '@/lib/api';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Table,
+  TableHeader,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+} from '@apartment-ultra/shared-ui/components/ui';
+import { apartmentsApi, roomsApi, utilitiesApi, leasesApi, billsApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { formatDate } from '@/lib/date-utils';
 import { useAuth } from '@/lib/auth/context';
-import { Plus, Upload, Download, Building2, AlertCircle, History } from 'lucide-react';
-import type { RoomMissingInitialReading } from '@/lib/api/utilities';
+import { Plus, Upload, Download, Building2, AlertCircle } from 'lucide-react';
+import type { Bill, RoomMissingInitialReading, UtilityReading } from '@/types';
+import { UtilityHistoryPanel } from './components/utility-history-panel';
 
 const CreateUtilityDialog = dynamic(
   () => import('./components/CreateUtilityDialog').then((mod) => mod.CreateUtilityDialog),
@@ -38,6 +48,11 @@ const InitialReadingDialog = dynamic(
   { ssr: false }
 );
 
+const EditUtilityDialog = dynamic(
+  () => import('./components/EditUtilityDialog').then((mod) => mod.EditUtilityDialog),
+  { ssr: false }
+);
+
 // 注意: 实际使用时从 testids 导入 UTILITIES 常量
 const UTILITIES = {
   HEADING: 'utilities-heading',
@@ -46,7 +61,7 @@ const UTILITIES = {
   EXPORT_TEMPLATE_BUTTON: 'utilities-export-template-button',
   IMPORT_BUTTON: 'utilities-import-button',
   OVERVIEW_CARD: 'utilities-overview-card',
-  MISSING_LEASES_CARD: 'utilities-missing-leases-card',
+  PENDING_BILLS_CARD: 'utilities-pending-bills-card',
   MISSING_INITIAL_CARD: 'utilities-missing-initial-card',
 } as const;
 
@@ -55,46 +70,70 @@ function getBillingDay(dateStr: string): number {
   return new Date(dateStr).getDate();
 }
 
-// 计算出账状态
-type BillingStatus = 'recorded' | 'pending' | 'upcoming' | 'overdue';
+type UtilityBillStatus = 'pending_input' | 'input_overdue' | 'ready_to_bill' | 'billed';
 
-function getBillingStatus(billingDay: number, isRecorded: boolean): BillingStatus {
-  if (isRecorded) return 'recorded';
-
-  const today = new Date();
-  const currentDay = today.getDate();
-  const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-  const adjustedBillingDay = Math.min(billingDay, daysInMonth);
-
-  if (currentDay > adjustedBillingDay) {
-    return 'overdue';
-  } else if (currentDay >= adjustedBillingDay - 5) {
-    return 'upcoming';
-  }
-  return 'pending';
-}
-
-const BILLING_STATUS_CONFIG: Record<
-  BillingStatus,
-  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+const UTILITY_BILL_STATUS_CONFIG: Record<
+  UtilityBillStatus,
+  { label: string; variant: 'success' | 'warning' | 'destructive' | 'info' }
 > = {
-  recorded: { label: '已录入', variant: 'default' }, // 绿色（默认使用 default，但需要自定义样式）
-  pending: { label: '未录入', variant: 'secondary' }, // 蓝色
-  upcoming: { label: '即将到期', variant: 'outline' }, // 橙色（需要自定义样式）
-  overdue: { label: '已逾期', variant: 'destructive' }, // 红色
+  pending_input: { label: '待录入', variant: 'warning' },
+  input_overdue: { label: '录入逾期', variant: 'destructive' },
+  ready_to_bill: { label: '待出账', variant: 'info' },
+  billed: { label: '已出账', variant: 'success' },
 };
 
-// 格式化合同期
-function formatLeasePeriod(startDate: string, endDate: string | null): string {
-  const start = formatDate(startDate);
-  const end = endDate ? formatDate(endDate) : '长期';
-  return `${start} ~ ${end}`;
+function getPeriodKey(year: number, month: number) {
+  return year * 12 + month;
+}
+
+function getBillingDeadline(startDate: string, year: number, month: number) {
+  const billingDay = getBillingDay(startDate);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  return new Date(year, month - 1, Math.min(billingDay, daysInMonth));
+}
+
+function getUsage(current: number | null | undefined, previous: number | null | undefined) {
+  if (current == null || previous == null) return null;
+  return current - previous;
+}
+
+function formatMeterValue(value: number | null | undefined) {
+  return value == null ? '—' : Number(value).toFixed(2);
+}
+
+function formatCurrencyValue(value: number | null | undefined) {
+  return value == null ? '—' : `¥${value.toFixed(2)}`;
+}
+
+interface PendingUtilityBillRow {
+  leaseId: string;
+  apartmentId: string | null;
+  apartmentName: string;
+  roomId: string;
+  roomNumber: string;
+  tenantName: string;
+  periodLabel: string;
+  waterPrevious: number | null;
+  electricityPrevious: number | null;
+  waterCurrent: number | null;
+  electricityCurrent: number | null;
+  waterUsage: number | null;
+  electricityUsage: number | null;
+  waterFee: number | null;
+  electricityFee: number | null;
+  totalUtilityFee: number | null;
+  deadline: string;
+  status: UtilityBillStatus;
+  currentReading: UtilityReading | null;
 }
 
 export default function UtilitiesPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
+  const activeTab = searchParams.get('tab') === 'history' ? 'history' : 'entry';
 
   const today = new Date();
   const currentYear = today.getFullYear();
@@ -104,6 +143,16 @@ export default function UtilitiesPage() {
   const [isExportTemplateOpen, setIsExportTemplateOpen] = useState(false);
   const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
   const [initialReadingRoom, setInitialReadingRoom] = useState<RoomMissingInitialReading | null>(null);
+  const [createPreset, setCreatePreset] = useState<{
+    apartmentId: string;
+    roomId: string;
+    periodYear: number;
+    periodMonth: number;
+    readingDate: string;
+    waterPrevious?: number | null;
+    electricityPrevious?: number | null;
+  } | null>(null);
+  const [editingUtility, setEditingUtility] = useState<UtilityReading | null>(null);
 
   const { data: apartments } = useQuery({
     queryKey: ['apartments', orgId],
@@ -130,6 +179,18 @@ export default function UtilitiesPage() {
         period_year: currentYear,
         period_month: currentMonth,
       }),
+    enabled: !!orgId,
+  });
+
+  const { data: latestPreviousReadings = {} } = useQuery({
+    queryKey: ['utilities', 'latest-before', orgId, currentYear, currentMonth],
+    queryFn: () => utilitiesApi.getLatestBefore(orgId!, currentYear, currentMonth),
+    enabled: !!orgId,
+  });
+
+  const { data: currentMonthBills = [] } = useQuery({
+    queryKey: ['bills', orgId, currentYear, currentMonth],
+    queryFn: () => billsApi.list(orgId!, { year: currentYear, month: currentMonth }),
     enabled: !!orgId,
   });
 
@@ -175,21 +236,91 @@ export default function UtilitiesPage() {
       ? null
       : Math.max(0, monthRoomsNeedInputCount - monthRoomsRecordedCount);
 
-  // 本月未录入水电的活跃租约列表
-  const monthMissingLeases = useMemo(() => {
-    if (!scopeRooms || !activeLeases.length) return [];
-    const recordedRoomIds = new Set(monthUtilities.map((u) => u.room_id));
-    const occupiedRoomIds = new Set(scopeRooms.filter((r) => r.status === 'occupied').map((r) => r.id));
+  const pendingUtilityBills = useMemo(() => {
+    if (!activeLeases.length) return [];
+
+    const todayTime = today.getTime();
+    const currentPeriodKey = getPeriodKey(currentYear, currentMonth);
+    const currentReadingByRoom = new Map<string, UtilityReading>();
+    const latestPreviousReadingByRoom = new Map<string, UtilityReading>();
+    const billByLease = new Map<string, Bill>();
+
+    for (const reading of monthUtilities) {
+      currentReadingByRoom.set(reading.room_id, reading);
+    }
+
+    for (const reading of Object.values(latestPreviousReadings)) {
+      latestPreviousReadingByRoom.set(reading.room_id, reading);
+    }
+
+    for (const bill of currentMonthBills) {
+      billByLease.set(bill.lease_id, bill);
+    }
 
     return activeLeases
-      .filter((lease) => occupiedRoomIds.has(lease.room_id) && !recordedRoomIds.has(lease.room_id))
-      .sort((a, b) => {
-        // 按出账日期（签约日的日部分）排序
-        const aDay = new Date(a.start_date).getDate();
-        const bDay = new Date(b.start_date).getDate();
-        return aDay - bDay;
-      });
-  }, [activeLeases, monthUtilities, scopeRooms]);
+      .filter((lease) => lease.room != null)
+      .map((lease) => {
+        const currentReading = currentReadingByRoom.get(lease.room_id) ?? null;
+        const previousReading = latestPreviousReadingByRoom.get(lease.room_id) ?? null;
+        const currentBill = billByLease.get(lease.id) ?? null;
+        const deadlineDate = getBillingDeadline(lease.start_date, currentYear, currentMonth);
+        const waterPrevious = currentReading?.water_previous ?? previousReading?.water_reading ?? null;
+        const electricityPrevious =
+          currentReading?.electricity_previous ?? previousReading?.electricity_reading ?? null;
+        const waterCurrent = currentReading?.water_reading ?? null;
+        const electricityCurrent = currentReading?.electricity_reading ?? null;
+        const waterUsage = getUsage(waterCurrent, waterPrevious);
+        const electricityUsage = getUsage(electricityCurrent, electricityPrevious);
+        const computedWaterFee =
+          waterUsage != null ? waterUsage * Number(lease.water_rate ?? 0) : null;
+        const computedElectricityFee =
+          electricityUsage != null ? electricityUsage * Number(lease.electricity_rate ?? 0) : null;
+        const waterFee = currentBill ? Number(currentBill.water_amount ?? 0) : computedWaterFee;
+        const electricityFee = currentBill
+          ? Number(currentBill.electricity_amount ?? 0)
+          : computedElectricityFee;
+        const totalUtilityFee =
+          waterFee != null || electricityFee != null ? Number(waterFee ?? 0) + Number(electricityFee ?? 0) : null;
+
+        let status: UtilityBillStatus = 'pending_input';
+        if (currentBill) {
+          status = 'billed';
+        } else if (currentReading) {
+          status = 'ready_to_bill';
+        } else if (todayTime > deadlineDate.getTime()) {
+          status = 'input_overdue';
+        }
+
+        return {
+          leaseId: lease.id,
+          apartmentId: lease.room?.apartment_id ?? null,
+          apartmentName: lease.room?.apartment?.name ?? '-',
+          roomId: lease.room_id,
+          roomNumber: lease.room?.room_number ?? '-',
+          tenantName: lease.tenant?.name ?? '-',
+          periodLabel: `${currentYear}年${currentMonth}月`,
+          waterPrevious,
+          electricityPrevious,
+          waterCurrent,
+          electricityCurrent,
+          waterUsage,
+          electricityUsage,
+          waterFee,
+          electricityFee,
+          totalUtilityFee,
+          deadline: formatDate(deadlineDate),
+          status,
+          currentReading:
+            currentReading && lease.room
+              ? {
+                  ...currentReading,
+                  room: currentReading.room ?? lease.room,
+                }
+              : currentReading,
+        } satisfies PendingUtilityBillRow;
+      })
+      .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+  }, [activeLeases, latestPreviousReadings, currentMonth, currentMonthBills, currentYear, monthUtilities, today]);
 
   const createMutation = useMutation({
     mutationFn: (data: Parameters<typeof utilitiesApi.create>[1]) =>
@@ -202,6 +333,19 @@ export default function UtilitiesPage() {
       appToast.success('水电读数录入成功');
     },
     onError: (error) => appToast.error(getErrorMessage(error, '录入失败，请重试')),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof utilitiesApi.update>[2] }) =>
+      utilitiesApi.update(orgId!, id, filterEmptyStrings(data)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['bills', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
+      setEditingUtility(null);
+      appToast.success('水电读数更新成功');
+    },
+    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const batchImportMutation = useMutation({
@@ -218,6 +362,17 @@ export default function UtilitiesPage() {
 
   const handleBatchImport = (payload: Parameters<typeof utilitiesApi.batchCreate>[1]) => {
     batchImportMutation.mutate(payload);
+  };
+
+  const handleTabChange = (value: string) => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (value === 'history') {
+      nextParams.set('tab', 'history');
+    } else {
+      nextParams.delete('tab');
+    }
+    const query = nextParams.toString();
+    router.replace(query ? `/utilities?${query}` : '/utilities', { scroll: false });
   };
 
   if (authLoading) {
@@ -247,178 +402,243 @@ export default function UtilitiesPage() {
     <PermissionPageGuard>
       <MainLayout>
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold tracking-tight" data-testid={UTILITIES.HEADING}>
-              水电记录
-            </h1>
-            <div className="flex gap-2">
-              <Button variant="outline" asChild>
-                <Link href="/utilities/history">
-                  <History className="mr-2 h-4 w-4" />
-                  历史水电记录
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsExportTemplateOpen(true)}
-                data-testid={UTILITIES.EXPORT_TEMPLATE_BUTTON}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                导出模版
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsBatchImportOpen(true)}
-                data-testid={UTILITIES.IMPORT_BUTTON}
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                批量导入
-              </Button>
-              <Button onClick={() => setIsCreateOpen(true)} data-testid={UTILITIES.ENTRY_BUTTON}>
-                <Plus className="mr-2 h-4 w-4" />
-                录入读数
-              </Button>
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-3">
+                <h1 className="text-2xl font-semibold tracking-tight" data-testid={UTILITIES.HEADING}>
+                  水电记录
+                </h1>
+                <TabsList>
+                  <TabsTrigger value="entry">本月录入</TabsTrigger>
+                  <TabsTrigger value="history">历史记录</TabsTrigger>
+                </TabsList>
+              </div>
+
+              {activeTab === 'entry' ? (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsExportTemplateOpen(true)}
+                    data-testid={UTILITIES.EXPORT_TEMPLATE_BUTTON}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    导出模版
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsBatchImportOpen(true)}
+                    data-testid={UTILITIES.IMPORT_BUTTON}
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    批量导入
+                  </Button>
+                <Button
+                  onClick={() => {
+                    setCreatePreset(null);
+                    setIsCreateOpen(true);
+                  }}
+                  data-testid={UTILITIES.ENTRY_BUTTON}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  录入读数
+                </Button>
+                </div>
+              ) : null}
             </div>
-          </div>
 
-          {/* 本月水电录入概览 */}
-          <Card data-testid={UTILITIES.OVERVIEW_CARD}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">
-                {currentYear}年{currentMonth}月水电录入概览
-              </CardTitle>
-              <CardDescription>统计范围：全部公寓（仅统计有活跃租约的已入住房间）</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {monthUtilitiesLoading || !allRooms ? (
-                <Skeleton className="h-20" />
-              ) : monthRoomsNeedInputCount == null ||
-                monthRoomsRecordedCount == null ||
-                monthRoomsMissingCount == null ? (
-                <p className="py-6 text-sm text-muted-foreground">暂无数据</p>
-              ) : (
-                <div className="rounded-xl border bg-muted/20 px-5 py-4">
-                  <div className="flex flex-wrap items-start gap-8">
-                    <div className="min-w-[120px]">
-                      <div className="text-sm text-muted-foreground">需要录入房间</div>
-                      <div className="mt-2 text-2xl font-bold">{monthRoomsNeedInputCount}</div>
+            <TabsContent value="entry" className="space-y-6">
+              <Card data-testid={UTILITIES.OVERVIEW_CARD}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">
+                    {currentYear}年{currentMonth}月水电录入概览
+                  </CardTitle>
+                  <CardDescription>统计范围：全部公寓（仅统计有活跃租约的已入住房间）</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {monthUtilitiesLoading || !allRooms ? (
+                    <Skeleton className="h-20" />
+                  ) : monthRoomsNeedInputCount == null ||
+                    monthRoomsRecordedCount == null ||
+                    monthRoomsMissingCount == null ? (
+                    <p className="py-6 text-sm text-muted-foreground">暂无数据</p>
+                  ) : (
+                    <div className="rounded-xl border bg-muted/20 px-5 py-4">
+                      <div className="flex flex-wrap items-start gap-8">
+                        <div className="min-w-[120px]">
+                          <div className="text-sm text-muted-foreground">需要录入房间</div>
+                          <div className="mt-2 text-2xl font-bold">{monthRoomsNeedInputCount}</div>
+                        </div>
+                        <div className="min-w-[120px]">
+                          <div className="text-sm text-muted-foreground">已记录房间</div>
+                          <div className="mt-2 text-2xl font-bold text-foreground">{monthRoomsRecordedCount}</div>
+                        </div>
+                        <div className="min-w-[120px]">
+                          <div className="text-sm text-muted-foreground">未记录房间</div>
+                          <div className="mt-2 text-2xl font-bold text-amber-600">{monthRoomsMissingCount}</div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="min-w-[120px]">
-                      <div className="text-sm text-muted-foreground">已记录房间</div>
-                      <div className="mt-2 text-2xl font-bold text-foreground">{monthRoomsRecordedCount}</div>
-                    </div>
-                    <div className="min-w-[120px]">
-                      <div className="text-sm text-muted-foreground">未记录房间</div>
-                      <div className="mt-2 text-2xl font-bold text-amber-600">{monthRoomsMissingCount}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                  )}
+                </CardContent>
+              </Card>
 
-          {/* 本月未录入水电的租约 */}
-          {monthMissingLeases.length > 0 && (
-            <Card data-testid={UTILITIES.MISSING_LEASES_CARD}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">本月未录入水电的租约</CardTitle>
-                <CardDescription>以下活跃租约本月尚未录入水电读数</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border" data-testid={UTILITIES.LIST}>
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-muted/50">
-                        <th className="px-4 py-2 text-left font-medium">公寓</th>
-                        <th className="px-4 py-2 text-left font-medium">房间号</th>
-                        <th className="px-4 py-2 text-left font-medium">租客</th>
-                        <th className="px-4 py-2 text-left font-medium">出账日期</th>
-                        <th className="px-4 py-2 text-left font-medium">合同期</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {monthMissingLeases.map((lease) => {
-                        const billingDay = getBillingDay(lease.start_date);
-                        const status = getBillingStatus(billingDay, false);
-                        const config = BILLING_STATUS_CONFIG[status];
-                        return (
-                          <tr key={lease.id} className="border-b last:border-0">
-                            <td className="px-4 py-2">{lease.room?.apartment?.name ?? '-'}</td>
-                            <td className="px-4 py-2">{lease.room?.room_number ?? '-'}</td>
-                            <td className="px-4 py-2">{lease.tenant?.name ?? '-'}</td>
-                            <td className="px-4 py-2">
-                              <div className="flex items-center gap-2">
-                                <span>每月{billingDay}日</span>
-                                <Badge
-                                  variant={config.variant}
-                                  className={
-                                    status === 'recorded'
-                                      ? 'bg-green-600 hover:bg-green-700'
-                                      : status === 'upcoming'
-                                        ? 'border-orange-500 text-orange-600'
-                                        : undefined
-                                  }
-                                >
-                                  {config.label}
+              <Card data-testid={UTILITIES.PENDING_BILLS_CARD}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">待出账水电账单</CardTitle>
+                    <CardDescription>按本月账期展示活跃租约的水电录入、出账准备和更新状态</CardDescription>
+                  </CardHeader>
+                  <CardContent className="!p-0">
+                    <Table data-testid={UTILITIES.LIST}>
+                      <colgroup>
+                        <col style={{ minWidth: 120 }} />
+                        <col style={{ minWidth: 80 }} />
+                        <col style={{ minWidth: 80 }} />
+                        <col style={{ minWidth: 100 }} />
+                        <col style={{ minWidth: 100 }} />
+                        <col style={{ minWidth: 100 }} />
+                        <col style={{ minWidth: 100 }} />
+                        <col style={{ minWidth: 80 }} />
+                        <col style={{ minWidth: 100 }} />
+                        <col style={{ minWidth: 80 }} />
+                      </colgroup>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="sticky left-0 z-10 bg-primary/10 before:absolute before:inset-0 before:-z-10 before:bg-primary/10">房间</TableHead>
+                          <TableHead>租客</TableHead>
+                          <TableHead>账期</TableHead>
+                          <TableHead>上月水电读数</TableHead>
+                          <TableHead>本月水电读数</TableHead>
+                          <TableHead>水电用量</TableHead>
+                          <TableHead>水电费</TableHead>
+                          <TableHead>状态</TableHead>
+                          <TableHead>出账截止时间</TableHead>
+                          <TableHead className="sticky right-0 z-10 bg-primary/10 before:absolute before:inset-0 before:-z-10 before:bg-primary/10 text-right">操作</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {pendingUtilityBills.map((row) => {
+                          const statusConfig = UTILITY_BILL_STATUS_CONFIG[row.status];
+                          return (
+                            <TableRow key={row.leaseId}>
+                              <TableCell className="sticky left-0 z-10 bg-card before:absolute before:inset-0 before:-z-10 before:bg-card">
+                                <div>{row.apartmentName}</div>
+                                <div className="font-medium">{row.roomNumber}</div>
+                              </TableCell>
+                              <TableCell>{row.tenantName}</TableCell>
+                              <TableCell>{row.periodLabel}</TableCell>
+                              <TableCell>
+                                <div>水 {formatMeterValue(row.waterPrevious)}</div>
+                                <div className="text-muted-foreground">电 {formatMeterValue(row.electricityPrevious)}</div>
+                              </TableCell>
+                              <TableCell>
+                                <div>水 {formatMeterValue(row.waterCurrent)}</div>
+                                <div className="text-muted-foreground">电 {formatMeterValue(row.electricityCurrent)}</div>
+                              </TableCell>
+                              <TableCell>
+                                <div>水 {formatMeterValue(row.waterUsage)}</div>
+                                <div className="text-muted-foreground">电 {formatMeterValue(row.electricityUsage)}</div>
+                              </TableCell>
+                              <TableCell>
+                                <div>{formatCurrencyValue(row.totalUtilityFee)}</div>
+                                <div className="text-muted-foreground">
+                                  水 {formatCurrencyValue(row.waterFee)} / 电 {formatCurrencyValue(row.electricityFee)}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={statusConfig.variant}>
+                                  {statusConfig.label}
                                 </Badge>
-                              </div>
-                            </td>
-                            <td className="px-4 py-2">{formatLeasePeriod(lease.start_date, lease.end_date)}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                              </TableCell>
+                              <TableCell>{row.deadline}</TableCell>
+                              <TableCell className="sticky right-0 z-10 bg-card before:absolute before:inset-0 before:-z-10 before:bg-card text-right">
+                                {row.currentReading ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setEditingUtility(row.currentReading)}
+                                  >
+                                    更新
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      if (!row.apartmentId) return;
+                                      setCreatePreset({
+                                        apartmentId: row.apartmentId,
+                                        roomId: row.roomId,
+                                        periodYear: currentYear,
+                                        periodMonth: currentMonth,
+                                        readingDate: today.toISOString().split('T')[0],
+                                        waterPrevious: row.waterPrevious,
+                                        electricityPrevious: row.electricityPrevious,
+                                      });
+                                      setIsCreateOpen(true);
+                                    }}
+                                  >
+                                    录入
+                                  </Button>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
 
-          {/* 未录入初始读数的房间 */}
-          {roomsMissingInitial.length > 0 && (
-            <Card className="border-amber-500/50" data-testid={UTILITIES.MISSING_INITIAL_CARD}>
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <AlertCircle className="h-4 w-4 text-amber-600" />
-                  未录入签约月初始读数的房间
-                </CardTitle>
-                <CardDescription>以下房间已签约但尚未录入签约月的初始水电读数，请及时补录</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b bg-muted/50">
-                        <th className="px-4 py-2 text-left font-medium">公寓</th>
-                        <th className="px-4 py-2 text-left font-medium">房间号</th>
-                        <th className="px-4 py-2 text-left font-medium">租客</th>
-                        <th className="px-4 py-2 text-left font-medium">签约日期</th>
-                        <th className="px-4 py-2 text-right font-medium">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {roomsMissingInitial.map((r) => (
-                        <tr key={r.room_id} className="border-b last:border-0">
-                          <td className="px-4 py-2">{r.apartment_name}</td>
-                          <td className="px-4 py-2">{r.room_number}</td>
-                          <td className="px-4 py-2">{r.tenant_name}</td>
-                          <td className="px-4 py-2">{r.lease_start_date}</td>
-                          <td className="px-4 py-2 text-right">
-                            <Button variant="outline" size="sm" onClick={() => setInitialReadingRoom(r)}>
-                              录入
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  点击每行「录入」按钮可快速录入该房间签约月的初始水电读数，读数日期默认签约日期
-                </p>
-              </CardContent>
-            </Card>
-          )}
+              {roomsMissingInitial.length > 0 && (
+                <Card className="border-amber-500/50" data-testid={UTILITIES.MISSING_INITIAL_CARD}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <AlertCircle className="h-4 w-4 text-amber-600" />
+                      未录入签约月初始读数的房间
+                    </CardTitle>
+                    <CardDescription>以下房间已签约但尚未录入签约月的初始水电读数，请及时补录</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="rounded-md border">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b bg-muted/50">
+                            <th className="px-4 py-2 text-left font-medium">公寓</th>
+                            <th className="px-4 py-2 text-left font-medium">房间号</th>
+                            <th className="px-4 py-2 text-left font-medium">租客</th>
+                            <th className="px-4 py-2 text-left font-medium">签约日期</th>
+                            <th className="px-4 py-2 text-right font-medium">操作</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {roomsMissingInitial.map((room) => (
+                            <tr key={room.room_id} className="border-b last:border-0">
+                              <td className="px-4 py-2">{room.apartment_name}</td>
+                              <td className="px-4 py-2">{room.room_number}</td>
+                              <td className="px-4 py-2">{room.tenant_name}</td>
+                              <td className="px-4 py-2">{room.lease_start_date}</td>
+                              <td className="px-4 py-2 text-right">
+                                <Button variant="outline" size="sm" onClick={() => setInitialReadingRoom(room)}>
+                                  录入
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      点击每行「录入」按钮可快速录入该房间签约月的初始水电读数，读数日期默认签约日期
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="history" className="space-y-6">
+              <UtilityHistoryPanel orgId={orgId} />
+            </TabsContent>
+          </Tabs>
         </div>
 
         {isCreateOpen ? (
@@ -429,6 +649,7 @@ export default function UtilitiesPage() {
             isPending={createMutation.isPending}
             apartmentRooms={apartmentRooms}
             orgId={orgId!}
+            preset={createPreset}
           />
         ) : null}
 
@@ -464,6 +685,16 @@ export default function UtilitiesPage() {
             }}
           />
         )}
+
+        {editingUtility ? (
+          <EditUtilityDialog
+            open={!!editingUtility}
+            onOpenChange={(open) => !open && setEditingUtility(null)}
+            onSubmit={(data) => updateMutation.mutate({ id: editingUtility.id, data })}
+            isPending={updateMutation.isPending}
+            utility={editingUtility}
+          />
+        ) : null}
       </MainLayout>
     </PermissionPageGuard>
   );

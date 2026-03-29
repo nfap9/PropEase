@@ -28,6 +28,7 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { TenantSelectWithCreate } from '@/components/common/tenant-select-with-create';
 import { leasesApi, apartmentsApi, roomsApi, utilityConfigApi, feeTypesApi } from '@/lib/api';
+import { toDateInputValue } from '@/lib/date-utils';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { Room, Apartment } from '@/types';
@@ -60,6 +61,7 @@ export interface LeaseCreatedParams {
   room_id: string;
   room_display: string;
   start_date: string;
+  is_historical_entry: boolean;
 }
 
 export interface LeaseFormDialogProps {
@@ -208,13 +210,19 @@ export function LeaseFormDialog({
       appToast.success('签约成功');
       const roomId = createdLease.room_id;
       const startDate = createdLease.start_date;
+      const isHistoricalEntry = variables.start_date < toDateInputValue(new Date());
       const matchedRoom = room ?? rooms?.find((r) => r.id === variables.room_id);
       const aptName =
         matchedRoom?.apartment?.name ??
         apartments?.find((a) => a.id === matchedRoom?.apartment_id)?.name ??
         '';
       const roomDisplay = matchedRoom ? `${aptName} - ${matchedRoom.room_number}` : '';
-      onLeaseCreated?.({ room_id: roomId, room_display: roomDisplay, start_date: startDate });
+      onLeaseCreated?.({
+        room_id: roomId,
+        room_display: roomDisplay,
+        start_date: startDate,
+        is_historical_entry: isHistoricalEntry,
+      });
       onSuccess?.();
     },
     onError: (error) => appToast.error(getErrorMessage(error, '签约失败，请重试')),

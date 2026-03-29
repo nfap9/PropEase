@@ -177,6 +177,55 @@ router.get('/export', async (req: Request, res: Response, next: NextFunction) =>
 
 /**
  * @openapi
+ * /utilities/latest-before:
+ *   get:
+ *     summary: 获取所有房间在指定周期之前的最新水电读数
+ *     tags: [水电管理]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period_year
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: period_month
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: 以 room_id 为键的水电读数映射
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               additionalProperties:
+ *                 $ref: '#/components/schemas/UtilityReading'
+ */
+router.get('/latest-before', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    const periodYear = Number(req.query.period_year);
+    const periodMonth = Number(req.query.period_month);
+
+    if (!req.query.period_year || !req.query.period_month) {
+      throw createAppError(400, 'period_year 和 period_month 为必填参数');
+    }
+    if (isNaN(periodYear) || isNaN(periodMonth) || periodYear < 2020 || periodMonth < 1 || periodMonth > 12) {
+      throw createAppError(400, 'period_year 或 period_month 参数无效');
+    }
+
+    const result = await defaultUtilityService.getLatestReadingsBefore(orgId, periodYear, periodMonth);
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * @openapi
  * /utilities:
  *   post:
  *     summary: 创建水电读数

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,6 +34,8 @@ export interface InitialReadingDialogProps {
   roomDisplay: string;
   /** 签约开始日期，用于确定录入月份 */
   startDate: string;
+  /** 是否为历史租约录入后的首次水电录入 */
+  isHistoricalLeaseEntry?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
@@ -43,6 +46,7 @@ export function InitialReadingDialog({
   roomId,
   roomDisplay,
   startDate,
+  isHistoricalLeaseEntry = false,
   open,
   onOpenChange,
   onSuccess,
@@ -51,7 +55,11 @@ export function InitialReadingDialog({
   const periodYear = start.getFullYear();
   const periodMonth = start.getMonth() + 1;
   /** 读数日期默认签约日期 */
-  const defaultReadingDate = startDate.includes('T') ? startDate.split('T')[0] : startDate;
+  const defaultReadingDate = isHistoricalLeaseEntry
+    ? new Date().toISOString().split('T')[0]
+    : startDate.includes('T')
+      ? startDate.split('T')[0]
+      : startDate;
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -103,7 +111,19 @@ export function InitialReadingDialog({
       open={open}
       onOpenChange={onOpenChange}
       title="录入初始水电读数"
-      description="签约后需记录初始水电表读数，便于后续出账计算。可填写后保存，或跳过稍后在水电录入页补录。"
+      description={
+        isHistoricalLeaseEntry ? (
+          <>
+            历史租约已创建，建议先记录当前表底数。历史月份数据可稍后前往
+            <Link href="/utilities?tab=history" className="mx-1 underline underline-offset-4">
+              历史水电记录
+            </Link>
+            继续补录。
+          </>
+        ) : (
+          '签约后需记录初始水电表读数，便于后续出账计算。可填写后保存，或跳过稍后在水电录入页补录。'
+        )
+      }
       size="sm"
       onSubmit={form.handleSubmit(handleSubmit)}
       cancelLabel="跳过"

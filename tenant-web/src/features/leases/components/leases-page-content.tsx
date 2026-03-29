@@ -178,6 +178,7 @@ export function LeasesPageContent() {
             roomId={pendingInitialReading.room_id}
             roomDisplay={pendingInitialReading.room_display}
             startDate={pendingInitialReading.start_date}
+            isHistoricalLeaseEntry={pendingInitialReading.is_historical_entry}
             open={Boolean(pendingInitialReading)}
             onOpenChange={(open) => !open && setPendingInitialReading(null)}
             onSuccess={() => setPendingInitialReading(null)}
