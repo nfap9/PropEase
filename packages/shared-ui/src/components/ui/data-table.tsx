@@ -76,6 +76,8 @@ function resolveRowClassName<TData>(
 export function DataTable<TData, TValue>({
   columns,
   data,
+  title,
+  description,
   toolbar,
   enablePagination = true,
   defaultPageSize = 10,
@@ -126,6 +128,12 @@ export function DataTable<TData, TValue>({
   return (
     <div className={cn('space-y-4', className)} data-testid={testid}>
       <Card className="w-full p-0">
+        {(title || description) && (
+          <div className="border-b p-4">
+            {title && <h3 className="text-lg font-semibold">{title}</h3>}
+            {description && <p className="text-sm text-muted-foreground">{description}</p>}
+          </div>
+        )}
         {toolbar && <div className="flex items-center justify-between p-4">{toolbar}</div>}
         <div className="p-0">
           <div className="overflow-auto">

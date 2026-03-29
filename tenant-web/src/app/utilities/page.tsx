@@ -617,19 +617,14 @@ export default function UtilitiesPage() {
                 </CardContent>
               </Card>
 
-              <Card data-testid={UTILITIES.PENDING_BILLS_CARD}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">待出账水电账单</CardTitle>
-                  <CardDescription>按本月账期展示活跃租约的水电录入、出账准备和更新状态</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <DataTable
-                    columns={columns}
-                    data={pendingUtilityBills}
-                    testid={UTILITIES.LIST}
-                  />
-                </CardContent>
-              </Card>
+              <DataTable
+                data-testid={UTILITIES.PENDING_BILLS_CARD}
+                columns={columns}
+                data={pendingUtilityBills}
+                testid={UTILITIES.LIST}
+                title="待出账水电账单"
+                description="按本月账期展示活跃租约的水电录入、出账准备和更新状态"
+              />
 
               {roomsMissingInitial.length > 0 && (
                 <Card className="border-amber-500/50" data-testid={UTILITIES.MISSING_INITIAL_CARD}>
