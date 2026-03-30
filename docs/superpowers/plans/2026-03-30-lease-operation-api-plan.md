@@ -837,3 +837,160 @@ Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>"
 
 ---
 
+
+## Task 12: 编辑租约费用项目接口
+
+**Files:**
+- Modify: `api/src/services/lease.service.ts`
+
+- [ ] **Step 1: 在 LeaseService 接口中添加 updateFeeItems 方法**
+
+```typescript
+export interface UpdateFeeItemsInput {
+  fee_items: Array<{ fee_type_id: string; specification_id?: string; quantity: number }>;
+  effective_from_year: number;
+  effective_from_month: number;
+}
+```
+
+- [ ] **Step 2: 实现 updateFeeItems**
+
+校验生效期 >= 当前账期，校验所有 fee_type_id 在公寓已启用配置中，然后插入 LeaseChangeLog。
+
+- [ ] **Step 3: 提交**
+
+```bash
+git add api/src/services/lease.service.ts
+git commit -m "feat: 新增编辑租约费用项目接口
+```
+
+---
+
+## Task 13: 退租结算服务
+
+**Files:**
+- Create: `api/src/services/leaseSettlement.service.ts`
+
+- [ ] **Step 1: 实现 settleLease 函数**
+
+实现要点：
+- 校验租约归属与 is_active
+- 读取本月已有读数；若请求未提供且库中也无，则报错（禁止系统推算）
+- 在事务中：更新/创建读数 → 计算最后一期账单（房租+水电+费用项目） → 计算押金结算（违约押金不退） → 生成结算账单 → 终止租约 → 释放房间 → 写变更日志
+
+- [ ] **Step 2: 提交**
+
+```bash
+git add api/src/services/leaseSettlement.service.ts
+git commit -m "feat: 新增退租结算服务
+```
+
+---
+
+## Task 14: 路由注册
+
+**Files:**
+- Modify: `api/src/routes/v1/leases.ts`
+
+- [ ] **Step 1: 添加 Zod schema**
+
+为 8 个新接口添加请求体 schema。
+
+- [ ] **Step 2: 注册路由**
+
+注册：
+- POST /:id/change-rent
+- POST /:id/change-deposit
+- POST /:id/change-utility-rates
+- POST /:id/change-room
+- POST /:id/renew
+- POST /:id/update-tenant
+- POST /:id/update-fee-items
+- POST /:id/settle
+- GET /:id/change-logs
+
+- [ ] **Step 3: 提交**
+
+```bash
+git add api/src/routes/v1/leases.ts
+git commit -m "feat: 注册租约高级操作路由
+```
+
+---
+
+## Task 15: 定时任务 — 应用租约变更
+
+**Files:**
+- Create: `api/src/scheduler/applyLeaseChanges.ts`
+- Modify: `api/src/scheduler/index.ts`
+
+- [ ] **Step 1: 创建定时任务文件**
+
+每月 1 日 00:00 执行，查询当月生效的变更并应用到租约字段。
+
+- [ ] **Step 2: 在 scheduler/index.ts 注册 cron 任务**
+
+`0 0 1 * *`
+
+- [ ] **Step 3: 提交**
+
+```bash
+git add api/src/scheduler/applyLeaseChanges.ts api/src/scheduler/index.ts
+git commit -m "feat: 新增定时任务 applyLeaseChanges
+```
+
+---
+
+## Task 16: 账单生成支持生效期
+
+**Files:**
+- Modify: `api/src/services/billGeneration.ts`
+
+- [ ] **Step 1: 查询该账期生效的变更**
+
+在金额计算前，查询 effective_from_year/month <= 账单年月的 lease_change_logs。
+
+- [ ] **Step 2: 用 effective 值替换租约字段**
+
+将 Number(lease.monthly_rent) 等替换为从变更日志计算得到的 effectiveRent / effectiveWater / effectiveElec。
+
+- [ ] **Step 3: 提交**
+
+```bash
+git add api/src/services/billGeneration.ts
+git commit -m "feat: 账单生成支持生效期机制
+```
+
+---
+
+## Task 17: 扩展创建租约支持 fee_items
+
+**Files:**
+- Modify: `api/src/services/lease.service.ts`
+- Modify: `api/src/routes/v1/leases.ts`
+
+- [ ] **Step 1: CreateLeaseInput 和 schema 新增 fee_items**
+
+- [ ] **Step 2: 创建租约后批量插入 LeaseFeeItem**
+
+- [ ] **Step 3: 首期账单生成时写入 BillFeeItem**
+
+- [ ] **Step 4: 提交**
+
+```bash
+git add api/src/services/lease.service.ts api/src/routes/v1/leases.ts
+git commit -m "feat: 创建租约支持 fee_items 参数
+```
+
+---
+
+## 实施顺序
+
+1. Task 1 — 数据模型
+2. Task 2-4 — 仓储层 + 变更日志服务
+3. Task 5 — 改造 PUT /leases/:id
+4. Task 6-13 — 7 个专门接口 + 退租结算
+5. Task 14 — 路由注册
+6. Task 15 — 定时任务
+7. Task 16 — 账单生成改造
+8. Task 17 — 创建租约扩展
