@@ -4,6 +4,85 @@ import { logger } from '../utils/logger.js';
 import { defaultTenantReachabilityService } from './tenantReachability.service.js';
 
 /**
+ * 查询某租约在指定账期的生效值（考虑变更日志中的未来生效变更）
+ */
+async function getEffectiveLeaseValues(
+  leaseId: string,
+  billYear: number,
+  billMonth: number
+): Promise<{
+  monthly_rent: number;
+  water_rate: number;
+  electricity_rate: number;
+}> {
+  const lease = await prisma.lease.findUnique({
+    where: { id: leaseId },
+    select: { monthly_rent: true, water_rate: true, electricity_rate: true },
+  });
+
+  if (!lease) {
+    throw new Error(`Lease ${leaseId} not found`);
+  }
+
+  let effectiveRent = Number(lease.monthly_rent);
+  let effectiveWater = Number(lease.water_rate);
+  let effectiveElec = Number(lease.electricity_rate);
+
+  // 查询生效的变更日志
+  const changes = await prisma.leaseChangeLog.findMany({
+    where: {
+      lease_id: leaseId,
+      effective_from_year: { lte: billYear },
+      effective_from_month: { lte: billMonth },
+      change_type: { in: ['rent_change', 'utility_rate_change'] },
+    },
+    orderBy: { created_at: 'asc' },
+  });
+
+  // 取最新生效的变更
+  const latestRentChange = changes
+    .filter((c) => c.change_type === 'rent_change')
+    .sort((a, b) => {
+      if (a.effective_from_year !== b.effective_from_year) {
+        return b.effective_from_year! - a.effective_from_year!;
+      }
+      return b.effective_from_month! - a.effective_from_month!;
+    })[0];
+
+  const latestUtilChange = changes
+    .filter((c) => c.change_type === 'utility_rate_change')
+    .sort((a, b) => {
+      if (a.effective_from_year !== b.effective_from_year) {
+        return b.effective_from_year! - a.effective_from_year!;
+      }
+      return b.effective_from_month! - a.effective_from_month!;
+    })[0];
+
+  if (latestRentChange?.new_value) {
+    const nv = latestRentChange.new_value as Record<string, unknown>;
+    if (nv.monthly_rent !== undefined) {
+      effectiveRent = Number(nv.monthly_rent);
+    }
+  }
+
+  if (latestUtilChange?.new_value) {
+    const nv = latestUtilChange.new_value as Record<string, unknown>;
+    if (nv.water_rate !== undefined) {
+      effectiveWater = Number(nv.water_rate);
+    }
+    if (nv.electricity_rate !== undefined) {
+      effectiveElec = Number(nv.electricity_rate);
+    }
+  }
+
+  return {
+    monthly_rent: effectiveRent,
+    water_rate: effectiveWater,
+    electricity_rate: effectiveElec,
+  };
+}
+
+/**
  * 为指定组织生成指定周期的账单，与 POST /bills/generate 逻辑一致。
  */
 export async function generateBillsForOrg(
@@ -47,14 +126,17 @@ export async function generateBillsForOrg(
       where: { apartment_id: lease.room.apartment_id },
     });
 
-    const rentAmount = Number(lease.monthly_rent);
+    // 获取生效中的租约值（考虑未来生效的变更）
+    const effective = await getEffectiveLeaseValues(lease.id, billYear, billMonth);
+
+    const rentAmount = effective.monthly_rent;
     let waterAmount = 0;
     if (reading?.water_reading != null && reading?.water_previous != null) {
       const usage = Number(reading.water_reading) - Number(reading.water_previous);
       if (usage > 0) {
         const rate =
-          lease.water_rate != null
-            ? Number(lease.water_rate)
+          effective.water_rate > 0
+            ? effective.water_rate
             : config?.water_price_per_unit != null
               ? Number(config.water_price_per_unit)
               : 0;
@@ -66,8 +148,8 @@ export async function generateBillsForOrg(
       const usage = Number(reading.electricity_reading) - Number(reading.electricity_previous);
       if (usage > 0) {
         const rate =
-          lease.electricity_rate != null
-            ? Number(lease.electricity_rate)
+          effective.electricity_rate > 0
+            ? effective.electricity_rate
             : config?.electricity_price_per_unit != null
               ? Number(config.electricity_price_per_unit)
               : 0;

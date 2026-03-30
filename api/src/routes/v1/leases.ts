@@ -5,10 +5,65 @@ import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
 import { Messages } from '../../messages.js';
 import { defaultLeaseService } from '../../services/lease.service.js';
+import { defaultLeaseChangeLogService } from '../../services/leaseChangeLog.service.js';
+import { settleLease } from '../../services/leaseSettlement.service.js';
 
 const router: Router = Router();
 
 router.use(requireConsoleAuth);
+
+const ChangeRoomSchema = z.object({
+  new_roomId: z.string(),
+  changeDate: z.string(),
+  reason: z.string().optional(),
+});
+
+const RenewSchema = z.object({
+  newEndDate: z.string(),
+  reason: z.string().optional(),
+});
+
+const UpdateTenantSchema = z.object({
+  newTenantId: z.string(),
+});
+
+const ChangeRentSchema = z.object({
+  newRent: z.number(),
+  effectiveFromYear: z.number(),
+  effectiveFromMonth: z.number(),
+  reason: z.string().optional(),
+});
+
+const ChangeUtilityRatesSchema = z.object({
+  waterRate: z.number(),
+  electricityRate: z.number(),
+  effectiveFromYear: z.number(),
+  effectiveFromMonth: z.number(),
+});
+
+const ChangeDepositSchema = z.object({
+  newDeposit: z.number(),
+  reason: z.string().optional(),
+});
+
+const UpdateFeeItemsSchema = z.object({
+  feeItems: z.array(
+    z.object({
+      fee_type_id: z.string(),
+      specification_id: z.string().optional(),
+      quantity: z.number(),
+    })
+  ),
+  effectiveFromYear: z.number(),
+  effectiveFromMonth: z.number(),
+});
+
+const SettleSchema = z.object({
+  finalWaterReading: z.number().optional(),
+  finalElectricityReading: z.number().optional(),
+  penaltyAmount: z.number().optional(),
+  remarks: z.string().optional(),
+});
 
 const LeaseCreateSchema = z.object({
   room_id: z.string(),
@@ -21,6 +76,15 @@ const LeaseCreateSchema = z.object({
   water_rate: z.number().optional(),
   electricity_rate: z.number().optional(),
   notes: z.string().optional(),
+  fee_items: z
+    .array(
+      z.object({
+        fee_type_id: z.string(),
+        specification_id: z.string().optional(),
+        quantity: z.number().optional(),
+      })
+    )
+    .optional(),
 });
 const LeaseUpdateSchema = LeaseCreateSchema.partial();
 
@@ -277,6 +341,177 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
     const orgId = await requireOrgMembership(req);
     await defaultLeaseService.delete(orgId, req.params.id);
     res.status(204).send();
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * POST /leases/:id/change-room - 换房
+ */
+router.post('/:id/change-room', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    const parsed = ChangeRoomSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const result = await defaultLeaseService.changeRoom(
+      orgId,
+      req.params.id,
+      parsed.data.new_roomId,
+      parsed.data.changeDate,
+      parsed.data.reason
+    );
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * POST /leases/:id/renew - 续约
+ */
+router.post('/:id/renew', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    const parsed = RenewSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const result = await defaultLeaseService.renew(orgId, req.params.id, parsed.data.newEndDate, parsed.data.reason);
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * POST /leases/:id/update-tenant - 编辑租客信息
+ */
+router.post('/:id/update-tenant', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    const parsed = UpdateTenantSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const result = await defaultLeaseService.updateTenant(orgId, req.params.id, parsed.data.newTenantId);
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * POST /leases/:id/change-rent - 房租变更
+ */
+router.post('/:id/change-rent', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    const parsed = ChangeRentSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const result = await defaultLeaseService.changeRent(
+      orgId,
+      req.params.id,
+      parsed.data.newRent,
+      parsed.data.effectiveFromYear,
+      parsed.data.effectiveFromMonth,
+      parsed.data.reason
+    );
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * POST /leases/:id/change-utility-rates - 水电单价变更
+ */
+router.post('/:id/change-utility-rates', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    const parsed = ChangeUtilityRatesSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const result = await defaultLeaseService.changeUtilityRates(
+      orgId,
+      req.params.id,
+      parsed.data.waterRate,
+      parsed.data.electricityRate,
+      parsed.data.effectiveFromYear,
+      parsed.data.effectiveFromMonth
+    );
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * POST /leases/:id/change-deposit - 押金变更
+ */
+router.post('/:id/change-deposit', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    const parsed = ChangeDepositSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const result = await defaultLeaseService.changeDeposit(
+      orgId,
+      req.params.id,
+      parsed.data.newDeposit,
+      parsed.data.reason
+    );
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * POST /leases/:id/update-fee-items - 编辑租约费用项目
+ */
+router.post('/:id/update-fee-items', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    const parsed = UpdateFeeItemsSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const result = await defaultLeaseService.updateFeeItems(
+      orgId,
+      req.params.id,
+      parsed.data.feeItems,
+      parsed.data.effectiveFromYear,
+      parsed.data.effectiveFromMonth
+    );
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * POST /leases/:id/settle - 退租结算
+ */
+router.post('/:id/settle', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    const parsed = SettleSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const result = await settleLease({
+      lease_id: req.params.id,
+      org_id: orgId,
+      final_water_reading: parsed.data.finalWaterReading,
+      final_electricity_reading: parsed.data.finalElectricityReading,
+      penalty_amount: parsed.data.penaltyAmount,
+      remarks: parsed.data.remarks,
+    });
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * GET /leases/:id/change-logs - 获取变更日志
+ */
+router.get('/:id/change-logs', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await requireOrgMembership(req);
+    const logs = await defaultLeaseChangeLogService.list(req.params.id);
+    res.json(logs);
   } catch (e) {
     next(e);
   }

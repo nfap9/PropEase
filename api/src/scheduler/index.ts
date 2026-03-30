@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { logger } from '../utils/logger.js';
 import { runMonthlyBillGeneration } from './monthlyBills.js';
 import { checkExpiringLeases, checkOverdueBills, checkUpcomingDueBills } from './notificationChecks.js';
+import { applyLeaseChanges } from './applyLeaseChanges.js';
 
 /**
  * 注册定时任务：
@@ -38,6 +39,20 @@ export function startScheduler(): void {
     { timezone: 'Asia/Shanghai' }
   );
 
+  // 每月 1 日 00:00 应用租约变更（房租、水电单价等）
+  cron.schedule(
+    '0 0 1 * *',
+    async () => {
+      try {
+        const result = await applyLeaseChanges();
+        logger.info({ result }, 'Apply lease changes completed');
+      } catch (e) {
+        logger.error({ err: e }, 'Apply lease changes failed');
+      }
+    },
+    { timezone: 'Asia/Shanghai' }
+  );
+
   cron.schedule(
     '3 8 * * *',
     async () => {
@@ -64,5 +79,5 @@ export function startScheduler(): void {
     { timezone: 'Asia/Shanghai' }
   );
 
-  logger.info('Scheduler started (monthly bills, expiring leases, upcoming due bills, overdue bills)');
+  logger.info('Scheduler started (monthly bills, apply lease changes, expiring leases, upcoming due bills, overdue bills)');
 }
