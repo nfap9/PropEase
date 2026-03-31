@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // 换房
 export const changeRoomSchema = z.object({
-  new_roomId: z.string().min(1, '请选择目标房间'),
+  newRoomId: z.string().min(1, '请选择目标房间'),
   changeDate: z.string().min(1, '请选择变更日期'),
   reason: z.string().optional(),
 });
@@ -48,8 +48,8 @@ export type ChangeDepositFormData = z.infer<typeof changeDepositSchema>;
 
 // 编辑费用项目
 export const feeItemRowSchema = z.object({
-  fee_type_id: z.string().min(1, '请选择费用类型'),
-  specification_id: z.string().optional(),
+  feeTypeId: z.string().min(1, '请选择费用类型'),
+  specificationId: z.string().optional(),
   quantity: z.coerce.number().min(1, '数量至少为1'),
 });
 
