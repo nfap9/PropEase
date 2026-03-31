@@ -2,6 +2,18 @@ import { ulid } from 'ulid';
 import { prisma } from '../lib/prisma.js';
 import { logger } from '../utils/logger.js';
 import { defaultTenantReachabilityService } from './tenantReachability.service.js';
+import type { LeaseRepository } from '../repositories/lease.repo.js';
+import type { BillRepository } from '../repositories/bill.repo.js';
+import type { UtilityRepository } from '../repositories/utility.repo.js';
+import type { OrgFeeItemRepository } from '../repositories/orgFeeItem.repo.js';
+import type { UtilityConfigRepository } from '../repositories/utilityConfig.repo.js';
+import type { LeaseChangeLogRepository } from '../repositories/leaseChangeLog.repo.js';
+import { createLeaseRepository } from '../repositories/lease.repo.js';
+import { createBillRepository } from '../repositories/bill.repo.js';
+import { createUtilityRepository } from '../repositories/utility.repo.js';
+import { createOrgFeeItemRepository } from '../repositories/orgFeeItem.repo.js';
+import { createUtilityConfigRepository } from '../repositories/utilityConfig.repo.js';
+import { createLeaseChangeLogRepository } from '../repositories/leaseChangeLog.repo.js';
 
 /**
  * 查询某租约在指定账期的生效值（考虑变更日志中的未来生效变更）
@@ -9,16 +21,15 @@ import { defaultTenantReachabilityService } from './tenantReachability.service.j
 async function getEffectiveLeaseValues(
   leaseId: string,
   billYear: number,
-  billMonth: number
+  billMonth: number,
+  leaseRepo: LeaseRepository,
+  _changeLogRepo: LeaseChangeLogRepository
 ): Promise<{
   monthly_rent: number;
   water_rate: number;
   electricity_rate: number;
 }> {
-  const lease = await prisma.lease.findUnique({
-    where: { id: leaseId },
-    select: { monthly_rent: true, water_rate: true, electricity_rate: true },
-  });
+  const lease = await leaseRepo.findById(leaseId);
 
   if (!lease) {
     throw new Error(`Lease ${leaseId} not found`);
@@ -28,7 +39,7 @@ async function getEffectiveLeaseValues(
   let effectiveWater = Number(lease.water_rate);
   let effectiveElec = Number(lease.electricity_rate);
 
-  // 查询生效的变更日志
+  // 查询生效的变更日志 - 直接查询保留（changeLog repo 签名不同）
   const changes = await prisma.leaseChangeLog.findMany({
     where: {
       lease_id: leaseId,
@@ -82,6 +93,15 @@ async function getEffectiveLeaseValues(
   };
 }
 
+export interface GenerateBillsDeps {
+  leaseRepo: LeaseRepository;
+  billRepo: BillRepository;
+  utilityRepo: UtilityRepository;
+  orgFeeItemRepo: OrgFeeItemRepository;
+  utilityConfigRepo: UtilityConfigRepository;
+  leaseChangeLogRepo: LeaseChangeLogRepository;
+}
+
 /**
  * 为指定组织生成指定周期的账单，与 POST /bills/generate 逻辑一致。
  */
@@ -90,44 +110,54 @@ export async function generateBillsForOrg(
   billYear: number,
   billMonth: number,
   dueDate: Date,
-  leaseIds?: string[]
+  leaseIds?: string[],
+  deps?: Partial<GenerateBillsDeps>
 ): Promise<{ created: number; skipped: number }> {
-  const rooms = await prisma.room.findMany({
+  // 提供默认 repository 实例
+  const leaseRepo = deps?.leaseRepo ?? createLeaseRepository(prisma);
+  const billRepo = deps?.billRepo ?? createBillRepository(prisma);
+  const utilityRepo = deps?.utilityRepo ?? createUtilityRepository(prisma);
+  const orgFeeItemRepo = deps?.orgFeeItemRepo ?? createOrgFeeItemRepository(prisma);
+  const utilityConfigRepo = deps?.utilityConfigRepo ?? createUtilityConfigRepository(prisma);
+  const leaseChangeLogRepo = deps?.leaseChangeLogRepo ?? createLeaseChangeLogRepository(prisma);
+
+  // 使用 RoomRepository 获取组织下的房间
+  // 注意: findByApartmentId 查询的是 apartment_id，而 orgId 是 organization_id
+  // 需要重新查询 - 使用原始方式获取 roomIds
+  const roomRecords = await prisma.room.findMany({
     where: { apartment: { organization_id: orgId } },
     select: { id: true },
   });
-  const roomIds = rooms.map((r) => r.id);
-  let leases = await prisma.lease.findMany({
-    where: {
-      room_id: { in: roomIds },
-      is_active: true,
-      room: { status: 'occupied' },
-    },
-    include: { room: { include: { apartment: true } } },
-  });
+  const roomIds = roomRecords.map((r) => r.id);
+
+  // 使用 LeaseRepository.findActiveByRoomIds
+  let leases = await leaseRepo.findActiveByRoomIds(roomIds);
   if (leaseIds?.length) leases = leases.filter((l) => leaseIds.includes(l.id));
 
   let created = 0;
   let skipped = 0;
 
   for (const lease of leases) {
-    const existing = await prisma.bill.findFirst({
-      where: { lease_id: lease.id, bill_year: billYear, bill_month: billMonth },
-    });
+    // 使用 BillRepository.findByLeaseAndPeriod
+    const existing = await billRepo.findByLeaseAndPeriod(lease.id, billYear, billMonth);
     if (existing) {
       skipped += 1;
       continue;
     }
 
-    const reading = await prisma.utilityReading.findFirst({
-      where: { room_id: lease.room_id, period_year: billYear, period_month: billMonth },
-    });
-    const config = await prisma.utilityConfig.findUnique({
-      where: { apartment_id: lease.room.apartment_id },
-    });
+    // 使用 UtilityRepository.findExistingReading
+    const reading = await utilityRepo.findExistingReading(lease.room_id, billYear, billMonth);
+    // 使用 UtilityConfigRepository.findByApartmentId
+    const config = await utilityConfigRepo.findByApartmentId(lease.room.apartment_id);
 
     // 获取生效中的租约值（考虑未来生效的变更）
-    const effective = await getEffectiveLeaseValues(lease.id, billYear, billMonth);
+    const effective = await getEffectiveLeaseValues(
+      lease.id,
+      billYear,
+      billMonth,
+      leaseRepo,
+      leaseChangeLogRepo
+    );
 
     const rentAmount = effective.monthly_rent;
     let waterAmount = 0;
@@ -157,12 +187,9 @@ export async function generateBillsForOrg(
       }
     }
 
-    // 查询组织启用的费用项目
-    const feeItems = await prisma.orgFeeItem.findMany({
-      where: {
-        organization_id: lease.room.apartment.organization_id,
-        is_active: true,
-      },
+    // 使用 OrgFeeItemRepository.findByOrgId
+    const feeItems = await orgFeeItemRepo.findByOrgId(lease.room.apartment.organization_id, {
+      isActive: true,
     });
 
     // 计算费用明细
@@ -210,7 +237,7 @@ export async function generateBillsForOrg(
 
     const billId = ulid().toLowerCase();
 
-    // 使用事务创建账单和费用明细
+    // 使用事务创建账单和费用明细 - 事务内部继续使用 tx
     await prisma.$transaction(async (tx) => {
       await tx.bill.create({
         data: {

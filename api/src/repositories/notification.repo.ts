@@ -1,4 +1,4 @@
-import type { Notification } from '@prisma/client';
+import type { Notification, Prisma } from '@prisma/client';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -11,6 +11,7 @@ export interface NotificationRepository {
   findByIdAndUser(id: string, userId: string): Promise<Notification | null>;
   markAllRead(userId: string): Promise<void>;
   markRead(id: string): Promise<void>;
+  create(data: Prisma.NotificationCreateInput): Promise<Notification>;
 }
 
 /**
@@ -50,6 +51,10 @@ export function createNotificationRepository(db: DbClient): NotificationReposito
         where: { id },
         data: { is_read: true },
       });
+    },
+
+    create: async (data: Prisma.NotificationCreateInput) => {
+      return db.notification.create({ data });
     },
   };
 }

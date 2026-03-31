@@ -43,6 +43,7 @@ export interface BillRepository {
   update(id: string, data: Prisma.BillUpdateInput): Promise<Bill>;
   delete(id: string): Promise<void>;
   getLeaseIdsByOrg(orgId: string): Promise<string[]>;
+  findByLeaseAndPeriod(leaseId: string, year: number, month: number): Promise<Bill | null>;
 }
 
 /**
@@ -140,6 +141,12 @@ export function createBillRepository(db: DbClient): BillRepository {
         select: { id: true },
       });
       return leases.map((l) => l.id);
+    },
+
+    findByLeaseAndPeriod: async (leaseId: string, year: number, month: number) => {
+      return db.bill.findFirst({
+        where: { lease_id: leaseId, bill_year: year, bill_month: month },
+      });
     },
   };
 }
