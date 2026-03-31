@@ -1,7 +1,7 @@
 import { ulid } from 'ulid';
-import type { Prisma } from '@prisma/client';
-import { prisma } from '../lib/prisma.js';
+import { createOrgFeeItemRepository, type OrgFeeItemRepository } from '../repositories/orgFeeItem.repo.js';
 import { createAppError } from '../utils/appError.js';
+import { prisma } from '../lib/prisma.js';
 
 /**
  * 组织级费用项目（本地定义，避免 Prisma 7.x Decimal 类型解析问题）
@@ -45,90 +45,66 @@ export interface OrgFeeItemService {
   delete(orgId: string, id: string): Promise<void>;
 }
 
-async function validateOwnership(orgId: string, id: string): Promise<OrgFeeItem> {
-  const item = await prisma.orgFeeItem.findFirst({
-    where: { id, organization_id: orgId },
-  });
-  if (!item) {
-    throw createAppError(404, '费用项目不存在');
-  }
-  return item;
-}
-
-export function createOrgFeeItemService(): OrgFeeItemService {
+/**
+ * 创建 OrgFeeItem Service 实例
+ */
+export function createOrgFeeItemService(
+  getRepo: () => OrgFeeItemRepository = () => createOrgFeeItemRepository(prisma)
+): OrgFeeItemService {
   return {
     list: async (orgId: string, filters) => {
-      const where: Prisma.OrgFeeItemWhereInput = {
-        organization_id: orgId,
-        is_active: true,
-      };
-      if (filters?.category) {
-        where.category = filters.category;
-      }
-      if (filters?.cycle) {
-        where.cycle = filters.cycle;
-      }
-      if (filters?.search) {
-        where.name = { contains: filters.search, mode: 'insensitive' };
-      }
-      return prisma.orgFeeItem.findMany({
-        where,
-        orderBy: [{ category: 'asc' }, { sort_order: 'asc' }],
-      });
+      return getRepo().findByOrgId(orgId, { ...filters, isActive: true });
     },
 
     getById: async (orgId: string, id: string) => {
-      const item = await prisma.orgFeeItem.findFirst({
-        where: { id, organization_id: orgId, is_active: true },
-      });
-      if (!item) {
+      const item = await getRepo().findByIdAndOrg(id, orgId);
+      if (!item || !item.is_active) {
         throw createAppError(404, '费用项目不存在');
       }
       return item;
     },
 
     create: async (orgId: string, data: CreateOrgFeeItemInput) => {
-      const existing = await prisma.orgFeeItem.findFirst({
-        where: { organization_id: orgId, name: data.name },
-      });
-      if (existing) {
+      const existing = await getRepo().findByOrgId(orgId);
+      const hasDuplicate = existing.some(
+        (item) => item.is_active && item.name === data.name
+      );
+      if (hasDuplicate) {
         throw createAppError(400, '费用项目名称已存在');
       }
-      return prisma.orgFeeItem.create({
-        data: {
-          id: ulid().toLowerCase(),
-          organization_id: orgId,
-          name: data.name,
-          category: data.category,
-          amount: data.amount,
-          cycle: data.cycle,
-          sort_order: 0,
-          is_active: true,
-        },
+      return getRepo().create({
+        id: ulid().toLowerCase(),
+        organization_id: orgId,
+        name: data.name,
+        category: data.category,
+        amount: data.amount,
+        cycle: data.cycle,
+        sort_order: 0,
+        is_active: true,
       });
     },
 
     update: async (orgId: string, id: string, data: UpdateOrgFeeItemInput) => {
-      await validateOwnership(orgId, id);
-      return prisma.orgFeeItem.update({
-        where: { id },
-        data: {
-          name: data.name,
-          category: data.category,
-          amount: data.amount,
-          cycle: data.cycle,
-          is_active: data.is_active,
-          sort_order: data.sort_order,
-        },
+      const existing = await getRepo().findByIdAndOrg(id, orgId);
+      if (!existing) {
+        throw createAppError(404, '费用项目不存在');
+      }
+      return getRepo().update(id, {
+        name: data.name,
+        category: data.category,
+        amount: data.amount,
+        cycle: data.cycle,
+        is_active: data.is_active,
+        sort_order: data.sort_order,
       });
     },
 
     delete: async (orgId: string, id: string) => {
-      await validateOwnership(orgId, id);
-      await prisma.orgFeeItem.update({
-        where: { id },
-        data: { is_active: false },
-      });
+      const existing = await getRepo().findByIdAndOrg(id, orgId);
+      if (!existing) {
+        throw createAppError(404, '费用项目不存在');
+      }
+      await getRepo().softDelete(id);
     },
   };
 }
