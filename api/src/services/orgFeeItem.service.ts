@@ -1,9 +1,10 @@
 import { ulid } from 'ulid';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { createAppError } from '../utils/appError.js';
 
 /**
- * 组织级费用项目
+ * 组织级费用项目（本地定义，避免 Prisma 7.x Decimal 类型解析问题）
  */
 export interface OrgFeeItem {
   id: string;
@@ -57,7 +58,7 @@ async function validateOwnership(orgId: string, id: string): Promise<OrgFeeItem>
 export function createOrgFeeItemService(): OrgFeeItemService {
   return {
     list: async (orgId: string, filters) => {
-      const where: any = {
+      const where: Prisma.OrgFeeItemWhereInput = {
         organization_id: orgId,
         is_active: true,
       };

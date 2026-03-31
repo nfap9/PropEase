@@ -78,11 +78,10 @@ export async function settleLease(
 
   const leaseFeeItems = await prisma.leaseFeeItem.findMany({
     where: { lease_id },
-    include: { feeType: true },
   });
   let otherAmount = 0;
   for (const item of leaseFeeItems) {
-    otherAmount += Number(item.feeType.amount) * Number(item.quantity);
+    otherAmount += Number(item.fee_amount) * Number(item.quantity);
   }
 
   const depositAmount = Number(lease.deposit);
