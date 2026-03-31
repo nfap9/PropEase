@@ -107,7 +107,7 @@ export type {
 export type { Tenant, TenantCreate, TenantUpdate, TenantListParams } from './tenants.js';
 
 /** 租约 */
-export type { Lease, LeaseCreate, LeaseUpdate, LeaseListParams } from './leases.js';
+export type { Lease, LeaseCreate, LeaseUpdate, LeaseListParams, LeaseFeeItem } from './leases.js';
 
 /** 水电读数 */
 export type {
