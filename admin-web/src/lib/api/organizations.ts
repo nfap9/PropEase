@@ -4,7 +4,6 @@ import {
   OrganizationMember,
   OrganizationUsage,
   MemberRole,
-  MigrationStats,
   DeletionPreview,
 } from '@/types';
 
@@ -81,13 +80,6 @@ export const organizationsApi = {
   // Personal team
   getPersonalTeam: async (): Promise<Organization> => {
     const response = await api.get<Organization>('/organizations/personal');
-    return response.data;
-  },
-
-  migratePersonalTeam: async (targetOrgId: string): Promise<MigrationStats> => {
-    const response = await api.post<MigrationStats>('/organizations/personal/migrate', {
-      target_org_id: targetOrgId,
-    });
     return response.data;
   },
 };

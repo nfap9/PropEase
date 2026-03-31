@@ -25,5 +25,4 @@ export interface UsageQuotaOrder {
   code_url: string | null;
   expires_at: string;
   paid_at: string | null;
-  simulate_pay_available?: boolean;
 }

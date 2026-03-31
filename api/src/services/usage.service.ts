@@ -4,7 +4,6 @@ import { defaultUsageRepo } from '../repositories/usage.repo.js';
 import { prisma } from '../lib/prisma.js';
 import { createAppError } from '../utils/appError.js';
 import { ulid } from 'ulid';
-import { config } from '../config.js';
 
 /**
  * 定价信息
@@ -43,11 +42,7 @@ export interface UsageService {
   getPricing(): Promise<PricingInfo>;
   getQuota(userId: string): Promise<QuotaSummary>;
   createOrder(userId: string, data: CreateOrderInput): Promise<UsageQuotaOrder>;
-  getOrder(
-    userId: string,
-    orderId: string
-  ): Promise<UsageQuotaOrder & { simulate_pay_available?: boolean }>;
-  simulatePay(userId: string, orderId: string): Promise<UsageQuotaOrder>;
+  getOrder(userId: string, orderId: string): Promise<UsageQuotaOrder>;
 }
 
 /**
@@ -136,35 +131,7 @@ export function createUsageService(
       if (!order) {
         throw createAppError(404, '订单不存在');
       }
-
-      const payload = order as UsageQuotaOrder & { simulate_pay_available?: boolean };
-      if (config.isDev && order.status === 'pending' && !order.code_url) {
-        payload.simulate_pay_available = true;
-      }
-      return payload;
-    },
-
-    simulatePay: async (userId: string, orderId: string) => {
-      if (!config.isDev) {
-        throw createAppError(403, '模拟支付仅限开发环境');
-      }
-
-      const order = await getRepo().findOrderById(orderId, userId);
-      if (!order) {
-        throw createAppError(404, '订单不存在');
-      }
-      if (order.status !== 'pending') {
-        throw createAppError(400, '订单状态不允许模拟支付');
-      }
-
-      await getRepo().updateOrder(order.id, { status: 'paid', paid_at: new Date() });
-
-      // 履约
-      const { fulfillUsageQuota } = await import('../services/fulfillUsageQuota.js');
-      await fulfillUsageQuota(order.id);
-
-      const updated = await getRepo().findOrderByIdOnly(order.id);
-      return updated ?? order;
+      return order;
     },
   };
 }

@@ -30,8 +30,6 @@ export const UpdateOrgSchema = z.object({
   notes: z.string().max(1000).optional(),
 });
 
-export const MigrateSchema = z.object({ target_org_id: z.string().min(1) });
-
 export const ConfirmDeleteSchema = z.object({ confirmed_name: z.string().min(1) });
 
 // ==================== Helpers ====================
@@ -104,54 +102,6 @@ export async function getPersonal(req: Request, res: Response, next: NextFunctio
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const personal = await defaultOrgService.getPersonalOrg(user.id);
     res.json(toOrgResponse(personal));
-  } catch (e) {
-    next(e);
-  }
-}
-
-export async function migrate(req: Request, res: Response, next: NextFunction) {
-  try {
-    const user = getConsoleUser(req);
-    if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const parsed = MigrateSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const personal = await prisma.organization.findFirst({
-      where: { is_personal: true, members: { some: { user_id: user.id, role: 'owner' } } },
-    });
-    if (!personal) return next(createAppError(400, '您没有个人团队'));
-    const targetMember = await prisma.organizationMember.findFirst({
-      where: { organization_id: parsed.data.target_org_id, user_id: user.id },
-    });
-    if (!targetMember) return next(createAppError(403, '无目标组织权限'));
-    const [apts, rooms, tenants, leases, bills, readings] = await Promise.all([
-      prisma.apartment.count({ where: { organization_id: personal.id } }),
-      prisma.room.count({ where: { apartment: { organization_id: personal.id } } }),
-      prisma.tenant.count({ where: { organization_id: personal.id } }),
-      prisma.lease.count({ where: { room: { apartment: { organization_id: personal.id } } } }),
-      prisma.bill.count({
-        where: { lease: { room: { apartment: { organization_id: personal.id } } } },
-      }),
-      prisma.utilityReading.count({
-        where: { room: { apartment: { organization_id: personal.id } } },
-      }),
-    ]);
-    const targetId = parsed.data.target_org_id;
-    await prisma.$transaction(async (tx) => {
-      const aptsToMove = await tx.apartment.findMany({
-        where: { organization_id: personal!.id },
-        include: { rooms: true },
-      });
-      for (const apt of aptsToMove) {
-        await tx.apartment.update({ where: { id: apt.id }, data: { organization_id: targetId } });
-      }
-      await tx.tenant.updateMany({
-        where: { organization_id: personal!.id },
-        data: { organization_id: targetId },
-      });
-      await tx.organization.delete({ where: { id: personal!.id } });
-    });
-    res.locals.successMessage = Messages.TEAM_MIGRATED;
-    res.json({ apartments: apts, rooms, tenants, leases, bills, utility_readings: readings });
   } catch (e) {
     next(e);
   }

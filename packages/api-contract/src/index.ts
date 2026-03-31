@@ -28,7 +28,6 @@ export type {
   Organization,
   OrganizationCreate,
   OrganizationUpdate,
-  MigrationStats,
   DeletionPreview,
   OrganizationMember,
   OrganizationUsage,
