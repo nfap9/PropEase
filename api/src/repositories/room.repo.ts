@@ -16,6 +16,7 @@ export interface RoomRepository {
   findById(id: string): Promise<Room | null>;
   findByIdWithApartment(id: string): Promise<RoomWithApartment | null>;
   findByApartmentId(apartmentId: string): Promise<Room[]>;
+  findByOrgId(orgId: string): Promise<Room[]>;
   create(data: Prisma.RoomCreateInput): Promise<Room>;
   createBatch(rooms: Array<Prisma.RoomCreateInput>): Promise<Room[]>;
   update(id: string, data: Prisma.RoomUpdateInput): Promise<Room>;
@@ -41,6 +42,12 @@ export function createRoomRepository(db: DbClient): RoomRepository {
 
     findByApartmentId: async (apartmentId: string) => {
       return db.room.findMany({ where: { apartment_id: apartmentId } });
+    },
+
+    findByOrgId: async (orgId: string) => {
+      return db.room.findMany({
+        where: { apartment: { organization_id: orgId } },
+      });
     },
 
     create: async (data: Prisma.RoomCreateInput) => {
