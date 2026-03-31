@@ -58,6 +58,22 @@ const UpdateFeeItemsSchema = z.object({
   effectiveFromMonth: z.number(),
 });
 
+// 直接设置租约费用项目（替换模式）
+const SetLeaseFeeItemsSchema = z.object({
+  feeItems: z.array(
+    z.object({
+      fee_type_id: z.string().optional(),
+      fee_name: z.string(),
+      fee_code: z.string().optional(),
+      specification_id: z.string().optional(),
+      spec_name: z.string().optional(),
+      spec_unit_price: z.number(),
+      quantity: z.number(),
+      billing_cycle: z.enum(['monthly', 'yearly']).default('monthly'),
+    })
+  ),
+});
+
 const SettleSchema = z.object({
   finalWaterReading: z.number().optional(),
   finalElectricityReading: z.number().optional(),
@@ -82,6 +98,7 @@ const LeaseCreateSchema = z.object({
         fee_type_id: z.string(),
         specification_id: z.string().optional(),
         quantity: z.number().optional(),
+        billing_cycle: z.enum(['monthly', 'yearly']).default('monthly'),
       })
     )
     .optional(),
@@ -475,6 +492,25 @@ router.post('/:id/update-fee-items', async (req: Request, res: Response, next: N
       parsed.data.feeItems,
       parsed.data.effectiveFromYear,
       parsed.data.effectiveFromMonth
+    );
+    res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * POST /leases/:id/set-fee-items - 直接设置租约费用项目（替换模式）
+ */
+router.post('/:id/set-fee-items', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orgId = await requireOrgMembership(req);
+    const parsed = SetLeaseFeeItemsSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const result = await defaultLeaseService.setLeaseFeeItems(
+      orgId,
+      req.params.id,
+      parsed.data.feeItems
     );
     res.json(result);
   } catch (e) {

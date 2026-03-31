@@ -147,7 +147,6 @@ export function createFeeTypeService(): FeeTypeService {
       const feeTypeId = ulid().toLowerCase();
       const specificationsData = (data.specifications || []).map((spec, index) => ({
         id: ulid().toLowerCase(),
-        fee_type_id: feeTypeId,
         name: spec.name,
         description: spec.description,
         price_monthly: spec.price_monthly,

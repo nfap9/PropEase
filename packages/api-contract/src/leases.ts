@@ -1,6 +1,18 @@
 import type { Room } from './apartments.js';
 import type { Tenant } from './tenants.js';
 
+/** 租约费用项目 */
+export interface LeaseFeeItem {
+  id: string;
+  lease_id: string;
+  fee_type_id: string;
+  specification_id: string | null;
+  quantity: number;
+  billing_cycle: 'monthly' | 'yearly';
+  feeType: { id: string; name: string; code: string };
+  specification: { id: string; name: string; price_monthly: number; price_yearly?: number } | null;
+}
+
 /** 租约 */
 export interface Lease {
   id: string;
@@ -17,6 +29,7 @@ export interface Lease {
   notes: string | null;
   room?: Room;
   tenant?: Tenant;
+  fee_items?: LeaseFeeItem[];
   created_at: string;
 }
 

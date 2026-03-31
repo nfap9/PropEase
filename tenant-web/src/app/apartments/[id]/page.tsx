@@ -12,7 +12,6 @@ import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/lib/auth/context';
 import type { Room, RoomFacilities } from '@/types';
-import { UtilityConfigDialog } from '@/features/apartment-detail/components/UtilityConfigDialog';
 import {
   apartmentFormDefaultValues,
   apartmentSchema,
@@ -32,6 +31,7 @@ import {
 import { ApartmentDetailHeader } from '@/features/apartment-detail/components/apartment-detail-header';
 import { ApartmentOverviewTab } from '@/features/apartment-detail/components/apartment-overview-tab';
 import { ApartmentUpstreamTab } from '@/features/apartment-detail/components/apartment-upstream-tab';
+import { UtilityConfigDialog } from '@/features/apartment-detail/components/UtilityConfigDialog';
 import {
   ApartmentEditDialog,
   BatchCreateRoomDialog,
@@ -220,6 +220,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
             apartmentAddress={apartment.address}
             onBack={() => router.push('/apartments')}
             onEdit={handleEditApartment}
+            onOpenUtilityConfig={() => setIsUtilityConfigOpen(true)}
           />
 
           <Tabs defaultValue="basic" className="space-y-4">
@@ -347,7 +348,7 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
         <UtilityConfigDialog
           open={isUtilityConfigOpen}
           onOpenChange={setIsUtilityConfigOpen}
-          orgId={orgId!}
+          orgId={orgId || ''}
           apartmentId={apartmentId}
           apartmentName={apartment.name}
         />

@@ -15,14 +15,17 @@ import { TenantSearchDrawer } from './tenant-search-drawer';
 import { RoomInfoSection } from './room-info-section';
 import { TenantInfoSection } from './tenant-info-section';
 import { ContractInfoSection } from './contract-info-section';
-import type { Room, Tenant, FeeType, FeeSpecification, UtilityConfig } from '@apartment-ultra/api-contract';
+import type { Room, Tenant, UtilityConfig } from '@apartment-ultra/api-contract';
 
-interface SelectedFee {
-  fee_type_id: string;
-  specification_id: string;
-  fee_type_name: string;
-  spec_name: string;
-  price: number;
+interface FeeItem {
+  id: string;
+  name: string;
+  feeTypeId?: string;
+  specification?: string;
+  specificationId?: string;
+  unitPrice: number;
+  quantity: number;
+  billingCycle: 'monthly' | 'yearly';
 }
 
 const leaseSigningSteps = [
@@ -75,7 +78,7 @@ export function LeaseSigningDrawer({
   const queryClient = useQueryClient();
   const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
   const [utilityConfig, setUtilityConfig] = useState<UtilityConfig | null>(null);
-  const [selectedFees, setSelectedFees] = useState<SelectedFee[]>([]);
+  const [feeItems, setFeeItems] = useState<FeeItem[]>([]);
   const [tenantSearchOpen, setTenantSearchOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -194,7 +197,7 @@ export function LeaseSigningDrawer({
       });
       setSelectedApartmentId(null);
     }
-    setSelectedFees([]);
+    setFeeItems([]);
   }, [room, open, isRoomSpecified]);
 
   useEffect(() => {
@@ -264,6 +267,12 @@ export function LeaseSigningDrawer({
         water_rate: data.water_rate,
         electricity_rate: data.electricity_rate,
         notes: data.notes,
+        fee_items: feeItems.map((f) => ({
+          fee_type_id: f.feeTypeId,
+          specification_id: f.specificationId,
+          quantity: f.quantity,
+          billing_cycle: f.billingCycle,
+        })),
       };
       const lease = await leasesApi.create(orgId, filterEmptyStrings(leaseData));
       return lease;
@@ -325,26 +334,8 @@ export function LeaseSigningDrawer({
     }
   };
 
-  // 费用选择
-  const handleAddFee = (feeType: FeeType, spec: FeeSpecification) => {
-    setSelectedFees((prev) => {
-      const exists = prev.some((f) => f.specification_id === spec.id);
-      if (exists) return prev.filter((f) => f.specification_id !== spec.id);
-      return [
-        ...prev.filter((f) => f.fee_type_id !== feeType.id),
-        {
-          fee_type_id: feeType.id,
-          specification_id: spec.id,
-          fee_type_name: feeType.name,
-          spec_name: spec.name,
-          price: spec.price_monthly,
-        },
-      ];
-    });
-  };
-
-  const handleUpdateFeePrice = (specId: string, price: number) => {
-    setSelectedFees((prev) => prev.map((f) => (f.specification_id === specId ? { ...f, price } : f)));
+  const handleFeesChange = (fees: FeeItem[]) => {
+    setFeeItems(fees);
   };
 
   const getDialogTitle = () => (isRoomSpecified ? '签约' : '新增租约');
@@ -398,10 +389,10 @@ export function LeaseSigningDrawer({
           {currentStep === 2 ? (
             <ContractInfoSection
               form={form}
+              orgId={orgId}
               feeTypes={feeTypes}
-              selectedFees={selectedFees}
-              onAddFee={handleAddFee}
-              onUpdateFeePrice={handleUpdateFeePrice}
+              selectedFees={feeItems}
+              onFeesChange={handleFeesChange}
             />
           ) : null}
         </form>

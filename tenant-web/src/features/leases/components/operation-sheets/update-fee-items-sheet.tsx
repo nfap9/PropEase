@@ -1,11 +1,13 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { updateFeeItemsSchema, type UpdateFeeItemsFormData } from '../../schemas/lease-operations.schemas';
 import { useUpdateFeeItems } from '../../hooks/use-lease-operations';
 import { feeTypesApi } from '@/lib/api';
+import type { LeaseFeeItem } from '@apartment-ultra/api-contract';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
@@ -18,9 +20,10 @@ interface UpdateFeeItemsSheetProps {
   onOpenChange: (open: boolean) => void;
   orgId: string;
   leaseId: string;
+  currentFeeItems?: LeaseFeeItem[];
 }
 
-export function UpdateFeeItemsSheet({ open, onOpenChange, orgId, leaseId }: UpdateFeeItemsSheetProps) {
+export function UpdateFeeItemsSheet({ open, onOpenChange, orgId, leaseId, currentFeeItems }: UpdateFeeItemsSheetProps) {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
@@ -39,6 +42,29 @@ export function UpdateFeeItemsSheet({ open, onOpenChange, orgId, leaseId }: Upda
     control: form.control,
     name: 'feeItems',
   });
+
+  // 当对话框打开时，用当前费用项目初始化表单
+  useEffect(() => {
+    if (open && currentFeeItems && currentFeeItems.length > 0) {
+      form.reset({
+        feeItems: currentFeeItems.map(item => ({
+          feeTypeId: item.fee_type_id,
+          specificationId: item.specification_id || '',
+          quantity: Number(item.quantity),
+        })),
+        effectiveFromYear: currentYear,
+        effectiveFromMonth: currentMonth,
+        reason: '',
+      });
+    } else if (open) {
+      form.reset({
+        feeItems: [{ feeTypeId: '', specificationId: '', quantity: 1 }],
+        effectiveFromYear: currentYear,
+        effectiveFromMonth: currentMonth,
+        reason: '',
+      });
+    }
+  }, [open, currentFeeItems, form, currentYear, currentMonth]);
 
   const updateFeeItems = useUpdateFeeItems(orgId, leaseId);
 
@@ -69,7 +95,7 @@ export function UpdateFeeItemsSheet({ open, onOpenChange, orgId, leaseId }: Upda
             {/* 费用项目列表 */}
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <FormLabel>费用项目</FormLabel>
+                <span className="text-sm font-medium">费用项目</span>
                 <Button
                   type="button"
                   variant="outline"
@@ -86,13 +112,11 @@ export function UpdateFeeItemsSheet({ open, onOpenChange, orgId, leaseId }: Upda
                       control={form.control}
                       name={`feeItems.${index}.feeTypeId`}
                       render={({ field: f }) => (
-                        <FormItem>
-                          <Select onValueChange={f.onChange} value={f.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="费用类型" />
-                              </SelectTrigger>
-                            </FormControl>
+                        <FormItem className="space-y-2">
+                          <Select value={f.value} onValueChange={f.onChange}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="费用类型" />
+                            </SelectTrigger>
                             <SelectContent>
                               {feeTypes?.map((ft) => (
                                 <SelectItem key={ft.id} value={ft.id}>{ft.name}</SelectItem>
@@ -108,15 +132,16 @@ export function UpdateFeeItemsSheet({ open, onOpenChange, orgId, leaseId }: Upda
                         control={form.control}
                         name={`feeItems.${index}.specificationId`}
                         render={({ field: f }) => (
-                          <FormItem>
-                            <Select onValueChange={f.onChange} value={f.value || ''}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="规格（可选）" />
-                                </SelectTrigger>
-                              </FormControl>
+                          <FormItem className="space-y-2">
+                            <Select
+                              value={f.value || ''}
+                              onValueChange={(val) => f.onChange(val === '__none__' ? '' : val)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="规格（可选）" />
+                              </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="">无</SelectItem>
+                                <SelectItem value="__none__">无</SelectItem>
                                 {feeTypes
                                   ?.find((ft) => ft.id === form.watch(`feeItems.${index}.feeTypeId`))
                                   ?.specifications?.filter((s) => s.is_active)
@@ -135,7 +160,7 @@ export function UpdateFeeItemsSheet({ open, onOpenChange, orgId, leaseId }: Upda
                         control={form.control}
                         name={`feeItems.${index}.quantity`}
                         render={({ field: f }) => (
-                          <FormItem>
+                          <FormItem className="space-y-2">
                             <FormControl>
                               <Input type="number" min="1" {...f} placeholder="数量" />
                             </FormControl>

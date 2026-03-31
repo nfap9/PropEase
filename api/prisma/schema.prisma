@@ -178,14 +178,19 @@ model Lease {
 model LeaseFeeItem {
   id               String   @id @db.VarChar(26)
   lease_id         String   @db.VarChar(26)
-  fee_type_id      String   @db.VarChar(26)
-  specification_id String?  @db.VarChar(26)
+  fee_type_id      String?  @db.VarChar(26)  // 可选，关联的费用类型ID
+  fee_name         String   @db.VarChar(100) // 费用名称（快照）
+  fee_code         String?  @db.VarChar(50)  // 费用代码（快照）
+  specification_id String?  @db.VarChar(26)  // 可选，关联的规格ID
+  spec_name        String?  @db.VarChar(100) // 规格名称（快照）
+  spec_unit_price  Decimal  @default(0) @db.Decimal(10, 2) // 单价（快照）
   quantity         Decimal  @default(1) @db.Decimal(10, 2)
+  billing_cycle    String   @default("monthly") @db.VarChar(20) // 账单周期：monthly 每月, yearly 每年
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
   lease         Lease             @relation(fields: [lease_id], references: [id], onDelete: Cascade)
-  feeType       FeeType           @relation(fields: [fee_type_id], references: [id])
+  feeType       FeeType?          @relation(fields: [fee_type_id], references: [id])
   specification FeeSpecification? @relation(fields: [specification_id], references: [id], onDelete: SetNull)
 
   @@index([lease_id])

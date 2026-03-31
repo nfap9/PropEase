@@ -1,4 +1,4 @@
-import type { Prisma, Lease, Room, Apartment, Tenant } from '@prisma/client';
+import type { Prisma, Lease, Room, Apartment, Tenant, LeaseFeeItem, FeeType, FeeSpecification } from '@prisma/client';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -8,6 +8,7 @@ import { prisma } from '../lib/prisma.js';
 export type LeaseWithRelations = Lease & {
   room: Room & { apartment: Apartment };
   tenant: Tenant;
+  fee_items: (LeaseFeeItem & { feeType: FeeType | null; specification: FeeSpecification | null })[];
 };
 
 /**
@@ -42,6 +43,7 @@ export function createLeaseRepository(db: DbClient): LeaseRepository {
         include: {
           room: { include: { apartment: true } },
           tenant: true,
+          fee_items: { include: { feeType: true, specification: true } },
         },
       }) as Promise<LeaseWithRelations | null>;
     },
@@ -61,6 +63,7 @@ export function createLeaseRepository(db: DbClient): LeaseRepository {
         include: {
           room: { include: { apartment: true } },
           tenant: true,
+          fee_items: { include: { feeType: true, specification: true } },
         },
       }) as Promise<LeaseWithRelations[]>;
     },

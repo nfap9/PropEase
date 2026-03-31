@@ -9,7 +9,6 @@ import { leasesApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { LeaseDetailTabs } from './lease-detail-tabs';
 import { LeaseDetailInfo } from './lease-detail-info';
-import { LeaseFeeItemsTab } from './lease-fee-items-tab';
 import { LeaseChangeHistoryTab } from './lease-change-history-tab';
 import { OperationsDropdown } from './operations-dropdown';
 
@@ -20,7 +19,7 @@ interface LeaseDetailPageProps {
 export function LeaseDetailPage({ leaseId }: LeaseDetailPageProps) {
   const { organization } = useAuth();
   const orgId = organization?.id;
-  const [activeTab, setActiveTab] = useState<'info' | 'fee-items' | 'history'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'history'>('info');
 
   const { data: lease, isLoading } = useQuery({
     queryKey: ['lease', leaseId],
@@ -79,7 +78,6 @@ export function LeaseDetailPage({ leaseId }: LeaseDetailPageProps) {
       {/* Tab 内容 */}
       <div>
         {activeTab === 'info' && <LeaseDetailInfo lease={lease} orgId={orgId!} />}
-        {activeTab === 'fee-items' && <LeaseFeeItemsTab leaseId={leaseId} orgId={orgId!} />}
         {activeTab === 'history' && <LeaseChangeHistoryTab leaseId={leaseId} orgId={orgId!} />}
       </div>
     </div>

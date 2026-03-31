@@ -1,37 +1,44 @@
 'use client';
 
+import { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
+import { CheckSquare } from 'lucide-react';
 import type { LeaseSigningFormData } from '../leases.schemas';
 import type { FeeType, FeeSpecification } from '@apartment-ultra/api-contract';
+import { FeeItemsEditorDialog } from './fee-items-editor-dialog';
 
-interface SelectedFee {
-  fee_type_id: string;
-  specification_id: string;
-  fee_type_name: string;
-  spec_name: string;
-  price: number;
+interface FeeItem {
+  id: string;
+  name: string;
+  feeTypeId?: string;
+  specification?: string;
+  specificationId?: string;
+  unitPrice: number;
+  quantity: number;
+  billingCycle: 'monthly' | 'yearly';
 }
 
 interface ContractInfoSectionProps {
   form: UseFormReturn<LeaseSigningFormData>;
+  orgId: string;
   feeTypes?: FeeType[];
-  selectedFees: SelectedFee[];
-  onAddFee: (feeType: FeeType, spec: FeeSpecification) => void;
-  onUpdateFeePrice: (specId: string, price: number) => void;
+  selectedFees: FeeItem[];
+  onFeesChange: (fees: FeeItem[]) => void;
 }
 
 export function ContractInfoSection({
   form,
+  orgId,
   feeTypes,
   selectedFees,
-  onAddFee,
-  onUpdateFeePrice,
+  onFeesChange,
 }: ContractInfoSectionProps) {
+  const [isFeeDialogOpen, setIsFeeDialogOpen] = useState(false);
+
   const setDateFieldValue = (field: 'start_date' | 'end_date', value: string) => {
     form.setValue(field, value, {
       shouldDirty: true,
@@ -112,75 +119,58 @@ export function ContractInfoSection({
       </div>
 
       {/* 额外费用 */}
-      {feeTypes && feeTypes.length > 0 && (
-        <div className="space-y-3 border rounded-lg p-4">
-          <Label className="text-base">额外费用（可选）</Label>
-          {selectedFees.length > 0 && (
-            <div className="space-y-2">
-              {selectedFees.map((fee) => (
-                <div key={fee.specification_id} className="flex items-center gap-2 bg-muted/50 rounded-lg p-2">
-                  <Checkbox
-                    checked={true}
-                    onCheckedChange={() =>
-                      onAddFee(
-                        { id: fee.fee_type_id, name: fee.fee_type_name } as FeeType,
-                        {
-                          id: fee.specification_id,
-                          name: fee.spec_name,
-                          price_monthly: fee.price,
-                        } as FeeSpecification
-                      )
-                    }
-                  />
-                  <span className="flex-1 text-sm">
-                    {fee.fee_type_name} - {fee.spec_name}
-                  </span>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={fee.price}
-                    onChange={(e) => onUpdateFeePrice(fee.specification_id, parseFloat(e.target.value) || 0)}
-                    className="w-24 h-8"
-                  />
-                  <span className="text-sm text-muted-foreground">元/月</span>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="space-y-2">
-            {feeTypes.map((feeType) => {
-              const specs = feeType.specifications?.filter((s) => s.is_active) || [];
-              if (specs.length === 0) return null;
-              return (
-                <div key={feeType.id} className="space-y-1">
-                  <div className="text-sm font-medium">{feeType.name}</div>
-                  <div className="flex flex-wrap gap-2">
-                    {specs.map((spec) => {
-                      const isSelected = selectedFees.some((f) => f.specification_id === spec.id);
-                      return (
-                        <Button
-                          key={spec.id}
-                          type="button"
-                          variant={isSelected ? 'default' : 'outline'}
-                          size="sm"
-                          onClick={() => onAddFee(feeType, spec)}
-                        >
-                          {spec.name} (¥{spec.price_monthly}/月)
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+      <div className="border rounded-lg p-4">
+        <div className="flex justify-between items-center mb-3">
+          <Label className="text-base">额外费用</Label>
+          <Button type="button" variant="outline" size="sm" onClick={() => setIsFeeDialogOpen(true)}>
+            <CheckSquare className="h-4 w-4 mr-2" />
+            选择费用项目
+          </Button>
         </div>
-      )}
+
+        {selectedFees.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-2">暂无费用项目</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-muted-foreground border-b">
+                <th className="pb-2 font-medium">费用类型</th>
+                <th className="pb-2 font-medium">规格</th>
+                <th className="pb-2 font-medium text-right">单价</th>
+                <th className="pb-2 font-medium text-right">数量</th>
+                <th className="pb-2 font-medium text-right">小计</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedFees.map((item) => (
+                <tr key={item.id} className="border-b last:border-0">
+                  <td className="py-2">{item.name}</td>
+                  <td className="py-2 text-muted-foreground">{item.specification || '-'}</td>
+                  <td className="py-2 text-right">¥{item.unitPrice.toLocaleString()}</td>
+                  <td className="py-2 text-right">× {item.quantity}</td>
+                  <td className="py-2 text-right font-medium">
+                    ¥{(item.unitPrice * item.quantity).toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="notes">备注</Label>
         <Input id="notes" {...form.register('notes')} />
       </div>
+
+      <FeeItemsEditorDialog
+        open={isFeeDialogOpen}
+        onOpenChange={setIsFeeDialogOpen}
+        orgId={orgId}
+        leaseId=""
+        currentItems={selectedFees}
+        onSave={onFeesChange}
+      />
     </div>
   );
 }

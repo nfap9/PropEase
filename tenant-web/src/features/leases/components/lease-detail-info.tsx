@@ -4,18 +4,9 @@ import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { formatDate } from '@/lib/date-utils';
 import { LEASE_STATUS_CONFIG } from '@/lib/status-config';
-import type { Lease } from '@/types';
+import type { Lease, LeaseFeeItem } from '@apartment-ultra/api-contract';
 
-interface LeaseFeeItem {
-  id: string;
-  fee_type_id: string;
-  specification_id: string | null;
-  quantity: number;
-  feeType?: { name: string };
-  specification?: { name: string };
-}
-
-/** 包含 fee_items 的 Lease 扩展类型（待 api-contract 更新后移除） */
+/** 包含 fee_items 的 Lease 扩展类型 */
 interface LeaseWithFeeItems extends Lease {
   fee_items?: LeaseFeeItem[];
 }
@@ -102,26 +93,47 @@ export function LeaseDetailInfo({ lease, orgId }: LeaseDetailInfoProps) {
         </CardContent>
       </Card>
 
-      {/* 费用项目摘要 */}
+      {/* 费用项目 */}
       <Card>
         <CardHeader>
           <CardTitle>费用项目</CardTitle>
         </CardHeader>
         <CardContent>
           {leaseWithFeeItems.fee_items && leaseWithFeeItems.fee_items.length > 0 ? (
-            <ul className="space-y-2">
-              {leaseWithFeeItems.fee_items.map((item) => (
-                <li key={item.id} className="flex justify-between text-sm">
-                  <span>
-                    {item.feeType?.name}
-                    {item.specification && ` - ${item.specification.name}`}
-                  </span>
-                  <span className="text-muted-foreground">
-                    × {item.quantity}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-muted-foreground border-b">
+                  <th className="pb-2 font-medium">费用名称</th>
+                  <th className="pb-2 font-medium">规格</th>
+                  <th className="pb-2 font-medium text-right">单价</th>
+                  <th className="pb-2 font-medium text-center">周期</th>
+                  <th className="pb-2 font-medium text-center">数量</th>
+                  <th className="pb-2 font-medium text-right">小计</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leaseWithFeeItems.fee_items.map((item) => {
+                  const unitPrice = Number(item.specification?.price_monthly || 0);
+                  const quantity = Number(item.quantity || 1);
+                  const subtotal = unitPrice * quantity;
+                  const cycle = item.billing_cycle === 'yearly' ? '每年' : '每月';
+                  return (
+                    <tr key={item.id} className="border-b last:border-0">
+                      <td className="py-2 font-medium">{item.feeType?.name || '-'}</td>
+                      <td className="py-2 text-muted-foreground">
+                        {item.specification?.name || '-'}
+                      </td>
+                      <td className="py-2 text-right">¥{unitPrice.toLocaleString()}</td>
+                      <td className="py-2 text-center text-muted-foreground">{cycle}</td>
+                      <td className="py-2 text-center">× {quantity}</td>
+                      <td className="py-2 text-right font-medium">
+                        ¥{subtotal.toLocaleString()}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           ) : (
             <p className="text-sm text-muted-foreground">暂无费用项目</p>
           )}
