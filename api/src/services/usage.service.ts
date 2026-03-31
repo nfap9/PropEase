@@ -1,7 +1,8 @@
 import type { UsageQuotaOrder, } from '@prisma/client';
 import type { UsageRepository } from '../repositories/usage.repo.js';
 import { defaultUsageRepo } from '../repositories/usage.repo.js';
-import { prisma } from '../lib/prisma.js';
+import { defaultPlatformConfigRepo } from '../repositories/platformConfig.repo.js';
+import type { PlatformConfigRepository } from '../repositories/platformConfig.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { ulid } from 'ulid';
 
@@ -49,11 +50,12 @@ export interface UsageService {
  * 创建 Usage Service 实例
  */
 export function createUsageService(
-  getRepo: () => UsageRepository = () => defaultUsageRepo
+  getRepo: () => UsageRepository = () => defaultUsageRepo,
+  getPlatformConfigRepo: () => PlatformConfigRepository = () => defaultPlatformConfigRepo
 ): UsageService {
   return {
     getPricing: async () => {
-      const platformConfig = await prisma.platformConfig.findUnique({ where: { id: 'default' } });
+      const platformConfig = await getPlatformConfigRepo().findDefault();
       const pricing = (platformConfig?.usage_pricing as Record<string, unknown>) ?? {};
       return {
         price_per_org: (pricing.price_per_org as number) ?? 0,
@@ -85,7 +87,7 @@ export function createUsageService(
         throw createAppError(400, '至少选择一种对象数量');
       }
 
-      const platformConfig = await prisma.platformConfig.findUnique({ where: { id: 'default' } });
+      const platformConfig = await getPlatformConfigRepo().findDefault();
       const usagePricing = (platformConfig?.usage_pricing as Record<string, unknown>) ?? {};
       if (
         usagePricing.price_per_org == null &&
