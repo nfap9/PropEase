@@ -5,36 +5,116 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createLeaseService, type LeaseService } from './lease.service.js';
 import type { LeaseRepository } from '../repositories/lease.repo.js';
+import type { RoomRepository } from '../repositories/room.repo.js';
+import type { TenantRepository } from '../repositories/tenant.repo.js';
+import type { OrgFeeItemRepository } from '../repositories/orgFeeItem.repo.js';
+import type { LeaseFeeItemRepository } from '../repositories/leaseFeeItem.repo.js';
+import type { LeaseChangeLogRepository } from '../repositories/leaseChangeLog.repo.js';
+import type { ApartmentRepository } from '../repositories/apartment.repo.js';
+import type { OrganizationRepository } from '../repositories/organization.repo.js';
+
+// Mock Prisma for notification.create
+vi.mock('../lib/prisma.js', () => ({
+  prisma: {
+    notification: {
+      create: vi.fn(),
+    },
+  },
+}));
 
 describe('LeaseService', () => {
-  // Mock Repository
+  // Mock Lease Repository
   const mockRepo: LeaseRepository = {
-    findByOrgId: vi.fn(),
+    findById: vi.fn(),
     findByIdWithRelations: vi.fn(),
     create: vi.fn(),
     createWithRoomUpdate: vi.fn(),
     update: vi.fn(),
     terminate: vi.fn(),
     delete: vi.fn(),
+    countOtherActive: vi.fn(),
+    findByOrgId: vi.fn(),
+    findActiveByRoomIds: vi.fn(),
   };
 
-  // Mock Prisma
-  vi.mock('../lib/prisma.js', () => ({
-    prisma: {
-      room: {
-        findFirst: vi.fn(),
-      },
-      tenant: {
-        findFirst: vi.fn(),
-      },
-      organizationMember: {
-        findMany: vi.fn(),
-      },
-      notification: {
-        create: vi.fn(),
-      },
-    },
-  }));
+  // Mock Room Repository
+  const mockRoomRepo: RoomRepository = {
+    findById: vi.fn(),
+    findByIdWithApartment: vi.fn(),
+    findByApartmentId: vi.fn(),
+    findByOrgId: vi.fn(),
+    findByOrgIdWithLeases: vi.fn(),
+    findByOrgIdWithLeasesAll: vi.fn(),
+    create: vi.fn(),
+    createBatch: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    countByOrgId: vi.fn(),
+  };
+
+  // Mock Tenant Repository
+  const mockTenantRepo: TenantRepository = {
+    findById: vi.fn(),
+    findByIdAndOrg: vi.fn(),
+    findByOrgId: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  };
+
+  // Mock OrgFeeItem Repository
+  const mockOrgFeeItemRepo: OrgFeeItemRepository = {
+    findById: vi.fn(),
+    findByIdAndOrg: vi.fn(),
+    findByOrgId: vi.fn(),
+    findByIds: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    softDelete: vi.fn(),
+  };
+
+  // Mock LeaseFeeItem Repository
+  const mockLeaseFeeItemRepo: LeaseFeeItemRepository = {
+    findById: vi.fn(),
+    findByLeaseId: vi.fn(),
+    createMany: vi.fn(),
+  };
+
+  // Mock LeaseChangeLog Repository
+  const mockLeaseChangeLogRepo: LeaseChangeLogRepository = {
+    findByLeaseId: vi.fn(),
+    create: vi.fn(),
+    findPendingChanges: vi.fn(),
+  };
+
+  // Mock Apartment Repository
+  const mockApartmentRepo: ApartmentRepository = {
+    findById: vi.fn(),
+    findByIdAndOrg: vi.fn(),
+    findByIdAndOrgWithRooms: vi.fn(),
+    findByOrgId: vi.fn(),
+    findByOrgIdWithRooms: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    countByOrgId: vi.fn(),
+  };
+
+  // Mock Organization Repository
+  const mockOrgRepo: OrganizationRepository = {
+    findById: vi.fn(),
+    findBySlug: vi.fn(),
+    findPersonalOrgByUserId: vi.fn(),
+    findByUserId: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    findMember: vi.fn(),
+    findMembersByOrgId: vi.fn(),
+    createMember: vi.fn(),
+    updateMember: vi.fn(),
+    deleteMember: vi.fn(),
+  };
 
   let service: LeaseService;
 
@@ -42,13 +122,14 @@ describe('LeaseService', () => {
   const leaseId = '01HQTESTLEASE0001';
   const roomId = '01HQTESTROOM00001';
   const tenantId = '01HQTESTTENANT0001';
+  const apartmentId = '01HQTESTAPT0000001';
 
   const mockRoom = {
     id: roomId,
-    apartment_id: '01HQTESTAPT0000001',
+    apartment_id: apartmentId,
     room_number: '101',
     apartment: {
-      id: '01HQTESTAPT0000001',
+      id: apartmentId,
       organization_id: orgId,
     },
     status: 'available',
@@ -85,7 +166,16 @@ describe('LeaseService', () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
-    service = createLeaseService(() => mockRepo);
+    service = createLeaseService(
+      () => mockRepo,
+      () => mockOrgFeeItemRepo,
+      () => mockLeaseFeeItemRepo,
+      () => mockLeaseChangeLogRepo,
+      () => mockRoomRepo,
+      () => mockTenantRepo,
+      () => mockApartmentRepo,
+      () => mockOrgRepo
+    );
   });
 
   describe('list', () => {
@@ -183,11 +273,11 @@ describe('LeaseService', () => {
 
   describe('create', () => {
     it('should create lease when room and tenant belong to org', async () => {
-      const { prisma } = await import('../lib/prisma.js');
-      vi.mocked(prisma.room.findFirst).mockResolvedValue(mockRoom as any);
-      vi.mocked(prisma.tenant.findFirst).mockResolvedValue(mockTenant as any);
-      vi.mocked(prisma.organizationMember.findMany).mockResolvedValue([]);
+      vi.mocked(mockRoomRepo.findByIdWithApartment).mockResolvedValue(mockRoom as any);
+      vi.mocked(mockTenantRepo.findByIdAndOrg).mockResolvedValue(mockTenant as any);
+      vi.mocked(mockOrgFeeItemRepo.findByIds).mockResolvedValue([]);
       vi.mocked(mockRepo.createWithRoomUpdate).mockResolvedValue(mockLease as any);
+      vi.mocked(mockOrgRepo.findMembersByOrgId).mockResolvedValue([]);
 
       const input = {
         room_id: roomId,
@@ -205,8 +295,7 @@ describe('LeaseService', () => {
     });
 
     it('should throw 404 when room not found', async () => {
-      const { prisma } = await import('../lib/prisma.js');
-      vi.mocked(prisma.room.findFirst).mockResolvedValue(null);
+      vi.mocked(mockRoomRepo.findByIdWithApartment).mockResolvedValue(null);
 
       const input = {
         room_id: roomId,
@@ -222,9 +311,8 @@ describe('LeaseService', () => {
     });
 
     it('should throw 404 when tenant not found', async () => {
-      const { prisma } = await import('../lib/prisma.js');
-      vi.mocked(prisma.room.findFirst).mockResolvedValue(mockRoom as any);
-      vi.mocked(prisma.tenant.findFirst).mockResolvedValue(null);
+      vi.mocked(mockRoomRepo.findByIdWithApartment).mockResolvedValue(mockRoom as any);
+      vi.mocked(mockTenantRepo.findByIdAndOrg).mockResolvedValue(null);
 
       const input = {
         room_id: roomId,
@@ -243,17 +331,17 @@ describe('LeaseService', () => {
   describe('update', () => {
     it('should update lease', async () => {
       vi.mocked(mockRepo.findByIdWithRelations).mockResolvedValue(mockLeaseWithRelations as any);
-      vi.mocked(mockRepo.update).mockResolvedValue({ ...mockLease, monthly_rent: 2500 } as any);
+      vi.mocked(mockRepo.update).mockResolvedValue({ ...mockLease, billing_day: 15 } as any);
 
-      const result = await service.update(orgId, leaseId, { monthly_rent: 2500 });
+      const result = await service.update(orgId, leaseId, { billing_day: 15 });
 
-      expect(result.monthly_rent).toBe(2500);
+      expect(result.billing_day).toBe(15);
     });
 
     it('should throw 404 when lease not found', async () => {
       vi.mocked(mockRepo.findByIdWithRelations).mockResolvedValue(null);
 
-      await expect(service.update(orgId, leaseId, { monthly_rent: 2500 })).rejects.toMatchObject({
+      await expect(service.update(orgId, leaseId, { billing_day: 15 })).rejects.toMatchObject({
         statusCode: 404,
       });
     });
@@ -262,8 +350,7 @@ describe('LeaseService', () => {
   describe('terminate', () => {
     it('should terminate lease', async () => {
       vi.mocked(mockRepo.findByIdWithRelations).mockResolvedValue(mockLeaseWithRelations as any);
-      const { prisma } = await import('../lib/prisma.js');
-      vi.mocked(prisma.organizationMember.findMany).mockResolvedValue([]);
+      vi.mocked(mockOrgRepo.findMembersByOrgId).mockResolvedValue([]);
       vi.mocked(mockRepo.terminate).mockResolvedValue(undefined);
 
       await service.terminate(orgId, leaseId);

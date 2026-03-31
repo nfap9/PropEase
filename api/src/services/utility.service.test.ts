@@ -1,16 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createUtilityService, type UtilityService } from './utility.service.js';
 import type { UtilityRepository } from '../repositories/utility.repo.js';
-
-vi.mock('../lib/prisma.js', () => ({
-  prisma: {
-    room: {
-      findFirst: vi.fn(),
-    },
-  },
-}));
+import type { RoomRepository } from '../repositories/room.repo.js';
 
 describe('UtilityService', () => {
+  // Mock Utility Repository
   const mockRepo: UtilityRepository = {
     findById: vi.fn(),
     findByIdWithRelations: vi.fn(),
@@ -21,14 +15,30 @@ describe('UtilityService', () => {
     delete: vi.fn(),
     findExistingReading: vi.fn(),
     findLatestReadingBefore: vi.fn(),
+    findLatestReadingsBeforeForOrg: vi.fn(),
     getRoomIdsByOrg: vi.fn(),
+  };
+
+  // Mock Room Repository
+  const mockRoomRepo: RoomRepository = {
+    findById: vi.fn(),
+    findByIdWithApartment: vi.fn(),
+    findByApartmentId: vi.fn(),
+    findByOrgId: vi.fn(),
+    findByOrgIdWithLeases: vi.fn(),
+    findByOrgIdWithLeasesAll: vi.fn(),
+    create: vi.fn(),
+    createBatch: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    countByOrgId: vi.fn(),
   };
 
   let service: UtilityService;
 
   beforeEach(() => {
     vi.resetAllMocks();
-    service = createUtilityService(() => mockRepo);
+    service = createUtilityService(() => mockRepo, () => mockRoomRepo);
   });
 
   it('should sort reading list by period desc and room number naturally', async () => {
@@ -75,8 +85,7 @@ describe('UtilityService', () => {
   });
 
   it('should auto-fill previous readings from latest history on create', async () => {
-    const { prisma } = await import('../lib/prisma.js');
-    vi.mocked(prisma.room.findFirst).mockResolvedValue({
+    vi.mocked(mockRoomRepo.findByIdWithApartment).mockResolvedValue({
       id: '01room',
       apartment: { organization_id: '01org' },
     } as any);
@@ -86,6 +95,7 @@ describe('UtilityService', () => {
       electricity_reading: 360,
       electricity_previous: 300,
     } as any);
+    vi.mocked(mockRepo.findExistingReading).mockResolvedValue(null);
     vi.mocked(mockRepo.create).mockResolvedValue({
       id: '01reading',
     } as any);
@@ -108,12 +118,12 @@ describe('UtilityService', () => {
   });
 
   it('should auto-handle first reading when no previous baseline exists', async () => {
-    const { prisma } = await import('../lib/prisma.js');
-    vi.mocked(prisma.room.findFirst).mockResolvedValue({
+    vi.mocked(mockRoomRepo.findByIdWithApartment).mockResolvedValue({
       id: '01room',
       apartment: { organization_id: '01org' },
     } as any);
     vi.mocked(mockRepo.findLatestReadingBefore).mockResolvedValue(null);
+    vi.mocked(mockRepo.findExistingReading).mockResolvedValue(null);
     vi.mocked(mockRepo.create).mockResolvedValue({
       id: '01reading',
     } as any);
@@ -135,12 +145,12 @@ describe('UtilityService', () => {
   });
 
   it('should allow initial readings to build the first baseline', async () => {
-    const { prisma } = await import('../lib/prisma.js');
-    vi.mocked(prisma.room.findFirst).mockResolvedValue({
+    vi.mocked(mockRoomRepo.findByIdWithApartment).mockResolvedValue({
       id: '01room',
       apartment: { organization_id: '01org' },
     } as any);
     vi.mocked(mockRepo.findLatestReadingBefore).mockResolvedValue(null);
+    vi.mocked(mockRepo.findExistingReading).mockResolvedValue(null);
     vi.mocked(mockRepo.create).mockResolvedValue({
       id: '01reading',
     } as any);
