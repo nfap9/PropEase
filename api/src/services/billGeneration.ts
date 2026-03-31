@@ -166,7 +166,6 @@ export async function generateBillsForOrg(
     });
 
     // 计算费用明细
-    const isYearly = lease.rental_type === 'yearly';
     const feeItemsData: Array<{
       id: string;
       fee_type_id: string;

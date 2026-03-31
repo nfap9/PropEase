@@ -1,7 +1,22 @@
-import type { OrgFeeItem } from '@prisma/client';
 import { ulid } from 'ulid';
 import { prisma } from '../lib/prisma.js';
 import { createAppError } from '../utils/appError.js';
+
+/**
+ * 组织级费用项目
+ */
+export interface OrgFeeItem {
+  id: string;
+  organization_id: string;
+  category: string;
+  name: string;
+  amount: unknown;
+  cycle: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
 
 export interface CreateOrgFeeItemInput {
   name: string;
@@ -19,7 +34,7 @@ export interface UpdateOrgFeeItemInput {
   sort_order?: number;
 }
 
-export interface OrgFeeItemWithDefaults = OrgFeeItem;
+export type OrgFeeItemWithDefaults = OrgFeeItem;
 
 export interface OrgFeeItemService {
   list(orgId: string, filters?: { category?: string; cycle?: string; search?: string }): Promise<OrgFeeItemWithDefaults[]>;
