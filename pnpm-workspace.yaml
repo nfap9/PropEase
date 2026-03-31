@@ -5,7 +5,6 @@ packages:
   - 'packages/api-contract'
   - 'packages/web-api-client'
   - 'packages/shared-ui'
-  - 'mobile'
 
 catalog:
   '@hookform/resolvers': ^5.2.2
