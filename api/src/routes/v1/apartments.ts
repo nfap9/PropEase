@@ -26,11 +26,4 @@ router.post('/:apartmentId/utility-config', ctrl.createUtilityConfig);
 router.put('/:apartmentId/utility-config', ctrl.updateUtilityConfig);
 router.delete('/:apartmentId/utility-config', ctrl.deleteUtilityConfig);
 
-// fee configs
-router.get('/:apartmentId/fee-configs', ctrl.listFeeConfigs);
-router.post('/:apartmentId/fee-configs', ctrl.createFeeConfig);
-router.get('/:apartmentId/fee-configs/:configId', ctrl.getFeeConfig);
-router.put('/:apartmentId/fee-configs/:configId', ctrl.updateFeeConfig);
-router.delete('/:apartmentId/fee-configs/:configId', ctrl.deleteFeeConfig);
-
 export const apartmentsRouter = router;
