@@ -7,18 +7,14 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { leasesApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
+import { LeaseDetailTabs } from './lease-detail-tabs';
+import { LeaseDetailInfo } from './lease-detail-info';
+import { LeaseFeeItemsTab } from './lease-fee-items-tab';
+import { LeaseChangeHistoryTab } from './lease-change-history-tab';
+import { OperationsDropdown } from './operations-dropdown';
 
 interface LeaseDetailPageProps {
   leaseId: string;
-}
-
-// 占位组件，后续 Task 会创建实际的子组件
-function LeaseDetailTabsPlaceholder() {
-  return <div className="text-muted-foreground">Tab 组件加载中...</div>;
-}
-
-function LeaseDetailInfoPlaceholder() {
-  return <div className="text-muted-foreground">详情内容加载中...</div>;
 }
 
 export function LeaseDetailPage({ leaseId }: LeaseDetailPageProps) {
@@ -69,51 +65,22 @@ export function LeaseDetailPage({ leaseId }: LeaseDetailPageProps) {
           </div>
         </div>
         {orgId && (
-          <Button variant="outline" size="sm" disabled>
-            操作（开发中）
-          </Button>
+          <OperationsDropdown
+            orgId={orgId}
+            leaseId={leaseId}
+            lease={lease}
+          />
         )}
       </div>
 
       {/* Tab 切换 */}
-      <div className="flex gap-4 border-b">
-        <button
-          className={`pb-2 px-1 text-sm font-medium ${
-            activeTab === 'info'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-muted-foreground'
-          }`}
-          onClick={() => setActiveTab('info')}
-        >
-          详情
-        </button>
-        <button
-          className={`pb-2 px-1 text-sm font-medium ${
-            activeTab === 'fee-items'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-muted-foreground'
-          }`}
-          onClick={() => setActiveTab('fee-items')}
-        >
-          费用项目
-        </button>
-        <button
-          className={`pb-2 px-1 text-sm font-medium ${
-            activeTab === 'history'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-muted-foreground'
-          }`}
-          onClick={() => setActiveTab('history')}
-        >
-          变更历史
-        </button>
-      </div>
+      <LeaseDetailTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
       {/* Tab 内容 */}
       <div>
-        {activeTab === 'info' && <LeaseDetailInfoPlaceholder />}
-        {activeTab === 'fee-items' && <div className="text-muted-foreground">费用项目 Tab 开发中...</div>}
-        {activeTab === 'history' && <div className="text-muted-foreground">变更历史 Tab 开发中...</div>}
+        {activeTab === 'info' && <LeaseDetailInfo lease={lease} orgId={orgId!} />}
+        {activeTab === 'fee-items' && <LeaseFeeItemsTab leaseId={leaseId} orgId={orgId!} />}
+        {activeTab === 'history' && <LeaseChangeHistoryTab leaseId={leaseId} orgId={orgId!} />}
       </div>
     </div>
   );
