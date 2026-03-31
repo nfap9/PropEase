@@ -34,7 +34,7 @@ export function LeaseDetailPage({ leaseId }: LeaseDetailPageProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-48">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -42,7 +42,7 @@ export function LeaseDetailPage({ leaseId }: LeaseDetailPageProps) {
 
   if (!lease) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
+      <div className="flex flex-col items-center justify-center h-48 gap-4">
         <p className="text-muted-foreground">租约不存在</p>
         <Link href="/leases">
           <Button variant="outline">返回列表</Button>
@@ -52,7 +52,7 @@ export function LeaseDetailPage({ leaseId }: LeaseDetailPageProps) {
   }
 
   return (
-    <div className="container py-6 space-y-4">
+    <div className="space-y-4">
       {/* 顶部导航栏 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
