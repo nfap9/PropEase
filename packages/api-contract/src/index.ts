@@ -160,17 +160,11 @@ export type {
 
 /** 费用类型与配置 */
 export type {
+  FeeCycle,
   FeeCategory,
-  FeeType,
-  FeeSpecification,
-  FeeTypeCreate,
-  FeeTypeUpdate,
-  FeeSpecificationCreate,
-  FeeSpecificationUpdate,
-  ApartmentFeeConfig,
-  ApartmentFeeConfigCreate,
-  ApartmentFeeConfigUpdate,
-  BillFeeItem,
+  OrgFeeItem,
+  OrgFeeItemCreate,
+  OrgFeeItemUpdate,
 } from './feeTypes.js';
 
 /** 报表 */
