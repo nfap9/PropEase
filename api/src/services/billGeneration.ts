@@ -157,18 +157,11 @@ export async function generateBillsForOrg(
       }
     }
 
-    // 查询公寓启用的费用配置
-    const currentDate = new Date();
-    const feeConfigs = await prisma.apartmentFeeConfig.findMany({
+    // 查询组织启用的费用项目
+    const feeItems = await prisma.orgFeeItem.findMany({
       where: {
-        apartment_id: lease.room.apartment_id,
-        is_enabled: true,
-        effective_from: { lte: currentDate },
-        OR: [{ effective_to: null }, { effective_to: { gte: currentDate } }],
-      },
-      include: {
-        feeType: true,
-        specification: true,
+        organization_id: lease.room.apartment.organization_id,
+        is_active: true,
       },
     });
 
@@ -177,9 +170,10 @@ export async function generateBillsForOrg(
     const feeItemsData: Array<{
       id: string;
       fee_type_id: string;
-      specification_id: string | null;
+      fee_category: string;
       fee_name: string;
-      specification_name: string | null;
+      fee_amount: number;
+      fee_cycle: string;
       quantity: number;
       unit_price: number;
       amount: number;
@@ -187,20 +181,16 @@ export async function generateBillsForOrg(
 
     let otherAmount = 0;
 
-    for (const feeConfig of feeConfigs) {
-      const spec = feeConfig.specification;
-      const price = isYearly && spec?.price_yearly != null
-        ? Number(spec.price_yearly) / 12
-        : spec?.price_monthly != null
-          ? Number(spec.price_monthly)
-          : 0;
+    for (const orgFeeItem of feeItems) {
+      const price = Number(orgFeeItem.amount);
 
       const feeItem = {
         id: ulid().toLowerCase(),
-        fee_type_id: feeConfig.fee_type_id,
-        specification_id: feeConfig.specification_id,
-        fee_name: feeConfig.feeType.name,
-        specification_name: spec?.name ?? null,
+        fee_type_id: orgFeeItem.id,
+        fee_category: orgFeeItem.category,
+        fee_name: orgFeeItem.name,
+        fee_amount: price,
+        fee_cycle: orgFeeItem.cycle,
         quantity: 1,
         unit_price: price,
         amount: price,
@@ -211,7 +201,7 @@ export async function generateBillsForOrg(
     }
 
     // 向后兼容：如果没有新的费用配置，使用旧的 UtilityConfig
-    if (feeConfigs.length === 0 && config) {
+    if (feeItems.length === 0 && config) {
       if (config.internet_fee != null) otherAmount += Number(config.internet_fee);
       if (config.management_fee != null) otherAmount += Number(config.management_fee);
       if (config.service_fee != null) otherAmount += Number(config.service_fee);
@@ -247,9 +237,10 @@ export async function generateBillsForOrg(
             id: item.id,
             bill_id: billId,
             fee_type_id: item.fee_type_id,
-            specification_id: item.specification_id,
+            fee_category: item.fee_category,
             fee_name: item.fee_name,
-            specification_name: item.specification_name,
+            fee_amount: item.fee_amount,
+            fee_cycle: item.fee_cycle,
             quantity: item.quantity,
             unit_price: item.unit_price,
             amount: item.amount,

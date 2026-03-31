@@ -21,7 +21,6 @@ import {
  */
 export interface LeaseFeeItemInput {
   fee_type_id: string;
-  specification_id?: string;
   quantity?: number;
 }
 
@@ -128,7 +127,7 @@ export interface LeaseService {
   updateFeeItems(
     orgId: string,
     leaseId: string,
-    feeItems: Array<{ fee_type_id: string; specification_id?: string; quantity: number }>,
+    feeItems: Array<{ fee_type_id: string; quantity: number }>,
     effectiveFromYear: number,
     effectiveFromMonth: number
   ): Promise<{ lease_id: string; updated_at: string }>;
@@ -262,13 +261,26 @@ export function createLeaseService(
 
       // 插入租约费用项目
       if (data.fee_items && data.fee_items.length > 0) {
-        const feeItemsData = data.fee_items.map((item) => ({
-          id: ulid().toLowerCase(),
-          lease_id: lease.id,
-          fee_type_id: item.fee_type_id,
-          specification_id: item.specification_id,
-          quantity: item.quantity ?? 1,
-        }));
+        // 获取费用项目详情
+        const feeItemIds = data.fee_items.map((i) => i.fee_type_id);
+        const orgFeeItems = await prisma.orgFeeItem.findMany({
+          where: { id: { in: feeItemIds } },
+        });
+        const orgFeeItemMap = new Map(orgFeeItems.map((i) => [i.id, i]));
+
+        const feeItemsData = data.fee_items.map((item) => {
+          const orgFeeItem = orgFeeItemMap.get(item.fee_type_id);
+          return {
+            id: ulid().toLowerCase(),
+            lease_id: lease.id,
+            fee_type_id: item.fee_type_id,
+            fee_category: orgFeeItem?.category ?? 'fixed',
+            fee_name: orgFeeItem?.name ?? '',
+            fee_amount: orgFeeItem?.amount ?? 0,
+            fee_cycle: orgFeeItem?.cycle ?? 'monthly',
+            quantity: item.quantity ?? 1,
+          };
+        });
         await prisma.leaseFeeItem.createMany({ data: feeItemsData });
       }
 
@@ -283,14 +295,15 @@ export function createLeaseService(
         // 查询费用项目计算其他费用
         let otherAmount = 0;
         if (data.fee_items && data.fee_items.length > 0) {
-          const feeSpecs = await prisma.feeSpecification.findMany({
-            where: { id: { in: data.fee_items.filter((i) => i.specification_id).map((i) => i.specification_id!) } },
+          const feeItemIds = data.fee_items.map((i) => i.fee_type_id);
+          const orgFeeItems = await prisma.orgFeeItem.findMany({
+            where: { id: { in: feeItemIds } },
           });
-          const specMap = new Map(feeSpecs.map((s) => [s.id, s]));
+          const orgFeeItemMap = new Map(orgFeeItems.map((i) => [i.id, i]));
           for (const item of data.fee_items) {
-            const spec = item.specification_id ? specMap.get(item.specification_id) : null;
-            if (spec) {
-              otherAmount += Number(spec.price_monthly) * (item.quantity ?? 1);
+            const orgFeeItem = orgFeeItemMap.get(item.fee_type_id);
+            if (orgFeeItem) {
+              otherAmount += Number(orgFeeItem.amount) * (item.quantity ?? 1);
             }
           }
         }
@@ -650,7 +663,7 @@ export function createLeaseService(
     updateFeeItems: async (
       orgId: string,
       leaseId: string,
-      feeItems: Array<{ fee_type_id: string; specification_id?: string; quantity: number }>,
+      feeItems: Array<{ fee_type_id: string; quantity: number }>,
       effectiveFromYear: number,
       effectiveFromMonth: number
     ) => {
@@ -671,15 +684,19 @@ export function createLeaseService(
 
       const apartmentId = lease.room.apartment_id;
 
-      const enabledConfigs = await prisma.apartmentFeeConfig.findMany({
-        where: { apartment_id: apartmentId, is_enabled: true },
-        select: { fee_type_id: true },
+      const apartment = await prisma.apartment.findUnique({
+        where: { id: apartmentId },
+        select: { organization_id: true },
       });
-      const enabledFeeTypeIds = new Set(enabledConfigs.map((c) => c.fee_type_id));
+      const enabledItems = await prisma.orgFeeItem.findMany({
+        where: { organization_id: apartment?.organization_id, is_active: true },
+        select: { id: true },
+      });
+      const enabledFeeItemIds = new Set(enabledItems.map((item) => item.id));
 
       for (const item of feeItems) {
-        if (!enabledFeeTypeIds.has(item.fee_type_id)) {
-          throw createAppError(400, `费用类型 ${item.fee_type_id} 未在公寓启用`);
+        if (!enabledFeeItemIds.has(item.fee_type_id)) {
+          throw createAppError(400, `费用项目 ${item.fee_type_id} 未在组织中启用`);
         }
       }
 
