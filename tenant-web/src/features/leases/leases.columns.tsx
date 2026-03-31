@@ -31,19 +31,18 @@ export function createLeaseColumns({
         if (!room) {
           return '-';
         }
-
         return (
-          <div className="flex flex-col">
+          <Link
+            href={`/leases/${row.original.id}`}
+            className="flex flex-col hover:underline"
+          >
             {room.apartment && (
-              <Link
-                href={`/apartments/${room.apartment.id}`}
-                className="text-xs text-muted-foreground hover:underline"
-              >
+              <span className="text-xs text-muted-foreground">
                 {room.apartment.name}
-              </Link>
+              </span>
             )}
             <span>{room.room_number}</span>
-          </div>
+          </Link>
         );
       },
     },
