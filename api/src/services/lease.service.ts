@@ -138,6 +138,19 @@ export interface LeaseService {
     effectiveFromYear: number,
     effectiveFromMonth: number
   ): Promise<{ lease_id: string; updated_at: string }>;
+  setLeaseFeeItems(
+    orgId: string,
+    leaseId: string,
+    feeItems: Array<{
+      fee_type_id?: string;
+      fee_name: string;
+      fee_code?: string;
+      specification_id?: string;
+      spec_name?: string;
+      spec_unit_price: number;
+      quantity: number;
+    }>
+  ): Promise<{ lease_id: string; updated_at: string }>;
 }
 
 /**
@@ -702,6 +715,46 @@ export function createLeaseService(
         effective_from_year: effectiveFromYear,
         effective_from_month: effectiveFromMonth,
       });
+
+      return {
+        lease_id: leaseId,
+        updated_at: new Date().toISOString(),
+      };
+    },
+
+    setLeaseFeeItems: async (
+      orgId: string,
+      leaseId: string,
+      feeItems: Array<{
+        fee_type_id?: string;
+        fee_name: string;
+        fee_code?: string;
+        specification_id?: string;
+        spec_name?: string;
+        spec_unit_price: number;
+        quantity: number;
+      }>
+    ) => {
+      const lease = await getRepo().findByIdWithRelations(leaseId);
+      if (!lease || lease.room.apartment.organization_id !== orgId) {
+        throw createAppError(404, NotFoundMessages.LEASE);
+      }
+
+      // 删除旧的费用项目
+      await getLeaseFeeItemRepo().deleteByLeaseId(leaseId);
+
+      // 创建新的费用项目
+      const itemsToCreate = feeItems.map((item) => ({
+        id: ulid().toLowerCase(),
+        lease_id: leaseId,
+        fee_type_id: item.fee_type_id || 'unknown',
+        fee_category: 'fixed',
+        fee_name: item.fee_name,
+        fee_amount: item.spec_unit_price,
+        fee_cycle: 'monthly',
+        quantity: item.quantity,
+      }));
+      await getLeaseFeeItemRepo().createMany(itemsToCreate);
 
       return {
         lease_id: leaseId,
