@@ -11,4 +11,4 @@ export { subscriptionsApi } from './subscriptions';
 export { usageApi } from './usage';
 export { notificationsApi } from './notifications';
 export { tenantReachabilityApi } from './tenant-reachability';
-export { feeItemsApi, feeTypesApi, apartmentFeeConfigApi, billFeeItemsApi } from './feeTypes';
+export { billFeeItemsApi } from './feeTypes';
