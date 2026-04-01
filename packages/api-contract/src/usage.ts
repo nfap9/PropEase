@@ -25,4 +25,6 @@ export interface UsageQuotaOrder {
   code_url: string | null;
   expires_at: string;
   paid_at: string | null;
+  /** 开发环境且无 code_url 时为 true，表示可调用模拟支付接口（向后兼容） */
+  simulate_pay_available?: boolean;
 }

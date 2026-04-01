@@ -30,6 +30,17 @@ export interface OrganizationUpdate {
   notes?: string;
 }
 
+/** 迁移统计（兼容旧 API） */
+export interface MigrationStats {
+  apartments: number;
+  rooms: number;
+  tenants: number;
+  leases: number;
+  bills: number;
+  utility_readings: number;
+  message: string;
+}
+
 /** 删除预览 */
 export interface DeletionPreview {
   can_delete: boolean;

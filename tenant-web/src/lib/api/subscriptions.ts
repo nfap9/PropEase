@@ -114,6 +114,13 @@ export const subscriptionsApi = {
     return response.data;
   },
 
+  /**
+   * @deprecated 模拟支付接口已废弃，开发环境请使用实际支付流程
+   */
+  simulatePay: async (_orgId: string, _orderId: string): Promise<{ message: string }> => {
+    throw new Error('simulatePay is deprecated, use actual payment flow');
+  },
+
 };
 
 export default subscriptionsApi;

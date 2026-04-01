@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { WizardDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import { leaseSigningSchema, type LeaseSigningFormData } from '../leases.schemas';
-import { leasesApi, apartmentsApi, roomsApi, tenantsApi, utilityConfigApi, feeTypesApi } from '@/lib/api';
+import { leasesApi, apartmentsApi, roomsApi, tenantsApi, utilityConfigApi, feeItemsApi } from '@/lib/api';
 import { toDateInputValue } from '@/lib/date-utils';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
@@ -15,14 +15,12 @@ import { TenantSearchDrawer } from './tenant-search-drawer';
 import { RoomInfoSection } from './room-info-section';
 import { TenantInfoSection } from './tenant-info-section';
 import { ContractInfoSection } from './contract-info-section';
-import type { Room, Tenant, FeeType, FeeSpecification, UtilityConfig } from '@apartment-ultra/api-contract';
+import type { Room, Tenant, OrgFeeItem, UtilityConfig } from '@apartment-ultra/api-contract';
 
 interface SelectedFee {
-  fee_type_id: string;
-  specification_id: string;
-  fee_type_name: string;
-  spec_name: string;
-  price: number;
+  fee_item_id: string;
+  fee_item_name: string;
+  amount: number;
 }
 
 const leaseSigningSteps = [
@@ -115,10 +113,10 @@ export function LeaseSigningDrawer({
     enabled: !!orgId && !isRoomSpecified && selectedApartmentId !== null,
   });
 
-  // 获取费用类型
-  const { data: feeTypes } = useQuery({
-    queryKey: ['fee-types', orgId],
-    queryFn: () => feeTypesApi.list(orgId),
+  // 获取费用项目
+  const { data: feeItems } = useQuery({
+    queryKey: ['fee-items', orgId],
+    queryFn: () => feeItemsApi.list(orgId),
     enabled: !!orgId && open,
   });
 
@@ -326,25 +324,23 @@ export function LeaseSigningDrawer({
   };
 
   // 费用选择
-  const handleAddFee = (feeType: FeeType, spec: FeeSpecification) => {
+  const handleAddFee = (feeItem: OrgFeeItem) => {
     setSelectedFees((prev) => {
-      const exists = prev.some((f) => f.specification_id === spec.id);
-      if (exists) return prev.filter((f) => f.specification_id !== spec.id);
+      const exists = prev.some((f) => f.fee_item_id === feeItem.id);
+      if (exists) return prev.filter((f) => f.fee_item_id !== feeItem.id);
       return [
-        ...prev.filter((f) => f.fee_type_id !== feeType.id),
+        ...prev.filter((f) => f.fee_item_id !== feeItem.id),
         {
-          fee_type_id: feeType.id,
-          specification_id: spec.id,
-          fee_type_name: feeType.name,
-          spec_name: spec.name,
-          price: spec.price_monthly,
+          fee_item_id: feeItem.id,
+          fee_item_name: feeItem.name,
+          amount: feeItem.amount,
         },
       ];
     });
   };
 
-  const handleUpdateFeePrice = (specId: string, price: number) => {
-    setSelectedFees((prev) => prev.map((f) => (f.specification_id === specId ? { ...f, price } : f)));
+  const handleUpdateFeePrice = (feeItemId: string, amount: number) => {
+    setSelectedFees((prev) => prev.map((f) => (f.fee_item_id === feeItemId ? { ...f, amount } : f)));
   };
 
   const getDialogTitle = () => (isRoomSpecified ? '签约' : '新增租约');
@@ -398,7 +394,7 @@ export function LeaseSigningDrawer({
           {currentStep === 2 ? (
             <ContractInfoSection
               form={form}
-              feeTypes={feeTypes}
+              feeItems={feeItems}
               selectedFees={selectedFees}
               onAddFee={handleAddFee}
               onUpdateFeePrice={handleUpdateFeePrice}

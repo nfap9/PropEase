@@ -98,6 +98,8 @@ export interface SubscriptionOrder {
   plan?: SubscriptionPlan | null;
   /** 优惠活动信息（可选） */
   promotion?: { id: string; name: string; type: string } | null;
+  /** 开发环境且无 code_url 时为 true，表示可调用模拟支付接口（向后兼容） */
+  simulate_pay_available?: boolean;
 }
 
 /** 创建订阅订单 */

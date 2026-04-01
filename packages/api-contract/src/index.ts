@@ -28,6 +28,7 @@ export type {
   Organization,
   OrganizationCreate,
   OrganizationUpdate,
+  MigrationStats,
   DeletionPreview,
   OrganizationMember,
   OrganizationUsage,
@@ -165,6 +166,21 @@ export type {
   OrgFeeItemCreate,
   OrgFeeItemUpdate,
 } from './feeTypes.js';
+
+/** 费用类型兼容层（向后兼容） */
+export type {
+  FeeType,
+  FeeSpecification,
+  FeeTypeCreate,
+  FeeTypeUpdate,
+  FeeSpecificationCreate,
+  FeeSpecificationUpdate,
+  ApartmentFeeConfig,
+  ApartmentFeeConfigCreate,
+  ApartmentFeeConfigUpdate,
+  BillFeeItem,
+} from './feeTypes.compat.js';
+export { orgFeeItemToFeeType } from './feeTypes.compat.js';
 
 /** 报表 */
 export type {
