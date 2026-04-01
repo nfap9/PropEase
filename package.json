@@ -4,7 +4,7 @@
   "private": true,
   "description": "Apartment Ultra - 多租户公寓管理系统",
   "scripts": {
-    "dev:api": "PORT=8000 pnpm --filter apartment-ultra-api dev",
+    "dev:api": "cross-env PORT=8000 pnpm --filter apartment-ultra-api dev",
     "dev:web": "pnpm --filter apartment-ultra-tenant dev",
     "dev:admin": "pnpm --filter apartment-ultra-admin dev",
     "dev:mobile": "pnpm --filter mobile start",
@@ -32,9 +32,10 @@
     "test:e2e:chromium": "playwright test --project=chromium"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@playwright/test": "^1.58.2",
+    "cross-env": "^10.1.0",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2"
   },
