@@ -95,34 +95,40 @@ function formatChangeContent(log: LeaseChangeLog): ChangeDetail[] {
 
     case 'fee_items_update':
       if (oldVal?.fee_items || newVal?.fee_items) {
-        const oldItems = (oldVal?.fee_items as Array<{ fee_type_id: string; fee_type_name?: string; specification_id?: string; specification_name?: string; quantity: number }>) || [];
-        const newItems = (newVal?.fee_items as Array<{ fee_type_id: string; fee_type_name?: string; specification_id?: string; specification_name?: string; quantity: number }>) || [];
+        const oldItems = (oldVal?.fee_items as Array<{ fee_name: string; fee_amount: number; fee_cycle: string; notes?: string }>) || [];
+        const newItems = (newVal?.fee_items as Array<{ fee_name: string; fee_amount: number; fee_cycle: string; notes?: string }>) || [];
+
+        // 比较新旧费用项目
+        const cycleLabels: Record<string, string> = {
+          monthly: '每月',
+          quarterly: '每季',
+          yearly: '每年',
+          one_time: '一次性',
+        };
 
         // 显示新增或变更的项目
         const addedOrChanged = newItems.filter((newItem) => {
-          const oldItem = oldItems.find((o) => o.fee_type_id === newItem.fee_type_id);
-          return !oldItem || oldItem.quantity !== newItem.quantity || oldItem.specification_id !== newItem.specification_id;
+          const oldItem = oldItems.find((o) => o.fee_name === newItem.fee_name);
+          return !oldItem || oldItem.fee_amount !== newItem.fee_amount || oldItem.fee_cycle !== newItem.fee_cycle;
         });
 
         // 显示删除的项目
         const removed = oldItems.filter((oldItem) => {
-          return !newItems.some((n) => n.fee_type_id === oldItem.fee_type_id);
+          return !newItems.some((n) => n.fee_name === oldItem.fee_name);
         });
 
         if (addedOrChanged.length > 0) {
           const itemsText = addedOrChanged.map((item) => {
-            const name = item.fee_type_name || item.fee_type_id;
-            const spec = item.specification_name ? ` (${item.specification_name})` : '';
-            return `${name}${spec} × ${item.quantity}`;
+            const cycle = cycleLabels[item.fee_cycle] || item.fee_cycle;
+            return `${item.fee_name} ¥${item.fee_amount}/${cycle}`;
           }).join('、');
           details.push({ label: '新增/变更', newValue: itemsText });
         }
 
         if (removed.length > 0) {
           const itemsText = removed.map((item) => {
-            const name = item.fee_type_name || item.fee_type_id;
-            const spec = item.specification_name ? ` (${item.specification_name})` : '';
-            return `${name}${spec} × ${item.quantity}`;
+            const cycle = cycleLabels[item.fee_cycle] || item.fee_cycle;
+            return `${item.fee_name} ¥${item.fee_amount}/${cycle}`;
           }).join('、');
           details.push({ label: '删除', oldValue: itemsText });
         }

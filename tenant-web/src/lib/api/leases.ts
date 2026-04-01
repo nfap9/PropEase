@@ -28,8 +28,11 @@ export interface LeaseCreateParams {
   notes?: string;
   fee_items?: Array<{
     fee_type_id?: string;
-    specification_id?: string;
+    fee_name: string;
+    fee_amount: number;
+    fee_cycle: 'monthly' | 'quarterly' | 'yearly' | 'one_time';
     quantity?: number;
+    notes?: string;
   }>;
 }
 
@@ -173,11 +176,10 @@ export const leasesApi = {
     feeItems: Array<{
       fee_type_id?: string;
       fee_name: string;
-      fee_code?: string;
-      specification_id?: string;
-      spec_name?: string;
-      spec_unit_price: number;
-      quantity: number;
+      fee_amount: number;
+      fee_cycle: 'monthly' | 'quarterly' | 'yearly' | 'one_time';
+      quantity?: number;
+      notes?: string;
     }>
   ): Promise<{ lease_id: string; updated_at: string }> => {
     const response = await api.post<{ lease_id: string; updated_at: string }>(

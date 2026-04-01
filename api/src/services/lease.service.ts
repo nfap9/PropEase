@@ -24,11 +24,15 @@ import {
 } from '../utils/intuitiveSort.js';
 
 /**
- * 租约费用项目输入
+ * 租约费用项目输入（直接输入模式）
  */
 export interface LeaseFeeItemInput {
-  fee_type_id: string;
+  fee_type_id?: string;
+  fee_name: string;
+  fee_amount: number;
+  fee_cycle: 'monthly' | 'quarterly' | 'yearly' | 'one_time';
   quantity?: number;
+  notes?: string;
 }
 
 /**
@@ -144,11 +148,10 @@ export interface LeaseService {
     feeItems: Array<{
       fee_type_id?: string;
       fee_name: string;
-      fee_code?: string;
-      specification_id?: string;
-      spec_name?: string;
-      spec_unit_price: number;
-      quantity: number;
+      fee_amount: number;
+      fee_cycle: 'monthly' | 'quarterly' | 'yearly' | 'one_time';
+      quantity?: number;
+      notes?: string;
     }>
   ): Promise<{ lease_id: string; updated_at: string }>;
 }
@@ -280,24 +283,25 @@ export function createLeaseService(
       // 创建租约并更新房间状态（事务）
       const lease = await getRepo().createWithRoomUpdate(buildCreateData(data), data.room_id);
 
-      // 插入租约费用项目
+      // 插入租约费用项目（直接输入模式）
       if (data.fee_items && data.fee_items.length > 0) {
-        // 获取费用项目详情
-        const feeItemIds = data.fee_items.map((i) => i.fee_type_id);
-        const orgFeeItems = await getOrgFeeItemRepo().findByIds(feeItemIds);
+        // 获取费用类型详情（用于获取 category）
+        const feeItemIds = data.fee_items.filter((i) => i.fee_type_id).map((i) => i.fee_type_id!);
+        const orgFeeItems = feeItemIds.length > 0 ? await getOrgFeeItemRepo().findByIds(feeItemIds) : [];
         const orgFeeItemMap = new Map(orgFeeItems.map((i) => [i.id, i]));
 
         const feeItemsData = data.fee_items.map((item) => {
-          const orgFeeItem = orgFeeItemMap.get(item.fee_type_id);
+          const orgFeeItem = item.fee_type_id ? orgFeeItemMap.get(item.fee_type_id) : null;
           return {
             id: ulid().toLowerCase(),
             lease_id: lease.id,
-            fee_type_id: item.fee_type_id,
+            fee_type_id: item.fee_type_id ?? null,
             fee_category: orgFeeItem?.category ?? 'fixed',
-            fee_name: orgFeeItem?.name ?? '',
-            fee_amount: orgFeeItem?.amount ?? 0,
-            fee_cycle: orgFeeItem?.cycle ?? 'monthly',
+            fee_name: item.fee_name,
+            fee_amount: item.fee_amount,
+            fee_cycle: item.fee_cycle,
             quantity: item.quantity ?? 1,
+            notes: item.notes ?? null,
           };
         });
         await getLeaseFeeItemRepo().createMany(feeItemsData);
@@ -311,17 +315,11 @@ export function createLeaseService(
         const monthlyRent = Number(lease.monthly_rent);
         const depositAmt = Number(lease.deposit ?? 0);
 
-        // 查询费用项目计算其他费用
+        // 计算其他费用（直接使用输入的金额）
         let otherAmount = 0;
         if (data.fee_items && data.fee_items.length > 0) {
-          const feeItemIds = data.fee_items.map((i) => i.fee_type_id);
-          const orgFeeItems = await getOrgFeeItemRepo().findByIds(feeItemIds);
-          const orgFeeItemMap = new Map(orgFeeItems.map((i) => [i.id, i]));
           for (const item of data.fee_items) {
-            const orgFeeItem = orgFeeItemMap.get(item.fee_type_id);
-            if (orgFeeItem) {
-              otherAmount += Number(orgFeeItem.amount) * (item.quantity ?? 1);
-            }
+            otherAmount += item.fee_amount * (item.quantity ?? 1);
           }
         }
 
@@ -728,11 +726,10 @@ export function createLeaseService(
       feeItems: Array<{
         fee_type_id?: string;
         fee_name: string;
-        fee_code?: string;
-        specification_id?: string;
-        spec_name?: string;
-        spec_unit_price: number;
-        quantity: number;
+        fee_amount: number;
+        fee_cycle: 'monthly' | 'quarterly' | 'yearly' | 'one_time';
+        quantity?: number;
+        notes?: string;
       }>
     ) => {
       const lease = await getRepo().findByIdWithRelations(leaseId);
@@ -740,21 +737,55 @@ export function createLeaseService(
         throw createAppError(404, NotFoundMessages.LEASE);
       }
 
+      // 获取旧的费用项目（用于变更记录）
+      const oldFeeItems = await getLeaseFeeItemRepo().findByLeaseId(leaseId);
+
       // 删除旧的费用项目
       await getLeaseFeeItemRepo().deleteByLeaseId(leaseId);
 
+      // 获取费用类型详情
+      const feeItemIds = feeItems.filter((i) => i.fee_type_id).map((i) => i.fee_type_id!);
+      const orgFeeItems = feeItemIds.length > 0 ? await getOrgFeeItemRepo().findByIds(feeItemIds) : [];
+      const orgFeeItemMap = new Map(orgFeeItems.map((i) => [i.id, i]));
+
       // 创建新的费用项目
-      const itemsToCreate = feeItems.map((item) => ({
-        id: ulid().toLowerCase(),
-        lease_id: leaseId,
-        fee_type_id: item.fee_type_id || 'unknown',
-        fee_category: 'fixed',
-        fee_name: item.fee_name,
-        fee_amount: item.spec_unit_price,
-        fee_cycle: 'monthly',
-        quantity: item.quantity,
-      }));
+      const itemsToCreate = feeItems.map((item) => {
+        const orgFeeItem = item.fee_type_id ? orgFeeItemMap.get(item.fee_type_id) : null;
+        return {
+          id: ulid().toLowerCase(),
+          lease_id: leaseId,
+          fee_type_id: item.fee_type_id ?? null,
+          fee_category: orgFeeItem?.category ?? 'fixed',
+          fee_name: item.fee_name,
+          fee_amount: item.fee_amount,
+          fee_cycle: item.fee_cycle,
+          quantity: item.quantity ?? 1,
+          notes: item.notes ?? null,
+        };
+      });
       await getLeaseFeeItemRepo().createMany(itemsToCreate);
+
+      // 记录变更日志
+      const oldItemsFormatted = oldFeeItems.map((item) => ({
+        fee_name: item.fee_name,
+        fee_amount: Number(item.fee_amount),
+        fee_cycle: item.fee_cycle,
+        notes: item.notes || '',
+      }));
+      const newItemsFormatted = feeItems.map((item) => ({
+        fee_name: item.fee_name,
+        fee_amount: item.fee_amount,
+        fee_cycle: item.fee_cycle,
+        notes: item.notes || '',
+      }));
+
+      await getLeaseChangeLogRepo().create({
+        id: ulid().toLowerCase(),
+        lease: { connect: { id: leaseId } },
+        change_type: 'fee_items_update',
+        old_value: { fee_items: oldItemsFormatted } as Prisma.InputJsonValue,
+        new_value: { fee_items: newItemsFormatted } as Prisma.InputJsonValue,
+      });
 
       return {
         lease_id: leaseId,

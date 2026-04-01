@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { WizardDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import { leaseSigningSchema, type LeaseSigningFormData } from '../leases.schemas';
-import { leasesApi, apartmentsApi, roomsApi, tenantsApi, utilityConfigApi, feeItemsApi } from '@/lib/api';
+import { leasesApi, apartmentsApi, roomsApi, tenantsApi, utilityConfigApi } from '@/lib/api';
 import { toDateInputValue } from '@/lib/date-utils';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
@@ -15,13 +15,8 @@ import { TenantSearchDrawer } from './tenant-search-drawer';
 import { RoomInfoSection } from './room-info-section';
 import { TenantInfoSection } from './tenant-info-section';
 import { ContractInfoSection } from './contract-info-section';
-import type { Room, Tenant, OrgFeeItem, UtilityConfig } from '@apartment-ultra/api-contract';
-
-interface SelectedFee {
-  fee_item_id: string;
-  fee_item_name: string;
-  amount: number;
-}
+import type { FeeItem } from '@/components/common/fee-items-editor';
+import type { Room, Tenant, UtilityConfig } from '@apartment-ultra/api-contract';
 
 const leaseSigningSteps = [
   {
@@ -73,7 +68,7 @@ export function LeaseSigningDrawer({
   const queryClient = useQueryClient();
   const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
   const [utilityConfig, setUtilityConfig] = useState<UtilityConfig | null>(null);
-  const [selectedFees, setSelectedFees] = useState<SelectedFee[]>([]);
+  const [feeItems, setFeeItems] = useState<FeeItem[]>([]);
   const [tenantSearchOpen, setTenantSearchOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -111,13 +106,6 @@ export function LeaseSigningDrawer({
     queryKey: ['rooms', orgId, selectedApartmentId],
     queryFn: () => roomsApi.list(orgId, selectedApartmentId!),
     enabled: !!orgId && !isRoomSpecified && selectedApartmentId !== null,
-  });
-
-  // 获取费用项目
-  const { data: feeItems } = useQuery({
-    queryKey: ['fee-items', orgId],
-    queryFn: () => feeItemsApi.list(orgId),
-    enabled: !!orgId && open,
   });
 
   // 监听公寓/房间变化获取水电配置
@@ -192,7 +180,7 @@ export function LeaseSigningDrawer({
       });
       setSelectedApartmentId(null);
     }
-    setSelectedFees([]);
+    setFeeItems([]);
   }, [room, open, isRoomSpecified]);
 
   useEffect(() => {
@@ -263,6 +251,16 @@ export function LeaseSigningDrawer({
         electricity_rate: data.electricity_rate,
         notes: data.notes,
       };
+      // 添加费用项目
+      if (feeItems && feeItems.length > 0) {
+        (leaseData as Record<string, unknown>).fee_items = feeItems.map((item) => ({
+          fee_name: item.name,
+          fee_amount: item.amount,
+          fee_cycle: item.cycle,
+          quantity: 1,
+          notes: item.notes || undefined,
+        }));
+      }
       const lease = await leasesApi.create(orgId, filterEmptyStrings(leaseData));
       return lease;
     },
@@ -323,26 +321,6 @@ export function LeaseSigningDrawer({
     }
   };
 
-  // 费用选择
-  const handleAddFee = (feeItem: OrgFeeItem) => {
-    setSelectedFees((prev) => {
-      const exists = prev.some((f) => f.fee_item_id === feeItem.id);
-      if (exists) return prev.filter((f) => f.fee_item_id !== feeItem.id);
-      return [
-        ...prev.filter((f) => f.fee_item_id !== feeItem.id),
-        {
-          fee_item_id: feeItem.id,
-          fee_item_name: feeItem.name,
-          amount: feeItem.amount,
-        },
-      ];
-    });
-  };
-
-  const handleUpdateFeePrice = (feeItemId: string, amount: number) => {
-    setSelectedFees((prev) => prev.map((f) => (f.fee_item_id === feeItemId ? { ...f, amount } : f)));
-  };
-
   const getDialogTitle = () => (isRoomSpecified ? '签约' : '新增租约');
   const getDialogDescription = () => (isRoomSpecified && room ? `为房间 ${room.room_number} 创建租约` : '创建新的租约');
 
@@ -395,9 +373,7 @@ export function LeaseSigningDrawer({
             <ContractInfoSection
               form={form}
               feeItems={feeItems}
-              selectedFees={selectedFees}
-              onAddFee={handleAddFee}
-              onUpdateFeePrice={handleUpdateFeePrice}
+              onFeeItemsChange={setFeeItems}
             />
           ) : null}
         </form>

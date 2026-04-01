@@ -177,17 +177,18 @@ model Lease {
 model LeaseFeeItem {
   id           String    @id @db.VarChar(26)
   lease_id     String    @db.VarChar(26)
-  fee_type_id  String    @db.VarChar(26)
+  fee_type_id  String?   @db.VarChar(26)
   fee_category String    @db.VarChar(20)
   fee_name     String    @db.VarChar(100)
   fee_amount   Decimal   @default(1) @db.Decimal(10, 2)
   fee_cycle    String    @db.VarChar(20)
   quantity     Decimal   @default(1) @db.Decimal(10, 2)
+  notes        String?   @db.VarChar(500)
   created_at   DateTime  @default(now())
   updated_at   DateTime  @updatedAt
 
   lease    Lease      @relation(fields: [lease_id], references: [id], onDelete: Cascade)
-  feeType  OrgFeeItem @relation(fields: [fee_type_id], references: [id])
+  feeType  OrgFeeItem? @relation(fields: [fee_type_id], references: [id])
 
   @@index([lease_id])
   @@map("lease_fee_items")

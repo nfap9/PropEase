@@ -21,7 +21,6 @@ const ROUTE_ACCESS_RULES: Record<string, AccessRule> = {
   '/leases': { requiresOrganization: true, permission: PERMISSIONS.LEASE_VIEW },
   '/utilities': { requiresOrganization: true, permission: PERMISSIONS.UTILITY_VIEW },
   '/bills': { requiresOrganization: true, permission: PERMISSIONS.BILL_VIEW },
-  '/fee-configs': { requiresOrganization: true, permission: PERMISSIONS.SETTINGS_VIEW },
   '/reports': { requiresOrganization: true, permission: PERMISSIONS.REPORT_VIEW },
   '/settings/team': { permission: PERMISSIONS.MEMBER_VIEW },
   '/settings/notifications': { requiresOrganization: true, permission: PERMISSIONS.SETTINGS_VIEW },

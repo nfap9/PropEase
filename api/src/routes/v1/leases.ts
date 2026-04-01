@@ -58,18 +58,16 @@ const UpdateFeeItemsSchema = z.object({
   effectiveFromMonth: z.number(),
 });
 
-// 直接设置租约费用项目（替换模式）
+// 直接设置租约费用项目（替换模式）- 支持直接输入费用
 const SetLeaseFeeItemsSchema = z.object({
   feeItems: z.array(
     z.object({
-      fee_type_id: z.string().optional(),
-      fee_name: z.string(),
-      fee_code: z.string().optional(),
-      specification_id: z.string().optional(),
-      spec_name: z.string().optional(),
-      spec_unit_price: z.number(),
-      quantity: z.number(),
-      billing_cycle: z.enum(['monthly', 'yearly']).default('monthly'),
+      fee_type_id: z.string().optional(), // 可选，关联费用类型
+      fee_name: z.string(), // 费用名称
+      fee_amount: z.number(), // 费用金额
+      fee_cycle: z.enum(['monthly', 'quarterly', 'yearly', 'one_time']).default('monthly'), // 计费周期
+      quantity: z.number().optional().default(1), // 数量
+      notes: z.string().optional(), // 备注
     })
   ),
 });
@@ -79,6 +77,16 @@ const SettleSchema = z.object({
   finalElectricityReading: z.number().optional(),
   penaltyAmount: z.number().optional(),
   remarks: z.string().optional(),
+});
+
+// 租约费用项目输入（直接输入模式）
+const LeaseFeeItemInputSchema = z.object({
+  fee_type_id: z.string().optional(), // 可选，关联费用类型
+  fee_name: z.string().min(1, '费用名称不能为空'), // 费用名称
+  fee_amount: z.number().min(0, '费用金额不能为负'), // 费用金额
+  fee_cycle: z.enum(['monthly', 'quarterly', 'yearly', 'one_time']).default('monthly'), // 计费周期
+  quantity: z.number().optional().default(1), // 数量
+  notes: z.string().optional(), // 备注
 });
 
 const LeaseCreateSchema = z.object({
@@ -92,16 +100,7 @@ const LeaseCreateSchema = z.object({
   water_rate: z.number().optional(),
   electricity_rate: z.number().optional(),
   notes: z.string().optional(),
-  fee_items: z
-    .array(
-      z.object({
-        fee_type_id: z.string(),
-        specification_id: z.string().optional(),
-        quantity: z.number().optional(),
-        billing_cycle: z.enum(['monthly', 'yearly']).default('monthly'),
-      })
-    )
-    .optional(),
+  fee_items: z.array(LeaseFeeItemInputSchema).optional(),
 });
 const LeaseUpdateSchema = LeaseCreateSchema.partial();
 

@@ -6,9 +6,21 @@ import { formatDate } from '@/lib/date-utils';
 import { LEASE_STATUS_CONFIG } from '@/lib/status-config';
 import type { Lease, LeaseFeeItem } from '@apartment-ultra/api-contract';
 
-/** 包含 fee_items 的 Lease 扩展类型 */
+/** 包含 fee_items 的 Lease 扩展类型（直接输入模式） */
+type FeeCycle = 'monthly' | 'quarterly' | 'yearly' | 'one_time';
+
 interface LeaseWithFeeItems extends Lease {
-  fee_items?: LeaseFeeItem[];
+  fee_items?: Array<{
+    id: string;
+    lease_id: string;
+    fee_type_id: string | null;
+    fee_category: string;
+    fee_name: string;
+    fee_amount: number;
+    fee_cycle: FeeCycle;
+    quantity: number;
+    notes: string | null;
+  }>;
 }
 
 interface LeaseDetailInfoProps {
@@ -104,31 +116,26 @@ export function LeaseDetailInfo({ lease, orgId }: LeaseDetailInfoProps) {
               <thead>
                 <tr className="text-left text-muted-foreground border-b">
                   <th className="pb-2 font-medium">费用名称</th>
-                  <th className="pb-2 font-medium">规格</th>
-                  <th className="pb-2 font-medium text-right">单价</th>
+                  <th className="pb-2 font-medium text-right">金额</th>
                   <th className="pb-2 font-medium text-center">周期</th>
-                  <th className="pb-2 font-medium text-center">数量</th>
-                  <th className="pb-2 font-medium text-right">小计</th>
+                  <th className="pb-2 font-medium text-right">备注</th>
                 </tr>
               </thead>
               <tbody>
                 {leaseWithFeeItems.fee_items.map((item) => {
-                  const unitPrice = Number(item.specification?.price_monthly || 0);
-                  const quantity = Number(item.quantity || 1);
-                  const subtotal = unitPrice * quantity;
-                  const cycle = item.billing_cycle === 'yearly' ? '每年' : '每月';
+                  const cycleLabels: Record<string, string> = {
+                    monthly: '每月',
+                    quarterly: '每季',
+                    yearly: '每年',
+                    one_time: '一次性',
+                  };
+                  const cycle = cycleLabels[item.fee_cycle] || item.fee_cycle;
                   return (
                     <tr key={item.id} className="border-b last:border-0">
-                      <td className="py-2 font-medium">{item.feeType?.name || '-'}</td>
-                      <td className="py-2 text-muted-foreground">
-                        {item.specification?.name || '-'}
-                      </td>
-                      <td className="py-2 text-right">¥{unitPrice.toLocaleString()}</td>
+                      <td className="py-2 font-medium">{item.fee_name}</td>
+                      <td className="py-2 text-right">¥{Number(item.fee_amount).toLocaleString()}</td>
                       <td className="py-2 text-center text-muted-foreground">{cycle}</td>
-                      <td className="py-2 text-center">× {quantity}</td>
-                      <td className="py-2 text-right font-medium">
-                        ¥{subtotal.toLocaleString()}
-                      </td>
+                      <td className="py-2 text-right text-muted-foreground">{item.notes || '-'}</td>
                     </tr>
                   );
                 })}

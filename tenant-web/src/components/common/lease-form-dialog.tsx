@@ -10,7 +10,6 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -27,12 +26,13 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { TenantSelectWithCreate } from '@/components/common/tenant-select-with-create';
-import { leasesApi, apartmentsApi, roomsApi, utilityConfigApi, feeItemsApi } from '@/lib/api';
+import { FeeItemsEditor, type FeeItem } from '@/components/common/fee-items-editor';
+import { leasesApi, apartmentsApi, roomsApi, utilityConfigApi } from '@/lib/api';
 import { toDateInputValue } from '@/lib/date-utils';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { Room, Apartment } from '@/types';
-import type { OrgFeeItem, FeeCycle, UtilityConfig } from '@apartment-ultra/api-contract';
+import type { UtilityConfig } from '@apartment-ultra/api-contract';
 
 const leaseSchema = z.object({
   room_id: z.string().min(1, '请选择房间'),
@@ -47,13 +47,6 @@ const leaseSchema = z.object({
 });
 
 export type LeaseFormData = z.infer<typeof leaseSchema>;
-
-/** 选中的费用项 */
-export interface SelectedFee {
-  fee_item_id: string;
-  fee_item_name: string;
-  amount: number;
-}
 
 export interface LeaseCreatedParams {
   room_id: string;
@@ -85,7 +78,7 @@ export function LeaseFormDialog({
   const queryClient = useQueryClient();
   const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
   const [utilityConfig, setUtilityConfig] = useState<UtilityConfig | null>(null);
-  const [selectedFees, setSelectedFees] = useState<SelectedFee[]>([]);
+  const [feeItems, setFeeItems] = useState<FeeItem[]>([]);
 
   const isRoomSpecified = !!room;
 
@@ -116,13 +109,6 @@ export function LeaseFormDialog({
     queryKey: ['rooms', orgId, selectedApartmentId],
     queryFn: () => roomsApi.list(orgId, selectedApartmentId!),
     enabled: !!orgId && !isRoomSpecified && selectedApartmentId !== null,
-  });
-
-  // 获取费用项目列表
-  const { data: feeItems } = useQuery({
-    queryKey: ['fee-items', orgId],
-    queryFn: () => feeItemsApi.list(orgId),
-    enabled: !!orgId && open,
   });
 
   // 当选择房间后，获取水电配置
@@ -191,13 +177,27 @@ export function LeaseFormDialog({
       });
       setSelectedApartmentId(null);
     }
-    // 重置选中的费用
-    setSelectedFees([]);
+    // 重置费用项目
+    setFeeItems([]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room, open, isRoomSpecified]);
 
   const createMutation = useMutation({
-    mutationFn: (data: LeaseFormData) => leasesApi.create(orgId, filterEmptyStrings(data)),
+    mutationFn: (data: LeaseFormData & { fee_items?: FeeItem[] }) => {
+      const { fee_items, ...rest } = data;
+      const payload = filterEmptyStrings(rest);
+      // 添加费用项目
+      if (fee_items && fee_items.length > 0) {
+        (payload as Record<string, unknown>).fee_items = fee_items.map((item) => ({
+          fee_name: item.name,
+          fee_amount: item.amount,
+          fee_cycle: item.cycle,
+          quantity: 1,
+          notes: item.notes || undefined,
+        }));
+      }
+      return leasesApi.create(orgId, payload as Parameters<typeof leasesApi.create>[1]);
+    },
     onSuccess: (createdLease, variables) => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
@@ -227,7 +227,7 @@ export function LeaseFormDialog({
   });
 
   const handleSubmit = (data: LeaseFormData) => {
-    createMutation.mutate(data);
+    createMutation.mutate({ ...data, fee_items: feeItems });
   };
 
   const setDateFieldValue = (field: 'start_date' | 'end_date', value: string) => {
@@ -236,36 +236,6 @@ export function LeaseFormDialog({
       shouldTouch: true,
       shouldValidate: true,
     });
-  };
-
-  // 添加费用到选中列表
-  const handleAddFee = (feeItem: OrgFeeItem) => {
-    const exists = selectedFees.some((f) => f.fee_item_id === feeItem.id);
-    if (exists) {
-      // 已存在则移除
-      handleRemoveFee(feeItem.id);
-      return;
-    }
-    setSelectedFees((prev) => [
-      ...prev.filter((f) => f.fee_item_id !== feeItem.id),
-      {
-        fee_item_id: feeItem.id,
-        fee_item_name: feeItem.name,
-        amount: feeItem.amount,
-      },
-    ]);
-  };
-
-  // 从选中列表移除费用
-  const handleRemoveFee = (feeItemId: string) => {
-    setSelectedFees((prev) => prev.filter((f) => f.fee_item_id !== feeItemId));
-  };
-
-  // 更新选中费用的价格
-  const handleUpdateFeePrice = (feeItemId: string, price: number) => {
-    setSelectedFees((prev) =>
-      prev.map((f) => (f.fee_item_id === feeItemId ? { ...f, amount: price } : f))
-    );
   };
 
   const getDialogTitle = () => {
@@ -448,56 +418,8 @@ export function LeaseFormDialog({
             </div>
           </div>
 
-          {/* 费用选择 */}
-          {feeItems && feeItems.length > 0 && (
-            <div className="space-y-3 border rounded-lg p-4">
-              <Label className="text-base">额外费用（可选）</Label>
-              <p className="text-sm text-muted-foreground">选择需要添加的费用，可修改价格</p>
-
-              {/* 已选择的费用列表 */}
-              {selectedFees.length > 0 && (
-                <div className="space-y-2">
-                  {selectedFees.map((fee) => (
-                    <div key={fee.fee_item_id} className="flex items-center gap-2 bg-muted/50 rounded-lg p-2">
-                      <Checkbox
-                        checked={true}
-                        onCheckedChange={() => handleRemoveFee(fee.fee_item_id)}
-                      />
-                      <span className="flex-1 text-sm">{fee.fee_item_name}</span>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={fee.amount}
-                        onChange={(e) => handleUpdateFeePrice(fee.fee_item_id, parseFloat(e.target.value) || 0)}
-                        className="w-24 h-8"
-                      />
-                      <span className="text-sm text-muted-foreground">元</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* 费用项目选择 */}
-              <div className="flex flex-wrap gap-2">
-                {feeItems
-                  .filter((item) => item.is_active)
-                  .map((item) => {
-                    const isSelected = selectedFees.some((f) => f.fee_item_id === item.id);
-                    return (
-                      <Button
-                        key={item.id}
-                        type="button"
-                        variant={isSelected ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => handleAddFee(item)}
-                      >
-                        {item.name} (¥{item.amount}/{item.cycle === 'monthly' ? '月' : item.cycle === 'yearly' ? '年' : '次'})
-                      </Button>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
+          {/* 费用项目编辑器 */}
+          <FeeItemsEditor items={feeItems} onChange={setFeeItems} />
 
           {/* 备注 */}
           <div className="space-y-2">

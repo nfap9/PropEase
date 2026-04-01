@@ -10,7 +10,6 @@ import {
   Bell,
   Shield,
   CreditCard,
-  DollarSign,
   MessageSquareMore,
 } from 'lucide-react';
 import { PERMISSIONS } from '@/hooks/use-permissions';
@@ -90,14 +89,6 @@ export const NAV_ITEMS: NavItem[] = [
     requiresOrganization: true,
     permission: PERMISSIONS.BILL_VIEW,
     id: 'bills',
-  },
-  {
-    href: '/fee-configs',
-    label: tenantMessages.layout.nav.feeConfigs,
-    icon: DollarSign,
-    requiresOrganization: true,
-    permission: PERMISSIONS.SETTINGS_VIEW,
-    id: 'fee-configs',
   },
   {
     href: '/reports',

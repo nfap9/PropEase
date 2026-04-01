@@ -6,15 +6,16 @@ import type { Prisma, PrismaClient } from '@prisma/client';
 export type LeaseFeeItemWithDetails = {
   id: string;
   lease_id: string;
-  fee_type_id: string;
+  fee_type_id: string | null;
   fee_category: string;
   fee_name: string;
   fee_amount: unknown;
   fee_cycle: string;
   quantity: unknown;
+  notes: string | null;
   created_at: Date;
   updated_at: Date;
-  feeType: { id: string; name: string; category: string; amount: unknown; cycle: string };
+  feeType: { id: string; name: string; category: string; amount: unknown; cycle: string } | null;
 };
 
 export interface LeaseFeeItemRepository {
