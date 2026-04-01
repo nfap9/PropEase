@@ -10,7 +10,6 @@ import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { ORDER_STATUS_CONFIG } from '@/lib/status-config';
 import { ArrowLeft, Loader2, Smartphone, FlaskConical } from 'lucide-react';
 import { subscriptionsApi } from '@/lib/api';
-import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantI18n, tenantMessages } from '@/lib/i18n';

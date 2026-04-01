@@ -3,25 +3,11 @@ import {
   OrganizationSubscription,
   SubscriptionOrder,
   SubscriptionOrderCreate,
-  SubscriptionPlan,
   SubscribeRequest,
   SubscriptionStatus,
 } from '@/types';
 
 export const subscriptionsApi = {
-  // Plans
-  listPlans: async (activeOnly: boolean = true): Promise<SubscriptionPlan[]> => {
-    const response = await api.get<SubscriptionPlan[]>('/subscriptions/plans', {
-      params: { active_only: activeOnly },
-    });
-    return response.data;
-  },
-
-  getPlan: async (planId: string): Promise<SubscriptionPlan> => {
-    const response = await api.get<SubscriptionPlan>(`/subscriptions/plans/${planId}`);
-    return response.data;
-  },
-
   // Organization Subscription
   getSubscription: async (orgId: string): Promise<OrganizationSubscription> => {
     const response = await api.get<OrganizationSubscription>(

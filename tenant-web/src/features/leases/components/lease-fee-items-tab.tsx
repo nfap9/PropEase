@@ -50,6 +50,14 @@ interface LeaseDirectFeeItem {
   notes: string;
 }
 
+interface LeaseFeeItemRaw {
+  id: string;
+  fee_name?: string;
+  fee_amount?: number;
+  fee_cycle?: string;
+  notes?: string;
+}
+
 interface LeaseFeeItemsTabProps {
   leaseId: string;
   orgId: string;
@@ -60,6 +68,7 @@ export function LeaseFeeItemsTab({ leaseId, orgId }: LeaseFeeItemsTabProps) {
   const [directFees, setDirectFees] = useState<LeaseDirectFeeItem[]>([]);
   const [editingFee, setEditingFee] = useState<LeaseDirectFeeItem | null>(null);
   const [feeFormData, setFeeFormData] = useState({ name: '', customName: '', amount: '', cycle: 'monthly' as BillingCycle, notes: '' });
+  const [showFeeDialog, setShowFeeDialog] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: lease, isLoading } = useQuery({
@@ -95,7 +104,7 @@ export function LeaseFeeItemsTab({ leaseId, orgId }: LeaseFeeItemsTabProps) {
   }
 
   // 转换存储的数据格式
-  const currentItems: LeaseDirectFeeItem[] = (lease as any)?.fee_items?.map((item: any) => ({
+  const currentItems: LeaseDirectFeeItem[] = (lease as { fee_items?: LeaseFeeItemRaw[] })?.fee_items?.map((item: LeaseFeeItemRaw) => ({
     id: item.id,
     name: item.fee_name || '-',
     amount: Number(item.fee_amount || 0),
@@ -128,7 +137,6 @@ export function LeaseFeeItemsTab({ leaseId, orgId }: LeaseFeeItemsTabProps) {
     setShowFeeDialog(true);
   };
 
-  const [showFeeDialog, setShowFeeDialog] = useState(false);
 
   // 保存费用
   const saveFee = () => {

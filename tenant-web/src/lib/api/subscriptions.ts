@@ -2,50 +2,23 @@ import api from './client';
 import {
   OrganizationSubscription,
   SubscriptionOrder,
-  SubscriptionPlan,
   SubscribeRequest,
   SubscriptionStatus,
   OrganizationUsage,
   StorefrontView,
   StorefrontViewPricing,
   StorefrontViewService,
-  PriceCalculationResult,
 } from '@/types';
 
 export type StorefrontServicePricing = StorefrontViewPricing;
 export type StorefrontService = StorefrontViewService;
 
 export const subscriptionsApi = {
-  // Plans
-  listPlans: async (activeOnly: boolean = true): Promise<SubscriptionPlan[]> => {
-    const response = await api.get<SubscriptionPlan[]>('/subscriptions/plans', {
-      params: { active_only: activeOnly },
-    });
-    return response.data;
-  },
-
-  getPlan: async (planId: string): Promise<SubscriptionPlan> => {
-    const response = await api.get<SubscriptionPlan>(`/subscriptions/plans/${planId}`);
-    return response.data;
-  },
-
   // Storefront
   getStorefront: async (storefrontId?: string): Promise<StorefrontView> => {
     const response = await api.get<StorefrontView>('/subscriptions/storefront', {
       params: storefrontId ? { storefront_id: storefrontId } : undefined,
     });
-    return response.data;
-  },
-
-  calculatePrice: async (params: {
-    service_id: string;
-    months: number;
-    storefront_id?: string;
-  }): Promise<PriceCalculationResult> => {
-    const response = await api.post<PriceCalculationResult>(
-      '/subscriptions/storefront/calculate-price',
-      params
-    );
     return response.data;
   },
 
@@ -79,25 +52,6 @@ export const subscriptionsApi = {
     return response.data;
   },
 
-  changePlan: async (
-    orgId: string,
-    data: { plan_id: string; billing_cycle?: string }
-  ): Promise<OrganizationSubscription> => {
-    const response = await api.put<OrganizationSubscription>(
-      `/subscriptions/organizations/${orgId}/subscription`,
-      data
-    );
-    return response.data;
-  },
-
-  cancelSubscription: async (orgId: string, reason?: string): Promise<{ message: string }> => {
-    const response = await api.post<{ message: string }>(
-      `/subscriptions/organizations/${orgId}/subscription/cancel`,
-      { reason }
-    );
-    return response.data;
-  },
-
   // Orders
   createOrder: async (orgId: string, data: { service_id: string; billing_months?: number }): Promise<SubscriptionOrder> => {
     const response = await api.post<SubscriptionOrder>(
@@ -113,14 +67,6 @@ export const subscriptionsApi = {
     );
     return response.data;
   },
-
-  /**
-   * @deprecated 模拟支付接口已废弃，开发环境请使用实际支付流程
-   */
-  simulatePay: async (_orgId: string, _orderId: string): Promise<{ message: string }> => {
-    throw new Error('simulatePay is deprecated, use actual payment flow');
-  },
-
 };
 
 export default subscriptionsApi;

@@ -217,7 +217,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
         <div className="space-y-6">
           <ApartmentDetailHeader
             apartmentName={apartment.name}
-            apartmentAddress={apartment.address}
             onBack={() => router.push('/apartments')}
             onEdit={handleEditApartment}
             onOpenUtilityConfig={() => setIsUtilityConfigOpen(true)}

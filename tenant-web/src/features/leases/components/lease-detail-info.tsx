@@ -4,7 +4,7 @@ import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { formatDate } from '@/lib/date-utils';
 import { LEASE_STATUS_CONFIG } from '@/lib/status-config';
-import type { Lease, LeaseFeeItem } from '@apartment-ultra/api-contract';
+import type { Lease } from '@apartment-ultra/api-contract';
 
 /** 包含 fee_items 的 Lease 扩展类型（直接输入模式） */
 type FeeCycle = 'monthly' | 'quarterly' | 'yearly' | 'one_time';
@@ -25,10 +25,9 @@ interface LeaseWithFeeItems extends Lease {
 
 interface LeaseDetailInfoProps {
   lease: Lease;
-  orgId: string;
 }
 
-export function LeaseDetailInfo({ lease, orgId }: LeaseDetailInfoProps) {
+export function LeaseDetailInfo({ lease }: LeaseDetailInfoProps) {
   const leaseWithFeeItems = lease as LeaseWithFeeItems;
   const statusConfig = lease.is_active
     ? LEASE_STATUS_CONFIG.active

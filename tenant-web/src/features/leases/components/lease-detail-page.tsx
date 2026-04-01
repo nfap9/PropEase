@@ -77,7 +77,7 @@ export function LeaseDetailPage({ leaseId }: LeaseDetailPageProps) {
 
       {/* Tab 内容 */}
       <div>
-        {activeTab === 'info' && <LeaseDetailInfo lease={lease} orgId={orgId!} />}
+        {activeTab === 'info' && <LeaseDetailInfo lease={lease} />}
         {activeTab === 'history' && <LeaseChangeHistoryTab leaseId={leaseId} orgId={orgId!} />}
       </div>
     </div>

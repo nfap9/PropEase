@@ -5,7 +5,6 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 
 interface ApartmentDetailHeaderProps {
   apartmentName: string;
-  apartmentAddress?: string | null;
   onBack: () => void;
   onEdit: () => void;
   onOpenUtilityConfig?: () => void;
@@ -13,7 +12,6 @@ interface ApartmentDetailHeaderProps {
 
 export function ApartmentDetailHeader({
   apartmentName,
-  apartmentAddress,
   onBack,
   onEdit,
   onOpenUtilityConfig,

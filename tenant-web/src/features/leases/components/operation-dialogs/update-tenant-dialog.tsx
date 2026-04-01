@@ -16,10 +16,9 @@ interface UpdateTenantDialogProps {
   onOpenChange: (open: boolean) => void;
   orgId: string;
   leaseId: string;
-  currentTenantId?: string | null;
 }
 
-export function UpdateTenantDialog({ open, onOpenChange, orgId, leaseId, currentTenantId }: UpdateTenantDialogProps) {
+export function UpdateTenantDialog({ open, onOpenChange, orgId, leaseId }: UpdateTenantDialogProps) {
   const form = useForm<UpdateTenantFormData>({
     resolver: zodResolver(updateTenantSchema),
     defaultValues: { newTenantId: '' },

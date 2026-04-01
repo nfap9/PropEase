@@ -58,6 +58,14 @@ interface LeaseDirectFeeItem {
   notes: string;
 }
 
+interface LeaseFeeItemRaw {
+  id: string;
+  fee_name?: string;
+  fee_amount?: number;
+  fee_cycle?: string;
+  notes?: string;
+}
+
 interface OperationsDropdownProps {
   orgId: string;
   leaseId: string;
@@ -96,7 +104,7 @@ export function OperationsDropdown({ orgId, leaseId, lease }: OperationsDropdown
   });
 
   // 转换存储的数据格式
-  const currentFeeItems: LeaseDirectFeeItem[] = (lease as any)?.fee_items?.map((item: any) => ({
+  const currentFeeItems: LeaseDirectFeeItem[] = (lease as { fee_items?: LeaseFeeItemRaw[] })?.fee_items?.map((item: LeaseFeeItemRaw) => ({
     id: item.id,
     name: item.fee_name || '-',
     amount: Number(item.fee_amount || 0),
@@ -254,7 +262,6 @@ export function OperationsDropdown({ orgId, leaseId, lease }: OperationsDropdown
         onOpenChange={(open) => setOpenDialog(open ? 'update-tenant' : null)}
         orgId={orgId}
         leaseId={leaseId}
-        currentTenantId={lease.tenant_id}
       />
       <ChangeDepositDialog
         open={openDialog === 'change-deposit'}

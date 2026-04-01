@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -53,7 +53,7 @@ const renewSchema = z.object({
 
 type RenewForm = z.infer<typeof renewSchema>;
 
-export default function AdminSubscriptionsPage() {
+function SubscriptionsContent() {
   const queryClient = useQueryClient();
   const [isRenewOpen, setIsRenewOpen] = useState(false);
   const [isCancelOpen, setIsCancelOpen] = useState(false);
@@ -338,5 +338,22 @@ export default function AdminSubscriptionsPage() {
         intent="destructive"
       />
     </div>
+  );
+}
+
+function SubscriptionsPageSkeleton() {
+  return (
+    <div className="mx-auto max-w-6xl">
+      <Skeleton className="mb-4 h-8 w-48" />
+      <Skeleton className="h-64 w-full" />
+    </div>
+  );
+}
+
+export default function AdminSubscriptionsPage() {
+  return (
+    <Suspense fallback={<SubscriptionsPageSkeleton />}>
+      <SubscriptionsContent />
+    </Suspense>
   );
 }

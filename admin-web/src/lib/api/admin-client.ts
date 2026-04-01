@@ -29,9 +29,6 @@ import type {
   AdminPlatformConfig,
   AdminUsagePricing,
   AdminUsagePricingUpdate,
-  Promotion,
-  PromotionCreate,
-  PromotionUpdate,
   ServiceProduct,
   ServiceProductCreate,
   ServiceProductUpdate,
@@ -43,7 +40,6 @@ import type {
   StorefrontItem,
   StorefrontItemCreate,
   StorefrontItemUpdate,
-  StorefrontItemsReorder,
   PricingDiscount,
 } from '@apartment-ultra/api-contract';
 
@@ -73,9 +69,6 @@ export type {
   AdminPlatformConfig,
   AdminUsagePricing,
   AdminUsagePricingUpdate,
-  Promotion,
-  PromotionCreate,
-  PromotionUpdate,
   ServiceProduct,
   ServiceProductCreate,
   ServiceProductUpdate,
@@ -87,7 +80,6 @@ export type {
   StorefrontItem,
   StorefrontItemCreate,
   StorefrontItemUpdate,
-  StorefrontItemsReorder,
   PricingDiscount,
 };
 
@@ -179,7 +171,6 @@ export const adminApiEndpoints = {
   listUsers: (params?: { skip?: number; limit?: number }) =>
     adminApi.get<AdminUser[]>('/admin/users', { params }),
   getMe: () => adminApi.get<AdminUser>('/admin/users/me'),
-  getUser: (id: string) => adminApi.get<AdminUser>(`/admin/users/${id}`),
   createUser: (data: AdminUserCreate) => adminApi.post<AdminUser>('/admin/users', data),
   updateUser: (id: string, data: AdminUserUpdate) =>
     adminApi.put<AdminUser>(`/admin/users/${id}`, data),
@@ -190,7 +181,6 @@ export const adminApiEndpoints = {
   // 运营角色
   listRoles: (params?: { skip?: number; limit?: number }) =>
     adminApi.get<AdminRole[]>('/admin/roles', { params }),
-  getRole: (id: string) => adminApi.get<AdminRole>(`/admin/roles/${id}`),
   createRole: (data: AdminRoleCreate) => adminApi.post<AdminRole>('/admin/roles', data),
   updateRole: (id: string, data: AdminRoleUpdate) =>
     adminApi.put<AdminRole>(`/admin/roles/${id}`, data),
@@ -210,8 +200,6 @@ export const adminApiEndpoints = {
     is_active?: boolean;
     search?: string;
   }) => adminApi.get<AdminRegisteredUser[]>('/admin/registered-users', { params }),
-  getRegisteredUserCount: (params?: { is_active?: boolean; search?: string }) =>
-    adminApi.get<{ total: number }>('/admin/registered-users/count', { params }),
   getRegisteredUser: (id: string) =>
     adminApi.get<AdminRegisteredUserDetail>(`/admin/registered-users/${id}`),
   setRegisteredUserActive: (id: string, data: AdminRegisteredUserSetActive) =>
@@ -336,21 +324,6 @@ export const adminApiEndpoints = {
     price_per_member?: number;
   }) => adminApi.put<unknown>('/admin/usage-pricing', data),
 
-  // 优惠活动
-  listPromotions: (params?: { is_active?: boolean; plan_id?: string }) =>
-    adminApi.get<Promotion[]>('/admin/promotions', { params }),
-  getPromotion: (id: string) =>
-    adminApi.get<Promotion>(`/admin/promotions/${id}`),
-  createPromotion: (data: PromotionCreate) =>
-    adminApi.post<Promotion>('/admin/promotions', data),
-  updatePromotion: (id: string, data: PromotionUpdate) =>
-    adminApi.put<Promotion>(`/admin/promotions/${id}`, data),
-  deletePromotion: (id: string) =>
-    adminApi.delete(`/admin/promotions/${id}`),
-  addPlanToPromotion: (promotionId: string, planId: string) =>
-    adminApi.post(`/admin/promotions/${promotionId}/plans`, { plan_id: planId }),
-  removePlanFromPromotion: (promotionId: string, planId: string) =>
-    adminApi.delete(`/admin/promotions/${promotionId}/plans/${planId}`),
 
   // 服务产品
   listServiceProducts: (params?: { is_active?: boolean }) =>
@@ -384,6 +357,4 @@ export const adminApiEndpoints = {
     adminApi.put<StorefrontItem>(`/admin/storefronts/${storefrontId}/items/${itemId}`, data),
   deleteStorefrontItem: (storefrontId: string, itemId: string) =>
     adminApi.delete(`/admin/storefronts/${storefrontId}/items/${itemId}`),
-  reorderStorefrontItems: (storefrontId: string, data: StorefrontItemsReorder) =>
-    adminApi.put<void>(`/admin/storefronts/${storefrontId}/items/reorder`, data),
 };

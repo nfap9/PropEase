@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useMemo } from 'react';
+import { Suspense, useState, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { type ColumnDef } from '@tanstack/react-table';
@@ -75,10 +75,6 @@ const UTILITY_BILL_STATUS_CONFIG: Record<
   ready_to_bill: { label: '待出账', variant: 'info' },
   billed: { label: '已出账', variant: 'success' },
 };
-
-function getPeriodKey(year: number, month: number) {
-  return year * 12 + month;
-}
 
 function getBillingDeadline(startDate: string, year: number, month: number) {
   const billingDay = getBillingDay(startDate);
@@ -223,6 +219,14 @@ const pendingUtilityBillColumns: ColumnDef<PendingUtilityBillRow>[] = [
 ];
 
 export default function UtilitiesPage() {
+  return (
+    <Suspense fallback={<UtilitiesPageSkeleton />}>
+      <UtilitiesContent />
+    </Suspense>
+  );
+}
+
+function UtilitiesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -230,7 +234,7 @@ export default function UtilitiesPage() {
   const orgId = organization?.id;
   const activeTab = searchParams.get('tab') === 'history' ? 'history' : 'entry';
 
-  const today = new Date();
+  const today = useMemo(() => new Date(), []);
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
 
@@ -375,7 +379,6 @@ export default function UtilitiesPage() {
     if (!activeLeases.length) return [];
 
     const todayTime = today.getTime();
-    const currentPeriodKey = getPeriodKey(currentYear, currentMonth);
     const currentReadingByRoom = new Map<string, UtilityReading>();
     const latestPreviousReadingByRoom = new Map<string, UtilityReading>();
     const billByLease = new Map<string, Bill>();
@@ -732,6 +735,22 @@ export default function UtilitiesPage() {
             utility={editingUtility}
           />
         ) : null}
+      </MainLayout>
+    </PermissionPageGuard>
+  );
+}
+
+function UtilitiesPageSkeleton() {
+  return (
+    <PermissionPageGuard>
+      <MainLayout>
+        <div className="space-y-4">
+          <div className="space-y-3">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <Skeleton className="h-64 w-full" />
+        </div>
       </MainLayout>
     </PermissionPageGuard>
   );
