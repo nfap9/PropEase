@@ -1,4 +1,4 @@
-import type { Prisma, Room } from '@prisma/client';
+import type { Prisma, Room, Apartment, Lease, Tenant, UtilityConfig } from '@prisma/client';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -10,12 +10,23 @@ export type RoomWithApartment = Room & {
 };
 
 /**
+ * 房间包含公寓和租约信息
+ */
+export type RoomWithLease = Room & {
+  apartment: Apartment & { utility_config: UtilityConfig | null };
+  leases: (Lease & { tenant: Tenant })[];
+};
+
+/**
  * Room Repository 接口
  */
 export interface RoomRepository {
   findById(id: string): Promise<Room | null>;
   findByIdWithApartment(id: string): Promise<RoomWithApartment | null>;
   findByApartmentId(apartmentId: string): Promise<Room[]>;
+  findByOrgId(orgId: string): Promise<Room[]>;
+  findByOrgIdWithLeases(orgId: string): Promise<RoomWithLease[]>;
+  findByOrgIdWithLeasesAll(orgId: string): Promise<RoomWithLease[]>;
   create(data: Prisma.RoomCreateInput): Promise<Room>;
   createBatch(rooms: Array<Prisma.RoomCreateInput>): Promise<Room[]>;
   update(id: string, data: Prisma.RoomUpdateInput): Promise<Room>;
@@ -41,6 +52,42 @@ export function createRoomRepository(db: DbClient): RoomRepository {
 
     findByApartmentId: async (apartmentId: string) => {
       return db.room.findMany({ where: { apartment_id: apartmentId } });
+    },
+
+    findByOrgId: async (orgId: string) => {
+      return db.room.findMany({
+        where: { apartment: { organization_id: orgId } },
+      });
+    },
+
+    findByOrgIdWithLeases: async (orgId: string) => {
+      return db.room.findMany({
+        where: { apartment: { organization_id: orgId }, status: 'occupied' },
+        include: {
+          apartment: { include: { utility_config: true } },
+          leases: {
+            where: { is_active: true },
+            include: { tenant: true },
+            take: 1,
+            orderBy: { start_date: 'desc' },
+          },
+        },
+      }) as Promise<RoomWithLease[]>;
+    },
+
+    findByOrgIdWithLeasesAll: async (orgId: string) => {
+      return db.room.findMany({
+        where: { apartment: { organization_id: orgId } },
+        include: {
+          apartment: { include: { utility_config: true } },
+          leases: {
+            where: { is_active: true },
+            include: { tenant: true },
+            take: 1,
+            orderBy: { start_date: 'desc' },
+          },
+        },
+      }) as Promise<RoomWithLease[]>;
     },
 
     create: async (data: Prisma.RoomCreateInput) => {

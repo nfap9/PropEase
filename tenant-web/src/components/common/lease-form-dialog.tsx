@@ -27,12 +27,12 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { TenantSelectWithCreate } from '@/components/common/tenant-select-with-create';
-import { leasesApi, apartmentsApi, roomsApi, utilityConfigApi, feeTypesApi } from '@/lib/api';
+import { leasesApi, apartmentsApi, roomsApi, utilityConfigApi, feeItemsApi } from '@/lib/api';
 import { toDateInputValue } from '@/lib/date-utils';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
 import { Room, Apartment } from '@/types';
-import type { FeeType, FeeSpecification, UtilityConfig } from '@apartment-ultra/api-contract';
+import type { OrgFeeItem, FeeCycle, UtilityConfig } from '@apartment-ultra/api-contract';
 
 const leaseSchema = z.object({
   room_id: z.string().min(1, '请选择房间'),
@@ -50,11 +50,9 @@ export type LeaseFormData = z.infer<typeof leaseSchema>;
 
 /** 选中的费用项 */
 export interface SelectedFee {
-  fee_type_id: string;
-  specification_id: string;
-  fee_type_name: string;
-  spec_name: string;
-  price: number;
+  fee_item_id: string;
+  fee_item_name: string;
+  amount: number;
 }
 
 export interface LeaseCreatedParams {
@@ -120,10 +118,10 @@ export function LeaseFormDialog({
     enabled: !!orgId && !isRoomSpecified && selectedApartmentId !== null,
   });
 
-  // 获取费用类型列表
-  const { data: feeTypes } = useQuery({
-    queryKey: ['fee-types', orgId],
-    queryFn: () => feeTypesApi.list(orgId),
+  // 获取费用项目列表
+  const { data: feeItems } = useQuery({
+    queryKey: ['fee-items', orgId],
+    queryFn: () => feeItemsApi.list(orgId),
     enabled: !!orgId && open,
   });
 
@@ -240,39 +238,33 @@ export function LeaseFormDialog({
     });
   };
 
-  // 添加费用到选中列表（同一费用类型只能选择一个规格）
-  const handleAddFee = (feeType: FeeType, spec: FeeSpecification) => {
-    const exists = selectedFees.some((f) => f.specification_id === spec.id);
+  // 添加费用到选中列表
+  const handleAddFee = (feeItem: OrgFeeItem) => {
+    const exists = selectedFees.some((f) => f.fee_item_id === feeItem.id);
     if (exists) {
       // 已存在则移除
-      handleRemoveFee(spec.id);
+      handleRemoveFee(feeItem.id);
       return;
     }
-    // 移除同一费用类型的其他规格，添加新规格
-    setSelectedFees((prev) => {
-      const filtered = prev.filter((f) => f.fee_type_id !== feeType.id);
-      return [
-        ...filtered,
-        {
-          fee_type_id: feeType.id,
-          specification_id: spec.id,
-          fee_type_name: feeType.name,
-          spec_name: spec.name,
-          price: spec.price_monthly,
-        },
-      ];
-    });
+    setSelectedFees((prev) => [
+      ...prev.filter((f) => f.fee_item_id !== feeItem.id),
+      {
+        fee_item_id: feeItem.id,
+        fee_item_name: feeItem.name,
+        amount: feeItem.amount,
+      },
+    ]);
   };
 
   // 从选中列表移除费用
-  const handleRemoveFee = (specificationId: string) => {
-    setSelectedFees((prev) => prev.filter((f) => f.specification_id !== specificationId));
+  const handleRemoveFee = (feeItemId: string) => {
+    setSelectedFees((prev) => prev.filter((f) => f.fee_item_id !== feeItemId));
   };
 
   // 更新选中费用的价格
-  const handleUpdateFeePrice = (specificationId: string, price: number) => {
+  const handleUpdateFeePrice = (feeItemId: string, price: number) => {
     setSelectedFees((prev) =>
-      prev.map((f) => (f.specification_id === specificationId ? { ...f, price } : f))
+      prev.map((f) => (f.fee_item_id === feeItemId ? { ...f, amount: price } : f))
     );
   };
 
@@ -457,7 +449,7 @@ export function LeaseFormDialog({
           </div>
 
           {/* 费用选择 */}
-          {feeTypes && feeTypes.length > 0 && (
+          {feeItems && feeItems.length > 0 && (
             <div className="space-y-3 border rounded-lg p-4">
               <Label className="text-base">额外费用（可选）</Label>
               <p className="text-sm text-muted-foreground">选择需要添加的费用，可修改价格</p>
@@ -466,61 +458,43 @@ export function LeaseFormDialog({
               {selectedFees.length > 0 && (
                 <div className="space-y-2">
                   {selectedFees.map((fee) => (
-                    <div key={fee.specification_id} className="flex items-center gap-2 bg-muted/50 rounded-lg p-2">
+                    <div key={fee.fee_item_id} className="flex items-center gap-2 bg-muted/50 rounded-lg p-2">
                       <Checkbox
                         checked={true}
-                        onCheckedChange={() => handleRemoveFee(fee.specification_id)}
+                        onCheckedChange={() => handleRemoveFee(fee.fee_item_id)}
                       />
-                      <span className="flex-1 text-sm">
-                        {fee.fee_type_name} - {fee.spec_name}
-                      </span>
+                      <span className="flex-1 text-sm">{fee.fee_item_name}</span>
                       <Input
                         type="number"
                         step="0.01"
-                        value={fee.price}
-                        onChange={(e) => handleUpdateFeePrice(fee.specification_id, parseFloat(e.target.value) || 0)}
+                        value={fee.amount}
+                        onChange={(e) => handleUpdateFeePrice(fee.fee_item_id, parseFloat(e.target.value) || 0)}
                         className="w-24 h-8"
                       />
-                      <span className="text-sm text-muted-foreground">元/月</span>
+                      <span className="text-sm text-muted-foreground">元</span>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* 费用类型选择 */}
-              <div className="space-y-2">
-                {feeTypes.map((feeType) => {
-                  const specs = feeType.specifications?.filter((s) => s.is_active) || [];
-                  if (specs.length === 0) return null;
-
-                  return (
-                    <div key={feeType.id} className="space-y-1">
-                      <div className="text-sm font-medium">{feeType.name}</div>
-                      <div className="flex flex-wrap gap-2">
-                        {specs.map((spec) => {
-                          const isSelected = selectedFees.some((f) => f.specification_id === spec.id);
-                          return (
-                            <Button
-                              key={spec.id}
-                              type="button"
-                              variant={isSelected ? 'default' : 'outline'}
-                              size="sm"
-                              onClick={() => {
-                                if (isSelected) {
-                                  handleRemoveFee(spec.id);
-                                } else {
-                                  handleAddFee(feeType, spec);
-                                }
-                              }}
-                            >
-                              {spec.name} (¥{spec.price_monthly}/月)
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
+              {/* 费用项目选择 */}
+              <div className="flex flex-wrap gap-2">
+                {feeItems
+                  .filter((item) => item.is_active)
+                  .map((item) => {
+                    const isSelected = selectedFees.some((f) => f.fee_item_id === item.id);
+                    return (
+                      <Button
+                        key={item.id}
+                        type="button"
+                        variant={isSelected ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => handleAddFee(item)}
+                      >
+                        {item.name} (¥{item.amount}/{item.cycle === 'monthly' ? '月' : item.cycle === 'yearly' ? '年' : '次'})
+                      </Button>
+                    );
+                  })}
               </div>
             </div>
           )}

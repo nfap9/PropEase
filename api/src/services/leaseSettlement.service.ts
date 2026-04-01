@@ -2,6 +2,8 @@ import { ulid } from 'ulid';
 import { prisma } from '../lib/prisma.js';
 import { createAppError } from '../utils/appError.js';
 import { createLeaseRepository, type LeaseRepository } from '../repositories/lease.repo.js';
+import { createUtilityRepository, type UtilityRepository } from '../repositories/utility.repo.js';
+import { createLeaseFeeItemRepository, type LeaseFeeItemRepository } from '../repositories/leaseFeeItem.repo.js';
 
 export interface SettleLeaseInput {
   lease_id: string;
@@ -30,7 +32,9 @@ export interface SettleLeaseResult {
 
 export async function settleLease(
   input: SettleLeaseInput,
-  getLeaseRepo: () => LeaseRepository = () => createLeaseRepository(prisma)
+  getLeaseRepo: () => LeaseRepository = () => createLeaseRepository(prisma),
+  getUtilityRepo: () => UtilityRepository = () => createUtilityRepository(prisma),
+  getLeaseFeeItemRepo: () => LeaseFeeItemRepository = () => createLeaseFeeItemRepository(prisma)
 ): Promise<SettleLeaseResult> {
   const { lease_id, org_id, final_water_reading, final_electricity_reading, penalty_amount = 0, remarks } = input;
 
@@ -46,15 +50,11 @@ export async function settleLease(
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
 
-  const existingReading = await prisma.utilityReading.findUnique({
-    where: {
-      room_id_period_year_period_month: {
-        room_id: lease.room_id,
-        period_year: currentYear,
-        period_month: currentMonth,
-      },
-    },
-  });
+  const existingReading = await getUtilityRepo().findExistingReading(
+    lease.room_id,
+    currentYear,
+    currentMonth
+  );
 
   const waterReading = final_water_reading ?? existingReading?.water_reading;
   const electricityReading = final_electricity_reading ?? existingReading?.electricity_reading;
@@ -76,15 +76,10 @@ export async function settleLease(
 
   const monthlyRent = Number(lease.monthly_rent);
 
-  const leaseFeeItems = await prisma.leaseFeeItem.findMany({
-    where: { lease_id },
-    include: { feeType: true, specification: true },
-  });
+  const leaseFeeItems = await getLeaseFeeItemRepo().findByLeaseId(lease_id);
   let otherAmount = 0;
   for (const item of leaseFeeItems) {
-    if (item.specification) {
-      otherAmount += Number(item.specification.price_monthly) * Number(item.quantity);
-    }
+    otherAmount += Number(item.fee_amount) * Number(item.quantity);
   }
 
   const depositAmount = Number(lease.deposit);

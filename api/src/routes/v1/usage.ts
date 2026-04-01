@@ -9,6 +9,11 @@ import { defaultUsageRepo } from '../../repositories/usage.repo.js';
 
 const router: Router = Router();
 
+// 显式拦截已删除路径，在 auth 之前拦截，避免未授权用户看到 404
+router.all('/orders/:order_id/simulate-pay', (_req, _res, next) =>
+  next(createAppError(404, 'Not Found'))
+);
+
 router.use(requireConsoleAuth);
 
 router.get('/pricing', async (_req: Request, res: Response, next: NextFunction) => {
@@ -79,19 +84,5 @@ router.get('/orders/:order_id', async (req: Request, res: Response, next: NextFu
     return next(e);
   }
 });
-
-router.post(
-  '/orders/:order_id/simulate-pay',
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const user = getConsoleUser(req);
-      if (!user) return next(createAppError(401, '未授权'));
-      const order = await defaultUsageService.simulatePay(user.id, req.params.order_id);
-      res.json(order);
-    } catch (e) {
-      return next(e);
-    }
-  }
-);
 
 export const usageRouter = router;

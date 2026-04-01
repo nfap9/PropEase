@@ -1,11 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { LeaseRepository } from '../repositories/lease.repo.js';
+import type { BillRepository } from '../repositories/bill.repo.js';
+import type { UtilityRepository } from '../repositories/utility.repo.js';
+import type { OrgFeeItemRepository } from '../repositories/orgFeeItem.repo.js';
+import type { UtilityConfigRepository } from '../repositories/utilityConfig.repo.js';
+import type { LeaseChangeLogRepository } from '../repositories/leaseChangeLog.repo.js';
 
 // Mock ulid first
 vi.mock('ulid', () => ({
   ulid: vi.fn(() => '01HQTESTBILL000001'),
 }));
 
-// Mock prisma
+// Mock prisma for direct queries inside generateBillsForOrg (room.findMany for org rooms, leaseChangeLog.findMany in getEffectiveLeaseValues)
 vi.mock('../lib/prisma.js', () => ({
   prisma: {
     room: {
@@ -14,23 +20,17 @@ vi.mock('../lib/prisma.js', () => ({
     lease: {
       findMany: vi.fn(),
     },
-    bill: {
-      findFirst: vi.fn(),
-      create: vi.fn(),
-    },
-    utilityReading: {
-      findFirst: vi.fn(),
-    },
-    utilityConfig: {
-      findUnique: vi.fn(),
-    },
-    apartmentFeeConfig: {
+    leaseChangeLog: {
       findMany: vi.fn(),
     },
-    billFeeItem: {
-      createMany: vi.fn(),
-    },
     $transaction: vi.fn(),
+  },
+}));
+
+// Mock tenantReachability service to avoid SMS sending
+vi.mock('./tenantReachability.service.js', () => ({
+  defaultTenantReachabilityService: {
+    sendBillGenerated: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -69,6 +69,64 @@ describe('generateBillsForOrg', () => {
     room: mockRoom,
   };
 
+  const createMockLeaseRepo = () => ({
+    findById: vi.fn(),
+    findByIdWithRelations: vi.fn(),
+    findByOrgId: vi.fn(),
+    create: vi.fn(),
+    createWithRoomUpdate: vi.fn(),
+    update: vi.fn(),
+    terminate: vi.fn(),
+    delete: vi.fn(),
+    countOtherActive: vi.fn(),
+    findActiveByRoomIds: vi.fn(),
+  });
+
+  const createMockBillRepo = () => ({
+    findById: vi.fn(),
+    findByIdWithRelations: vi.fn(),
+    findByOrgId: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    getLeaseIdsByOrg: vi.fn(),
+    findByLeaseAndPeriod: vi.fn(),
+  });
+
+  const createMockUtilityRepo = () => ({
+    findById: vi.fn(),
+    findByIdWithRelations: vi.fn(),
+    findByOrgId: vi.fn(),
+    create: vi.fn(),
+    createBatch: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    findExistingReading: vi.fn(),
+    findLatestReadingBefore: vi.fn(),
+    findLatestReadingsBeforeForOrg: vi.fn(),
+    getRoomIdsByOrg: vi.fn(),
+  });
+
+  const createMockOrgFeeItemRepo = () => ({
+    findById: vi.fn(),
+    findByIdAndOrg: vi.fn(),
+    findByOrgId: vi.fn(),
+    findByIds: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    softDelete: vi.fn(),
+  });
+
+  const createMockUtilityConfigRepo = () => ({
+    findByApartmentId: vi.fn(),
+  });
+
+  const createMockLeaseChangeLogRepo = (): LeaseChangeLogRepository => ({
+    findByLeaseId: vi.fn(),
+    create: vi.fn(),
+    findPendingChanges: vi.fn(),
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -83,31 +141,46 @@ describe('generateBillsForOrg', () => {
   });
 
   it('should return 0 created and 0 skipped when no active leases', async () => {
-    vi.mocked(prisma.room.findMany).mockResolvedValue([mockRoom]);
-    vi.mocked(prisma.lease.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.room.findMany).mockResolvedValue([{ id: mockRoom.id, apartment: { organization_id: orgId } }]);
+    const mockLeaseRepo = createMockLeaseRepo();
+    mockLeaseRepo.findActiveByRoomIds.mockResolvedValue([]);
 
-    const result = await generateBillsForOrg(orgId, billYear, billMonth, dueDate);
+    const result = await generateBillsForOrg(orgId, billYear, billMonth, dueDate, undefined, {
+      leaseRepo: mockLeaseRepo,
+    });
 
     expect(result).toEqual({ created: 0, skipped: 0 });
   });
 
   it('should skip bill when already exists', async () => {
-    vi.mocked(prisma.room.findMany).mockResolvedValue([mockRoom]);
-    vi.mocked(prisma.lease.findMany).mockResolvedValue([mockLease]);
-    vi.mocked(prisma.bill.findFirst).mockResolvedValue({ id: 'existing_bill' } as any);
+    vi.mocked(prisma.room.findMany).mockResolvedValue([{ id: mockRoom.id, apartment: { organization_id: orgId } }]);
+    const mockLeaseRepo = createMockLeaseRepo();
+    mockLeaseRepo.findActiveByRoomIds.mockResolvedValue([mockLease as any]);
+    const mockBillRepo = createMockBillRepo();
+    mockBillRepo.findByLeaseAndPeriod.mockResolvedValue({ id: 'existing_bill' } as any);
 
-    const result = await generateBillsForOrg(orgId, billYear, billMonth, dueDate);
+    const result = await generateBillsForOrg(orgId, billYear, billMonth, dueDate, undefined, {
+      leaseRepo: mockLeaseRepo,
+      billRepo: mockBillRepo,
+    });
 
     expect(result).toEqual({ created: 0, skipped: 1 });
   });
 
   it('should create bill without utility readings', async () => {
-    vi.mocked(prisma.room.findMany).mockResolvedValue([mockRoom]);
-    vi.mocked(prisma.lease.findMany).mockResolvedValue([mockLease]);
-    vi.mocked(prisma.bill.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.utilityReading.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.utilityConfig.findUnique).mockResolvedValue(null);
-    vi.mocked(prisma.apartmentFeeConfig.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.room.findMany).mockResolvedValue([{ id: mockRoom.id, apartment: { organization_id: orgId } }]);
+    const mockLeaseRepo = createMockLeaseRepo();
+    mockLeaseRepo.findById.mockResolvedValue(mockLease as any);
+    mockLeaseRepo.findActiveByRoomIds.mockResolvedValue([mockLease as any]);
+    const mockBillRepo = createMockBillRepo();
+    mockBillRepo.findByLeaseAndPeriod.mockResolvedValue(null);
+    const mockUtilityRepo = createMockUtilityRepo();
+    mockUtilityRepo.findExistingReading.mockResolvedValue(null);
+    const mockUtilityConfigRepo = createMockUtilityConfigRepo();
+    mockUtilityConfigRepo.findByApartmentId.mockResolvedValue(null);
+    const mockOrgFeeItemRepo = createMockOrgFeeItemRepo();
+    mockOrgFeeItemRepo.findByOrgId.mockResolvedValue([]);
+    vi.mocked(prisma.leaseChangeLog.findMany).mockResolvedValue([]);
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: Function) => {
       const mockTx = {
         bill: { create: vi.fn() },
@@ -116,7 +189,13 @@ describe('generateBillsForOrg', () => {
       return fn(mockTx);
     });
 
-    const result = await generateBillsForOrg(orgId, billYear, billMonth, dueDate);
+    const result = await generateBillsForOrg(orgId, billYear, billMonth, dueDate, undefined, {
+      leaseRepo: mockLeaseRepo,
+      billRepo: mockBillRepo,
+      utilityRepo: mockUtilityRepo,
+      utilityConfigRepo: mockUtilityConfigRepo,
+      orgFeeItemRepo: mockOrgFeeItemRepo,
+    });
 
     expect(result).toEqual({ created: 1, skipped: 0 });
     expect(prisma.$transaction).toHaveBeenCalled();
@@ -133,12 +212,19 @@ describe('generateBillsForOrg', () => {
       electricity_previous: null,
     };
 
-    vi.mocked(prisma.room.findMany).mockResolvedValue([mockRoom]);
-    vi.mocked(prisma.lease.findMany).mockResolvedValue([mockLease]);
-    vi.mocked(prisma.bill.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.utilityReading.findFirst).mockResolvedValue(mockReading as any);
-    vi.mocked(prisma.utilityConfig.findUnique).mockResolvedValue(null);
-    vi.mocked(prisma.apartmentFeeConfig.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.room.findMany).mockResolvedValue([{ id: mockRoom.id, apartment: { organization_id: orgId } }]);
+    vi.mocked(prisma.leaseChangeLog.findMany).mockResolvedValue([]);
+    const mockLeaseRepo = createMockLeaseRepo();
+    mockLeaseRepo.findById.mockResolvedValue(mockLease as any);
+    mockLeaseRepo.findActiveByRoomIds.mockResolvedValue([mockLease as any]);
+    const mockBillRepo = createMockBillRepo();
+    mockBillRepo.findByLeaseAndPeriod.mockResolvedValue(null);
+    const mockUtilityRepo = createMockUtilityRepo();
+    mockUtilityRepo.findExistingReading.mockResolvedValue(mockReading as any);
+    const mockUtilityConfigRepo = createMockUtilityConfigRepo();
+    mockUtilityConfigRepo.findByApartmentId.mockResolvedValue(null);
+    const mockOrgFeeItemRepo = createMockOrgFeeItemRepo();
+    mockOrgFeeItemRepo.findByOrgId.mockResolvedValue([]);
 
     let capturedBillData: any = null;
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: Function) => {
@@ -153,7 +239,13 @@ describe('generateBillsForOrg', () => {
       return fn(mockTx);
     });
 
-    await generateBillsForOrg(orgId, billYear, billMonth, dueDate);
+    await generateBillsForOrg(orgId, billYear, billMonth, dueDate, undefined, {
+      leaseRepo: mockLeaseRepo,
+      billRepo: mockBillRepo,
+      utilityRepo: mockUtilityRepo,
+      utilityConfigRepo: mockUtilityConfigRepo,
+      orgFeeItemRepo: mockOrgFeeItemRepo,
+    });
 
     // water usage = 100 - 80 = 20, rate = 5, amount = 100
     expect(capturedBillData.water_amount).toBe(100);
@@ -182,12 +274,19 @@ describe('generateBillsForOrg', () => {
       electricity_price_per_unit: 0.8,
     };
 
-    vi.mocked(prisma.room.findMany).mockResolvedValue([mockRoom]);
-    vi.mocked(prisma.lease.findMany).mockResolvedValue([leaseWithoutRate]);
-    vi.mocked(prisma.bill.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.utilityReading.findFirst).mockResolvedValue(mockReading as any);
-    vi.mocked(prisma.utilityConfig.findUnique).mockResolvedValue(mockConfig as any);
-    vi.mocked(prisma.apartmentFeeConfig.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.room.findMany).mockResolvedValue([{ id: mockRoom.id, apartment: { organization_id: orgId } }]);
+    vi.mocked(prisma.leaseChangeLog.findMany).mockResolvedValue([]);
+    const mockLeaseRepo = createMockLeaseRepo();
+    mockLeaseRepo.findById.mockResolvedValue(leaseWithoutRate as any);
+    mockLeaseRepo.findActiveByRoomIds.mockResolvedValue([leaseWithoutRate as any]);
+    const mockBillRepo = createMockBillRepo();
+    mockBillRepo.findByLeaseAndPeriod.mockResolvedValue(null);
+    const mockUtilityRepo = createMockUtilityRepo();
+    mockUtilityRepo.findExistingReading.mockResolvedValue(mockReading as any);
+    const mockUtilityConfigRepo = createMockUtilityConfigRepo();
+    mockUtilityConfigRepo.findByApartmentId.mockResolvedValue(mockConfig as any);
+    const mockOrgFeeItemRepo = createMockOrgFeeItemRepo();
+    mockOrgFeeItemRepo.findByOrgId.mockResolvedValue([]);
 
     let capturedBillData: any = null;
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: Function) => {
@@ -202,7 +301,13 @@ describe('generateBillsForOrg', () => {
       return fn(mockTx);
     });
 
-    await generateBillsForOrg(orgId, billYear, billMonth, dueDate);
+    await generateBillsForOrg(orgId, billYear, billMonth, dueDate, undefined, {
+      leaseRepo: mockLeaseRepo,
+      billRepo: mockBillRepo,
+      utilityRepo: mockUtilityRepo,
+      utilityConfigRepo: mockUtilityConfigRepo,
+      orgFeeItemRepo: mockOrgFeeItemRepo,
+    });
 
     // water: (100 - 80) * 4 = 80
     // electricity: (200 - 150) * 0.8 = 40
@@ -214,12 +319,22 @@ describe('generateBillsForOrg', () => {
     const lease1 = { ...mockLease, id: 'lease1' };
     const lease2 = { ...mockLease, id: 'lease2', room: { ...mockRoom, id: 'room2' } };
 
-    vi.mocked(prisma.room.findMany).mockResolvedValue([mockRoom, { ...mockRoom, id: 'room2' }]);
-    vi.mocked(prisma.lease.findMany).mockResolvedValue([lease1, lease2]);
-    vi.mocked(prisma.bill.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.utilityReading.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.utilityConfig.findUnique).mockResolvedValue(null);
-    vi.mocked(prisma.apartmentFeeConfig.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.room.findMany).mockResolvedValue([
+      { id: mockRoom.id, apartment: { organization_id: orgId } },
+      { id: 'room2', apartment: { organization_id: orgId } },
+    ]);
+    vi.mocked(prisma.leaseChangeLog.findMany).mockResolvedValue([]);
+    const mockLeaseRepo = createMockLeaseRepo();
+    mockLeaseRepo.findById.mockResolvedValue(lease1 as any);
+    mockLeaseRepo.findActiveByRoomIds.mockResolvedValue([lease1, lease2] as any);
+    const mockBillRepo = createMockBillRepo();
+    mockBillRepo.findByLeaseAndPeriod.mockResolvedValue(null);
+    const mockUtilityRepo = createMockUtilityRepo();
+    mockUtilityRepo.findExistingReading.mockResolvedValue(null);
+    const mockUtilityConfigRepo = createMockUtilityConfigRepo();
+    mockUtilityConfigRepo.findByApartmentId.mockResolvedValue(null);
+    const mockOrgFeeItemRepo = createMockOrgFeeItemRepo();
+    mockOrgFeeItemRepo.findByOrgId.mockResolvedValue([]);
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: Function) => {
       const mockTx = {
         bill: { create: vi.fn() },
@@ -228,7 +343,13 @@ describe('generateBillsForOrg', () => {
       return fn(mockTx);
     });
 
-    const result = await generateBillsForOrg(orgId, billYear, billMonth, dueDate, ['lease1']);
+    const result = await generateBillsForOrg(orgId, billYear, billMonth, dueDate, ['lease1'], {
+      leaseRepo: mockLeaseRepo,
+      billRepo: mockBillRepo,
+      utilityRepo: mockUtilityRepo,
+      utilityConfigRepo: mockUtilityConfigRepo,
+      orgFeeItemRepo: mockOrgFeeItemRepo,
+    });
 
     expect(result).toEqual({ created: 1, skipped: 0 });
     expect(prisma.$transaction).toHaveBeenCalledTimes(1);
@@ -245,12 +366,19 @@ describe('generateBillsForOrg', () => {
       electricity_previous: 150,
     };
 
-    vi.mocked(prisma.room.findMany).mockResolvedValue([mockRoom]);
-    vi.mocked(prisma.lease.findMany).mockResolvedValue([mockLease]);
-    vi.mocked(prisma.bill.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.utilityReading.findFirst).mockResolvedValue(mockReading as any);
-    vi.mocked(prisma.utilityConfig.findUnique).mockResolvedValue(null);
-    vi.mocked(prisma.apartmentFeeConfig.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.room.findMany).mockResolvedValue([{ id: mockRoom.id, apartment: { organization_id: orgId } }]);
+    vi.mocked(prisma.leaseChangeLog.findMany).mockResolvedValue([]);
+    const mockLeaseRepo = createMockLeaseRepo();
+    mockLeaseRepo.findById.mockResolvedValue(mockLease as any);
+    mockLeaseRepo.findActiveByRoomIds.mockResolvedValue([mockLease as any]);
+    const mockBillRepo = createMockBillRepo();
+    mockBillRepo.findByLeaseAndPeriod.mockResolvedValue(null);
+    const mockUtilityRepo = createMockUtilityRepo();
+    mockUtilityRepo.findExistingReading.mockResolvedValue(mockReading as any);
+    const mockUtilityConfigRepo = createMockUtilityConfigRepo();
+    mockUtilityConfigRepo.findByApartmentId.mockResolvedValue(null);
+    const mockOrgFeeItemRepo = createMockOrgFeeItemRepo();
+    mockOrgFeeItemRepo.findByOrgId.mockResolvedValue([]);
 
     let capturedBillData: any = null;
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: Function) => {
@@ -265,7 +393,13 @@ describe('generateBillsForOrg', () => {
       return fn(mockTx);
     });
 
-    await generateBillsForOrg(orgId, billYear, billMonth, dueDate);
+    await generateBillsForOrg(orgId, billYear, billMonth, dueDate, undefined, {
+      leaseRepo: mockLeaseRepo,
+      billRepo: mockBillRepo,
+      utilityRepo: mockUtilityRepo,
+      utilityConfigRepo: mockUtilityConfigRepo,
+      orgFeeItemRepo: mockOrgFeeItemRepo,
+    });
 
     // rent: 2000, water: 100, electricity: 50
     expect(capturedBillData.rent_amount).toBe(2000);

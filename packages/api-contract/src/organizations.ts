@@ -30,7 +30,7 @@ export interface OrganizationUpdate {
   notes?: string;
 }
 
-/** 迁移统计 */
+/** 迁移统计（兼容旧 API） */
 export interface MigrationStats {
   apartments: number;
   rooms: number;

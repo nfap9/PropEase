@@ -160,7 +160,15 @@ export type {
 
 /** 费用类型与配置 */
 export type {
+  FeeCycle,
   FeeCategory,
+  OrgFeeItem,
+  OrgFeeItemCreate,
+  OrgFeeItemUpdate,
+} from './feeTypes.js';
+
+/** 费用类型兼容层（向后兼容） */
+export type {
   FeeType,
   FeeSpecification,
   FeeTypeCreate,
@@ -171,7 +179,8 @@ export type {
   ApartmentFeeConfigCreate,
   ApartmentFeeConfigUpdate,
   BillFeeItem,
-} from './feeTypes.js';
+} from './feeTypes.compat.js';
+export { orgFeeItemToFeeType } from './feeTypes.compat.js';
 
 /** 报表 */
 export type {

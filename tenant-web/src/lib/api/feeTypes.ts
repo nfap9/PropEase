@@ -1,146 +1,94 @@
 import api from './client';
 import type {
-  FeeType,
-  FeeSpecification,
-  FeeTypeCreate,
-  FeeTypeUpdate,
-  FeeSpecificationCreate,
-  FeeSpecificationUpdate,
-  ApartmentFeeConfig,
-  ApartmentFeeConfigCreate,
-  ApartmentFeeConfigUpdate,
-  BillFeeItem,
+  OrgFeeItem,
+  OrgFeeItemCreate,
+  OrgFeeItemUpdate,
+  FeeCycle,
+  FeeCategory,
 } from '@apartment-ultra/api-contract';
 
-export const feeTypesApi = {
-  list: async (orgId: string): Promise<FeeType[]> => {
-    const response = await api.get<FeeType[]>('/fee-types', {
+/**
+ * 费用项目 API（新版 /fee-items）
+ * 注意：新版 API 移除了 FeeSpecification 和 ApartmentFeeConfig 概念
+ */
+
+export const feeItemsApi = {
+  list: async (orgId: string, params?: {
+    category?: FeeCategory;
+    cycle?: FeeCycle;
+    search?: string;
+  }): Promise<OrgFeeItem[]> => {
+    const response = await api.get<OrgFeeItem[]>('/fee-items', {
+      params: { org_id: orgId, ...params },
+    });
+    return response.data;
+  },
+
+  get: async (orgId: string, id: string): Promise<OrgFeeItem> => {
+    const response = await api.get<OrgFeeItem>(`/fee-items/${id}`, {
       params: { org_id: orgId },
     });
     return response.data;
   },
 
-  get: async (orgId: string, id: string): Promise<FeeType> => {
-    const response = await api.get<FeeType>(`/fee-types/${id}`, {
+  create: async (orgId: string, data: OrgFeeItemCreate): Promise<OrgFeeItem> => {
+    const response = await api.post<OrgFeeItem>('/fee-items', data, {
       params: { org_id: orgId },
     });
     return response.data;
   },
 
-  create: async (orgId: string, data: FeeTypeCreate): Promise<FeeType> => {
-    const response = await api.post<FeeType>('/fee-types', data, {
-      params: { org_id: orgId },
-    });
-    return response.data;
-  },
-
-  update: async (orgId: string, id: string, data: FeeTypeUpdate): Promise<FeeType> => {
-    const response = await api.put<FeeType>(`/fee-types/${id}`, data, {
+  update: async (orgId: string, id: string, data: OrgFeeItemUpdate): Promise<OrgFeeItem> => {
+    const response = await api.put<OrgFeeItem>(`/fee-items/${id}`, data, {
       params: { org_id: orgId },
     });
     return response.data;
   },
 
   delete: async (orgId: string, id: string): Promise<void> => {
-    await api.delete(`/fee-types/${id}`, { params: { org_id: orgId } });
-  },
-
-  // 规格相关
-  addSpecification: async (
-    orgId: string,
-    feeTypeId: string,
-    data: FeeSpecificationCreate
-  ): Promise<FeeSpecification> => {
-    const response = await api.post<FeeSpecification>(
-      `/fee-types/${feeTypeId}/specifications`,
-      data,
-      { params: { org_id: orgId } }
-    );
-    return response.data;
-  },
-
-  updateSpecification: async (
-    orgId: string,
-    specificationId: string,
-    data: FeeSpecificationUpdate
-  ): Promise<FeeSpecification> => {
-    const response = await api.put<FeeSpecification>(
-      `/fee-types/specifications/${specificationId}`,
-      data,
-      { params: { org_id: orgId } }
-    );
-    return response.data;
-  },
-
-  deleteSpecification: async (orgId: string, specificationId: string): Promise<void> => {
-    await api.delete(`/fee-types/specifications/${specificationId}`, {
-      params: { org_id: orgId },
-    });
+    await api.delete(`/fee-items/${id}`, { params: { org_id: orgId } });
   },
 };
 
+/**
+ * 兼容旧 API 的 feeTypesApi
+ * @deprecated 请使用 feeItemsApi
+ */
+export const feeTypesApi = {
+  list: async (orgId: string) => feeItemsApi.list(orgId),
+  get: async (orgId: string, id: string) => feeItemsApi.get(orgId, id),
+  create: async (orgId: string, data: any) => feeItemsApi.create(orgId, data),
+  update: async (orgId: string, id: string, data: any) => feeItemsApi.update(orgId, id, data),
+  delete: async (orgId: string, id: string) => feeItemsApi.delete(orgId, id),
+  // 旧 API 有规格管理，新 API 已移除，返回空
+  addSpecification: async () => { throw new Error('Specification not supported in new API'); },
+  updateSpecification: async () => { throw new Error('Specification not supported in new API'); },
+  deleteSpecification: async () => { throw new Error('Specification not supported in new API'); },
+};
+
+/**
+ * 兼容旧 API 的 apartmentFeeConfigApi
+ * @deprecated 新 API 已移除 ApartmentFeeConfig 概念
+ */
 export const apartmentFeeConfigApi = {
-  list: async (orgId: string, apartmentId: string): Promise<ApartmentFeeConfig[]> => {
-    const response = await api.get<ApartmentFeeConfig[]>(
-      `/apartments/${apartmentId}/fee-configs`,
-      { params: { org_id: orgId } }
-    );
-    return response.data;
+  list: async (orgId: string, apartmentId: string) => {
+    // 新 API 中没有公寓级别费用配置，返回空数组
+    console.warn('ApartmentFeeConfig is deprecated, use OrgFeeItem instead');
+    return [];
   },
-
-  get: async (
-    orgId: string,
-    apartmentId: string,
-    configId: string
-  ): Promise<ApartmentFeeConfig> => {
-    const response = await api.get<ApartmentFeeConfig>(
-      `/apartments/${apartmentId}/fee-configs/${configId}`,
-      { params: { org_id: orgId } }
-    );
-    return response.data;
-  },
-
-  create: async (
-    orgId: string,
-    apartmentId: string,
-    data: ApartmentFeeConfigCreate
-  ): Promise<ApartmentFeeConfig> => {
-    const response = await api.post<ApartmentFeeConfig>(
-      `/apartments/${apartmentId}/fee-configs`,
-      data,
-      { params: { org_id: orgId } }
-    );
-    return response.data;
-  },
-
-  update: async (
-    orgId: string,
-    apartmentId: string,
-    configId: string,
-    data: ApartmentFeeConfigUpdate
-  ): Promise<ApartmentFeeConfig> => {
-    const response = await api.put<ApartmentFeeConfig>(
-      `/apartments/${apartmentId}/fee-configs/${configId}`,
-      data,
-      { params: { org_id: orgId } }
-    );
-    return response.data;
-  },
-
-  delete: async (
-    orgId: string,
-    apartmentId: string,
-    configId: string
-  ): Promise<void> => {
-    await api.delete(`/apartments/${apartmentId}/fee-configs/${configId}`, {
-      params: { org_id: orgId },
-    });
-  },
+  get: async () => { throw new Error('ApartmentFeeConfig not supported in new API'); },
+  create: async () => { throw new Error('ApartmentFeeConfig not supported in new API'); },
+  update: async () => { throw new Error('ApartmentFeeConfig not supported in new API'); },
+  delete: async () => { throw new Error('ApartmentFeeConfig not supported in new API'); },
 };
 
+/**
+ * 账单费用明细 API
+ * 新 API 中仍在使用，但结构可能不同
+ */
 export const billFeeItemsApi = {
-  list: async (orgId: string, billId: string): Promise<BillFeeItem[]> => {
-    const response = await api.get<BillFeeItem[]>(`/bills/${billId}/fee-items`, {
+  list: async (orgId: string, billId: string) => {
+    const response = await api.get<any[]>(`/bills/${billId}/fee-items`, {
       params: { org_id: orgId },
     });
     return response.data;

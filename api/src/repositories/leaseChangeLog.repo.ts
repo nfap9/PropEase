@@ -1,4 +1,5 @@
-import type { LeaseChangeLog, Prisma, PrismaClient } from '@prisma/client';
+import type { LeaseChangeLog, Prisma } from '@prisma/client';
+import type { DbClient } from '../types/repository.types.js';
 
 export interface LeaseChangeLogRepository {
   findByLeaseId(leaseId: string): Promise<LeaseChangeLog[]>;
@@ -7,22 +8,22 @@ export interface LeaseChangeLogRepository {
 }
 
 export function createLeaseChangeLogRepository(
-  prisma: PrismaClient | Prisma.TransactionClient
+  db: DbClient
 ): LeaseChangeLogRepository {
   return {
     findByLeaseId: async (leaseId: string) => {
-      return prisma.leaseChangeLog.findMany({
+      return db.leaseChangeLog.findMany({
         where: { lease_id: leaseId },
         orderBy: { created_at: 'desc' },
       });
     },
 
     create: async (data: Prisma.LeaseChangeLogCreateInput) => {
-      return prisma.leaseChangeLog.create({ data });
+      return db.leaseChangeLog.create({ data });
     },
 
     findPendingChanges: async (year: number, month: number) => {
-      return prisma.leaseChangeLog.findMany({
+      return db.leaseChangeLog.findMany({
         where: {
           effective_from_year: year,
           effective_from_month: month,

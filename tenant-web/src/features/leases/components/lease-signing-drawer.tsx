@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { WizardDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import { leaseSigningSchema, type LeaseSigningFormData } from '../leases.schemas';
-import { leasesApi, apartmentsApi, roomsApi, tenantsApi, utilityConfigApi, feeTypesApi } from '@/lib/api';
+import { leasesApi, apartmentsApi, roomsApi, tenantsApi, utilityConfigApi, feeItemsApi } from '@/lib/api';
 import { toDateInputValue } from '@/lib/date-utils';
 import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
@@ -15,17 +15,12 @@ import { TenantSearchDrawer } from './tenant-search-drawer';
 import { RoomInfoSection } from './room-info-section';
 import { TenantInfoSection } from './tenant-info-section';
 import { ContractInfoSection } from './contract-info-section';
-import type { Room, Tenant, UtilityConfig } from '@apartment-ultra/api-contract';
+import type { Room, Tenant, OrgFeeItem, UtilityConfig } from '@apartment-ultra/api-contract';
 
-interface FeeItem {
-  id: string;
-  name: string;
-  feeTypeId?: string;
-  specification?: string;
-  specificationId?: string;
-  unitPrice: number;
-  quantity: number;
-  billingCycle: 'monthly' | 'yearly';
+interface SelectedFee {
+  fee_item_id: string;
+  fee_item_name: string;
+  amount: number;
 }
 
 const leaseSigningSteps = [
@@ -78,7 +73,7 @@ export function LeaseSigningDrawer({
   const queryClient = useQueryClient();
   const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
   const [utilityConfig, setUtilityConfig] = useState<UtilityConfig | null>(null);
-  const [feeItems, setFeeItems] = useState<FeeItem[]>([]);
+  const [selectedFees, setSelectedFees] = useState<SelectedFee[]>([]);
   const [tenantSearchOpen, setTenantSearchOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -118,10 +113,10 @@ export function LeaseSigningDrawer({
     enabled: !!orgId && !isRoomSpecified && selectedApartmentId !== null,
   });
 
-  // 获取费用类型
-  const { data: feeTypes } = useQuery({
-    queryKey: ['fee-types', orgId],
-    queryFn: () => feeTypesApi.list(orgId),
+  // 获取费用项目
+  const { data: feeItems } = useQuery({
+    queryKey: ['fee-items', orgId],
+    queryFn: () => feeItemsApi.list(orgId),
     enabled: !!orgId && open,
   });
 
@@ -197,7 +192,7 @@ export function LeaseSigningDrawer({
       });
       setSelectedApartmentId(null);
     }
-    setFeeItems([]);
+    setSelectedFees([]);
   }, [room, open, isRoomSpecified]);
 
   useEffect(() => {
@@ -267,12 +262,6 @@ export function LeaseSigningDrawer({
         water_rate: data.water_rate,
         electricity_rate: data.electricity_rate,
         notes: data.notes,
-        fee_items: feeItems.map((f) => ({
-          fee_type_id: f.feeTypeId,
-          specification_id: f.specificationId,
-          quantity: f.quantity,
-          billing_cycle: f.billingCycle,
-        })),
       };
       const lease = await leasesApi.create(orgId, filterEmptyStrings(leaseData));
       return lease;
@@ -334,8 +323,24 @@ export function LeaseSigningDrawer({
     }
   };
 
-  const handleFeesChange = (fees: FeeItem[]) => {
-    setFeeItems(fees);
+  // 费用选择
+  const handleAddFee = (feeItem: OrgFeeItem) => {
+    setSelectedFees((prev) => {
+      const exists = prev.some((f) => f.fee_item_id === feeItem.id);
+      if (exists) return prev.filter((f) => f.fee_item_id !== feeItem.id);
+      return [
+        ...prev.filter((f) => f.fee_item_id !== feeItem.id),
+        {
+          fee_item_id: feeItem.id,
+          fee_item_name: feeItem.name,
+          amount: feeItem.amount,
+        },
+      ];
+    });
+  };
+
+  const handleUpdateFeePrice = (feeItemId: string, amount: number) => {
+    setSelectedFees((prev) => prev.map((f) => (f.fee_item_id === feeItemId ? { ...f, amount } : f)));
   };
 
   const getDialogTitle = () => (isRoomSpecified ? '签约' : '新增租约');
@@ -389,10 +394,10 @@ export function LeaseSigningDrawer({
           {currentStep === 2 ? (
             <ContractInfoSection
               form={form}
-              orgId={orgId}
-              feeTypes={feeTypes}
-              selectedFees={feeItems}
-              onFeesChange={handleFeesChange}
+              feeItems={feeItems}
+              selectedFees={selectedFees}
+              onAddFee={handleAddFee}
+              onUpdateFeePrice={handleUpdateFeePrice}
             />
           ) : null}
         </form>

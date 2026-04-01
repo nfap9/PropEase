@@ -4,9 +4,7 @@ import { prisma } from '../../lib/prisma.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
 import { NotFoundMessages } from '../../messages.js';
-import { config } from '../../config.js';
 import { createWechatPayNativeOrder } from '../../services/wechatPayNative.js';
-import { fulfillSubscription } from '../../services/fulfillSubscription.js';
 import { defaultSubscriptionService } from '../../services/subscription.service.js';
 import { isSubscriptionActive } from '../../utils/subscription.js';
 import { defaultServiceProductService } from '../../services/service-product.service.js';
@@ -199,13 +197,7 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
       return res.status(201).json(updated ?? order);
     }
 
-    const payload = order as typeof order & { simulate_pay_available?: boolean };
-
-    if (!config.wechatPayEnabled) {
-      payload.simulate_pay_available = true;
-    }
-
-    res.status(201).json(payload);
+    res.status(201).json(order);
   } catch (e) {
     next(e);
   }
@@ -218,41 +210,7 @@ export async function getOrder(req: Request, res: Response, next: NextFunction) 
       req.params.org_id,
       req.params.order_id
     );
-    const payload = order as typeof order & { simulate_pay_available?: boolean };
-    if (!config.wechatPayEnabled && order.status === 'pending' && !order.code_url) {
-      payload.simulate_pay_available = true;
-    }
-    res.json(payload);
-  } catch (e) {
-    next(e);
-  }
-}
-
-export async function simulatePay(req: Request, res: Response, next: NextFunction) {
-  try {
-    if (config.wechatPayEnabled) {
-      return next(createAppError(403, '模拟支付仅在未配置微信支付时可用'));
-    }
-    await requireOrgMembership(req, 'org_id');
-    const order = await prisma.subscriptionOrder.findFirst({
-      where: { id: req.params.order_id, organization_id: req.params.org_id },
-      include: { service: true },
-    });
-    if (!order) return next(createAppError(404, NotFoundMessages.ORDER));
-    if (order.status !== 'pending') {
-      return next(createAppError(400, '订单状态不允许模拟支付'));
-    }
-    await prisma.subscriptionOrder.update({
-      where: { id: order.id },
-      data: { status: 'paid', paid_at: new Date() },
-    });
-    await fulfillSubscription(order.id);
-
-    const updated = await prisma.subscriptionOrder.findUnique({
-      where: { id: order.id },
-      include: { service: true },
-    });
-    res.json(updated ?? order);
+    res.json(order);
   } catch (e) {
     next(e);
   }

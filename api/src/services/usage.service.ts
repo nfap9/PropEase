@@ -1,10 +1,10 @@
 import type { UsageQuotaOrder, } from '@prisma/client';
 import type { UsageRepository } from '../repositories/usage.repo.js';
 import { defaultUsageRepo } from '../repositories/usage.repo.js';
-import { prisma } from '../lib/prisma.js';
+import { defaultPlatformConfigRepo } from '../repositories/platformConfig.repo.js';
+import type { PlatformConfigRepository } from '../repositories/platformConfig.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { ulid } from 'ulid';
-import { config } from '../config.js';
 
 /**
  * 定价信息
@@ -43,22 +43,19 @@ export interface UsageService {
   getPricing(): Promise<PricingInfo>;
   getQuota(userId: string): Promise<QuotaSummary>;
   createOrder(userId: string, data: CreateOrderInput): Promise<UsageQuotaOrder>;
-  getOrder(
-    userId: string,
-    orderId: string
-  ): Promise<UsageQuotaOrder & { simulate_pay_available?: boolean }>;
-  simulatePay(userId: string, orderId: string): Promise<UsageQuotaOrder>;
+  getOrder(userId: string, orderId: string): Promise<UsageQuotaOrder>;
 }
 
 /**
  * 创建 Usage Service 实例
  */
 export function createUsageService(
-  getRepo: () => UsageRepository = () => defaultUsageRepo
+  getRepo: () => UsageRepository = () => defaultUsageRepo,
+  getPlatformConfigRepo: () => PlatformConfigRepository = () => defaultPlatformConfigRepo
 ): UsageService {
   return {
     getPricing: async () => {
-      const platformConfig = await prisma.platformConfig.findUnique({ where: { id: 'default' } });
+      const platformConfig = await getPlatformConfigRepo().findDefault();
       const pricing = (platformConfig?.usage_pricing as Record<string, unknown>) ?? {};
       return {
         price_per_org: (pricing.price_per_org as number) ?? 0,
@@ -90,7 +87,7 @@ export function createUsageService(
         throw createAppError(400, '至少选择一种对象数量');
       }
 
-      const platformConfig = await prisma.platformConfig.findUnique({ where: { id: 'default' } });
+      const platformConfig = await getPlatformConfigRepo().findDefault();
       const usagePricing = (platformConfig?.usage_pricing as Record<string, unknown>) ?? {};
       if (
         usagePricing.price_per_org == null &&
@@ -136,35 +133,7 @@ export function createUsageService(
       if (!order) {
         throw createAppError(404, '订单不存在');
       }
-
-      const payload = order as UsageQuotaOrder & { simulate_pay_available?: boolean };
-      if (config.isDev && order.status === 'pending' && !order.code_url) {
-        payload.simulate_pay_available = true;
-      }
-      return payload;
-    },
-
-    simulatePay: async (userId: string, orderId: string) => {
-      if (!config.isDev) {
-        throw createAppError(403, '模拟支付仅限开发环境');
-      }
-
-      const order = await getRepo().findOrderById(orderId, userId);
-      if (!order) {
-        throw createAppError(404, '订单不存在');
-      }
-      if (order.status !== 'pending') {
-        throw createAppError(400, '订单状态不允许模拟支付');
-      }
-
-      await getRepo().updateOrder(order.id, { status: 'paid', paid_at: new Date() });
-
-      // 履约
-      const { fulfillUsageQuota } = await import('../services/fulfillUsageQuota.js');
-      await fulfillUsageQuota(order.id);
-
-      const updated = await getRepo().findOrderByIdOnly(order.id);
-      return updated ?? order;
+      return order;
     },
   };
 }

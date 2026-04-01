@@ -6,6 +6,10 @@ import {
   type ReadingWithRelations,
   type ReadingFilter,
 } from '../repositories/utility.repo.js';
+import {
+  createRoomRepository,
+  type RoomRepository,
+} from '../repositories/room.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
@@ -345,7 +349,8 @@ function buildUpdateData(data: UpdateReadingInput): Prisma.UtilityReadingUpdateI
  * 创建 Utility Service 实例
  */
 export function createUtilityService(
-  getRepo: () => UtilityRepository = () => createUtilityRepository(prisma)
+  getRepo: () => UtilityRepository = () => createUtilityRepository(prisma),
+  getRoomRepo: () => RoomRepository = () => createRoomRepository(prisma)
 ): UtilityService {
   const sortReadings = (readings: ReadingWithRelations[]) =>
     [...readings].sort(
@@ -372,10 +377,7 @@ export function createUtilityService(
     },
 
     create: async (orgId: string, data: CreateReadingInput) => {
-      const room = await prisma.room.findFirst({
-        where: { id: data.room_id },
-        include: { apartment: true },
-      });
+      const room = await getRoomRepo().findByIdWithApartment(data.room_id);
       if (!room || room.apartment.organization_id !== orgId) {
         throw createAppError(404, NotFoundMessages.ROOM);
       }
@@ -401,15 +403,13 @@ export function createUtilityService(
 
       // 批量检查哪些房间已存在该账期的读数
       const roomIds = data.readings.map((r) => r.room_id);
-      const existingReadings = await prisma.utilityReading.findMany({
-        where: {
-          room_id: { in: roomIds },
-          period_year: data.period_year,
-          period_month: data.period_month,
-        },
-        select: { room_id: true },
+      const readingsForPeriod = await repo.findByOrgId(orgId, {
+        periodYear: data.period_year,
+        periodMonth: data.period_month,
       });
-      const existingRoomIds = new Set(existingReadings.map((r) => r.room_id));
+      const existingRoomIds = new Set(
+        readingsForPeriod.filter((r) => roomIds.includes(r.room_id)).map((r) => r.room_id)
+      );
       if (existingRoomIds.size > 0) {
         throw createAppError(
           409,
@@ -489,18 +489,7 @@ export function createUtilityService(
     },
 
     getMissingInitialReadings: async (orgId: string) => {
-      const rooms = await prisma.room.findMany({
-        where: { apartment: { organization_id: orgId }, status: 'occupied' },
-        include: {
-          apartment: true,
-          leases: {
-            where: { is_active: true },
-            include: { tenant: true },
-            take: 1,
-            orderBy: { start_date: 'desc' },
-          },
-        },
-      });
+      const rooms = await getRoomRepo().findByOrgIdWithLeases(orgId);
 
       const result: MissingInitialRoom[] = [];
 
@@ -538,18 +527,7 @@ export function createUtilityService(
       periodMonth?: number,
       daysRange?: number
     ) => {
-      const rooms = await prisma.room.findMany({
-        where: { apartment: { organization_id: orgId } },
-        include: {
-          apartment: { include: { utility_config: true } },
-          leases: {
-            where: { is_active: true },
-            include: { tenant: true },
-            take: 1,
-            orderBy: { start_date: 'desc' },
-          },
-        },
-      });
+      const rooms = await getRoomRepo().findByOrgIdWithLeasesAll(orgId);
 
       let roomsToExport = rooms;
 
@@ -572,17 +550,14 @@ export function createUtilityService(
 
       // 排除已有读数的房间
       if (periodYear != null && periodMonth != null && roomsToExport.length > 0) {
+        const readingsForPeriod = await getRepo().findByOrgId(orgId, {
+          periodYear,
+          periodMonth,
+        });
         const roomIdsWithReadings = new Set(
-          (
-            await prisma.utilityReading.findMany({
-              where: {
-                room_id: { in: roomsToExport.map((r) => r.id) },
-                period_year: periodYear,
-                period_month: periodMonth,
-              },
-              select: { room_id: true },
-            })
-          ).map((r) => r.room_id)
+          readingsForPeriod
+            .filter((r) => roomsToExport.some((room) => room.id === r.room_id))
+            .map((r) => r.room_id)
         );
         roomsToExport = roomsToExport.filter((r) => !roomIdsWithReadings.has(r.id));
       }

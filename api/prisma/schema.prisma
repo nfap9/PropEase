@@ -93,7 +93,6 @@ model Apartment {
   organization   Organization         @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   rooms          Room[]
   utility_config UtilityConfig?
-  fee_configs    ApartmentFeeConfig[]
 
   @@index([organization_id])
   @@map("apartments")
@@ -176,22 +175,19 @@ model Lease {
 }
 
 model LeaseFeeItem {
-  id               String   @id @db.VarChar(26)
-  lease_id         String   @db.VarChar(26)
-  fee_type_id      String?  @db.VarChar(26)  // 可选，关联的费用类型ID
-  fee_name         String   @db.VarChar(100) // 费用名称（快照）
-  fee_code         String?  @db.VarChar(50)  // 费用代码（快照）
-  specification_id String?  @db.VarChar(26)  // 可选，关联的规格ID
-  spec_name        String?  @db.VarChar(100) // 规格名称（快照）
-  spec_unit_price  Decimal  @default(0) @db.Decimal(10, 2) // 单价（快照）
-  quantity         Decimal  @default(1) @db.Decimal(10, 2)
-  billing_cycle    String   @default("monthly") @db.VarChar(20) // 账单周期：monthly 每月, yearly 每年
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  id           String    @id @db.VarChar(26)
+  lease_id     String    @db.VarChar(26)
+  fee_type_id  String    @db.VarChar(26)
+  fee_category String    @db.VarChar(20)
+  fee_name     String    @db.VarChar(100)
+  fee_amount   Decimal   @default(1) @db.Decimal(10, 2)
+  fee_cycle    String    @db.VarChar(20)
+  quantity     Decimal   @default(1) @db.Decimal(10, 2)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
 
-  lease         Lease             @relation(fields: [lease_id], references: [id], onDelete: Cascade)
-  feeType       FeeType?          @relation(fields: [fee_type_id], references: [id])
-  specification FeeSpecification? @relation(fields: [specification_id], references: [id], onDelete: SetNull)
+  lease    Lease      @relation(fields: [lease_id], references: [id], onDelete: Cascade)
+  feeType  OrgFeeItem @relation(fields: [fee_type_id], references: [id])
 
   @@index([lease_id])
   @@map("lease_fee_items")
@@ -255,6 +251,26 @@ model UtilityConfig {
   @@map("utility_configs")
 }
 
+// 机构费用项目（平铺结构，替代原有的 FeeType -> FeeSpecification 树形结构）
+model OrgFeeItem {
+  id              String   @id @db.VarChar(26)
+  organization_id String   @db.VarChar(26)
+  category        String   @db.VarChar(20)  // fixed/utility/optional
+  name            String   @db.VarChar(100) // 服务费、卫生费、网费
+  amount          Decimal  @db.Decimal(10, 2)
+  cycle           String   @db.VarChar(20)  // monthly/quarterly/yearly/one_time
+  sort_order      Int      @default(0)
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  bill_fee_items BillFeeItem[]
+  lease_fee_items LeaseFeeItem[]
+
+  @@unique([organization_id, name])
+  @@map("org_fee_items")
+}
+
 model Bill {
   id                 String   @id @db.VarChar(26)
   lease_id           String   @db.VarChar(26)
@@ -300,92 +316,24 @@ model Payment {
   @@map("payments")
 }
 
-// 费用类型（全局模板，可用于组织或系统预设）
-model FeeType {
-  id              String   @id @db.VarChar(26)
-  organization_id String?  @db.VarChar(26) // null 表示系统预设类型
-  name            String   @db.VarChar(100) // 费用名称
-  code            String   @db.VarChar(50) // 唯一标识码（如 internet, management）
-  description     String?  @db.VarChar(500)
-  category        String   @default("fixed") @db.VarChar(20) // fixed 固定费用 / utility 计量费用 / optional 可选费用
-  is_active       Boolean  @default(true)
-  sort_order      Int      @default(0)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-
-  specifications        FeeSpecification[]
-  apartment_fee_configs ApartmentFeeConfig[]
-  bill_fee_items        BillFeeItem[]
-  lease_fee_items       LeaseFeeItem[]
-
-  @@unique([organization_id, code])
-  @@map("fee_types")
-}
-
-// 费用规格（一个费用类型可以有多个规格选项）
-model FeeSpecification {
-  id            String   @id @db.VarChar(26)
-  fee_type_id   String   @db.VarChar(26)
-  name          String   @db.VarChar(100) // 规格名称（如 "50兆套餐"、"100兆套餐"）
-  description   String?  @db.VarChar(500)
-  price_monthly Decimal  @db.Decimal(10, 2) // 月付价格
-  price_yearly  Decimal? @db.Decimal(10, 2) // 年付价格（可选）
-  unit          String?  @db.VarChar(20) // 单位（如 "月"、"年"、"次"）
-  is_default    Boolean  @default(false)
-  is_active     Boolean  @default(true)
-  sort_order    Int      @default(0)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
-
-  feeType FeeType @relation(fields: [fee_type_id], references: [id], onDelete: Cascade)
-
-  apartment_fee_configs ApartmentFeeConfig[]
-  bill_fee_items        BillFeeItem[]
-  lease_fee_items       LeaseFeeItem[]
-
-  @@unique([fee_type_id, name])
-  @@map("fee_specifications")
-}
-
-// 公寓费用配置（公寓启用哪些费用，选择哪个规格）
-model ApartmentFeeConfig {
-  id                   String    @id @db.VarChar(26)
-  apartment_id         String    @db.VarChar(26)
-  fee_type_id          String    @db.VarChar(26)
-  specification_id     String?   @db.VarChar(26) // 选择的规格，null 表示使用租约级别选择
-  is_enabled           Boolean   @default(true)
-  allow_lease_override Boolean   @default(false) // 是否允许租约级别覆盖规格
-  effective_from       DateTime  @db.Date
-  effective_to         DateTime? @db.Date
-  notes                String?   @db.VarChar(500)
-  created_at           DateTime  @default(now())
-  updated_at           DateTime  @updatedAt
-
-  apartment     Apartment         @relation(fields: [apartment_id], references: [id], onDelete: Cascade)
-  feeType       FeeType           @relation(fields: [fee_type_id], references: [id], onDelete: Cascade)
-  specification FeeSpecification? @relation(fields: [specification_id], references: [id], onDelete: SetNull)
-
-  @@unique([apartment_id, fee_type_id])
-  @@map("apartment_fee_configs")
-}
 
 // 账单费用明细（替代原来的 other_amount）
 model BillFeeItem {
-  id                 String   @id @db.VarChar(26)
-  bill_id            String   @db.VarChar(26)
-  fee_type_id        String   @db.VarChar(26)
-  specification_id   String?  @db.VarChar(26)
-  fee_name           String   @db.VarChar(100) // 冗余存储，避免关联丢失
-  specification_name String?  @db.VarChar(100)
-  quantity           Decimal  @default(1) @db.Decimal(10, 2) // 数量（如停车费可能是2个车位）
-  unit_price         Decimal  @db.Decimal(10, 2) // 单价
-  amount             Decimal  @db.Decimal(10, 2) // 总金额
-  notes              String?  @db.VarChar(500)
-  created_at         DateTime @default(now())
+  id           String    @id @db.VarChar(26)
+  bill_id      String    @db.VarChar(26)
+  fee_type_id  String    @db.VarChar(26)
+  fee_category String    @db.VarChar(20)
+  fee_name     String    @db.VarChar(100)
+  fee_amount   Decimal   @default(1) @db.Decimal(10, 2)
+  fee_cycle    String    @db.VarChar(20)
+  quantity     Decimal   @default(1) @db.Decimal(10, 2)
+  unit_price   Decimal   @db.Decimal(10, 2)
+  amount       Decimal   @db.Decimal(10, 2)
+  notes        String?   @db.VarChar(500)
+  created_at   DateTime  @default(now())
 
-  bill          Bill              @relation(fields: [bill_id], references: [id], onDelete: Cascade)
-  feeType       FeeType           @relation(fields: [fee_type_id], references: [id])
-  specification FeeSpecification? @relation(fields: [specification_id], references: [id], onDelete: SetNull)
+  bill     Bill      @relation(fields: [bill_id], references: [id], onDelete: Cascade)
+  feeType  OrgFeeItem @relation(fields: [fee_type_id], references: [id])
 
   @@index([bill_id])
   @@map("bill_fee_items")

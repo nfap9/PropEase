@@ -8,7 +8,6 @@ router.use(requireConsoleAuth);
 router.get('/', ctrl.list);
 router.post('/', ctrl.create);
 router.get('/personal', ctrl.getPersonal);
-router.post('/personal/migrate', ctrl.migrate);
 router.get('/:orgId', ctrl.get);
 router.put('/:orgId', ctrl.update);
 router.get('/:orgId/deletion-preview', ctrl.deletionPreview);

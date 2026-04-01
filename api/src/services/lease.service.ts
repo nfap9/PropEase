@@ -5,6 +5,13 @@ import {
   type LeaseRepository,
   type LeaseWithRelations,
 } from '../repositories/lease.repo.js';
+import { createOrgFeeItemRepository, type OrgFeeItemRepository } from '../repositories/orgFeeItem.repo.js';
+import { createLeaseFeeItemRepository, type LeaseFeeItemRepository } from '../repositories/leaseFeeItem.repo.js';
+import { createLeaseChangeLogRepository, type LeaseChangeLogRepository } from '../repositories/leaseChangeLog.repo.js';
+import { createRoomRepository, type RoomRepository } from '../repositories/room.repo.js';
+import { createTenantRepository, type TenantRepository } from '../repositories/tenant.repo.js';
+import { createApartmentRepository, type ApartmentRepository } from '../repositories/apartment.repo.js';
+import { createOrganizationRepository, type OrganizationRepository } from '../repositories/organization.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { logger } from '../utils/logger.js';
@@ -21,9 +28,7 @@ import {
  */
 export interface LeaseFeeItemInput {
   fee_type_id: string;
-  specification_id?: string;
   quantity?: number;
-  billing_cycle?: 'monthly' | 'yearly';
 }
 
 /**
@@ -129,23 +134,9 @@ export interface LeaseService {
   updateFeeItems(
     orgId: string,
     leaseId: string,
-    feeItems: Array<{ fee_type_id: string; specification_id?: string; quantity: number }>,
+    feeItems: Array<{ fee_type_id: string; quantity: number }>,
     effectiveFromYear: number,
     effectiveFromMonth: number
-  ): Promise<{ lease_id: string; updated_at: string }>;
-  setLeaseFeeItems(
-    orgId: string,
-    leaseId: string,
-    feeItems: Array<{
-      fee_type_id?: string;
-      fee_name: string;
-      fee_code?: string;
-      specification_id?: string;
-      spec_name?: string;
-      spec_unit_price: number;
-      quantity: number;
-      billing_cycle?: 'monthly' | 'yearly';
-    }>
   ): Promise<{ lease_id: string; updated_at: string }>;
 }
 
@@ -202,14 +193,13 @@ async function notifyOrgAdmins(
   type: string,
   title: string,
   content: string,
-  extraData: Prisma.InputJsonObject
+  extraData: Prisma.InputJsonObject,
+  getOrgRepo: () => OrganizationRepository
 ): Promise<void> {
-  const members = await prisma.organizationMember.findMany({
-    where: { organization_id: orgId, role: { in: ['owner', 'admin'] } },
-    select: { user_id: true },
-  });
+  const members = await getOrgRepo().findMembersByOrgId(orgId);
+  const admins = members.filter((m) => m.role === 'owner' || m.role === 'admin');
 
-  for (const member of members) {
+  for (const member of admins) {
     await prisma.notification.create({
       data: {
         id: ulid().toLowerCase(),
@@ -228,7 +218,14 @@ async function notifyOrgAdmins(
  * 创建 Lease Service 实例
  */
 export function createLeaseService(
-  getRepo: () => LeaseRepository = () => createLeaseRepository(prisma)
+  getRepo: () => LeaseRepository = () => createLeaseRepository(prisma),
+  getOrgFeeItemRepo: () => OrgFeeItemRepository = () => createOrgFeeItemRepository(prisma),
+  getLeaseFeeItemRepo: () => LeaseFeeItemRepository = () => createLeaseFeeItemRepository(prisma),
+  getLeaseChangeLogRepo: () => LeaseChangeLogRepository = () => createLeaseChangeLogRepository(prisma),
+  getRoomRepo: () => RoomRepository = () => createRoomRepository(prisma),
+  getTenantRepo: () => TenantRepository = () => createTenantRepository(prisma),
+  getApartmentRepo: () => ApartmentRepository = () => createApartmentRepository(prisma),
+  getOrgRepo: () => OrganizationRepository = () => createOrganizationRepository(prisma)
 ): LeaseService {
   const sortLeases = (leases: LeaseWithRelations[]) =>
     [...leases].sort(
@@ -256,18 +253,13 @@ export function createLeaseService(
 
     create: async (orgId: string, data: CreateLeaseInput) => {
       // 验证房间归属
-      const room = await prisma.room.findFirst({
-        where: { id: data.room_id },
-        include: { apartment: true },
-      });
+      const room = await getRoomRepo().findByIdWithApartment(data.room_id);
       if (!room || room.apartment.organization_id !== orgId) {
         throw createAppError(404, NotFoundMessages.ROOM);
       }
 
       // 验证租客归属
-      const tenant = await prisma.tenant.findFirst({
-        where: { id: data.tenant_id, organization_id: orgId },
-      });
+      const tenant = await getTenantRepo().findByIdAndOrg(data.tenant_id, orgId);
       if (!tenant) {
         throw createAppError(404, NotFoundMessages.TENANT);
       }
@@ -275,37 +267,27 @@ export function createLeaseService(
       // 创建租约并更新房间状态（事务）
       const lease = await getRepo().createWithRoomUpdate(buildCreateData(data), data.room_id);
 
-      // 插入租约费用项目（包含快照数据）
+      // 插入租约费用项目
       if (data.fee_items && data.fee_items.length > 0) {
-        // 获取费用类型和规格信息用于快照
-        const feeTypeIds = data.fee_items.map((i) => i.fee_type_id).filter(Boolean) as string[];
-        const specIds = data.fee_items.map((i) => i.specification_id).filter(Boolean) as string[];
-
-        const [feeTypes, specs] = await Promise.all([
-          feeTypeIds.length > 0 ? prisma.feeType.findMany({ where: { id: { in: feeTypeIds } } }) : [],
-          specIds.length > 0 ? prisma.feeSpecification.findMany({ where: { id: { in: specIds } } }) : [],
-        ]);
-
-        const feeTypeMap = new Map(feeTypes.map((ft) => [ft.id, ft]));
-        const specMap = new Map(specs.map((s) => [s.id, s]));
+        // 获取费用项目详情
+        const feeItemIds = data.fee_items.map((i) => i.fee_type_id);
+        const orgFeeItems = await getOrgFeeItemRepo().findByIds(feeItemIds);
+        const orgFeeItemMap = new Map(orgFeeItems.map((i) => [i.id, i]));
 
         const feeItemsData = data.fee_items.map((item) => {
-          const feeType = feeTypeMap.get(item.fee_type_id);
-          const spec = item.specification_id ? specMap.get(item.specification_id) : null;
+          const orgFeeItem = orgFeeItemMap.get(item.fee_type_id);
           return {
             id: ulid().toLowerCase(),
             lease_id: lease.id,
             fee_type_id: item.fee_type_id,
-            fee_name: feeType?.name || '',
-            fee_code: feeType?.code,
-            specification_id: item.specification_id,
-            spec_name: spec?.name,
-            spec_unit_price: spec ? Number(spec.price_monthly) : 0,
+            fee_category: orgFeeItem?.category ?? 'fixed',
+            fee_name: orgFeeItem?.name ?? '',
+            fee_amount: orgFeeItem?.amount ?? 0,
+            fee_cycle: orgFeeItem?.cycle ?? 'monthly',
             quantity: item.quantity ?? 1,
-            billing_cycle: item.billing_cycle ?? 'monthly',
           };
         });
-        await prisma.leaseFeeItem.createMany({ data: feeItemsData as any });
+        await getLeaseFeeItemRepo().createMany(feeItemsData);
       }
 
       // 自动创建首个账单（租金 + 押金 + 费用项目）
@@ -319,14 +301,13 @@ export function createLeaseService(
         // 查询费用项目计算其他费用
         let otherAmount = 0;
         if (data.fee_items && data.fee_items.length > 0) {
-          const feeSpecs = await prisma.feeSpecification.findMany({
-            where: { id: { in: data.fee_items.filter((i) => i.specification_id).map((i) => i.specification_id!) } },
-          });
-          const specMap = new Map(feeSpecs.map((s) => [s.id, s]));
+          const feeItemIds = data.fee_items.map((i) => i.fee_type_id);
+          const orgFeeItems = await getOrgFeeItemRepo().findByIds(feeItemIds);
+          const orgFeeItemMap = new Map(orgFeeItems.map((i) => [i.id, i]));
           for (const item of data.fee_items) {
-            const spec = item.specification_id ? specMap.get(item.specification_id) : null;
-            if (spec) {
-              otherAmount += Number(spec.price_monthly) * (item.quantity ?? 1);
+            const orgFeeItem = orgFeeItemMap.get(item.fee_type_id);
+            if (orgFeeItem) {
+              otherAmount += Number(orgFeeItem.amount) * (item.quantity ?? 1);
             }
           }
         }
@@ -364,7 +345,8 @@ export function createLeaseService(
             room_id: room.id,
             room_number: room.room_number,
             start_date: startDate,
-          }
+          },
+          getOrgRepo
         );
       } catch (e) {
         logger.error({ err: e, leaseId: lease.id }, 'Failed to create tenant_move_in notification');
@@ -406,7 +388,8 @@ export function createLeaseService(
             room_id: existing.room_id,
             room_number: existing.room.room_number,
             end_date: endDate,
-          }
+          },
+          getOrgRepo
         );
       } catch (e) {
         logger.error({ err: e, leaseId: existing.id }, 'Failed to create tenant_move_out notification');
@@ -418,26 +401,7 @@ export function createLeaseService(
       if (!existing || existing.room.apartment.organization_id !== orgId) {
         throw createAppError(404, NotFoundMessages.LEASE);
       }
-
-      const roomId = existing.room_id;
-
-      await prisma.$transaction(async (tx) => {
-        // 删除租约
-        await tx.lease.delete({ where: { id } });
-
-        // 检查该房间是否还有其他活跃租约
-        const otherActiveLeases = await tx.lease.count({
-          where: { room_id: roomId, is_active: true, id: { not: id } },
-        });
-
-        // 如果没有其他活跃租约，释放房间
-        if (otherActiveLeases === 0) {
-          await tx.room.update({
-            where: { id: roomId },
-            data: { status: 'available' },
-          });
-        }
-      });
+      await getRepo().delete(id);
     },
 
     changeRoom: async (orgId: string, leaseId: string, newRoomId: string, changeDate: string, reason?: string) => {
@@ -446,10 +410,7 @@ export function createLeaseService(
         throw createAppError(404, NotFoundMessages.LEASE);
       }
 
-      const newRoom = await prisma.room.findFirst({
-        where: { id: newRoomId },
-        include: { apartment: true },
-      });
+      const newRoom = await getRoomRepo().findByIdWithApartment(newRoomId);
       if (!newRoom || newRoom.apartment.organization_id !== orgId) {
         throw createAppError(404, '目标房间不存在');
       }
@@ -525,9 +486,7 @@ export function createLeaseService(
         throw createAppError(404, NotFoundMessages.LEASE);
       }
 
-      const newTenant = await prisma.tenant.findFirst({
-        where: { id: newTenantId, organization_id: orgId },
-      });
+      const newTenant = await getTenantRepo().findByIdAndOrg(newTenantId, orgId);
       if (!newTenant) {
         throw createAppError(404, '租客不存在');
       }
@@ -580,17 +539,15 @@ export function createLeaseService(
 
       const oldRent = Number(lease.monthly_rent);
 
-      await prisma.leaseChangeLog.create({
-        data: {
-          id: ulid().toLowerCase(),
-          lease_id: leaseId,
-          change_type: 'rent_change',
-          old_value: { monthly_rent: oldRent },
-          new_value: { monthly_rent: newRent },
-          effective_from_year: effectiveFromYear,
-          effective_from_month: effectiveFromMonth,
-          reason,
-        },
+      await getLeaseChangeLogRepo().create({
+        id: ulid().toLowerCase(),
+        lease: { connect: { id: leaseId } },
+        change_type: 'rent_change',
+        old_value: { monthly_rent: oldRent },
+        new_value: { monthly_rent: newRent },
+        effective_from_year: effectiveFromYear,
+        effective_from_month: effectiveFromMonth,
+        reason,
       });
 
       return {
@@ -627,16 +584,14 @@ export function createLeaseService(
       const oldWater = Number(lease.water_rate);
       const oldElec = Number(lease.electricity_rate);
 
-      await prisma.leaseChangeLog.create({
-        data: {
-          id: ulid().toLowerCase(),
-          lease_id: leaseId,
-          change_type: 'utility_rate_change',
-          old_value: { water_rate: oldWater, electricity_rate: oldElec },
-          new_value: { water_rate: waterRate, electricity_rate: electricityRate },
-          effective_from_year: effectiveFromYear,
-          effective_from_month: effectiveFromMonth,
-        },
+      await getLeaseChangeLogRepo().create({
+        id: ulid().toLowerCase(),
+        lease: { connect: { id: leaseId } },
+        change_type: 'utility_rate_change',
+        old_value: { water_rate: oldWater, electricity_rate: oldElec },
+        new_value: { water_rate: waterRate, electricity_rate: electricityRate },
+        effective_from_year: effectiveFromYear,
+        effective_from_month: effectiveFromMonth,
       });
 
       return {
@@ -705,7 +660,7 @@ export function createLeaseService(
     updateFeeItems: async (
       orgId: string,
       leaseId: string,
-      feeItems: Array<{ fee_type_id: string; specification_id?: string; quantity: number }>,
+      feeItems: Array<{ fee_type_id: string; quantity: number }>,
       effectiveFromYear: number,
       effectiveFromMonth: number
     ) => {
@@ -724,93 +679,29 @@ export function createLeaseService(
         throw createAppError(400, '生效期不能早于当前账期');
       }
 
-      // 获取旧费用项目（包含名称）
-      const oldFeeItems = lease.fee_items.map((item) => ({
-        fee_type_id: item.fee_type_id,
-        fee_type_name: item.feeType?.name || item.fee_type_id,
-        specification_id: item.specification_id,
-        specification_name: item.specification?.name,
-        quantity: Number(item.quantity),
-      }));
+      const apartmentId = lease.room.apartment_id;
 
-      // 获取新费用项目的名称
-      const feeTypeIds = [...new Set(feeItems.map((item) => item.fee_type_id))];
-      const feeTypesData = await prisma.feeType.findMany({
-        where: { id: { in: feeTypeIds } },
-        include: { specifications: true },
+      const apartment = await getApartmentRepo().findById(apartmentId);
+      const enabledItems = await getOrgFeeItemRepo().findByOrgId(apartment?.organization_id ?? '', {
+        isActive: true,
       });
-      const feeTypeMap = new Map(feeTypesData.map((ft) => [ft.id, ft]));
-      const specMap = new Map(feeTypesData.flatMap((ft) => ft.specifications.map((s) => [s.id, s])));
+      const enabledFeeItemIds = new Set(enabledItems.map((item) => item.id));
 
-      const newFeeItems = feeItems.map((item) => ({
-        fee_type_id: item.fee_type_id,
-        fee_type_name: feeTypeMap.get(item.fee_type_id)?.name || item.fee_type_id,
-        specification_id: item.specification_id,
-        specification_name: item.specification_id ? specMap.get(item.specification_id)?.name : undefined,
-        quantity: item.quantity,
-      }));
-
-      await prisma.leaseChangeLog.create({
-        data: {
-          id: ulid().toLowerCase(),
-          lease_id: leaseId,
-          change_type: 'fee_items_update',
-          old_value: { fee_items: oldFeeItems } as Prisma.InputJsonValue,
-          new_value: { fee_items: newFeeItems } as Prisma.InputJsonValue,
-          effective_from_year: effectiveFromYear,
-          effective_from_month: effectiveFromMonth,
-        },
-      });
-
-      return {
-        lease_id: leaseId,
-        updated_at: new Date().toISOString(),
-      };
-    },
-
-    setLeaseFeeItems: async (
-      orgId: string,
-      leaseId: string,
-      feeItems: Array<{
-        fee_type_id?: string;
-        fee_name: string;
-        fee_code?: string;
-        specification_id?: string;
-        spec_name?: string;
-        spec_unit_price: number;
-        quantity: number;
-        billing_cycle?: 'monthly' | 'yearly';
-      }>
-    ) => {
-      const lease = await getRepo().findByIdWithRelations(leaseId);
-      if (!lease || lease.room.apartment.organization_id !== orgId) {
-        throw createAppError(404, NotFoundMessages.LEASE);
+      for (const item of feeItems) {
+        if (!enabledFeeItemIds.has(item.fee_type_id)) {
+          throw createAppError(400, `费用项目 ${item.fee_type_id} 未在组织中启用`);
+        }
       }
 
-      // 删除旧的费用项目
-      await prisma.leaseFeeItem.deleteMany({
-        where: { lease_id: leaseId },
+      await getLeaseChangeLogRepo().create({
+        id: ulid().toLowerCase(),
+        lease: { connect: { id: leaseId } },
+        change_type: 'fee_items_update',
+        old_value: undefined,
+        new_value: { fee_items: feeItems } as Prisma.InputJsonValue,
+        effective_from_year: effectiveFromYear,
+        effective_from_month: effectiveFromMonth,
       });
-
-      // 创建新的费用项目
-      if (feeItems.length > 0) {
-        const data = feeItems.map((item) => {
-          const obj: Record<string, unknown> = {
-            id: ulid().toLowerCase(),
-            lease_id: leaseId,
-            fee_name: item.fee_name,
-            spec_unit_price: item.spec_unit_price,
-            quantity: item.quantity,
-            billing_cycle: item.billing_cycle ?? 'monthly',
-          };
-          if (item.fee_type_id) obj.fee_type_id = item.fee_type_id;
-          if (item.fee_code) obj.fee_code = item.fee_code;
-          if (item.specification_id) obj.specification_id = item.specification_id;
-          if (item.spec_name) obj.spec_name = item.spec_name;
-          return obj;
-        });
-        await prisma.leaseFeeItem.createMany({ data: data as any });
-      }
 
       return {
         lease_id: leaseId,

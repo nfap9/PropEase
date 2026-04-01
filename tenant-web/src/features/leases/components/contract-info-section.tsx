@@ -1,44 +1,42 @@
 'use client';
 
-import { useState } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { CheckSquare } from 'lucide-react';
+import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
 import type { LeaseSigningFormData } from '../leases.schemas';
-import type { FeeType, FeeSpecification } from '@apartment-ultra/api-contract';
-import { FeeItemsEditorDialog } from './fee-items-editor-dialog';
+import type { OrgFeeItem, FeeCycle } from '@apartment-ultra/api-contract';
 
-interface FeeItem {
-  id: string;
-  name: string;
-  feeTypeId?: string;
-  specification?: string;
-  specificationId?: string;
-  unitPrice: number;
-  quantity: number;
-  billingCycle: 'monthly' | 'yearly';
+interface SelectedFee {
+  fee_item_id: string;
+  fee_item_name: string;
+  amount: number;
 }
+
+const CYCLE_LABELS: Record<FeeCycle, string> = {
+  monthly: '每月',
+  quarterly: '每季',
+  yearly: '每年',
+  one_time: '一次性',
+};
 
 interface ContractInfoSectionProps {
   form: UseFormReturn<LeaseSigningFormData>;
-  orgId: string;
-  feeTypes?: FeeType[];
-  selectedFees: FeeItem[];
-  onFeesChange: (fees: FeeItem[]) => void;
+  feeItems?: OrgFeeItem[];
+  selectedFees: SelectedFee[];
+  onAddFee: (feeItem: OrgFeeItem) => void;
+  onUpdateFeePrice: (feeItemId: string, price: number) => void;
 }
 
 export function ContractInfoSection({
   form,
-  orgId,
-  feeTypes,
+  feeItems,
   selectedFees,
-  onFeesChange,
+  onAddFee,
+  onUpdateFeePrice,
 }: ContractInfoSectionProps) {
-  const [isFeeDialogOpen, setIsFeeDialogOpen] = useState(false);
-
   const setDateFieldValue = (field: 'start_date' | 'end_date', value: string) => {
     form.setValue(field, value, {
       shouldDirty: true,
@@ -119,58 +117,61 @@ export function ContractInfoSection({
       </div>
 
       {/* 额外费用 */}
-      <div className="border rounded-lg p-4">
-        <div className="flex justify-between items-center mb-3">
-          <Label className="text-base">额外费用</Label>
-          <Button type="button" variant="outline" size="sm" onClick={() => setIsFeeDialogOpen(true)}>
-            <CheckSquare className="h-4 w-4 mr-2" />
-            选择费用项目
-          </Button>
-        </div>
-
-        {selectedFees.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-2">暂无费用项目</p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-muted-foreground border-b">
-                <th className="pb-2 font-medium">费用类型</th>
-                <th className="pb-2 font-medium">规格</th>
-                <th className="pb-2 font-medium text-right">单价</th>
-                <th className="pb-2 font-medium text-right">数量</th>
-                <th className="pb-2 font-medium text-right">小计</th>
-              </tr>
-            </thead>
-            <tbody>
-              {selectedFees.map((item) => (
-                <tr key={item.id} className="border-b last:border-0">
-                  <td className="py-2">{item.name}</td>
-                  <td className="py-2 text-muted-foreground">{item.specification || '-'}</td>
-                  <td className="py-2 text-right">¥{item.unitPrice.toLocaleString()}</td>
-                  <td className="py-2 text-right">× {item.quantity}</td>
-                  <td className="py-2 text-right font-medium">
-                    ¥{(item.unitPrice * item.quantity).toLocaleString()}
-                  </td>
-                </tr>
+      {feeItems && feeItems.length > 0 && (
+        <div className="space-y-3 border rounded-lg p-4">
+          <Label className="text-base">额外费用（可选）</Label>
+          {selectedFees.length > 0 && (
+            <div className="space-y-2">
+              {selectedFees.map((fee) => (
+                <div key={fee.fee_item_id} className="flex items-center gap-2 bg-muted/50 rounded-lg p-2">
+                  <Checkbox
+                    checked={true}
+                    onCheckedChange={() =>
+                      onAddFee({
+                        id: fee.fee_item_id,
+                        name: fee.fee_item_name,
+                        amount: fee.amount,
+                      } as OrgFeeItem)
+                    }
+                  />
+                  <span className="flex-1 text-sm">{fee.fee_item_name}</span>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={fee.amount}
+                    onChange={(e) => onUpdateFeePrice(fee.fee_item_id, parseFloat(e.target.value) || 0)}
+                    className="w-24 h-8"
+                  />
+                  <span className="text-sm text-muted-foreground">元</span>
+                </div>
               ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {feeItems
+              .filter((item) => item.is_active)
+              .map((item) => {
+                const isSelected = selectedFees.some((f) => f.fee_item_id === item.id);
+                return (
+                  <Button
+                    key={item.id}
+                    type="button"
+                    variant={isSelected ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => onAddFee(item)}
+                  >
+                    {item.name} (¥{item.amount}/{CYCLE_LABELS[item.cycle]})
+                  </Button>
+                );
+              })}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="notes">备注</Label>
         <Input id="notes" {...form.register('notes')} />
       </div>
-
-      <FeeItemsEditorDialog
-        open={isFeeDialogOpen}
-        onOpenChange={setIsFeeDialogOpen}
-        orgId={orgId}
-        leaseId=""
-        currentItems={selectedFees}
-        onSave={onFeesChange}
-      />
     </div>
   );
 }

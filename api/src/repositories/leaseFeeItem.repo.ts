@@ -1,8 +1,20 @@
-import type { LeaseFeeItem, Prisma, PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 
-export type LeaseFeeItemWithDetails = LeaseFeeItem & {
-  feeType: { id: string; name: string; code: string };
-  specification: { id: string; name: string; price_monthly: number } | null;
+/**
+ * 租约费用项目（包含冗余的費用項目信息）
+ */
+export type LeaseFeeItemWithDetails = {
+  id: string;
+  lease_id: string;
+  fee_type_id: string;
+  fee_category: string;
+  fee_name: string;
+  fee_amount: unknown;
+  fee_cycle: string;
+  quantity: unknown;
+  created_at: Date;
+  updated_at: Date;
+  feeType: { id: string; name: string; category: string; amount: unknown; cycle: string };
 };
 
 export interface LeaseFeeItemRepository {
@@ -19,17 +31,11 @@ export function createLeaseFeeItemRepository(
       const results = await prisma.leaseFeeItem.findMany({
         where: { lease_id: leaseId },
         include: {
-          feeType: { select: { id: true, name: true, code: true } },
-          specification: { select: { id: true, name: true, price_monthly: true } },
+          feeType: { select: { id: true, name: true, category: true, amount: true, cycle: true } },
         },
         orderBy: { created_at: 'asc' },
       });
-      return results.map((r) => ({
-        ...r,
-        specification: r.specification
-          ? { ...r.specification, price_monthly: Number(r.specification.price_monthly) }
-          : null,
-      })) as LeaseFeeItemWithDetails[];
+      return results as LeaseFeeItemWithDetails[];
     },
 
     createMany: async (data: Prisma.LeaseFeeItemCreateManyInput[]) => {

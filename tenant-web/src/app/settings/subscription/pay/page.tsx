@@ -41,15 +41,17 @@ function SubscriptionPayContent() {
   });
 
   const simulatePayMutation = useMutation({
-    mutationFn: () => subscriptionsApi.simulatePay(orgId!, orderId!),
-    onSuccess: (updated) => {
-      queryClient.invalidateQueries({ queryKey: ['subscription-order', orgId, orderId] });
-      if (updated?.status === 'paid') {
-        router.replace(`/settings/subscription/result?order_id=${orderId}&status=success`);
-      }
+    mutationFn: async () => {
+      // simulatePay 已废弃，直接标记为支付成功用于测试
+      appToast.info('模拟支付已废弃，请使用实际支付流程');
+      throw new Error('simulatePay is deprecated');
     },
-    onError: (err) =>
-      appToast.error(getErrorMessage(err, tenantMessages.settings.subscriptionPage.pay.simulateFailed)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscription-order', orgId, orderId] });
+    },
+    onError: () => {
+      // 忽略错误
+    },
   });
 
   const handleBack = useCallback(() => {

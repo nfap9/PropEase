@@ -5,26 +5,36 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createRoomService, type RoomService } from './room.service.js';
 import type { RoomRepository } from '../repositories/room.repo.js';
+import type { ApartmentRepository } from '../repositories/apartment.repo.js';
 
 describe('RoomService', () => {
-  // Mock Repository
+  // Mock Room Repository
   const mockRepo: RoomRepository = {
+    findById: vi.fn(),
     findByIdWithApartment: vi.fn(),
     findByApartmentId: vi.fn(),
+    findByOrgId: vi.fn(),
+    findByOrgIdWithLeases: vi.fn(),
+    findByOrgIdWithLeasesAll: vi.fn(),
     create: vi.fn(),
     createBatch: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    countByOrgId: vi.fn(),
   };
 
-  // Mock Prisma
-  vi.mock('../lib/prisma.js', () => ({
-    prisma: {
-      apartment: {
-        findFirst: vi.fn(),
-      },
-    },
-  }));
+  // Mock Apartment Repository
+  const mockApartmentRepo: ApartmentRepository = {
+    findById: vi.fn(),
+    findByIdAndOrg: vi.fn(),
+    findByIdAndOrgWithRooms: vi.fn(),
+    findByOrgId: vi.fn(),
+    findByOrgIdWithRooms: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    countByOrgId: vi.fn(),
+  };
 
   let service: RoomService;
 
@@ -59,7 +69,7 @@ describe('RoomService', () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
-    service = createRoomService(() => mockRepo);
+    service = createRoomService(() => mockRepo, () => mockApartmentRepo);
   });
 
   describe('getById', () => {
@@ -93,8 +103,7 @@ describe('RoomService', () => {
 
   describe('listByApartment', () => {
     it('should return rooms when apartment belongs to org', async () => {
-      const { prisma } = await import('../lib/prisma.js');
-      vi.mocked(prisma.apartment.findFirst).mockResolvedValue(mockApartment as any);
+      vi.mocked(mockApartmentRepo.findByIdAndOrg).mockResolvedValue(mockApartment as any);
       vi.mocked(mockRepo.findByApartmentId).mockResolvedValue([mockRoom as any]);
 
       const result = await service.listByApartment(orgId, apartmentId);
@@ -103,8 +112,7 @@ describe('RoomService', () => {
     });
 
     it('should sort rooms by room number naturally', async () => {
-      const { prisma } = await import('../lib/prisma.js');
-      vi.mocked(prisma.apartment.findFirst).mockResolvedValue(mockApartment as any);
+      vi.mocked(mockApartmentRepo.findByIdAndOrg).mockResolvedValue(mockApartment as any);
       vi.mocked(mockRepo.findByApartmentId).mockResolvedValue([
         { ...mockRoom, id: 'room-10', room_number: '10' } as any,
         { ...mockRoom, id: 'room-2', room_number: '2' } as any,
@@ -117,8 +125,7 @@ describe('RoomService', () => {
     });
 
     it('should throw 404 when apartment not found', async () => {
-      const { prisma } = await import('../lib/prisma.js');
-      vi.mocked(prisma.apartment.findFirst).mockResolvedValue(null);
+      vi.mocked(mockApartmentRepo.findByIdAndOrg).mockResolvedValue(null);
 
       await expect(service.listByApartment(orgId, apartmentId)).rejects.toMatchObject({
         statusCode: 404,
@@ -128,8 +135,7 @@ describe('RoomService', () => {
 
   describe('create', () => {
     it('should create room when apartment belongs to org', async () => {
-      const { prisma } = await import('../lib/prisma.js');
-      vi.mocked(prisma.apartment.findFirst).mockResolvedValue(mockApartment as any);
+      vi.mocked(mockApartmentRepo.findByIdAndOrg).mockResolvedValue(mockApartment as any);
       vi.mocked(mockRepo.create).mockResolvedValue(mockRoom as any);
 
       const input = {
@@ -146,8 +152,7 @@ describe('RoomService', () => {
     });
 
     it('should throw 404 when apartment not found', async () => {
-      const { prisma } = await import('../lib/prisma.js');
-      vi.mocked(prisma.apartment.findFirst).mockResolvedValue(null);
+      vi.mocked(mockApartmentRepo.findByIdAndOrg).mockResolvedValue(null);
 
       const input = {
         apartment_id: apartmentId,
@@ -163,8 +168,7 @@ describe('RoomService', () => {
 
   describe('batchCreate', () => {
     it('should batch create rooms', async () => {
-      const { prisma } = await import('../lib/prisma.js');
-      vi.mocked(prisma.apartment.findFirst).mockResolvedValue(mockApartment as any);
+      vi.mocked(mockApartmentRepo.findByIdAndOrg).mockResolvedValue(mockApartment as any);
       vi.mocked(mockRepo.createBatch).mockResolvedValue([mockRoom as any, { ...mockRoom, id: 'room2', room_number: '102' } as any]);
 
       const input = {

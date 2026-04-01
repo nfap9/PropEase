@@ -6,6 +6,10 @@ import {
   type RoomRepository,
   type RoomWithApartment,
 } from '../repositories/room.repo.js';
+import {
+  createApartmentRepository,
+  type ApartmentRepository,
+} from '../repositories/apartment.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { toPrismaInputJsonValue } from '../utils/json.js';
 import { NotFoundMessages } from '../messages.js';
@@ -129,7 +133,8 @@ function buildUpdateData(existing: Room, data: UpdateRoomInput): Prisma.RoomUpda
  * 创建 Room Service 实例
  */
 export function createRoomService(
-  getRepo: () => RoomRepository = () => createRoomRepository(prisma)
+  getRepo: () => RoomRepository = () => createRoomRepository(prisma),
+  getApartmentRepo: () => ApartmentRepository = () => createApartmentRepository(prisma)
 ): RoomService {
   const sortRooms = (rooms: Room[]) =>
     [...rooms].sort((left, right) => compareNaturalText(left.room_number, right.room_number));
@@ -145,9 +150,7 @@ export function createRoomService(
 
     listByApartment: async (orgId: string, apartmentId: string) => {
       // 先验证公寓归属
-      const apartment = await prisma.apartment.findFirst({
-        where: { id: apartmentId, organization_id: orgId },
-      });
+      const apartment = await getApartmentRepo().findByIdAndOrg(apartmentId, orgId);
       if (!apartment) {
         throw createAppError(404, NotFoundMessages.APARTMENT);
       }
@@ -157,9 +160,7 @@ export function createRoomService(
 
     create: async (orgId: string, apartmentId: string, data: CreateRoomInput) => {
       // 验证公寓归属
-      const apartment = await prisma.apartment.findFirst({
-        where: { id: apartmentId, organization_id: orgId },
-      });
+      const apartment = await getApartmentRepo().findByIdAndOrg(apartmentId, orgId);
       if (!apartment) {
         throw createAppError(404, NotFoundMessages.APARTMENT);
       }
@@ -168,9 +169,7 @@ export function createRoomService(
 
     batchCreate: async (orgId: string, apartmentId: string, data: BatchCreateRoomInput) => {
       // 验证公寓归属
-      const apartment = await prisma.apartment.findFirst({
-        where: { id: apartmentId, organization_id: orgId },
-      });
+      const apartment = await getApartmentRepo().findByIdAndOrg(apartmentId, orgId);
       if (!apartment) {
         throw createAppError(404, NotFoundMessages.APARTMENT);
       }

@@ -8,6 +8,7 @@ import {
   type BillWithRelations,
   type BillFilter,
 } from '../repositories/bill.repo.js';
+import { createLeaseRepository, type LeaseRepository } from '../repositories/lease.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { logger } from '../utils/logger.js';
@@ -117,7 +118,8 @@ function buildUpdateData(data: UpdateBillInput): Prisma.BillUpdateInput {
  */
 export function createBillService(
   getBillRepo: () => BillRepository = () => createBillRepository(prisma),
-  getPaymentRepo: () => PaymentRepository = () => createPaymentRepository(prisma)
+  getPaymentRepo: () => PaymentRepository = () => createPaymentRepository(prisma),
+  getLeaseRepo: () => LeaseRepository = () => createLeaseRepository(prisma)
 ): BillService {
   return {
     list: async (orgId: string, filter?: BillFilter) => {
@@ -134,10 +136,7 @@ export function createBillService(
 
     create: async (orgId: string, data: CreateBillInput) => {
       // 验证租约归属
-      const lease = await prisma.lease.findFirst({
-        where: { id: data.lease_id },
-        include: { room: { include: { apartment: true } } },
-      });
+      const lease = await getLeaseRepo().findByIdWithRelations(data.lease_id);
       if (!lease || lease.room.apartment.organization_id !== orgId) {
         throw createAppError(404, NotFoundMessages.LEASE);
       }

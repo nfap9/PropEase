@@ -9,7 +9,6 @@ import { Messages, NotFoundMessages } from '../../messages.js';
 import { getEffectivePlanLimits, getRoomsUsedForLimitCheck } from '../../utils/orgPlanLimits.js';
 import { defaultApartmentService } from '../../services/apartment.service.js';
 import { defaultRoomService } from '../../services/room.service.js';
-import { defaultApartmentFeeConfigService } from '../../services/apartmentFeeConfig.service.js';
 
 // ==================== Schemas ====================
 
@@ -92,17 +91,6 @@ export const UtilityConfigSchema = z.object({
   notes: z.string().max(500).optional(),
 });
 
-export const ApartmentFeeConfigCreateSchema = z.object({
-  fee_type_id: z.string().min(1),
-  specification_id: z.string().optional(),
-  is_enabled: z.boolean().optional(),
-  allow_lease_override: z.boolean().optional(),
-  effective_from: z.string().min(1),
-  effective_to: z.string().optional(),
-  notes: z.string().max(500).optional(),
-});
-
-export const ApartmentFeeConfigUpdateSchema = ApartmentFeeConfigCreateSchema.partial().omit({ fee_type_id: true });
 
 // ==================== Handlers ====================
 
@@ -354,75 +342,3 @@ export async function deleteUtilityConfig(req: Request, res: Response, next: Nex
   }
 }
 
-// fee configs
-export async function listFeeConfigs(req: Request, res: Response, next: NextFunction) {
-  try {
-    const orgId = await requireOrgMembership(req);
-    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    const configs = await defaultApartmentFeeConfigService.list(req.params.apartmentId);
-    res.json(configs);
-  } catch (e) {
-    next(e);
-  }
-}
-
-export async function createFeeConfig(req: Request, res: Response, next: NextFunction) {
-  try {
-    const orgId = await requireOrgMembership(req);
-    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    const parsed = ApartmentFeeConfigCreateSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const config = await defaultApartmentFeeConfigService.create(
-      req.params.apartmentId,
-      parsed.data
-    );
-    res.status(201).json(config);
-  } catch (e) {
-    next(e);
-  }
-}
-
-export async function getFeeConfig(req: Request, res: Response, next: NextFunction) {
-  try {
-    const orgId = await requireOrgMembership(req);
-    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    const config = await defaultApartmentFeeConfigService.getById(
-      req.params.apartmentId,
-      req.params.configId
-    );
-    res.json(config);
-  } catch (e) {
-    next(e);
-  }
-}
-
-export async function updateFeeConfig(req: Request, res: Response, next: NextFunction) {
-  try {
-    const orgId = await requireOrgMembership(req);
-    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    const parsed = ApartmentFeeConfigUpdateSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const config = await defaultApartmentFeeConfigService.update(
-      req.params.apartmentId,
-      req.params.configId,
-      parsed.data
-    );
-    res.json(config);
-  } catch (e) {
-    next(e);
-  }
-}
-
-export async function deleteFeeConfig(req: Request, res: Response, next: NextFunction) {
-  try {
-    const orgId = await requireOrgMembership(req);
-    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    await defaultApartmentFeeConfigService.delete(
-      req.params.apartmentId,
-      req.params.configId
-    );
-    res.status(204).send();
-  } catch (e) {
-    next(e);
-  }
-}

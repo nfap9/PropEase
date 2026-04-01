@@ -17,7 +17,4 @@ export const usageApi = {
 
   getOrder: (orderId: string): Promise<UsageQuotaOrder> =>
     api.get<UsageQuotaOrder>(`/usage/orders/${orderId}`).then((r) => r.data),
-
-  simulatePay: (orderId: string): Promise<UsageQuotaOrder> =>
-    api.post<UsageQuotaOrder>(`/usage/orders/${orderId}/simulate-pay`).then((r) => r.data),
 };
