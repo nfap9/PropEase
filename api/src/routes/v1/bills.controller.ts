@@ -1,12 +1,13 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
-import { prisma } from '../../lib/prisma.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
 import { generateBillsExcel, generateBillPdf } from '../../utils/billExports.js';
 import { generateBillsForOrg } from '../../services/billGeneration.js';
 import { getBrandConfig } from '../../services/platformConfig.js';
 import { defaultBillService } from '../../services/bill.service.js';
+import { defaultTenantService } from '../../services/tenant.service.js';
+import { defaultOrgRepo } from '../../repositories/organization.repo.js';
 import type { BillFilter } from '../../repositories/bill.repo.js';
 
 // ==================== Schemas ====================
@@ -113,13 +114,10 @@ export async function exportExcel(req: Request, res: Response, next: NextFunctio
     if (bills.length === 0) return next(createAppError(400, '没有可导出的账单'));
 
     const tenantIds = [...new Set(bills.map((b) => b.lease.tenant_id))];
-    const tenants = await prisma.tenant.findMany({
-      where: { id: { in: tenantIds } },
-      select: { id: true, name: true },
-    });
+    const tenants = await defaultTenantService.getByIds(tenantIds);
     const tenantNameById = Object.fromEntries(tenants.map((t) => [t.id, t.name]));
 
-    const org = await prisma.organization.findUnique({ where: { id: orgId } });
+    const org = await defaultOrgRepo.findById(orgId);
     const brandConfig = await getBrandConfig();
     const orgName = org?.name ?? brandConfig.app_name;
 
@@ -180,11 +178,7 @@ export async function addPayment(req: Request, res: Response, next: NextFunction
 export async function listFeeItems(req: Request, res: Response, next: NextFunction) {
   try {
     const orgId = await requireOrgMembership(req);
-    await defaultBillService.validateOwnership(orgId, req.params.id);
-    const feeItems = await prisma.billFeeItem.findMany({
-      where: { bill_id: req.params.id },
-      orderBy: { created_at: 'asc' },
-    });
+    const feeItems = await defaultBillService.listFeeItems(orgId, req.params.id);
     res.json(feeItems);
   } catch (e) {
     next(e);
@@ -195,11 +189,8 @@ export async function exportPdf(req: Request, res: Response, next: NextFunction)
   try {
     const orgId = await requireOrgMembership(req);
     const bill = await defaultBillService.validateOwnership(orgId, req.params.id);
-    const tenant = await prisma.tenant.findUnique({
-      where: { id: bill.lease.tenant_id },
-      select: { name: true },
-    });
-    const org = await prisma.organization.findUnique({ where: { id: orgId } });
+    const tenant = await defaultTenantService.getById(orgId, bill.lease.tenant_id);
+    const org = await defaultOrgRepo.findById(orgId);
     const brandConfig = await getBrandConfig();
     const orgName = org?.name ?? brandConfig.app_name;
 

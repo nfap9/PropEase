@@ -1,9 +1,10 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { prisma } from '../../../lib/prisma.js';
 import { config } from '../../../config.js';
 import { decryptWechatPayResource } from '../../../utils/wechatPayCallback.js';
 import { fulfillSubscription } from '../../../services/fulfillSubscription.js';
 import { fulfillUsageQuota } from '../../../services/fulfillUsageQuota.js';
+import { defaultSubscriptionRepo } from '../../../repositories/subscription.repo.js';
+import { defaultUsageRepo } from '../../../repositories/usage.repo.js';
 
 const router: Router = Router();
 
@@ -58,22 +59,17 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       return;
     }
 
-    const subOrder = await prisma.subscriptionOrder.findFirst({
-      where: { order_no: outTradeNo },
-    });
+    const subOrder = await defaultSubscriptionRepo.findOrderByOrderNo(outTradeNo);
     if (subOrder) {
       if (subOrder.status === 'paid') {
         res.status(200).json({ code: 'SUCCESS', message: 'already paid' });
         return;
       }
       const now = new Date();
-      await prisma.subscriptionOrder.update({
-        where: { id: subOrder.id },
-        data: {
-          status: 'paid',
-          wechat_transaction_id: transactionId ?? null,
-          paid_at: now,
-        },
+      await defaultSubscriptionRepo.updateOrder(subOrder.id, {
+        status: 'paid',
+        wechat_transaction_id: transactionId ?? null,
+        paid_at: now,
       });
       try {
         await fulfillSubscription(subOrder.id);
@@ -84,22 +80,17 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       return;
     }
 
-    const usageOrder = await prisma.usageQuotaOrder.findFirst({
-      where: { order_no: outTradeNo },
-    });
+    const usageOrder = await defaultUsageRepo.findOrderByOrderNo(outTradeNo);
     if (usageOrder) {
       if (usageOrder.status === 'paid') {
         res.status(200).json({ code: 'SUCCESS', message: 'already paid' });
         return;
       }
       const now = new Date();
-      await prisma.usageQuotaOrder.update({
-        where: { id: usageOrder.id },
-        data: {
-          status: 'paid',
-          wechat_transaction_id: transactionId ?? null,
-          paid_at: now,
-        },
+      await defaultUsageRepo.updateOrder(usageOrder.id, {
+        status: 'paid',
+        wechat_transaction_id: transactionId ?? null,
+        paid_at: now,
       });
       try {
         await fulfillUsageQuota(usageOrder.id);

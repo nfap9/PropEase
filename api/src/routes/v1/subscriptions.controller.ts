@@ -1,9 +1,7 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
-import { prisma } from '../../lib/prisma.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
-import { NotFoundMessages } from '../../messages.js';
 import { createWechatPayNativeOrder } from '../../services/wechatPayNative.js';
 import { defaultSubscriptionService } from '../../services/subscription.service.js';
 import { isSubscriptionActive } from '../../utils/subscription.js';
@@ -151,23 +149,14 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
 
     const { service_id, billing_months } = parsed.data;
 
-    const service = await prisma.serviceProduct.findFirst({
-      where: { id: service_id },
-      include: {
-        pricing: { where: { is_active: true } },
-      },
-    });
+    const service = await defaultSubscriptionService.getServiceById(service_id);
 
-    if (!service) return next(createAppError(404, NotFoundMessages.PLAN));
     if (service.code === 'free') {
       return next(createAppError(400, '免费服务无需购买，注册时已自动开通'));
     }
 
     const orgId = req.params.org_id;
-    const sub = await prisma.organizationSubscription.findUnique({
-      where: { organization_id: orgId },
-      include: { service: true },
-    });
+    const sub = await defaultSubscriptionService.getSubscription(orgId);
 
     if (sub && isSubscriptionActive(sub) && sub.service) {
       const currentSort = sub.service.sort_order;
@@ -189,12 +178,8 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
     });
 
     if (wechatResult?.code_url) {
-      await prisma.subscriptionOrder.update({
-        where: { id: order.id },
-        data: { code_url: wechatResult.code_url },
-      });
-      const updated = await prisma.subscriptionOrder.findUnique({ where: { id: order.id } });
-      return res.status(201).json(updated ?? order);
+      await defaultSubscriptionService.updateOrderCodeUrl(order.id, wechatResult.code_url);
+      return res.status(201).json(order);
     }
 
     res.status(201).json(order);

@@ -85,6 +85,7 @@ function buildUpdateData(existing: Tenant, data: UpdateTenantInput): Prisma.Tena
 export interface TenantService {
   list(orgId: string, search?: string): Promise<Tenant[]>;
   getById(orgId: string, id: string): Promise<Tenant>;
+  getByIds(ids: string[]): Promise<Tenant[]>;
   create(orgId: string, data: CreateTenantInput): Promise<Tenant>;
   update(orgId: string, id: string, data: UpdateTenantInput): Promise<Tenant>;
   delete(orgId: string, id: string): Promise<void>;
@@ -113,6 +114,10 @@ export function createTenantService(
         throw createAppError(404, NotFoundMessages.TENANT);
       }
       return tenant;
+    },
+
+    getByIds: async (ids: string[]) => {
+      return getRepo().findByIds(ids);
     },
 
     create: async (orgId: string, data: CreateTenantInput) => {

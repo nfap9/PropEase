@@ -1,4 +1,4 @@
-import type { Bill, Payment, Prisma } from '@prisma/client';
+import type { Bill, Payment, BillFeeItem, Prisma } from '@prisma/client';
 import { ulid } from 'ulid';
 import {
   createBillRepository,
@@ -9,6 +9,7 @@ import {
   type BillFilter,
 } from '../repositories/bill.repo.js';
 import { createLeaseRepository, type LeaseRepository } from '../repositories/lease.repo.js';
+import { createBillFeeItemRepository, type BillFeeItemRepository } from '../repositories/billFeeItem.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { logger } from '../utils/logger.js';
@@ -67,6 +68,7 @@ export interface BillService {
   delete(orgId: string, id: string): Promise<void>;
   addPayment(orgId: string, billId: string, data: CreatePaymentInput): Promise<Payment>;
   getPayments(orgId: string, billId: string): Promise<Payment[]>;
+  listFeeItems(orgId: string, billId: string): Promise<BillFeeItem[]>;
   validateOwnership(orgId: string, billId: string): Promise<BillWithRelations>;
 }
 
@@ -119,7 +121,8 @@ function buildUpdateData(data: UpdateBillInput): Prisma.BillUpdateInput {
 export function createBillService(
   getBillRepo: () => BillRepository = () => createBillRepository(prisma),
   getPaymentRepo: () => PaymentRepository = () => createPaymentRepository(prisma),
-  getLeaseRepo: () => LeaseRepository = () => createLeaseRepository(prisma)
+  getLeaseRepo: () => LeaseRepository = () => createLeaseRepository(prisma),
+  getBillFeeItemRepo: () => BillFeeItemRepository = () => createBillFeeItemRepository(prisma)
 ): BillService {
   return {
     list: async (orgId: string, filter?: BillFilter) => {
@@ -198,6 +201,14 @@ export function createBillService(
         throw createAppError(404, NotFoundMessages.BILL);
       }
       return getPaymentRepo().findByBillId(billId);
+    },
+
+    listFeeItems: async (orgId: string, billId: string) => {
+      const bill = await getBillRepo().findByIdWithRelations(billId);
+      if (!bill || bill.lease.room.apartment.organization_id !== orgId) {
+        throw createAppError(404, NotFoundMessages.BILL);
+      }
+      return getBillFeeItemRepo().findByBillId(billId);
     },
 
     validateOwnership: async (orgId: string, billId: string) => {

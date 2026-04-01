@@ -16,6 +16,7 @@ export interface UsageRepository {
   // 订单
   findOrderById(orderId: string, userId: string): Promise<UsageQuotaOrder | null>;
   findOrderByIdOnly(orderId: string): Promise<UsageQuotaOrder | null>;
+  findOrderByOrderNo(orderNo: string): Promise<UsageQuotaOrder | null>;
   createOrder(data: Prisma.UsageQuotaOrderCreateInput): Promise<UsageQuotaOrder>;
   updateOrder(orderId: string, data: Prisma.UsageQuotaOrderUpdateInput): Promise<UsageQuotaOrder>;
 }
@@ -51,6 +52,10 @@ export function createUsageRepository(db: DbClient): UsageRepository {
 
     updateOrder: async (orderId: string, data: Prisma.UsageQuotaOrderUpdateInput) => {
       return db.usageQuotaOrder.update({ where: { id: orderId }, data });
+    },
+
+    findOrderByOrderNo: async (orderNo: string) => {
+      return db.usageQuotaOrder.findFirst({ where: { order_no: orderNo } });
     },
   };
 }

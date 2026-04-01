@@ -1,14 +1,14 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
-import { ulid } from 'ulid';
-import { prisma } from '../../lib/prisma.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
 import { Messages, NotFoundMessages } from '../../messages.js';
 import { getEffectivePlanLimits, getRoomsUsedForLimitCheck } from '../../utils/orgPlanLimits.js';
 import { defaultApartmentService } from '../../services/apartment.service.js';
+import { defaultApartmentRepo } from '../../repositories/apartment.repo.js';
 import { defaultRoomService } from '../../services/room.service.js';
+import { defaultUtilityConfigService } from '../../services/utilityConfig.service.js';
 
 // ==================== Schemas ====================
 
@@ -109,7 +109,7 @@ export async function create(req: Request, res: Response, next: NextFunction) {
     const orgId = await requireOrgMembership(req);
     const user = getConsoleUser(req);
     const limits = await getEffectivePlanLimits(orgId, user?.id);
-    const apartmentsUsed = await prisma.apartment.count({ where: { organization_id: orgId } });
+    const apartmentsUsed = await defaultApartmentRepo.countByOrgId(orgId);
     if (apartmentsUsed >= limits.max_apartments) {
       return next(createAppError(403, `当前服务最多允许 ${limits.max_apartments} 个公寓`));
     }
@@ -262,9 +262,7 @@ export async function getUtilityConfig(req: Request, res: Response, next: NextFu
   try {
     const orgId = await requireOrgMembership(req);
     await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    const config = await prisma.utilityConfig.findUnique({
-      where: { apartment_id: req.params.apartmentId },
-    });
+    const config = await defaultUtilityConfigService.getByApartmentId(req.params.apartmentId);
     if (!config) return next(createAppError(404, NotFoundMessages.UTILITY_CONFIG));
     res.json(config);
   } catch (e) {
@@ -278,27 +276,7 @@ export async function createUtilityConfig(req: Request, res: Response, next: Nex
     await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
     const parsed = UtilityConfigSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const config = await prisma.utilityConfig.upsert({
-      where: { apartment_id: req.params.apartmentId },
-      update: {
-        water_price_per_unit: parsed.data.water_price_per_unit ?? undefined,
-        electricity_price_per_unit: parsed.data.electricity_price_per_unit ?? undefined,
-        internet_fee: parsed.data.internet_fee ?? undefined,
-        management_fee: parsed.data.management_fee ?? undefined,
-        service_fee: parsed.data.service_fee ?? undefined,
-        notes: parsed.data.notes ?? undefined,
-      },
-      create: {
-        id: ulid().toLowerCase(),
-        apartment_id: req.params.apartmentId,
-        water_price_per_unit: parsed.data.water_price_per_unit ?? undefined,
-        electricity_price_per_unit: parsed.data.electricity_price_per_unit ?? undefined,
-        internet_fee: parsed.data.internet_fee ?? undefined,
-        management_fee: parsed.data.management_fee ?? undefined,
-        service_fee: parsed.data.service_fee ?? undefined,
-        notes: parsed.data.notes ?? undefined,
-      },
-    });
+    const config = await defaultUtilityConfigService.upsert(req.params.apartmentId, parsed.data);
     res.status(200).json(config);
   } catch (e) {
     next(e);
@@ -311,20 +289,7 @@ export async function updateUtilityConfig(req: Request, res: Response, next: Nex
     await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
     const parsed = UtilityConfigSchema.partial().safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const existing = await prisma.utilityConfig.findUnique({
-      where: { apartment_id: req.params.apartmentId },
-    });
-    if (!existing) return next(createAppError(404, NotFoundMessages.UTILITY_CONFIG));
-    const data: Record<string, unknown> = {};
-    if (parsed.data.water_price_per_unit != null)
-      data.water_price_per_unit = parsed.data.water_price_per_unit;
-    if (parsed.data.electricity_price_per_unit != null)
-      data.electricity_price_per_unit = parsed.data.electricity_price_per_unit;
-    if (parsed.data.internet_fee != null) data.internet_fee = parsed.data.internet_fee;
-    if (parsed.data.management_fee != null) data.management_fee = parsed.data.management_fee;
-    if (parsed.data.service_fee != null) data.service_fee = parsed.data.service_fee;
-    if (parsed.data.notes !== undefined) data.notes = parsed.data.notes;
-    const config = await prisma.utilityConfig.update({ where: { id: existing.id }, data });
+    const config = await defaultUtilityConfigService.update(req.params.apartmentId, parsed.data);
     res.json(config);
   } catch (e) {
     next(e);
@@ -335,7 +300,7 @@ export async function deleteUtilityConfig(req: Request, res: Response, next: Nex
   try {
     const orgId = await requireOrgMembership(req);
     await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    await prisma.utilityConfig.deleteMany({ where: { apartment_id: req.params.apartmentId } });
+    await defaultUtilityConfigService.delete(req.params.apartmentId);
     res.status(204).send();
   } catch (e) {
     next(e);

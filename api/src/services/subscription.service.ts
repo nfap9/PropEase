@@ -54,6 +54,7 @@ export interface SubscriptionService {
   cancelSubscription(orgId: string, reason?: string): Promise<void>;
   createOrder(orgId: string, params: CreateOrderParams): Promise<SubscriptionOrder>;
   getOrder(orgId: string, orderId: string): Promise<OrderWithService>;
+  updateOrderCodeUrl(orderId: string, codeUrl: string): Promise<SubscriptionOrder>;
 }
 
 /**
@@ -277,6 +278,10 @@ export function createSubscriptionService(
         throw createAppError(404, NotFoundMessages.ORDER);
       }
       return order as OrderWithService;
+    },
+
+    updateOrderCodeUrl: async (orderId: string, codeUrl: string) => {
+      return getRepo().updateOrder(orderId, { code_url: codeUrl });
     },
   };
 }

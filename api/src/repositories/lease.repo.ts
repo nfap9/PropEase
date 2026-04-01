@@ -24,6 +24,7 @@ export interface LeaseRepository {
   terminate(id: string, roomId: string): Promise<void>;
   delete(id: string): Promise<void>;
   countOtherActive(roomId: string, excludeLeaseId: string): Promise<number>;
+  countByOrgId(orgId: string): Promise<number>;
   findActiveByRoomIds(roomIds: string[]): Promise<LeaseWithRelations[]>;
 }
 
@@ -124,6 +125,12 @@ export function createLeaseRepository(db: DbClient): LeaseRepository {
     countOtherActive: async (roomId: string, excludeLeaseId: string) => {
       return db.lease.count({
         where: { room_id: roomId, is_active: true, id: { not: excludeLeaseId } },
+      });
+    },
+
+    countByOrgId: async (orgId: string) => {
+      return db.lease.count({
+        where: { room: { apartment: { organization_id: orgId } } },
       });
     },
 

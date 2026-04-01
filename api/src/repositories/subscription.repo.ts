@@ -63,6 +63,7 @@ export interface SubscriptionRepository {
   // 订单
   findOrderById(orderId: string, orgId: string): Promise<OrderWithService | null>;
   findOrderByIdOnly(orderId: string): Promise<OrderWithService | null>;
+  findOrderByOrderNo(orderNo: string): Promise<SubscriptionOrder | null>;
   createOrder(data: Prisma.SubscriptionOrderCreateInput): Promise<SubscriptionOrder>;
   updateOrder(
     orderId: string,
@@ -158,6 +159,10 @@ export function createSubscriptionRepository(db: DbClient): SubscriptionReposito
         include: { service: true },
       });
       return order;
+    },
+
+    findOrderByOrderNo: async (orderNo: string) => {
+      return db.subscriptionOrder.findFirst({ where: { order_no: orderNo } });
     },
 
     createOrder: async (data: Prisma.SubscriptionOrderCreateInput) => {
