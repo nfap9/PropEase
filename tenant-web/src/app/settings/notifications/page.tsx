@@ -3,11 +3,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { NotificationDeliveryStatus, TenantNotificationDelivery, TenantReachabilityEventType } from '@/types';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { appToast, KpiSection, StatCard as SharedStatCard } from '@apartment-ultra/shared-ui';
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/common/data-table';
-import { KpiSection } from '@apartment-ultra/shared-ui/components/ui';
-import { StatCard as SharedStatCard } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Label, Skeleton, Switch, Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui';
 import { tenantReachabilityApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
