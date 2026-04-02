@@ -1,6 +1,8 @@
-# api 开发说明
+# API 开发指南
 
 Node/TypeScript 后端（Express），为项目当前唯一运行后端。
+
+---
 
 ## 技术栈
 
@@ -10,31 +12,68 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端。
 - **ORM**: Prisma（PostgreSQL）
 - **校验**: Zod
 - **认证**: JWT (HS256)；密码 bcrypt
+- **测试**: Vitest
+- **Lint**: ESLint + TypeScript ESLint
+
+---
 
 ## 目录结构
 
-- `src/`：源码
-  - `config.ts`：环境配置
-  - `constants.ts`：业务码、不包装路径
-  - `index.ts`：入口，挂载中间件与路由
-  - `messages.ts`：错误消息定义
-  - `swagger.ts`：OpenAPI 文档配置
-  - `lib/`：Prisma 单例等基础库
-  - `constants/`：权限默认值等常量定义
-  - `errors/`：领域特定异常处理
-  - `middlewares/`：响应包装、错误处理、认证、权限校验
-  - `observability/`：可观测性相关
-  - `repositories/`：数据仓库层，封装数据库操作
-  - `routes/`：API 路由
-    - `health.ts`：健康检查
-    - `v1/`：版本 1 API（auth、organizations、apartments、tenants、leases、utilities、bills、reports、permissions、subscriptions、notifications、customRoles、admin、webhooks、config、fee-types、usage）
-  - `scheduler/`：定时任务（通知检查、月度账单生成）
-  - `services/`：业务逻辑层
-  - `startup/`：启动时检查（数据库连接检查）
-  - `types/`：TypeScript 类型定义
-  - `utils/`：工具函数（security、jwt、context、appError、orgContext、audit、billExports、subscriptionProration 等）
+```
+src/
+├── config.ts             # 环境配置
+├── constants.ts          # 业务码、不包装路径
+├── index.ts              # 入口，挂载中间件与路由
+├── messages.ts           # 错误消息定义
+├── swagger.ts           # OpenAPI 文档配置
+├── lib/                  # Prisma 单例等基础库
+├── constants/            # 权限默认值等常量定义
+├── errors/               # 领域特定异常处理
+├── middlewares/          # 响应包装、错误处理、认证、权限校验
+├── observability/         # 可观测性相关
+├── repositories/         # 数据仓库层，封装数据库操作
+├── routes/               # API 路由
+│   ├── health.ts         # 健康检查
+│   └── v1/               # 版本 1 API
+├── scheduler/            # 定时任务
+├── services/             # 业务逻辑层
+├── startup/              # 启动时检查
+├── types/                # TypeScript 类型定义
+└── utils/                # 工具函数
 
-- `prisma/schema.prisma`：数据库模型定义，由 Prisma 管理表结构。
+prisma/schema.prisma      # 数据库模型定义
+```
+
+---
+
+## 代码风格
+
+### 命名规范
+
+- 请求/响应字段、路径与查询参数：**snake_case**
+- 目录：**kebab-case**（如 `lease-fee-items/`）
+- 类型/接口：**PascalCase**（如 `LeaseFormData`）
+- 常量：**UPPER_CASE**
+
+### 导入顺序
+
+1. Node 内置模块
+2. 第三方包
+3. 内部包（workspace 包）
+4. 相对导入（`./`, `../`）
+
+### ESLint 规则
+
+- `@typescript-eslint/no-explicit-any`: error（禁止 `any`）
+- `@typescript-eslint/no-unused-vars`: error（未使用变量报错，`_` 前缀忽略）
+- 测试文件（`*.test.ts`）：以上规则关闭
+
+### 格式化
+
+- 使用 Prettier
+- 两个空格缩进，单引号，trailing comma
+
+---
 
 ## 响应契约
 
@@ -42,35 +81,56 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端。
 - 错误：`{ code, message, data?: { errors?: [{ field, message }] } }`
 - 不包装：`/health`、`/docs`、`/openapi.json`、`/api/v1/webhooks` 前缀
 
-## 命名规范
-
-请求/响应字段、路径与查询参数统一使用 **snake_case**，与数据库一致。详见 [docs/naming-conventions.md](../docs/naming-conventions.md)。
-
-## 文档职责
-
-- 本文件负责 `api/` 模块内部的开发说明。
-- 根 `README.md` 负责项目入口与启动方式。
-- `docs/api-contract/README.md` 负责统一响应契约说明。
-- `docs/测试用例/` 负责业务验收场景，不替代接口文档。
-
-## 常用命令
-
-- `pnpm install`：安装依赖
-- `pnpm exec prisma generate`：生成 Prisma Client
-- `pnpm dev`：开发（tsx watch，默认端口 8000，可用 PORT=8001）
-- `pnpm run build`：编译
-- `pnpm start`：生产运行
-- `pnpm run type-check`：类型检查
-- `pnpm run test`：测试
-
-## 数据库
-
-- 使用 PostgreSQL；表结构以 `prisma/schema.prisma` 为准，在 api 目录执行 `pnpm exec prisma db push` 同步。
+---
 
 ## 分层约定
 
-- `services/` 负责业务规则、权限/状态校验、错误语义与流程编排；不要在 service 中直接编写 Prisma 查询。
-- `repositories/` 负责封装 Prisma 读写；service 默认通过 `createXxxRepository(prisma)` 或 `defaultXxxRepo` 注入依赖。
-- 单元测试优先 mock repository，而不是 mock Prisma Client；repository 测试再覆盖具体查询条件。
-- 需要事务时，由 service 打开 `prisma.$transaction(async (tx) => ...)`，并在事务内用 `createXxxRepository(tx)` 组装仓储，避免在 service 中混用事务对象和裸 Prisma 查询。
-- 本约定已在 `apartment`、`subscription` 试点模块落地，后续模块按同样模式迁移。
+### services/（业务逻辑层）
+
+- 业务规则、权限/状态校验、错误语义与流程编排
+- **禁止**在 service 内直接写 Prisma 查询
+- 通过 `createXxxRepository(prisma)` 或 `defaultXxxRepo` 注入依赖
+
+### repositories/（数据仓库层）
+
+- 封装 Prisma 读写
+- 单元测试优先 mock repository，不 mock Prisma Client
+
+### 事务处理
+
+- 使用 `prisma.$transaction(async (tx) => ...)`
+- 事务内用 `createXxxRepository(tx)` 组装仓储
+- 避免在 service 中混用事务对象和裸 Prisma 查询
+
+---
+
+## API 路由编写规范
+
+```typescript
+// routes/v1/apartments.ts
+import { Router } from 'express';
+import { z } from 'zod';
+import { apartmentService } from '@/services/apartment';
+import { validateBody, validateQuery } from '@/middlewares/validation';
+import { asyncHandler } from '@/middlewares/error';
+
+const router = Router();
+
+const createSchema = z.object({
+  name: z.string().min(1),
+  address: z.string().optional(),
+});
+
+router.post('/', validateBody(createSchema), asyncHandler(async (req, res) => {
+  const result = await apartmentService.create(req.body);
+  res.success(result);
+}));
+
+export default router;
+```
+
+---
+
+## 数据库
+
+- 使用 PostgreSQL，表结构以 `prisma/schema.prisma` 为准
