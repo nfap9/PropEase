@@ -44,6 +44,7 @@ export * from './split-settings-panel';
 export * from './table';
 export * from './table-actions';
 export * from './tabs';
+export * from './textarea';
 export * from './stat-grid';
 export * from './theme-provider';
 export * from './theme-toggle';
