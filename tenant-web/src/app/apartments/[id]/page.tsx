@@ -7,9 +7,9 @@ import { useRouter } from 'next/navigation';
 import { Building2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Button } from '@/components/ui';
-import { Skeleton } from '@/components/ui';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/lib/auth/context';
 import type { Room, RoomFacilities } from '@/types';
 import {

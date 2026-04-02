@@ -2,7 +2,7 @@
 
 import { UseFormReturn } from 'react-hook-form';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { FeeItemsEditor, type FeeItem } from '@/components/common/fee-items-editor';
 import type { LeaseSigningFormData } from '../leases.schemas';

@@ -5,11 +5,11 @@ import { useRouter } from 'next/navigation';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { LEASE_STATUS_CONFIG } from '@/lib/status-config';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantReachabilityApi, tenantsApi, leasesApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { Lease } from '@/types';
@@ -23,7 +23,7 @@ import {
   Building2,
   MessageSquareMore,
 } from 'lucide-react';
-import { Skeleton } from '@/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import Link from 'next/link';
 import { DataTable } from '@/components/common/data-table';
 import { formatDate, formatDateTime } from '@/lib/date-utils';

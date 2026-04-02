@@ -3,7 +3,7 @@
 import type { UseFormReturn } from 'react-hook-form';
 import { Download, DollarSign, Share2 } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { formatDate } from '@/lib/date-utils';
 import { BILL_STATUS_CONFIG } from '@/lib/status-config';
 import type { Bill, BillFeeItem, Payment, PaymentMethod } from '@/types';

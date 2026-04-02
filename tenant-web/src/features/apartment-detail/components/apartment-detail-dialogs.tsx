@@ -6,7 +6,7 @@ import { ApartmentForm } from '@/components/apartments';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
 import { EditRoomDialog } from '@/app/rooms/components/EditRoomDialog';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { WizardDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,

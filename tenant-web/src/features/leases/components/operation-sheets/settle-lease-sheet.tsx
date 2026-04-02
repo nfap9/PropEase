@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { settleLeaseSchema, type SettleLeaseFormData } from '../../schemas/lease-operations.schemas';
 import { useSettleLease } from '../../hooks/use-lease-operations';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Form,
   FormControl,
@@ -13,7 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Alert, AlertDescription } from '@apartment-ultra/shared-ui/components/ui';

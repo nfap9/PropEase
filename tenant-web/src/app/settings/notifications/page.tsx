@@ -7,7 +7,7 @@ import { appToast, KpiSection, StatCard as SharedStatCard } from '@apartment-ult
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/common/data-table';
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Label, Skeleton, Switch, Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui';
-import { Textarea } from '@/components/ui';
+import { Textarea } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantReachabilityApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { formatDateTime } from '@/lib/date-utils';

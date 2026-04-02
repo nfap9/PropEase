@@ -2,7 +2,7 @@
 
 import { Building2, Search } from 'lucide-react';
 import { Card, CardContent } from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
 

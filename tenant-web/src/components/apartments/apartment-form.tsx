@@ -2,7 +2,7 @@
 
 import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { LandlordInfoSection } from './landlord-info-section';
 

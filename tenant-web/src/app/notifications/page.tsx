@@ -10,7 +10,7 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { useAuth } from '@/lib/auth/context';
 import { usePermissions } from '@/hooks/use-permissions';
 import { canAccessRule } from '@/lib/permission-access';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { notificationsApi, type Notification } from '@/lib/api/notifications';

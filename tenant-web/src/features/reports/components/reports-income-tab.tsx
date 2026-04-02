@@ -13,8 +13,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
-import { Skeleton } from '@/components/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import type { IncomeReport } from '@/types';
 import { REPORT_COLORS } from '../reports.schemas';
 import { buildIncomeCategoryData, buildIncomeSummary } from '../reports.utils';

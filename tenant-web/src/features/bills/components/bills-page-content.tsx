@@ -7,7 +7,7 @@ import { useAsyncDialogSubmit, usePageQueryState } from '@apartment-ultra/shared
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Skeleton } from '@/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/lib/auth/context';
 import type { Bill, BillStatus } from '@/types';
 import { createBillsColumns } from '../bills.columns';

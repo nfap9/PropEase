@@ -8,14 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { CardDescription } from '@/components/ui';
+import { CardDescription } from '@apartment-ultra/shared-ui/components/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Building2, MapPin, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { ApartmentWithStats } from '@/types';
 import { PermissionGuard } from '@/components/common/permission-guard';

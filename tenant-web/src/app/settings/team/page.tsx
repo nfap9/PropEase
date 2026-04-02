@@ -11,14 +11,14 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
 import { DataTable } from '@/components/common/data-table';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { FormDialog } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,7 +38,7 @@ import { getErrorMessage } from '@/lib/utils/error';
 import { formatDate, formatDateTime } from '@/lib/date-utils';
 import { OrganizationMember, MemberRole, OrganizationUsage } from '@/types';
 import { MoreHorizontal, Pencil, Trash2, UserPlus, Building2, Users, DoorOpen } from 'lucide-react';
-import { Skeleton } from '@/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/lib/auth/context';
 import { tenantI18n, tenantMessages } from '@/lib/i18n';
 

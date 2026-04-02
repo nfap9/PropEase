@@ -9,7 +9,7 @@ import { DataTable } from '@/components/common/data-table';
 import { LeaseSigningDrawer } from '@/features/leases/components/lease-signing-drawer';
 import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
-import { Skeleton } from '@/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { roomsApi, apartmentsApi, leasesApi } from '@/lib/api';
 import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';

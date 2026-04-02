@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { changeRoomSchema, type ChangeRoomFormData } from '../../schemas/lease-operations.schemas';
 import { useChangeRoom } from '../../hooks/use-lease-operations';
 import { roomsApi, apartmentsApi } from '@/lib/api';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Form,
@@ -16,7 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Plus } from 'lucide-react';
 import { TenantSelect } from './tenant-select';
 import { CreateTenantDialog } from './create-tenant-dialog';

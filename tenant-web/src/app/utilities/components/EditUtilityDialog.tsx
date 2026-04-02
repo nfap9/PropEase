@@ -13,10 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui';
-import { Button } from '@/components/ui';
+import { Alert, AlertDescription, AlertTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,

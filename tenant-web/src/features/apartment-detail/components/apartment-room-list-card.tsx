@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Check, Home, Layers, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@/components/ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
-import { Skeleton } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { ROOM_STATUS_CONFIG } from '@/lib/status-config';
 import type { Room } from '@/types';
 import type { RoomStatus } from '@/types';

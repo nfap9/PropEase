@@ -3,7 +3,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { AlertCircle, Building2, ChevronDown, Download, FilePlus, FileSpreadsheet } from 'lucide-react';
 import { DataTable } from '@/components/common/data-table';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
 import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
 import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import type { Bill, BillStatus } from '@/types';
 import { BILLS } from '../bills.schemas';
 import type { BillStats } from '../bills.utils';

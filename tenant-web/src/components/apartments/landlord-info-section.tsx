@@ -2,7 +2,7 @@
 
 import { UseFormReturn } from 'react-hook-form';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { ApartmentFormData } from './apartment-form';
 

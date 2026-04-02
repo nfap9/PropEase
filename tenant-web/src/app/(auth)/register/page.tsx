@@ -8,9 +8,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/lib/auth/context';
 import { getPostAuthRedirectPath } from '@/lib/auth/redirect';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { useBrandConfig } from '@/lib/brand-config-context';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Form,
   FormControl,

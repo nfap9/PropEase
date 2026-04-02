@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { renewSchema, type RenewFormData } from '../../schemas/lease-operations.schemas';
 import { useRenew } from '../../hooks/use-lease-operations';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Form,
@@ -14,7 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
 
 interface RenewSheetProps {
