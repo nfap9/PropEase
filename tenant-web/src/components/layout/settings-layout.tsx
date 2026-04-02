@@ -10,7 +10,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+} from '@apartment-ultra/shared-ui';
 import { ChevronRight } from 'lucide-react';
 import { tenantMessages } from '@/lib/i18n';
 
