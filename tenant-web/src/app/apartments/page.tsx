@@ -67,7 +67,6 @@ export default function ApartmentsPage() {
       contract_start: '',
       contract_end: '',
       landlord_rent: undefined,
-      operating_cost: undefined,
     },
   });
 
@@ -122,7 +121,6 @@ export default function ApartmentsPage() {
       contract_start: apartment.contract_start ? new Date(apartment.contract_start).toISOString().split('T')[0] : '',
       contract_end: apartment.contract_end ? new Date(apartment.contract_end).toISOString().split('T')[0] : '',
       landlord_rent: apartment.landlord_rent ?? undefined,
-      operating_cost: apartment.operating_cost ?? undefined,
     });
     setIsEditOpen(true);
   };
@@ -204,7 +202,7 @@ export default function ApartmentsPage() {
 
         {/* Create Dialog */}
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogContent data-testid="apartments-create-dialog">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="apartments-create-dialog">
             <DialogHeader>
               <DialogTitle>新增公寓</DialogTitle>
               <DialogDescription>填写公寓信息创建新的公寓</DialogDescription>
@@ -238,7 +236,7 @@ export default function ApartmentsPage() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent data-testid="apartments-edit-dialog">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="apartments-edit-dialog">
             <DialogHeader>
               <DialogTitle>编辑公寓</DialogTitle>
               <DialogDescription>修改公寓信息</DialogDescription>

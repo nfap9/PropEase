@@ -108,7 +108,7 @@ export default function LoginPage() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{tenantMessages.auth.login.phone}</FormLabel>
+                  <FormLabel required>{tenantMessages.auth.login.phone}</FormLabel>
                   <FormControl>
                     <Input
                       type="tel"
@@ -128,7 +128,7 @@ export default function LoginPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{tenantMessages.auth.login.password}</FormLabel>
+                  <FormLabel required>{tenantMessages.auth.login.password}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"

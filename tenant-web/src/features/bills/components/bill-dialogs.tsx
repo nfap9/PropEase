@@ -372,11 +372,11 @@ export function BillPaymentDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="reference">{tenantMessages.bills.dialogs.reference}</Label>
-            <Input id="reference" {...form.register('reference')} />
+            <Input id="reference" placeholder="请输入交易号或参考号" {...form.register('reference')} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="notes">{tenantMessages.bills.dialogs.notesLabel}</Label>
-            <Input id="notes" {...form.register('notes')} />
+            <Input id="notes" placeholder="请输入备注" {...form.register('notes')} />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} data-testid={BILLS.CANCEL_BUTTON}>

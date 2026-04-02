@@ -269,19 +269,19 @@ export default function TenantsPage() {
             <form onSubmit={createForm.handleSubmit((data) => createMutation.mutate(data))} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">
-                    姓名 <span aria-hidden="true">*</span>
+                  <Label htmlFor="name" required>
+                    姓名
                   </Label>
-                  <Input id="name" aria-required {...createForm.register('name')} data-testid={TENANTS.NAME_INPUT} />
+                  <Input id="name" placeholder="请输入租客姓名" {...createForm.register('name')} data-testid={TENANTS.NAME_INPUT} />
                   {createForm.formState.errors.name && (
                     <p className="text-sm text-destructive">{createForm.formState.errors.name.message}</p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">
-                    联系电话 <span aria-hidden="true">*</span>
+                  <Label htmlFor="phone" required>
+                    联系电话
                   </Label>
-                  <Input id="phone" aria-required {...createForm.register('phone')} data-testid={TENANTS.PHONE_INPUT} />
+                  <Input id="phone" placeholder="请输入联系电话" {...createForm.register('phone')} data-testid={TENANTS.PHONE_INPUT} />
                   {createForm.formState.errors.phone && (
                     <p className="text-sm text-destructive">{createForm.formState.errors.phone.message}</p>
                   )}
@@ -290,7 +290,7 @@ export default function TenantsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="id_card">身份证号</Label>
-                  <Input id="id_card" {...createForm.register('id_card')} data-testid={TENANTS.ID_CARD_INPUT} />
+                  <Input id="id_card" placeholder="请输入身份证号" {...createForm.register('id_card')} data-testid={TENANTS.ID_CARD_INPUT} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -298,6 +298,7 @@ export default function TenantsPage() {
                   <Label htmlFor="emergency_contact">紧急联系人</Label>
                   <Input
                     id="emergency_contact"
+                    placeholder="请输入紧急联系人"
                     {...createForm.register('emergency_contact')}
                     data-testid={TENANTS.EMERGENCY_CONTACT_INPUT}
                   />
@@ -306,6 +307,7 @@ export default function TenantsPage() {
                   <Label htmlFor="emergency_phone">紧急联系电话</Label>
                   <Input
                     id="emergency_phone"
+                    placeholder="请输入紧急联系电话"
                     {...createForm.register('emergency_phone')}
                     data-testid={TENANTS.EMERGENCY_PHONE_INPUT}
                   />
@@ -313,7 +315,7 @@ export default function TenantsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="notes">备注</Label>
-                <Input id="notes" {...createForm.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
+                <Input id="notes" placeholder="请输入备注" {...createForm.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
               </div>
               <DialogFooter>
                 <Button
@@ -345,18 +347,18 @@ export default function TenantsPage() {
             >
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-name">
-                    姓名 <span aria-hidden="true">*</span>
+                  <Label htmlFor="edit-name" required>
+                    姓名
                   </Label>
-                  <Input id="edit-name" aria-required {...editForm.register('name')} data-testid={TENANTS.NAME_INPUT} />
+                  <Input id="edit-name" placeholder="请输入租客姓名" {...editForm.register('name')} data-testid={TENANTS.NAME_INPUT} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-phone">
-                    联系电话 <span aria-hidden="true">*</span>
+                  <Label htmlFor="edit-phone" required>
+                    联系电话
                   </Label>
                   <Input
                     id="edit-phone"
-                    aria-required
+                    placeholder="请输入联系电话"
                     {...editForm.register('phone')}
                     data-testid={TENANTS.PHONE_INPUT}
                   />
@@ -365,7 +367,7 @@ export default function TenantsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-id_card">身份证号</Label>
-                  <Input id="edit-id_card" {...editForm.register('id_card')} data-testid={TENANTS.ID_CARD_INPUT} />
+                  <Input id="edit-id_card" placeholder="请输入身份证号" {...editForm.register('id_card')} data-testid={TENANTS.ID_CARD_INPUT} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -373,6 +375,7 @@ export default function TenantsPage() {
                   <Label htmlFor="edit-emergency_contact">紧急联系人</Label>
                   <Input
                     id="edit-emergency_contact"
+                    placeholder="请输入紧急联系人"
                     {...editForm.register('emergency_contact')}
                     data-testid={TENANTS.EMERGENCY_CONTACT_INPUT}
                   />
@@ -381,6 +384,7 @@ export default function TenantsPage() {
                   <Label htmlFor="edit-emergency_phone">紧急联系电话</Label>
                   <Input
                     id="edit-emergency_phone"
+                    placeholder="请输入紧急联系电话"
                     {...editForm.register('emergency_phone')}
                     data-testid={TENANTS.EMERGENCY_PHONE_INPUT}
                   />
@@ -388,7 +392,7 @@ export default function TenantsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-notes">备注</Label>
-                <Input id="edit-notes" {...editForm.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
+                <Input id="edit-notes" placeholder="请输入备注" {...editForm.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
               </div>
               <DialogFooter>
                 <Button

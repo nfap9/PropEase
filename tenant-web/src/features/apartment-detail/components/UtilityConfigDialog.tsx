@@ -121,7 +121,7 @@ export function UtilityConfigDialog({
                 id="water_price"
                 type="number"
                 step="0.01"
-                placeholder="如: 5.00"
+                placeholder="请输入水费单价"
                 {...form.register('water_price_per_unit', { valueAsNumber: true })}
               />
               {form.formState.errors.water_price_per_unit && (
@@ -137,7 +137,7 @@ export function UtilityConfigDialog({
                 id="electricity_price"
                 type="number"
                 step="0.01"
-                placeholder="如: 1.00"
+                placeholder="请输入电费单价"
                 {...form.register('electricity_price_per_unit', { valueAsNumber: true })}
               />
               {form.formState.errors.electricity_price_per_unit && (

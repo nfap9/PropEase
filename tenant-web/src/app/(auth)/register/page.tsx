@@ -119,7 +119,7 @@ export default function RegisterPage() {
               name="full_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{tenantMessages.auth.register.name}</FormLabel>
+                  <FormLabel required>{tenantMessages.auth.register.name}</FormLabel>
                   <FormControl>
                     <Input placeholder={tenantMessages.auth.register.namePlaceholder} autoComplete="name" {...field} data-testid="auth-name-input" />
                   </FormControl>
@@ -132,7 +132,7 @@ export default function RegisterPage() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{tenantMessages.auth.register.phone}</FormLabel>
+                  <FormLabel required>{tenantMessages.auth.register.phone}</FormLabel>
                   <FormControl>
                     <Input
                       type="tel"
@@ -151,7 +151,7 @@ export default function RegisterPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{tenantMessages.auth.register.password}</FormLabel>
+                  <FormLabel required>{tenantMessages.auth.register.password}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
@@ -170,7 +170,7 @@ export default function RegisterPage() {
               name="confirm_password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{tenantMessages.auth.register.confirmPassword}</FormLabel>
+                  <FormLabel required>{tenantMessages.auth.register.confirmPassword}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"

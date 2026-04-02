@@ -128,7 +128,7 @@ export default function OrganizationsPage() {
                 </Label>
                 <Input
                   id="organization-name"
-                  placeholder="例如：星河公寓"
+                  placeholder="请输入团队名称"
                   aria-required
                   {...form.register('name')}
                 />

@@ -385,7 +385,7 @@ export function CreateUtilityDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="notes">备注</Label>
-            <Input id="notes" {...form.register('notes')} />
+            <Input id="notes" placeholder="请输入备注" {...form.register('notes')} />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

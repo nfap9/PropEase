@@ -67,7 +67,6 @@ export const apartmentFormDefaultValues: ApartmentFormData = {
   landlord_contact: '',
   contract_start: '',
   contract_end: '',
-  landlord_rent: undefined,
-  operating_cost: undefined,
+  landlord_rent: 0,
 };
 

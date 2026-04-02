@@ -185,7 +185,7 @@ export function FeeItemsEditor({ items, onChange, disabled }: FeeItemsEditorProp
               <div className="space-y-2">
                 <Label>自定义费用名称</Label>
                 <Input
-                  placeholder="输入费用名称"
+                  placeholder="请输入费用名称"
                   value={formData.customName}
                   onChange={(e) => setFormData((prev) => ({ ...prev, customName: e.target.value }))}
                 />
@@ -197,7 +197,7 @@ export function FeeItemsEditor({ items, onChange, disabled }: FeeItemsEditorProp
               <Input
                 type="number"
                 step="0.01"
-                placeholder="0.00"
+                placeholder="请输入金额"
                 value={formData.amount}
                 onChange={(e) => setFormData((prev) => ({ ...prev, amount: e.target.value }))}
               />

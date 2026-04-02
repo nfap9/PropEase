@@ -27,10 +27,6 @@ export function ApartmentUpstreamTab({ apartment }: { apartment: Apartment }) {
             label="房东租金"
             value={apartment.landlord_rent ? `¥${apartment.landlord_rent}/月` : '-'}
           />
-          <UpstreamInfoItem
-            label="经营成本"
-            value={apartment.operating_cost ? `¥${apartment.operating_cost}/月` : '-'}
-          />
         </div>
       </CardContent>
     </Card>

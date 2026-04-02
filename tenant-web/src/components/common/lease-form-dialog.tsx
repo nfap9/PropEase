@@ -290,7 +290,9 @@ export function LeaseFormDialog({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="room_id">选择房间 *</Label>
+                <Label htmlFor="room_id" required>
+                  选择房间
+                </Label>
                 <Select
                   value={form.watch('room_id') || ''}
                   onValueChange={(value) => form.setValue('room_id', value)}
@@ -319,7 +321,9 @@ export function LeaseFormDialog({
 
           {/* 租客选择 */}
           <div className="space-y-2">
-            <Label htmlFor="tenant_id">选择租客 *</Label>
+            <Label htmlFor="tenant_id" required>
+              选择租客
+            </Label>
             <div data-testid="leases-tenant-select">
               <TenantSelectWithCreate
                 orgId={orgId}
@@ -333,7 +337,9 @@ export function LeaseFormDialog({
           {/* 日期 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="start_date">开始日期 *</Label>
+              <Label htmlFor="start_date" required>
+                开始日期
+              </Label>
               <DateTimePicker
                 id="start_date"
                 mode="date"
@@ -342,6 +348,9 @@ export function LeaseFormDialog({
                 data-testid="leases-start-date-input"
                 placeholder="选择开始日期"
               />
+              {form.formState.errors.start_date && (
+                <p className="text-sm text-destructive">{form.formState.errors.start_date.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="end_date">结束日期</Label>
@@ -359,14 +368,20 @@ export function LeaseFormDialog({
           {/* 月租和押金 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="monthly_rent">月租 (元) *</Label>
+              <Label htmlFor="monthly_rent" required>
+                月租 (元)
+              </Label>
               <Input
                 id="monthly_rent"
                 type="number"
                 step="0.01"
+                placeholder="请输入月租金额"
                 {...form.register('monthly_rent', { valueAsNumber: true })}
                 data-testid="leases-monthly-rent-input"
               />
+              {form.formState.errors.monthly_rent && (
+                <p className="text-sm text-destructive">{form.formState.errors.monthly_rent.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="deposit">押金 (元)</Label>
@@ -374,6 +389,7 @@ export function LeaseFormDialog({
                 id="deposit"
                 type="number"
                 step="0.01"
+                placeholder="请输入押金金额"
                 {...form.register('deposit', { valueAsNumber: true })}
                 data-testid="leases-deposit-input"
               />
@@ -395,7 +411,7 @@ export function LeaseFormDialog({
                 id="water_rate"
                 type="number"
                 step="0.01"
-                placeholder={utilityConfig?.water_price_per_unit?.toString() ?? '0'}
+                placeholder="请输入水费单价"
                 {...form.register('water_rate', { valueAsNumber: true })}
               />
             </div>
@@ -412,7 +428,7 @@ export function LeaseFormDialog({
                 id="electricity_rate"
                 type="number"
                 step="0.01"
-                placeholder={utilityConfig?.electricity_price_per_unit?.toString() ?? '0'}
+                placeholder="请输入电费单价"
                 {...form.register('electricity_rate', { valueAsNumber: true })}
               />
             </div>
@@ -424,7 +440,7 @@ export function LeaseFormDialog({
           {/* 备注 */}
           <div className="space-y-2">
             <Label htmlFor="notes">备注</Label>
-            <Input id="notes" {...form.register('notes')} />
+            <Input id="notes" placeholder="请输入备注" {...form.register('notes')} />
           </div>
 
           <DialogFooter>

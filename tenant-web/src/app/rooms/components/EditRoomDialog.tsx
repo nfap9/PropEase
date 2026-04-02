@@ -122,12 +122,17 @@ export function EditRoomDialog({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-room_number">房间号</Label>
+                <Label htmlFor="edit-room_number" required>
+                  房间号
+                </Label>
                 <Input
                   id="edit-room_number"
                   data-testid={testids?.NUMBER_INPUT}
                   {...form.register('room_number')}
                 />
+                {form.formState.errors.room_number && (
+                  <p className="text-sm text-destructive">{form.formState.errors.room_number.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-layout">户型</Label>
@@ -157,9 +162,14 @@ export function EditRoomDialog({
                 data-testid={testids?.AREA_INPUT}
                 {...form.register('area', { valueAsNumber: true })}
               />
+              {form.formState.errors.area && (
+                <p className="text-sm text-destructive">{form.formState.errors.area.message}</p>
+              )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-monthly_rent">月租 (元)</Label>
+              <Label htmlFor="edit-monthly_rent" required>
+                月租 (元)
+              </Label>
               <Input
                 id="edit-monthly_rent"
                 type="number"
@@ -167,6 +177,9 @@ export function EditRoomDialog({
                 data-testid={testids?.MONTHLY_RENT_INPUT}
                 {...form.register('monthly_rent', { valueAsNumber: true })}
               />
+              {form.formState.errors.monthly_rent && (
+                <p className="text-sm text-destructive">{form.formState.errors.monthly_rent.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-notes">备注</Label>

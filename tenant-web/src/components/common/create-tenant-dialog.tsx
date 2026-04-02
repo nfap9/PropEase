@@ -87,15 +87,19 @@ export function CreateTenantDialog({ orgId, open, onOpenChange, onSuccess }: Cre
     >
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="tenant-name">姓名 *</Label>
-          <Input id="tenant-name" {...form.register('name')} />
+          <Label htmlFor="tenant-name" required>
+            姓名
+          </Label>
+          <Input id="tenant-name" placeholder="请输入租客姓名" {...form.register('name')} />
           {form.formState.errors.name && (
             <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="tenant-phone">联系电话 *</Label>
-          <Input id="tenant-phone" {...form.register('phone')} />
+          <Label htmlFor="tenant-phone" required>
+            联系电话
+          </Label>
+          <Input id="tenant-phone" placeholder="请输入联系电话" {...form.register('phone')} />
           {form.formState.errors.phone && (
             <p className="text-sm text-destructive">{form.formState.errors.phone.message}</p>
           )}
@@ -103,21 +107,21 @@ export function CreateTenantDialog({ orgId, open, onOpenChange, onSuccess }: Cre
       </div>
       <div className="space-y-2">
         <Label htmlFor="tenant-id_card">身份证号</Label>
-        <Input id="tenant-id_card" {...form.register('id_card')} />
+        <Input id="tenant-id_card" placeholder="请输入身份证号" {...form.register('id_card')} />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="tenant-emergency_contact">紧急联系人</Label>
-          <Input id="tenant-emergency_contact" {...form.register('emergency_contact')} />
+          <Input id="tenant-emergency_contact" placeholder="请输入紧急联系人" {...form.register('emergency_contact')} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="tenant-emergency_phone">紧急联系电话</Label>
-          <Input id="tenant-emergency_phone" {...form.register('emergency_phone')} />
+          <Input id="tenant-emergency_phone" placeholder="请输入紧急联系电话" {...form.register('emergency_phone')} />
         </div>
       </div>
       <div className="space-y-2">
         <Label htmlFor="tenant-notes">备注</Label>
-        <Input id="tenant-notes" {...form.register('notes')} />
+        <Input id="tenant-notes" placeholder="请输入备注" {...form.register('notes')} />
       </div>
     </FormDialog>
   );

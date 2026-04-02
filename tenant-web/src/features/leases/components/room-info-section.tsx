@@ -61,7 +61,9 @@ export function RoomInfoSection({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>选择房间 *</Label>
+            <Label required>
+              选择房间
+            </Label>
             <Select
               value={form.watch('room_id') || ''}
               onValueChange={(v) => form.setValue('room_id', v)}

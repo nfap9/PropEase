@@ -31,7 +31,9 @@ export function ContractInfoSection({
       <h3 className="text-sm font-medium text-muted-foreground">合同信息</h3>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="start_date">开始日期 *</Label>
+          <Label htmlFor="start_date" required>
+            开始日期
+          </Label>
           <DateTimePicker
             id="start_date"
             mode="date"
@@ -58,13 +60,19 @@ export function ContractInfoSection({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="monthly_rent">月租 (元) *</Label>
+          <Label htmlFor="monthly_rent" required>
+            月租 (元)
+          </Label>
           <Input
             id="monthly_rent"
             type="number"
             step="0.01"
+            placeholder="请输入月租金额"
             {...form.register('monthly_rent', { valueAsNumber: true })}
           />
+          {form.formState.errors.monthly_rent && (
+            <p className="text-sm text-destructive">{form.formState.errors.monthly_rent.message}</p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="deposit">押金 (元)</Label>
@@ -72,6 +80,7 @@ export function ContractInfoSection({
             id="deposit"
             type="number"
             step="0.01"
+            placeholder="请输入押金金额"
             {...form.register('deposit', { valueAsNumber: true })}
           />
         </div>
@@ -83,6 +92,7 @@ export function ContractInfoSection({
             id="water_rate"
             type="number"
             step="0.01"
+            placeholder="请输入水费单价"
             {...form.register('water_rate', { valueAsNumber: true })}
           />
         </div>
@@ -92,6 +102,7 @@ export function ContractInfoSection({
             id="electricity_rate"
             type="number"
             step="0.01"
+            placeholder="请输入电费单价"
             {...form.register('electricity_rate', { valueAsNumber: true })}
           />
         </div>
@@ -102,7 +113,7 @@ export function ContractInfoSection({
 
       <div className="space-y-2">
         <Label htmlFor="notes">备注</Label>
-        <Input id="notes" {...form.register('notes')} />
+        <Input id="notes" placeholder="请输入备注" {...form.register('notes')} />
       </div>
     </div>
   );
