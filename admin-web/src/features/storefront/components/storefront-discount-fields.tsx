@@ -2,7 +2,7 @@
 
 import type { UseFieldArrayAppend, UseFieldArrayRemove, UseFieldArrayReturn, UseFormReturn } from 'react-hook-form';
 import { Plus, Trash2 } from 'lucide-react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 import {
   FormControl,
   FormDescription,
@@ -10,7 +10,7 @@ import {
   FormItem,
   FormLabel,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@/components/ui';
 import {
   Select,
   SelectContent,

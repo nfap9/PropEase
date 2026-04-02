@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
+import { Checkbox } from '@/components/ui';
 import { getAdminPermissionGroups } from '@/lib/constants/admin-permissions';
 import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronRight } from 'lucide-react';

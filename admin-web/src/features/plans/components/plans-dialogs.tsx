@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useFieldArray, useForm, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DollarSign, Settings } from 'lucide-react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
+import { Checkbox } from '@/components/ui';
 import {
   ConfirmDialog,
   Dialog,
@@ -23,9 +23,9 @@ import {
   FormLabel,
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { CommonDrawer } from '@apartment-ultra/shared-ui/components/ui';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@/components/ui';
+import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
 import type { AdminPlan } from '@/lib/api/admin-client';
 import { planCreateSchema, planUpdateSchema, type PlanCreateForm, type PlanUpdateForm } from '../plans.schemas';
 import { getDefaultPlanCreateFormValues, getPlanUpdateFormValues } from '../plans.utils';
@@ -299,26 +299,26 @@ export function PlanEditSheet({
     }
   }, [form, open, plan]);
 
-  const header = (
-    <div>
-      <h2 className="text-lg font-semibold">{adminMessages.plans.dialogs.editTitle}</h2>
-      <p className="text-sm text-muted-foreground">{plan?.name}</p>
-    </div>
-  );
-
   const footer = (
-    <div className="flex justify-end gap-3">
+    <>
       <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
         {adminMessages.common.cancel}
       </Button>
       <Button type="button" disabled={isPending} onClick={form.handleSubmit((data) => onSubmit(data, activeTab))}>
         {isPending ? adminMessages.common.saving : adminMessages.common.save}
       </Button>
-    </div>
+    </>
   );
 
   return (
-    <CommonDrawer open={open} onOpenChange={onOpenChange} header={header} footer={footer} width="w-full sm:w-[600px]">
+    <AppDrawer
+      open={open}
+      onOpenChange={onOpenChange}
+      title={adminMessages.plans.dialogs.editTitle}
+      description={plan?.name}
+      footer={footer}
+      size="lg"
+    >
       <Form {...form}>
         <div className="space-y-4">
           <PlanFormSections
@@ -329,7 +329,7 @@ export function PlanEditSheet({
           />
         </div>
       </Form>
-    </CommonDrawer>
+    </AppDrawer>
   );
 }
 

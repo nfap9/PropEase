@@ -5,8 +5,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { FormDialog } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { utilitiesApi } from '@/lib/api';
 import { filterEmptyStrings } from '@/lib/utils/form';
@@ -142,7 +143,13 @@ export function InitialReadingDialog({
       </div>
       <div className="space-y-2">
         <Label htmlFor="initial-reading_date">读数日期</Label>
-        <Input id="initial-reading_date" type="date" {...form.register('reading_date')} />
+        <DateTimePicker
+          id="initial-reading_date"
+          mode="date"
+          value={form.watch('reading_date')}
+          onChange={(value) => form.setValue('reading_date', value)}
+          placeholder="选择读数日期"
+        />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">

@@ -3,9 +3,9 @@
 import { Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import { CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/lib/auth/context';
 import { tenantI18n, tenantMessages } from '@/lib/i18n';

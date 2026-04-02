@@ -17,9 +17,10 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+} from '@/components/ui';
+import { Button } from '@/components/ui';
+import { Input } from '@/components/ui';
+import { Textarea } from '@/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { DEFAULT_ORGANIZATION_HOME_PATH } from '@/lib/auth/redirect';
 import { Organization } from '@/types';
@@ -138,12 +139,11 @@ export default function OrganizationsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="notes">备注</Label>
-                <textarea
+                <Textarea
                   id="notes"
                   {...form.register('notes')}
                   placeholder="备注信息（选填）"
                   rows={3}
-                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
               <Button type="submit" className="w-full" disabled={createOrgMutation.isPending}>

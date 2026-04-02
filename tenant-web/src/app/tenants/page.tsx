@@ -12,8 +12,8 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions, TableAction } from '@/components/common/table-actions';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
+import { Input } from '@/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
@@ -31,7 +31,7 @@ import { getErrorMessage } from '@/lib/utils/error';
 import { useAuth } from '@/lib/auth/context';
 import { Tenant } from '@/types';
 import { Plus, Pencil, Trash2, Phone, User, Building2 } from 'lucide-react';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from '@/components/ui';
 
 // 注意: 实际使用时从 testids 导入 TENANTS 常量
 const TENANTS = {

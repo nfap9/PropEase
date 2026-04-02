@@ -13,9 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Alert, AlertDescription, AlertTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui';
+import { Button } from '@/components/ui';
+import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
@@ -114,7 +115,13 @@ export function EditUtilityDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-reading_date">读数日期</Label>
-            <Input id="edit-reading_date" type="date" {...form.register('reading_date')} />
+            <DateTimePicker
+              id="edit-reading_date"
+              mode="date"
+              value={form.watch('reading_date')}
+              onChange={(value) => form.setValue('reading_date', value)}
+              placeholder="选择读数日期"
+            />
           </div>
           <div className="space-y-2">
             <Label>录入场景</Label>

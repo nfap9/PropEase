@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 import { SelectableSideList } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminRole } from '@/lib/api/admin-client';
 import { Plus, Trash2 } from 'lucide-react';

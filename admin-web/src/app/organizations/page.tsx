@@ -22,7 +22,7 @@ import { getErrorMessage } from '@/lib/utils/error';
 import { formatDateTime } from '@/lib/date-utils';
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye, Power, PowerOff } from 'lucide-react';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from '@/components/ui';
 import { adminMessages } from '@/lib/i18n';
 
 type FilterActive = 'all' | 'active' | 'inactive';

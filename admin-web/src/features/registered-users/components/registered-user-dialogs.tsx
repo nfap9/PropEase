@@ -3,10 +3,10 @@
 import type { UseFormReturn } from 'react-hook-form';
 import { Gift } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
-  DetailDrawer,
+  AppDrawer,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -22,7 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@/components/ui';
 import {
   Select,
   SelectContent,
@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from '@/components/ui';
 import type { AdminPlan, AdminRegisteredUserDetail } from '@/lib/api/admin-client';
 import { formatDateTime } from '@/lib/date-utils';
 import { ORG_STATUS_CONFIG } from '@/lib/status-config';
@@ -117,7 +117,7 @@ export function RegisteredUserDetailSheet({
   isDeletePending: boolean;
 }) {
   return (
-    <DetailDrawer
+    <AppDrawer
       open={open}
       onOpenChange={onOpenChange}
       title={adminMessages.registeredUsers.dialogs.detailTitle}
@@ -201,7 +201,7 @@ export function RegisteredUserDetailSheet({
           )}
         </div>
       ) : null}
-    </DetailDrawer>
+    </AppDrawer>
   );
 }
 

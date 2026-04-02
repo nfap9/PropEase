@@ -10,8 +10,8 @@ import type {
   StorefrontItemCreate,
   StorefrontItemUpdate,
 } from '@/lib/api/admin-client';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
+import { Checkbox } from '@/components/ui';
 import {
   ConfirmDialog,
   Dialog,
@@ -29,7 +29,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@/components/ui';
 import {
   Select,
   SelectContent,

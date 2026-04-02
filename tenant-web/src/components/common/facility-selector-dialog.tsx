@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
+import { Checkbox } from '@/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 import {
   Dialog,
   DialogContent,

@@ -3,7 +3,7 @@
 import { Plus } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/common/data-table';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 import type { ServiceProduct } from '@/lib/api/admin-client';
 import { adminMessages } from '@/lib/i18n';
 

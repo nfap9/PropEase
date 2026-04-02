@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from '@/components/ui';
 import type { ServiceProduct } from '@/lib/api/admin-client';
 import { createServicePricingColumns } from '@/features/service-pricing/service-pricing.columns';
 import { useServicePricingData } from '@/features/service-pricing/service-pricing.hooks';

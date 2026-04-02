@@ -6,8 +6,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { adminApiEndpoints, AdminTokenResponse } from '@/lib/api/admin-client';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
+import { Input } from '@/components/ui';
 import {
   Card,
   CardContent,

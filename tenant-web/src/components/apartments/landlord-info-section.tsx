@@ -1,7 +1,8 @@
 'use client';
 
 import { UseFormReturn } from 'react-hook-form';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { ApartmentFormData } from './apartment-form';
 
@@ -44,7 +45,13 @@ export function LandlordInfoSection({ form }: LandlordInfoSectionProps) {
           <Label htmlFor="contract_start" required>
             合同开始
           </Label>
-          <Input id="contract_start" type="date" {...form.register('contract_start')} />
+          <DateTimePicker
+            id="contract_start"
+            mode="date"
+            value={form.watch('contract_start')}
+            onChange={(value) => form.setValue('contract_start', value)}
+            placeholder="选择合同开始日期"
+          />
           {form.formState.errors.contract_start && (
             <p className="text-sm text-destructive">{form.formState.errors.contract_start.message}</p>
           )}
@@ -53,7 +60,13 @@ export function LandlordInfoSection({ form }: LandlordInfoSectionProps) {
           <Label htmlFor="contract_end" required>
             合同结束
           </Label>
-          <Input id="contract_end" type="date" {...form.register('contract_end')} />
+          <DateTimePicker
+            id="contract_end"
+            mode="date"
+            value={form.watch('contract_end')}
+            onChange={(value) => form.setValue('contract_end', value)}
+            placeholder="选择合同结束日期"
+          />
           {form.formState.errors.contract_end && (
             <p className="text-sm text-destructive">{form.formState.errors.contract_end.message}</p>
           )}

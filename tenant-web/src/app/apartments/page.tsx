@@ -8,7 +8,7 @@ import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { useConfirmAction } from '@apartment-ultra/shared-ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from '@/components/ui';
 import { apartmentsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { ApartmentWithStats } from '@/types';

@@ -7,6 +7,7 @@ import { appToast, KpiSection, StatCard as SharedStatCard } from '@apartment-ult
 import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/common/data-table';
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Label, Skeleton, Switch, Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui';
+import { Textarea } from '@/components/ui';
 import { tenantReachabilityApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { formatDateTime } from '@/lib/date-utils';
@@ -249,8 +250,7 @@ export default function ReachabilitySettingsPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <textarea
-                      className="min-h-32 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    <Textarea
                       value={editable?.content ?? ''}
                       onChange={(event) =>
                         setEditableTemplates((prev) => ({

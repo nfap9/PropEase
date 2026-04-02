@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 import { leasesApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { LeaseDetailTabs } from './lease-detail-tabs';

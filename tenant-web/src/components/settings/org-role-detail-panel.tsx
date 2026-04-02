@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 import { Card, CardContent } from '@apartment-ultra/shared-ui/components/ui';
-import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Checkbox } from '@/components/ui';
+import { Skeleton } from '@/components/ui';
 import type { MemberRole, Permission } from '@/types';
 import { ChevronDown, ChevronRight, Shield, Save } from 'lucide-react';
 import { tenantMessages } from '@/lib/i18n';

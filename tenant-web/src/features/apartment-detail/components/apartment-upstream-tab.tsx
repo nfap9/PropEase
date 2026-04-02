@@ -1,7 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import type { Apartment } from '@/types';
 
 export function ApartmentUpstreamTab({ apartment }: { apartment: Apartment }) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 import type { AdminRole } from '@/lib/api/admin-client';
 import { AdminPermissionCheckboxGroup } from './admin-permission-checkbox-group';
 import { Save } from 'lucide-react';

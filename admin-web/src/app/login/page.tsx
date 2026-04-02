@@ -7,15 +7,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { LoaderCircle, ShieldCheck } from 'lucide-react';
 import { adminApiEndpoints, AdminTokenResponse } from '@/lib/api/admin-client';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
+import { Input } from '@/components/ui';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
+} from '@/components/ui';
 import {
   Form,
   FormControl,

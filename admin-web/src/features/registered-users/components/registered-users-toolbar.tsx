@@ -1,9 +1,9 @@
 'use client';
 
 import type { FormEvent } from 'react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@/components/ui';
 import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,

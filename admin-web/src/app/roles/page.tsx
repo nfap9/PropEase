@@ -12,7 +12,7 @@ import { AdminRoleCreateDialog } from '@/components/admin/admin-role-create-dial
 import { AdminRoleDeleteDialog } from '@/components/admin/admin-role-delete-dialog';
 import { getAllAdminPermissionCodes } from '@/lib/constants/admin-permissions';
 import { togglePermissionCode } from './utils';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from '@/components/ui';
 import { adminMessages } from '@/lib/i18n';
 
 export default function AdminRolesPage() {

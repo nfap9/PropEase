@@ -8,7 +8,7 @@ import { IncomeChart } from '@/components/dashboard/income-chart';
 import { YearFilter } from '@/components/dashboard/year-filter';
 import { RefreshButton } from '@/components/dashboard/refresh-button';
 import { StatCardsSkeleton } from '@/components/dashboard/skeleton';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 import { KpiSection } from '@apartment-ultra/shared-ui/components/ui';
 import { PageHeader } from '@apartment-ultra/shared-ui/components/ui';
 import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';

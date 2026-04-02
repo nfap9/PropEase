@@ -6,12 +6,25 @@ import { useQuery } from '@tanstack/react-query';
 import { changeRoomSchema, type ChangeRoomFormData } from '../../schemas/lease-operations.schemas';
 import { useChangeRoom } from '../../hooks/use-lease-operations';
 import { roomsApi, apartmentsApi } from '@/lib/api';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@/components/ui';
+import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@apartment-ultra/shared-ui/components/ui';
 
 interface ChangeRoomSheetProps {
   open: boolean;
@@ -49,80 +62,81 @@ export function ChangeRoomSheet({ open, onOpenChange, orgId, leaseId }: ChangeRo
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>换房</SheetTitle>
-          <SheetDescription>将租约切换到其他房间</SheetDescription>
-        </SheetHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-            <FormField
-              control={form.control}
-              name="newRoomId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>目标房间 *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="选择目标房间" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {availableRooms.map((room) => (
-                        <SelectItem key={room.id} value={room.id}>
-                          {room.apartment?.name} - {room.room_number}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="changeDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>变更日期 *</FormLabel>
+    <AppDrawer
+      open={open}
+      onOpenChange={onOpenChange}
+      title="换房"
+      description="将租约切换到其他房间"
+      footer={
+        <>
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            取消
+          </Button>
+          <Button type="submit" disabled={changeRoom.isPending}>
+            {changeRoom.isPending ? '提交中...' : '确认换房'}
+          </Button>
+        </>
+      }
+    >
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="newRoomId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>目标房间 *</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <DateTimePicker
-                      mode="date"
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="选择变更日期"
-                    />
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择目标房间" />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="reason"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>原因备注</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="可选" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <SheetFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                取消
-              </Button>
-              <Button type="submit" disabled={changeRoom.isPending}>
-                {changeRoom.isPending ? '提交中...' : '确认换房'}
-              </Button>
-            </SheetFooter>
-          </form>
-        </Form>
-      </SheetContent>
-    </Sheet>
+                  <SelectContent>
+                    {availableRooms.map((room) => (
+                      <SelectItem key={room.id} value={room.id}>
+                        {room.apartment?.name} - {room.room_number}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="changeDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>变更日期 *</FormLabel>
+                <FormControl>
+                  <DateTimePicker
+                    mode="date"
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="选择变更日期"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="reason"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>原因备注</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="可选" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
+    </AppDrawer>
   );
 }

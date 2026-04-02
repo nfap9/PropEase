@@ -1,8 +1,8 @@
 'use client';
 
 import { UseFormReturn } from 'react-hook-form';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
+import { Input } from '@/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import type { LeaseSigningFormData } from '../leases.schemas';
 

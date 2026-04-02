@@ -2,10 +2,10 @@
 
 import type { UseFieldArrayAppend, UseFieldArrayRemove, UseFieldArrayReturn, UseFormReturn } from 'react-hook-form';
 import { Plus, Trash2 } from 'lucide-react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
+import { Checkbox } from '@/components/ui';
 import { FormControl, FormField, FormItem, FormLabel } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from '@/components/ui';
 import type { ServiceProductForm } from '../service-pricing.schemas';
 
 export function ServiceProductPricingFields({

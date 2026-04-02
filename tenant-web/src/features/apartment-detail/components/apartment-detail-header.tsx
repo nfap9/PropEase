@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowLeft, Pencil, Zap } from 'lucide-react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 
 interface ApartmentDetailHeaderProps {
   apartmentName: string;

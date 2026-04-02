@@ -13,7 +13,7 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Building2, Plus } from 'lucide-react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@/components/ui';
 import { useRouter } from 'next/navigation';
 import { Organization } from '@/types';
 
