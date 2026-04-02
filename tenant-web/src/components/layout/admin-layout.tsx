@@ -1,5 +1,14 @@
 'use client';
 
+/**
+ * 运营后台管理布局组件
+ *
+ * 提供管理后台的页面框架：
+ * - 左侧边栏导航（桌面端）
+ * - 移动端抽屉式导航（Sheet）
+ * - 顶部 Header（主题切换、退出登录）
+ * - 主内容区域
+ */
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
@@ -19,6 +28,7 @@ import { useState } from 'react';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@apartment-ultra/shared-ui/components/ui';
 
+/** 管理员导航菜单配置 */
 const ADMIN_NAV = [
   { href: '/admin', label: '概览', icon: LayoutDashboard },
   { href: '/admin/brand', label: '品牌配置', icon: Palette },
@@ -35,11 +45,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
+  /** 退出登录 */
   const handleLogout = () => {
     localStorage.removeItem('admin_access_token');
     window.location.href = '/admin/login';
   };
 
+  /** 导航菜单内容（桌面侧边栏和移动端 Sheet 共用） */
   const NavContent = () => (
     <>
       <div className="flex h-16 items-center border-b px-4">
@@ -48,6 +60,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       <nav className="flex-1 space-y-1 p-4">
         {ADMIN_NAV.map((item) => {
           const Icon = item.icon;
+          // 高亮当前激活的菜单项（精确匹配或前缀匹配）
           const isActive =
             pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
           return (
@@ -72,12 +85,15 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen">
+      {/* 桌面端侧边栏 - lg 及以上屏幕显示 */}
       <aside className="hidden w-64 flex-col border-r bg-muted/40 lg:flex">
         <NavContent />
       </aside>
 
       <div className="flex flex-1 flex-col overflow-hidden">
+        {/* 顶部 Header */}
         <header className="flex h-16 items-center justify-between border-b bg-background px-4">
+          {/* 移动端菜单按钮 - 小于 lg 屏幕显示 */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden">
@@ -92,6 +108,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
           <div className="flex-1" />
 
+          {/* 右侧操作区 */}
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Button variant="outline" size="sm" onClick={handleLogout}>
@@ -101,6 +118,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
+        {/* 主内容区 */}
         <main className="flex-1 overflow-auto bg-muted/30 p-6">{children}</main>
       </div>
     </div>

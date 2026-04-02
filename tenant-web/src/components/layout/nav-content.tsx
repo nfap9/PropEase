@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * 租户端导航内容组件
+ *
+ * 用于桌面端侧边栏和移动端 Sheet 中显示导航菜单
+ * 根据用户权限动态过滤可见菜单项
+ */
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Building2, ChevronRight } from 'lucide-react';
@@ -11,13 +17,17 @@ import { NAV_ITEMS } from './nav-config';
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@apartment-ultra/shared-ui/components/ui';
 
 interface NavContentProps {
+  /** 导航项点击回调（用于移动端关闭 Sheet） */
   onNavClick?: () => void;
 }
 
 /**
  * 导航内容组件
  *
- * 用于桌面端侧边栏和移动端 Sheet 中显示导航菜单
+ * 功能：
+ * 1. 显示品牌 Logo 和应用名称
+ * 2. 根据用户权限过滤可见菜单项
+ * 3. 高亮当前激活的菜单项
  */
 export function NavContent({ onNavClick }: NavContentProps) {
   const brandConfig = useBrandConfig();
@@ -25,6 +35,7 @@ export function NavContent({ onNavClick }: NavContentProps) {
   const { permissions, hasPermission, isSuperAdmin } = usePermissions();
   const pathname = usePathname();
 
+  // 根据权限过滤可见的导航项
   const visibleNavItems = NAV_ITEMS.filter((item) =>
     canAccessRule(item, {
       organization,
@@ -36,12 +47,14 @@ export function NavContent({ onNavClick }: NavContentProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
+      {/* 品牌 Logo 和应用名称区域 */}
       <div className="shrink-0 border-b border-sidebar-border/80 px-4 py-4" data-testid="main-nav">
         <Link href="/dashboard" className="flex items-center gap-3" data-testid="nav-dashboard">
           {brandConfig.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element -- Logo URL 来自运营配置，域名动态
             <img src={brandConfig.logo_url} alt="" className="h-9 w-9 rounded-xl object-contain" />
           ) : (
+            // 无 Logo 时显示默认图标
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sidebar-accent text-sidebar-accent-foreground">
               <Building2 className="h-5 w-5" />
             </div>
@@ -51,6 +64,8 @@ export function NavContent({ onNavClick }: NavContentProps) {
           </div>
         </Link>
       </div>
+
+      {/* 导航菜单区域 */}
       <nav className="flex min-h-0 flex-1 flex-col px-3 py-4">
         <div className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-sidebar-foreground/45">
           核心业务
@@ -59,6 +74,7 @@ export function NavContent({ onNavClick }: NavContentProps) {
           <SidebarMenu className="space-y-1">
             {visibleNavItems.map((item) => {
               const Icon = item.icon;
+              // 判断是否为当前激活的菜单项
               const isActive = item.exact
                 ? pathname === item.href
                 : pathname === item.href || pathname.startsWith(item.href + '/');
