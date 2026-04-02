@@ -103,6 +103,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   /**
+   * 登出
+   * 清除所有本地状态和存储，跳转登录页
+   */
+  const logout = React.useCallback(() => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('current_organization_id');
+    setUser(null);
+    setOrganization(null);
+    setOrganizations([]);
+    queryClient.clear();
+    router.push('/login');
+  }, [queryClient, router]);
+
+  /**
    * 页面加载时检查认证状态
    * 验证 localStorage 中的 token 是否有效
    */
@@ -115,17 +130,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(userData);
           await loadOrganizations();
         } catch {
-          // Token 无效，清除本地存储
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          localStorage.removeItem('current_organization_id');
+          logout();
         }
       }
       setIsLoading(false);
     };
 
     checkAuth();
-  }, []);
+  }, [logout]);
 
   /**
    * 登录
@@ -157,21 +169,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     // 注册成功后自动登录
     return login(phone, password);
-  };
-
-  /**
-   * 登出
-   * 清除所有本地状态和存储，跳转登录页
-   */
-  const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('current_organization_id');
-    setUser(null);
-    setOrganization(null);
-    setOrganizations([]);
-    queryClient.clear();
-    router.push('/login');
   };
 
   /** 切换当前组织 */
