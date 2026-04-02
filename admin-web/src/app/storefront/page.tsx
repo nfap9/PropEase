@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Skeleton } from '@/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import type {
   StorefrontConfig,
   StorefrontItem,

@@ -10,9 +10,9 @@ import Link from 'next/link';
 import { useAsyncDialogSubmit, usePageQueryState } from '@apartment-ultra/shared-ui';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions } from '@/components/common/table-actions';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { SUBSCRIPTION_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import {
@@ -44,7 +44,7 @@ import { formatDate } from '@/lib/date-utils';
 import { adminApiEndpoints, AdminSubscription } from '@/lib/api/admin-client';
 import { getErrorMessage } from '@/lib/utils/error';
 import { CalendarPlus, Ban } from 'lucide-react';
-import { Skeleton } from '@/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { adminI18n, adminMessages } from '@/lib/i18n';
 
 const renewSchema = z.object({

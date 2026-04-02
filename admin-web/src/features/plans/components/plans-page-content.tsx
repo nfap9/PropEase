@@ -2,10 +2,10 @@
 
 import { Plus } from 'lucide-react';
 import { useManagedItem } from '@apartment-ultra/shared-ui';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
 import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { DataTable } from '@/components/common/data-table';
 import type { AdminPlan } from '@/lib/api/admin-client';
 import { createPlanColumns } from '../plans.columns';

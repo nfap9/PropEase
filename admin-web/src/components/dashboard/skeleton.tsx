@@ -1,4 +1,4 @@
-import { Skeleton } from '@/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 
 export function StatCardsSkeleton() {
   return (

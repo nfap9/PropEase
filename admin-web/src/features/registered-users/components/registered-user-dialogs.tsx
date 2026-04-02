@@ -3,7 +3,7 @@
 import type { UseFormReturn } from 'react-hook-form';
 import { Gift } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
   AppDrawer,
@@ -22,7 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
   SelectContent,
@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminPlan, AdminRegisteredUserDetail } from '@/lib/api/admin-client';
 import { formatDateTime } from '@/lib/date-utils';
 import { ORG_STATUS_CONFIG } from '@/lib/status-config';

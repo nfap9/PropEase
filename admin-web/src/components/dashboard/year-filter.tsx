@@ -1,6 +1,6 @@
 'use client';
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@apartment-ultra/shared-ui/components/ui';
 
 interface YearFilterProps {
   value: number;

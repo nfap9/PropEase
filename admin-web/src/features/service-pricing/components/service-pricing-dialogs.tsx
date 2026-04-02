@@ -5,8 +5,8 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DollarSign, Settings } from 'lucide-react';
 import type { ServiceProduct } from '@/lib/api/admin-client';
-import { Button } from '@/components/ui';
-import { Checkbox } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
 import {
   ConfirmDialog,
   Dialog,
@@ -24,9 +24,9 @@ import {
   FormLabel,
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import {
   serviceProductCreateSchema,
   serviceProductUpdateSchema,

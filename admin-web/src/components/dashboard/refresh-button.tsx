@@ -1,7 +1,7 @@
 'use client';
 
 import { RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 
 interface RefreshButtonProps {
   onRefresh: () => void;

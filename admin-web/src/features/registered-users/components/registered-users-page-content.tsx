@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useConfirmAction, useListFilters } from '@apartment-ultra/shared-ui';
 import { DataTable } from '@/components/common/data-table';
 import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@/components/ui';
+import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { adminMessages } from '@/lib/i18n';
 import { giftSubscriptionSchema, type FilterActive, type GiftSubscriptionForm } from '../registered-users.schemas';
 import { createRegisteredUsersColumns } from '../registered-users.columns';

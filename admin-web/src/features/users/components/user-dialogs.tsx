@@ -3,8 +3,8 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui';
-import { Checkbox } from '@/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
@@ -22,7 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@/components/ui';
+import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
   SelectContent,
