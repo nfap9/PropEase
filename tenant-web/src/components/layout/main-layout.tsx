@@ -139,8 +139,8 @@ function MainContent({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="min-h-0 flex-1 overflow-auto">
-        <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col px-4 py-5 md:px-6 md:py-6">{children}</div>
+      <main className="min-h-0 flex-1 overflow-hidden">
+        <div className="mx-auto flex h-full w-full max-w-[1600px] flex-1 flex-col px-4 py-5 md:px-6 md:py-6">{children}</div>
       </main>
     </div>
   );
