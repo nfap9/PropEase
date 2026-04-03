@@ -27,6 +27,9 @@ describe('BillService', () => {
       lease: {
         findFirst: vi.fn(),
       },
+      bill: {
+        findUnique: vi.fn().mockResolvedValue(null), // 防止 sendBillGenerated 警告
+      },
     },
   }));
 
