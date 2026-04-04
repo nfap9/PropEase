@@ -1,8 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/components/layout/providers";
 import { AdminAuthLayout } from "@/components/layout/admin-auth-layout";
 import { adminMessages } from "@/lib/i18n";
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: adminMessages.meta.title,

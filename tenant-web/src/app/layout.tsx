@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from '@/components/layout/providers';
 
@@ -27,6 +27,12 @@ async function getBrandConfig(): Promise<{ app_name: string; app_description: st
   }
   return { app_name: '公寓管理系统', app_description: '公寓、租客与账单的一体化管理系统' };
 }
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const { app_name, app_description } = await getBrandConfig();
