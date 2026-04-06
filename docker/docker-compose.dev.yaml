@@ -1,7 +1,6 @@
 # Apartment Ultra 本地开发 Docker Compose
 # 提供 api、tenant-web、admin-web 的容器内热更新。
 
-name: apartment-ultra-dev
 
 services:
   postgres:

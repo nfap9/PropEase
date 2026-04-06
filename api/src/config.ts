@@ -131,7 +131,9 @@ function envCorsOrigins(): string[] | true {
 
 function buildRawConfig() {
   const isProduction = process.env.NODE_ENV === 'production';
-  const isDev = !isProduction || envBool('IS_DEV', false);
+  // 生产环境强制 isDev=false，忽略 IS_DEV 环境变量
+  // 非生产环境时，isDev 默认 true（开发模式），可通过 IS_DEV=false 关闭
+  const isDev = !isProduction && envBool('IS_DEV', !isProduction);
 
   return {
     isDev,
@@ -194,8 +196,8 @@ function validateProductionSecurity(rawConfig: ReturnType<typeof buildRawConfig>
 function loadAndValidateConfig() {
   const rawConfig = buildRawConfig();
 
-  // 生产环境安全检查
-  if (!rawConfig.isDev) {
+  // 生产环境安全检查（基于 NODE_ENV，不受 IS_DEV 影响）
+  if (process.env.NODE_ENV === 'production') {
     validateProductionSecurity(rawConfig);
   }
 
@@ -222,7 +224,23 @@ function loadAndValidateConfig() {
     process.exit(1);
   }
 
+  logConfigValidation(result.data);
+
   return result.data;
+}
+
+function logConfigValidation(configData: Config): void {
+  const env = process.env.NODE_ENV || 'development';
+  console.log(`\n[配置] ${configData.appName} 启动配置校验完成`);
+  console.log(`  环境: ${env}`);
+  console.log(`  调试模式: ${configData.debug ? '启用' : '禁用'}`);
+  console.log(`  JWT 算法: ${configData.algorithm}`);
+  console.log(`  访问令牌过期: ${configData.accessTokenExpireMinutes} 分钟`);
+  console.log(`  刷新令牌过期: ${configData.refreshTokenExpireDays} 天`);
+  console.log(`  CORS: ${configData.corsOrigins === true ? '允许所有来源' : configData.corsOrigins.join(', ')}`);
+  console.log(`  微信支付: ${configData.wechatPayEnabled ? '启用' : '禁用'}`);
+  console.log(`  短信触达: ${configData.smsNotificationsEnabled ? '启用' : '禁用'}`);
+  console.log('');
 }
 
 // ============================================
