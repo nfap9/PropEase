@@ -2,9 +2,11 @@ import type { Request, Response, NextFunction } from 'express';
 import { decodeToken } from '../utils/jwt.js';
 import { prisma } from '../lib/prisma.js';
 import { createAppError } from '../utils/appError.js';
+import { isTokenBlacklisted } from '../lib/redis.js';
 
 /**
  * 运营后台 JWT 认证：从 Authorization Bearer 解析 admin 用户并挂到 req.adminUser。
+ * 支持 Token 黑名单检查（已吊销的 Token 无法使用）。
  */
 export async function requireAdmin(
   req: Request,
@@ -22,6 +24,17 @@ export async function requireAdmin(
     next(createAppError(401, '请使用运营后台账号登录'));
     return;
   }
+
+  // Token 黑名单检查
+  const jti = payload.jti as string | undefined;
+  if (jti) {
+    const blacklisted = await isTokenBlacklisted(jti);
+    if (blacklisted) {
+      next(createAppError(401, 'Token 已失效，请重新登录'));
+      return;
+    }
+  }
+
   const adminUserId = payload.sub as string | undefined;
   if (!adminUserId) {
     next(createAppError(401, 'Could not validate credentials'));

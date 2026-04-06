@@ -46,6 +46,7 @@ services:
       PORT: 8000
       npm_config_store_dir: /root/.local/share/pnpm/store
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-apartment_ultra}
+      REDIS_URL: redis://redis:6379
       SECRET_KEY: ${SECRET_KEY:-dev-secret-key}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:3001}
       CHOKIDAR_USEPOLLING: "true"

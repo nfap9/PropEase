@@ -9,6 +9,7 @@
  * 注意：项目采用手动实现而非 jsonwebtoken 库，以减少外部依赖
  */
 import crypto from 'node:crypto';
+import { ulid } from 'ulid';
 import { config } from '../config.js';
 
 // JWT 算法和类型标识
@@ -86,7 +87,7 @@ function verify(token: string): Record<string, unknown> | null {
  * 短期令牌，用于日常 API 认证
  */
 export function createAccessToken(data: { sub: string; phone?: string }): string {
-  return sign({ ...data, type: 'access' }, config.accessTokenExpireMinutes);
+  return sign({ ...data, type: 'access', jti: ulid() }, config.accessTokenExpireMinutes);
 }
 
 /**
@@ -94,7 +95,7 @@ export function createAccessToken(data: { sub: string; phone?: string }): string
  * 长期令牌，用于获取新的 Access Token
  */
 export function createRefreshToken(data: { sub: string; phone?: string }): string {
-  return sign({ ...data, type: 'refresh' }, config.refreshTokenExpireDays * 24 * 60);
+  return sign({ ...data, type: 'refresh', jti: ulid() }, config.refreshTokenExpireDays * 24 * 60);
 }
 
 /**
@@ -105,9 +106,23 @@ export function decodeToken(token: string): Record<string, unknown> | null {
 }
 
 /**
+ * 获取 Token 的剩余有效期（秒）
+ * @param token JWT 字符串
+ * @returns 剩余秒数，如果已过期或无效返回 0
+ */
+export function getTokenRemainingTtl(token: string): number {
+  const payload = decodeToken(token);
+  if (!payload) return 0;
+  const exp = payload.exp as number | undefined;
+  if (exp == null) return 0;
+  const remaining = exp - Math.floor(Date.now() / 1000);
+  return remaining > 0 ? remaining : 0;
+}
+
+/**
  * 创建管理员访问令牌
  * 与普通 Access Token 独立，用于运营后台认证
  */
 export function createAdminAccessToken(adminUserId: string): string {
-  return sign({ sub: adminUserId, type: 'admin' }, config.adminAccessTokenExpireMinutes);
+  return sign({ sub: adminUserId, type: 'admin', jti: ulid() }, config.adminAccessTokenExpireMinutes);
 }

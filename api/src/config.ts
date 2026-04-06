@@ -28,6 +28,8 @@ const configSchema = z.object({
   adminAccessTokenExpireMinutes: z.number().int().positive(),
   /** CORS 允许的来源 */
   corsOrigins: z.union([z.literal(true), z.array(z.string())]),
+  /** Redis 连接 URL */
+  redisUrl: z.string().optional(),
   /** 微信支付是否启用 */
   wechatPayEnabled: z.boolean(),
   /** 微信商户号 */
@@ -150,6 +152,7 @@ function buildRawConfig() {
     refreshTokenExpireDays: envInt('REFRESH_TOKEN_EXPIRE_DAYS', 7),
     adminAccessTokenExpireMinutes: envInt('ADMIN_ACCESS_TOKEN_EXPIRE_MINUTES', 30),
     corsOrigins: envCorsOrigins(),
+    redisUrl: envStr('REDIS_URL', '') || undefined,
     wechatPayEnabled: envBool('WECHAT_PAY_ENABLED', false),
     wechatMchId: envStr('WECHAT_MCH_ID', '') || undefined,
     wechatApiv3Key: envStr('WECHAT_APIV3_KEY', '') || undefined,

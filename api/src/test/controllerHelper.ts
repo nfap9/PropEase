@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { vi } from 'vitest';
+import { expect, vi } from 'vitest';
 
 /**
  * Creates a mock Express Request object
