@@ -96,7 +96,6 @@ const FormLabel = React.forwardRef<
       ref={ref}
       className={cn(error && 'text-destructive', className)}
       htmlFor={formItemId}
-      required={required}
       {...props}
     >
       {children}
