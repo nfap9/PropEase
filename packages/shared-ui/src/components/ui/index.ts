@@ -22,7 +22,7 @@ export * from './form';
 export * from './filter-field';
 export * from './form-dialog';
 export * from './input';
-export * from './label';
+export * from '../primitives';
 export * from './line-chart';
 export * from './kpi-section';
 export * from './list-page-layout';
