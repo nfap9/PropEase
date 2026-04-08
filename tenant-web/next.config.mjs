@@ -1,3 +1,12 @@
+import withPWAInit from 'next-pwa';
+
+const withPWA = withPWAInit({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // 输出模式 - Windows 构建时禁用 standalone 以避免 symlink 权限问题
@@ -19,4 +28,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withPWA(nextConfig);

@@ -1,0 +1,20 @@
+{
+  "name": "公寓管理系统",
+  "short_name": "公寓管理",
+  "description": "公寓、租客与账单的一体化管理系统",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "zh-CN"
+}

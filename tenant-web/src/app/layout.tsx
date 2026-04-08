@@ -42,6 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: {
       icon: '/favicon.svg',
     },
+    manifest: '/manifest.json',
   };
 }
 
