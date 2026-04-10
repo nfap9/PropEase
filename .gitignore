@@ -69,3 +69,5 @@ api/src/generated/
 
 # git
 .worktrees/
+
+.superpowers/
