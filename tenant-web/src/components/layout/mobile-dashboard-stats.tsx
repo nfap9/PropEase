@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apartmentsApi, billsApi, leasesApi, reportsApi, roomsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
@@ -10,12 +10,19 @@ import { tenantMessages } from '@/lib/i18n';
 import { StatCard } from '@apartment-ultra/shared-ui/components/ui';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { Home, Receipt, TrendingUp, Bell, Zap, Clock, AlertCircle } from 'lucide-react';
+import { Home, Receipt, TrendingUp, Bell, Zap, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 function formatCurrency(value: number) {
   return `¥${value.toLocaleString()}`;
+}
+
+interface ReminderItem {
+  type: 'warning' | 'destructive';
+  count: number;
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 export function MobileDashboardStats() {
@@ -106,7 +113,7 @@ export function MobileDashboardStats() {
       href: '/bills?status=overview',
       icon: Clock,
     },
-  ].filter((r) => r.count > 0);
+  ].filter((r) => r.count > 0) as ReminderItem[];
 
   const totalReminders = reminders.reduce((sum, r) => sum + r.count, 0);
 
