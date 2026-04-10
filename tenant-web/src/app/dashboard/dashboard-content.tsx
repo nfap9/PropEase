@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
+import { useIsMobile } from '@apartment-ultra/shared-ui/hooks';
 import Link from 'next/link';
 import {
   AlertCircle,
@@ -24,6 +25,7 @@ import {
   Wallet,
   Zap,
 } from 'lucide-react';
+import { MobileDashboardStats } from '@/components/layout/mobile-dashboard-stats';
 import { apartmentsApi, billsApi, leasesApi, reportsApi, roomsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { useBrandConfig } from '@/lib/brand-config-context';
@@ -425,6 +427,7 @@ export function DashboardContent() {
   const { organization, organizations, isLoading: authLoading } = useAuth();
   const brandConfig = useBrandConfig();
   const orgId = organization?.id;
+  const isMobile = useIsMobile();
 
   const { data: overview } = useQuery({
     queryKey: ['dashboard-overview', orgId],
@@ -461,6 +464,17 @@ export function DashboardContent() {
     );
   }
 
+  // 移动端布局
+  if (isMobile) {
+    return (
+      <div className="flex h-full min-h-0 flex-1 flex-col gap-3">
+        <QuickActions />
+        <MobileDashboardStats />
+      </div>
+    );
+  }
+
+  // 桌面端布局（保持现有代码）
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col gap-3">
       <QuickActions />
