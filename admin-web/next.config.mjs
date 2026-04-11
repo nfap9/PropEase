@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // 输出模式 - Windows 构建时禁用 standalone 以避免 symlink 权限问题
-  // output: 'standalone',
+  output: 'standalone',
   transpilePackages: [
     '@apartment-ultra/api-contract',
     '@apartment-ultra/shared-ui',

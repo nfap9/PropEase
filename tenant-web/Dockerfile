@@ -20,7 +20,7 @@ COPY tenant-web/package.json tenant-web/package.json
 COPY packages/ packages/
 
 # 安装依赖
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # ============================================
 # Stage 2: 构建
