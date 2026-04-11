@@ -120,7 +120,7 @@ services:
     image: apartment-ultra-tenant-web:${TENANT_WEB_IMAGE_TAG:-latest}
     build:
       context: ..
-      dockerfile: tenant-web/Dockerfile.prod
+      dockerfile: tenant-web/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}
     container_name: apartment_ultra_tenant_web
@@ -150,7 +150,7 @@ services:
     image: apartment-ultra-admin-web:${ADMIN_WEB_IMAGE_TAG:-latest}
     build:
       context: ..
-      dockerfile: admin-web/Dockerfile.prod
+      dockerfile: admin-web/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}
     container_name: apartment_ultra_admin

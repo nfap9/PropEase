@@ -1,4 +1,4 @@
-# Middleware services for local development
+# Middleware services
 # Usage: docker compose -f docker/docker-compose.middleware.yaml --env-file docker/middleware.env up -d
 
 name: apartment-ultra-middleware
@@ -6,9 +6,10 @@ name: apartment-ultra-middleware
 services:
   postgres:
     image: postgres:15-alpine
+    container_name: apartment_ultra_middleware_postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-apartment_ultra}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -16,22 +17,44 @@ services:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    networks:
+      - apartment-middleware-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   redis:
     image: redis:7-alpine
+    container_name: apartment_ultra_middleware_redis
+    command: redis-server --appendonly yes
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    networks:
+      - apartment-middleware-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  apartment-middleware-network:
+    driver: bridge
