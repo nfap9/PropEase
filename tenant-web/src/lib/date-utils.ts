@@ -2,7 +2,7 @@
  * 统一的日期时间格式化工具
  * 使用 date-fns 确保前端所有时间显示格式一致
  */
-import { format, isValid, parseISO } from 'date-fns';
+import { format, isValid, parseISO, formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 
 /** 日期格式：yyyy-MM-dd，用于纯日期显示（租约、账单到期日等） */
@@ -39,6 +39,16 @@ export function formatDateTime(input: string | Date | null | undefined): string 
   const d = parseDate(input);
   if (!d) return '—';
   return format(d, DATETIME_FORMAT, { locale: zhCN });
+}
+
+/**
+ * 格式化相对时间
+ * @example formatRelativeTime('2024-01-15T10:30:00Z') => '2小时前'
+ */
+export function formatRelativeTime(input: string | Date | null | undefined): string {
+  const d = parseDate(input);
+  if (!d) return '—';
+  return formatDistanceToNow(d, { addSuffix: true, locale: zhCN });
 }
 
 /**
