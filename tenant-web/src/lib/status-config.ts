@@ -25,10 +25,13 @@ export const BILL_STATUS_CONFIG: Record<
 };
 
 /** 房间状态 */
-export const ROOM_STATUS_CONFIG: Record<string, { label: string; variant: BadgeVariant }> = {
-  available: { label: '空置', variant: 'success' },
-  occupied: { label: '已租', variant: 'info' },
-  maintenance: { label: '维修中', variant: 'warning' },
+export const ROOM_STATUS_CONFIG: Record<
+  string,
+  { label: string; variant: BadgeVariant; borderClass: string; bgClass: string }
+> = {
+  available: { label: '空置', variant: 'success', borderClass: 'border-emerald-200 hover:border-emerald-300', bgClass: 'bg-emerald-500' },
+  occupied: { label: '已租', variant: 'info', borderClass: 'border-blue-200 hover:border-blue-300', bgClass: 'bg-blue-500' },
+  maintenance: { label: '维修中', variant: 'warning', borderClass: 'border-amber-200 hover:border-amber-300', bgClass: 'bg-amber-500' },
 };
 
 /** 租约状态（is_active） */
