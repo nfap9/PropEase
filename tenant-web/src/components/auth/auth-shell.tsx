@@ -58,11 +58,8 @@ export function AuthShell({
       <div className="absolute bottom-0 right-[-5rem] h-80 w-80 rounded-full bg-sky-300/20 blur-3xl dark:bg-sky-300/10" />
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid w-full gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)] lg:items-stretch">
-          <section className="relative overflow-hidden rounded-[32px] border border-border/60 bg-card/50 p-6 shadow-2xl backdrop-blur-xl dark:bg-card/40 sm:p-8 lg:p-10">
-            <div className="absolute inset-y-0 right-0 hidden w-1/3 bg-gradient-to-l from-background/35 to-transparent lg:block" />
-            <div className="absolute left-10 top-10 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
-            <div className="absolute bottom-16 right-16 h-32 w-32 rounded-full bg-sky-200/30 blur-3xl dark:bg-sky-200/15" />
+        <div className="grid w-full gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)] lg:items-center">
+          <section className="relative p-6 sm:p-8 lg:p-10">
             <div className="relative flex h-full flex-col">
               <Badge className="w-fit rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-[11px] font-semibold tracking-[0.16em] text-primary uppercase">
                 {shellCopy.badge}
@@ -78,7 +75,7 @@ export function AuthShell({
                 </p>
               </div>
 
-              <div className="mt-10 max-w-md rounded-[28px] border border-border/60 bg-card/60 px-6 py-5 shadow-xl dark:bg-card/40">
+              <div className="mt-10 max-w-md">
                 <p className="text-xs font-medium tracking-[0.16em] text-primary/80 uppercase">Slogan</p>
                 <p className="mt-3 text-base font-medium leading-7 text-muted-foreground">{shellCopy.note}</p>
               </div>
@@ -123,11 +120,7 @@ export function AuthShell({
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-6">
-                <div className="rounded-[28px] border border-border/60 bg-card/60 p-5 shadow-xl dark:bg-card/40 sm:p-6">
-                  {children}
-                </div>
-              </CardContent>
+              <CardContent className="space-y-6">{children}</CardContent>
 
               {footer ? (
                 <div className="border-t border-border/70 px-5 pb-5 pt-5 text-sm text-muted-foreground sm:px-6 sm:pb-6">
