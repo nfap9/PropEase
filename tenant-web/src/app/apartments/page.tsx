@@ -163,26 +163,25 @@ export default function ApartmentsPage() {
   return (
     <PermissionPageGuard>
       <MainLayout>
-        <div className="space-y-6">
-          <div className="flex items-center justify-end">
+        <div className="space-y-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <ApartmentSearchBar value={searchQuery} onChange={setSearchQuery} />
             <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
-              <Button onClick={() => setIsCreateOpen(true)} data-testid="apartments-new-btn">
+              <Button onClick={() => setIsCreateOpen(true)} data-testid="apartments-new-btn" className="shrink-0">
                 <Plus className="mr-2 h-4 w-4" />
                 新增公寓
               </Button>
             </PermissionGuard>
           </div>
 
-          <ApartmentSearchBar value={searchQuery} onChange={setSearchQuery} />
-
           {apartmentsLoading ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-7xl mx-auto">
               <Skeleton className="h-48" />
               <Skeleton className="h-48" />
               <Skeleton className="h-48" />
             </div>
           ) : filteredApartments && filteredApartments.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-testid="apartments-list">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-7xl mx-auto" data-testid="apartments-list">
               {filteredApartments.map((apartment) => (
                 <ApartmentCard key={apartment.id} apartment={apartment} onEdit={handleEdit} onDelete={handleDelete} />
               ))}
