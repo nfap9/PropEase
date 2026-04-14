@@ -52,17 +52,17 @@ export function AuthShell({
   const shellCopy = SHELL_COPY[mode];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.20),_transparent_26%),linear-gradient(135deg,_#eff6ff_0%,_#f8fafc_46%,_#e0ecff_100%)]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,_rgba(15,23,42,0.08),_transparent_18%),radial-gradient(circle_at_20%_85%,_rgba(14,165,233,0.12),_transparent_22%)]" />
+    <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.20),_transparent_26%),linear-gradient(135deg,_#eff6ff_0%,_#f8fafc_46%,_#e0ecff_100%)] dark:bg-background dark:bg-none">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,_hsl(var(--foreground)/0.06),_transparent_18%),radial-gradient(circle_at_20%_85%,_hsl(var(--primary)/0.10),_transparent_22%)]" />
       <div className="absolute left-[-8rem] top-16 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-      <div className="absolute bottom-0 right-[-5rem] h-80 w-80 rounded-full bg-sky-300/20 blur-3xl" />
+      <div className="absolute bottom-0 right-[-5rem] h-80 w-80 rounded-full bg-sky-300/20 blur-3xl dark:bg-sky-300/10" />
 
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-6 sm:px-6 lg:px-8">
         <div className="grid w-full gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)] lg:items-stretch">
-          <section className="relative overflow-hidden rounded-[32px] border border-white/60 bg-white/52 p-6 shadow-[0_24px_80px_-36px_rgba(15,23,42,0.28)] backdrop-blur-xl sm:p-8 lg:p-10">
-            <div className="absolute inset-y-0 right-0 hidden w-1/3 bg-gradient-to-l from-white/35 to-transparent lg:block" />
+          <section className="relative overflow-hidden rounded-[32px] border border-border/60 bg-card/50 p-6 shadow-2xl backdrop-blur-xl dark:bg-card/40 sm:p-8 lg:p-10">
+            <div className="absolute inset-y-0 right-0 hidden w-1/3 bg-gradient-to-l from-background/35 to-transparent lg:block" />
             <div className="absolute left-10 top-10 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
-            <div className="absolute bottom-16 right-16 h-32 w-32 rounded-full bg-sky-200/30 blur-3xl" />
+            <div className="absolute bottom-16 right-16 h-32 w-32 rounded-full bg-sky-200/30 blur-3xl dark:bg-sky-200/15" />
             <div className="relative flex h-full flex-col">
               <Badge className="w-fit rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-[11px] font-semibold tracking-[0.16em] text-primary uppercase">
                 {shellCopy.badge}
@@ -70,27 +70,27 @@ export function AuthShell({
 
               <div className="mt-8 max-w-xl lg:mt-14">
                 <p className="text-sm font-medium tracking-[0.08em] text-foreground/60 uppercase">{app_name}</p>
-                <h1 className="mt-4 text-3xl font-semibold leading-tight text-slate-950 sm:text-4xl lg:text-[3.4rem] lg:leading-[1.08]">
+                <h1 className="mt-4 text-3xl font-semibold leading-tight text-foreground sm:text-4xl lg:text-[3.4rem] lg:leading-[1.08]">
                   {shellCopy.title}
                 </h1>
-                <p className="mt-5 max-w-lg text-sm leading-7 text-slate-600 sm:text-base">
+                <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
                   {shellCopy.description}
                 </p>
               </div>
 
-              <div className="mt-10 max-w-md rounded-[28px] border border-white/70 bg-white/68 px-6 py-5 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.3)]">
-                <p className="text-xs font-medium tracking-[0.16em] text-primary/70 uppercase">Slogan</p>
-                <p className="mt-3 text-base font-medium leading-7 text-slate-700">{shellCopy.note}</p>
+              <div className="mt-10 max-w-md rounded-[28px] border border-border/60 bg-card/60 px-6 py-5 shadow-xl dark:bg-card/40">
+                <p className="text-xs font-medium tracking-[0.16em] text-primary/80 uppercase">Slogan</p>
+                <p className="mt-3 text-base font-medium leading-7 text-muted-foreground">{shellCopy.note}</p>
               </div>
 
               <div className="mt-auto hidden pt-10 lg:block">
-                <p className="max-w-sm text-sm leading-7 text-slate-500">{app_description}</p>
+                <p className="max-w-sm text-sm leading-7 text-muted-foreground">{app_description}</p>
               </div>
             </div>
           </section>
 
           <section className="flex items-center lg:justify-end">
-            <Card className="w-full max-w-xl rounded-[32px] border-white/70 bg-white/88 shadow-[0_28px_90px_-42px_rgba(15,23,42,0.42)] backdrop-blur-2xl">
+            <Card className="w-full max-w-xl rounded-[32px] border-border/60 bg-card/70 shadow-2xl backdrop-blur-2xl dark:bg-card/50">
               <CardHeader className="space-y-6 pb-6">
                 <div className="inline-flex w-fit rounded-full border border-border/70 bg-muted/70 p-1">
                   <Button
@@ -99,7 +99,7 @@ export function AuthShell({
                     variant={mode === 'login' ? 'secondary' : 'ghost'}
                     className={cn(
                       'rounded-full px-4 shadow-none',
-                      mode === 'login' && 'bg-white text-slate-950 shadow-sm hover:bg-white'
+                      mode === 'login' && 'bg-background text-foreground shadow-sm hover:bg-background'
                     )}
                   >
                     <Link href="/login">登录</Link>
@@ -110,7 +110,7 @@ export function AuthShell({
                     variant={mode === 'register' ? 'secondary' : 'ghost'}
                     className={cn(
                       'rounded-full px-4 shadow-none',
-                      mode === 'register' && 'bg-white text-slate-950 shadow-sm hover:bg-white'
+                      mode === 'register' && 'bg-background text-foreground shadow-sm hover:bg-background'
                     )}
                   >
                     <Link href="/register">注册</Link>
@@ -118,13 +118,13 @@ export function AuthShell({
                 </div>
 
                 <div className="space-y-2">
-                  <CardTitle className="text-2xl font-semibold text-slate-950 sm:text-[1.85rem]">{form_title}</CardTitle>
-                  <CardDescription className="max-w-lg text-sm leading-7 text-slate-600">{form_description}</CardDescription>
+                  <CardTitle className="text-2xl font-semibold text-foreground sm:text-[1.85rem]">{form_title}</CardTitle>
+                  <CardDescription className="max-w-lg text-sm leading-7 text-muted-foreground">{form_description}</CardDescription>
                 </div>
               </CardHeader>
 
               <CardContent className="space-y-6">
-                <div className="rounded-[28px] border border-white/70 bg-white/72 p-5 shadow-[0_18px_36px_-30px_rgba(15,23,42,0.24)] sm:p-6">
+                <div className="rounded-[28px] border border-border/60 bg-card/60 p-5 shadow-xl dark:bg-card/40 sm:p-6">
                   {children}
                 </div>
               </CardContent>
