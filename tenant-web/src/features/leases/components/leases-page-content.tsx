@@ -133,8 +133,7 @@ export function LeasesPageContent() {
     <PermissionPageGuard>
       <MainLayout>
         <ListPageLayout
-          title="租约管理"
-          titleTestId={LEASES.HEADING}
+          title=""
           maxWidth="full"
           className="w-full"
           actions={

@@ -19,6 +19,18 @@ interface BreadcrumbItem {
   label: string;
 }
 
+// 设置页面的面包屑配置
+const SETTINGS_BREADCRUMBS: Record<string, string> = {
+  '/settings': tenantMessages.settings.breadcrumb.root,
+  '/settings/team': tenantMessages.settings.breadcrumb.team,
+  '/settings/permissions': tenantMessages.settings.breadcrumb.permissions,
+  '/settings/notifications': tenantMessages.settings.breadcrumb.notifications,
+  '/settings/subscription': tenantMessages.settings.breadcrumb.subscription,
+  '/settings/subscription/purchase': tenantMessages.settings.breadcrumb.subscriptionPurchase,
+  '/settings/subscription/pay': tenantMessages.settings.breadcrumb.subscriptionPay,
+  '/settings/subscription/result': tenantMessages.settings.breadcrumb.subscriptionResult,
+};
+
 /**
  * 从路径中提取面包屑项
  */
@@ -28,6 +40,18 @@ function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
   // 首页
   if (pathname === '/dashboard') {
     return [{ href: '/dashboard', label: tenantMessages.layout.nav.home }];
+  }
+
+  // 设置页面处理
+  if (pathname.startsWith('/settings')) {
+    // 首页 > 设置
+    items.push({ href: '/settings', label: tenantMessages.settings.breadcrumb.root });
+    // 子页面
+    const pageTitle = SETTINGS_BREADCRUMBS[pathname];
+    if (pageTitle && pathname !== '/settings') {
+      items.push({ href: pathname, label: pageTitle });
+    }
+    return items;
   }
 
   // 匹配导航配置中的项目

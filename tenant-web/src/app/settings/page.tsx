@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Building2, Settings as SettingsIcon, ShoppingBag, MessageSquareMore, Users } from 'lucide-react';
+import { Building2, ShoppingBag, MessageSquareMore, Users } from 'lucide-react';
 import { useAuth } from '@/lib/auth/context';
 import { Card, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantMessages } from '@/lib/i18n';
@@ -66,12 +66,6 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <SettingsIcon className="h-8 w-8" />
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight" data-testid={SETTINGS.HEADING}>{tenantMessages.settings.home.heading}</h1>
-          </div>
-        </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {allSettingsItems.map((item) =>

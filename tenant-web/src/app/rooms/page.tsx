@@ -224,9 +224,6 @@ export default function RoomsPage() {
     <PermissionPageGuard>
       <MainLayout>
         <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight" data-testid={ROOMS.HEADING}>全部房间</h1>
-          </div>
 
           {allRooms && <RoomStatsCards rooms={allRooms} />}
 

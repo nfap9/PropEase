@@ -160,8 +160,6 @@ export default function AdminOrganizationsPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-organizations-heading">{adminMessages.organizations.heading}</h2>
-
       <DataTable
         columns={columns}
         data={organizations ?? []}

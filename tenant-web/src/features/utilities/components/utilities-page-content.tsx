@@ -169,9 +169,6 @@ export function UtilitiesPageContent() {
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-3">
-                <h1 className="text-2xl font-semibold tracking-tight" data-testid={UTILITIES.HEADING}>
-                  水电记录
-                </h1>
                 <TabsList>
                   <TabsTrigger value="entry">本月录入</TabsTrigger>
                   <TabsTrigger value="history">历史记录</TabsTrigger>

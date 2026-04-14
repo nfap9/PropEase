@@ -83,7 +83,6 @@ export default function AdminUsagePricingPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-pricing-heading">{adminMessages.usagePricing.heading}</h2>
       <Card>
         <CardHeader>
           <CardTitle>{adminMessages.usagePricing.title}</CardTitle>

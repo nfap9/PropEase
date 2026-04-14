@@ -19,7 +19,7 @@ import {
   tenantReachabilityEventOptions,
   tenantReachabilityStatusOptions,
 } from '@/lib/tenant-reachability';
-import { BellRing, MessageSquare, Send, ShieldOff } from 'lucide-react';
+import { MessageSquare, Send, ShieldOff } from 'lucide-react';
 import { tenantI18n, tenantMessages } from '@/lib/i18n';
 
 type EditableTemplateState = Record<
@@ -175,12 +175,6 @@ export default function ReachabilitySettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <BellRing className="h-8 w-8" />
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{tenantMessages.settings.notificationsPage.heading}</h1>
-        </div>
-      </div>
 
       <Card>
         <CardHeader>

@@ -40,7 +40,7 @@ export function PlansPageContent() {
 
   return (
     <ListPageLayout
-      title="服务配置"
+      title=""
       titleTestId="admin-plans-heading"
       maxWidth="6xl"
       actions={

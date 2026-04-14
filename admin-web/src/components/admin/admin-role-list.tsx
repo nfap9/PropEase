@@ -51,7 +51,7 @@ export function AdminRoleList({
 
   return (
     <SelectableSideList
-      title={<span data-testid="admin-roles-heading">{adminMessages.roles.heading}</span>}
+      title=""
       headerAction={
         <Button
           variant="outline"

@@ -5,8 +5,6 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/common/data-table';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import type { ServiceProduct } from '@/lib/api/admin-client';
-import { adminMessages } from '@/lib/i18n';
-
 export function ServicePricingView({
   services,
   columns,
@@ -18,10 +16,7 @@ export function ServicePricingView({
 }) {
   return (
     <div className="mx-auto max-w-6xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold" data-testid="service-pricing-heading">
-          {adminMessages.servicePricing.heading}
-        </h2>
+      <div className="mb-4 flex items-center justify-end">
         <Button onClick={onCreate} data-testid="service-pricing-create-btn">
           <Plus className="mr-2 h-4 w-4" />
           新建服务

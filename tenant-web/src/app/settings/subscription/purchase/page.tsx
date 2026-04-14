@@ -13,9 +13,7 @@ import {
   Crown,
   Zap,
   Building2,
-  ArrowLeft,
   Loader2,
-  ShoppingCart,
   Tag,
   Gift,
 } from 'lucide-react';
@@ -153,28 +151,6 @@ export default function SubscriptionPurchasePage() {
 
   return (
     <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.push('/settings/subscription')}
-            data-testid={SUBSCRIPTION.BACK_BTN}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {tenantMessages.settings.subscriptionPage.purchase.back}
-          </Button>
-          <div className="flex-1">
-            <h1
-              className="flex items-center gap-2 text-2xl font-semibold tracking-tight"
-              data-testid={SUBSCRIPTION.HEADING}
-            >
-              <ShoppingCart className="h-8 w-8" />
-              {tenantMessages.settings.subscriptionPage.purchase.heading}
-            </h1>
-          </div>
-        </div>
-
         {/* Services Grid */}
         {storefrontLoading ? (
           <div className="grid gap-6 md:grid-cols-3">

@@ -64,8 +64,7 @@ export function BillsListView({
 
   return (
     <ListPageLayout
-      title={tenantMessages.bills.list.heading}
-      titleTestId={BILLS.HEADING}
+      title=""
       maxWidth="full"
       className="w-full"
     >

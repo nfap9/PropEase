@@ -164,12 +164,7 @@ export default function ApartmentsPage() {
     <PermissionPageGuard>
       <MainLayout>
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight" data-testid="apartments-heading">
-                公寓管理
-              </h1>
-            </div>
+          <div className="flex items-center justify-end">
             <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
               <Button onClick={() => setIsCreateOpen(true)} data-testid="apartments-new-btn">
                 <Plus className="mr-2 h-4 w-4" />

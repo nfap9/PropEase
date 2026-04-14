@@ -43,7 +43,7 @@ export function UsersPageContent() {
 
   return (
     <ListPageLayout
-      title="管理账号"
+      title=""
       titleTestId="admin-users-heading"
       maxWidth="6xl"
       actions={

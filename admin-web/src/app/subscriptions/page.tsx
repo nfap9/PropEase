@@ -230,10 +230,6 @@ function SubscriptionsContent() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-subscriptions-heading">
-        {adminMessages.subscriptions.heading}
-      </h2>
-
       <DataTable
         columns={columns}
         data={subscriptions ?? []}

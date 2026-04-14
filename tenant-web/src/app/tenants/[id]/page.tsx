@@ -183,14 +183,11 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
     <PermissionPageGuard>
       <MainLayout>
         <div className="space-y-6">
-          {/* 返回按钮和标题 */}
+          {/* 返回按钮 */}
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.push('/tenants')}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight">{tenant.name}</h1>
-            </div>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">

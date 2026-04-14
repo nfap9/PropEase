@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apar
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { ORDER_STATUS_CONFIG } from '@/lib/status-config';
-import { ArrowLeft, Loader2, Smartphone, FlaskConical } from 'lucide-react';
+import { ArrowLeft, Loader2, FlaskConical } from 'lucide-react';
 import { subscriptionsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
@@ -152,19 +152,6 @@ function SubscriptionPayContent() {
 
   return (
     <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={handleBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {tenantMessages.settings.subscriptionPage.pay.back}
-          </Button>
-          <div>
-            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-              <Smartphone className="h-7 w-7" />
-              {tenantMessages.settings.subscriptionPage.pay.heading}
-            </h1>
-          </div>
-        </div>
-
         <Card className="mx-auto max-w-md">
           <CardHeader>
             <CardTitle>

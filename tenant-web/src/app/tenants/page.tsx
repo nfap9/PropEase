@@ -242,10 +242,7 @@ export default function TenantsPage() {
     <PermissionPageGuard>
       <MainLayout>
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold tracking-tight" data-testid={TENANTS.HEADING}>
-              租客管理
-            </h1>
+          <div className="flex items-center justify-end">
             <Button onClick={() => setIsCreateOpen(true)} data-testid={TENANTS.NEW_BUTTON}>
               <Plus className="mr-2 h-4 w-4" />
               新增租客

@@ -18,10 +18,7 @@ export function StorefrontListView({
 }) {
   return (
     <div className="mx-auto max-w-6xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold" data-testid="storefront-heading">
-          {adminMessages.storefront.heading}
-        </h2>
+      <div className="mb-4 flex items-center justify-end">
         <Button onClick={onCreate} data-testid="storefront-create-btn">
           <Plus className="mr-2 h-4 w-4" />
           {adminMessages.storefront.createButton}

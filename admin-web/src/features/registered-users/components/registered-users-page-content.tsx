@@ -7,7 +7,6 @@ import { useConfirmAction, useListFilters } from '@apartment-ultra/shared-ui';
 import { DataTable } from '@/components/common/data-table';
 import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { adminMessages } from '@/lib/i18n';
 import { giftSubscriptionSchema, type FilterActive, type GiftSubscriptionForm } from '../registered-users.schemas';
 import { createRegisteredUsersColumns } from '../registered-users.columns';
 import { useRegisteredUsersData } from '../registered-users.hooks';
@@ -110,7 +109,7 @@ export function RegisteredUsersPageContent() {
 
   return (
     <ListPageLayout
-      title={adminMessages.registeredUsers.heading}
+      title=""
       titleTestId="admin-registered-users-heading"
       maxWidth="6xl"
     >

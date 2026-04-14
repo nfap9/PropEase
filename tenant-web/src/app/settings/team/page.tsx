@@ -233,14 +233,6 @@ export default function TeamSettingsPage() {
   return (
     <PermissionPageGuard>
       <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <Users className="h-8 w-8" />
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight" data-testid={TEAM_SETTINGS.HEADING}>
-              {tenantMessages.settings.team.heading}
-            </h1>
-          </div>
-        </div>
 
         <Tabs defaultValue="organizations" className="space-y-4">
           <TabsList>

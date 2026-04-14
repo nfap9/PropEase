@@ -73,7 +73,7 @@ export function DashboardContent() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={adminMessages.dashboard.heading}
+        title=""
         titleTestId="admin-overview-heading"
         actions={<RefreshButton onRefresh={handleRefresh} isLoading={statsLoading} />}
       />

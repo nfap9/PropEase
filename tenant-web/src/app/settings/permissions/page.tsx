@@ -137,16 +137,6 @@ export default function PermissionsPage() {
   return (
     <PermissionPageGuard>
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <Shield className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight" data-testid={PERMISSIONS.HEADING}>
-              {tenantMessages.settings.permissions.heading}
-            </h1>
-          </div>
-        </div>
 
         <SplitSettingsPanel
           className="h-[calc(100vh-12rem)]"

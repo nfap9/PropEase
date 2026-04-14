@@ -8,7 +8,6 @@ import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { SUBSCRIPTION_STATUS_CONFIG } from '@/lib/status-config';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import {
-  ShoppingBag,
   Package,
   Building2,
   Home,
@@ -61,13 +60,7 @@ export default function SubscriptionPage() {
   return (
     <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight" data-testid={SUBSCRIPTION.HEADING}>
-              <ShoppingBag className="h-8 w-8" />
-              {tenantMessages.settings.subscriptionPage.heading}
-            </h1>
-          </div>
+        <div className="flex items-center justify-end">
           <Button onClick={() => router.push('/settings/subscription/purchase')} data-testid={SUBSCRIPTION.UPGRADE_BUTTON}>
             <ShoppingCart className="mr-2 h-4 w-4" />
             {tenantMessages.settings.subscriptionPage.buyService}

@@ -22,7 +22,7 @@ import {
   getNotificationTypeLabel,
   notificationCategoryOptions,
 } from '@/lib/notifications';
-import { Bell, CheckCheck, Loader2, MessageSquareMore } from 'lucide-react';
+import { CheckCheck, Loader2, MessageSquareMore } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/lib/date-utils';
 import { tenantMessages } from '@/lib/i18n';
@@ -90,15 +90,7 @@ export default function NotificationsPage() {
         {canAccessNotifications ? (
           <MainLayout>
           <div className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2">
-                <Bell className="h-8 w-8" />
-                <div>
-                  <h1 className="text-2xl font-semibold tracking-tight" data-testid={NOTIFICATIONS.HEADING}>
-                    {tenantMessages.notificationsPage.heading}
-                  </h1>
-                </div>
-              </div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
               {unreadCount > 0 && (
                 <Button
                   variant="outline"
