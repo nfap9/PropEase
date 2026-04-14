@@ -21,18 +21,18 @@ import type { Room, Tenant, UtilityConfig } from '@apartment-ultra/api-contract'
 const leaseSigningSteps = [
   {
     id: 'room',
-    title: '房间信息',
-    description: '先确认要签约的公寓和房间。',
+    title: '房间',
+    description: '选择公寓与房间',
   },
   {
     id: 'tenant',
-    title: '租客信息',
-    description: '填写或选择租客资料。',
+    title: '租客',
+    description: '填写租客信息',
   },
   {
     id: 'contract',
-    title: '合同信息',
-    description: '确认租约日期、租金和附加费用。',
+    title: '签约确认',
+    description: '设置合同条款',
   },
 ] as const;
 
@@ -321,8 +321,9 @@ export function LeaseSigningDrawer({
     }
   };
 
-  const getDialogTitle = () => (isRoomSpecified ? '签约' : '新增租约');
-  const getDialogDescription = () => (isRoomSpecified && room ? `为房间 ${room.room_number} 创建租约` : '创建新的租约');
+  const getDialogTitle = () => (isRoomSpecified ? '房间签约' : '新建租约');
+  const getDialogDescription = () =>
+    isRoomSpecified && room ? `为 ${room.apartment?.name || ''} - ${room.room_number} 创建租约` : '按步骤填写信息以创建新租约';
 
   return (
     <>
@@ -338,13 +339,15 @@ export function LeaseSigningDrawer({
         onComplete={() => {
           void form.handleSubmit(handleSubmit)();
         }}
-        completeLabel={createMutation.isPending ? '创建中...' : '确认签约'}
+        completeLabel={createMutation.isPending ? '签约中...' : '确认签约'}
+        nextLabel="下一步"
+        previousLabel="上一步"
         isPending={createMutation.isPending}
         contentTestId="lease-signing-drawer"
         footerExtra={
           currentStep === 2 ? (
             <p className="text-sm text-muted-foreground">
-              完成后会自动刷新租约、房间和租客数据。
+              签约完成后将自动刷新数据
             </p>
           ) : null
         }
