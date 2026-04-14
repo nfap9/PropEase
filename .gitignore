@@ -69,5 +69,5 @@ api/src/generated/
 
 # git
 .worktrees/
-
+.omc
 .superpowers/
