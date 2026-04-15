@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useBillingUsagePricing } from '../billing.hooks';
 
 export function UsagePricingPageContent() {
@@ -14,7 +14,7 @@ export function UsagePricingPageContent() {
   const [saved, setSaved] = useState(false);
 
   // 初始化表单数据
-  useState(() => {
+  useEffect(() => {
     if (pricing) {
       setFormData({
         price_per_org: pricing.price_per_org ?? 0,
@@ -23,7 +23,7 @@ export function UsagePricingPageContent() {
         price_per_member: pricing.price_per_member ?? 0,
       });
     }
-  });
+  }, [pricing]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
