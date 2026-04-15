@@ -140,13 +140,15 @@ export default function SubscriptionPurchasePage() {
   };
 
   const getLimitText = (limit: number | null) => {
-    return limit == null || limit === -1
-      ? tenantMessages.settings.subscriptionPage.purchase.unlimited
-      : limit.toString();
+    if (limit == null || limit >= 999999) {
+      return tenantMessages.settings.subscriptionPage.purchase.unlimited;
+    }
+    return limit.toString();
   };
 
   const isPending = subscribeMutation.isPending || createOrderMutation.isPending;
-  const services = storefront?.services ?? [];
+  // 只显示已设置定价的服务
+  const services = (storefront?.services ?? []).filter((s) => (s.pricing ?? []).length > 0);
   const selectedPricingSummary = getPricingSummary(selectedPricing);
 
   return (
@@ -178,13 +180,15 @@ export default function SubscriptionPurchasePage() {
                 <Card
                   key={service.id}
                   className={`relative ${SERVICE_COLORS[service.code] || ''} ${
-                    isCurrentPlan ? 'ring-2 ring-primary' : ''
+                    isCurrentPlan ? 'ring-2 ring-amber-500' : ''
                   }`}
                   data-testid={SUBSCRIPTION.SERVICE_CARD}
                 >
                   {isCurrentPlan && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge>{tenantMessages.settings.subscriptionPage.purchase.currentBadge}</Badge>
+                    <div className="absolute -top-px -right-px -mr-px -mt-px">
+                      <Badge className="bg-gradient-to-r from-amber-400 to-yellow-500 text-black shadow-md rounded-none rounded-tr-md rounded-bl-md">
+                        {tenantMessages.settings.subscriptionPage.purchase.currentBadge}
+                      </Badge>
                     </div>
                   )}
                   <CardHeader>
@@ -206,7 +210,7 @@ export default function SubscriptionPurchasePage() {
                               key={p.id}
                               className="flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors hover:bg-muted"
                               onClick={() => handleSubscribe(service, p)}
-                              disabled={isCurrentPlan || isPending}
+                              disabled={isPending}
                             >
                               <div>
                                 <p className="font-medium">
@@ -249,7 +253,7 @@ export default function SubscriptionPurchasePage() {
                       <Button
                         className="w-full"
                         variant={isCurrentPlan ? 'outline' : 'default'}
-                        disabled={isCurrentPlan || isPending}
+                        disabled={isPending}
                         onClick={() => handleSubscribe(service)}
                         data-testid={SUBSCRIPTION.SUBSCRIBE_BTN}
                       >
