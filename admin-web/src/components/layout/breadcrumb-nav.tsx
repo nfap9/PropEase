@@ -18,51 +18,77 @@ interface BreadcrumbItem {
   label: string;
 }
 
-const ADMIN_NAV = [
-  { href: '/', label: adminMessages.layout.nav.dashboard },
-  { href: '/brand', label: adminMessages.layout.nav.brand },
-  { href: '/users', label: adminMessages.layout.nav.users },
-  { href: '/registered-users', label: adminMessages.layout.nav.registeredUsers },
-  { href: '/roles', label: adminMessages.layout.nav.roles },
-  { href: '/organizations', label: adminMessages.layout.nav.organizations },
-  { href: '/service-pricing', label: adminMessages.layout.nav.servicePricing },
-  { href: '/storefront', label: adminMessages.layout.nav.storefront },
-  { href: '/usage-pricing', label: adminMessages.layout.nav.usagePricing },
-  { href: '/subscriptions', label: adminMessages.layout.nav.subscriptions },
-];
+/**
+ * 面包屑配置
+ * - 精确匹配时使用 label
+ * - 前缀匹配时使用 detailLabel（用于详情页）
+ */
+const BREADCRUMB_CONFIG: Record<string, { label: string; detailLabel?: string }> = {
+  '/': { label: adminMessages.layout.nav.dashboard },
+  '/brand': { label: adminMessages.layout.nav.brand },
+  '/users': { label: adminMessages.layout.nav.users },
+  '/registered-users': { label: adminMessages.layout.nav.registeredUsers },
+  '/roles': { label: adminMessages.layout.nav.roles },
+  '/organizations': { label: adminMessages.layout.nav.organizations, detailLabel: '团队详情' },
+  '/organizations/new': { label: '新增团队' },
+  '/service-pricing': { label: adminMessages.layout.nav.servicePricing },
+  '/storefront': { label: adminMessages.layout.nav.storefront },
+  '/plans': { label: '套餐管理' },
+  '/subscriptions': { label: adminMessages.layout.nav.subscriptions },
+  '/usage-pricing': { label: adminMessages.layout.nav.usagePricing },
+  '/setup': { label: '设置向导' },
+};
 
 /**
- * 从路径中提取面包屑项
+ * 按路径层级构建面包屑
+ * 不依赖 ID 正则匹配，而是通过路径前缀匹配
  */
 function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
-  // 首页
+  const items: BreadcrumbItem[] = [];
+  const segments = pathname.split('/').filter(Boolean);
+
+  // 首页特殊处理
   if (pathname === '/') {
     return [{ href: '/', label: adminMessages.layout.nav.dashboard }];
   }
 
-  // 匹配导航配置中的项目
-  const matchedItem = ADMIN_NAV.find(
-    (item) => pathname === item.href || pathname.startsWith(item.href + '/')
-  );
+  // 从根路径开始，逐层构建面包屑
+  let currentPath = '';
+  for (let i = 0; i < segments.length; i++) {
+    currentPath += '/' + segments[i];
+    const isLastSegment = i === segments.length - 1;
+    const config = BREADCRUMB_CONFIG[currentPath];
 
-  if (matchedItem) {
-    const items: BreadcrumbItem[] = [{ href: matchedItem.href, label: matchedItem.label }];
-
-    // 详情页处理
-    const segments = pathname.split('/').filter(Boolean);
-    if (segments.length > 1) {
-      const lastSegment = segments[segments.length - 1];
-      // 检查是否是ID（数字或UUID格式）
-      const isIdSegment = /^[0-9]+$|^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lastSegment);
-      if (isIdSegment) {
-        items.push({ href: pathname, label: '详情' });
+    if (config) {
+      // 如果是最后一个路径段且有 detailLabel，使用 detailLabel
+      if (isLastSegment && config.detailLabel) {
+        items.push({ href: pathname, label: config.detailLabel });
+      } else if (!isLastSegment) {
+        // 非最后一个路径段，作为中间节点
+        items.push({ href: currentPath, label: config.label });
+      } else {
+        // 精确匹配且没有 detailLabel
+        items.push({ href: pathname, label: config.label });
+      }
+    } else {
+      // 没有精确匹配当前路径，尝试找前缀匹配
+      let found = false;
+      // 按长度倒序遍历配置键，找最长匹配的前缀
+      const sortedKeys = Object.keys(BREADCRUMB_CONFIG).sort((a, b) => b.length - a.length);
+      for (const key of sortedKeys) {
+        if (currentPath.startsWith(key + '/') || currentPath === key) {
+          const parentConfig = BREADCRUMB_CONFIG[key];
+          if (parentConfig?.detailLabel) {
+            items.push({ href: currentPath, label: parentConfig.detailLabel });
+            found = true;
+            break;
+          }
+        }
       }
     }
-
-    return items;
   }
 
-  return [{ href: pathname, label: pathname.split('/').pop() || '' }];
+  return items;
 }
 
 export function BreadcrumbNav() {
