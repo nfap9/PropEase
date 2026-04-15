@@ -97,7 +97,7 @@ export function UtilitiesPageContent() {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
+                className="h-8 border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
                 onClick={() => setEditingUtility(currentReading)}
               >
                 更新
@@ -106,7 +106,7 @@ export function UtilitiesPageContent() {
               <Button
                 variant="default"
                 size="sm"
-                className="h-8 bg-blue-600 hover:bg-blue-700"
+                className="h-8 bg-primary hover:bg-primary/90"
                 onClick={() => {
                   if (!apartmentId) return;
                   setCreatePreset({
@@ -184,7 +184,7 @@ export function UtilitiesPageContent() {
                 <div className="flex flex-wrap gap-2">
                   <Button
                     variant="outline"
-                    className="hover.border-slate-300 border-slate-200"
+                    className="hover:border-input border-border"
                     onClick={() => setIsExportTemplateOpen(true)}
                     data-testid={UTILITIES.EXPORT_TEMPLATE_BUTTON}
                   >
@@ -193,7 +193,7 @@ export function UtilitiesPageContent() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="hover.border-slate-300 border-slate-200"
+                    className="hover:border-input border-border"
                     onClick={() => setIsBatchImportOpen(true)}
                     data-testid={UTILITIES.IMPORT_BUTTON}
                   >
@@ -201,7 +201,7 @@ export function UtilitiesPageContent() {
                     批量导入
                   </Button>
                   <Button
-                    className="bg-blue-600 shadow-sm hover:bg-blue-700"
+                    className="bg-primary shadow-sm hover:bg-primary/90"
                     onClick={() => {
                       setCreatePreset(null);
                       setIsCreateOpen(true);
@@ -220,25 +220,25 @@ export function UtilitiesPageContent() {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {/* 本月录入进度卡片 */}
                 <Card className="relative overflow-hidden border-0 shadow-md">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100/50" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/5" />
                   <CardContent className="relative !pt-5 p-5 sm:!pt-5">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm font-medium text-blue-600">本月录入进度</p>
+                        <p className="text-sm font-medium text-primary">本月录入进度</p>
                         <div className="mt-2 flex items-baseline gap-1">
-                          <span className="text-3xl font-bold text-blue-700">{monthRoomsRecordedCount ?? 0}</span>
-                          <span className="text-lg text-blue-500">/ {monthRoomsNeedInputCount ?? 0}</span>
+                          <span className="text-3xl font-bold text-foreground">{monthRoomsRecordedCount ?? 0}</span>
+                          <span className="text-lg text-muted-foreground">/ {monthRoomsNeedInputCount ?? 0}</span>
                         </div>
-                        <p className="mt-1 text-xs text-blue-500/80">已录入房间数</p>
+                        <p className="mt-1 text-xs text-muted-foreground">已录入房间数</p>
                       </div>
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
-                        <Droplets className="h-7 w-7 text-blue-600" />
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/20">
+                        <Droplets className="h-7 w-7 text-primary" />
                       </div>
                     </div>
                     {/* 进度条 */}
-                    <div className="mt-4 h-2 w-full rounded-full bg-blue-100">
+                    <div className="mt-4 h-2 w-full rounded-full bg-primary/20">
                       <div
-                        className="h-2 rounded-full bg-blue-600 transition-all duration-500"
+                        className="h-2 rounded-full bg-primary transition-all duration-500"
                         style={{
                           width: `${monthRoomsNeedInputCount ? ((monthRoomsRecordedCount ?? 0) / monthRoomsNeedInputCount) * 100 : 0}%`,
                         }}
@@ -249,19 +249,19 @@ export function UtilitiesPageContent() {
 
                 {/* 待录入卡片 */}
                 <Card className="relative overflow-hidden border-0 shadow-md">
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-amber-100/50" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-warning/10 to-warning/5" />
                   <CardContent className="relative !pt-5 p-5 sm:!pt-5">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm font-medium text-amber-600">待录入</p>
+                        <p className="text-sm font-medium text-warning-foreground">待录入</p>
                         <div className="mt-2 flex items-baseline gap-1">
-                          <span className="text-3xl font-bold text-amber-700">{monthRoomsMissingCount ?? 0}</span>
-                          <span className="text-sm text-amber-500">房间</span>
+                          <span className="text-3xl font-bold text-foreground">{monthRoomsMissingCount ?? 0}</span>
+                          <span className="text-sm text-muted-foreground">房间</span>
                         </div>
-                        <p className="mt-1 text-xs text-amber-500/80">需要尽快录入</p>
+                        <p className="mt-1 text-xs text-muted-foreground">需要尽快录入</p>
                       </div>
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
-                        <Clock className="h-7 w-7 text-amber-600" />
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-warning/20">
+                        <Clock className="h-7 w-7 text-warning-foreground" />
                       </div>
                     </div>
                   </CardContent>
@@ -269,21 +269,21 @@ export function UtilitiesPageContent() {
 
                 {/* 待出账卡片 */}
                 <Card className="relative overflow-hidden border-0 shadow-md">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-purple-100/50" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-info/10 to-info/5" />
                   <CardContent className="relative !pt-5 p-5 sm:!pt-5">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm font-medium text-purple-600">待出账</p>
+                        <p className="text-sm font-medium text-info-foreground">待出账</p>
                         <div className="mt-2 flex items-baseline gap-1">
-                          <span className="text-3xl font-bold text-purple-700">
+                          <span className="text-3xl font-bold text-foreground">
                             {pendingUtilityBills.filter((b) => b.status === 'ready_to_bill').length}
                           </span>
-                          <span className="text-sm text-purple-500">笔</span>
+                          <span className="text-sm text-muted-foreground">笔</span>
                         </div>
-                        <p className="mt-1 text-xs text-purple-500/80">已录入待出账</p>
+                        <p className="mt-1 text-xs text-muted-foreground">已录入待出账</p>
                       </div>
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-purple-100">
-                        <TrendingUp className="h-7 w-7 text-purple-600" />
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-info/20">
+                        <TrendingUp className="h-7 w-7 text-info-foreground" />
                       </div>
                     </div>
                   </CardContent>
@@ -291,21 +291,21 @@ export function UtilitiesPageContent() {
 
                 {/* 逾期提醒卡片 */}
                 <Card className="relative overflow-hidden border-0 shadow-md">
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-red-100/50" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-destructive/10 to-destructive/5" />
                   <CardContent className="relative !pt-5 p-5 sm:!pt-5">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm font-medium text-red-600">录入逾期</p>
+                        <p className="text-sm font-medium text-destructive">录入逾期</p>
                         <div className="mt-2 flex items-baseline gap-1">
-                          <span className="text-3xl font-bold text-red-700">
+                          <span className="text-3xl font-bold text-foreground">
                             {pendingUtilityBills.filter((b) => b.status === 'input_overdue').length}
                           </span>
-                          <span className="text-sm text-red-500">房间</span>
+                          <span className="text-sm text-muted-foreground">房间</span>
                         </div>
-                        <p className="mt-1 text-xs text-red-500/80">需要立即处理</p>
+                        <p className="mt-1 text-xs text-muted-foreground">需要立即处理</p>
                       </div>
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
-                        <AlertCircle className="h-7 w-7 text-red-600" />
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/20">
+                        <AlertCircle className="h-7 w-7 text-destructive" />
                       </div>
                     </div>
                   </CardContent>
@@ -323,11 +323,11 @@ export function UtilitiesPageContent() {
               />
 
               {roomsMissingInitial.length > 0 && (
-                <Card className="border-amber-200 bg-amber-50/50" data-testid={UTILITIES.MISSING_INITIAL_CARD}>
+                <Card className="border-warning/20 bg-warning/10" data-testid={UTILITIES.MISSING_INITIAL_CARD}>
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-100">
-                        <AlertCircle className="h-4 w-4 text-amber-600" />
+                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-warning/20">
+                        <AlertCircle className="h-4 w-4 text-warning-foreground" />
                       </span>
                       缺失初始读数
                     </CardTitle>

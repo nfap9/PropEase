@@ -212,13 +212,13 @@ export function UtilityHistoryPanel({ orgId }: { orgId: string }) {
                 <TableHead>记录日期</TableHead>
                 <TableHead>
                   <span className="flex items-center gap-1">
-                    <Droplets className="h-4 w-4 text-blue-500" />
+                    <Droplets className="h-4 w-4 text-info" />
                     水表 (m³)
                   </span>
                 </TableHead>
                 <TableHead>
                   <span className="flex items-center gap-1">
-                    <Zap className="h-4 w-4 text-yellow-500" />
+                    <Zap className="h-4 w-4 text-warning" />
                     电表 (kWh)
                   </span>
                 </TableHead>

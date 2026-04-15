@@ -85,9 +85,9 @@ export function OrdersPageContent() {
     <div className="space-y-4">
       <div className="flex gap-4 items-center">
         <div className="flex gap-2 items-center">
-          <label className="text-sm text-gray-600">类型:</label>
+          <label className="text-sm text-foreground">类型:</label>
           <select
-            className="border rounded px-2 py-1 text-sm"
+            className="border border-input rounded px-2 py-1 text-sm bg-background"
             value={typeFilter ?? ''}
             onChange={(e) => {
               setTypeFilter(e.target.value ? (e.target.value as BillingOrderType) : undefined);
@@ -103,9 +103,9 @@ export function OrdersPageContent() {
           </select>
         </div>
         <div className="flex gap-2 items-center">
-          <label className="text-sm text-gray-600">状态:</label>
+          <label className="text-sm text-foreground">状态:</label>
           <select
-            className="border rounded px-2 py-1 text-sm"
+            className="border border-input rounded px-2 py-1 text-sm bg-background"
             value={statusFilter ?? ''}
             onChange={(e) => {
               setStatusFilter(e.target.value ? (e.target.value as BillingOrderStatus) : undefined);

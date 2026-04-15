@@ -34,7 +34,7 @@ export type ColumnMeta = {
 
 function getStickyClass(meta: ColumnMeta | undefined, isHeader = false): string | undefined {
   if (!meta?.sticky) return undefined;
-  const bg = isHeader ? 'bg-slate-100' : 'bg-white';
+  const bg = isHeader ? 'bg-muted' : 'bg-card';
   if (meta.sticky === 'left') {
     return `sticky left-0 z-10 ${bg}`;
   }
@@ -166,7 +166,7 @@ export function DataTable<TData, TValue>({
                   key={header.id}
                   style={{ width: header.getSize(), minWidth: header.column.columnDef.minSize }}
                   className={cn(
-                    'h-11 bg-slate-100 px-4 text-left align-middle text-sm font-medium text-foreground [&:has([role=checkbox])]:pr-0',
+                    'h-11 bg-muted px-4 text-left align-middle text-sm font-medium text-foreground [&:has([role=checkbox])]:pr-0',
                     getStickyClass(header.column.columnDef.meta as ColumnMeta | undefined, true)
                   )}
                 >
@@ -215,7 +215,7 @@ export function DataTable<TData, TValue>({
                     key={cell.id}
                     style={{ width: cell.column.getSize(), minWidth: cell.column.columnDef.minSize }}
                     className={cn(
-                      'h-12 bg-white px-4 text-left align-middle [&:has([role=checkbox])]:pr-0',
+                      'h-12 bg-card px-4 text-left align-middle [&:has([role=checkbox])]:pr-0',
                       getStickyClass(cell.column.columnDef.meta as ColumnMeta | undefined)
                     )}
                   >

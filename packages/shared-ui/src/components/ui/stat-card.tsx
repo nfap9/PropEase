@@ -9,7 +9,7 @@ type StatDirection = 'up' | 'down' | 'neutral';
 type StatFormat = 'number' | 'currency' | 'percent' | 'text';
 
 const toneClasses: Record<StatTone, string> = {
-  default: 'from-slate-500/8 to-transparent text-foreground',
+  default: 'from-primary/8 to-transparent text-foreground',
   primary: 'from-primary/12 to-transparent text-primary',
   success: 'from-success/12 to-transparent text-[hsl(var(--success))]',
   warning: 'from-warning/12 to-transparent text-[hsl(var(--warning))]',

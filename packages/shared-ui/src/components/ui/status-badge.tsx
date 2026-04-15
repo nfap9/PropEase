@@ -16,7 +16,7 @@ const statusBadgeVariants: Record<StatusBadgeVariant, string> = {
   secondary: 'bg-secondary text-secondary-foreground',
   destructive: 'bg-destructive/14 text-destructive',
   success: 'bg-success/14 text-success',
-  warning: 'bg-warning/18 text-amber-950',
+  warning: 'bg-warning/18 text-warning-foreground',
   info: 'bg-info/14 text-info',
   outline: 'bg-background text-foreground border border-border',
 };
