@@ -6,6 +6,109 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  .scrollbar-subtle {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--sidebar-border)) transparent;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background-clip: padding-box;
+    background-color: hsl(var(--sidebar-border) / 0.45);
+  }
+
+  .scrollbar-subtle:hover::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--sidebar-foreground) / 0.26);
+  }
+}
+
+/* 现代简洁侧边栏样式 */
+@layer components {
+  /* 侧边栏背景 */
+  .sidebar-glass {
+    background: hsl(var(--sidebar-background));
+  }
+
+  /* 侧边栏顶部细线 */
+  .sidebar-glow {
+    position: relative;
+  }
+
+  .sidebar-glow::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: hsl(var(--sidebar-border));
+  }
+
+  /* 菜单项左侧指示条 */
+  .nav-item-slide {
+    position: relative;
+  }
+
+  .nav-item-slide::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) scaleY(0);
+    width: 3px;
+    height: 60%;
+    background: hsl(var(--sidebar-primary));
+    border-radius: 0 2px 2px 0;
+    transition: transform 0.2s ease;
+  }
+
+  .nav-item-slide:hover::after,
+  .nav-item-slide[data-active='true']::after {
+    transform: translateY(-50%) scaleY(1);
+  }
+
+  /* 图标悬浮效果 */
+  .icon-glow {
+    transition: color 0.2s ease;
+  }
+
+  .icon-glow[data-active='true'] {
+    color: hsl(var(--sidebar-primary));
+  }
+
+  /* 用户头像悬浮效果 */
+  .avatar-hover {
+    transition: opacity 0.2s ease;
+  }
+
+  .avatar-hover:hover {
+    opacity: 0.8;
+  }
+
+  /* 子菜单展开动画 */
+  .submenu-enter {
+    overflow: hidden;
+    animation: submenuFadeIn 0.2s ease-out forwards;
+  }
+
+  @keyframes submenuFadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
 }
 
 /**
@@ -54,6 +157,7 @@
     --sidebar-accent-foreground: 220 13% 18%;
     --sidebar-border: 214 20% 88%;
     --sidebar-ring: 214 84% 37%;
+    --sidebar-shadow: 20 20 40;
   }
 
   .dark {
@@ -95,6 +199,7 @@
     --sidebar-accent-foreground: 210 20% 96%;
     --sidebar-border: 217 19% 21%;
     --sidebar-ring: 210 92% 66%;
+    --sidebar-shadow: 0 25 50;
   }
 
   * {

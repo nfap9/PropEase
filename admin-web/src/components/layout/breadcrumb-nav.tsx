@@ -31,7 +31,7 @@ const BREADCRUMB_CONFIG: Record<string, { label: string; detailLabel?: string }>
   '/roles': { label: adminMessages.layout.nav.roles },
   '/organizations': { label: adminMessages.layout.nav.organizations, detailLabel: '团队详情' },
   '/organizations/new': { label: '新增团队' },
-  '/billing': { label: '账单管理' },
+  '/billing': { label: adminMessages.layout.nav.billingManagement },
   '/billing/plans': { label: adminMessages.layout.nav.servicePricing },
   '/billing/orders': { label: adminMessages.layout.nav.billingOrders },
   '/billing/usage-pricing': { label: adminMessages.layout.nav.usagePricing },
