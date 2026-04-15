@@ -31,11 +31,10 @@ const BREADCRUMB_CONFIG: Record<string, { label: string; detailLabel?: string }>
   '/roles': { label: adminMessages.layout.nav.roles },
   '/organizations': { label: adminMessages.layout.nav.organizations, detailLabel: '团队详情' },
   '/organizations/new': { label: '新增团队' },
-  '/service-pricing': { label: adminMessages.layout.nav.servicePricing },
-  '/storefront': { label: adminMessages.layout.nav.storefront },
-  '/plans': { label: '套餐管理' },
-  '/subscriptions': { label: adminMessages.layout.nav.subscriptions },
-  '/usage-pricing': { label: adminMessages.layout.nav.usagePricing },
+  '/billing': { label: '账单管理' },
+  '/billing/plans': { label: adminMessages.layout.nav.servicePricing },
+  '/billing/orders': { label: adminMessages.layout.nav.billingOrders },
+  '/billing/usage-pricing': { label: adminMessages.layout.nav.usagePricing },
   '/setup': { label: '设置向导' },
 };
 

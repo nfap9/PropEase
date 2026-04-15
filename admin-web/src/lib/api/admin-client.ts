@@ -41,6 +41,11 @@ import type {
   StorefrontItemCreate,
   StorefrontItemUpdate,
   PricingDiscount,
+  BillingOrder,
+  BillingOrderListParams,
+  BillingOrderListResponse,
+  AdminUsagePricingResponse,
+  AdminUsagePricingUpdateRequest,
 } from '@apartment-ultra/api-contract';
 
 // 重新导出类型，保持向后兼容
@@ -81,6 +86,11 @@ export type {
   StorefrontItemCreate,
   StorefrontItemUpdate,
   PricingDiscount,
+  BillingOrder,
+  BillingOrderListParams,
+  BillingOrderListResponse,
+  AdminUsagePricingResponse,
+  AdminUsagePricingUpdateRequest,
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
@@ -357,4 +367,16 @@ export const adminApiEndpoints = {
     adminApi.put<StorefrontItem>(`/admin/storefronts/${storefrontId}/items/${itemId}`, data),
   deleteStorefrontItem: (storefrontId: string, itemId: string) =>
     adminApi.delete(`/admin/storefronts/${storefrontId}/items/${itemId}`),
+
+  // 统一订单（billing）
+  listBillingOrders: (params?: BillingOrderListParams) =>
+    adminApi.get<BillingOrderListResponse>('/admin/billing/orders', { params }),
+  getBillingOrder: (id: string) =>
+    adminApi.get<BillingOrder>(`/admin/billing/orders/${id}`),
+
+  // 新用量定价（使用新 API）
+  getBillingUsagePricing: () =>
+    adminApi.get<AdminUsagePricingResponse>('/admin/billing/usage-pricing'),
+  updateBillingUsagePricing: (data: AdminUsagePricingUpdateRequest) =>
+    adminApi.put<unknown>('/admin/billing/usage-pricing', data),
 };

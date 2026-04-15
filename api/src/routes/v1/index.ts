@@ -18,6 +18,7 @@ import { tenantReachabilityRouter } from './tenant-reachability.js';
 import { adminRouter } from './admin/index.js';
 import { webhooksRouter } from './webhooks/index.js';
 import { configRouter } from './config.js';
+import { billingRouter } from './billing/index.js';
 
 const router: Router = Router();
 
@@ -39,6 +40,7 @@ router.use('/custom-roles', customRolesRouter);
 router.use('/fee-items', feeItemsRouter);
 router.use('/admin', adminRouter);
 router.use('/webhooks', webhooksRouter);
+router.use('/billing', billingRouter);
 
 router.get('/', (_req, res) => {
   res.json({ message: 'API v1' });

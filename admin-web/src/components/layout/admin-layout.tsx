@@ -12,7 +12,6 @@ import {
   CreditCard,
   LogOut,
   Palette,
-  Store,
   DollarSign,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
@@ -44,10 +43,9 @@ const ADMIN_NAV = [
   { href: '/registered-users', label: adminMessages.layout.nav.registeredUsers, icon: UserCircle },
   { href: '/roles', label: adminMessages.layout.nav.roles, icon: Shield },
   { href: '/organizations', label: adminMessages.layout.nav.organizations, icon: Building2 },
-  { href: '/service-pricing', label: adminMessages.layout.nav.servicePricing, icon: DollarSign },
-  { href: '/storefront', label: adminMessages.layout.nav.storefront, icon: Store },
-  { href: '/usage-pricing', label: adminMessages.layout.nav.usagePricing, icon: Package },
-  { href: '/subscriptions', label: adminMessages.layout.nav.subscriptions, icon: CreditCard },
+  { href: '/billing/plans', label: adminMessages.layout.nav.servicePricing, icon: DollarSign },
+  { href: '/billing/usage-pricing', label: adminMessages.layout.nav.usagePricing, icon: Package },
+  { href: '/billing/orders', label: adminMessages.layout.nav.billingOrders, icon: CreditCard },
 ];
 
 function AdminNavContent() {

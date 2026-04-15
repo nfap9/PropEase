@@ -242,3 +242,19 @@ export type {
   AdminUsagePricing,
   AdminUsagePricingUpdate,
 } from './admin.js';
+
+/** 用量付费（统一订单） */
+export type {
+  BillingOrder,
+  BillingOrderType,
+  BillingOrderStatus,
+  BillingUsageDetails,
+  CreateSubscriptionOrderRequest,
+  CreateUsageOrderRequest,
+  CreateBillingOrderRequest,
+  BillingOrderListParams,
+  BillingOrderListResponse,
+  UsageUnitPricing,
+  AdminUsagePricingResponse,
+  AdminUsagePricingUpdateRequest,
+} from './billing.js';

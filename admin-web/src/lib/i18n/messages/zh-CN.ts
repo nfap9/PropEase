@@ -36,6 +36,7 @@ export const adminZhCNMessages = {
       storefront: '商品展示',
       usagePricing: '用量计费',
       subscriptions: '已购服务',
+      billingOrders: '订单管理',
     },
   },
   login: {

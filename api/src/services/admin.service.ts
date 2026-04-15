@@ -23,9 +23,8 @@ import { ulid } from 'ulid';
 import {
   defaultServiceProductService,
 } from './service-product.service.js';
-import { defaultSubscriptionService } from './subscription.service.js';
-import { fulfillSubscription } from './fulfillSubscription.js';
-import { defaultSubscriptionRepo } from '../repositories/subscription.repo.js';
+import { defaultBillingOrderRepo } from '../repositories/billing-order.repo.js';
+import { prisma } from '../lib/prisma.js';
 
 /**
  * 登录结果
@@ -547,22 +546,54 @@ export function createAdminService(
         );
       }
 
-      const order = await defaultSubscriptionService.createOrder(data.organization_id, {
-        serviceId: data.service_id,
-        pricingId: data.pricing_id ?? undefined,
-        billingMonths: data.billing_months,
-      });
+      // 计算原始价格
+      let originalAmount = 0;
+      if (data.pricing_id) {
+        const pricing = await prisma.servicePricing.findFirst({
+          where: { id: data.pricing_id, service_id: data.service_id },
+        });
+        if (pricing) {
+          originalAmount = Number(pricing.price);
+        }
+      } else {
+        const pricing = await prisma.servicePricing.findFirst({
+          where: { service_id: data.service_id, months: data.billing_months, is_active: true },
+        });
+        if (pricing) {
+          originalAmount = Number(pricing.price);
+        } else {
+          const monthlyPricing = await prisma.servicePricing.findFirst({
+            where: { service_id: data.service_id, months: 1, is_active: true },
+          });
+          if (monthlyPricing) {
+            originalAmount = Number(monthlyPricing.price) * data.billing_months;
+          }
+        }
+      }
 
-      const originalAmount = Number(order.original_amount ?? order.amount);
       const paidAt = new Date();
 
-      await defaultSubscriptionRepo.updateOrder(order.id, {
-        status: 'paid',
+      // 创建0元订单并立即标记为已支付
+      const orderNo = `ADM${Date.now()}`;
+      const expiresAt = new Date();
+      expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+
+      // 创建订单记录
+      await defaultBillingOrderRepo.create({
+        id: ulid().toLowerCase(),
+        order_no: orderNo,
+        order_type: 'subscription',
+        organization: { connect: { id: data.organization_id } },
+        service: { connect: { id: data.service_id } },
+        pricing: data.pricing_id ? { connect: { id: data.pricing_id } } : undefined,
+        billing_months: data.billing_months,
         amount: 0,
         original_amount: originalAmount,
+        currency: 'CNY',
+        status: 'paid',
         payment_method: 'admin_grant',
         paid_at: paidAt,
-        expires_at: paidAt,
+        expires_at: expiresAt,
         total_discount: originalAmount,
         total_gift_months: giftMonths,
         applied_discounts: toPrismaInputJsonValue([
@@ -575,17 +606,38 @@ export function createAdminService(
         ]),
       });
 
-      await fulfillSubscription(order.id);
+      // 履行订阅 - 创建或更新subscription
+      const startDate = new Date();
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + data.billing_months + giftMonths);
 
-      const updatedSubscriptions = await getRepo().listSubscriptions(0, 1, {
-        organization_id: data.organization_id,
-      });
-      const updatedSubscription = updatedSubscriptions[0] ?? null;
-      if (!updatedSubscription) {
-        throw createAppError(500, '赠送成功，但未读取到最新订阅结果');
+      const existingSub = await defaultBillingOrderRepo.findSubscriptionByOrgId(data.organization_id);
+
+      if (existingSub) {
+        // 更新现有订阅
+        const updated = await defaultBillingOrderRepo.updateSubscription(data.organization_id, {
+          service: { connect: { id: data.service_id } },
+          status: 'active',
+          billing_months: data.billing_months,
+          start_date: startDate,
+          end_date: endDate,
+          auto_renew: true,
+          next_service: { disconnect: true },
+        });
+        return updated as unknown as SubscriptionWithRelations;
+      } else {
+        // 创建新订阅
+        const newSub = await defaultBillingOrderRepo.createSubscription({
+          id: ulid().toLowerCase(),
+          organization: { connect: { id: data.organization_id } },
+          service: { connect: { id: data.service_id } },
+          billing_months: data.billing_months,
+          start_date: startDate,
+          end_date: endDate,
+          auto_renew: true,
+        });
+        return newSub as unknown as SubscriptionWithRelations;
       }
-
-      return updatedSubscription;
     },
 
     getStats: async () => {

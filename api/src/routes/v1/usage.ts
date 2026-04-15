@@ -3,9 +3,8 @@ import { z } from 'zod';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
-import { defaultUsageService } from '../../services/usage.service.js';
-import { createWechatPayNativeOrder } from '../../services/wechatPayNative.js';
-import { defaultUsageRepo } from '../../repositories/usage.repo.js';
+import { defaultBillingService } from '../../services/billing.service.js';
+import { prisma } from '../../lib/prisma.js';
 
 const router: Router = Router();
 
@@ -18,7 +17,7 @@ router.use(requireConsoleAuth);
 
 router.get('/pricing', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const pricing = await defaultUsageService.getPricing();
+    const pricing = await defaultBillingService.getUsagePricing();
     res.json(pricing);
   } catch (e) {
     return next(e);
@@ -29,7 +28,21 @@ router.get('/quota', async (req: Request, res: Response, next: NextFunction) => 
   try {
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权'));
-    const quota = await defaultUsageService.getQuota(user.id);
+
+    // 获取用户的组织
+    const membership = await prisma.organizationMember.findFirst({
+      where: { user_id: user.id, role: 'owner' },
+    });
+
+    if (!membership) {
+      return res.json({ orgs: 0, apartments: 0, rooms: 0, members: 0 });
+    }
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+
+    const quota = await defaultBillingService.getUsageAllowance(membership.organization_id, year, month);
     res.json(quota);
   } catch (e) {
     return next(e);
@@ -50,24 +63,21 @@ router.post('/orders', async (req: Request, res: Response, next: NextFunction) =
     const parsed = CreateUsageOrderSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
 
-    const order = await defaultUsageService.createOrder(user.id, parsed.data);
-
-    // 创建微信支付订单
-    const expires = order.expires_at;
-    const wechatResult = await createWechatPayNativeOrder({
-      out_trade_no: order.order_no,
-      description: `按量购买-组织${parsed.data.orgs}公寓${parsed.data.apartments}房间${parsed.data.rooms}成员${parsed.data.members}`,
-      amount_yuan: Number(order.amount),
-      time_expire: expires
-        ? expires.toISOString()
-        : new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+    // 获取用户的组织
+    const membership = await prisma.organizationMember.findFirst({
+      where: { user_id: user.id, role: 'owner' },
     });
 
-    if (wechatResult?.code_url) {
-      await defaultUsageRepo.updateOrder(order.id, { code_url: wechatResult.code_url });
-      const updated = await defaultUsageRepo.findOrderByIdOnly(order.id);
-      return res.status(201).json(updated ?? order);
+    if (!membership) {
+      return next(createAppError(400, '用户没有关联组织'));
     }
+
+    const order = await defaultBillingService.createUsageOrder({
+      userId: user.id,
+      organizationId: membership.organization_id,
+      usageDetails: parsed.data,
+    });
+
     res.status(201).json(order);
   } catch (e) {
     return next(e);
@@ -78,7 +88,12 @@ router.get('/orders/:order_id', async (req: Request, res: Response, next: NextFu
   try {
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权'));
-    const order = await defaultUsageService.getOrder(user.id, req.params.order_id);
+    const order = await defaultBillingService.getOrder(req.params.order_id);
+
+    if (!order || order.user_id !== user.id) {
+      return next(createAppError(404, '订单不存在'));
+    }
+
     res.json(order);
   } catch (e) {
     return next(e);
