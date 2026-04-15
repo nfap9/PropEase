@@ -95,24 +95,33 @@ export function ApartmentCard({ apartment, onEdit, onDelete }: ApartmentCardProp
 
         <CardContent className="space-y-4">
           {/* Room Stats Row */}
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="flex-1 justify-center py-1.5 whitespace-nowrap">
-              <span className="font-mono font-bold">{room_stats.total}</span>
-              <span className="ml-1 text-muted-foreground">总房间</span>
-            </Badge>
-            <Badge variant="success" className="flex-1 justify-center py-1.5 whitespace-nowrap">
-              <span className="font-mono font-bold">{room_stats.available}</span>
-              <span className="ml-1 text-muted-foreground">空房</span>
-            </Badge>
-            <Badge variant="info" className="flex-1 justify-center py-1.5 whitespace-nowrap">
-              <span className="font-mono font-bold">{room_stats.occupied}</span>
-              <span className="ml-1 text-muted-foreground">已租</span>
-            </Badge>
-            {room_stats.maintenance > 0 && (
-              <Badge variant="warning" className="flex-1 justify-center py-1.5 whitespace-nowrap">
-                <span className="font-mono font-bold">{room_stats.maintenance}</span>
-                <span className="ml-1 text-muted-foreground">维修</span>
-              </Badge>
+          <div className="grid grid-cols-4 gap-3">
+            {/* Total */}
+            <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-muted/50 border border-muted">
+              <span className="text-2xl font-bold text-foreground tabular-nums">{room_stats.total}</span>
+              <span className="text-xs text-muted-foreground mt-1">总计</span>
+            </div>
+            {/* Available */}
+            <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-emerald-50 border border-emerald-100">
+              <span className="text-2xl font-bold text-emerald-600 tabular-nums">{room_stats.available}</span>
+              <span className="text-xs text-emerald-600/70 mt-1">空房</span>
+            </div>
+            {/* Occupied */}
+            <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-blue-50 border border-blue-100">
+              <span className="text-2xl font-bold text-blue-600 tabular-nums">{room_stats.occupied}</span>
+              <span className="text-xs text-blue-600/70 mt-1">已租</span>
+            </div>
+            {/* Maintenance */}
+            {room_stats.maintenance > 0 ? (
+              <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-amber-50 border border-amber-100">
+                <span className="text-2xl font-bold text-amber-600 tabular-nums">{room_stats.maintenance}</span>
+                <span className="text-xs text-amber-600/70 mt-1">维修</span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-muted/30 border border-transparent">
+                <span className="text-2xl font-bold text-muted-foreground/50 tabular-nums">0</span>
+                <span className="text-xs text-muted-foreground/50 mt-1">维修</span>
+              </div>
             )}
           </div>
 
