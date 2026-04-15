@@ -13,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Building2, MapPin, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { ApartmentWithStats } from '@/types';
 import { PermissionGuard } from '@/components/common/permission-guard';

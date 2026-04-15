@@ -17,11 +17,13 @@ export function createMockRequest(overrides?: Partial<Request>): Request {
 /**
  * Creates a mock Express Response object with json and status spies
  */
-export function createMockResponse(): Response & {
+interface MockResponse extends Response {
   _json: ReturnType<typeof vi.fn>;
   _status: ReturnType<typeof vi.fn>;
   _send: ReturnType<typeof vi.fn>;
-} {
+}
+
+export function createMockResponse(): MockResponse {
   const _json = vi.fn();
   const _status = vi.fn().mockReturnThis();
   const _send = vi.fn().mockReturnThis();
@@ -33,17 +35,22 @@ export function createMockResponse(): Response & {
     _json,
     _status,
     _send,
-  } as any;
+  } as unknown as MockResponse;
 }
 
 /**
  * Creates a mock NextFunction
  */
-export function createMockNext(): NextFunction & { _called: boolean; _error: any } {
-  const fn: any = vi.fn((error?: any) => {
+interface MockNext {
+  _called: boolean;
+  _error: Error | null;
+}
+
+export function createMockNext(): NextFunction & MockNext {
+  const fn = vi.fn((error?: Error) => {
     fn._called = true;
-    fn._error = error;
-  });
+    fn._error = error ?? null;
+  }) as unknown as NextFunction & MockNext;
   fn._called = false;
   fn._error = null;
   return fn;
@@ -52,7 +59,7 @@ export function createMockNext(): NextFunction & { _called: boolean; _error: any
 /**
  * Helper to assert a controller handler calls next with an error
  */
-export function expectNextWithError(next: NextFunction & { _called: boolean; _error: any }) {
+export function expectNextWithError(next: NextFunction & { _called: boolean; _error: Error | null }) {
   expect(next._called).toBe(true);
   expect(next._error).toBeDefined();
 }

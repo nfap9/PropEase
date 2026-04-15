@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, X, Building2, Calendar, SlidersHorizontal } from 'lucide-react';
+import { Search, X, Building2 } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { DateRangePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';

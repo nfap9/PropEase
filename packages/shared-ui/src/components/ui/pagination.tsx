@@ -125,7 +125,7 @@ export function Pagination({
             key={pageNumber}
             variant={isActive ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => goToPage(pageNumber)}
+            onClick={() => goToPage(pageNumber as number)}
             aria-label={`第 ${pageNumber} 页`}
             aria-current={isActive ? 'page' : undefined}
             className={cn(

@@ -72,7 +72,6 @@ function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
       }
     } else {
       // 没有精确匹配当前路径，尝试找前缀匹配
-      let found = false;
       // 按长度倒序遍历配置键，找最长匹配的前缀
       const sortedKeys = Object.keys(BREADCRUMB_CONFIG).sort((a, b) => b.length - a.length);
       for (const key of sortedKeys) {
@@ -80,7 +79,6 @@ function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
           const parentConfig = BREADCRUMB_CONFIG[key];
           if (parentConfig?.detailLabel) {
             items.push({ href: currentPath, label: parentConfig.detailLabel });
-            found = true;
             break;
           }
         }

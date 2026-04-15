@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { GripVertical, Pencil, Store, Trash2 } from 'lucide-react';
-import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
+import { StatusBadge, Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { TableActions } from '@/components/common/table-actions';
 import { BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import type { StorefrontConfig, StorefrontItem } from '@/lib/api/admin-client';
