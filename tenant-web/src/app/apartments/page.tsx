@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,13 +24,13 @@ import { apartmentsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { ApartmentWithStats } from '@/types';
 import { Building2, Plus } from 'lucide-react';
-import { filterEmptyStrings } from '@/lib/utils/form';
 import { getErrorMessage } from '@/lib/utils/error';
+import { filterEmptyStrings } from '@/lib/utils/form';
 import {
   ApartmentCard,
   ApartmentEmptyState,
-  ApartmentForm,
   ApartmentSearchBar,
+  ApartmentForm,
   apartmentSchema,
   type ApartmentFormData,
 } from '@/components/apartments';
@@ -37,11 +38,11 @@ import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
 
 export default function ApartmentsPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedApartment, setSelectedApartment] = useState<ApartmentWithStats | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,36 +54,8 @@ export default function ApartmentsPage() {
     enabled: !!orgId,
   });
 
-  const createForm = useForm<ApartmentFormData>({
-    resolver: zodResolver(apartmentSchema),
-    defaultValues: {
-      name: '',
-      address: '',
-      description: '',
-      floors: undefined,
-      land_area: undefined,
-      total_area: undefined,
-      landlord_name: '',
-      landlord_contact: '',
-      contract_start: '',
-      contract_end: '',
-      landlord_rent: undefined,
-    },
-  });
-
   const editForm = useForm<ApartmentFormData>({
     resolver: zodResolver(apartmentSchema),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data: ApartmentFormData) => apartmentsApi.create(orgId!, filterEmptyStrings(data)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
-      setIsCreateOpen(false);
-      createForm.reset();
-      appToast.success('公寓创建成功');
-    },
-    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
@@ -167,7 +140,11 @@ export default function ApartmentsPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <ApartmentSearchBar value={searchQuery} onChange={setSearchQuery} />
             <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
-              <Button onClick={() => setIsCreateOpen(true)} data-testid="apartments-new-btn" className="shrink-0">
+              <Button
+                onClick={() => router.push('/apartments/new')}
+                data-testid="apartments-new-btn"
+                className="shrink-0"
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 新增公寓
               </Button>
@@ -175,13 +152,16 @@ export default function ApartmentsPage() {
           </div>
 
           {apartmentsLoading ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-7xl mx-auto">
+            <div className="mx-auto grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               <Skeleton className="h-48" />
               <Skeleton className="h-48" />
               <Skeleton className="h-48" />
             </div>
           ) : filteredApartments && filteredApartments.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-7xl mx-auto" data-testid="apartments-list">
+            <div
+              className="mx-auto grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              data-testid="apartments-list"
+            >
               {filteredApartments.map((apartment) => (
                 <ApartmentCard key={apartment.id} apartment={apartment} onEdit={handleEdit} onDelete={handleDelete} />
               ))}
@@ -189,48 +169,14 @@ export default function ApartmentsPage() {
           ) : (
             <ApartmentEmptyState
               hasApartments={!!apartments && apartments.length > 0}
-              onCreateClick={() => setIsCreateOpen(true)}
+              onCreateClick={() => router.push('/apartments/new')}
             />
           )}
         </div>
 
-        {/* Create Dialog */}
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="apartments-create-dialog">
-            <DialogHeader>
-              <DialogTitle>新增公寓</DialogTitle>
-              <DialogDescription>填写公寓信息创建新的公寓</DialogDescription>
-            </DialogHeader>
-            <ApartmentForm
-              form={createForm}
-              mode="create"
-              formId="create-apartment-form"
-              onSubmit={(data) => createMutation.mutate(data)}
-            />
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsCreateOpen(false)}
-                data-testid="apartments-cancel-btn"
-              >
-                取消
-              </Button>
-              <Button
-                type="submit"
-                form="create-apartment-form"
-                disabled={createMutation.isPending}
-                data-testid="apartments-confirm-btn"
-              >
-                {createMutation.isPending ? '创建中...' : '创建'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
         {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="apartments-edit-dialog">
+          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto" data-testid="apartments-edit-dialog">
             <DialogHeader>
               <DialogTitle>编辑公寓</DialogTitle>
               <DialogDescription>修改公寓信息</DialogDescription>

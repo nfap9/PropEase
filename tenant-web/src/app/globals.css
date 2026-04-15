@@ -6,30 +6,6 @@
   .text-balance {
     text-wrap: balance;
   }
-
-  .scrollbar-subtle {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--sidebar-border)) transparent;
-  }
-
-  .scrollbar-subtle::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .scrollbar-subtle::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .scrollbar-subtle::-webkit-scrollbar-thumb {
-    border: 2px solid transparent;
-    border-radius: 9999px;
-    background-clip: padding-box;
-    background-color: hsl(var(--sidebar-border) / 0.45);
-  }
-
-  .scrollbar-subtle:hover::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--sidebar-foreground) / 0.26);
-  }
 }
 
 /**
@@ -138,5 +114,43 @@
 
   ::selection {
     background: hsl(var(--primary) / 0.18);
+  }
+
+  /* 全局滚动条样式 */
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  html::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  html::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  html::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background-clip: padding-box;
+    background-color: hsl(var(--border) / 0.5);
+  }
+
+  html:hover::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+  }
+
+  /* 暗色模式滚动条 */
+  .dark html {
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .dark html::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border) / 0.6);
+  }
+
+  .dark html:hover::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
   }
 }

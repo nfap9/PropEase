@@ -31,6 +31,11 @@ const SETTINGS_BREADCRUMBS: Record<string, string> = {
   '/settings/subscription/result': tenantMessages.settings.breadcrumb.subscriptionResult,
 };
 
+// 公寓页面的面包屑配置
+const APARTMENTS_BREADCRUMBS: Record<string, string> = {
+  '/apartments/new': '新增公寓',
+};
+
 /**
  * 从路径中提取面包屑项
  */
@@ -54,10 +59,23 @@ function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
     return items;
   }
 
+  // 公寓页面处理
+  if (pathname.startsWith('/apartments')) {
+    // 首页 > 公寓
+    const matchedApartment = NAV_ITEMS.find((item) => item.href === '/apartments');
+    if (matchedApartment) {
+      items.push({ href: '/apartments', label: matchedApartment.label });
+    }
+    // 子页面（如新增公寓）
+    const pageTitle = APARTMENTS_BREADCRUMBS[pathname];
+    if (pageTitle) {
+      items.push({ href: pathname, label: pageTitle });
+    }
+    return items;
+  }
+
   // 匹配导航配置中的项目
-  const matchedItem = NAV_ITEMS.find(
-    (item) => pathname === item.href || pathname.startsWith(item.href + '/')
-  );
+  const matchedItem = NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(item.href + '/'));
 
   if (matchedItem) {
     items.push({ href: matchedItem.href, label: matchedItem.label });
@@ -97,15 +115,10 @@ export function BreadcrumbNav() {
             <div key={item.href} className="flex items-center">
               <BreadcrumbItem>
                 {isLast ? (
-                  <BreadcrumbPage className="text-sm font-medium text-foreground">
-                    {item.label}
-                  </BreadcrumbPage>
+                  <BreadcrumbPage className="text-sm font-medium text-foreground">{item.label}</BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink asChild>
-                    <Link
-                      href={item.href}
-                      className="text-sm text-muted-foreground hover:text-foreground"
-                    >
+                    <Link href={item.href} className="text-sm text-muted-foreground hover:text-foreground">
                       {item.label}
                     </Link>
                   </BreadcrumbLink>

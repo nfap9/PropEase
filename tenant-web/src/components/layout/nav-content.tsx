@@ -103,10 +103,7 @@ export function NavContent({ onNavClick }: NavContentProps) {
 
       {/* 导航菜单区域 */}
       <nav className="flex min-h-0 flex-1 flex-col px-3 py-4">
-        <div
-          className="scrollbar-subtle min-h-0 flex-1 overflow-y-auto overflow-x-hidden"
-          style={{ scrollbarGutter: 'stable' }}
-        >
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden" style={{ scrollbarGutter: 'stable' }}>
           <SidebarMenu>
             {visibleNavItems.map((item) => {
               const Icon = item.icon;
@@ -150,25 +147,26 @@ export function NavContent({ onNavClick }: NavContentProps) {
                     <ChevronRight className={cn('h-3.5 w-3.5 transition-transform', settingsOpen && 'rotate-90')} />
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                {settingsOpen && visibleSettingsItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-                  return (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        isActive={isActive}
-                        tooltip={item.label}
-                        className="ml-3 h-10 rounded-lg px-3 text-sidebar-foreground/75 transition-all hover:bg-secondary hover:text-sidebar-foreground data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
-                        asChild
-                      >
-                        <Link href={item.href} onClick={onNavClick} className="flex min-w-0 items-center gap-3">
-                          <Icon className="h-4 w-4 shrink-0" />
-                          <span className="flex-1 truncate text-sm font-medium">{item.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
+                {settingsOpen &&
+                  visibleSettingsItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                    return (
+                      <SidebarMenuItem key={item.href}>
+                        <SidebarMenuButton
+                          isActive={isActive}
+                          tooltip={item.label}
+                          className="ml-3 h-10 rounded-lg px-3 text-sidebar-foreground/75 transition-all hover:bg-secondary hover:text-sidebar-foreground data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
+                          asChild
+                        >
+                          <Link href={item.href} onClick={onNavClick} className="flex min-w-0 items-center gap-3">
+                            <Icon className="h-4 w-4 shrink-0" />
+                            <span className="flex-1 truncate text-sm font-medium">{item.label}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
               </>
             )}
           </SidebarMenu>
@@ -190,8 +188,12 @@ export function NavContent({ onNavClick }: NavContentProps) {
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1 text-left">
-                      <div className="truncate text-sm font-medium">{user?.full_name || tenantMessages.common.user}</div>
-                      <div className="truncate text-xs text-sidebar-foreground/60">{organization?.name || tenantMessages.common.currentTeam}</div>
+                      <div className="truncate text-sm font-medium">
+                        {user?.full_name || tenantMessages.common.user}
+                      </div>
+                      <div className="truncate text-xs text-sidebar-foreground/60">
+                        {organization?.name || tenantMessages.common.currentTeam}
+                      </div>
                     </div>
                     <ChevronDown className="h-4 w-4 text-sidebar-foreground/50" />
                   </Button>
