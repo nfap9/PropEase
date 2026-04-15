@@ -67,6 +67,29 @@ export const subscriptionsApi = {
     );
     return response.data;
   },
+
+  previewOrder: async (orgId: string, data: { service_id: string; billing_months?: number }): Promise<{
+    action_type: 'purchase' | 'renew' | 'upgrade' | 'downgrade';
+    service_name: string;
+    current_service_name: string | null;
+    original_price: number;
+    credit: number;
+    final_price: number;
+    billing_months: number;
+  }> => {
+    const response = await api.post(`/subscriptions/organizations/${orgId}/orders/preview`, {
+      service_id: data.service_id,
+      billing_months: data.billing_months ?? 1,
+    });
+    return response.data;
+  },
+
+  simulatePay: async (orgId: string, orderId: string): Promise<{ message: string; order_id: string }> => {
+    const response = await api.post<{ message: string; order_id: string }>(
+      `/subscriptions/organizations/${orgId}/orders/${orderId}/simulate-pay`
+    );
+    return response.data;
+  },
 };
 
 export default subscriptionsApi;

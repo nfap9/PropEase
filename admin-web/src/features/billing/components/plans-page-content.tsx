@@ -162,9 +162,9 @@ function PlanDialog({ plan, onClose, onSubmit, isPending }: PlanDialogProps) {
     name: plan?.name || '',
     code: plan?.code || '',
     description: plan?.description || '',
-    max_apartments: plan?.max_apartments ?? -1,
-    max_rooms: plan?.max_rooms ?? -1,
-    max_members: plan?.max_members ?? -1,
+    max_apartments: plan?.max_apartments ?? 0,
+    max_rooms: plan?.max_rooms ?? 0,
+    max_members: plan?.max_members ?? 0,
     is_active: plan?.is_active ?? true,
     sort_order: plan?.sort_order ?? 0,
   });
@@ -211,23 +211,24 @@ function PlanDialog({ plan, onClose, onSubmit, isPending }: PlanDialogProps) {
               rows={2}
             />
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">最大公寓数</label>
               <input
                 type="number"
+                min="0"
                 value={formData.max_apartments}
-                onChange={(e) => setFormData({ ...formData, max_apartments: parseInt(e.target.value) || -1 })}
+                onChange={(e) => setFormData({ ...formData, max_apartments: e.target.valueAsNumber || 0 })}
                 className="w-full border border-input rounded px-3 py-2 bg-background"
-                placeholder="-1表示不限"
               />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">最大房间数</label>
               <input
                 type="number"
+                min="0"
                 value={formData.max_rooms}
-                onChange={(e) => setFormData({ ...formData, max_rooms: parseInt(e.target.value) || -1 })}
+                onChange={(e) => setFormData({ ...formData, max_rooms: e.target.valueAsNumber || 0 })}
                 className="w-full border border-input rounded px-3 py-2 bg-background"
               />
             </div>
@@ -235,8 +236,9 @@ function PlanDialog({ plan, onClose, onSubmit, isPending }: PlanDialogProps) {
               <label className="block text-sm font-medium mb-1">最大成员数</label>
               <input
                 type="number"
+                min="0"
                 value={formData.max_members}
-                onChange={(e) => setFormData({ ...formData, max_members: parseInt(e.target.value) || -1 })}
+                onChange={(e) => setFormData({ ...formData, max_members: e.target.valueAsNumber || 0 })}
                 className="w-full border border-input rounded px-3 py-2 bg-background"
               />
             </div>

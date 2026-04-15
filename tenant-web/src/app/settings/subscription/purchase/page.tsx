@@ -16,6 +16,9 @@ import {
   Loader2,
   Tag,
   Gift,
+  ArrowUpCircle,
+  RefreshCw,
+  PlusCircle,
 } from 'lucide-react';
 import {
   Dialog,
@@ -53,6 +56,23 @@ const SERVICE_COLORS: Record<string, string> = {
   enterprise: 'border-yellow-500',
 };
 
+type OrderPreview = {
+  action_type: 'purchase' | 'renew' | 'upgrade' | 'downgrade';
+  service_name: string;
+  current_service_name: string | null;
+  original_price: number;
+  credit: number;
+  final_price: number;
+  billing_months: number;
+};
+
+const ACTION_TYPE_CONFIG = {
+  purchase: { label: '购买', icon: PlusCircle, color: 'text-blue-600' },
+  renew: { label: '续费', icon: RefreshCw, color: 'text-green-600' },
+  upgrade: { label: '升级', icon: ArrowUpCircle, color: 'text-amber-600' },
+  downgrade: { label: '降级', icon: RefreshCw, color: 'text-gray-600' },
+};
+
 export default function SubscriptionPurchasePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -61,6 +81,8 @@ export default function SubscriptionPurchasePage() {
 
   const [selectedService, setSelectedService] = useState<StorefrontService | null>(null);
   const [selectedPricing, setSelectedPricing] = useState<StorefrontServicePricing | null>(null);
+  const [orderPreview, setOrderPreview] = useState<OrderPreview | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   // 获取商店视图
   const { data: storefront, isLoading: storefrontLoading } = useQuery({
@@ -85,6 +107,7 @@ export default function SubscriptionPurchasePage() {
       }),
     onSuccess: (order) => {
       setSelectedService(null);
+      setOrderPreview(null);
       router.push(`/settings/subscription/pay?order_id=${order.id}`);
     },
     onError: (error) =>
@@ -106,6 +129,7 @@ export default function SubscriptionPurchasePage() {
       queryClient.invalidateQueries({ queryKey: ['subscription-status', orgId] });
       queryClient.invalidateQueries({ queryKey: ['organization-usage', orgId] });
       setSelectedService(null);
+      setOrderPreview(null);
       router.push('/settings/subscription');
     },
     onError: (error) =>
@@ -114,16 +138,36 @@ export default function SubscriptionPurchasePage() {
       ),
   });
 
-  const handleSubscribe = (service: StorefrontService, pricing?: StorefrontServicePricing) => {
+  // 获取订单预览
+  const fetchOrderPreview = async (serviceId: string, billingMonths: number) => {
+    if (!orgId) return null;
+    try {
+      setPreviewLoading(true);
+      const preview = await subscriptionsApi.previewOrder(orgId, { service_id: serviceId, billing_months: billingMonths });
+      setOrderPreview(preview);
+      return preview;
+    } catch {
+      setOrderPreview(null);
+      return null;
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const handleSubscribe = async (service: StorefrontService, pricing?: StorefrontServicePricing) => {
     setSelectedService(service);
     setSelectedPricing(pricing ?? null);
+    setOrderPreview(null);
+    // 获取订单预览
+    const billingMonths = pricing?.months ?? 1;
+    await fetchOrderPreview(service.id, billingMonths);
   };
 
   const handleConfirmSubscribe = () => {
     if (!selectedService) return;
 
     const billingMonths = selectedPricing?.months ?? 1;
-    const price = getPricingSummary(selectedPricing).finalPrice;
+    const price = orderPreview?.final_price ?? getPricingSummary(selectedPricing).finalPrice;
 
     if (price <= 0) {
       subscribeMutation.mutate({ planId: selectedService.id, billingMonths });
@@ -150,6 +194,8 @@ export default function SubscriptionPurchasePage() {
   // 只显示已设置定价的服务
   const services = (storefront?.services ?? []).filter((s) => (s.pricing ?? []).length > 0);
   const selectedPricingSummary = getPricingSummary(selectedPricing);
+
+  const actionConfig = orderPreview ? ACTION_TYPE_CONFIG[orderPreview.action_type] : null;
 
   return (
     <div className="space-y-6">
@@ -317,22 +363,100 @@ export default function SubscriptionPurchasePage() {
         <Dialog open={!!selectedService} onOpenChange={(open) => !open && setSelectedService(null)}>
           <DialogContent className="max-w-lg" data-testid={SUBSCRIPTION.CONFIRM_DIALOG}>
             <DialogHeader>
-              <DialogTitle>{tenantMessages.settings.subscriptionPage.purchase.confirmTitle}</DialogTitle>
+              <DialogTitle>
+                {actionConfig ? (
+                  <span className={`flex items-center gap-2 ${actionConfig.color}`}>
+                    {(() => {
+                      const Icon = actionConfig.icon;
+                      return <Icon className="h-5 w-5" />;
+                    })()}
+                    {actionConfig.label}确认
+                  </span>
+                ) : (
+                  tenantMessages.settings.subscriptionPage.purchase.confirmTitle
+                )}
+              </DialogTitle>
               <DialogDescription>
-                {tenantI18n.t('settings.subscriptionPage.purchase.confirmDescription', {
-                  name: selectedService?.name ?? '',
-                  duration: selectedPricing
-                    ? ` (${tenantI18n.t('settings.subscriptionPage.purchase.durationMonths', {
-                        months: selectedPricing.months,
-                      })})`
-                    : '',
-                })}
+                {orderPreview ? (
+                  <>
+                    {orderPreview.action_type === 'upgrade' && orderPreview.current_service_name && (
+                      <span className="text-amber-600">
+                        从 {orderPreview.current_service_name} 升级到 {orderPreview.service_name}
+                      </span>
+                    )}
+                    {orderPreview.action_type === 'renew' && orderPreview.current_service_name && (
+                      <span className="text-green-600">
+                        续费 {orderPreview.service_name}
+                      </span>
+                    )}
+                    {orderPreview.action_type === 'purchase' && (
+                      <span>购买 {orderPreview.service_name}</span>
+                    )}
+                    {orderPreview.action_type === 'downgrade' && orderPreview.current_service_name && (
+                      <span className="text-gray-600">
+                        从 {orderPreview.current_service_name} 降级到 {orderPreview.service_name}
+                      </span>
+                    )}
+                    {selectedPricing && ` (${selectedPricing.months}个月)`}
+                  </>
+                ) : (
+                  tenantI18n.t('settings.subscriptionPage.purchase.confirmDescription', {
+                    name: selectedService?.name ?? '',
+                    duration: selectedPricing
+                      ? ` (${tenantI18n.t('settings.subscriptionPage.purchase.durationMonths', {
+                          months: selectedPricing.months,
+                        })})`
+                      : '',
+                  })
+                )}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
-              {/* 价格明细 */}
-              {selectedPricing && (
+              {previewLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : orderPreview ? (
+                <div className="space-y-3 rounded-lg border p-4">
+                  <div className="flex justify-between">
+                    <span>原价</span>
+                    <span>¥{orderPreview.original_price.toFixed(2)}</span>
+                  </div>
+                  {orderPreview.credit > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>抵扣（升级）</span>
+                      <span>-¥{orderPreview.credit.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {selectedPricingSummary.discountAmount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>
+                        <Tag className="mr-1 inline h-4 w-4" />
+                        {tenantMessages.settings.subscriptionPage.purchase.discount}
+                      </span>
+                      <span>-¥{selectedPricingSummary.discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  {selectedPricingSummary.giftMonths > 0 && (
+                    <div className="flex justify-between text-purple-600">
+                      <span>
+                        <Gift className="mr-1 inline h-4 w-4" />
+                        {tenantMessages.settings.subscriptionPage.purchase.giftDuration}
+                      </span>
+                      <span>
+                        +{tenantI18n.t('settings.subscriptionPage.purchase.durationMonths', {
+                          months: selectedPricingSummary.giftMonths,
+                        })}
+                      </span>
+                    </div>
+                  )}
+                  <div className="border-t flex justify-between pt-2 font-bold">
+                    <span>{tenantMessages.settings.subscriptionPage.purchase.finalPrice}</span>
+                    <span className="text-xl">{formatPrice(orderPreview.final_price)}</span>
+                  </div>
+                </div>
+              ) : selectedPricing ? (
                 <div className="space-y-3 rounded-lg border p-4">
                   <div className="flex justify-between">
                     <span>{tenantMessages.settings.subscriptionPage.purchase.originalPrice}</span>
@@ -365,17 +489,17 @@ export default function SubscriptionPurchasePage() {
                     <span className="text-xl">{formatPrice(selectedPricingSummary.finalPrice)}</span>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setSelectedService(null)}>
                 {tenantMessages.common.cancel}
               </Button>
-              <Button onClick={handleConfirmSubscribe} disabled={isPending}>
+              <Button onClick={handleConfirmSubscribe} disabled={isPending || previewLoading}>
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {tenantMessages.common.confirm}
-                {selectedPricing && selectedPricingSummary.finalPrice > 0
+                {orderPreview && orderPreview.final_price > 0
                   ? tenantMessages.settings.subscriptionPage.purchase.confirmAndPay
                   : tenantMessages.settings.subscriptionPage.purchase.subscribe}
               </Button>

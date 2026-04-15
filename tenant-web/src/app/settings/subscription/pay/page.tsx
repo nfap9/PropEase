@@ -9,7 +9,7 @@ import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { ORDER_STATUS_CONFIG } from '@/lib/status-config';
 import { ArrowLeft, Loader2, Zap } from 'lucide-react';
-import { subscriptionsApi, api } from '@/lib/api';
+import { subscriptionsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantI18n, tenantMessages } from '@/lib/i18n';
@@ -42,21 +42,8 @@ function SubscriptionPayContent() {
   // 开发环境直接完成订阅（用于测试）
   const directCompleteMutation = useMutation({
     mutationFn: async () => {
-      // 直接完成订阅：开发环境下使用 admin 接口直接开通订阅
       if (!orgId || !orderId) throw new Error('缺少 orgId 或 orderId');
-      // 获取订单信息
-      const freshOrder = await subscriptionsApi.getOrder(orgId, orderId);
-      const serviceId = (freshOrder as any).service_id || freshOrder.plan_id || (freshOrder.plan?.id ?? '');
-      if (!serviceId) throw new Error('缺少 service_id');
-
-      // 使用 admin gift 接口直接开通订阅（支持 billing_months）
-      const response = await api.post(`/admin/subscriptions/gift`, {
-        organization_id: orgId,
-        service_id: serviceId,
-        billing_months: freshOrder.billing_months,
-        gift_months: 0,
-      });
-      return response.data;
+      await subscriptionsApi.simulatePay(orgId, orderId);
     },
     onSuccess: () => {
       appToast.success('直接完成订阅成功（开发环境）');

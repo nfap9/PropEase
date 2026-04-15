@@ -21,6 +21,7 @@ export interface CreateSubscriptionOrderParams {
   serviceId: string;
   pricingId?: string;
   billingMonths?: number;
+  credit?: number; // 抵扣金额（升级时旧服务剩余价值）
 }
 
 /**
@@ -124,7 +125,7 @@ export function createBillingService(
 ): BillingService {
   return {
     createSubscriptionOrder: async (params) => {
-      const { organizationId, serviceId, pricingId, billingMonths = 1 } = params;
+      const { organizationId, serviceId, pricingId, billingMonths = 1, credit = 0 } = params;
 
       // 获取服务产品
       const service = await prisma.serviceProduct.findFirst({ where: { id: serviceId } });
@@ -167,6 +168,10 @@ export function createBillingService(
         }
       }
 
+      // 应用抵扣金额
+      const originalAmount = amount;
+      amount = Math.max(0, amount - credit);
+
       const orderNo = `SUB${Date.now()}`;
       const expires = new Date();
       expires.setHours(expires.getHours() + 2);
@@ -180,7 +185,8 @@ export function createBillingService(
         pricing: selectedPricingId ? { connect: { id: selectedPricingId } } : undefined,
         billing_months: billingMonths,
         amount,
-        original_amount: amount,
+        original_amount: originalAmount,
+        total_discount: credit > 0 ? credit : undefined,
         currency: 'CNY',
         status: 'pending',
         payment_method: 'wechat_native',
