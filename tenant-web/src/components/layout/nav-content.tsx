@@ -18,6 +18,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarSeparator,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -174,6 +175,7 @@ export function NavContent({ onNavClick }: NavContentProps) {
 
         {/* 用户头像下拉菜单 */}
         <div className="mt-auto pt-4">
+          <SidebarSeparator className="mb-3" />
           <SidebarMenu>
             <SidebarMenuItem>
               <DropdownMenu>
