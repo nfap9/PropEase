@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Trash2 } from 'lucide-react';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import { TableActions } from '@/components/common/table-actions';
 import { BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import type { AdminPlan } from '@/lib/api/admin-client';
@@ -44,7 +44,7 @@ export function createPlanColumns({
         const config = row.original.is_purchasable
           ? BOOLEAN_YES_NO_CONFIG.yes
           : BOOLEAN_YES_NO_CONFIG.no;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
     {
@@ -54,7 +54,7 @@ export function createPlanColumns({
       minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_active ? BOOLEAN_YES_NO_CONFIG.yes : BOOLEAN_YES_NO_CONFIG.no;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
     { accessorKey: 'sort_order', header: adminMessages.plans.columns.sortOrder, size: 80, minSize: 60 },

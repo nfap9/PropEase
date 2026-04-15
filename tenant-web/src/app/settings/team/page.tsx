@@ -181,6 +181,8 @@ export default function TeamSettingsPage() {
     {
       accessorKey: 'user',
       header: tenantMessages.settings.team.labels.memberName,
+      size: 200,
+      minSize: 150,
       cell: ({ row }) => {
         const member = row.original;
         return (
@@ -199,15 +201,21 @@ export default function TeamSettingsPage() {
     {
       accessorKey: 'role',
       header: tenantMessages.settings.team.labels.identity,
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => <Badge variant={ROLE_COLORS[row.original.role]}>{ROLE_LABELS[row.original.role]}</Badge>,
     },
     {
       accessorKey: 'joined_at',
       header: tenantMessages.settings.team.labels.joinedAt,
+      size: 180,
+      minSize: 150,
       cell: ({ row }) => formatDateTime(row.original.joined_at),
     },
     {
       id: 'actions',
+      size: 80,
+      minSize: 60,
       cell: ({ row }) => {
         const member = row.original;
         if (member.user_id === user?.id || !canManage) return null;

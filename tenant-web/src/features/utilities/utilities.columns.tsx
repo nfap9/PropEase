@@ -1,5 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import type { PendingUtilityBillRow } from './utilities.types';
 import { UTILITY_BILL_STATUS_CONFIG } from './utilities.constants';
 import { formatMeterValue, formatCurrencyValue } from './utilities.utils';
@@ -94,7 +94,7 @@ export const pendingUtilityBillColumns: ColumnDef<PendingUtilityBillRow>[] = [
     minSize: 80,
     cell: ({ row }) => {
       const statusConfig = UTILITY_BILL_STATUS_CONFIG[row.original.status];
-      return <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>;
+      return <StatusBadge variant={statusConfig.variant}>{statusConfig.label}</StatusBadge>;
     },
   },
   {

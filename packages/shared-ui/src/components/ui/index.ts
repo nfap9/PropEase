@@ -5,6 +5,7 @@ export * from './app-dialog';
 export * from './app-drawer';
 export * from './avatar';
 export * from './badge';
+export * from './status-badge';
 export * from './button';
 export * from './breadcrumb';
 export * from './card';

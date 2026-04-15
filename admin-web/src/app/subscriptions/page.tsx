@@ -13,7 +13,7 @@ import { TableActions } from '@/components/common/table-actions';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import { SUBSCRIPTION_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import {
   Dialog,
@@ -159,7 +159,7 @@ function SubscriptionsContent() {
           label: s,
           variant: 'secondary' as const,
         };
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
     {
@@ -183,7 +183,7 @@ function SubscriptionsContent() {
       minSize: 80,
       cell: ({ row }) => {
         const config = row.original.auto_renew ? BOOLEAN_YES_NO_CONFIG.yes : BOOLEAN_YES_NO_CONFIG.no;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
     {

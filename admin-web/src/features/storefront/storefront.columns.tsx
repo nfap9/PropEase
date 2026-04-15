@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { GripVertical, Pencil, Store, Trash2 } from 'lucide-react';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import { TableActions } from '@/components/common/table-actions';
 import { BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import type { StorefrontConfig, StorefrontItem } from '@/lib/api/admin-client';
@@ -27,7 +27,7 @@ export function createStorefrontColumns({
       minSize: 60,
       cell: ({ row }) => {
         const config = row.original.is_default ? BOOLEAN_YES_NO_CONFIG.yes : BOOLEAN_YES_NO_CONFIG.no;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
     {
@@ -37,7 +37,7 @@ export function createStorefrontColumns({
       minSize: 60,
       cell: ({ row }) => {
         const config = row.original.is_active ? BOOLEAN_YES_NO_CONFIG.yes : BOOLEAN_YES_NO_CONFIG.no;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
     {
@@ -99,7 +99,7 @@ export function createStorefrontItemColumns({
       minSize: 60,
       cell: ({ row }) => {
         const config = row.original.is_visible ? BOOLEAN_YES_NO_CONFIG.yes : BOOLEAN_YES_NO_CONFIG.no;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
     {

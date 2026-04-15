@@ -1,9 +1,8 @@
 'use client';
 
-import { Search, X } from 'lucide-react';
+import { Search, X, Building2, Calendar, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { DateRangePicker } from '@apartment-ultra/shared-ui/components/ui';
-import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
@@ -12,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import type { LeaseFiltersState } from '../leases.schemas';
 
 interface LeaseFiltersProps {
@@ -31,69 +31,86 @@ export function LeaseFilters({ apartments, filters, onFilterChange, onClearFilte
     Boolean(filters.endDateTo);
   const hasActiveFilters = hasApartment || hasKeyword || hasDates;
 
+  const selectedApartment = apartments.find((a) => a.id === filters.apartmentId);
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-4">
-        <FilterField label="公寓">
-          <Select
-            value={filters.apartmentId || 'all'}
-            onValueChange={(value) => onFilterChange('apartmentId', value === 'all' ? null : value)}
-          >
-            <SelectTrigger className="w-full" data-testid="leases-apartment-filter">
-              <SelectValue placeholder="全部公寓" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部公寓</SelectItem>
-              {apartments.map((apartment) => (
-                <SelectItem key={apartment.id} value={apartment.id}>
-                  {apartment.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FilterField>
-
-        <FilterField label="搜索">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="房间号、租客姓名、手机号或身份证号"
-              className="pl-10"
-              value={filters.keyword ?? ''}
-              onChange={(event) => onFilterChange('keyword', event.target.value.trim() || null)}
-            />
+    <div className="flex flex-wrap items-center gap-3">
+      {/* 公寓筛选 */}
+      <Select
+        value={filters.apartmentId || 'all'}
+        onValueChange={(value) => onFilterChange('apartmentId', value === 'all' ? null : value)}
+      >
+        <SelectTrigger className="h-9 w-[160px]" data-testid="leases-apartment-filter">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+            <SelectValue placeholder="全部公寓" />
           </div>
-        </FilterField>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">全部公寓</SelectItem>
+          {apartments.map((apartment) => (
+            <SelectItem key={apartment.id} value={apartment.id}>
+              {apartment.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* 搜索框 */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="搜索..."
+          className="h-9 w-[200px] pl-9"
+          value={filters.keyword ?? ''}
+          onChange={(event) => onFilterChange('keyword', event.target.value.trim() || null)}
+        />
       </div>
 
-      <div className="flex flex-wrap gap-4">
-        <FilterField label="开始日期范围">
-          <DateRangePicker
-            value={{ from: filters.startDateFrom, to: filters.startDateTo }}
-            placeholder="选择开始日期范围"
-            onChange={(range) => {
-              onFilterChange('startDateFrom', range.from);
-              onFilterChange('startDateTo', range.to);
-            }}
-          />
-        </FilterField>
-        <FilterField label="结束日期范围">
-          <DateRangePicker
-            value={{ from: filters.endDateFrom, to: filters.endDateTo }}
-            placeholder="选择结束日期范围"
-            onChange={(range) => {
-              onFilterChange('endDateFrom', range.from);
-              onFilterChange('endDateTo', range.to);
-            }}
-          />
-        </FilterField>
-      </div>
+      {/* 开始日期 */}
+      <DateRangePicker
+        value={{ from: filters.startDateFrom, to: filters.startDateTo }}
+        placeholder="开始日期"
+        onChange={(range) => {
+          onFilterChange('startDateFrom', range.from);
+          onFilterChange('startDateTo', range.to);
+        }}
+      />
 
+      {/* 结束日期 */}
+      <DateRangePicker
+        value={{ from: filters.endDateFrom, to: filters.endDateTo }}
+        placeholder="结束日期"
+        onChange={(range) => {
+          onFilterChange('endDateFrom', range.from);
+          onFilterChange('endDateTo', range.to);
+        }}
+      />
+
+      {/* 清除筛选 */}
       {hasActiveFilters && (
-        <Button variant="ghost" size="sm" onClick={onClearFilters}>
-          <X className="mr-1 h-4 w-4" />
-          清除筛选
+        <Button variant="ghost" size="sm" onClick={onClearFilters} className="h-9 gap-1 text-muted-foreground">
+          <X className="h-4 w-4" />
+          清除
         </Button>
+      )}
+
+      {/* 活跃筛选标签 */}
+      {hasActiveFilters && (
+        <div className="flex items-center gap-1">
+          {hasKeyword && (
+            <Badge variant="secondary" className="h-6 gap-1 px-2 text-xs">
+              <Search className="h-3 w-3" />
+              {filters.keyword}
+            </Badge>
+          )}
+          {hasApartment && selectedApartment && (
+            <Badge variant="secondary" className="h-6 gap-1 px-2 text-xs">
+              <Building2 className="h-3 w-3" />
+              {selectedApartment.name}
+            </Badge>
+          )}
+        </div>
       )}
     </div>
   );

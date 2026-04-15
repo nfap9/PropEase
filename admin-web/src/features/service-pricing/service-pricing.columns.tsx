@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Trash2 } from 'lucide-react';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import { TableActions } from '@/components/common/table-actions';
 import { BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import type { ServiceProduct } from '@/lib/api/admin-client';
@@ -15,11 +15,13 @@ export function createServicePricingColumns({
   onDelete: (service: ServiceProduct) => void;
 }): ColumnDef<ServiceProduct>[] {
   return [
-    { accessorKey: 'name', header: '服务名称' },
-    { accessorKey: 'code', header: '代码' },
+    { accessorKey: 'name', header: '服务名称', size: 160, minSize: 120 },
+    { accessorKey: 'code', header: '代码', size: 120, minSize: 80 },
     {
       id: 'pricing',
       header: '定价',
+      size: 200,
+      minSize: 160,
       cell: ({ row }) => {
         const service = row.original;
         if (service.pricing && service.pricing.length > 0) {
@@ -34,6 +36,8 @@ export function createServicePricingColumns({
     {
       id: 'limits',
       header: '服务内容',
+      size: 280,
+      minSize: 200,
       cell: ({ row }) => {
         const service = row.original;
         const orgs = service.max_organizations == null ? '∞' : service.max_organizations;
@@ -43,15 +47,19 @@ export function createServicePricingColumns({
     {
       accessorKey: 'is_active',
       header: '启用',
+      size: 80,
+      minSize: 60,
       cell: ({ row }) => {
         const config = row.original.is_active ? BOOLEAN_YES_NO_CONFIG.yes : BOOLEAN_YES_NO_CONFIG.no;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
-    { accessorKey: 'sort_order', header: '排序' },
+    { accessorKey: 'sort_order', header: '排序', size: 80, minSize: 60 },
     {
       id: 'actions',
       header: '操作',
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => (
         <TableActions
           actions={[

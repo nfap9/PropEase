@@ -32,13 +32,14 @@ export type ColumnMeta = {
   sticky?: 'left' | 'right';
 };
 
-function getStickyClass(meta: ColumnMeta | undefined): string | undefined {
+function getStickyClass(meta: ColumnMeta | undefined, isHeader = false): string | undefined {
   if (!meta?.sticky) return undefined;
+  const bg = isHeader ? 'bg-slate-100' : 'bg-white';
   if (meta.sticky === 'left') {
-    return 'sticky left-0 z-10 bg-background';
+    return `sticky left-0 z-10 ${bg}`;
   }
   if (meta.sticky === 'right') {
-    return 'sticky right-0 z-10 bg-background';
+    return `sticky right-0 z-10 ${bg}`;
   }
   return undefined;
 }
@@ -156,17 +157,17 @@ export function DataTable<TData, TValue>({
 
   const renderTable = () => (
     <div className="overflow-auto">
-      <table className="w-full caption-bottom text-sm">
-        <thead className="bg-muted border-b border-border">
+      <table className="min-w-full caption-bottom text-sm">
+        <thead className="border-b border-border">
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}
-                  style={{ width: header.getSize() }}
+                  style={{ width: header.getSize(), minWidth: header.column.columnDef.minSize }}
                   className={cn(
-                    'h-11 px-4 text-left align-middle font-semibold text-foreground [&:has([role=checkbox])]:pr-0',
-                    getStickyClass(header.column.columnDef.meta as ColumnMeta | undefined)
+                    'h-11 bg-slate-100 px-4 text-left align-middle text-sm font-medium text-foreground [&:has([role=checkbox])]:pr-0',
+                    getStickyClass(header.column.columnDef.meta as ColumnMeta | undefined, true)
                   )}
                 >
                   {header.isPlaceholder
@@ -212,9 +213,9 @@ export function DataTable<TData, TValue>({
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
-                    style={{ width: cell.column.getSize() }}
+                    style={{ width: cell.column.getSize(), minWidth: cell.column.columnDef.minSize }}
                     className={cn(
-                      'h-12 px-4 text-left align-middle [&:has([role=checkbox])]:pr-0',
+                      'h-12 bg-white px-4 text-left align-middle [&:has([role=checkbox])]:pr-0',
                       getStickyClass(cell.column.columnDef.meta as ColumnMeta | undefined)
                     )}
                   >

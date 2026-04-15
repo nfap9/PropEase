@@ -107,6 +107,8 @@ export default function ReachabilitySettingsPage() {
       {
         accessorKey: 'tenant_name',
         header: tenantMessages.settings.notificationsPage.columns.tenant,
+        size: 160,
+        minSize: 120,
         cell: ({ row }) => (
           <div>
             <div className="font-medium">{row.original.tenant_name || '-'}</div>
@@ -117,11 +119,15 @@ export default function ReachabilitySettingsPage() {
       {
         accessorKey: 'event_type',
         header: tenantMessages.settings.notificationsPage.columns.scenario,
+        size: 120,
+        minSize: 100,
         cell: ({ row }) => getTenantReachabilityEventLabel(row.original.event_type),
       },
       {
         accessorKey: 'status',
         header: tenantMessages.settings.notificationsPage.columns.status,
+        size: 100,
+        minSize: 80,
         cell: ({ row }) => (
           <Badge variant={getDeliveryStatusVariant(row.original.status)}>
             {getDeliveryStatusLabel(row.original.status)}
@@ -131,11 +137,15 @@ export default function ReachabilitySettingsPage() {
       {
         accessorKey: 'recipient',
         header: tenantMessages.settings.notificationsPage.columns.recipient,
+        size: 140,
+        minSize: 100,
         cell: ({ row }) => row.original.recipient || '-',
       },
       {
         accessorKey: 'status_reason',
         header: tenantMessages.settings.notificationsPage.columns.result,
+        size: 200,
+        minSize: 160,
         cell: ({ row }) => (
           <div className="max-w-sm text-sm text-muted-foreground">
             {row.original.status_reason || row.original.content}
@@ -145,6 +155,8 @@ export default function ReachabilitySettingsPage() {
       {
         accessorKey: 'created_at',
         header: tenantMessages.settings.notificationsPage.columns.sentAt,
+        size: 180,
+        minSize: 150,
         cell: ({ row }) => formatDateTime(row.original.created_at),
       },
     ],

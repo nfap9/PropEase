@@ -7,7 +7,7 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import { LEASE_STATUS_CONFIG } from '@/lib/status-config';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantReachabilityApi, tenantsApi, leasesApi } from '@/lib/api';
@@ -96,6 +96,8 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
     {
       accessorKey: 'room',
       header: '房间',
+      size: 180,
+      minSize: 150,
       cell: ({ row }) => {
         const room = row.original.room;
         if (!room) return '-';
@@ -118,30 +120,40 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
     {
       accessorKey: 'start_date',
       header: '开始日期',
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => formatDate(row.original.start_date),
     },
     {
       accessorKey: 'end_date',
       header: '结束日期',
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => (row.original.end_date ? formatDate(row.original.end_date) : '长期'),
     },
     {
       accessorKey: 'monthly_rent',
       header: '月租',
+      size: 120,
+      minSize: 100,
       cell: ({ row }) => `¥${row.original.monthly_rent.toLocaleString()}`,
     },
     {
       accessorKey: 'is_active',
       header: '状态',
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_active
           ? LEASE_STATUS_CONFIG.active
           : LEASE_STATUS_CONFIG.inactive;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
     {
       id: 'actions',
+      size: 100,
+      minSize: 80,
       cell: ({ row }) => {
         const lease = row.original;
         return (
@@ -254,9 +266,9 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={getTenantSmsReachabilityVariant(smsStatus)}>
+                    <StatusBadge variant={getTenantSmsReachabilityVariant(smsStatus)}>
                       {getTenantSmsReachabilityLabel(smsStatus)}
-                    </Badge>
+                    </StatusBadge>
                     {tenant.sms_opt_out_at && (
                       <span className="text-sm text-muted-foreground">
                         暂停于 {formatDateTime(tenant.sms_opt_out_at)}
@@ -369,9 +381,9 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
                     >
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant={getDeliveryStatusVariant(delivery.status)}>
+                          <StatusBadge variant={getDeliveryStatusVariant(delivery.status)}>
                             {getDeliveryStatusLabel(delivery.status)}
-                          </Badge>
+                          </StatusBadge>
                           <span className="font-medium">
                             {getTenantReachabilityEventLabel(delivery.event_type)}
                           </span>

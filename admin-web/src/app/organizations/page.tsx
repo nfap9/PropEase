@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions } from '@/components/common/table-actions';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
 import { ORG_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
 import {
@@ -81,7 +81,7 @@ export default function AdminOrganizationsPage() {
         const config = row.original.is_personal
           ? BOOLEAN_YES_NO_CONFIG.yes
           : BOOLEAN_YES_NO_CONFIG.no;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
     {
@@ -93,7 +93,7 @@ export default function AdminOrganizationsPage() {
         const config = row.original.is_active
           ? ORG_STATUS_CONFIG.active
           : ORG_STATUS_CONFIG.inactive;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
     {

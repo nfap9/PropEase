@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Ban, Pencil, Trash2 } from 'lucide-react';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import { TableActions, type TableAction } from '@/components/common/table-actions';
 import { formatDate } from '@/lib/date-utils';
 import { LEASE_STATUS_CONFIG } from '@/lib/status-config';
@@ -81,7 +81,7 @@ export function createLeaseColumns({
       minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_active ? LEASE_STATUS_CONFIG.active : LEASE_STATUS_CONFIG.inactive;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
     {
