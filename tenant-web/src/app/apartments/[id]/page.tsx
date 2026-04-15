@@ -30,7 +30,7 @@ import {
 } from '@/features/apartment-detail/apartment-detail.hooks';
 import { ApartmentDetailHeader } from '@/features/apartment-detail/components/apartment-detail-header';
 import { ApartmentOverviewTab } from '@/features/apartment-detail/components/apartment-overview-tab';
-import { ApartmentUpstreamTab } from '@/features/apartment-detail/components/apartment-upstream-tab';
+import { ApartmentRoomListTab } from '@/features/apartment-detail/components/apartment-room-list-tab';
 import { UtilityConfigDialog } from '@/features/apartment-detail/components/UtilityConfigDialog';
 import {
   ApartmentEditDialog,
@@ -214,26 +214,28 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
   return (
     <PermissionPageGuard>
       <MainLayout>
-        <div className="space-y-6">
+        <div className="flex flex-col gap-4 overflow-y-auto pr-1">
           <ApartmentDetailHeader
-            apartmentName={apartment.name}
+            apartment={apartment}
             onBack={() => router.push('/apartments')}
             onEdit={handleEditApartment}
             onOpenUtilityConfig={() => setIsUtilityConfigOpen(true)}
           />
 
-          <Tabs defaultValue="basic" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="basic">基础信息</TabsTrigger>
-              <TabsTrigger value="upstream">上游信息</TabsTrigger>
+          <Tabs defaultValue="info" className="flex flex-col">
+            <TabsList className="inline-flex w-auto self-start">
+              <TabsTrigger value="info">基础信息</TabsTrigger>
+              <TabsTrigger value="rooms">房间列表</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="basic">
-              <ApartmentOverviewTab
-                apartment={apartment}
+            <TabsContent value="info" className="mt-4">
+              <ApartmentOverviewTab apartment={apartment} stats={stats} />
+            </TabsContent>
+
+            <TabsContent value="rooms" className="mt-4">
+              <ApartmentRoomListTab
                 rooms={rooms}
                 roomsLoading={roomsLoading}
-                stats={stats}
                 roomGroups={roomGroups}
                 selectedRoomIds={selectedRoomIds}
                 isBatchDeletePending={batchDeleteMutation.isPending}
@@ -247,10 +249,6 @@ export default function ApartmentDetailPage({ params }: { params: { id: string }
                 onEditRoom={handleEditRoom}
                 onDeleteRoom={handleDeleteRoom}
               />
-            </TabsContent>
-
-            <TabsContent value="upstream">
-              <ApartmentUpstreamTab apartment={apartment} />
             </TabsContent>
           </Tabs>
         </div>
