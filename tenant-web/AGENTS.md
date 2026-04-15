@@ -116,7 +116,7 @@ export default function TenantsPage() {
 
 // 复杂页面（提取到 features/）
 // app/leases/page.tsx              # 路由入口
-// features/leases/components/      # 20+ 业务组件
+// features/leases/components/      # 业务组件
 // features/leases/hooks/           # useLeaseOperations
 // features/leases/leases.columns.tsx
 ```

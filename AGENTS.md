@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 后端 API：[`api/AGENTS.md`](./api/AGENTS.md)
 - 租户端 Web：[`tenant-web/AGENTS.md`](./tenant-web/AGENTS.md)
 - 运营后台：[`admin-web/AGENTS.md`](./admin-web/AGENTS.md)
-- 移动端：[`mobile/AGENTS.md`](./mobile/AGENTS.md)
+- ~~移动端~~（已下线，代码已移除）
 - E2E 测试：[`e2e/AGENTS.md`](./e2e/AGENTS.md)
 - 项目文档导航：[`docs/README.md`](./docs/README.md)
 
@@ -32,11 +32,11 @@ Apartment Ultra 是一个公寓管理产品，核心能力包括：
 
 ## 仓库结构
 
-- `api/`：当前唯一在用的后端，Node/Express/TypeScript
+- `api/`：当前唯一在用的后端，Node/Express/TypeScript，端口 `8000`
 - `tenant-web/`：租户端前端，Next.js，默认端口 `3000`
 - `admin-web/`：运营后台前端，Next.js，默认端口 `3001`
-- `mobile/`：实验性 Expo/React Native 客户端，当前按单独质量门治理
 - `packages/api-contract/`：接口契约相关共享包
+- `packages/web-api-client/`：前端 API 客户端（Axios + TanStack Query 封装）
 - `packages/shared-ui/`：共享 UI 组件
 - `docs/`：长期说明、规范、测试用例、设计稿
 - `docker/`：本地中间件和部署相关配置
@@ -73,8 +73,8 @@ pnpm --filter apartment-ultra-tenant exec vitest run components/__tests__/LeaseC
 首次进入仓库或依赖变化后，优先使用这套流程：
 
 ```bash
-# 1. 启动中间件
-cd docker && docker compose -f docker-compose.middleware.yaml up -d
+# 1. 启动中间件（PostgreSQL, Redis）
+pnpm docker:middleware
 
 # 2. 安装依赖
 pnpm install
@@ -90,9 +90,30 @@ pnpm dev:web
 
 # 6. 启动运营后台
 pnpm dev:admin
+```
 
-# 7. 如需维护移动端原型，再单独启动
-pnpm dev:mobile
+如需完整容器化热更新开发（API + 两个前端全部在容器内），使用：
+
+```bash
+pnpm docker:dev
+```
+
+如开发态首次依赖卷异常，可执行：
+
+```bash
+pnpm docker:dev:reset && pnpm docker:dev
+```
+
+如需完整容器化热更新开发（API + 两个前端全部在容器内），使用：
+
+```bash
+pnpm docker:dev
+```
+
+如开发态首次依赖卷异常，可执行：
+
+```bash
+pnpm docker:dev:reset && pnpm docker:dev
 ```
 
 如无特殊说明，所有前端和测试都以 `api/` 作为后端。
@@ -162,6 +183,7 @@ pnpm dev:mobile
 - `README.md`：新同学入口，讲项目是什么、怎么启动
 - `CLAUDE.md`：项目级 Agent 规则，讲怎么安全高效地做事
 - 模块 `AGENTS.md`：模块内部开发约定，讲这个目录该怎么改
+- `docs/monorepo-governance.md`：共享 tsconfig、ESLint 与依赖治理入口
 - `docs/测试用例/`：业务预期和人工验收场景
 - `docs/api-contract/`：统一契约说明
 - `docs/ui-design/`：设计参考和历史原型，不是代码真相
