@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apar
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { DataTable } from '@/components/common/data-table';
 import { useAuth } from '@/lib/auth/context';
-import { Plus, Upload, Download, Building2, AlertCircle } from 'lucide-react';
+import { Plus, Upload, Download, Building2, AlertCircle, Droplets, TrendingUp, Clock } from 'lucide-react';
 import type { RoomMissingInitialReading, UtilityReading } from '@/types';
 import { pendingUtilityBillColumns } from '../utilities.columns';
 import { UTILITIES } from '../utilities.constants';
@@ -80,7 +80,6 @@ export function UtilitiesPageContent() {
     monthRoomsRecordedCount,
     monthRoomsMissingCount,
     roomsMissingInitial,
-    monthUtilitiesLoading,
     apartmentRooms,
     createMutation,
     updateMutation,
@@ -95,13 +94,19 @@ export function UtilitiesPageContent() {
           cell: ({ row }: { row: { original: PendingUtilityBillRow } }) => {
             const { currentReading, apartmentId, roomId, waterPrevious, electricityPrevious } = row.original;
             return currentReading ? (
-              <Button variant="outline" size="sm" onClick={() => setEditingUtility(currentReading)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
+                onClick={() => setEditingUtility(currentReading)}
+              >
                 更新
               </Button>
             ) : (
               <Button
-                variant="outline"
+                variant="default"
                 size="sm"
+                className="h-8 bg-blue-600 hover:bg-blue-700"
                 onClick={() => {
                   if (!apartmentId) return;
                   setCreatePreset({
@@ -179,6 +184,7 @@ export function UtilitiesPageContent() {
                 <div className="flex flex-wrap gap-2">
                   <Button
                     variant="outline"
+                    className="hover.border-slate-300 border-slate-200"
                     onClick={() => setIsExportTemplateOpen(true)}
                     data-testid={UTILITIES.EXPORT_TEMPLATE_BUTTON}
                   >
@@ -187,6 +193,7 @@ export function UtilitiesPageContent() {
                   </Button>
                   <Button
                     variant="outline"
+                    className="hover.border-slate-300 border-slate-200"
                     onClick={() => setIsBatchImportOpen(true)}
                     data-testid={UTILITIES.IMPORT_BUTTON}
                   >
@@ -194,6 +201,7 @@ export function UtilitiesPageContent() {
                     批量导入
                   </Button>
                   <Button
+                    className="bg-blue-600 shadow-sm hover:bg-blue-700"
                     onClick={() => {
                       setCreatePreset(null);
                       setIsCreateOpen(true);
@@ -207,60 +215,125 @@ export function UtilitiesPageContent() {
               ) : null}
             </div>
 
-            <TabsContent value="entry" className="space-y-6">
-              <Card data-testid={UTILITIES.OVERVIEW_CARD}>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">
-                    {currentYear}年{currentMonth}月水电录入概览
-                  </CardTitle>
-                  <CardDescription>统计范围：全部公寓（仅统计有活跃租约的已入住房间）</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {monthUtilitiesLoading || !allRooms ? (
-                    <div className="h-20" />
-                  ) : monthRoomsNeedInputCount == null ||
-                    monthRoomsRecordedCount == null ||
-                    monthRoomsMissingCount == null ? (
-                    <p className="py-6 text-sm text-muted-foreground">暂无数据</p>
-                  ) : (
-                    <div className="rounded-xl border bg-muted/20 px-5 py-4">
-                      <div className="flex flex-wrap items-start gap-8">
-                        <div className="min-w-[120px]">
-                          <div className="text-sm text-muted-foreground">需要录入房间</div>
-                          <div className="mt-2 text-2xl font-bold">{monthRoomsNeedInputCount}</div>
+            <TabsContent value="entry" className="mt-6 space-y-6">
+              {/* 现代化概览卡片区域 */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {/* 本月录入进度卡片 */}
+                <Card className="relative overflow-hidden border-0 shadow-md">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-blue-100/50" />
+                  <CardContent className="relative !pt-5 p-5 sm:!pt-5">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-blue-600">本月录入进度</p>
+                        <div className="mt-2 flex items-baseline gap-1">
+                          <span className="text-3xl font-bold text-blue-700">{monthRoomsRecordedCount ?? 0}</span>
+                          <span className="text-lg text-blue-500">/ {monthRoomsNeedInputCount ?? 0}</span>
                         </div>
-                        <div className="min-w-[120px]">
-                          <div className="text-sm text-muted-foreground">已记录房间</div>
-                          <div className="mt-2 text-2xl font-bold text-foreground">{monthRoomsRecordedCount}</div>
-                        </div>
-                        <div className="min-w-[120px]">
-                          <div className="text-sm text-muted-foreground">未记录房间</div>
-                          <div className="mt-2 text-2xl font-bold text-amber-600">{monthRoomsMissingCount}</div>
-                        </div>
+                        <p className="mt-1 text-xs text-blue-500/80">已录入房间数</p>
+                      </div>
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
+                        <Droplets className="h-7 w-7 text-blue-600" />
                       </div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+                    {/* 进度条 */}
+                    <div className="mt-4 h-2 w-full rounded-full bg-blue-100">
+                      <div
+                        className="h-2 rounded-full bg-blue-600 transition-all duration-500"
+                        style={{
+                          width: `${monthRoomsNeedInputCount ? ((monthRoomsRecordedCount ?? 0) / monthRoomsNeedInputCount) * 100 : 0}%`,
+                        }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 待录入卡片 */}
+                <Card className="relative overflow-hidden border-0 shadow-md">
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-amber-100/50" />
+                  <CardContent className="relative !pt-5 p-5 sm:!pt-5">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-amber-600">待录入</p>
+                        <div className="mt-2 flex items-baseline gap-1">
+                          <span className="text-3xl font-bold text-amber-700">{monthRoomsMissingCount ?? 0}</span>
+                          <span className="text-sm text-amber-500">房间</span>
+                        </div>
+                        <p className="mt-1 text-xs text-amber-500/80">需要尽快录入</p>
+                      </div>
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
+                        <Clock className="h-7 w-7 text-amber-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 待出账卡片 */}
+                <Card className="relative overflow-hidden border-0 shadow-md">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-purple-100/50" />
+                  <CardContent className="relative !pt-5 p-5 sm:!pt-5">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-purple-600">待出账</p>
+                        <div className="mt-2 flex items-baseline gap-1">
+                          <span className="text-3xl font-bold text-purple-700">
+                            {pendingUtilityBills.filter((b) => b.status === 'ready_to_bill').length}
+                          </span>
+                          <span className="text-sm text-purple-500">笔</span>
+                        </div>
+                        <p className="mt-1 text-xs text-purple-500/80">已录入待出账</p>
+                      </div>
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-purple-100">
+                        <TrendingUp className="h-7 w-7 text-purple-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 逾期提醒卡片 */}
+                <Card className="relative overflow-hidden border-0 shadow-md">
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-red-100/50" />
+                  <CardContent className="relative !pt-5 p-5 sm:!pt-5">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-red-600">录入逾期</p>
+                        <div className="mt-2 flex items-baseline gap-1">
+                          <span className="text-3xl font-bold text-red-700">
+                            {pendingUtilityBills.filter((b) => b.status === 'input_overdue').length}
+                          </span>
+                          <span className="text-sm text-red-500">房间</span>
+                        </div>
+                        <p className="mt-1 text-xs text-red-500/80">需要立即处理</p>
+                      </div>
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
+                        <AlertCircle className="h-7 w-7 text-red-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
               <DataTable
                 data-testid={UTILITIES.PENDING_BILLS_CARD}
                 columns={columns}
                 data={pendingUtilityBills}
                 testid={UTILITIES.LIST}
-                useCard={false}
-                title="待出账水电账单"
-                description="按本月账期展示活跃租约的水电录入、出账准备和更新状态"
+                useCard={true}
+                title="本月水电账单"
+                description="展示本月各房间水电录入状态，支持快速录入和更新"
               />
 
               {roomsMissingInitial.length > 0 && (
-                <Card className="border-amber-500/50" data-testid={UTILITIES.MISSING_INITIAL_CARD}>
+                <Card className="border-amber-200 bg-amber-50/50" data-testid={UTILITIES.MISSING_INITIAL_CARD}>
                   <CardHeader className="pb-2">
                     <CardTitle className="flex items-center gap-2 text-base">
-                      <AlertCircle className="h-4 w-4 text-amber-600" />
-                      未录入签约月初始读数的房间
+                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-100">
+                        <AlertCircle className="h-4 w-4 text-amber-600" />
+                      </span>
+                      缺失初始读数
                     </CardTitle>
-                    <CardDescription>以下房间已签约但尚未录入签约月的初始水电读数，请及时补录</CardDescription>
+                    <CardDescription>
+                      以下房间已签约但尚未录入签约月的初始水电读数，请及时补录以避免费用计算错误
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="rounded-md border">
@@ -299,7 +372,7 @@ export function UtilitiesPageContent() {
               )}
             </TabsContent>
 
-            <TabsContent value="history" className="space-y-6">
+            <TabsContent value="history" className="mt-6 space-y-6">
               <UtilityHistoryPanel orgId={orgId} />
             </TabsContent>
           </Tabs>
