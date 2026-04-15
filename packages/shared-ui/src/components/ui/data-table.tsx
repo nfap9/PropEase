@@ -14,10 +14,6 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -28,6 +24,7 @@ import { Button } from './button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 import { Skeleton } from './skeleton';
 import { Card } from './card';
+import { Pagination } from './pagination';
 
 type RowClassName<TData> = string | ((row: TData) => string | undefined);
 
@@ -233,7 +230,7 @@ export function DataTable<TData, TValue>({
   );
 
   const renderPagination = () => (
-    <div className="flex flex-col gap-3 border-t border-border/50 p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
         <span>
           共 <span className="font-semibold text-foreground">{table.getFilteredRowModel().rows.length}</span> 条记录
@@ -261,26 +258,11 @@ export function DataTable<TData, TValue>({
       </div>
 
       {enablePagination && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            第 <span className="font-semibold text-foreground">{currentPage}</span> /{' '}
-            <span className="font-semibold text-foreground">{pageCount}</span> 页
-          </span>
-          <div className="flex items-center gap-1">
-            <Button variant="outline" size="sm" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}>
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => table.setPageIndex(pageCount - 1)} disabled={!table.getCanNextPage()}>
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={currentPage}
+          pageCount={pageCount}
+          onPageChange={(page) => table.setPageIndex(page - 1)}
+        />
       )}
     </div>
   );

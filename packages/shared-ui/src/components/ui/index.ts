@@ -30,6 +30,7 @@ export * from './list-page-layout';
 export * from './page-header';
 export * from './page-section';
 export * from './page-toolbar';
+export * from './pagination';
 export * from './pie-chart';
 export * from './radio-group';
 export * from './select';
