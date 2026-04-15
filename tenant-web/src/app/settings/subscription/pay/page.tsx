@@ -8,8 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apar
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { ORDER_STATUS_CONFIG } from '@/lib/status-config';
-import { ArrowLeft, Loader2, FlaskConical } from 'lucide-react';
-import { subscriptionsApi } from '@/lib/api';
+import { ArrowLeft, Loader2, Zap } from 'lucide-react';
+import { subscriptionsApi, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth/context';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantI18n, tenantMessages } from '@/lib/i18n';
@@ -39,17 +39,33 @@ function SubscriptionPayContent() {
     },
   });
 
-  const simulatePayMutation = useMutation({
+  // 开发环境直接完成订阅（用于测试）
+  const directCompleteMutation = useMutation({
     mutationFn: async () => {
-      // simulatePay 已废弃，直接标记为支付成功用于测试
-      appToast.info('模拟支付已废弃，请使用实际支付流程');
-      throw new Error('simulatePay is deprecated');
+      // 直接完成订阅：开发环境下使用 admin 接口直接开通订阅
+      if (!orgId || !orderId) throw new Error('缺少 orgId 或 orderId');
+      // 获取订单信息
+      const freshOrder = await subscriptionsApi.getOrder(orgId, orderId);
+      const serviceId = (freshOrder as any).service_id || freshOrder.plan_id || (freshOrder.plan?.id ?? '');
+      if (!serviceId) throw new Error('缺少 service_id');
+
+      // 使用 admin gift 接口直接开通订阅（支持 billing_months）
+      const response = await api.post(`/admin/subscriptions/gift`, {
+        organization_id: orgId,
+        service_id: serviceId,
+        billing_months: freshOrder.billing_months,
+        gift_months: 0,
+      });
+      return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription-order', orgId, orderId] });
+      appToast.success('直接完成订阅成功（开发环境）');
+      queryClient.invalidateQueries({ queryKey: ['subscription-status', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['organization-usage', orgId] });
+      router.push('/settings/subscription');
     },
-    onError: () => {
-      // 忽略错误
+    onError: (error) => {
+      appToast.error(`直接完成订阅失败: ${error instanceof Error ? error.message : '未知错误'}`);
     },
   });
 
@@ -187,23 +203,23 @@ function SubscriptionPayContent() {
                   {tenantMessages.settings.subscriptionPage.pay.qrHint}
                 </p>
               </>
-            ) : order.simulate_pay_available ? (
+            ) : order.simulate_pay_available || process.env.NODE_ENV === 'development' ? (
               <div className="flex flex-col items-center gap-4 py-4">
                 <p className="text-center text-muted-foreground">
                   {tenantMessages.settings.subscriptionPage.pay.devHint}
                 </p>
                 <Button
-                  onClick={() => simulatePayMutation.mutate()}
-                  disabled={simulatePayMutation.isPending}
-                  variant="outline"
-                  className="gap-2"
+                  onClick={() => directCompleteMutation.mutate()}
+                  disabled={directCompleteMutation.isPending}
+                  variant="default"
+                  className="gap-2 bg-primary hover:bg-primary/90"
                 >
-                  {simulatePayMutation.isPending ? (
+                  {directCompleteMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <FlaskConical className="h-4 w-4" />
+                    <Zap className="h-4 w-4" />
                   )}
-                  {tenantMessages.settings.subscriptionPage.pay.simulatePay}
+                  直接完成订阅（开发测试）
                 </Button>
               </div>
             ) : (
