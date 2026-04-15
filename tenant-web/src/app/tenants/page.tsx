@@ -252,7 +252,7 @@ export default function TenantsPage() {
           {tenantsLoading ? (
             <Skeleton className="h-96" />
           ) : (
-            <DataTable columns={columns} data={tenants || []} testid={TENANTS.LIST} />
+            <DataTable columns={columns} data={tenants || []} testid={TENANTS.LIST} useCard={false} />
           )}
         </div>
 

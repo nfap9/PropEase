@@ -90,7 +90,7 @@ export function TableActions({ actions, maxInline = 2, moreLabel = '更多操作
                 variant="ghost"
                 size="sm"
                 onClick={action.onClick}
-                className={action.variant === 'destructive' ? 'text-destructive hover:text-destructive' : ''}
+                className={action.variant === 'destructive' ? 'h-8 px-2 gap-1 text-destructive hover:bg-destructive/10' : 'h-8 px-2 gap-1'}
                 data-testid={action.testId}
               >
                 {action.icon ? <action.icon className="h-4 w-4" /> : null}

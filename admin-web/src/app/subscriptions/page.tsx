@@ -234,6 +234,7 @@ function SubscriptionsContent() {
         columns={columns}
         data={subscriptions ?? []}
         testid="admin-subscriptions-list"
+        useCard={false}
         toolbar={
           <div className="flex flex-wrap gap-4">
             <FilterField label="团队 ID">

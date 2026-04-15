@@ -248,6 +248,7 @@ export function UtilitiesPageContent() {
                 columns={columns}
                 data={pendingUtilityBills}
                 testid={UTILITIES.LIST}
+                useCard={false}
                 title="待出账水电账单"
                 description="按本月账期展示活跃租约的水电录入、出账准备和更新状态"
               />

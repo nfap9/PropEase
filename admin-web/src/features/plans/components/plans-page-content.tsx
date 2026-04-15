@@ -52,7 +52,7 @@ export function PlansPageContent() {
         </PageToolbar>
       }
     >
-      <DataTable columns={columns} data={plans ?? []} testid="admin-plans-list" />
+      <DataTable columns={columns} data={plans ?? []} testid="admin-plans-list" useCard={false} />
 
       <PlanCreateDialog
         {...dialogState.dialogProps('create')}

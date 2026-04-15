@@ -152,6 +152,7 @@ export function LeasesPageContent() {
               columns={columns}
               data={filteredLeases}
               testid={LEASES.LIST}
+              useCard={false}
               toolbar={
                 <LeaseFilters
                   apartments={apartments?.map((apartment) => ({ id: apartment.id, name: apartment.name })) ?? []}

@@ -34,7 +34,7 @@ export function StorefrontItemsView({
         </Button>
       </div>
 
-      <DataTable columns={columns} data={items} testid="storefront-items-list" />
+      <DataTable columns={columns} data={items} testid="storefront-items-list" useCard={false} />
     </div>
   );
 }

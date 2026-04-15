@@ -55,7 +55,7 @@ export function UsersPageContent() {
         </PageToolbar>
       }
     >
-      <DataTable columns={columns} data={users ?? []} testid="admin-users-list" />
+      <DataTable columns={columns} data={users ?? []} testid="admin-users-list" useCard={false} />
 
       <CreateUserDialog
         {...dialogState.dialogProps('create')}

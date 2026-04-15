@@ -117,6 +117,7 @@ export function RegisteredUsersPageContent() {
         columns={columns}
         data={users ?? []}
         testid="admin-registered-users-list"
+        useCard={false}
         toolbar={
           <RegisteredUsersToolbar
             activeFilter={filters.activeFilter}

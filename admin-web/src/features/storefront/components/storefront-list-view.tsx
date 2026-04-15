@@ -25,7 +25,7 @@ export function StorefrontListView({
         </Button>
       </div>
 
-      <DataTable columns={columns} data={storefronts} testid="storefront-list" />
+      <DataTable columns={columns} data={storefronts} testid="storefront-list" useCard={false} />
     </div>
   );
 }

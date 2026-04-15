@@ -164,6 +164,7 @@ export default function AdminOrganizationsPage() {
         columns={columns}
         data={organizations ?? []}
         testid="admin-organizations-list"
+        useCard={false}
         toolbar={
           <FilterField label="状态">
             <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as FilterActive)}>

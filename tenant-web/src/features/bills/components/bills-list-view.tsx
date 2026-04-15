@@ -106,6 +106,7 @@ export function BillsListView({
             columns={columns}
             data={bills}
             testid={BILLS.LIST}
+            useCard={false}
             toolbar={
               <PageToolbar className="justify-between gap-4">
                 <div className="flex items-center gap-4">
