@@ -1,4 +1,4 @@
-import { ChevronDown, LogOut, Settings, Building2, Users, CreditCard, Shield } from 'lucide-react';
+import { ChevronDown, LogOut, Building2, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
@@ -60,25 +60,11 @@ export function HeaderUserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="text-xs text-muted-foreground">设置</DropdownMenuLabel>
         <DropdownMenuItem
-          onClick={() => navigate('/settings/team')}
-          className="cursor-pointer"
-        >
-          <Users className="mr-2 h-4 w-4" />
-          <span>团队管理</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem
           onClick={() => navigate('/settings/subscription')}
           className="cursor-pointer"
         >
           <CreditCard className="mr-2 h-4 w-4" />
           <span>服务购买</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => navigate('/settings/permissions')}
-          className="cursor-pointer"
-        >
-          <Shield className="mr-2 h-4 w-4" />
-          <span>功能分配</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem

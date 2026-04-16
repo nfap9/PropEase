@@ -18,6 +18,7 @@ import { useState } from 'react';
 
 import { AppHeader } from './app-header';
 import { NavProvider, useNavContext } from './nav-context';
+import { ROUTE_META } from './nav-config-v2';
 import { useBrandConfig } from '@/contexts/brand-config';
 import { useAuth } from '@/contexts/auth';
 
@@ -120,22 +121,42 @@ function SidebarNavContent() {
   const { visibleSections } = useNavContext();
   const pathname = useLocation().pathname;
 
-  const mainSection = visibleSections.find((s) => s.id === 'main');
+  const workspaceSection = visibleSections.find((s) => s.id === 'workspace');
 
   return (
     <SidebarContent className="flex flex-col">
       <SidebarBrand />
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        {/* 主导航菜单 - 一级显示，无分组 */}
-        {mainSection && (
+        {/* 工作台分区 - 一级显示，支持分组 */}
+        {workspaceSection && (
           <SidebarMenu>
-            {mainSection.items.map((item) => {
+            {workspaceSection.items.map((item, index) => {
               const Icon = item.icon;
               const isActive =
-                pathname === item.href || pathname.startsWith(item.href + '/');
+                pathname === item.href ||
+                (() => {
+                  // 只有当导航项有详情页（如 /workspace/apartments/:id）时才使用前缀匹配
+                  // team 和 team/members 是兄弟路由，不应该前缀匹配
+                  const hasDetailPages = Object.keys(ROUTE_META).some(
+                    (route) => route.startsWith(item.href + '/') && route.includes('/:')
+                  );
+                  if (!hasDetailPages) return false;
+
+                  const prefix = item.href + '/';
+                  if (!pathname.startsWith(prefix)) return false;
+                  const remaining = pathname.slice(prefix.length);
+                  return !remaining.includes('/');
+                })();
+              const prevItem = workspaceSection.items[index - 1];
+              const showGroupHeader = prevItem?.group !== item.group;
 
               return (
                 <SidebarMenuItem key={item.id}>
+                  {showGroupHeader && item.group && (
+                    <div className="px-2 py-1.5 text-xs font-medium text-sidebar-foreground/50">
+                      {item.group}
+                    </div>
+                  )}
                   <SidebarMenuButton
                     isActive={isActive}
                     tooltip={item.label}
@@ -167,31 +188,22 @@ function SidebarNavContent() {
  */
 function SidebarUserFooter() {
   const { user, organization } = useAuth();
-  const navigate = useNavigate();
 
   return (
     <SidebarFooter className="border-t border-sidebar-border/50 p-3">
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            onClick={() => navigate('/settings')}
-            tooltip="设置"
-            className="h-10 rounded-lg px-3 text-sidebar-foreground/75 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-accent-foreground">
-              {user?.full_name?.charAt(0).toUpperCase() || 'U'}
-            </div>
-            <div className="min-w-0 flex-1 text-left">
-              <div className="truncate text-sm font-medium">
-                {user?.full_name || '用户'}
-              </div>
-              <div className="truncate text-xs text-sidebar-foreground/60">
-                {organization?.name || '未选择团队'}
-              </div>
-            </div>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
+      <div className="flex items-center gap-3 px-3 py-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-accent-foreground">
+          {user?.full_name?.charAt(0).toUpperCase() || 'U'}
+        </div>
+        <div className="min-w-0 flex-1 text-left">
+          <div className="truncate text-sm font-medium text-sidebar-foreground">
+            {user?.full_name || '用户'}
+          </div>
+          <div className="truncate text-xs text-sidebar-foreground/60">
+            {organization?.name || '未选择团队'}
+          </div>
+        </div>
+      </div>
     </SidebarFooter>
   );
 }

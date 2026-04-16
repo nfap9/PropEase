@@ -8,6 +8,7 @@ import {
   Receipt,
   BarChart3,
   Bell,
+  Shield,
 } from 'lucide-react';
 import { PERMISSIONS } from '@/hooks/use-permissions';
 import type { AccessRule } from '@/utils/permission-access';
@@ -20,6 +21,8 @@ export interface NavItem extends AccessRule {
   icon: React.ComponentType<{ className?: string }>;
   /** 详情页标签（如公寓详情） */
   detailLabel?: string;
+  /** 分组名称（用于菜单内部分组） */
+  group?: string;
 }
 
 /** 导航分区 */
@@ -49,10 +52,11 @@ export interface NavConfig {
   routeMeta: Record<string, RouteMeta>;
 }
 
-const MAIN_NAV_ITEMS: NavItem[] = [
+/** 工作台导航项（公寓管理相关） */
+const WORKSPACE_NAV_ITEMS: NavItem[] = [
   {
     id: 'dashboard',
-    href: '/dashboard',
+    href: '/workspace/dashboard',
     label: '首页',
     icon: Home,
     requiresOrganization: true,
@@ -60,7 +64,7 @@ const MAIN_NAV_ITEMS: NavItem[] = [
   },
   {
     id: 'notifications',
-    href: '/notifications',
+    href: '/workspace/notifications',
     label: '通知',
     icon: Bell,
     requiresOrganization: true,
@@ -68,7 +72,7 @@ const MAIN_NAV_ITEMS: NavItem[] = [
   },
   {
     id: 'apartments',
-    href: '/apartments',
+    href: '/workspace/apartments',
     label: '公寓管理',
     icon: Building2,
     requiresOrganization: true,
@@ -76,7 +80,7 @@ const MAIN_NAV_ITEMS: NavItem[] = [
   },
   {
     id: 'rooms',
-    href: '/rooms',
+    href: '/workspace/rooms',
     label: '全部房间',
     icon: DoorOpen,
     requiresOrganization: true,
@@ -84,7 +88,7 @@ const MAIN_NAV_ITEMS: NavItem[] = [
   },
   {
     id: 'tenants',
-    href: '/tenants',
+    href: '/workspace/tenants',
     label: '租客管理',
     icon: Users,
     requiresOrganization: true,
@@ -92,7 +96,7 @@ const MAIN_NAV_ITEMS: NavItem[] = [
   },
   {
     id: 'leases',
-    href: '/leases',
+    href: '/workspace/leases',
     label: '租约管理',
     icon: FileText,
     requiresOrganization: true,
@@ -100,7 +104,7 @@ const MAIN_NAV_ITEMS: NavItem[] = [
   },
   {
     id: 'utilities',
-    href: '/utilities',
+    href: '/workspace/utilities',
     label: '水电记录',
     icon: Zap,
     requiresOrganization: true,
@@ -108,7 +112,7 @@ const MAIN_NAV_ITEMS: NavItem[] = [
   },
   {
     id: 'bills',
-    href: '/bills',
+    href: '/workspace/bills',
     label: '账单管理',
     icon: Receipt,
     requiresOrganization: true,
@@ -116,40 +120,67 @@ const MAIN_NAV_ITEMS: NavItem[] = [
   },
   {
     id: 'reports',
-    href: '/reports',
+    href: '/workspace/reports',
     label: '经营分析',
     icon: BarChart3,
     requiresOrganization: true,
     permission: PERMISSIONS.REPORT_VIEW,
   },
+  {
+    id: 'team',
+    href: '/workspace/team',
+    label: '团队信息',
+    icon: Users,
+    permission: PERMISSIONS.MEMBER_VIEW,
+    group: '团队设置',
+  },
+  {
+    id: 'team-members',
+    href: '/workspace/team/members',
+    label: '团队成员',
+    icon: Users,
+    permission: PERMISSIONS.MEMBER_VIEW,
+    group: '团队设置',
+  },
+  {
+    id: 'permissions',
+    href: '/workspace/permissions',
+    label: '功能分配',
+    icon: Shield,
+    permission: PERMISSIONS.SETTINGS_VIEW,
+    group: '团队设置',
+  },
 ];
 
-/** 主导航分区 */
-export const MAIN_SECTION: NavSection = {
-  id: 'main',
-  label: '导航菜单',
-  items: MAIN_NAV_ITEMS,
+/** 工作台导航分区 */
+export const WORKSPACE_SECTION: NavSection = {
+  id: 'workspace',
+  label: '工作台',
+  items: WORKSPACE_NAV_ITEMS,
 };
 
 /** 所有导航分区 */
-export const NAV_SECTIONS: NavSection[] = [MAIN_SECTION];
+export const NAV_SECTIONS: NavSection[] = [WORKSPACE_SECTION];
 
 /** 路由元数据映射 */
 export const ROUTE_META: Record<string, RouteMeta> = {
-  '/dashboard': { sectionItemId: 'dashboard' },
-  '/notifications': { sectionItemId: 'notifications' },
-  '/apartments': { sectionItemId: 'apartments' },
-  '/apartments/new': { sectionItemId: 'apartments' },
-  '/apartments/:id': { sectionItemId: 'apartments', detailLabel: '公寓详情' },
-  '/rooms': { sectionItemId: 'rooms' },
-  '/tenants': { sectionItemId: 'tenants' },
-  '/tenants/:id': { sectionItemId: 'tenants', detailLabel: '租客详情' },
-  '/leases': { sectionItemId: 'leases' },
-  '/leases/:id': { sectionItemId: 'leases', detailLabel: '租约详情' },
-  '/bills': { sectionItemId: 'bills' },
-  '/utilities': { sectionItemId: 'utilities' },
-  '/utilities/history': { sectionItemId: 'utilities', detailLabel: '历史记录' },
-  '/reports': { sectionItemId: 'reports' },
+  '/workspace/dashboard': { sectionItemId: 'dashboard' },
+  '/workspace/notifications': { sectionItemId: 'notifications' },
+  '/workspace/team': { sectionItemId: 'team' },
+  '/workspace/team/members': { sectionItemId: 'team-members' },
+  '/workspace/permissions': { sectionItemId: 'permissions' },
+  '/workspace/apartments': { sectionItemId: 'apartments' },
+  '/workspace/apartments/new': { sectionItemId: 'apartments' },
+  '/workspace/apartments/:id': { sectionItemId: 'apartments', detailLabel: '公寓详情' },
+  '/workspace/rooms': { sectionItemId: 'rooms' },
+  '/workspace/tenants': { sectionItemId: 'tenants' },
+  '/workspace/tenants/:id': { sectionItemId: 'tenants', detailLabel: '租客详情' },
+  '/workspace/leases': { sectionItemId: 'leases' },
+  '/workspace/leases/:id': { sectionItemId: 'leases', detailLabel: '租约详情' },
+  '/workspace/bills': { sectionItemId: 'bills' },
+  '/workspace/utilities': { sectionItemId: 'utilities' },
+  '/workspace/utilities/history': { sectionItemId: 'utilities', detailLabel: '历史记录' },
+  '/workspace/reports': { sectionItemId: 'reports' },
 };
 
 /** 获取路由元数据 */

@@ -135,8 +135,21 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
     const userData = await authApi.getMe();
     setUser(userData);
 
+    // 加载组织列表，并检查本地存储的组织是否有效
     const orgs = await loadOrganizations();
-    return orgs.length > 0 ? '/dashboard' : '/organizations/new';
+    const savedOrgId = localStorage.getItem('current_organization_id');
+    const savedOrgIsValid = savedOrgId && orgs.some(org => org.id === savedOrgId);
+
+    if (savedOrgIsValid) {
+      // 保存的组织有效，进入工作台
+      return '/workspace/dashboard';
+    } else if (orgs.length > 0) {
+      // 没有保存的组织或已无效，但有其他组织，进入组织选择页面
+      return '/organizations';
+    } else {
+      // 没有组织，进入创建组织页面
+      return '/organizations/new';
+    }
   };
 
   const register = async (phone: string, password: string, fullName: string) => {

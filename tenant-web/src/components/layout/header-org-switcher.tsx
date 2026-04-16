@@ -55,7 +55,7 @@ export function HeaderOrgSwitcher() {
             onClick={() => {
               setOrganization(org);
               setOpen(false);
-              navigate('/dashboard');
+              navigate('/workspace/apartments');
             }}
             className="flex items-center justify-between"
           >
