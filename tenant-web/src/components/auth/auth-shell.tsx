@@ -51,8 +51,7 @@ export function AuthShell({
   const shellCopy = SHELL_COPY[mode];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.20),_transparent_26%),linear-gradient(135deg,_#eff6ff_0%,_#f8fafc_46%,_#e0ecff_100%)] dark:bg-background dark:bg-none">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,_hsl(var(--foreground)/0.06),_transparent_18%),radial-gradient(circle_at_20%_85%,_hsl(var(--primary)/0.10),_transparent_22%)]" />
+    <div className="relative min-h-screen overflow-hidden bg-background">
       <div className="absolute left-[-8rem] top-16 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
       <div className="absolute bottom-0 right-[-5rem] h-80 w-80 rounded-full bg-sky-300/20 blur-3xl dark:bg-sky-300/10" />
 
