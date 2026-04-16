@@ -100,20 +100,20 @@ export function ApartmentCard({ apartment, onEdit, onDelete }: ApartmentCardProp
               <span className="text-xs text-muted-foreground mt-1">总计</span>
             </div>
             {/* Available */}
-            <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-emerald-50 border border-emerald-100">
-              <span className="text-2xl font-bold text-emerald-600 tabular-nums">{room_stats.available}</span>
-              <span className="text-xs text-emerald-600/70 mt-1">空房</span>
+            <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 dark:bg-emerald-500/15 dark:border-emerald-500/30">
+              <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">{room_stats.available}</span>
+              <span className="text-xs text-emerald-600/70 dark:text-emerald-400/70 mt-1">空房</span>
             </div>
             {/* Occupied */}
-            <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-blue-50 border border-blue-100">
-              <span className="text-2xl font-bold text-blue-600 tabular-nums">{room_stats.occupied}</span>
-              <span className="text-xs text-blue-600/70 mt-1">已租</span>
+            <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 dark:bg-blue-500/15 dark:border-blue-500/30">
+              <span className="text-2xl font-bold text-blue-600 dark:text-blue-400 tabular-nums">{room_stats.occupied}</span>
+              <span className="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">已租</span>
             </div>
             {/* Maintenance */}
             {room_stats.maintenance > 0 ? (
-              <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-amber-50 border border-amber-100">
-                <span className="text-2xl font-bold text-amber-600 tabular-nums">{room_stats.maintenance}</span>
-                <span className="text-xs text-amber-600/70 mt-1">维修</span>
+              <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 dark:bg-amber-500/15 dark:border-amber-500/30">
+                <span className="text-2xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">{room_stats.maintenance}</span>
+                <span className="text-xs text-amber-600/70 dark:text-amber-400/70 mt-1">维修</span>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-muted/30 border border-transparent">
