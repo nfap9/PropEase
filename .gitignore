@@ -28,7 +28,9 @@ tenant-web/public/workbox-*.js
 
 # Production
 build/
-dist/
+
+# admin-web vite build
+admin-web/dist/
 
 # Misc
 .DS_Store
@@ -53,6 +55,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 # api 构建产物已由 dist/ 覆盖
+
+# 前端环境变量文件
+.env.local
+.env.*.local
 
 # Prisma generated client
 api/src/generated/
