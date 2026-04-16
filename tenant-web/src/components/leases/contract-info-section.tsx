@@ -148,7 +148,7 @@ export function ContractInfoSection({
 
         {/* Financial summary bar */}
         {(monthlyRent > 0 || totalMonthly > 0) && (
-          <div className="mt-3 rounded-xl bg-white/80 border border-amber-100/60 p-4 space-y-2">
+          <div className="mt-3 rounded-xl bg-card/80 border border-amber-100/60 dark:border-amber-800/50 p-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">月租</span>
               <span className="font-medium">¥{monthlyRent.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</span>
@@ -159,7 +159,7 @@ export function ContractInfoSection({
                 <span className="font-medium">¥{totalMonthly.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</span>
               </div>
             )}
-            <div className="h-px bg-amber-200/50 my-1" />
+            <div className="h-px bg-amber-200/50 dark:bg-amber-800/50 my-1" />
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-foreground">每月合计</span>
               <span className="text-lg font-bold text-amber-600">

@@ -19,26 +19,18 @@ export function RoomsStatsBar({ rooms }: RoomsStatsBarProps) {
     : 0;
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-black/5 bg-gradient-to-r from-stone-50 via-white to-stone-50 shadow-sm">
-      {/* Subtle texture overlay */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-        }}
-      />
-
+    <div className="relative overflow-hidden rounded-xl border border-border bg-card shadow-sm">
       <div className="relative flex flex-wrap items-center gap-4 px-4 py-3 sm:gap-6 sm:px-5">
         {/* Main stat - Total */}
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stone-900 text-white shadow-sm">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
             <Home className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-xl font-semibold tracking-tight text-stone-900">
+            <div className="text-xl font-semibold tracking-tight text-foreground">
               {stats.total}
             </div>
-            <div className="text-[10px] text-stone-500">总房间数</div>
+            <div className="text-[10px] text-muted-foreground">总房间数</div>
           </div>
         </div>
 
@@ -48,33 +40,33 @@ export function RoomsStatsBar({ rooms }: RoomsStatsBarProps) {
             icon={<Users className="h-3.5 w-3.5" />}
             value={stats.occupied}
             label="已出租"
-            colorClass="text-blue-600"
-            bgClass="bg-blue-50"
-            iconClass="text-blue-500"
+            colorClass="text-blue-600 dark:text-blue-500"
+            bgClass="bg-blue-50 dark:bg-blue-950/30"
+            iconClass="text-blue-500 dark:text-blue-400"
           />
           <StatusStat
             icon={<CheckCircle className="h-3.5 w-3.5" />}
             value={stats.available}
             label="空置"
-            colorClass="text-emerald-600"
-            bgClass="bg-emerald-50"
-            iconClass="text-emerald-500"
+            colorClass="text-emerald-600 dark:text-emerald-500"
+            bgClass="bg-emerald-50 dark:bg-emerald-950/30"
+            iconClass="text-emerald-500 dark:text-emerald-400"
           />
           <StatusStat
             icon={<Wrench className="h-3.5 w-3.5" />}
             value={stats.maintenance}
             label="维修中"
-            colorClass="text-amber-600"
-            bgClass="bg-amber-50"
-            iconClass="text-amber-500"
+            colorClass="text-amber-600 dark:text-amber-500"
+            bgClass="bg-amber-50 dark:bg-amber-950/30"
+            iconClass="text-amber-500 dark:text-amber-400"
           />
         </div>
 
         {/* Occupancy rate - right aligned */}
         <div className="ml-auto flex items-center gap-2">
           <div className="text-right">
-            <div className="text-xs font-medium text-stone-900">出租率</div>
-            <div className="text-[10px] text-stone-500">{occupancyRate}%</div>
+            <div className="text-xs font-medium text-foreground">出租率</div>
+            <div className="text-[10px] text-muted-foreground">{occupancyRate}%</div>
           </div>
           <OccupancyRing rate={occupancyRate} />
         </div>
@@ -105,7 +97,7 @@ function StatusStat({
       </div>
       <div>
         <div className={`text-base font-semibold ${colorClass}`}>{value}</div>
-        <div className="text-[10px] text-stone-500">{label}</div>
+        <div className="text-[10px] text-muted-foreground">{label}</div>
       </div>
     </div>
   );
@@ -124,7 +116,7 @@ function OccupancyRing({ rate }: { rate: number }) {
           cy="18"
           r="14"
           fill="none"
-          stroke="#e7e5e4"
+          className="stroke-border"
           strokeWidth="3"
         />
         {/* Progress ring */}
@@ -133,16 +125,15 @@ function OccupancyRing({ rate }: { rate: number }) {
           cy="18"
           r="14"
           fill="none"
-          stroke="#1c1917"
+          className="stroke-foreground transition-all duration-500 ease-out"
           strokeWidth="3"
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          className="transition-all duration-500 ease-out"
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-xs font-semibold text-stone-900">{rate}%</span>
+        <span className="text-xs font-semibold text-foreground">{rate}%</span>
       </div>
     </div>
   );

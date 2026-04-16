@@ -181,7 +181,7 @@ function SubscriptionPayContent() {
                 <img
                   src={qrUrl}
                   alt={tenantMessages.settings.subscriptionPage.pay.qrAlt}
-                  className="rounded-lg border bg-white p-2"
+                  className="rounded-lg border border-input bg-background p-2"
                   width={220}
                   height={220}
                 />

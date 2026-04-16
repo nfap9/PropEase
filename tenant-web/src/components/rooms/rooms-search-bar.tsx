@@ -45,17 +45,17 @@ export function RoomsSearchBar({
     <div className="flex flex-wrap items-center gap-2">
       {/* Search input */}
       <div className="relative flex-1 min-w-[160px]">
-        <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" />
+        <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="搜索房间号..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="h-8 flex-1 rounded-lg border-stone-200 bg-white pl-8 pr-8 text-xs shadow-sm transition-all focus:border-stone-400 focus:ring-1 focus:ring-stone-100"
+          className="h-8 flex-1 rounded-lg border-input bg-background pl-8 pr-8 text-xs shadow-sm transition-all"
         />
         {search && (
           <button
             onClick={() => onSearchChange('')}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -69,7 +69,7 @@ export function RoomsSearchBar({
           onFilterChange('apartmentId', value === 'all' ? null : value)
         }
       >
-        <SelectTrigger className="h-8 w-[130px] rounded-lg border-stone-200 bg-white text-xs shadow-sm transition-all hover:border-stone-300">
+        <SelectTrigger className="h-8 w-[130px] rounded-lg border-input bg-background text-xs shadow-sm transition-all">
           <SelectValue placeholder="全部公寓" />
         </SelectTrigger>
         <SelectContent>
@@ -89,7 +89,7 @@ export function RoomsSearchBar({
           onFilterChange('status', value === 'all' ? null : (value as RoomStatus))
         }
       >
-        <SelectTrigger className="h-8 w-[100px] rounded-lg border-stone-200 bg-white text-xs shadow-sm transition-all hover:border-stone-300">
+        <SelectTrigger className="h-8 w-[100px] rounded-lg border-input bg-background text-xs shadow-sm transition-all">
           <SelectValue placeholder="状态" />
         </SelectTrigger>
         <SelectContent>
@@ -105,7 +105,7 @@ export function RoomsSearchBar({
         value={filters.layout || 'all'}
         onValueChange={(value) => onFilterChange('layout', value === 'all' ? null : value)}
       >
-        <SelectTrigger className="h-8 w-[110px] rounded-lg border-stone-200 bg-white text-xs shadow-sm transition-all hover:border-stone-300">
+        <SelectTrigger className="h-8 w-[110px] rounded-lg border-input bg-background text-xs shadow-sm transition-all">
           <SelectValue placeholder="户型" />
         </SelectTrigger>
         <SelectContent>
@@ -122,7 +122,7 @@ export function RoomsSearchBar({
       {hasActiveFilters && (
         <button
           onClick={onClearFilters}
-          className="flex h-8 items-center gap-1 rounded-lg border border-stone-200 bg-white px-2.5 text-xs text-stone-600 shadow-sm transition-all hover:border-stone-300 hover:bg-stone-50"
+          className="flex h-8 items-center gap-1 rounded-lg border border-input bg-background px-2.5 text-xs text-muted-foreground shadow-sm transition-all hover:bg-muted hover:text-foreground"
         >
           <X className="h-3 w-3" />
           清除

@@ -208,8 +208,8 @@ export function RoomsPageContent() {
   if (!orgId) {
     return (
       <div className="flex h-full flex-col items-center justify-center space-y-4">
-        <Building2 className="h-16 w-16 text-stone-300" />
-        <h2 className="text-xl font-semibold text-stone-900">请先创建或加入团队</h2>
+        <Building2 className="h-16 w-16 text-muted-foreground" />
+        <h2 className="text-xl font-semibold text-foreground">请先创建或加入团队</h2>
         <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
       </div>
     );

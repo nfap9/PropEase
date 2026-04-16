@@ -44,10 +44,10 @@ export function RoomsGroupedView({
 
   if (groups.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-stone-400">
+      <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
         <Home className="mb-4 h-12 w-12" />
-        <p className="text-lg font-medium">暂无房间</p>
-        <p className="text-sm">在公寓详情页添加房间</p>
+        <p className="text-lg font-medium text-foreground">暂无房间</p>
+        <p className="text-sm text-muted-foreground">在公寓详情页添加房间</p>
       </div>
     );
   }
@@ -68,20 +68,20 @@ export function RoomsGroupedView({
             {/* Apartment header */}
             <button
               onClick={() => toggleGroup(group.id)}
-              className="flex w-full items-center gap-2 rounded-lg bg-stone-100 px-3 py-2 text-left transition-colors hover:bg-stone-200"
+              className="flex w-full items-center gap-2 rounded-lg bg-muted px-3 py-2 text-left transition-colors hover:bg-muted/80"
             >
               {isCollapsed ? (
-                <ChevronRight className="h-4 w-4 text-stone-500" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
               ) : (
-                <ChevronDown className="h-4 w-4 text-stone-500" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               )}
               <div className="flex flex-1 items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white shadow-sm">
-                  <Home className="h-3.5 w-3.5 text-stone-600" />
+                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-background shadow-sm">
+                  <Home className="h-3.5 w-3.5 text-muted-foreground" />
                 </div>
                 <div>
-                  <div className="font-medium text-stone-900 text-sm">{group.name}</div>
-                  <div className="text-[10px] text-stone-500">
+                  <div className="font-medium text-foreground text-sm">{group.name}</div>
+                  <div className="text-[10px] text-muted-foreground">
                     {stats.total} 间 · {stats.occupied} 已租 · {stats.available} 空置
                   </div>
                 </div>

@@ -24,8 +24,8 @@ export function RoomListRow({ room, apartmentName, onLease, onTerminate, onStatu
   return (
     <div
       className={cn(
-        'flex items-center gap-3 rounded-lg border bg-white px-3 py-2 shadow-sm transition-all duration-150',
-        'hover:border-stone-300 hover:shadow-sm',
+        'flex items-center gap-3 rounded-lg border bg-card px-3 py-2 shadow-sm transition-all duration-150',
+        'hover:border-input hover:shadow-sm',
         status.borderClass
       )}
     >
@@ -34,11 +34,11 @@ export function RoomListRow({ room, apartmentName, onLease, onTerminate, onStatu
 
       {/* Room number */}
       <div className="min-w-[80px]">
-        <div className="font-medium text-stone-900 text-sm">{room.room_number}</div>
+        <div className="font-medium text-foreground text-sm">{room.room_number}</div>
         {apartmentName && (
           <Link
             to={`/apartments/${room.apartment_id}`}
-            className="text-[10px] text-stone-400 hover:text-stone-600 hover:underline"
+            className="text-[10px] text-muted-foreground hover:text-foreground hover:underline"
           >
             {apartmentName}
           </Link>
@@ -51,22 +51,22 @@ export function RoomListRow({ room, apartmentName, onLease, onTerminate, onStatu
       </Badge>
 
       {/* Layout */}
-      <div className="min-w-[80px] text-xs text-stone-500">
+      <div className="min-w-[80px] text-xs text-muted-foreground">
         {room.layout || '-'}
       </div>
 
       {/* Area */}
-      <div className="min-w-[60px] text-xs text-stone-400">
+      <div className="min-w-[60px] text-xs text-muted-foreground">
         {room.area ? `${room.area}m²` : '-'}
       </div>
 
       {/* Rent */}
       <div className="min-w-[90px]">
-        <span className="text-sm font-semibold text-stone-900">¥{room.monthly_rent.toLocaleString()}</span>
+        <span className="text-sm font-semibold text-foreground">¥{room.monthly_rent.toLocaleString()}</span>
       </div>
 
       {/* Notes */}
-      <div className="flex-1 truncate text-xs text-stone-400">
+      <div className="flex-1 truncate text-xs text-muted-foreground">
         {room.notes || '-'}
       </div>
 
@@ -99,7 +99,7 @@ export function RoomListRow({ room, apartmentName, onLease, onTerminate, onStatu
             variant="ghost"
             size="sm"
             onClick={() => onStatusChange(room, 'maintenance')}
-            className="h-6 w-6 p-0 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+            className="h-6 w-6 p-0 text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
           >
             <Wrench className="h-3 w-3" />
           </Button>
@@ -109,7 +109,7 @@ export function RoomListRow({ room, apartmentName, onLease, onTerminate, onStatu
             variant="ghost"
             size="sm"
             onClick={() => onStatusChange(room, 'available')}
-            className="h-6 w-6 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+            className="h-6 w-6 p-0 text-emerald-600 dark:text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
           >
             <CheckCircle className="h-3 w-3" />
           </Button>
