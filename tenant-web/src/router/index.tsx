@@ -2,7 +2,6 @@ import React from 'react';
 import { createBrowserRouter, Outlet } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AppShell } from '@/components/layout/app-shell';
-import { SimpleHeaderLayout } from '@/components/layout/simple-header-layout';
 import { AppProviders } from '@/components/layout/providers';
 
 // Auth pages
@@ -60,20 +59,11 @@ function RootLayout() {
   );
 }
 
-// Wrapper for protected routes with sidebar (AppShell)
+// Wrapper for protected routes (MainLayout with AppShell)
 function ProtectedRoutesLayout() {
   return (
     <ProtectedRoute>
       <AppShell />
-    </ProtectedRoute>
-  );
-}
-
-// Wrapper for organization routes (simple header only, no sidebar)
-function OrganizationRoutesLayout() {
-  return (
-    <ProtectedRoute>
-      <SimpleHeaderLayout />
     </ProtectedRoute>
   );
 }
@@ -92,10 +82,11 @@ export const router = createBrowserRouter([
         element: <React.Suspense fallback={<LoadingFallback />}><RegisterPage /></React.Suspense>,
       },
 
-      // Organization routes (simple header, no sidebar)
+      // Protected routes with sidebar (AppShell)
       {
-        element: <OrganizationRoutesLayout />,
+        element: <ProtectedRoutesLayout />,
         children: [
+          // Organization routes (now handled by MainLayout based on org state)
           {
             path: 'organizations',
             element: <React.Suspense fallback={<LoadingFallback />}><OrganizationsPage /></React.Suspense>,
@@ -104,13 +95,7 @@ export const router = createBrowserRouter([
             path: 'organizations/new',
             element: <React.Suspense fallback={<LoadingFallback />}><OrganizationNewPage /></React.Suspense>,
           },
-        ],
-      },
 
-      // Protected routes with sidebar (AppShell)
-      {
-        element: <ProtectedRoutesLayout />,
-        children: [
           {
             index: true,
             element: <React.Suspense fallback={<LoadingFallback />}><HomePage /></React.Suspense>,
