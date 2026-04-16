@@ -5,7 +5,6 @@ import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import { canAccessRule, type AccessRule } from '@/utils/permission-access';
-import { MainLayout } from '@/components/layout/main-layout';
 import { ORGANIZATION_ONBOARDING_PATH } from '@/utils/auth-redirect';
 
 /**
@@ -39,9 +38,7 @@ interface PermissionPageGuardProps {
  *
  * @example
  * <PermissionPageGuard>
- *   <MainLayout>
- *     {/* 页面内容 *\/}
- *   </MainLayout>
+ *   {/* 页面内容 *\/}
  * </PermissionPageGuard>
  */
 export function PermissionPageGuard({ children, permission, accessRule }: PermissionPageGuardProps) {
@@ -80,11 +77,9 @@ export function PermissionPageGuard({ children, permission, accessRule }: Permis
   // 加载中
   if (authLoading || permissionsLoading) {
     return (
-      <MainLayout>
-        <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </MainLayout>
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
@@ -99,12 +94,10 @@ export function PermissionPageGuard({ children, permission, accessRule }: Permis
     }
 
     return (
-      <MainLayout>
-        <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4">
-          <h2 className="text-2xl font-semibold">请先选择组织</h2>
-          <p className="text-muted-foreground">请选择或创建一个组织后再访问此页面</p>
-        </div>
-      </MainLayout>
+      <div className="flex h-full flex-col items-center justify-center gap-4">
+        <h2 className="text-2xl font-semibold">请先选择组织</h2>
+        <p className="text-muted-foreground">请选择或创建一个组织后再访问此页面</p>
+      </div>
     );
   }
 
@@ -125,12 +118,10 @@ export function PermissionPageGuard({ children, permission, accessRule }: Permis
     })
   ) {
     return (
-      <MainLayout>
-        <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4">
-          <h2 className="text-2xl font-semibold">无访问权限</h2>
-          <p className="text-muted-foreground">您没有权限访问此页面</p>
-        </div>
-      </MainLayout>
+      <div className="flex h-full flex-col items-center justify-center gap-4">
+        <h2 className="text-2xl font-semibold">无访问权限</h2>
+        <p className="text-muted-foreground">您没有权限访问此页面</p>
+      </div>
     );
   }
 

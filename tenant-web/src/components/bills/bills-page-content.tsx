@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAsyncDialogSubmit, usePageQueryState } from '@apartment-ultra/shared-ui';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
-import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/contexts/auth';
@@ -25,12 +24,10 @@ import { BillsListView } from './bills-list-view';
 
 function BillsFallback() {
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-96" />
-      </div>
-    </MainLayout>
+    <div className="space-y-6">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-96" />
+    </div>
   );
 }
 
@@ -140,8 +137,7 @@ export function BillsPageContent() {
 
   return (
     <PermissionPageGuard>
-      <MainLayout>
-        <BillsListView
+      <BillsListView
           orgId={orgId}
           billsLoading={billsLoading}
           bills={filteredBills}
@@ -197,7 +193,6 @@ export function BillsPageContent() {
           }}
           isPending={paymentMutation.isPending}
         />
-      </MainLayout>
     </PermissionPageGuard>
   );
 }

@@ -2,7 +2,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
-import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { roomsApi, apartmentsApi, leasesApi } from '@/api';
@@ -194,29 +193,25 @@ export function RoomsPageContent() {
 
   if (authLoading) {
     return (
-      <MainLayout>
-        <div className="space-y-4">
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <Skeleton key={i} className="h-28 rounded-xl" />
-            ))}
-          </div>
+      <div className="space-y-4">
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <Skeleton key={i} className="h-28 rounded-xl" />
+          ))}
         </div>
-      </MainLayout>
+      </div>
     );
   }
 
   if (!orgId) {
     return (
-      <MainLayout>
-        <div className="flex h-full flex-col items-center justify-center space-y-4">
-          <Building2 className="h-16 w-16 text-stone-300" />
-          <h2 className="text-xl font-semibold text-stone-900">请先创建或加入团队</h2>
-          <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
-        </div>
-      </MainLayout>
+      <div className="flex h-full flex-col items-center justify-center space-y-4">
+        <Building2 className="h-16 w-16 text-stone-300" />
+        <h2 className="text-xl font-semibold text-stone-900">请先创建或加入团队</h2>
+        <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
+      </div>
     );
   }
 
@@ -224,8 +219,7 @@ export function RoomsPageContent() {
 
   return (
     <PermissionPageGuard>
-      <MainLayout>
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* Stats bar */}
           {allRooms && <RoomsStatsBar rooms={allRooms} />}
 
@@ -298,7 +292,6 @@ export function RoomsPageContent() {
           isPending={terminateLeaseMutation.isPending}
           room={selectedRoom}
         />
-      </MainLayout>
     </PermissionPageGuard>
   );
 }

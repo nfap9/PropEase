@@ -2,7 +2,6 @@
 import { lazy } from 'react';
 import { useState } from 'react';
 import { Building2 } from 'lucide-react';
-import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -25,12 +24,10 @@ type ReportTab = 'income' | 'occupancy' | 'overview';
 
 function ReportsFallback() {
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-96" />
-      </div>
-    </MainLayout>
+    <div className="space-y-6">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-96" />
+    </div>
   );
 }
 
@@ -50,20 +47,17 @@ export function ReportsPageContent() {
 
   if (!orgId) {
     return (
-      <MainLayout>
-        <div className="flex h-full flex-col items-center justify-center space-y-4">
-          <Building2 className="h-16 w-16 text-muted-foreground" />
-          <h2 className="text-xl font-semibold">请先创建或加入团队</h2>
-          <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
-        </div>
-      </MainLayout>
+      <div className="flex h-full flex-col items-center justify-center space-y-4">
+        <Building2 className="h-16 w-16 text-muted-foreground" />
+        <h2 className="text-xl font-semibold">请先创建或加入团队</h2>
+        <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
+      </div>
     );
   }
 
   return (
     <PermissionPageGuard>
-      <MainLayout>
-        <div className="space-y-6">
+      <div className="space-y-6">
           <div className="flex items-center justify-end">
             <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(Number(value))}>
               <SelectTrigger className="w-[120px]" data-testid={REPORTS.YEAR_SELECT}>
@@ -122,7 +116,6 @@ export function ReportsPageContent() {
             </TabsContent>
           </Tabs>
         </div>
-      </MainLayout>
     </PermissionPageGuard>
   );
 }

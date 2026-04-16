@@ -8,7 +8,6 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
 import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { LeaseSigningDrawer } from './lease-signing-drawer';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
@@ -107,31 +106,26 @@ export function LeasesPageContent() {
 
   if (authLoading) {
     return (
-      <MainLayout>
-        <div className="space-y-6">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-96" />
-        </div>
-      </MainLayout>
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-96" />
+      </div>
     );
   }
 
   if (!orgId) {
     return (
-      <MainLayout>
-        <div className="flex h-full flex-col items-center justify-center space-y-4">
-          <Building2 className="h-16 w-16 text-muted-foreground" />
-          <h2 className="text-xl font-semibold">请先创建或加入团队</h2>
-          <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
-        </div>
-      </MainLayout>
+      <div className="flex h-full flex-col items-center justify-center space-y-4">
+        <Building2 className="h-16 w-16 text-muted-foreground" />
+        <h2 className="text-xl font-semibold">请先创建或加入团队</h2>
+        <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
+      </div>
     );
   }
 
   return (
     <PermissionPageGuard>
-      <MainLayout>
-        <ListPageLayout
+      <ListPageLayout
           title=""
           maxWidth="full"
           className="w-full"
@@ -204,7 +198,6 @@ export function LeasesPageContent() {
           onConfirm={() => deleteConfirm.selectedItem && deleteMutation.mutate(deleteConfirm.selectedItem.id)}
           isPending={deleteMutation.isPending}
         />
-      </MainLayout>
     </PermissionPageGuard>
   );
 }

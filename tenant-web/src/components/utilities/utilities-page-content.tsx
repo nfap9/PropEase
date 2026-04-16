@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
-import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
@@ -128,29 +127,22 @@ export function UtilitiesPageContent() {
   };
 
   if (authLoading) {
-    return (
-      <MainLayout>
-        <UtilitiesPageSuspenseFallback />
-      </MainLayout>
-    );
+    return <UtilitiesPageSuspenseFallback />;
   }
 
   if (!orgId) {
     return (
-      <MainLayout>
-        <div className="flex h-full flex-col items-center justify-center space-y-4">
-          <Building2 className="h-16 w-16 text-muted-foreground" />
-          <h2 className="text-xl font-semibold">请先创建或加入团队</h2>
-          <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
-        </div>
-      </MainLayout>
+      <div className="flex h-full flex-col items-center justify-center space-y-4">
+        <Building2 className="h-16 w-16 text-muted-foreground" />
+        <h2 className="text-xl font-semibold">请先创建或加入团队</h2>
+        <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
+      </div>
     );
   }
 
   return (
     <PermissionPageGuard>
-      <MainLayout>
-        <div className="space-y-6">
+      <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-3">
@@ -412,7 +404,6 @@ export function UtilitiesPageContent() {
             utility={editingUtility}
           />
         )}
-      </MainLayout>
     </PermissionPageGuard>
   );
 }
