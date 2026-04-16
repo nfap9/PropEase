@@ -2,14 +2,14 @@
 import { useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable, StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
-import { useBillingOrders } from '../billing.hooks';
+import { useBillingOrders } from '@/hooks/billing';
 import {
   formatOrderAmount,
   getOrderStatusLabel,
   getOrderTypeLabel,
   BILLING_ORDER_STATUS_OPTIONS,
   BILLING_ORDER_TYPE_OPTIONS,
-} from '../billing.types';
+} from '@/types/billing';
 import type { BillingOrder, BillingOrderStatus, BillingOrderType } from '@apartment-ultra/api-contract';
 
 export function OrdersPageContent() {

@@ -1,4 +1,4 @@
-import { UsagePricingPageContent } from '@/features/billing';
+import { UsagePricingPageContent } from '@/components/billing/usage-pricing-page-content';
 
 export default function BillingUsagePricingPage() {
   return (

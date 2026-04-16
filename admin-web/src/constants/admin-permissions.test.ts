@@ -4,7 +4,7 @@ import {
   formatAdminPermissionsForDisplay,
   getAdminPermissionGroups,
   ADMIN_PERMISSION_OPTIONS,
-} from './admin-permissions';
+} from '@/types/admin-permissions';
 
 describe('admin-permissions', () => {
   describe('adminPermissionCodesToLabels', () => {

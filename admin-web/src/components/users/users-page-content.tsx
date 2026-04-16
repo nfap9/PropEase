@@ -7,9 +7,9 @@ import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { DataTable } from '@/components/common/data-table';
 import type { AdminUser } from '@/api/admin-client';
-import { createAdminUsersColumns } from '../users.columns';
-import { useAdminUsersData } from '../users.hooks';
-import { toCreateUserPayload, toResetPasswordPayload, toUpdateUserPayload } from '../users.utils';
+import { createAdminUsersColumns } from '@/components/users/columns';
+import { useAdminUsersData } from '@/hooks/users';
+import { toCreateUserPayload, toResetPasswordPayload, toUpdateUserPayload } from '@/utils/users';
 import { CreateUserDialog, DeleteUserDialog, EditUserDialog, ResetPasswordDialog } from './user-dialogs';
 
 type UserDialogAction = 'create' | 'edit' | 'reset' | 'delete';

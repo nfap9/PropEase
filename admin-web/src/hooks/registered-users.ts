@@ -7,12 +7,12 @@ import {
   type AdminRegisteredUserDetail,
 } from '@/api/admin-client';
 import { getErrorMessage } from '@/utils/error';
-import type { FilterActive, GiftSubscriptionForm } from './registered-users.schemas';
+import type { FilterActive, GiftSubscriptionForm } from '@/schemas/registered-users';
 import {
   buildGiftSubscriptionPayload,
   getGiftEligiblePlans,
   getRegisteredUsersActiveParam,
-} from './registered-users.utils';
+} from '@/utils/registered-users';
 import { adminMessages } from '@/i18n';
 
 interface UseRegisteredUsersDataOptions {

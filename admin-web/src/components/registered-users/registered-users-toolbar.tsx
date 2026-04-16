@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
-import type { FilterActive } from '../registered-users.schemas';
+import type { FilterActive } from '@/schemas/registered-users';
 import { adminMessages } from '@/i18n';
 
 interface RegisteredUsersToolbarProps {

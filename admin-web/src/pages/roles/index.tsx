@@ -9,7 +9,7 @@ import { AdminRoleList } from '@/components/admin/admin-role-list';
 import { AdminRoleDetailPanel } from '@/components/admin/admin-role-detail-panel';
 import { AdminRoleCreateDialog } from '@/components/admin/admin-role-create-dialog';
 import { AdminRoleDeleteDialog } from '@/components/admin/admin-role-delete-dialog';
-import { getAllAdminPermissionCodes } from '@/constants/admin-permissions';
+import { getAllAdminPermissionCodes } from '@/types/admin-permissions';
 import { togglePermissionCode } from './utils';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { adminMessages } from '@/i18n';

@@ -1,4 +1,4 @@
-import { PlansPageContent } from '@/features/billing';
+import { PlansPageContent } from '@/components/billing/plans-page-content';
 
 export default function BillingPlansPage() {
   return (

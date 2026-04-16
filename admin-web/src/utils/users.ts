@@ -4,7 +4,7 @@ import type {
   AdminUserCreate,
   AdminUserUpdate,
 } from '@/api/admin-client';
-import type { CreateUserForm, EditUserForm } from './users.schemas';
+import type { CreateUserForm, EditUserForm } from '@/schemas/users';
 
 export function getDefaultCreateUserFormValues(): CreateUserForm {
   return {

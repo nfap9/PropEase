@@ -38,8 +38,8 @@ import {
   type CreateUserForm,
   type EditUserForm,
   type ResetPasswordForm,
-} from '../users.schemas';
-import { getDefaultCreateUserFormValues, getDefaultResetPasswordValues, getEditUserFormValues } from '../users.utils';
+} from '@/schemas/users';
+import { getDefaultCreateUserFormValues, getDefaultResetPasswordValues, getEditUserFormValues } from '@/utils/users';
 
 export function CreateUserDialog({
   open,

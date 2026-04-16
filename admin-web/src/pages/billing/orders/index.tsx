@@ -1,4 +1,4 @@
-import { OrdersPageContent } from '@/features/billing';
+import { OrdersPageContent } from '@/components/billing/orders-page-content';
 
 export default function BillingOrdersPage() {
   return (

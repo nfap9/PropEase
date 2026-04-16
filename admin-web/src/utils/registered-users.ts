@@ -3,7 +3,7 @@ import type {
   AdminPlanPricingCreate,
   AdminRegisteredUserDetail,
 } from '@/api/admin-client';
-import type { FilterActive, GiftSubscriptionForm } from './registered-users.schemas';
+import type { FilterActive, GiftSubscriptionForm } from '@/schemas/registered-users';
 
 export function getRegisteredUsersActiveParam(activeFilter: FilterActive) {
   if (activeFilter === 'all') {

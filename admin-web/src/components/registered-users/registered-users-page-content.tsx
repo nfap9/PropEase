@@ -6,10 +6,10 @@ import { useConfirmAction, useListFilters } from '@apartment-ultra/shared-ui';
 import { DataTable } from '@/components/common/data-table';
 import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { giftSubscriptionSchema, type FilterActive, type GiftSubscriptionForm } from '../registered-users.schemas';
-import { createRegisteredUsersColumns } from '../registered-users.columns';
-import { useRegisteredUsersData } from '../registered-users.hooks';
-import { getDefaultGiftFormValues, getSelectedGiftPlan } from '../registered-users.utils';
+import { giftSubscriptionSchema, type FilterActive, type GiftSubscriptionForm } from '@/schemas/registered-users';
+import { createRegisteredUsersColumns } from '@/components/registered-users/columns';
+import { useRegisteredUsersData } from '@/hooks/registered-users';
+import { getDefaultGiftFormValues, getSelectedGiftPlan } from '@/utils/registered-users';
 import {
   DeleteRegisteredUserDialog,
   DisableRegisteredUserDialog,

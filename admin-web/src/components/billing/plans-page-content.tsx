@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { usePlans, useCreatePlan, useUpdatePlan, useDeletePlan, useUpdatePlanPricing } from '../billing.hooks';
+import { usePlans, useCreatePlan, useUpdatePlan, useDeletePlan, useUpdatePlanPricing } from '@/hooks/billing';
 import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminPlan, AdminPlanPricingCreate } from '@/api/admin-client';
 import type { PlanPricing } from '@apartment-ultra/api-contract';

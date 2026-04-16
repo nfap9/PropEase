@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { useBillingUsagePricing } from '../billing.hooks';
+import { useBillingUsagePricing } from '@/hooks/billing';
 
 export function UsagePricingPageContent() {
   const { pricing, loading, updateMutation } = useBillingUsagePricing();
