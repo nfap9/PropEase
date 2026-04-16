@@ -68,7 +68,7 @@ export function ReportsOccupancyTab({
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="period" />
                 <YAxis domain={[0, 100]} />
-                <Tooltip formatter={(value: number | undefined) => `${value ?? 0}%`} />
+                <Tooltip formatter={(value) => `${Number(value) ?? 0}%`} />
                 <Legend />
                 <Line type="monotone" dataKey="occupancy_rate" name="入住率" stroke="#8884d8" strokeWidth={2} />
               </LineChart>

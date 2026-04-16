@@ -7,13 +7,12 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
-# 配置 pnpm 使用国内镜像
+# 配置 pnpm
 RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.com
 
 # 复制 workspace 配置
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY tsconfig.base.json tsconfig.base.json
-COPY tsconfig.nextjs.json tsconfig.nextjs.json
 COPY tsconfig.react-package.json tsconfig.react-package.json
 COPY api/package.json api/package.json
 COPY admin-web/package.json admin-web/package.json
@@ -28,7 +27,6 @@ RUN pnpm install --no-frozen-lockfile
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# 配置 pnpm 使用国内镜像
 RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.com
 
 # 复制依赖
@@ -40,7 +38,6 @@ COPY --from=deps /app/packages ./packages
 # 复制源代码
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY tsconfig.base.json tsconfig.base.json
-COPY tsconfig.nextjs.json tsconfig.nextjs.json
 COPY tsconfig.react-package.json tsconfig.react-package.json
 COPY api/package.json api/package.json
 COPY admin-web/package.json admin-web/package.json
@@ -49,19 +46,20 @@ COPY api/src api/src
 COPY api/prisma api/prisma
 COPY api/tsconfig.json api/
 COPY admin-web/src admin-web/src
-COPY admin-web/next.config.mjs admin-web/
+COPY admin-web/public admin-web/public
+COPY admin-web/vite.config.ts admin-web/
 COPY admin-web/tsconfig.json admin-web/
 COPY admin-web/tailwind.config.ts admin-web/
 COPY admin-web/postcss.config.mjs admin-web/
+COPY admin-web/index.html admin-web/
 
 # 构建 api-contract
-RUN corepack enable pnpm && pnpm --filter @apartment-ultra/api-contract run build
+RUN pnpm --filter @apartment-ultra/api-contract run build
 
-# 构建运营后台（环境变量在构建时注入）
+# 构建前端
 WORKDIR /app/admin-web
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ENV NEXT_TELEMETRY_DISABLED=1
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 RUN pnpm run build
 
 # ============================================
@@ -71,21 +69,14 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
 
-# 创建非 root 用户
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# 安装 serve 用于静态文件服务
+RUN corepack enable pnpm && pnpm add -g serve@14
 
 # 复制构建产物
-COPY --from=builder --chown=nextjs:nodejs /app/admin-web/.next/standalone/ ./
-COPY --from=builder --chown=nextjs:nodejs /app/admin-web/.next/static ./admin-web/.next/static
+COPY --from=builder /app/admin-web/dist ./dist
 
-USER nextjs
+EXPOSE 8080
 
-EXPOSE 3001
-
-ENV PORT=3001
-ENV HOSTNAME="0.0.0.0"
-
-CMD ["node", "admin-web/server.js"]
+# serve 会自动寻找 dist 目录
+CMD ["serve", "-s", "dist", "-l", "8080"]

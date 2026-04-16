@@ -81,7 +81,7 @@ export function ReportsIncomeTab({
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="period" />
                 <YAxis />
-                <Tooltip formatter={(value: number | undefined) => `¥${(value ?? 0).toLocaleString()}`} />
+                <Tooltip formatter={(value) => `¥${(Number(value) ?? 0).toLocaleString()}`} />
                 <Legend />
                 <Bar dataKey="total_amount" name="应收金额" fill="#8884d8" />
                 <Bar dataKey="collected_amount" name="实收金额" fill="#82ca9d" />
@@ -119,7 +119,7 @@ export function ReportsIncomeTab({
                       <Cell key={`cell-${index}`} fill={color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number | undefined) => `¥${(value ?? 0).toLocaleString()}`} />
+                  <Tooltip formatter={(value) => `¥${(Number(value) ?? 0).toLocaleString()}`} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-4">

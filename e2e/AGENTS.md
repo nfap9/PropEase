@@ -17,31 +17,6 @@
 | 每个测试独立数据 | 使用 `TestDataGenerator` 创建 |
 | 必须清理数据 | 使用 `try/finally` 确保清理 |
 
-## 目录结构
-
-```
-e2e/
-├── helpers/           # 辅助工具
-│   ├── test-data.ts   # 测试数据生成器
-│   ├── api.ts         # API 辅助类
-│   ├── auth.ts        # 认证辅助函数
-│   ├── navigation.ts  # 导航辅助函数
-│   └── ui.ts          # UI 操作辅助函数
-├── fixtures.ts        # Playwright fixtures（自动登录）
-├── testids.ts         # data-testid 常量
-├── apartments/        # 公寓模块测试
-├── rooms/             # 房间模块测试
-├── tenants/           # 租客模块测试
-├── leases/            # 租约模块测试
-├── bills/             # 账单模块测试
-├── settings/          # 设置模块测试
-├── subscription/      # 订阅模块测试
-├── organization/      # 组织管理测试
-├── permissions/       # 权限管理测试
-├── utilities/         # 水电录入测试
-├── auth/              # 认证测试
-└── admin/             # 运营端测试
-```
 
 ## 测试数据生成器
 
@@ -62,43 +37,6 @@ test('测试用例', async ({ page, request }) => {
   }
 });
 ```
-
-### 可用方法
-
-| 方法 | 说明 |
-|------|------|
-| `createApartmentWithRooms(count)` | 创建公寓和房间 |
-| `createTenant(name?)` | 创建租客 |
-| `createLease(roomId, tenantId)` | 创建租约 |
-| `terminateLease(leaseId)` | 终止租约 |
-| `createFeeType(name?)` | 创建费用类型 |
-| `createBill(leaseId, options?)` | 创建账单 |
-| `createFullTestEnvironment()` | 创建公寓+租客+租约 |
-| `cleanup()` | 清理所有资源 |
-
-## 认证与 Fixtures
-
-```typescript
-// 方式一：手动登录
-import { login } from '../helpers/auth';
-await login(page);
-
-// 方式二：使用 fixtures 自动登录（推荐）
-import { test, expect } from '../fixtures';
-
-test('测试', async ({ authenticatedPage }) => {
-  await authenticatedPage.goto('/dashboard');
-});
-```
-
-### 测试账号
-
-| 环境变量 | 说明 | 默认值 |
-|----------|------|--------|
-| `E2E_TEST_PHONE` | 租户端手机号 | 13800138000 |
-| `E2E_TEST_PASSWORD` | 租户端密码 | Test1234 |
-| `E2E_PLATFORM_ADMIN_USERNAME` | 运营端用户名 | e2e_admin |
-| `E2E_PLATFORM_ADMIN_PASSWORD` | 运营端密码 | admin123 |
 
 ## TestID 规范
 

@@ -90,7 +90,7 @@ export function LineChart<TData extends LineChartDataItem>({
           <RechartsLineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             {showGrid ? <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border))" vertical={false} /> : null}
             <XAxis
-              dataKey={xKey}
+              dataKey={xKey as string}
               axisLine={false}
               tickLine={false}
               tickMargin={10}

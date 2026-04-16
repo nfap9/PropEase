@@ -66,7 +66,7 @@ REFRESH_TOKEN_EXPIRE_DAYS=7
 CORS_ORIGINS=["http://${SERVER_ADDR}"]
 
 # ---- 前端配置 ----
-NEXT_PUBLIC_API_URL=http://${SERVER_ADDR}/api/v1
+VITE_API_URL=http://${SERVER_ADDR}/api/v1
 
 # ---- Nginx 配置 ----
 SERVER_NAME=${SERVER_ADDR}

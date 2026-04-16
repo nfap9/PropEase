@@ -70,7 +70,7 @@ docker compose -p apartment-ultra-middleware -f docker/docker-compose.middleware
 ```bash
 # 1. 配置环境变量
 cp docker/.env.production.example .env.production
-# 必填项：SECRET_KEY、CORS_ORIGINS、NEXT_PUBLIC_API_URL、POSTGRES_PASSWORD
+# 必填项：SECRET_KEY、CORS_ORIGINS、VITE_API_URL、POSTGRES_PASSWORD
 
 # 2. 一键构建并启动
 docker compose -f docker/docker-compose.yaml --env-file .env.production up -d --build
@@ -194,7 +194,7 @@ docker compose -f docker/docker-compose.yaml --env-file docker/.env.docker up -d
 
 ```bash
 cp docker/.env.production.example .env.production
-vim .env.production  # 修改 SECRET_KEY、CORS_ORIGINS、NEXT_PUBLIC_API_URL 等必填项
+vim .env.production  # 修改 SECRET_KEY、CORS_ORIGINS、VITE_API_URL 等必填项
 ```
 
 ### 2. 构建并启动

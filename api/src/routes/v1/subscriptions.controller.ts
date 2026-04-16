@@ -367,9 +367,12 @@ export async function simulatePay(req: Request, res: Response, next: NextFunctio
           end_date: effectiveEndDate,
           auto_renew: true,
           next_service: { disconnect: true },
-          ...(order.service_id && { service: { connect: { id: order.service_id } } }),
+          ...(order.service_id ? { service: { connect: { id: order.service_id as string } } } : {}),
         });
       } else {
+        if (!order.service_id) {
+          return next(createAppError(400, '订阅订单缺少服务信息'));
+        }
         await defaultBillingOrderRepo.createSubscription({
           id: (order as { subscription_id?: string }).subscription_id ?? order.id,
           organization: { connect: { id: order.organization_id } },
@@ -377,7 +380,7 @@ export async function simulatePay(req: Request, res: Response, next: NextFunctio
           start_date: startDate,
           end_date: endDate,
           auto_renew: true,
-          ...(order.service_id && { service: { connect: { id: order.service_id } } }),
+          service: { connect: { id: order.service_id } },
         });
       }
     }

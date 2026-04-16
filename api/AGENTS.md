@@ -2,7 +2,6 @@
 
 Node/TypeScript 后端（Express），为项目当前唯一运行后端。
 
----
 
 ## 技术栈
 
@@ -14,37 +13,6 @@ Node/TypeScript 后端（Express），为项目当前唯一运行后端。
 - **认证**: JWT (HS256)；密码 bcrypt
 - **测试**: Vitest
 - **Lint**: ESLint + TypeScript ESLint
-
----
-
-## 目录结构
-
-```
-src/
-├── config.ts             # 环境配置
-├── constants.ts          # 业务码、不包装路径
-├── index.ts              # 入口，挂载中间件与路由
-├── messages.ts           # 错误消息定义
-├── swagger.ts           # OpenAPI 文档配置
-├── lib/                  # Prisma 单例等基础库
-├── constants/            # 权限默认值等常量定义
-├── errors/               # 领域特定异常处理
-├── middlewares/          # 响应包装、错误处理、认证、权限校验
-├── observability/         # 可观测性相关
-├── repositories/         # 数据仓库层，封装数据库操作
-├── routes/               # API 路由
-│   ├── health.ts         # 健康检查
-│   └── v1/               # 版本 1 API
-├── scheduler/            # 定时任务
-├── services/             # 业务逻辑层
-├── startup/              # 启动时检查
-├── types/                # TypeScript 类型定义
-└── utils/                # 工具函数
-
-prisma/schema.prisma      # 数据库模型定义
-```
-
----
 
 ## 代码风格
 
@@ -73,7 +41,6 @@ prisma/schema.prisma      # 数据库模型定义
 - 使用 Prettier
 - 两个空格缩进，单引号，trailing comma
 
----
 
 ## 响应契约
 
@@ -81,7 +48,6 @@ prisma/schema.prisma      # 数据库模型定义
 - 错误：`{ code, message, data?: { errors?: [{ field, message }] } }`
 - 不包装：`/health`、`/docs`、`/openapi.json`、`/api/v1/webhooks` 前缀
 
----
 
 ## 分层约定
 

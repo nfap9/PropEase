@@ -5,37 +5,37 @@ import { MainLayoutWithOutlet } from '@/components/layout/main-layout';
 import { AppProviders } from '@/components/layout/providers';
 
 // Auth pages
-const LoginPage = React.lazy(() => import('@/app/(auth)/login/page').then(m => ({ default: m.default })));
-const RegisterPage = React.lazy(() => import('@/app/(auth)/register/page').then(m => ({ default: m.default })));
+const LoginPage = React.lazy(() => import('@/pages/auth/login').then(m => ({ default: m.default })));
+const RegisterPage = React.lazy(() => import('@/pages/auth/register').then(m => ({ default: m.default })));
 
 // Dashboard pages
-const DashboardPage = React.lazy(() => import('@/app/(dashboard)/dashboard/page').then(m => ({ default: m.default })));
+const DashboardPage = React.lazy(() => import('@/pages/dashboard/index').then(m => ({ default: m.default })));
 
 // Regular pages
-const HomePage = React.lazy(() => import('@/app/page').then(m => ({ default: m.default })));
-const ApartmentsPage = React.lazy(() => import('@/app/apartments/page').then(m => ({ default: m.default })));
-const ApartmentNewPage = React.lazy(() => import('@/app/apartments/new/page').then(m => ({ default: m.default })));
-const ApartmentDetailPage = React.lazy(() => import('@/app/apartments/[id]/page').then(m => ({ default: m.default })));
-const RoomsPage = React.lazy(() => import('@/app/rooms/page').then(m => ({ default: m.default })));
-const TenantsPage = React.lazy(() => import('@/app/tenants/page').then(m => ({ default: m.default })));
-const TenantDetailPage = React.lazy(() => import('@/app/tenants/[id]/page').then(m => ({ default: m.default })));
-const LeasesPage = React.lazy(() => import('@/app/leases/page').then(m => ({ default: m.default })));
-const LeaseDetailPage = React.lazy(() => import('@/app/leases/[id]/page').then(m => ({ default: m.default })));
-const BillsPage = React.lazy(() => import('@/app/bills/page').then(m => ({ default: m.default })));
-const ReportsPage = React.lazy(() => import('@/app/reports/page').then(m => ({ default: m.default })));
-const UtilitiesPage = React.lazy(() => import('@/app/utilities/page').then(m => ({ default: m.default })));
-const UtilitiesHistoryPage = React.lazy(() => import('@/app/utilities/history/page').then(m => ({ default: m.default })));
-const OrganizationsPage = React.lazy(() => import('@/app/organizations/page').then(m => ({ default: m.default })));
-const OrganizationNewPage = React.lazy(() => import('@/app/organizations/new/page').then(m => ({ default: m.default })));
-const NotificationsPage = React.lazy(() => import('@/app/notifications/page').then(m => ({ default: m.default })));
-const SettingsPage = React.lazy(() => import('@/app/settings/page').then(m => ({ default: m.default })));
-const SettingsTeamPage = React.lazy(() => import('@/app/settings/team/page').then(m => ({ default: m.default })));
-const SettingsNotificationsPage = React.lazy(() => import('@/app/settings/notifications/page').then(m => ({ default: m.default })));
-const SettingsPermissionsPage = React.lazy(() => import('@/app/settings/permissions/page').then(m => ({ default: m.default })));
-const SettingsSubscriptionPage = React.lazy(() => import('@/app/settings/subscription/page').then(m => ({ default: m.default })));
-const SettingsSubscriptionPurchasePage = React.lazy(() => import('@/app/settings/subscription/purchase/page').then(m => ({ default: m.default })));
-const SettingsSubscriptionPayPage = React.lazy(() => import('@/app/settings/subscription/pay/page').then(m => ({ default: m.default })));
-const SettingsSubscriptionResultPage = React.lazy(() => import('@/app/settings/subscription/result/page').then(m => ({ default: m.default })));
+const HomePage = React.lazy(() => import('@/pages/index').then(m => ({ default: m.default })));
+const ApartmentsPage = React.lazy(() => import('@/pages/apartments/index').then(m => ({ default: m.default })));
+const ApartmentNewPage = React.lazy(() => import('@/pages/apartments/new').then(m => ({ default: m.default })));
+const ApartmentDetailPage = React.lazy(() => import('@/pages/apartments/[id]').then(m => ({ default: m.default })));
+const RoomsPage = React.lazy(() => import('@/pages/rooms/index').then(m => ({ default: m.default })));
+const TenantsPage = React.lazy(() => import('@/pages/tenants/index').then(m => ({ default: m.default })));
+const TenantDetailPage = React.lazy(() => import('@/pages/tenants/[id]').then(m => ({ default: m.default })));
+const LeasesPage = React.lazy(() => import('@/pages/leases/index').then(m => ({ default: m.default })));
+const LeaseDetailPage = React.lazy(() => import('@/pages/leases/[id]').then(m => ({ default: m.default })));
+const BillsPage = React.lazy(() => import('@/pages/bills/index').then(m => ({ default: m.default })));
+const ReportsPage = React.lazy(() => import('@/pages/reports/index').then(m => ({ default: m.default })));
+const UtilitiesPage = React.lazy(() => import('@/pages/utilities/index').then(m => ({ default: m.default })));
+const UtilitiesHistoryPage = React.lazy(() => import('@/pages/utilities/history').then(m => ({ default: m.default })));
+const OrganizationsPage = React.lazy(() => import('@/pages/organizations/index').then(m => ({ default: m.default })));
+const OrganizationNewPage = React.lazy(() => import('@/pages/organizations/new').then(m => ({ default: m.default })));
+const NotificationsPage = React.lazy(() => import('@/pages/notifications/index').then(m => ({ default: m.default })));
+const SettingsPage = React.lazy(() => import('@/pages/settings/index').then(m => ({ default: m.default })));
+const SettingsTeamPage = React.lazy(() => import('@/pages/settings/team').then(m => ({ default: m.default })));
+const SettingsNotificationsPage = React.lazy(() => import('@/pages/settings/notifications').then(m => ({ default: m.default })));
+const SettingsPermissionsPage = React.lazy(() => import('@/pages/settings/permissions').then(m => ({ default: m.default })));
+const SettingsSubscriptionPage = React.lazy(() => import('@/pages/settings/subscription/index').then(m => ({ default: m.default })));
+const SettingsSubscriptionPurchasePage = React.lazy(() => import('@/pages/settings/subscription/purchase').then(m => ({ default: m.default })));
+const SettingsSubscriptionPayPage = React.lazy(() => import('@/pages/settings/subscription/pay').then(m => ({ default: m.default })));
+const SettingsSubscriptionResultPage = React.lazy(() => import('@/pages/settings/subscription/result').then(m => ({ default: m.default })));
 
 const LoadingFallback = () => (
   <div className="flex h-screen items-center justify-center">

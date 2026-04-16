@@ -5,18 +5,18 @@ import { AdminLayout } from '@/components/layout/admin-layout';
 import { AppProviders } from '@/components/layout/providers';
 
 // Page components - lazy loaded for better code splitting
-const LoginPage = React.lazy(() => import('@/app/login/page').then(m => ({ default: m.default })));
-const SetupPage = React.lazy(() => import('@/app/setup/page').then(m => ({ default: m.default })));
-const DashboardPage = React.lazy(() => import('@/app/page').then(m => ({ default: m.default })));
-const UsersPage = React.lazy(() => import('@/app/users/page').then(m => ({ default: m.default })));
-const RegisteredUsersPage = React.lazy(() => import('@/app/registered-users/page').then(m => ({ default: m.default })));
-const RolesPage = React.lazy(() => import('@/app/roles/page').then(m => ({ default: m.default })));
-const OrganizationsPage = React.lazy(() => import('@/app/organizations/page').then(m => ({ default: m.default })));
-const OrganizationDetailPage = React.lazy(() => import('@/app/organizations/[id]/page').then(m => ({ default: m.default })));
-const BrandPage = React.lazy(() => import('@/app/brand/page').then(m => ({ default: m.default })));
-const BillingPlansPage = React.lazy(() => import('@/app/billing/plans/page').then(m => ({ default: m.default })));
-const BillingOrdersPage = React.lazy(() => import('@/app/billing/orders/page').then(m => ({ default: m.default })));
-const BillingUsagePricingPage = React.lazy(() => import('@/app/billing/usage-pricing/page').then(m => ({ default: m.default })));
+const LoginPage = React.lazy(() => import('@/pages/login/index').then(m => ({ default: m.default })));
+const SetupPage = React.lazy(() => import('@/pages/setup/index').then(m => ({ default: m.default })));
+const DashboardPage = React.lazy(() => import('@/pages/index').then(m => ({ default: m.default })));
+const UsersPage = React.lazy(() => import('@/pages/users/index').then(m => ({ default: m.default })));
+const RegisteredUsersPage = React.lazy(() => import('@/pages/registered-users/index').then(m => ({ default: m.default })));
+const RolesPage = React.lazy(() => import('@/pages/roles/index').then(m => ({ default: m.default })));
+const OrganizationsPage = React.lazy(() => import('@/pages/organizations/index').then(m => ({ default: m.default })));
+const OrganizationDetailPage = React.lazy(() => import('@/pages/organizations/[id]/index').then(m => ({ default: m.default })));
+const BrandPage = React.lazy(() => import('@/pages/brand/index').then(m => ({ default: m.default })));
+const BillingPlansPage = React.lazy(() => import('@/pages/billing/plans/index').then(m => ({ default: m.default })));
+const BillingOrdersPage = React.lazy(() => import('@/pages/billing/orders/index').then(m => ({ default: m.default })));
+const BillingUsagePricingPage = React.lazy(() => import('@/pages/billing/usage-pricing/index').then(m => ({ default: m.default })));
 
 const LoadingFallback = () => (
   <div className="flex h-screen items-center justify-center">

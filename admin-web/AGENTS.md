@@ -1,12 +1,11 @@
 # 运营后台开发指南
 
-Next.js 14 (App Router)，面向平台运营人员，端口 3001。
+Vite + React Router，面向平台运营人员，端口 3001。
 
----
 
 ## 技术栈
 
-- **框架**: Next.js 14 (App Router)
+- **框架**: Vite + React Router 6
 - **语言**: TypeScript (strict mode)
 - **UI**: shadcn/ui + Radix UI
 - **样式**: Tailwind CSS
@@ -14,52 +13,6 @@ Next.js 14 (App Router)，面向平台运营人员，端口 3001。
 - **数据获取**: TanStack Query + Axios
 - **测试**: Vitest + Testing Library
 
----
-
-## 目录结构
-
-```
-src/
-├── api/                  # API 客户端
-│   └── admin-client.ts  # 运营后台 API 客户端
-├── auth/                 # 认证上下文
-├── constants/            # 状态与权限等前端常量
-├── contexts/             # React Context
-├── features/             # 业务领域模块（可选，复杂模块使用）
-│   └── [feature]/
-├── hooks/                # 顶层全局 hooks
-├── i18n/                 # 国际化
-├── utils/                # 通用工具函数
-├── app/                  # Next.js App Router 路由层
-│   ├── layout.tsx        # 布局组件
-│   ├── page.tsx         # 首页
-│   └── [feature]/       # 业务功能路由
-├── components/           # 通用 UI 组件
-│   ├── ui/               # shadcn/ui 原始组件
-│   ├── layout/           # 布局组件
-│   ├── common/           # 跨业务复用组件
-│   └── charts/           # 图表组件
-└── types/                # TypeScript 类型定义
-
-test/                     # E2E 测试辅助文件
-```
-
----
-
-## 运营后台职责
-
-面向平台运营人员，负责：
-
-- 平台概览
-- 品牌配置
-- 运营账号与角色管理
-- 组织管理
-- 服务定价
-- 商店配置
-- 按量定价
-- 订阅管理
-
----
 
 ## 代码风格
 
@@ -107,11 +60,11 @@ export default function SubscriptionsPageContent() { ... }
 
 ---
 
-## app/ 与 features/ 职责划分
+## pages/ 与 features/ 职责划分
 
 | 目录 | 职责 | 复杂度阈值 |
 |------|------|-----------|
-| `app/` | 路由入口 + 简单组装（< 100 行） | 简单页面 |
+| `pages/` | 路由入口 + 简单组装（< 100 行） | 简单页面 |
 | `features/` | 复杂业务逻辑、组件、hooks、schemas | 复杂页面（> 100 行） |
 
 ---
