@@ -1,4 +1,3 @@
-'use client';
 
 import { Tabs, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 

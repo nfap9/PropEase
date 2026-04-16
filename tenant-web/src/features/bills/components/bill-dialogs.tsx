@@ -1,4 +1,3 @@
-'use client';
 
 import type { UseFormReturn } from 'react-hook-form';
 import { Download, DollarSign, Share2 } from 'lucide-react';

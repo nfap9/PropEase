@@ -1,4 +1,3 @@
-'use client';
 
 import * as React from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';

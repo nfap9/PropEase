@@ -1,4 +1,3 @@
-'use client';
 
 import { SelectableSideList } from '@apartment-ultra/shared-ui/components/ui';
 import type { MemberRole } from '@/types';

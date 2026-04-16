@@ -1,4 +1,3 @@
-'use client';
 
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminRole } from '@/api/admin-client';

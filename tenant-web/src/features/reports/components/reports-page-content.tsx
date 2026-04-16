@@ -1,6 +1,5 @@
-'use client';
 
-import dynamic from 'next/dynamic';
+import { lazy } from 'react';
 import { useState } from 'react';
 import { Building2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -19,15 +18,8 @@ import { useReportsData } from '../reports.hooks';
 import { getReportYearOptions, REPORTS } from '../reports.schemas';
 import { ReportsOverviewTab } from './reports-overview-tab';
 
-const ReportsIncomeTab = dynamic(
-  () => import('./reports-income-tab').then((mod) => mod.ReportsIncomeTab),
-  { loading: () => <Skeleton className="h-[400px]" />, ssr: false }
-);
-
-const ReportsOccupancyTab = dynamic(
-  () => import('./reports-occupancy-tab').then((mod) => mod.ReportsOccupancyTab),
-  { loading: () => <Skeleton className="h-[400px]" />, ssr: false }
-);
+const ReportsIncomeTab = lazy(() => import('./reports-income-tab').then((mod) => ({ default: mod.ReportsIncomeTab })));
+const ReportsOccupancyTab = lazy(() => import('./reports-occupancy-tab').then((mod) => ({ default: mod.ReportsOccupancyTab })));
 
 type ReportTab = 'income' | 'occupancy' | 'overview';
 

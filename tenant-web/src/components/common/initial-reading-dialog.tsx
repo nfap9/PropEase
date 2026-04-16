@@ -1,6 +1,5 @@
-'use client';
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -116,7 +115,7 @@ export function InitialReadingDialog({
         isHistoricalLeaseEntry ? (
           <>
             历史租约已创建，建议先记录当前表底数。历史月份数据可稍后前往
-            <Link href="/utilities?tab=history" className="mx-1 underline underline-offset-4">
+            <Link to="/utilities?tab=history" className="mx-1 underline underline-offset-4">
               历史水电记录
             </Link>
             继续补录。

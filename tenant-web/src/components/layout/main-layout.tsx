@@ -1,5 +1,5 @@
-'use client';
 
+import { Outlet } from 'react-router-dom';
 import { Sidebar, SidebarContent, SidebarProvider, SidebarTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { NavContent } from './nav-content';
 import { SidebarFooterContent } from './sidebar-footer';
@@ -38,6 +38,25 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
         </Sidebar>
 
         <MainContent>{children}</MainContent>
+      </div>
+    </SidebarProvider>
+  );
+}
+
+export function MainLayoutWithOutlet() {
+  return (
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex h-screen w-full overflow-hidden bg-transparent">
+        <Sidebar side="left" variant="sidebar" collapsible="icon">
+          <SidebarContent>
+            <NavContent />
+          </SidebarContent>
+          <SidebarFooterContent />
+        </Sidebar>
+
+        <MainContent>
+          <Outlet />
+        </MainContent>
       </div>
     </SidebarProvider>
   );

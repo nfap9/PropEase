@@ -1,4 +1,3 @@
-'use client';
 
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';

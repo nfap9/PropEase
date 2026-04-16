@@ -1,4 +1,3 @@
-'use client';
 
 import { Search, X } from 'lucide-react';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';

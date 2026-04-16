@@ -1,9 +1,6 @@
-'use client';
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { Link, useNavigate } from 'react-router-dom';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions } from '@/components/common/table-actions';
@@ -29,7 +26,7 @@ type FilterActive = 'all' | 'active' | 'inactive';
 
 export default function AdminOrganizationsPage() {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<FilterActive>('all');
 
   const isActiveParam = activeFilter === 'all' ? undefined : activeFilter === 'active';
@@ -63,7 +60,7 @@ export default function AdminOrganizationsPage() {
       minSize: 150,
       cell: ({ row }) => (
         <Link
-          href={`/organizations/${row.original.id}`}
+          to={`/organizations/${row.original.id}`}
           className="font-medium text-primary hover:underline"
         >
           {row.original.name}
@@ -116,7 +113,7 @@ export default function AdminOrganizationsPage() {
               {
                 icon: Eye,
                 label: adminMessages.organizations.actions.detail,
-                onClick: () => router.push(`/organizations/${org.id}`),
+                onClick: () => navigate(`/organizations/${org.id}`),
               },
               ...(org.is_active
                 ? [

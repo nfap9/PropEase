@@ -1,7 +1,6 @@
-'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -65,7 +64,7 @@ function validatePassword(password: string): { valid: boolean; message?: string 
 }
 
 export default function AdminSetupPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,7 +85,7 @@ export default function AdminSetupPage() {
         const res = await adminApiEndpoints.checkInitStatus();
         if (res.data?.initialized) {
           // 已初始化，跳转到登录页
-          router.replace('/login');
+          navigate('/login');
         } else {
           setIsChecking(false);
         }
@@ -96,7 +95,7 @@ export default function AdminSetupPage() {
       }
     };
     checkStatus();
-  }, [router]);
+  }, [navigate]);
 
   const onSubmit = async (values: FormValues) => {
     // 额外验证密码强度
@@ -119,7 +118,7 @@ export default function AdminSetupPage() {
         localStorage.setItem('admin_access_token', data.access_token);
         // Sync to cookie for middleware
         document.cookie = `admin_access_token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
-        router.replace('/');
+        navigate('/');
         return;
       }
       setError('初始化失败');

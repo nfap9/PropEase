@@ -1,8 +1,7 @@
-'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -48,16 +47,16 @@ export default function RegisterPage() {
   const { register: registerUser, isAuthenticated, isLoading: isAuthLoading, organizations, organization } =
     useAuth();
   const brandConfig = useBrandConfig();
-  const router = useRouter();
+  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // 已登录用户自动跳转到登录后目标页
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
-      router.replace(getPostAuthRedirectPath(organizations, organization));
+      navigate(getPostAuthRedirectPath(organizations, organization), { replace: true });
     }
-  }, [isAuthLoading, isAuthenticated, organization, organizations, router]);
+  }, [isAuthLoading, isAuthenticated, organization, organizations, navigate]);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -74,7 +73,7 @@ export default function RegisterPage() {
     setError(null);
     try {
       const targetPath = await registerUser(data.phone, data.password, data.full_name);
-      router.replace(targetPath);
+      navigate(targetPath, { replace: true });
     } catch {
       setError(tenantMessages.auth.register.failed);
     } finally {
@@ -99,7 +98,7 @@ export default function RegisterPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p>
               {tenantMessages.auth.register.hasAccount}{' '}
-              <Link href="/login" className="font-medium text-primary hover:underline">
+              <Link to="/login" className="font-medium text-primary hover:underline">
                 {tenantMessages.auth.register.loginNow}
               </Link>
             </p>

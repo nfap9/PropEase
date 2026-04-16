@@ -1,4 +1,3 @@
-'use client';
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -11,7 +10,7 @@ import {
   CardTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { useIsMobile } from '@apartment-ultra/shared-ui/hooks';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import {
   AlertCircle,
   BookDown,
@@ -50,7 +49,7 @@ function QuickActions() {
         return (
           <Link
             key={action.href}
-            href={action.href}
+            to={action.href}
             className="group flex items-center gap-2 rounded-xl border border-border/60 bg-background/80 px-2 py-2 sm:px-3 transition-all hover:bg-accent/50"
           >
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary sm:h-8 sm:w-8">
@@ -289,7 +288,7 @@ function RemindersCard({ missingReadings, pendingBills, overdueBills }: { missin
           return (
             <Link
               key={reminder.label}
-              href={reminder.href}
+              to={reminder.href}
               className="flex items-center justify-between rounded-lg border border-border/60 bg-background/80 px-2 py-1.5 sm:px-3 sm:py-2 transition-all hover:bg-accent/50"
             >
               <div className="flex items-center gap-1.5 sm:gap-2">
@@ -447,9 +446,9 @@ export function DashboardContent() {
           {tenantMessages.dashboard.noOrganizationsTitle.replace('{appName}', brandConfig.app_name)}
         </h2>
         <p className="mb-4 text-muted-foreground">{tenantMessages.dashboard.noOrganizationsDescription}</p>
-        <a href="/organizations/new" className="text-primary hover:underline">
+        <Link to="/organizations/new" className="text-primary hover:underline">
           {tenantMessages.dashboard.createTeam}
-        </a>
+        </Link>
       </div>
     );
   }

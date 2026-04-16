@@ -1,7 +1,6 @@
-'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter, useParams } from 'next/navigation';
+import { useNavigate, useParams } from 'react-router-dom';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
@@ -24,7 +23,7 @@ import {
   MessageSquareMore,
 } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { DataTable } from '@/components/common/data-table';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { ColumnDef } from '@tanstack/react-table';
@@ -40,7 +39,7 @@ import {
 export default function TenantDetailPage() {
   const params = useParams();
   const tenantId = params.id as string;
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
@@ -107,7 +106,7 @@ export default function TenantDetailPage() {
           <div className="flex flex-col">
             {apartment && (
               <Link
-                href={`/apartments/${apartment.id}`}
+                to={`/apartments/${apartment.id}`}
                 className="text-xs text-muted-foreground hover:underline"
               >
                 {apartment.name}
@@ -159,7 +158,7 @@ export default function TenantDetailPage() {
         const lease = row.original;
         return (
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/leases?highlight=${lease.id}`}>查看详情</Link>
+            <Link to={`/leases?highlight=${lease.id}`}>查看详情</Link>
           </Button>
         );
       },
@@ -184,7 +183,7 @@ export default function TenantDetailPage() {
         <div className="flex h-full flex-col items-center justify-center space-y-4">
           <User className="h-16 w-16 text-muted-foreground" />
           <h2 className="text-xl font-semibold">租客不存在</h2>
-          <Button onClick={() => router.push('/tenants')}>返回租客列表</Button>
+          <Button onClick={() => navigate('/tenants')}>返回租客列表</Button>
         </div>
       </MainLayout>
     );
@@ -198,7 +197,7 @@ export default function TenantDetailPage() {
         <div className="space-y-6">
           {/* 返回按钮 */}
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.push('/tenants')}>
+            <Button variant="ghost" size="icon" onClick={() => navigate('/tenants')}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </div>
@@ -350,7 +349,7 @@ export default function TenantDetailPage() {
                     </div>
                   )}
                   <Button variant="outline" className="w-full" asChild>
-                    <Link href={`/leases?highlight=${activeLease.id}`}>查看租约详情</Link>
+                    <Link to={`/leases?highlight=${activeLease.id}`}>查看租约详情</Link>
                   </Button>
                 </div>
               ) : (
@@ -358,7 +357,7 @@ export default function TenantDetailPage() {
                   <AlertCircle className="mb-4 h-12 w-12 text-muted-foreground" />
                   <p className="text-muted-foreground">该租客暂无生效租约</p>
                   <Button className="mt-4" asChild>
-                    <Link href={`/leases?tenant=${tenantId}`}>创建租约</Link>
+                    <Link to={`/leases?tenant=${tenantId}`}>创建租约</Link>
                   </Button>
                 </div>
               )}
@@ -434,13 +433,13 @@ export default function TenantDetailPage() {
             <CardContent>
               <div className="flex flex-wrap gap-3">
                 <Button variant="outline" asChild>
-                  <Link href={`/leases?tenant=${tenantId}`}>
+                  <Link to={`/leases?tenant=${tenantId}`}>
                     <FileText className="mr-2 h-4 w-4" />
                     创建租约
                   </Link>
                 </Button>
                 <Button variant="outline" asChild>
-                  <Link href={`/bills?tenant=${tenantId}`}>
+                  <Link to={`/bills?tenant=${tenantId}`}>
                     <Building2 className="mr-2 h-4 w-4" />
                     查看账单
                   </Link>

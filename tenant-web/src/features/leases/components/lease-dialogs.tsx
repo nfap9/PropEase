@@ -1,4 +1,3 @@
-'use client';
 
 import type { UseFormReturn } from 'react-hook-form';
 import { Info } from 'lucide-react';

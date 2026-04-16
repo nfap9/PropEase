@@ -1,4 +1,3 @@
-'use client';
 
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { AlertTriangle } from 'lucide-react';

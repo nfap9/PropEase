@@ -1,4 +1,3 @@
-'use client';
 
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';

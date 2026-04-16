@@ -1,4 +1,3 @@
-'use client';
 
 import { Room } from '@/types';
 import { Home, Users, CheckCircle, Wrench } from 'lucide-react';

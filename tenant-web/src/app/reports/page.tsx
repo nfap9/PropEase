@@ -1,4 +1,3 @@
-'use client';
 
 import { ReportsPageContent } from '@/features/reports/components/reports-page-content';
 

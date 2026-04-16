@@ -1,8 +1,7 @@
-'use client';
 
-import dynamic from 'next/dynamic';
+import { lazy, Suspense } from 'react';
 import { useState, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -19,34 +18,15 @@ import { UTILITIES } from '../utilities.constants';
 import type { PendingUtilityBillRow } from '../utilities.types';
 import { useUtilitiesData } from '../hooks/use-utilities';
 
-const CreateUtilityDialog = dynamic(
-  () => import('@/components/utilities/CreateUtilityDialog').then((mod) => mod.CreateUtilityDialog),
-  { ssr: false }
-);
-
-const ExportTemplateDialog = dynamic(
-  () => import('@/components/utilities/ExportTemplateDialog').then((mod) => mod.ExportTemplateDialog),
-  { ssr: false }
-);
-
-const BatchImportDialog = dynamic(
-  () => import('@/components/utilities/BatchImportDialog').then((mod) => mod.BatchImportDialog),
-  { ssr: false }
-);
-
-const InitialReadingDialog = dynamic(
-  () => import('@/components/common/initial-reading-dialog').then((mod) => mod.InitialReadingDialog),
-  { ssr: false }
-);
-
-const EditUtilityDialog = dynamic(
-  () => import('@/components/utilities/EditUtilityDialog').then((mod) => mod.EditUtilityDialog),
-  { ssr: false }
-);
+const CreateUtilityDialog = lazy(() => import('@/components/utilities/CreateUtilityDialog').then((mod) => ({ default: mod.CreateUtilityDialog })));
+const ExportTemplateDialog = lazy(() => import('@/components/utilities/ExportTemplateDialog').then((mod) => ({ default: mod.ExportTemplateDialog })));
+const BatchImportDialog = lazy(() => import('@/components/utilities/BatchImportDialog').then((mod) => ({ default: mod.BatchImportDialog })));
+const InitialReadingDialog = lazy(() => import('@/components/common/initial-reading-dialog').then((mod) => ({ default: mod.InitialReadingDialog })));
+const EditUtilityDialog = lazy(() => import('@/components/utilities/EditUtilityDialog').then((mod) => ({ default: mod.EditUtilityDialog })));
 
 export function UtilitiesPageContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
@@ -144,7 +124,7 @@ export function UtilitiesPageContent() {
       nextParams.delete('tab');
     }
     const query = nextParams.toString();
-    router.replace(query ? `/utilities?${query}` : '/utilities', { scroll: false });
+    navigate(query ? `/utilities?${query}` : '/utilities', { replace: true });
   };
 
   if (authLoading) {
@@ -449,7 +429,4 @@ export function UtilitiesPageSuspenseFallback() {
   );
 }
 
-const UtilityHistoryPanel = dynamic(
-  () => import('@/components/utilities/utility-history-panel').then((mod) => mod.UtilityHistoryPanel),
-  { ssr: false }
-);
+const UtilityHistoryPanel = lazy(() => import('@/components/utilities/utility-history-panel').then((mod) => ({ default: mod.UtilityHistoryPanel })));

@@ -1,4 +1,3 @@
-'use client';
 
 import { formatDate } from '@/utils/date';
 import type { LeaseChangeLog } from '@/api/leases';

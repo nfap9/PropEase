@@ -1,4 +1,3 @@
-'use client';
 
 import { useAuth } from '@/auth/context';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';

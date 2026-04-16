@@ -1,4 +1,3 @@
-'use client';
 
 import { UseFormReturn } from 'react-hook-form';
 import { User, Phone, IdCard, AlertCircle, Search, UserCheck2 } from 'lucide-react';

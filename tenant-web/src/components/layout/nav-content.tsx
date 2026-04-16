@@ -1,4 +1,3 @@
-'use client';
 
 /**
  * 租户端导航内容组件
@@ -6,8 +5,8 @@
  * 用于桌面端侧边栏和移动端 Sheet 中显示导航菜单
  * 根据用户权限动态过滤可见菜单项
  */
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Building2, ChevronRight, Settings } from 'lucide-react';
 import { useBrandConfig } from '@/contexts/brand-config';
 import { useAuth } from '@/auth/context';
@@ -52,7 +51,7 @@ export function NavContent({ onNavClick }: NavContentProps) {
   const brandConfig = useBrandConfig();
   const { user, organization, logout } = useAuth();
   const { permissions, hasPermission, isSuperAdmin } = usePermissions();
-  const pathname = usePathname();
+  const pathname = useLocation().pathname;
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   // 当进入 settings 子路由时自动展开设置菜单
@@ -84,7 +83,7 @@ export function NavContent({ onNavClick }: NavContentProps) {
     <div className="flex h-full min-h-0 flex-col">
       {/* 品牌 Logo 和应用名称区域 */}
       <div className="sidebar-glow flex h-14 shrink-0 items-center border-b border-sidebar-border/50 px-4" data-testid="main-nav">
-        <Link href="/dashboard" className="flex items-center gap-3" data-testid="nav-dashboard">
+        <Link to="/dashboard" className="flex items-center gap-3" data-testid="nav-dashboard">
           {brandConfig.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element -- Logo URL 来自运营配置，域名动态
             <img src={brandConfig.logo_url} alt="" className="h-9 w-9 rounded-lg object-contain" />
@@ -121,7 +120,7 @@ export function NavContent({ onNavClick }: NavContentProps) {
                     asChild
                   >
                     <Link
-                      href={item.href}
+                      to={item.href}
                       onClick={onNavClick}
                       data-testid={`nav-${item.id}`}
                       className="flex min-w-0 items-center gap-3"
@@ -162,7 +161,7 @@ export function NavContent({ onNavClick }: NavContentProps) {
                             className="nav-item-slide ml-3 h-10 rounded-md px-3 text-sidebar-foreground/75 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground"
                             asChild
                           >
-                            <Link href={item.href} onClick={onNavClick} className="flex min-w-0 items-center gap-3">
+                            <Link to={item.href} onClick={onNavClick} className="flex min-w-0 items-center gap-3">
                               <Icon className="h-4 w-4 shrink-0" />
                               <span className="flex-1 truncate text-sm font-medium">{item.label}</span>
                             </Link>
@@ -213,7 +212,7 @@ export function NavContent({ onNavClick }: NavContentProps) {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/organizations">
+                    <Link to="/organizations">
                       <Building2 className="mr-2 h-4 w-4" />
                       <span>{tenantMessages.common.switchTeam}</span>
                     </Link>

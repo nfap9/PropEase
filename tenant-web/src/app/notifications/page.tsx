@@ -1,7 +1,6 @@
-'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { NotificationCategory } from '@apartment-ultra/api-contract';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -42,7 +41,7 @@ const categoryColors: Record<NotificationCategory, string> = {
 };
 
 export default function NotificationsPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { organization } = useAuth();
   const { permissions, hasPermission, isSuperAdmin } = usePermissions();
@@ -177,11 +176,11 @@ export default function NotificationsPage() {
                           const target = getNotificationTarget(item);
                           if (!target) return;
                           if (item.is_read) {
-                            router.push(target);
+                            navigate(target);
                             return;
                           }
                           markReadMutation.mutate(item.id, {
-                            onSettled: () => router.push(target),
+                            onSettled: () => navigate(target),
                           });
                         }}
                         isMarking={

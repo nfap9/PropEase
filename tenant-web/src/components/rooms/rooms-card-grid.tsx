@@ -1,6 +1,5 @@
-'use client';
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { FileText, Ban, Wrench, CheckCircle } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
@@ -41,7 +40,7 @@ export function RoomCard({ room, apartmentName, onLease, onTerminate, onStatusCh
             <div className="font-bold text-stone-900 text-base truncate">{room.room_number}</div>
             {apartmentName && (
               <Link
-                href={`/apartments/${room.apartment_id}`}
+                to={`/apartments/${room.apartment_id}`}
                 className="text-[10px] text-stone-400 hover:text-stone-600 hover:underline truncate block"
                 onClick={(e) => e.stopPropagation()}
               >

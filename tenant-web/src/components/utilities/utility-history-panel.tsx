@@ -1,6 +1,5 @@
-'use client';
 
-import dynamic from 'next/dynamic';
+import { lazy } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
@@ -28,9 +27,7 @@ import { filterEmptyStrings } from '@/utils/form';
 import { UtilityReading } from '@/types';
 import { Droplets, Pencil, Zap } from 'lucide-react';
 
-const EditUtilityDialog = dynamic(() => import('./EditUtilityDialog').then((mod) => mod.EditUtilityDialog), {
-  ssr: false,
-});
+const EditUtilityDialog = lazy(() => import('./EditUtilityDialog').then((mod) => ({ default: mod.EditUtilityDialog })));
 
 function getMonthsInLeasePeriod(startDate: string, endDate: string | null): { year: number; month: number }[] {
   const start = new Date(startDate);

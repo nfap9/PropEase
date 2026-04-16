@@ -1,4 +1,3 @@
-'use client';
 
 import { Card, CardContent } from '@apartment-ultra/shared-ui/components/ui';
 import { Room } from '@/types';

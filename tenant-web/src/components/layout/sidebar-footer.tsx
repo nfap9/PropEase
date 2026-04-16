@@ -1,4 +1,3 @@
-'use client';
 
 import { SidebarFooter } from '@apartment-ultra/shared-ui/components/ui';
 

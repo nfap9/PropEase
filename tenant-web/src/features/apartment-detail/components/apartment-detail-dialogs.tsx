@@ -1,4 +1,3 @@
-'use client';
 
 import { Check, Loader2, Settings2 } from 'lucide-react';
 import type { UseFormReturn } from 'react-hook-form';

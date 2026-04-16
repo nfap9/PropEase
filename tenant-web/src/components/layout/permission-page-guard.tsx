@@ -1,7 +1,6 @@
-'use client';
 
 import { useEffect, ReactNode } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/auth/context';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
@@ -49,8 +48,8 @@ interface PermissionPageGuardProps {
 export function PermissionPageGuard({ children, permission, accessRule }: PermissionPageGuardProps) {
   const { isAuthenticated, isLoading: authLoading, organization, organizations } = useAuth();
   const { permissions, hasPermission, isLoading: permissionsLoading, isSuperAdmin } = usePermissions();
-  const router = useRouter();
-  const pathname = usePathname();
+  const navigate = useNavigate();
+  const pathname = useLocation().pathname;
 
   // 获取当前路由需要的权限
   const resolvedAccessRule =
@@ -62,12 +61,12 @@ export function PermissionPageGuard({ children, permission, accessRule }: Permis
 
     // 未登录
     if (!isAuthenticated) {
-      router.push('/login');
+      navigate('/login');
       return;
     }
 
     if (resolvedAccessRule?.requiresOrganization && !organization && organizations.length === 0) {
-      router.replace(ORGANIZATION_ONBOARDING_PATH);
+      navigate(ORGANIZATION_ONBOARDING_PATH, { replace: true });
     }
   }, [
     authLoading,
@@ -76,7 +75,7 @@ export function PermissionPageGuard({ children, permission, accessRule }: Permis
     organizations.length,
     permissionsLoading,
     resolvedAccessRule,
-    router,
+    navigate,
   ]);
 
   // 加载中

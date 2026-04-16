@@ -1,4 +1,3 @@
-'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { Eye, Power, PowerOff, Trash2 } from 'lucide-react';

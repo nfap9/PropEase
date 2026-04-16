@@ -1,8 +1,7 @@
-'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -39,16 +38,16 @@ const AUTH_INPUT_CLASSNAME =
 export default function LoginPage() {
   const { login, isAuthenticated, isLoading: isAuthLoading, organizations, organization } = useAuth();
   const brandConfig = useBrandConfig();
-  const router = useRouter();
+  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // 已登录用户自动跳转到仪表盘
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
-      router.replace(getPostAuthRedirectPath(organizations, organization));
+      navigate(getPostAuthRedirectPath(organizations, organization), { replace: true });
     }
-  }, [isAuthLoading, isAuthenticated, organization, organizations, router]);
+  }, [isAuthLoading, isAuthenticated, organization, organizations, navigate]);
 
   const passwordForm = useForm<PasswordLoginFormValues>({
     resolver: zodResolver(passwordLoginSchema),
@@ -64,7 +63,7 @@ export default function LoginPage() {
     setError(null);
     try {
       const targetPath = await login(data.phone, data.password);
-      router.replace(targetPath);
+      navigate(targetPath, { replace: true });
     } catch {
       setError(tenantMessages.auth.login.invalidCredentials);
     } finally {
@@ -89,7 +88,7 @@ export default function LoginPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p>
               {tenantMessages.auth.login.noAccount}{' '}
-              <Link href="/register" className="font-medium text-primary hover:underline" data-testid="auth-register-link">
+              <Link to="/register" className="font-medium text-primary hover:underline" data-testid="auth-register-link">
                 {tenantMessages.auth.login.registerNow}
               </Link>
             </p>

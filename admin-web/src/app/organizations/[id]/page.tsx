@@ -1,8 +1,5 @@
-'use client';
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { Link, useParams } from 'react-router-dom';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
@@ -52,7 +49,7 @@ export default function AdminOrganizationDetailPage() {
     <div className="mx-auto max-w-2xl">
       <div className="mb-4 flex items-center gap-2">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/organizations">
+          <Link to="/organizations">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>

@@ -1,7 +1,6 @@
-'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
@@ -27,7 +26,7 @@ const SUBSCRIPTION = {
 } as const;
 
 export default function SubscriptionPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { organization } = useAuth();
   const orgId = organization?.id;
 
@@ -61,7 +60,7 @@ export default function SubscriptionPage() {
     <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-end">
-          <Button onClick={() => router.push('/settings/subscription/purchase')} data-testid={SUBSCRIPTION.UPGRADE_BUTTON}>
+          <Button onClick={() => navigate('/settings/subscription/purchase')} data-testid={SUBSCRIPTION.UPGRADE_BUTTON}>
             <ShoppingCart className="mr-2 h-4 w-4" />
             {tenantMessages.settings.subscriptionPage.buyService}
           </Button>
@@ -122,7 +121,7 @@ export default function SubscriptionPage() {
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-4 py-4">
                     <p className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.noService}</p>
-                    <Button onClick={() => router.push('/settings/subscription/purchase')}>
+                    <Button onClick={() => navigate('/settings/subscription/purchase')}>
                       <ShoppingCart className="mr-2 h-4 w-4" />
                       {tenantMessages.settings.subscriptionPage.buyService}
                     </Button>
@@ -244,7 +243,7 @@ export default function SubscriptionPage() {
                         {tenantMessages.settings.subscriptionPage.upgradeDescription}
                       </p>
                     </div>
-                    <Button onClick={() => router.push('/settings/subscription/purchase')}>
+                    <Button onClick={() => navigate('/settings/subscription/purchase')}>
                       {tenantMessages.settings.subscriptionPage.viewServices}
                     </Button>
                   </div>

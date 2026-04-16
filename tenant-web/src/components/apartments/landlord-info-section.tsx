@@ -1,4 +1,3 @@
-'use client';
 
 import { UseFormReturn } from 'react-hook-form';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';

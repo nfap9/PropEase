@@ -1,7 +1,5 @@
-'use client';
-
 import * as React from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 
 export interface PageQueryUpdateOptions {
   /** 本次更新使用 push 还是 replace。 */
@@ -39,18 +37,18 @@ export interface UsePageQueryStateResult<TValue> {
 /**
  * 管理页面 URL 查询参数中的单个状态。
  *
- * 适用于 Next App Router 的 client 页面，例如：
+ * 适用于 React Router v7 的 client 组件，例如：
  * - 列表页状态筛选
  * - 标签页 / 分类切换
  * - 组织 ID、搜索词这类需要可分享 URL 的页面状态
  *
  * 设计目标：
  * - 让 URL 成为页面筛选状态的单一真源
- * - 统一处理“解析 / 序列化 / 清空默认值”
+ * - 统一处理"解析 / 序列化 / 清空默认值"
  * - 避免业务页面重复拼装 `URLSearchParams`
  *
  * 注意：
- * - 这是一个依赖 `next/navigation` 的 hook，只适用于 Next App Router client 组件
+ * - 这是一个依赖 `react-router-dom` 的 hook
  * - 它只管理单个 query state，不负责接口请求和数据过滤逻辑
  */
 export function usePageQueryState<TValue>({
@@ -62,9 +60,11 @@ export function usePageQueryState<TValue>({
   clearOnDefault = true,
   scroll = true,
 }: UsePageQueryStateOptions<TValue>): UsePageQueryStateResult<TValue> {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  const pathname = location.pathname;
 
   const value = React.useMemo(() => {
     const rawValue = searchParams.get(queryKey);
@@ -108,16 +108,15 @@ export function usePageQueryState<TValue>({
       }
 
       const nextHistory = options?.history ?? history;
-      const nextScroll = options?.scroll ?? scroll;
 
       if (nextHistory === 'push') {
-        router.push(nextUrl, { scroll: nextScroll });
+        navigate(nextUrl, { replace: false });
         return;
       }
 
-      router.replace(nextUrl, { scroll: nextScroll });
+      navigate(nextUrl, { replace: true });
     },
-    [clearOnDefault, defaultValue, history, pathname, queryKey, router, scroll, searchParams, serialize, value]
+    [clearOnDefault, defaultValue, history, navigate, pathname, queryKey, scroll, searchParams, serialize, value]
   );
 
   const clear = React.useCallback(

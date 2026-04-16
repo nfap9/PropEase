@@ -1,6 +1,5 @@
-'use client';
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import { TableActions, TableAction } from '@/components/common/table-actions';
@@ -36,7 +35,7 @@ export function useColumns({
       cell: ({ row }) => {
         const apartment = row.original.apartment;
         return apartment ? (
-          <Link href={`/apartments/${apartment.id}`} className="text-primary hover:underline">
+          <Link to={`/apartments/${apartment.id}`} className="text-primary hover:underline">
             {apartment.name}
           </Link>
         ) : (

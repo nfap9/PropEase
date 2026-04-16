@@ -1,4 +1,3 @@
-'use client';
 
 import { UseFormReturn } from 'react-hook-form';
 import { Building2, DoorOpen, CheckCircle2 } from 'lucide-react';

@@ -1,4 +1,3 @@
-'use client';
 
 /**
  * 主题 Provider

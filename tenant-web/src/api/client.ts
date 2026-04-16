@@ -7,7 +7,7 @@
  * - 401 响应自动跳转登录页
  *
  * 环境变量：
- * - NEXT_PUBLIC_API_URL: API 基础地址（默认 http://localhost:8000/api/v1）
+ * - VITE_API_URL: API 基础地址（默认 http://localhost:8000/api/v1）
  */
 import {
   ApiError,
@@ -16,8 +16,8 @@ import {
   type FieldError,
 } from '@apartment-ultra/web-api-client';
 
-// API 基础地址，NEXT_PUBLIC_ 前缀使其可在浏览器端访问
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+// API 基础地址
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
 export type { ApiResponse, FieldError };
 export { ApiError };

@@ -1,4 +1,3 @@
-'use client';
 
 import { MainLayout } from '@/components/layout/main-layout';
 

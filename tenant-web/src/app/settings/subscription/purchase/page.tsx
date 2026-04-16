@@ -1,8 +1,7 @@
-'use client';
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
@@ -74,7 +73,7 @@ const ACTION_TYPE_CONFIG = {
 };
 
 export default function SubscriptionPurchasePage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { organization } = useAuth();
   const orgId = organization?.id;
@@ -108,7 +107,7 @@ export default function SubscriptionPurchasePage() {
     onSuccess: (order) => {
       setSelectedService(null);
       setOrderPreview(null);
-      router.push(`/settings/subscription/pay?order_id=${order.id}`);
+      navigate(`/settings/subscription/pay?order_id=${order.id}`);
     },
     onError: (error) =>
       appToast.error(
@@ -130,7 +129,7 @@ export default function SubscriptionPurchasePage() {
       queryClient.invalidateQueries({ queryKey: ['organization-usage', orgId] });
       setSelectedService(null);
       setOrderPreview(null);
-      router.push('/settings/subscription');
+      navigate('/settings/subscription');
     },
     onError: (error) =>
       appToast.error(

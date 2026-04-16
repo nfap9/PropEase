@@ -1,5 +1,6 @@
-import { redirect } from 'next/navigation';
+
+import { Navigate } from 'react-router-dom';
 
 export default function UtilitiesHistoryPage() {
-  redirect('/utilities?tab=history');
+  return <Navigate to="/utilities?tab=history" replace />;
 }

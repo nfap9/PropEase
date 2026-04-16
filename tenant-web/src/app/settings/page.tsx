@@ -1,6 +1,5 @@
-'use client';
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { Building2, ShoppingBag, MessageSquareMore, Users } from 'lucide-react';
 import { useAuth } from '@/auth/context';
 import { Card, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
@@ -72,7 +71,7 @@ export default function SettingsPage() {
             item && (
               <Link
                 key={item.title}
-                href={item.href}
+                to={item.href}
                 data-testid={item.testId}
               >
                 <Card

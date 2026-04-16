@@ -1,24 +1,23 @@
-'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/auth/context';
 import { getPostAuthRedirectPath } from '@/auth/redirect';
 
 export default function HomePage() {
   const { isAuthenticated, isLoading, organizations, organization } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isLoading) {
       if (isAuthenticated) {
-        router.replace(getPostAuthRedirectPath(organizations, organization));
+        navigate(getPostAuthRedirectPath(organizations, organization), { replace: true });
       } else {
-        router.replace('/login');
+        navigate('/login', { replace: true });
       }
     }
-  }, [isAuthenticated, isLoading, organization, organizations, router]);
+  }, [isAuthenticated, isLoading, organization, organizations, navigate]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">

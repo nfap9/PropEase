@@ -1,7 +1,6 @@
-'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,7 +41,7 @@ function buildOrganizationSlug(name: string) {
 }
 
 export default function OrganizationsPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { isLoading, isAuthenticated, organizations, organization, setOrganization, refreshOrganizations } =
     useAuth();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -61,12 +60,12 @@ export default function OrganizationsPage() {
     }
 
     if (!isAuthenticated) {
-      router.replace('/login');
+      navigate('/login', { replace: true });
       return;
     }
 
     setIsCheckingAuth(false);
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   const createOrgMutation = useMutation({
     mutationFn: async (data: CreateOrganizationFormData) =>
@@ -79,7 +78,7 @@ export default function OrganizationsPage() {
       await refreshOrganizations(createdOrganization.id);
       setOrganization(createdOrganization);
       appToast.success('团队创建成功');
-      router.replace(DEFAULT_ORGANIZATION_HOME_PATH);
+      navigate(DEFAULT_ORGANIZATION_HOME_PATH, { replace: true });
     },
     onError: (error) => {
       appToast.error(getErrorMessage(error, '创建团队失败，请重试'));
@@ -89,7 +88,7 @@ export default function OrganizationsPage() {
   const handleSelectOrganization = (org: Organization) => {
     setOrganization(org);
     appToast.success('团队切换成功');
-    router.replace(DEFAULT_ORGANIZATION_HOME_PATH);
+    navigate(DEFAULT_ORGANIZATION_HOME_PATH, { replace: true });
   };
 
   if (isLoading || isCheckingAuth) {

@@ -1,18 +1,16 @@
-import { LeaseDetailPage } from '@/features/leases/components/lease-detail-page';
-import { MainLayout } from '@/components/layout/main-layout';
+
 import { Suspense } from 'react';
+import { useParams } from 'react-router-dom';
+import { LeaseDetailPage } from '@/features/leases/components/lease-detail-page';
 
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function LeaseDetailPageRoute({ params }: PageProps) {
-  const { id } = await params;
+export default function LeaseDetailPageRoute() {
+  const { id } = useParams<{ id: string }>();
+  if (!id) {
+    return <div>无效的租约ID</div>;
+  }
   return (
-    <MainLayout>
-      <Suspense fallback={<div className="flex items-center justify-center h-64">加载中...</div>}>
-        <LeaseDetailPage leaseId={id} />
-      </Suspense>
-    </MainLayout>
+    <Suspense fallback={<div className="flex items-center justify-center h-64">加载中...</div>}>
+      <LeaseDetailPage leaseId={id} />
+    </Suspense>
   );
 }

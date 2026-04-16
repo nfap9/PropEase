@@ -1,6 +1,5 @@
-'use client';
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Ban, Pencil, Trash2 } from 'lucide-react';
 import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
@@ -33,7 +32,7 @@ export function createLeaseColumns({
         }
         return (
           <Link
-            href={`/leases/${row.original.id}`}
+            to={`/leases/${row.original.id}`}
             className="flex flex-col hover:underline"
           >
             {room.apartment && (

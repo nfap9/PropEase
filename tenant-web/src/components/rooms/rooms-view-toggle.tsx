@@ -1,4 +1,3 @@
-'use client';
 
 import { LayoutGrid, List } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';

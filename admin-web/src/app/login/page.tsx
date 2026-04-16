@@ -1,7 +1,6 @@
-'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -37,7 +36,7 @@ const AUTH_INPUT_CLASSNAME =
   'h-11 rounded-xl border-border/80 bg-background/80 px-3.5 shadow-none focus-visible:ring-2 focus-visible:ring-ring/15 focus-visible:ring-offset-0';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,7 +53,7 @@ export default function AdminLoginPage() {
       if (token) {
         // Sync to cookie for middleware
         document.cookie = `admin_access_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
-        router.replace('/');
+        navigate('/');
         return;
       }
 
@@ -63,7 +62,7 @@ export default function AdminLoginPage() {
         const res = await adminApiEndpoints.checkInitStatus();
         if (!res.data?.initialized) {
           // 未初始化，跳转到初始化页面
-          router.replace('/setup');
+          navigate('/setup');
           return;
         }
       } catch {
@@ -73,7 +72,7 @@ export default function AdminLoginPage() {
       setIsCheckingAuth(false);
     };
     checkAuth();
-  }, [router]);
+  }, [navigate]);
 
   const onSubmit = async (values: FormValues) => {
     setError(null);
@@ -85,7 +84,7 @@ export default function AdminLoginPage() {
         localStorage.setItem('admin_access_token', data.access_token);
         // Sync to cookie for middleware
         document.cookie = `admin_access_token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
-        router.replace('/');
+        navigate('/');
         return;
       }
       setError('登录失败');

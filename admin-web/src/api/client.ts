@@ -5,7 +5,7 @@ import {
   type FieldError,
 } from '@apartment-ultra/web-api-client';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
 export type { ApiResponse, FieldError };
 export { ApiError };

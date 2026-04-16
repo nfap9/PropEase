@@ -1,4 +1,3 @@
-'use client';
 
 import { format } from 'date-fns';
 import { Building2, CheckCircle2, Home, Wrench } from 'lucide-react';

@@ -1,7 +1,6 @@
-'use client';
 
 import { Suspense, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
@@ -11,9 +10,9 @@ import { useAuth } from '@/auth/context';
 import { tenantI18n, tenantMessages } from '@/i18n';
 
 function SubscriptionResultContent() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { organization } = useAuth();
   const orgId = organization?.id;
   const status = searchParams.get('status'); // success | fail
@@ -30,7 +29,7 @@ function SubscriptionResultContent() {
   }, [isSuccess, orgId, queryClient]);
 
   const handleBack = () => {
-    router.push('/settings/subscription');
+    navigate('/settings/subscription');
   };
 
   return (

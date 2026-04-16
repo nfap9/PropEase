@@ -1,10 +1,9 @@
-'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
@@ -45,7 +44,7 @@ import {
 export default function ApartmentDetailPage() {
   const params = useParams();
   const apartmentId = params.id as string;
-  const router = useRouter();
+  const navigate = useNavigate();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
 
@@ -207,7 +206,7 @@ export default function ApartmentDetailPage() {
         <div className="flex h-full flex-col items-center justify-center space-y-4">
           <Building2 className="h-16 w-16 text-muted-foreground" />
           <h2 className="text-xl font-semibold">公寓不存在</h2>
-          <Button onClick={() => router.push('/apartments')}>返回公寓列表</Button>
+          <Button onClick={() => navigate('/apartments')}>返回公寓列表</Button>
         </div>
       </MainLayout>
     );
@@ -219,7 +218,7 @@ export default function ApartmentDetailPage() {
         <div className="flex flex-col gap-4 overflow-y-auto pr-1">
           <ApartmentDetailHeader
             apartment={apartment}
-            onBack={() => router.push('/apartments')}
+            onBack={() => navigate('/apartments')}
             onEdit={handleEditApartment}
             onOpenUtilityConfig={() => setIsUtilityConfigOpen(true)}
           />

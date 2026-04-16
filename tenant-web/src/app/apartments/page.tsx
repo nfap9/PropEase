@@ -1,7 +1,6 @@
-'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,7 +37,7 @@ import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
 
 export default function ApartmentsPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
@@ -141,7 +140,7 @@ export default function ApartmentsPage() {
             <ApartmentSearchBar value={searchQuery} onChange={setSearchQuery} />
             <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
               <Button
-                onClick={() => router.push('/apartments/new')}
+                onClick={() => navigate('/apartments/new')}
                 data-testid="apartments-new-btn"
                 className="shrink-0"
               >
@@ -169,7 +168,7 @@ export default function ApartmentsPage() {
           ) : (
             <ApartmentEmptyState
               hasApartments={!!apartments && apartments.length > 0}
-              onCreateClick={() => router.push('/apartments/new')}
+              onCreateClick={() => navigate('/apartments/new')}
             />
           )}
         </div>

@@ -1,7 +1,4 @@
-'use client';
-
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
@@ -55,7 +52,8 @@ const BILLING_NAV = [
 ];
 
 function AdminNavContent() {
-  const pathname = usePathname();
+  const pathname = useLocation().pathname;
+  const navigate = useNavigate();
   const [billingOpen, setBillingOpen] = useState(false);
 
   // 进入 billing 路由时自动展开
@@ -97,7 +95,7 @@ function AdminNavContent() {
                     asChild
                   >
                     <Link
-                      href={item.href}
+                      to={item.href}
                       className="flex min-w-0 items-center gap-3"
                     >
                       <Icon className="icon-glow h-4 w-4" />
@@ -118,7 +116,7 @@ function AdminNavContent() {
                   onClick={() => setBillingOpen(!billingOpen)}
                 >
                   <Link
-                    href="/billing/plans"
+                    to="/billing/plans"
                     className="flex min-w-0 items-center gap-3"
                   >
                     <DollarSign className="icon-glow h-4 w-4" />
@@ -142,7 +140,7 @@ function AdminNavContent() {
                           asChild
                         >
                           <Link
-                            href={item.href}
+                            to={item.href}
                             className="flex min-w-0 items-center gap-3"
                           >
                             <Icon className="h-4 w-4" />
@@ -191,7 +189,7 @@ function AdminNavContent() {
                       localStorage.removeItem('admin_access_token');
                       // Clear cookie for middleware
                       document.cookie = 'admin_access_token=; path=/; max-age=0; SameSite=Lax';
-                      window.location.href = '/login';
+                      navigate('/login');
                     }}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
@@ -207,7 +205,7 @@ function AdminNavContent() {
   );
 }
 
-function AdminMainContent({ children }: { children: React.ReactNode }) {
+function AdminMainContent() {
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border/70 bg-background/85 px-4 backdrop-blur-xl md:px-6">
@@ -220,12 +218,14 @@ function AdminMainContent({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="flex-1 overflow-auto bg-muted/30 p-6">{children}</main>
+      <main className="flex-1 overflow-auto bg-muted/30 p-6">
+        <Outlet />
+      </main>
     </div>
   );
 }
 
-export function AdminLayout({ children }: { children: React.ReactNode }) {
+export function AdminLayout() {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex h-screen w-full overflow-hidden">
@@ -235,7 +235,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           </SidebarContent>
         </Sidebar>
 
-        <AdminMainContent>{children}</AdminMainContent>
+        <AdminMainContent />
       </div>
     </SidebarProvider>
   );

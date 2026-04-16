@@ -1,4 +1,3 @@
-'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { AlertCircle, Building2, ChevronDown, Download, FilePlus, FileSpreadsheet } from 'lucide-react';

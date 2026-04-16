@@ -1,4 +1,3 @@
-'use client';
 
 /**
  * 运营后台管理布局组件
@@ -9,8 +8,8 @@
  * - 顶部 Header（主题切换、退出登录）
  * - 主内容区域
  */
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import {
   LayoutDashboard,
@@ -42,7 +41,7 @@ const ADMIN_NAV = [
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  const pathname = useLocation().pathname;
   const [open, setOpen] = useState(false);
 
   /** 退出登录 */
@@ -66,7 +65,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           return (
             <Link
               key={item.href}
-              href={item.href}
+              to={item.href}
               onClick={() => setOpen(false)}
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
                 isActive

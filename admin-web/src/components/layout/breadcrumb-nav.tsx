@@ -1,7 +1,4 @@
-'use client';
-
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import {
   Breadcrumb,
@@ -89,7 +86,7 @@ function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
 }
 
 export function BreadcrumbNav() {
-  const pathname = usePathname();
+  const pathname = useLocation().pathname;
   const breadcrumbs = getBreadcrumbs(pathname);
 
   if (breadcrumbs.length === 0) {
@@ -111,7 +108,7 @@ export function BreadcrumbNav() {
                 ) : (
                   <BreadcrumbLink asChild>
                     <Link
-                      href={item.href}
+                      to={item.href}
                       className="text-sm text-muted-foreground hover:text-foreground"
                     >
                       {item.label}

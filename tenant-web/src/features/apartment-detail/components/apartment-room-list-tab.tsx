@@ -1,4 +1,3 @@
-'use client';
 
 import type { Room } from '@/types';
 import type { FloorRoomGroup } from '../apartment-detail.utils';

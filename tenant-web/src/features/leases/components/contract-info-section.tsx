@@ -1,4 +1,3 @@
-'use client';
 
 import { UseFormReturn } from 'react-hook-form';
 import { CalendarDays, Banknote, Droplets, Zap, FileText, AlertCircle } from 'lucide-react';

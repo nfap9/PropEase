@@ -1,4 +1,3 @@
-'use client';
 
 /**
  * 品牌配置 Context

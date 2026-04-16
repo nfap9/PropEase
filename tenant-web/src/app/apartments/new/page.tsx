@@ -1,8 +1,7 @@
-'use client';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
@@ -18,7 +17,7 @@ import { filterEmptyStrings } from '@/utils/form';
 import { apartmentSchema, type ApartmentFormData } from '@/components/apartments';
 
 export default function NewApartmentPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { organization } = useAuth();
   const orgId = organization?.id;
@@ -45,7 +44,7 @@ export default function NewApartmentPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       appToast.success('公寓创建成功');
-      router.push('/apartments');
+      navigate('/apartments');
     },
     onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
   });
@@ -67,7 +66,7 @@ export default function NewApartmentPage() {
         {/* 固定头部 */}
         <div className="shrink-0 px-1 pb-4">
           <h3 className="flex items-center gap-2 text-base font-medium text-foreground">
-            <button type="button" onClick={() => router.back()} className="flex items-center justify-center">
+            <button type="button" onClick={() => navigate(-1)} className="flex items-center justify-center">
               <ArrowLeft className="h-4 w-4" />
             </button>
             公寓信息
@@ -212,7 +211,7 @@ export default function NewApartmentPage() {
 
           {/* 操作按钮 */}
           <div className="flex items-center justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => router.back()}>
+            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
               取消
             </Button>
             <Button type="submit" disabled={createMutation.isPending}>

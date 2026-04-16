@@ -1,7 +1,6 @@
-'use client';
 
 import { Suspense, useCallback, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
@@ -17,9 +16,9 @@ import { tenantI18n, tenantMessages } from '@/i18n';
 const POLL_INTERVAL_MS = 2500;
 
 function SubscriptionPayContent() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
   const orderId = searchParams.get('order_id');
   const { organization } = useAuth();
   const orgId = organization?.id;
@@ -49,7 +48,7 @@ function SubscriptionPayContent() {
       appToast.success('直接完成订阅成功（开发环境）');
       queryClient.invalidateQueries({ queryKey: ['subscription-status', orgId] });
       queryClient.invalidateQueries({ queryKey: ['organization-usage', orgId] });
-      router.push('/settings/subscription');
+      navigate('/settings/subscription');
     },
     onError: (error) => {
       appToast.error(`直接完成订阅失败: ${error instanceof Error ? error.message : '未知错误'}`);
@@ -57,14 +56,14 @@ function SubscriptionPayContent() {
   });
 
   const handleBack = useCallback(() => {
-    router.push('/settings/subscription');
-  }, [router]);
+    navigate('/settings/subscription');
+  }, [navigate]);
 
   useEffect(() => {
     if (order?.status === 'paid') {
-      router.replace(`/settings/subscription/result?order_id=${orderId}&status=success`);
+      navigate(`/settings/subscription/result?order_id=${orderId}&status=success`, { replace: true });
     }
-  }, [order?.status, orderId, router]);
+  }, [order?.status, orderId, navigate]);
 
   if (!orderId || !orgId) {
     return (
@@ -190,7 +189,7 @@ function SubscriptionPayContent() {
                   {tenantMessages.settings.subscriptionPage.pay.qrHint}
                 </p>
               </>
-            ) : order.simulate_pay_available || process.env.NODE_ENV === 'development' ? (
+            ) : order.simulate_pay_available || import.meta.env.MODE === 'development' ? (
               <div className="flex flex-col items-center gap-4 py-4">
                 <p className="text-center text-muted-foreground">
                   {tenantMessages.settings.subscriptionPage.pay.devHint}

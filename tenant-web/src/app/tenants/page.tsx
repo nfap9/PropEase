@@ -1,4 +1,3 @@
-'use client';
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -6,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { useConfirmAction } from '@apartment-ultra/shared-ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
@@ -154,7 +153,7 @@ export default function TenantsPage() {
       minSize: 120,
       cell: ({ row }) => (
         <Link
-          href={`/tenants/${row.original.id}`}
+          to={`/tenants/${row.original.id}`}
           className="flex items-center gap-2 font-medium text-primary hover:underline"
         >
           <User className="h-4 w-4 text-muted-foreground" />

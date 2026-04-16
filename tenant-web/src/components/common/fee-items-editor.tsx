@@ -1,4 +1,3 @@
-'use client';
 
 import { useState } from 'react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';

@@ -1,6 +1,5 @@
-'use client';
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { cn } from '@/utils';
@@ -99,7 +98,7 @@ export function AuthShell({
                       mode === 'login' && 'bg-background text-foreground shadow-sm hover:bg-background'
                     )}
                   >
-                    <Link href="/login">登录</Link>
+                    <Link to="/login">登录</Link>
                   </Button>
                   <Button
                     asChild
@@ -110,7 +109,7 @@ export function AuthShell({
                       mode === 'register' && 'bg-background text-foreground shadow-sm hover:bg-background'
                     )}
                   >
-                    <Link href="/register">注册</Link>
+                    <Link to="/register">注册</Link>
                   </Button>
                 </div>
 

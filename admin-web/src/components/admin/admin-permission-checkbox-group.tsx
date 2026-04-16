@@ -1,4 +1,3 @@
-'use client';
 
 import { useState } from 'react';
 import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';

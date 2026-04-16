@@ -1,4 +1,3 @@
-'use client';
 
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Room } from '@/types';

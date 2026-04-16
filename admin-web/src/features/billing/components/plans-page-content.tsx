@@ -1,4 +1,3 @@
-'use client';
 
 import { useState } from 'react';
 import { usePlans, useCreatePlan, useUpdatePlan, useDeletePlan, useUpdatePlanPricing } from '../billing.hooks';

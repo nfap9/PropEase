@@ -1,7 +1,6 @@
-'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Redirects /organizations/new to /organizations.
@@ -9,11 +8,11 @@ import { useRouter } from 'next/navigation';
  * This preserves the flow for "create new org when org exists" while using the unified page.
  */
 export default function RedirectPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    router.replace('/organizations');
-  }, [router]);
+    navigate('/organizations', { replace: true });
+  }, [navigate]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30">

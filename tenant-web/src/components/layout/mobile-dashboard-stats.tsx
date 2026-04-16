@@ -1,6 +1,5 @@
 // tenant-web/src/components/layout/mobile-dashboard-stats.tsx
 
-'use client';
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -11,7 +10,7 @@ import { StatCard } from '@apartment-ultra/shared-ui/components/ui';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Home, Receipt, TrendingUp, Bell, Zap, Clock } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 
 function formatCurrency(value: number) {
   return `¥${value.toLocaleString()}`;
@@ -209,7 +208,7 @@ export function MobileDashboardStats() {
                 <span className="text-muted-foreground">上游成本</span>
                 <span className="font-medium text-rose-600">{formatCurrency(upstreamCost)}</span>
               </div>
-              <Link href="/bills" className="mt-2 block text-sm text-primary hover:underline">
+              <Link to="/bills" className="mt-2 block text-sm text-primary hover:underline">
                 查看全部账单
               </Link>
             </div>
@@ -262,7 +261,7 @@ export function MobileDashboardStats() {
                   return (
                     <Link
                       key={reminder.label}
-                      href={reminder.href}
+                      to={reminder.href}
                       className="flex items-center justify-between py-1.5"
                     >
                       <div className="flex items-center gap-2">
