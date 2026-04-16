@@ -105,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /**
    * 登出
    * 1. 调用后端接口将 token 加入黑名单
-   * 2. 清除所有本地状态和存储，跳转登录页
+   * 2. 清除所有本地状态和存储（包括 cookie），跳转登录页
    */
   const logout = React.useCallback(async () => {
     try {
@@ -116,6 +116,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('current_organization_id');
+      // Clear cookie for middleware
+      document.cookie = 'access_token=; path=/; max-age=0';
       setUser(null);
       setOrganization(null);
       setOrganizations([]);
@@ -132,6 +134,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkAuth = async () => {
       const token = localStorage.getItem('access_token');
       if (token) {
+        // Sync token to cookie for middleware
+        document.cookie = `access_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
         try {
           const userData = await authApi.getMe();
           setUser(userData);
@@ -149,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /**
    * 登录
    * 1. 调用登录 API 获取 token
-   * 2. 保存 token 到 localStorage
+   * 2. 保存 token 到 localStorage 和 cookie（cookie 供 middleware 使用）
    * 3. 获取用户信息和组织列表
    * 4. 返回跳转路径（有组织去 dashboard，无组织去创建组织）
    */
@@ -157,6 +161,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await authApi.login({ phone, password });
     localStorage.setItem('access_token', response.access_token);
     localStorage.setItem('refresh_token', response.refresh_token);
+    // Sync to cookie for middleware
+    document.cookie = `access_token=${response.access_token}; path=/; max-age=${7 * 24 * 60 * 60}`;
     const userData = await authApi.getMe();
     setUser(userData);
 

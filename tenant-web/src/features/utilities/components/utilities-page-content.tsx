@@ -20,17 +20,17 @@ import type { PendingUtilityBillRow } from '../utilities.types';
 import { useUtilitiesData } from '../hooks/use-utilities';
 
 const CreateUtilityDialog = dynamic(
-  () => import('@/app/utilities/components/CreateUtilityDialog').then((mod) => mod.CreateUtilityDialog),
+  () => import('@/components/utilities/CreateUtilityDialog').then((mod) => mod.CreateUtilityDialog),
   { ssr: false }
 );
 
 const ExportTemplateDialog = dynamic(
-  () => import('@/app/utilities/components/ExportTemplateDialog').then((mod) => mod.ExportTemplateDialog),
+  () => import('@/components/utilities/ExportTemplateDialog').then((mod) => mod.ExportTemplateDialog),
   { ssr: false }
 );
 
 const BatchImportDialog = dynamic(
-  () => import('@/app/utilities/components/BatchImportDialog').then((mod) => mod.BatchImportDialog),
+  () => import('@/components/utilities/BatchImportDialog').then((mod) => mod.BatchImportDialog),
   { ssr: false }
 );
 
@@ -40,7 +40,7 @@ const InitialReadingDialog = dynamic(
 );
 
 const EditUtilityDialog = dynamic(
-  () => import('@/app/utilities/components/EditUtilityDialog').then((mod) => mod.EditUtilityDialog),
+  () => import('@/components/utilities/EditUtilityDialog').then((mod) => mod.EditUtilityDialog),
   { ssr: false }
 );
 
@@ -450,6 +450,6 @@ export function UtilitiesPageSuspenseFallback() {
 }
 
 const UtilityHistoryPanel = dynamic(
-  () => import('@/app/utilities/components/utility-history-panel').then((mod) => mod.UtilityHistoryPanel),
+  () => import('@/components/utilities/utility-history-panel').then((mod) => mod.UtilityHistoryPanel),
   { ssr: false }
 );

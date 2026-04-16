@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
@@ -41,8 +42,9 @@ import {
   RoomEditDialog,
 } from '@/features/apartment-detail/components/apartment-detail-dialogs';
 
-export default function ApartmentDetailPage({ params }: { params: { id: string } }) {
-  const apartmentId = params.id;
+export default function ApartmentDetailPage() {
+  const params = useParams();
+  const apartmentId = params.id as string;
   const router = useRouter();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;

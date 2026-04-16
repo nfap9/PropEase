@@ -189,6 +189,8 @@ function AdminNavContent() {
                         // 即使失败也继续清除本地状态
                       }
                       localStorage.removeItem('admin_access_token');
+                      // Clear cookie for middleware
+                      document.cookie = 'admin_access_token=; path=/; max-age=0; SameSite=Lax';
                       window.location.href = '/login';
                     }}
                   >

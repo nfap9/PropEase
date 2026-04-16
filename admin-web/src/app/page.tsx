@@ -1,6 +1,6 @@
 'use client';
 
-import { DashboardContent } from './dashboard-content';
+import { DashboardContent } from '@/components/dashboard/dashboard-content';
 
 export default function AdminDashboardPage() {
   return <DashboardContent />;

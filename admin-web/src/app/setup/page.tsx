@@ -117,6 +117,8 @@ export default function AdminSetupPage() {
       const data = res.data as AdminTokenResponse;
       if (data?.access_token) {
         localStorage.setItem('admin_access_token', data.access_token);
+        // Sync to cookie for middleware
+        document.cookie = `admin_access_token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
         router.replace('/');
         return;
       }

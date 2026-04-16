@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
@@ -37,8 +37,9 @@ import {
   getTenantSmsReachabilityVariant,
 } from '@/lib/tenant-reachability';
 
-export default function TenantDetailPage({ params }: { params: { id: string } }) {
-  const tenantId = params.id;
+export default function TenantDetailPage() {
+  const params = useParams();
+  const tenantId = params.id as string;
   const router = useRouter();
   const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();

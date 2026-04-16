@@ -4,7 +4,7 @@ import { Check, Loader2, Settings2 } from 'lucide-react';
 import type { UseFormReturn } from 'react-hook-form';
 import { ApartmentForm } from '@/components/apartments';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
-import { EditRoomDialog } from '@/app/rooms/components/EditRoomDialog';
+import { EditRoomDialog } from '@/components/rooms/EditRoomDialog';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { WizardDialog } from '@apartment-ultra/shared-ui/components/ui';

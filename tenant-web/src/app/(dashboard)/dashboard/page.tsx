@@ -1,7 +1,6 @@
 'use client';
 
 import { useAuth } from '@/lib/auth/context';
-import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { usePermissions } from '@/hooks/use-permissions';
 import { canAccessRule } from '@/lib/permission-access';
@@ -14,7 +13,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -32,11 +31,7 @@ export default function DashboardPage() {
 
   return (
     <PermissionPageGuard>
-      {canAccessDashboard ? (
-        <MainLayout>
-          <DashboardContent />
-        </MainLayout>
-      ) : null}
+      {canAccessDashboard ? <DashboardContent /> : null}
     </PermissionPageGuard>
   );
 }

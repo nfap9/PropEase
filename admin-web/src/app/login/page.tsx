@@ -52,6 +52,8 @@ export default function AdminLoginPage() {
       // 1. 检查是否已登录
       const token = localStorage.getItem('admin_access_token');
       if (token) {
+        // Sync to cookie for middleware
+        document.cookie = `admin_access_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
         router.replace('/');
         return;
       }
@@ -81,6 +83,8 @@ export default function AdminLoginPage() {
       const data = res.data as AdminTokenResponse;
       if (data?.access_token) {
         localStorage.setItem('admin_access_token', data.access_token);
+        // Sync to cookie for middleware
+        document.cookie = `admin_access_token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
         router.replace('/');
         return;
       }
