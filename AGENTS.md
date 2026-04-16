@@ -26,7 +26,6 @@ Apartment Ultra 是一个公寓管理产品，核心能力包括：
 - 后端 API：[`api/AGENTS.md`](./api/AGENTS.md)
 - 租户端 Web：[`tenant-web/AGENTS.md`](./tenant-web/AGENTS.md)
 - 运营后台：[`admin-web/AGENTS.md`](./admin-web/AGENTS.md)
-- E2E 测试：[`e2e/AGENTS.md`](./e2e/AGENTS.md)
 
 ## 代码风格
 

@@ -20,17 +20,8 @@
     "format:check": "prettier --check \"api/src/**/*.ts\" \"tenant-web/src/**/*.{ts,tsx}\"",
     "type-check": "pnpm --filter apartment-ultra-api exec prisma generate && pnpm --filter apartment-ultra-api run type-check && pnpm --filter apartment-ultra-tenant run type-check && pnpm --filter apartment-ultra-admin run type-check",
     "test": "pnpm --filter apartment-ultra-api exec prisma generate && pnpm --filter apartment-ultra-api run test && pnpm --filter apartment-ultra-tenant run test:run && pnpm --filter apartment-ultra-admin run test:run",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug",
-    "test:e2e:headed": "playwright test --headed",
-    "test:e2e:report": "playwright show-report e2e/report",
-    "test:e2e:setup": "playwright test --grep @authenticate --setup-only",
-    "test:e2e:project": "playwright test --project",
-    "test:e2e:chromium": "playwright test --project=chromium"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "cross-env": "^10.1.0",
