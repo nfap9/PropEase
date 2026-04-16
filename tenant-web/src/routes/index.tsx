@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBrowserRouter, Outlet } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/protected-route';
-import { MainLayoutWithOutlet } from '@/components/layout/main-layout';
+import { AppShell } from '@/components/layout/app-shell';
 import { AppProviders } from '@/components/layout/providers';
 
 // Auth pages
@@ -56,7 +56,7 @@ function RootLayout() {
 function ProtectedRoutesLayout() {
   return (
     <ProtectedRoute>
-      <MainLayoutWithOutlet />
+      <AppShell />
     </ProtectedRoute>
   );
 }

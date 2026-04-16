@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -79,23 +79,24 @@ export default function AdminSetupPage() {
   const passwordValidation = password ? validatePassword(password) : { valid: false };
 
   // 检查初始化状态
-  useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        const res = await adminApiEndpoints.checkInitStatus();
-        if (res.data?.initialized) {
-          // 已初始化，跳转到登录页
-          navigate('/login');
-        } else {
-          setIsChecking(false);
-        }
-      } catch {
-        setError('无法检查系统状态，请刷新页面重试');
+  const checkStatus = useCallback(async () => {
+    try {
+      const res = await adminApiEndpoints.checkInitStatus();
+      if (res.data?.initialized) {
+        // 已初始化，跳转到登录页
+        navigate('/login');
+      } else {
         setIsChecking(false);
       }
-    };
-    checkStatus();
+    } catch {
+      setError('无法检查系统状态，请刷新页面重试');
+      setIsChecking(false);
+    }
   }, [navigate]);
+
+  useEffect(() => {
+    checkStatus();
+  }, [checkStatus]);
 
   const onSubmit = async (values: FormValues) => {
     // 额外验证密码强度

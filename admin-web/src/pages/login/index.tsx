@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -46,33 +46,36 @@ export default function AdminLoginPage() {
   });
 
   // 检查认证状态和初始化状态
-  useEffect(() => {
-    const checkAuth = async () => {
-      // 1. 检查是否已登录
-      const token = localStorage.getItem('admin_access_token');
-      if (token) {
-        // Sync to cookie for middleware
-        document.cookie = `admin_access_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
-        navigate('/');
+  const checkAuth = useCallback(async () => {
+    // 1. 检查是否已登录
+    const token = localStorage.getItem('admin_access_token');
+    if (token) {
+      console.log(token);
+      
+      // Sync to cookie for middleware
+      document.cookie = `admin_access_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+      navigate('/');
+      return;
+    }
+
+    // 2. 检查系统是否已初始化
+    try {
+      const res = await adminApiEndpoints.checkInitStatus();
+      if (!res.data?.initialized) {
+        // 未初始化，跳转到初始化页面
+        navigate('/setup');
         return;
       }
+    } catch {
+      // 检查失败，继续显示登录页
+    }
 
-      // 2. 检查系统是否已初始化
-      try {
-        const res = await adminApiEndpoints.checkInitStatus();
-        if (!res.data?.initialized) {
-          // 未初始化，跳转到初始化页面
-          navigate('/setup');
-          return;
-        }
-      } catch {
-        // 检查失败，继续显示登录页
-      }
-
-      setIsCheckingAuth(false);
-    };
-    checkAuth();
+    setIsCheckingAuth(false);
   }, [navigate]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const onSubmit = async (values: FormValues) => {
     setError(null);
