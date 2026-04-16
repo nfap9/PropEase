@@ -118,27 +118,45 @@ function NavMenuSection({
  */
 function SidebarNavContent() {
   const { visibleSections } = useNavContext();
+  const pathname = useLocation().pathname;
+
+  const mainSection = visibleSections.find((s) => s.id === 'main');
 
   return (
     <SidebarContent className="flex flex-col">
       <SidebarBrand />
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        {visibleSections.map((section) => (
-          <NavMenuSection
-            key={section.id}
-            section={{
-              id: section.id,
-              label: section.label,
-              items: section.items.map((item) => ({
-                id: item.id,
-                href: item.href,
-                label: item.label,
-                icon: item.icon,
-              })),
-            }}
-            defaultOpen={section.id !== 'settings'}
-          />
-        ))}
+        {/* 主导航菜单 - 一级显示，无分组 */}
+        {mainSection && (
+          <SidebarMenu>
+            {mainSection.items.map((item) => {
+              const Icon = item.icon;
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + '/');
+
+              return (
+                <SidebarMenuItem key={item.id}>
+                  <SidebarMenuButton
+                    isActive={isActive}
+                    tooltip={item.label}
+                    className={cn(
+                      'h-10 rounded-lg px-3 text-sidebar-foreground/75 transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground',
+                      'data-[active=true]:bg-sidebar-primary data-[active=true]:text-sidebar-primary-foreground'
+                    )}
+                    asChild
+                  >
+                    <Link to={item.href}>
+                      <Icon className="h-4 w-4" />
+                      <span className="flex-1 truncate text-sm font-medium">
+                        {item.label}
+                      </span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        )}
       </div>
     </SidebarContent>
   );

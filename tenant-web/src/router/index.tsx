@@ -28,9 +28,7 @@ const UtilitiesHistoryPage = React.lazy(() => import('@/pages/utilities/history'
 const OrganizationsPage = React.lazy(() => import('@/pages/organizations/index').then(m => ({ default: m.default })));
 const OrganizationNewPage = React.lazy(() => import('@/pages/organizations/new').then(m => ({ default: m.default })));
 const NotificationsPage = React.lazy(() => import('@/pages/notifications/index').then(m => ({ default: m.default })));
-const SettingsPage = React.lazy(() => import('@/pages/settings/index').then(m => ({ default: m.default })));
 const SettingsTeamPage = React.lazy(() => import('@/pages/settings/team').then(m => ({ default: m.default })));
-const SettingsNotificationsPage = React.lazy(() => import('@/pages/settings/notifications').then(m => ({ default: m.default })));
 const SettingsPermissionsPage = React.lazy(() => import('@/pages/settings/permissions').then(m => ({ default: m.default })));
 const SettingsSubscriptionPage = React.lazy(() => import('@/pages/settings/subscription/index').then(m => ({ default: m.default })));
 const SettingsSubscriptionPurchasePage = React.lazy(() => import('@/pages/settings/subscription/purchase').then(m => ({ default: m.default })));
@@ -148,16 +146,8 @@ export const router = createBrowserRouter([
             element: <React.Suspense fallback={<LoadingFallback />}><NotificationsPage /></React.Suspense>,
           },
           {
-            path: 'settings',
-            element: <React.Suspense fallback={<LoadingFallback />}><SettingsPage /></React.Suspense>,
-          },
-          {
             path: 'settings/team',
             element: <React.Suspense fallback={<LoadingFallback />}><SettingsTeamPage /></React.Suspense>,
-          },
-          {
-            path: 'settings/notifications',
-            element: <React.Suspense fallback={<LoadingFallback />}><SettingsNotificationsPage /></React.Suspense>,
           },
           {
             path: 'settings/permissions',

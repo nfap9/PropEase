@@ -22,7 +22,6 @@ const ROUTE_ACCESS_RULES: Record<string, AccessRule> = {
   '/bills': { requiresOrganization: true, permission: PERMISSIONS.BILL_VIEW },
   '/reports': { requiresOrganization: true, permission: PERMISSIONS.REPORT_VIEW },
   '/settings/team': { permission: PERMISSIONS.MEMBER_VIEW },
-  '/settings/notifications': { requiresOrganization: true, permission: PERMISSIONS.SETTINGS_VIEW },
   '/settings/permissions': { requiresOrganization: true, permission: PERMISSIONS.SETTINGS_VIEW },
 };
 
