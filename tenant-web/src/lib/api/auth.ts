@@ -52,6 +52,14 @@ export const authApi = {
     });
     return response.data;
   },
+
+  /**
+   * 退出登录
+   * 调用后端接口将 token 加入黑名单
+   */
+  logout: async (): Promise<void> => {
+    await api.post('/auth/logout');
+  },
 };
 
 export default authApi;

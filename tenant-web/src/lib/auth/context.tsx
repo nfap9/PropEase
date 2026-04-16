@@ -25,7 +25,7 @@ interface AuthContextType {
   isAuthenticated: boolean;                  // 是否已认证
   login: (phone: string, password: string) => Promise<string>;  // 登录，返回跳转路径
   register: (phone: string, password: string, fullName: string) => Promise<string>;  // 注册
-  logout: () => void;                        // 登出
+  logout: () => Promise<void>;               // 登出
   setOrganization: (org: Organization | null) => void;  // 切换组织
   refreshOrganizations: (preferredOrgId?: string | null) => Promise<void>;  // 刷新组织列表
 }
@@ -104,17 +104,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /**
    * 登出
-   * 清除所有本地状态和存储，跳转登录页
+   * 1. 调用后端接口将 token 加入黑名单
+   * 2. 清除所有本地状态和存储，跳转登录页
    */
-  const logout = React.useCallback(() => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('current_organization_id');
-    setUser(null);
-    setOrganization(null);
-    setOrganizations([]);
-    queryClient.clear();
-    router.push('/login');
+  const logout = React.useCallback(async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // 即使接口失败也清除本地状态
+    } finally {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('current_organization_id');
+      setUser(null);
+      setOrganization(null);
+      setOrganizations([]);
+      queryClient.clear();
+      router.push('/login');
+    }
   }, [queryClient, router]);
 
   /**
