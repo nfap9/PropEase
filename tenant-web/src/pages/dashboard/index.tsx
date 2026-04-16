@@ -1,5 +1,5 @@
 
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { usePermissions } from '@/hooks/use-permissions';
 import { canAccessRule } from '@/utils/permission-access';

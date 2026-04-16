@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Building2, ShoppingBag, MessageSquareMore, Users } from 'lucide-react';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { Card, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantMessages } from '@/i18n';
 

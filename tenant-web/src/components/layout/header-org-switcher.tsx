@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { useBrandConfig } from '@/contexts/brand-config';
 
 /**

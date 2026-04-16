@@ -38,7 +38,7 @@ import { formatDate, formatDateTime } from '@/utils/date';
 import { OrganizationMember, MemberRole, OrganizationUsage } from '@/types';
 import { MoreHorizontal, Pencil, Trash2, UserPlus, Building2, Users, DoorOpen } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { tenantI18n, tenantMessages } from '@/i18n';
 
 // 注意: 实际使用时从 testids 导入 TEAM_SETTINGS 常量

@@ -10,7 +10,7 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Avatar, AvatarFallback } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { tenantMessages } from '@/i18n';
 
 /**

@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { NAV_SECTIONS, getRouteMeta, findNavItem, type NavSection, type NavItem } from './nav-config-v2';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { usePermissions } from '@/hooks/use-permissions';
 import { canAccessRule } from '@/utils/permission-access';
 

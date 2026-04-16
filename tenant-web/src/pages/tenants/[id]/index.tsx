@@ -9,7 +9,7 @@ import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import { LEASE_STATUS_CONFIG } from '@/utils/status';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantReachabilityApi, tenantsApi, leasesApi } from '@/api';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { Lease } from '@/types';
 import {
   ArrowLeft,

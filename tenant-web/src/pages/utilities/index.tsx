@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { UtilitiesPageContent } from '@/features/utilities/components';
+import { UtilitiesPageContent } from '@/components/utilities';
 
 export default function UtilitiesPage() {
   return (

@@ -4,7 +4,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apartmentsApi, billsApi, leasesApi, reportsApi, roomsApi } from '@/api';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { tenantMessages } from '@/i18n';
 import { StatCard } from '@apartment-ultra/shared-ui/components/ui';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@apartment-ultra/shared-ui/components/ui';

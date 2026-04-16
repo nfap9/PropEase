@@ -19,7 +19,7 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { apartmentsApi } from '@/api';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { ApartmentWithStats } from '@/types';
 import { Building2, Plus } from 'lucide-react';
 import { getErrorMessage } from '@/utils/error';

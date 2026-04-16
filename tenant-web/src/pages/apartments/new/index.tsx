@@ -10,7 +10,7 @@ import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { apartmentsApi } from '@/api';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { getErrorMessage } from '@/utils/error';
 import { filterEmptyStrings } from '@/utils/form';
 import { apartmentSchema, type ApartmentFormData } from '@/components/apartments';

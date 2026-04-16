@@ -7,7 +7,7 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { roomsApi, apartmentsApi, leasesApi } from '@/api';
 import { getErrorMessage } from '@/utils/error';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { Room, RoomStatus } from '@/types';
 import { Building2 } from 'lucide-react';
 
@@ -16,7 +16,7 @@ import { RoomsSearchBar } from './rooms-search-bar';
 import { RoomsViewToggle, type ViewMode } from './rooms-view-toggle';
 import { RoomsGroupedView } from './rooms-grouped-view';
 import { RoomFiltersState } from './room-filters';
-import { LeaseSigningDrawer } from '@/features/leases/components/lease-signing-drawer';
+import { LeaseSigningDrawer } from '@/components/leases/lease-signing-drawer';
 import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 import { TerminateDialog } from './TerminateDialog';

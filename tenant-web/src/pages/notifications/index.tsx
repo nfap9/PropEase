@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { NotificationCategory } from '@apartment-ultra/api-contract';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { usePermissions } from '@/hooks/use-permissions';
 import { canAccessRule } from '@/utils/permission-access';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';

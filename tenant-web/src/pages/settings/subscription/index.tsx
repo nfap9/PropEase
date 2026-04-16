@@ -15,7 +15,7 @@ import {
   ShoppingCart,
 } from 'lucide-react';
 import { subscriptionsApi } from '@/api';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { tenantI18n, tenantMessages } from '@/i18n';
 
 const SUBSCRIPTION = {

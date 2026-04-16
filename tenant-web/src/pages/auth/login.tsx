@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth } from '@/auth/context';
-import { getPostAuthRedirectPath } from '@/auth/redirect';
+import { useAuth } from '@/contexts/auth';
+import { getPostAuthRedirectPath } from '@/utils/auth-redirect';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {

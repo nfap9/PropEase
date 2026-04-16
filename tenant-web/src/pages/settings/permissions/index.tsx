@@ -8,7 +8,7 @@ import { permissionsApi } from '@/api/permissions';
 import { organizationsApi } from '@/api';
 import { getErrorMessage } from '@/utils/error';
 import { MemberRole, Permission } from '@/types';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { OrgRoleList } from '@/components/settings/org-role-list';
 import { OrgRoleDetailPanel } from '@/components/settings/org-role-detail-panel';
 import { Shield } from 'lucide-react';

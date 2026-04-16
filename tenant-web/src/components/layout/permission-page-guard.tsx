@@ -2,11 +2,11 @@
 import { useEffect, ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import { canAccessRule, type AccessRule } from '@/utils/permission-access';
 import { MainLayout } from '@/components/layout/main-layout';
-import { ORGANIZATION_ONBOARDING_PATH } from '@/auth/redirect';
+import { ORGANIZATION_ONBOARDING_PATH } from '@/utils/auth-redirect';
 
 /**
  * 路由到权限的映射

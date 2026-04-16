@@ -9,7 +9,7 @@ import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { ORDER_STATUS_CONFIG } from '@/utils/status';
 import { ArrowLeft, Loader2, Zap } from 'lucide-react';
 import { subscriptionsApi } from '@/api';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantI18n, tenantMessages } from '@/i18n';
 

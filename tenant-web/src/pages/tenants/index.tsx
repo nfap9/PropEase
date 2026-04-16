@@ -26,7 +26,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { tenantsApi } from '@/api';
 import { filterEmptyStrings } from '@/utils/form';
 import { getErrorMessage } from '@/utils/error';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { Tenant } from '@/types';
 import { Plus, Pencil, Trash2, Phone, User, Building2 } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';

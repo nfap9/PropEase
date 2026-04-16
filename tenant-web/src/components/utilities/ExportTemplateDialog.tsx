@@ -22,7 +22,7 @@ import { Download, Loader2 } from 'lucide-react';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { utilitiesApi, UtilityExportRoom } from '@/api/utilities';
 import { getErrorMessage } from '@/utils/error';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 
 interface ExportTemplateDialogProps {
   open: boolean;

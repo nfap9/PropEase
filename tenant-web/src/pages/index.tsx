@@ -2,8 +2,8 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { useAuth } from '@/auth/context';
-import { getPostAuthRedirectPath } from '@/auth/redirect';
+import { useAuth } from '@/contexts/auth';
+import { getPostAuthRedirectPath } from '@/utils/auth-redirect';
 
 export default function HomePage() {
   const { isAuthenticated, isLoading, organizations, organization } = useAuth();

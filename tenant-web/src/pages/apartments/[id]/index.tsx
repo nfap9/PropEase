@@ -9,7 +9,7 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import type { Room, RoomFacilities } from '@/types';
 import {
   apartmentFormDefaultValues,
@@ -19,18 +19,18 @@ import {
   roomSchema,
   type BatchEditFormData,
   type RoomFormData,
-} from '@/features/apartment-detail/apartment-detail.schemas';
+} from '@/schemas/apartment-detail';
 import {
   useApartmentDetailData,
   useApartmentFormSync,
   useApartmentRoomMetrics,
   useGeneratedRoomSelection,
   useRoomBatchSelection,
-} from '@/features/apartment-detail/apartment-detail.hooks';
-import { ApartmentDetailHeader } from '@/features/apartment-detail/components/apartment-detail-header';
-import { ApartmentOverviewTab } from '@/features/apartment-detail/components/apartment-overview-tab';
-import { ApartmentRoomListTab } from '@/features/apartment-detail/components/apartment-room-list-tab';
-import { UtilityConfigDialog } from '@/features/apartment-detail/components/UtilityConfigDialog';
+} from '@/hooks/apartment-detail';
+import { ApartmentDetailHeader } from '@/components/apartment-detail/apartment-detail-header';
+import { ApartmentOverviewTab } from '@/components/apartment-detail/apartment-overview-tab';
+import { ApartmentRoomListTab } from '@/components/apartment-detail/apartment-room-list-tab';
+import { UtilityConfigDialog } from '@/components/apartment-detail/UtilityConfigDialog';
 import {
   ApartmentEditDialog,
   BatchCreateRoomDialog,
@@ -38,7 +38,7 @@ import {
   CreateRoomDialog,
   DeleteRoomDialog,
   RoomEditDialog,
-} from '@/features/apartment-detail/components/apartment-detail-dialogs';
+} from '@/components/apartment-detail/apartment-detail-dialogs';
 
 export default function ApartmentDetailPage() {
   const params = useParams();

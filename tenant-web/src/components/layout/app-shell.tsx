@@ -19,7 +19,7 @@ import { useState } from 'react';
 import { AppHeader } from './app-header';
 import { NavProvider, useNavContext } from './nav-context';
 import { useBrandConfig } from '@/contexts/brand-config';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 
 /**
  * 侧边栏品牌区域

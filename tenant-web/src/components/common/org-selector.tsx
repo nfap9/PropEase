@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { invalidateOrgScopedQueries } from '@/hooks/query-utils';
 import {
   Select,

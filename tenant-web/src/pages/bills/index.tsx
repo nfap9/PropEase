@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import {
   BillsPageContent,
   BillsPageSuspenseFallback,
-} from '@/features/bills/components/bills-page-content';
+} from '@/components/bills/bills-page-content';
 
 export default function BillsPage() {
   return (

@@ -29,7 +29,7 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { subscriptionsApi } from '@/api';
 import { getErrorMessage } from '@/utils/error';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import type { StorefrontService, StorefrontServicePricing } from '@/api/subscriptions';
 import { getPricingSummary } from './pricing';
 import { tenantI18n, tenantMessages } from '@/i18n';

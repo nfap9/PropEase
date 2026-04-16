@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { MobileDashboardStats } from '@/components/layout/mobile-dashboard-stats';
 import { apartmentsApi, billsApi, leasesApi, reportsApi, roomsApi } from '@/api';
-import { useAuth } from '@/auth/context';
+import { useAuth } from '@/contexts/auth';
 import { useBrandConfig } from '@/contexts/brand-config';
 import { tenantMessages } from '@/i18n';
 

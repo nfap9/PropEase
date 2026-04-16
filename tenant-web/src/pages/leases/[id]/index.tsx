@@ -1,7 +1,7 @@
 
 import { Suspense } from 'react';
 import { useParams } from 'react-router-dom';
-import { LeaseDetailPage } from '@/features/leases/components/lease-detail-page';
+import { LeaseDetailPage } from '@/components/leases/lease-detail-page';
 
 export default function LeaseDetailPageRoute() {
   const { id } = useParams<{ id: string }>();
