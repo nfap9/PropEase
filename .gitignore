@@ -42,10 +42,9 @@ yarn-error.log*
 .node_repl_history
 
 # Local env files
-.env
-middleware.env
-.env*.local
+.env.middleware
 .env.production
+.env
 
 # Vercel
 .vercel
