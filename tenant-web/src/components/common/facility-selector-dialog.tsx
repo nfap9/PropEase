@@ -14,7 +14,7 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { ChevronDown, ChevronRight, Minus, Plus } from 'lucide-react';
 import type { RoomFacilities, FacilityItem, FacilityPreset } from '@/types';
-import { FURNITURE_PRESETS, APPLIANCE_PRESETS } from '@/lib/constants/facilities';
+import { FURNITURE_PRESETS, APPLIANCE_PRESETS } from '@/constants/facilities';
 
 export interface FacilitySelectorDialogProps {
   /** 当前设施配置 */

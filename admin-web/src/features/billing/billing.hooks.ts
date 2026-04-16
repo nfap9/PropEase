@@ -9,8 +9,8 @@ import {
   type AdminPlanCreate,
   type AdminPlanUpdate,
   type AdminPlanPricingCreate,
-} from '@/lib/api/admin-client';
-import { getErrorMessage } from '@/lib/utils/error';
+} from '@/api/admin-client';
+import { getErrorMessage } from '@/utils/error';
 
 /**
  * 套餐管理 Hooks

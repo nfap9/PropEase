@@ -11,7 +11,7 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { DataTable } from '@/components/common/data-table';
-import { useAuth } from '@/lib/auth/context';
+import { useAuth } from '@/auth/context';
 import { Plus, Upload, Download, Building2, AlertCircle, Droplets, TrendingUp, Clock } from 'lucide-react';
 import type { RoomMissingInitialReading, UtilityReading } from '@/types';
 import { pendingUtilityBillColumns } from '../utilities.columns';

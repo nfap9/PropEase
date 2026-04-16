@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { updateTenantSchema, type UpdateTenantFormData } from '../../schemas/lease-operations.schemas';
 import { useUpdateTenant } from '../../hooks/use-lease-operations';
-import { tenantsApi } from '@/lib/api';
+import { tenantsApi } from '@/api';
 import { FormDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Form,

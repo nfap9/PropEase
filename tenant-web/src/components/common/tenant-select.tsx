@@ -8,8 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { tenantsApi } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { tenantsApi } from '@/api';
+import { cn } from '@/utils';
 
 interface TenantSelectProps {
   orgId: string;

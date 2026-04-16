@@ -33,14 +33,14 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { ColumnDef } from '@tanstack/react-table';
-import { organizationsApi } from '@/lib/api';
-import { getErrorMessage } from '@/lib/utils/error';
-import { formatDate, formatDateTime } from '@/lib/date-utils';
+import { organizationsApi } from '@/api';
+import { getErrorMessage } from '@/utils/error';
+import { formatDate, formatDateTime } from '@/utils/date';
 import { OrganizationMember, MemberRole, OrganizationUsage } from '@/types';
 import { MoreHorizontal, Pencil, Trash2, UserPlus, Building2, Users, DoorOpen } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { useAuth } from '@/lib/auth/context';
-import { tenantI18n, tenantMessages } from '@/lib/i18n';
+import { useAuth } from '@/auth/context';
+import { tenantI18n, tenantMessages } from '@/i18n';
 
 // 注意: 实际使用时从 testids 导入 TEAM_SETTINGS 常量
 const TEAM_SETTINGS = {

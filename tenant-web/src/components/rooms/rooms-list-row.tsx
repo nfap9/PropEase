@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { FileText, Ban, Wrench, CheckCircle } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { ROOM_STATUS_CONFIG } from '@/lib/status-config';
+import { ROOM_STATUS_CONFIG } from '@/utils/status';
 import { Room, RoomStatus } from '@/types';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 interface RoomListRowProps {
   room: Room;

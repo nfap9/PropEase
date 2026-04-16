@@ -4,11 +4,11 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Download, DollarSign, Eye, Share2 } from 'lucide-react';
 import { TableActions, type TableAction } from '@/components/common/table-actions';
-import { formatDate } from '@/lib/date-utils';
-import { BILL_STATUS_CONFIG } from '@/lib/status-config';
+import { formatDate } from '@/utils/date';
+import { BILL_STATUS_CONFIG } from '@/utils/status';
 import type { Bill } from '@/types';
 import { formatBillLocation, formatBillPeriod } from './bills.utils';
-import { tenantMessages } from '@/lib/i18n';
+import { tenantMessages } from '@/i18n';
 
 interface CreateBillsColumnsOptions {
   sharingBillId: string | null;

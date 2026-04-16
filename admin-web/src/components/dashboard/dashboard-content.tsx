@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { adminApiEndpoints } from '@/lib/api/admin-client';
+import { adminApiEndpoints } from '@/api/admin-client';
 import { ChartCard } from '@/components/dashboard/chart-card';
 import { IncomeChart } from '@/components/dashboard/income-chart';
 import { YearFilter } from '@/components/dashboard/year-filter';
@@ -16,7 +16,7 @@ import { StatCard } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminPlatformStats } from '@apartment-ultra/api-contract';
 import type { AxiosResponse } from 'axios';
 import type { IncomeReport } from '@apartment-ultra/api-contract';
-import { adminMessages } from '@/lib/i18n';
+import { adminMessages } from '@/i18n';
 
 export function DashboardContent() {
   const queryClient = useQueryClient();

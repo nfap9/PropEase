@@ -27,10 +27,10 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { TenantSelectWithCreate } from '@/components/common/tenant-select-with-create';
 import { FeeItemsEditor, type FeeItem } from '@/components/common/fee-items-editor';
-import { leasesApi, apartmentsApi, roomsApi, utilityConfigApi } from '@/lib/api';
-import { toDateInputValue } from '@/lib/date-utils';
-import { filterEmptyStrings } from '@/lib/utils/form';
-import { getErrorMessage } from '@/lib/utils/error';
+import { leasesApi, apartmentsApi, roomsApi, utilityConfigApi } from '@/api';
+import { toDateInputValue } from '@/utils/date';
+import { filterEmptyStrings } from '@/utils/form';
+import { getErrorMessage } from '@/utils/error';
 import { Room, Apartment } from '@/types';
 import type { UtilityConfig } from '@apartment-ultra/api-contract';
 

@@ -1,4 +1,4 @@
-import { adminMessages } from '@/lib/i18n';
+import { adminMessages } from '@/i18n';
 
 /**
  * 运营后台权限选项：仅用中文展示给用户，不暴露权限码。

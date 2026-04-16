@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth } from '@/lib/auth/context';
-import { getPostAuthRedirectPath } from '@/lib/auth/redirect';
+import { useAuth } from '@/auth/context';
+import { getPostAuthRedirectPath } from '@/auth/redirect';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -18,10 +18,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { useBrandConfig } from '@/lib/brand-config-context';
+import { useBrandConfig } from '@/contexts/brand-config';
 import { AuthLoadingScreen } from '@/components/auth/auth-loading-screen';
 import { AuthShell } from '@/components/auth/auth-shell';
-import { tenantMessages } from '@/lib/i18n';
+import { tenantMessages } from '@/i18n';
 
 // 手机号验证正则
 const phoneRegex = /^1[3-9]\d{9}$/;

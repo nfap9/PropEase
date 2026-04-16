@@ -7,8 +7,8 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
-import { useAuth } from '@/lib/auth/context';
-import { tenantI18n, tenantMessages } from '@/lib/i18n';
+import { useAuth } from '@/auth/context';
+import { tenantI18n, tenantMessages } from '@/i18n';
 
 function SubscriptionResultContent() {
   const router = useRouter();

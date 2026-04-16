@@ -23,7 +23,7 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MoreHorizontal, Home, RefreshCw, User, TrendingUp, Droplets, DollarSign, Layers, LogOut, Plus, Trash2 } from 'lucide-react';
-import { leasesApi } from '@/lib/api';
+import { leasesApi } from '@/api';
 import { ChangeRoomSheet } from './operation-sheets/change-room-sheet';
 import { RenewSheet } from './operation-sheets/renew-sheet';
 import { ChangeRentSheet } from './operation-sheets/change-rent-sheet';

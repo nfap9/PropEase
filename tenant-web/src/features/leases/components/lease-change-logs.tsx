@@ -1,7 +1,7 @@
 'use client';
 
-import { formatDate } from '@/lib/date-utils';
-import type { LeaseChangeLog } from '@/lib/api/leases';
+import { formatDate } from '@/utils/date';
+import type { LeaseChangeLog } from '@/api/leases';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent } from '@apartment-ultra/shared-ui/components/ui';
 import { ArrowRight, Calendar, User } from 'lucide-react';

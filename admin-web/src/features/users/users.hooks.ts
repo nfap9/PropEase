@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
-import { adminApiEndpoints, type AdminRole, type AdminUser } from '@/lib/api/admin-client';
-import { getErrorMessage } from '@/lib/utils/error';
-import type { AdminPasswordReset, AdminUserCreate, AdminUserUpdate } from '@/lib/api/admin-client';
-import { adminMessages } from '@/lib/i18n';
+import { adminApiEndpoints, type AdminRole, type AdminUser } from '@/api/admin-client';
+import { getErrorMessage } from '@/utils/error';
+import type { AdminPasswordReset, AdminUserCreate, AdminUserUpdate } from '@/api/admin-client';
+import { adminMessages } from '@/i18n';
 
 interface UseAdminUsersDataOptions {
   onCreateSuccess: () => void;

@@ -7,13 +7,13 @@ import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { ORG_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/lib/status-config';
-import { adminApiEndpoints } from '@/lib/api/admin-client';
-import { getErrorMessage } from '@/lib/utils/error';
+import { ORG_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/utils/status';
+import { adminApiEndpoints } from '@/api/admin-client';
+import { getErrorMessage } from '@/utils/error';
 import { ArrowLeft, Power, PowerOff } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { formatDateTime } from '@/lib/date-utils';
-import { adminMessages } from '@/lib/i18n';
+import { formatDateTime } from '@/utils/date';
+import { adminMessages } from '@/i18n';
 
 export default function AdminOrganizationDetailPage() {
   const params = useParams();

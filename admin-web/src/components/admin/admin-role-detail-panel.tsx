@@ -1,10 +1,10 @@
 'use client';
 
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import type { AdminRole } from '@/lib/api/admin-client';
+import type { AdminRole } from '@/api/admin-client';
 import { AdminPermissionCheckboxGroup } from './admin-permission-checkbox-group';
 import { Save } from 'lucide-react';
-import { adminMessages } from '@/lib/i18n';
+import { adminMessages } from '@/i18n';
 
 export interface AdminRoleDetailPanelProps {
   role: AdminRole | null;

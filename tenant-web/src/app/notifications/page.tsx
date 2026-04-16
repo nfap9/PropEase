@@ -7,11 +7,11 @@ import type { NotificationCategory } from '@apartment-ultra/api-contract';
 import { MainLayout } from '@/components/layout/main-layout';
 import { AuthGuard } from '@/components/layout/auth-guard';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { useAuth } from '@/lib/auth/context';
+import { useAuth } from '@/auth/context';
 import { usePermissions } from '@/hooks/use-permissions';
-import { canAccessRule } from '@/lib/permission-access';
+import { canAccessRule } from '@/utils/permission-access';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { notificationsApi, type Notification } from '@/lib/api/notifications';
+import { notificationsApi, type Notification } from '@/api/notifications';
 import {
   getNotificationActionLabel,
   getNotificationCategory,
@@ -19,11 +19,11 @@ import {
   getNotificationTarget,
   getNotificationTypeLabel,
   notificationCategoryOptions,
-} from '@/lib/notifications';
+} from '@/utils/notifications';
 import { CheckCheck, Loader2, BellOff, ArrowRight, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { formatDateTime, formatRelativeTime } from '@/lib/date-utils';
-import { tenantMessages } from '@/lib/i18n';
+import { cn } from '@/utils';
+import { formatDateTime, formatRelativeTime } from '@/utils/date';
+import { tenantMessages } from '@/i18n';
 
 const NOTIFICATIONS = {
   HEADING: 'notifications-heading',

@@ -2,8 +2,8 @@
 
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { formatDate } from '@/lib/date-utils';
-import { LEASE_STATUS_CONFIG } from '@/lib/status-config';
+import { formatDate } from '@/utils/date';
+import { LEASE_STATUS_CONFIG } from '@/utils/status';
 import type { Lease } from '@apartment-ultra/api-contract';
 
 /** 包含 fee_items 的 Lease 扩展类型（直接输入模式） */

@@ -21,10 +21,10 @@ import {
   TableHeader,
   TableRow,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { apartmentsApi, billsApi, leasesApi, utilitiesApi } from '@/lib/api';
-import { formatDate } from '@/lib/date-utils';
-import { getErrorMessage } from '@/lib/utils/error';
-import { filterEmptyStrings } from '@/lib/utils/form';
+import { apartmentsApi, billsApi, leasesApi, utilitiesApi } from '@/api';
+import { formatDate } from '@/utils/date';
+import { getErrorMessage } from '@/utils/error';
+import { filterEmptyStrings } from '@/utils/form';
 import { UtilityReading } from '@/types';
 import { Droplets, Pencil, Zap } from 'lucide-react';
 

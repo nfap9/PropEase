@@ -14,7 +14,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { User, Organization } from '@/types';
-import { authApi, organizationsApi } from '@/lib/api';
+import { authApi, organizationsApi } from '@/api';
 
 /** 认证 Context 类型定义 */
 interface AuthContextType {

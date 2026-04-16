@@ -8,7 +8,7 @@ const { getMeMock, listOrganizationsMock } = vi.hoisted(() => ({
   listOrganizationsMock: vi.fn(),
 }));
 
-vi.mock('@/lib/api', () => ({
+vi.mock('@/api', () => ({
   authApi: {
     getMe: getMeMock,
     login: vi.fn(),

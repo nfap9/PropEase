@@ -1,5 +1,5 @@
 import type { Apartment, Room, RoomFacilities } from '@/types';
-import { getFacilityLabel } from '@/lib/constants/facilities';
+import { getFacilityLabel } from '@/constants/facilities';
 
 export interface GeneratedFloorRooms {
   floor: number;

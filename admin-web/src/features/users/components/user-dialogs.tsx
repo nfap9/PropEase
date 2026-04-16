@@ -30,8 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
-import type { AdminRole, AdminUser } from '@/lib/api/admin-client';
-import { adminI18n, adminMessages } from '@/lib/i18n';
+import type { AdminRole, AdminUser } from '@/api/admin-client';
+import { adminI18n, adminMessages } from '@/i18n';
 import {
   createUserSchema,
   editUserSchema,

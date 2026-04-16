@@ -10,7 +10,7 @@
  */
 import { createContext, useContext, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { configApi, type BrandConfig } from '@/lib/api/config';
+import { configApi, type BrandConfig } from '@/api/config';
 
 /** 默认品牌配置（中文公寓管理系统的标准文案） */
 const DEFAULT_BRAND: BrandConfig = {

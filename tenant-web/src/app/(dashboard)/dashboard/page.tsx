@@ -1,9 +1,9 @@
 'use client';
 
-import { useAuth } from '@/lib/auth/context';
+import { useAuth } from '@/auth/context';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { usePermissions } from '@/hooks/use-permissions';
-import { canAccessRule } from '@/lib/permission-access';
+import { canAccessRule } from '@/utils/permission-access';
 import { Loader2 } from 'lucide-react';
 import { DashboardContent } from './dashboard-content';
 

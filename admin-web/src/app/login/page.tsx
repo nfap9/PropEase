@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { LoaderCircle, ShieldCheck } from 'lucide-react';
-import { adminApiEndpoints, AdminTokenResponse } from '@/lib/api/admin-client';
+import { adminApiEndpoints, AdminTokenResponse } from '@/api/admin-client';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -24,7 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { adminMessages } from '@/lib/i18n';
+import { adminMessages } from '@/i18n';
 
 const schema = z.object({
   username: z.string().min(1, '请输入用户名'),

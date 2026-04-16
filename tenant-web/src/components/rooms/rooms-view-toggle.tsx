@@ -2,7 +2,7 @@
 
 import { LayoutGrid, List } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 export type ViewMode = 'grid' | 'list';
 

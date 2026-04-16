@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { Building2, ShoppingBag, MessageSquareMore, Users } from 'lucide-react';
-import { useAuth } from '@/lib/auth/context';
+import { useAuth } from '@/auth/context';
 import { Card, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { tenantMessages } from '@/lib/i18n';
+import { tenantMessages } from '@/i18n';
 
 // 注意: 实际使用时从 testids 导入 SETTINGS 常量
 const SETTINGS = {

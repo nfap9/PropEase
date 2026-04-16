@@ -24,7 +24,7 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Room, RoomFacilities } from '@/types';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
-import { getFacilityLabel } from '@/lib/constants/facilities';
+import { getFacilityLabel } from '@/constants/facilities';
 import { Settings2 } from 'lucide-react';
 
 const roomSchema = z.object({

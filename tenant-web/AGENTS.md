@@ -20,6 +20,19 @@ Next.js 14 (App Router)，面向租客端用户，端口 3000。
 
 ```
 src/
+├── api/                  # API 客户端（按领域分文件）
+├── auth/                 # 认证上下文
+├── constants/            # 常量定义
+├── contexts/             # React Context
+├── features/             # 业务领域模块（可选，复杂模块使用）
+│   └── [feature]/        # 按业务域组织
+│       ├── components/   # 该领域的业务组件
+│       ├── hooks/        # 该领域的自定义 hooks
+│       ├── schemas/      # Zod schemas
+│       └── *.columns.tsx # DataTable columns 定义
+├── hooks/                # 顶层全局 hooks
+├── i18n/                 # 国际化
+├── utils/                # 通用工具函数（cn 合并 class 等）
 ├── app/                  # Next.js App Router 路由层
 │   ├── layout.tsx        # 布局组件
 │   ├── page.tsx         # 首页
@@ -30,18 +43,6 @@ src/
 │   ├── common/           # 跨业务复用组件（DataTable, PermissionGuard 等）
 │   ├── charts/           # 图表组件
 │   └── settings/         # 设置相关组件
-├── features/             # 业务领域模块（可选，复杂模块使用）
-│   └── [feature]/        # 按业务域组织
-│       ├── components/   # 该领域的业务组件
-│       ├── hooks/        # 该领域的自定义 hooks
-│       ├── schemas/      # Zod schemas
-│       └── *.columns.tsx # DataTable columns 定义
-├── hooks/                # 顶层全局 hooks
-├── lib/                  # 库和工具
-│   ├── api/              # API 客户端（按领域分文件）
-│   ├── auth/             # 认证上下文
-│   ├── utils.ts          # 通用工具函数（cn 合并 class）
-│   └── constants/        # 常量定义
 └── types/                # TypeScript 类型定义
 ```
 
@@ -71,7 +72,7 @@ src/
 ```typescript
 import { z } from 'zod';
 import { useQuery } from '@tanstack/react-query';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 import { LeaseCard } from '@/features/leases/components';
 ```
 
@@ -126,7 +127,7 @@ export default function TenantsPage() {
 ## API 客户端组织
 
 ```
-lib/api/
+api/
 ├── index.ts           # 统一导出
 ├── client.ts          # Axios 实例配置
 ├── apartments.ts      # 公寓相关 API

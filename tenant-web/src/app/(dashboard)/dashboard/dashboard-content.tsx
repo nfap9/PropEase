@@ -26,10 +26,10 @@ import {
   Zap,
 } from 'lucide-react';
 import { MobileDashboardStats } from '@/components/layout/mobile-dashboard-stats';
-import { apartmentsApi, billsApi, leasesApi, reportsApi, roomsApi } from '@/lib/api';
-import { useAuth } from '@/lib/auth/context';
-import { useBrandConfig } from '@/lib/brand-config-context';
-import { tenantMessages } from '@/lib/i18n';
+import { apartmentsApi, billsApi, leasesApi, reportsApi, roomsApi } from '@/api';
+import { useAuth } from '@/auth/context';
+import { useBrandConfig } from '@/contexts/brand-config';
+import { tenantMessages } from '@/i18n';
 
 function formatCurrency(value: number) {
   return `¥${value.toLocaleString()}`;

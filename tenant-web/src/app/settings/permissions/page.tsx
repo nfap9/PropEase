@@ -5,16 +5,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { SplitSettingsPanel } from '@apartment-ultra/shared-ui/components/ui';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { permissionsApi } from '@/lib/api/permissions';
-import { organizationsApi } from '@/lib/api';
-import { getErrorMessage } from '@/lib/utils/error';
+import { permissionsApi } from '@/api/permissions';
+import { organizationsApi } from '@/api';
+import { getErrorMessage } from '@/utils/error';
 import { MemberRole, Permission } from '@/types';
-import { useAuth } from '@/lib/auth/context';
+import { useAuth } from '@/auth/context';
 import { OrgRoleList } from '@/components/settings/org-role-list';
 import { OrgRoleDetailPanel } from '@/components/settings/org-role-detail-panel';
 import { Shield } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { tenantMessages } from '@/lib/i18n';
+import { tenantMessages } from '@/i18n';
 
 // 注意: 实际使用时从 testids 导入 PERMISSIONS 常量
 const PERMISSIONS = {

@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/auth/context';
-import { invalidateOrgScopedQueries } from '@/lib/query-utils';
+import { useAuth } from '@/auth/context';
+import { invalidateOrgScopedQueries } from '@/hooks/query-utils';
 import {
   Select,
   SelectContent,

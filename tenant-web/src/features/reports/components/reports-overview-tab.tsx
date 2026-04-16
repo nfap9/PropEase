@@ -2,7 +2,7 @@
 
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { BILL_STATUS_CONFIG, ROOM_STATUS_CONFIG } from '@/lib/status-config';
+import { BILL_STATUS_CONFIG, ROOM_STATUS_CONFIG } from '@/utils/status';
 import type { DashboardOverview } from '@/types';
 
 export function ReportsOverviewTab({ overview }: { overview: DashboardOverview | undefined }) {

@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
-import { apartmentsApi, roomsApi, utilitiesApi, leasesApi, billsApi } from '@/lib/api';
-import { filterEmptyStrings } from '@/lib/utils/form';
-import { getErrorMessage } from '@/lib/utils/error';
-import { formatDate } from '@/lib/date-utils';
+import { apartmentsApi, roomsApi, utilitiesApi, leasesApi, billsApi } from '@/api';
+import { filterEmptyStrings } from '@/utils/form';
+import { getErrorMessage } from '@/utils/error';
+import { formatDate } from '@/utils/date';
 import type { Bill, UtilityReading } from '@/types';
 import type { PendingUtilityBillRow } from '../utilities.types';
 import { getBillingDeadline, getUsage } from '../utilities.utils';

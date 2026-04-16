@@ -20,12 +20,12 @@ import {
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { apartmentsApi } from '@/lib/api';
-import { useAuth } from '@/lib/auth/context';
+import { apartmentsApi } from '@/api';
+import { useAuth } from '@/auth/context';
 import { ApartmentWithStats } from '@/types';
 import { Building2, Plus } from 'lucide-react';
-import { getErrorMessage } from '@/lib/utils/error';
-import { filterEmptyStrings } from '@/lib/utils/form';
+import { getErrorMessage } from '@/utils/error';
+import { filterEmptyStrings } from '@/utils/form';
 import {
   ApartmentCard,
   ApartmentEmptyState,

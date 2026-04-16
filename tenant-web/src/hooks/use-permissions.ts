@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { permissionsApi } from '@/lib/api/permissions';
-import { useAuth } from '@/lib/auth/context';
+import { permissionsApi } from '@/api/permissions';
+import { useAuth } from '@/auth/context';
 import type { SystemRole } from '@/types';
 
 /**

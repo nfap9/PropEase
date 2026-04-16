@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 type AuthMode = 'login' | 'register';
 

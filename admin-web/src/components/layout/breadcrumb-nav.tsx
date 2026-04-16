@@ -11,7 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { adminMessages } from '@/lib/i18n';
+import { adminMessages } from '@/i18n';
 
 interface BreadcrumbItem {
   href: string;

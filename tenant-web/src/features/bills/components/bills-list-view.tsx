@@ -25,7 +25,7 @@ import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import type { Bill, BillStatus } from '@/types';
 import { BILLS } from '../bills.schemas';
 import type { BillStats } from '../bills.utils';
-import { tenantMessages } from '@/lib/i18n';
+import { tenantMessages } from '@/i18n';
 
 interface BillsListViewProps {
   orgId?: string;

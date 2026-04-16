@@ -5,7 +5,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Room, RoomStatus } from '@/types';
-import { ROOM_STATUS_CONFIG } from '@/lib/status-config';
+import { ROOM_STATUS_CONFIG } from '@/utils/status';
 import { FileText, Ban, Wrench, CheckCircle } from 'lucide-react';
 
 export interface UseColumnsOptions {

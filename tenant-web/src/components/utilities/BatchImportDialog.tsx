@@ -14,7 +14,7 @@ import { WizardDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Upload, FileSpreadsheet } from 'lucide-react';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { Apartment, Room } from '@/types';
-import { getErrorMessage } from '@/lib/utils/error';
+import { getErrorMessage } from '@/utils/error';
 
 const batchImportSteps = [
   {

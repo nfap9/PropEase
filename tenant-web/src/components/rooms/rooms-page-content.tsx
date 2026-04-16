@@ -6,9 +6,9 @@ import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { roomsApi, apartmentsApi, leasesApi } from '@/lib/api';
-import { getErrorMessage } from '@/lib/utils/error';
-import { useAuth } from '@/lib/auth/context';
+import { roomsApi, apartmentsApi, leasesApi } from '@/api';
+import { getErrorMessage } from '@/utils/error';
+import { useAuth } from '@/auth/context';
 import { Room, RoomStatus } from '@/types';
 import { Building2 } from 'lucide-react';
 

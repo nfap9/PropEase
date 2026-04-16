@@ -7,7 +7,7 @@ import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import type { MemberRole, Permission } from '@/types';
 import { ChevronDown, ChevronRight, Shield, Save } from 'lucide-react';
-import { tenantMessages } from '@/lib/i18n';
+import { tenantMessages } from '@/i18n';
 
 const ROLE_LABELS: Record<MemberRole, string> = {
   owner: tenantMessages.settings.team.roles.owner,

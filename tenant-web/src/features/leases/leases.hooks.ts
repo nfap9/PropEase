@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
-import { apartmentsApi, leasesApi } from '@/lib/api';
-import { getErrorMessage } from '@/lib/utils/error';
-import { filterEmptyStrings } from '@/lib/utils/form';
+import { apartmentsApi, leasesApi } from '@/api';
+import { getErrorMessage } from '@/utils/error';
+import { filterEmptyStrings } from '@/utils/form';
 import type { LeaseEditFormData } from './leases.schemas';
 
 interface UseLeasesDataOptions {

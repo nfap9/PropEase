@@ -8,9 +8,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Building2, Check } from 'lucide-react';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
-import { useAuth } from '@/lib/auth/context';
-import { organizationsApi } from '@/lib/api';
-import { getErrorMessage } from '@/lib/utils/error';
+import { useAuth } from '@/auth/context';
+import { organizationsApi } from '@/api';
+import { getErrorMessage } from '@/utils/error';
 import {
   Card,
   CardContent,
@@ -22,7 +22,7 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Textarea } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { DEFAULT_ORGANIZATION_HOME_PATH } from '@/lib/auth/redirect';
+import { DEFAULT_ORGANIZATION_HOME_PATH } from '@/auth/redirect';
 import { Organization } from '@/types';
 
 const createOrganizationSchema = z.object({

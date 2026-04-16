@@ -7,7 +7,7 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { ROOM_STATUS_CONFIG } from '@/lib/status-config';
+import { ROOM_STATUS_CONFIG } from '@/utils/status';
 import type { Room } from '@/types';
 import type { RoomStatus } from '@/types';
 import type { FloorRoomGroup } from '../apartment-detail.utils';

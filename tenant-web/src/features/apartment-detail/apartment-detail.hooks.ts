@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import type { UseFormReturn } from 'react-hook-form';
-import { apartmentsApi, roomsApi } from '@/lib/api';
-import { getErrorMessage } from '@/lib/utils/error';
-import { filterEmptyStrings } from '@/lib/utils/form';
+import { apartmentsApi, roomsApi } from '@/api';
+import { getErrorMessage } from '@/utils/error';
+import { filterEmptyStrings } from '@/utils/form';
 import type { Apartment, Room, RoomFacilities, RoomStatus } from '@/types';
 import type {
   ApartmentFormData,

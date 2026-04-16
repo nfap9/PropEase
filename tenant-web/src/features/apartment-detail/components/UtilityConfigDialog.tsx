@@ -18,8 +18,8 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { Loader2, Zap } from 'lucide-react';
-import { utilityConfigApi } from '@/lib/api';
-import { getErrorMessage } from '@/lib/utils/error';
+import { utilityConfigApi } from '@/api';
+import { getErrorMessage } from '@/utils/error';
 
 const utilityConfigSchema = z.object({
   water_price_per_unit: z.number().min(0, '单价不能为负'),

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { SUBSCRIPTION_STATUS_CONFIG } from '@/lib/status-config';
+import { SUBSCRIPTION_STATUS_CONFIG } from '@/utils/status';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Package,
@@ -15,9 +15,9 @@ import {
   Calendar,
   ShoppingCart,
 } from 'lucide-react';
-import { subscriptionsApi } from '@/lib/api';
-import { useAuth } from '@/lib/auth/context';
-import { tenantI18n, tenantMessages } from '@/lib/i18n';
+import { subscriptionsApi } from '@/api';
+import { useAuth } from '@/auth/context';
+import { tenantI18n, tenantMessages } from '@/i18n';
 
 const SUBSCRIPTION = {
   HEADING: 'subscription-heading',

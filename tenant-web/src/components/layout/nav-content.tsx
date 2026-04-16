@@ -9,10 +9,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Building2, ChevronRight, Settings } from 'lucide-react';
-import { useBrandConfig } from '@/lib/brand-config-context';
-import { useAuth } from '@/lib/auth/context';
+import { useBrandConfig } from '@/contexts/brand-config';
+import { useAuth } from '@/auth/context';
 import { usePermissions } from '@/hooks/use-permissions';
-import { canAccessRule } from '@/lib/permission-access';
+import { canAccessRule } from '@/utils/permission-access';
 import { NAV_ITEMS, SETTINGS_ITEMS } from './nav-config';
 import {
   SidebarMenu,
@@ -32,7 +32,7 @@ import { cn } from '@apartment-ultra/shared-ui/lib/utils';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { ChevronDown, LogOut } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { tenantMessages } from '@/lib/i18n';
+import { tenantMessages } from '@/i18n';
 
 interface NavContentProps {
   /** 导航项点击回调（用于移动端关闭 Sheet） */

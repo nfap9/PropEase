@@ -1,4 +1,4 @@
-import type { StorefrontServicePricing } from '@/lib/api/subscriptions';
+import type { StorefrontServicePricing } from '@/api/subscriptions';
 
 export interface PricingSummary {
   originalPrice: number;

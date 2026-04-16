@@ -3,7 +3,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Zap, Droplets } from 'lucide-react';
 import { TableActions, TableAction } from '@/components/common/table-actions';
-import { formatDate } from '@/lib/date-utils';
+import { formatDate } from '@/utils/date';
 import { UtilityReading } from '@/types';
 
 interface UseColumnsOptions {

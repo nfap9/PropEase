@@ -35,9 +35,9 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { cn } from '@apartment-ultra/shared-ui/lib/utils';
-import { adminMessages } from '@/lib/i18n';
+import { adminMessages } from '@/i18n';
 import { BreadcrumbNav } from './breadcrumb-nav';
-import { adminApiEndpoints } from '@/lib/api/admin-client';
+import { adminApiEndpoints } from '@/api/admin-client';
 
 const ADMIN_NAV = [
   { href: '/', label: adminMessages.layout.nav.dashboard, icon: LayoutDashboard },

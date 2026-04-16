@@ -4,16 +4,16 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { SplitSettingsPanel } from '@apartment-ultra/shared-ui/components/ui';
-import { adminApiEndpoints, AdminRole, AdminRoleUpdate } from '@/lib/api/admin-client';
-import { getErrorMessage } from '@/lib/utils/error';
+import { adminApiEndpoints, AdminRole, AdminRoleUpdate } from '@/api/admin-client';
+import { getErrorMessage } from '@/utils/error';
 import { AdminRoleList } from '@/components/admin/admin-role-list';
 import { AdminRoleDetailPanel } from '@/components/admin/admin-role-detail-panel';
 import { AdminRoleCreateDialog } from '@/components/admin/admin-role-create-dialog';
 import { AdminRoleDeleteDialog } from '@/components/admin/admin-role-delete-dialog';
-import { getAllAdminPermissionCodes } from '@/lib/constants/admin-permissions';
+import { getAllAdminPermissionCodes } from '@/constants/admin-permissions';
 import { togglePermissionCode } from './utils';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { adminMessages } from '@/lib/i18n';
+import { adminMessages } from '@/i18n';
 
 export default function AdminRolesPage() {
   const queryClient = useQueryClient();

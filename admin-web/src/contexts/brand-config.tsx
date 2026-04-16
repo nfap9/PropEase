@@ -2,7 +2,7 @@
 
 import { createContext, useContext, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { configApi, type BrandConfig } from '@/lib/api/config';
+import { configApi, type BrandConfig } from '@/api/config';
 
 const DEFAULT_BRAND: BrandConfig = {
   app_name: '公寓管理系统',

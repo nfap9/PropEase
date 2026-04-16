@@ -7,12 +7,12 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { ORDER_STATUS_CONFIG } from '@/lib/status-config';
+import { ORDER_STATUS_CONFIG } from '@/utils/status';
 import { ArrowLeft, Loader2, Zap } from 'lucide-react';
-import { subscriptionsApi } from '@/lib/api';
-import { useAuth } from '@/lib/auth/context';
+import { subscriptionsApi } from '@/api';
+import { useAuth } from '@/auth/context';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
-import { tenantI18n, tenantMessages } from '@/lib/i18n';
+import { tenantI18n, tenantMessages } from '@/i18n';
 
 const POLL_INTERVAL_MS = 2500;
 

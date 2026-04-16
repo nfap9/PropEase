@@ -4,7 +4,7 @@ import type {
   TenantNotificationDelivery,
   TenantReachabilityEventType,
 } from '@/types';
-import { tenantMessages } from '@/lib/i18n';
+import { tenantMessages } from '@/i18n';
 
 export type TenantSmsReachabilityStatus = 'ready' | 'missing_phone' | 'opted_out';
 

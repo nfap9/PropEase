@@ -3,7 +3,7 @@ import type {
   AdminUser,
   AdminUserCreate,
   AdminUserUpdate,
-} from '@/lib/api/admin-client';
+} from '@/api/admin-client';
 import type { CreateUserForm, EditUserForm } from './users.schemas';
 
 export function getDefaultCreateUserFormValues(): CreateUserForm {

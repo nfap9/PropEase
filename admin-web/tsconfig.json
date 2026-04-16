@@ -4,8 +4,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@apartment-ultra/api-contract": ["../packages/api-contract/src/index.ts"],
-      "@/components/*": ["./src/components/*"],
-      "@/lib/*": ["./src/lib/*"]
+      "@/components/*": ["./src/components/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

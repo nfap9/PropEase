@@ -7,7 +7,7 @@ import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
 import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { DataTable } from '@/components/common/data-table';
-import type { AdminUser } from '@/lib/api/admin-client';
+import type { AdminUser } from '@/api/admin-client';
 import { createAdminUsersColumns } from '../users.columns';
 import { useAdminUsersData } from '../users.hooks';
 import { toCreateUserPayload, toResetPasswordPayload, toUpdateUserPayload } from '../users.utils';

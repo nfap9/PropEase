@@ -2,7 +2,7 @@
 
 import { SelectableSideList } from '@apartment-ultra/shared-ui/components/ui';
 import type { MemberRole } from '@/types';
-import { tenantMessages } from '@/lib/i18n';
+import { tenantMessages } from '@/i18n';
 
 const ROLE_LABELS: Record<MemberRole, string> = {
   owner: tenantMessages.settings.team.roles.owner,

@@ -11,10 +11,10 @@ import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
-import { apartmentsApi } from '@/lib/api';
-import { useAuth } from '@/lib/auth/context';
-import { getErrorMessage } from '@/lib/utils/error';
-import { filterEmptyStrings } from '@/lib/utils/form';
+import { apartmentsApi } from '@/api';
+import { useAuth } from '@/auth/context';
+import { getErrorMessage } from '@/utils/error';
+import { filterEmptyStrings } from '@/utils/form';
 import { apartmentSchema, type ApartmentFormData } from '@/components/apartments';
 
 export default function NewApartmentPage() {

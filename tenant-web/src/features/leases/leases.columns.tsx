@@ -5,8 +5,8 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Ban, Pencil, Trash2 } from 'lucide-react';
 import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import { TableActions, type TableAction } from '@/components/common/table-actions';
-import { formatDate } from '@/lib/date-utils';
-import { LEASE_STATUS_CONFIG } from '@/lib/status-config';
+import { formatDate } from '@/utils/date';
+import { LEASE_STATUS_CONFIG } from '@/utils/status';
 import type { Lease } from '@/types';
 
 interface CreateLeaseColumnsOptions {

@@ -11,7 +11,7 @@ const { createMock, invalidateQueriesMock, successMock, errorMock } = vi.hoisted
   errorMock: vi.fn(),
 }));
 
-vi.mock('@/lib/api', () => ({
+vi.mock('@/api', () => ({
   utilitiesApi: {
     create: createMock,
   },

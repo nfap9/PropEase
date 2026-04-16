@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import type { FilterActive } from '../registered-users.schemas';
-import { adminMessages } from '@/lib/i18n';
+import { adminMessages } from '@/i18n';
 
 interface RegisteredUsersToolbarProps {
   activeFilter: FilterActive;

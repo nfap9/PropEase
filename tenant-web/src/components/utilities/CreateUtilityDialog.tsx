@@ -30,7 +30,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@apartment-ultra/shared-ui/components/ui';
 import { Apartment, Room, UtilityReading } from '@/types';
 import { Droplets, Zap } from 'lucide-react';
-import { utilitiesApi } from '@/lib/api';
+import { utilitiesApi } from '@/api';
 
 const optionalNumberField = z.union([z.number().min(0), z.nan().transform(() => undefined)]).optional();
 

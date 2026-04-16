@@ -28,12 +28,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { subscriptionsApi } from '@/lib/api';
-import { getErrorMessage } from '@/lib/utils/error';
-import { useAuth } from '@/lib/auth/context';
-import type { StorefrontService, StorefrontServicePricing } from '@/lib/api/subscriptions';
+import { subscriptionsApi } from '@/api';
+import { getErrorMessage } from '@/utils/error';
+import { useAuth } from '@/auth/context';
+import type { StorefrontService, StorefrontServicePricing } from '@/api/subscriptions';
 import { getPricingSummary } from './pricing';
-import { tenantI18n, tenantMessages } from '@/lib/i18n';
+import { tenantI18n, tenantMessages } from '@/i18n';
 
 const SUBSCRIPTION = {
   HEADING: 'subscription-purchase-heading',

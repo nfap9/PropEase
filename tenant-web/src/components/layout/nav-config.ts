@@ -13,8 +13,8 @@ import {
   MessageSquareMore,
 } from 'lucide-react';
 import { PERMISSIONS } from '@/hooks/use-permissions';
-import { tenantMessages } from '@/lib/i18n';
-import type { AccessRule } from '@/lib/permission-access';
+import { tenantMessages } from '@/i18n';
+import type { AccessRule } from '@/utils/permission-access';
 
 export interface NavItem extends AccessRule {
   href: string;

@@ -25,10 +25,10 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { ColumnDef } from '@tanstack/react-table';
-import { tenantsApi } from '@/lib/api';
-import { filterEmptyStrings } from '@/lib/utils/form';
-import { getErrorMessage } from '@/lib/utils/error';
-import { useAuth } from '@/lib/auth/context';
+import { tenantsApi } from '@/api';
+import { filterEmptyStrings } from '@/utils/form';
+import { getErrorMessage } from '@/utils/error';
+import { useAuth } from '@/auth/context';
 import { Tenant } from '@/types';
 import { Plus, Pencil, Trash2, Phone, User, Building2 } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';

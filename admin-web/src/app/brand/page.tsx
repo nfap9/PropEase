@@ -17,9 +17,9 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { adminApiEndpoints } from '@/lib/api/admin-client';
-import { getErrorMessage } from '@/lib/utils/error';
-import { adminMessages } from '@/lib/i18n';
+import { adminApiEndpoints } from '@/api/admin-client';
+import { getErrorMessage } from '@/utils/error';
+import { adminMessages } from '@/i18n';
 
 const schema = z.object({
   app_name: z.string().min(1, '请输入系统名称'),

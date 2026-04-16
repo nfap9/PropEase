@@ -8,9 +8,9 @@ import { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/common/data-table';
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Label, Skeleton, Switch, Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui';
 import { Textarea } from '@apartment-ultra/shared-ui/components/ui';
-import { tenantReachabilityApi } from '@/lib/api';
-import { useAuth } from '@/lib/auth/context';
-import { formatDateTime } from '@/lib/date-utils';
+import { tenantReachabilityApi } from '@/api';
+import { useAuth } from '@/auth/context';
+import { formatDateTime } from '@/utils/date';
 import {
   getDeliveryStatusLabel,
   getDeliveryStatusVariant,
@@ -18,9 +18,9 @@ import {
   getTenantReachabilityEventLabel,
   tenantReachabilityEventOptions,
   tenantReachabilityStatusOptions,
-} from '@/lib/tenant-reachability';
+} from '@/utils/tenant-reachability';
 import { MessageSquare, Send, ShieldOff } from 'lucide-react';
-import { tenantI18n, tenantMessages } from '@/lib/i18n';
+import { tenantI18n, tenantMessages } from '@/i18n';
 
 type EditableTemplateState = Record<
   TenantReachabilityEventType,

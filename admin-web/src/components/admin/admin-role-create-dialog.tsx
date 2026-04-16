@@ -23,7 +23,7 @@ import {
   FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { AdminPermissionCheckboxGroup } from './admin-permission-checkbox-group';
-import { adminMessages } from '@/lib/i18n';
+import { adminMessages } from '@/i18n';
 
 const schema = z.object({
   name: z.string().min(1, adminMessages.roles.createDialog.nameValidation),

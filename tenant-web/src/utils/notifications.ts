@@ -1,5 +1,5 @@
 import type { Notification, NotificationCategory } from '@apartment-ultra/api-contract';
-import { tenantMessages } from '@/lib/i18n';
+import { tenantMessages } from '@/i18n';
 
 const notificationTypeLabelMap: Record<string, string> = {
   lease_expiring: tenantMessages.notificationsPage.types.leaseExpiring,

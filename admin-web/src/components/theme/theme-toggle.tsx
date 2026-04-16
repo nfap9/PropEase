@@ -7,7 +7,7 @@
  * 使用运营后台的国际化文案
  */
 import { ThemeToggle as SharedThemeToggle } from '@apartment-ultra/shared-ui/components/ui';
-import { adminMessages } from '@/lib/i18n';
+import { adminMessages } from '@/i18n';
 
 export function ThemeToggle() {
   return (

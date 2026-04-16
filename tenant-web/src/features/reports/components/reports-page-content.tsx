@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { useAuth } from '@/lib/auth/context';
+import { useAuth } from '@/auth/context';
 import { useReportsData } from '../reports.hooks';
 import { getReportYearOptions, REPORTS } from '../reports.schemas';
 import { ReportsOverviewTab } from './reports-overview-tab';

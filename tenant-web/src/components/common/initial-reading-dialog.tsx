@@ -9,9 +9,9 @@ import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { FormDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { utilitiesApi } from '@/lib/api';
-import { filterEmptyStrings } from '@/lib/utils/form';
-import { getErrorMessage } from '@/lib/utils/error';
+import { utilitiesApi } from '@/api';
+import { filterEmptyStrings } from '@/utils/form';
+import { getErrorMessage } from '@/utils/error';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { Droplets, Zap } from 'lucide-react';
 

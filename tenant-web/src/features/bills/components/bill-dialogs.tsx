@@ -23,8 +23,8 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { formatDate } from '@/lib/date-utils';
-import { BILL_STATUS_CONFIG } from '@/lib/status-config';
+import { formatDate } from '@/utils/date';
+import { BILL_STATUS_CONFIG } from '@/utils/status';
 import type { Bill, BillFeeItem, Payment, PaymentMethod } from '@/types';
 import {
   BILLS,
@@ -38,7 +38,7 @@ import {
   getBillDetailDescription,
   getBillPaymentSummary,
 } from '../bills.utils';
-import { tenantI18n, tenantMessages } from '@/lib/i18n';
+import { tenantI18n, tenantMessages } from '@/i18n';
 
 export function BillDetailDialog({
   open,
