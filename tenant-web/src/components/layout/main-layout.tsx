@@ -32,15 +32,13 @@ export function MainLayout() {
         <div className="flex h-screen min-h-0 w-full flex-col overflow-hidden bg-transparent">
           <AppHeader />
           <main className="min-h-0 flex-1 overflow-hidden">
-            <div className="mx-auto flex h-full w-full max-w-[1600px] flex-1 flex-col px-4 py-5 md:px-6 md:py-6">
-              {showSidebar ? (
-                <WorkspaceLayout>
-                  <Outlet />
-                </WorkspaceLayout>
-              ) : (
+            {showSidebar ? (
+              <WorkspaceLayout>
                 <Outlet />
-              )}
-            </div>
+              </WorkspaceLayout>
+            ) : (
+              <Outlet />
+            )}
           </main>
         </div>
       </NavProvider>
