@@ -43,7 +43,7 @@ export default function NewApartmentPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       appToast.success('公寓创建成功');
-      navigate('/apartments');
+      navigate('/workspace/apartments');
     },
     onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
   });

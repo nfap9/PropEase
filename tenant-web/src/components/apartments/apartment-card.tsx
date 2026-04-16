@@ -30,7 +30,7 @@ export function ApartmentCard({ apartment, onEdit, onDelete }: ApartmentCardProp
     : 0;
 
   return (
-    <Link key={apartment.id} to={`/apartments/${apartment.id}`} className="block">
+    <Link key={apartment.id} to={`/workspace/apartments/${apartment.id}`} className="block">
       <Card className="h-full cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-3">

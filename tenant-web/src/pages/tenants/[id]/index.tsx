@@ -105,7 +105,7 @@ export default function TenantDetailPage() {
           <div className="flex flex-col">
             {apartment && (
               <Link
-                to={`/apartments/${apartment.id}`}
+                to={`/workspace/apartments/${apartment.id}`}
                 className="text-xs text-muted-foreground hover:underline"
               >
                 {apartment.name}

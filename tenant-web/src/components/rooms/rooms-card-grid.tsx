@@ -40,7 +40,7 @@ export function RoomCard({ room, apartmentName, onLease, onTerminate, onStatusCh
             <div className="font-bold text-foreground text-base truncate">{room.room_number}</div>
             {apartmentName && (
               <Link
-                to={`/apartments/${room.apartment_id}`}
+                to={`/workspace/apartments/${room.apartment_id}`}
                 className="text-[10px] text-muted-foreground hover:text-foreground hover:underline truncate block"
                 onClick={(e) => e.stopPropagation()}
               >

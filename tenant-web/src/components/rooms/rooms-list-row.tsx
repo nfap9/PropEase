@@ -37,7 +37,7 @@ export function RoomListRow({ room, apartmentName, onLease, onTerminate, onStatu
         <div className="font-medium text-foreground text-sm">{room.room_number}</div>
         {apartmentName && (
           <Link
-            to={`/apartments/${room.apartment_id}`}
+            to={`/workspace/apartments/${room.apartment_id}`}
             className="text-[10px] text-muted-foreground hover:text-foreground hover:underline"
           >
             {apartmentName}

@@ -35,7 +35,7 @@ export function useColumns({
       cell: ({ row }) => {
         const apartment = row.original.apartment;
         return apartment ? (
-          <Link to={`/apartments/${apartment.id}`} className="text-primary hover:underline">
+          <Link to={`/workspace/apartments/${apartment.id}`} className="text-primary hover:underline">
             {apartment.name}
           </Link>
         ) : (

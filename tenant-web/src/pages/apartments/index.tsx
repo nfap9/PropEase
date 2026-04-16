@@ -134,7 +134,7 @@ export default function ApartmentsPage() {
             <ApartmentSearchBar value={searchQuery} onChange={setSearchQuery} />
             <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
               <Button
-                onClick={() => navigate('/apartments/new')}
+                onClick={() => navigate('/workspace/apartments/new')}
                 data-testid="apartments-new-btn"
                 className="shrink-0"
               >
@@ -162,7 +162,7 @@ export default function ApartmentsPage() {
           ) : (
             <ApartmentEmptyState
               hasApartments={!!apartments && apartments.length > 0}
-              onCreateClick={() => navigate('/apartments/new')}
+              onCreateClick={() => navigate('/workspace/apartments/new')}
             />
           )}
         </div>
