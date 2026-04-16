@@ -10,7 +10,9 @@
     "./components/ui": "./src/components/ui/index.ts",
     "./hooks": "./src/hooks/index.ts",
     "./lib/utils": "./src/lib/utils/index.ts",
-    "./lib/i18n": "./src/lib/i18n/index.ts"
+    "./lib/i18n": "./src/lib/i18n/index.ts",
+    "./tokens": "./src/tokens/index.ts",
+    "./styles/theme.css": "./src/styles/theme.css"
   },
   "scripts": {
     "type-check": "tsc --noEmit",
