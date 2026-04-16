@@ -1,4 +1,3 @@
-'use client';
 
 import type { UseFormReturn } from 'react-hook-form';
 import { Gift } from 'lucide-react';
@@ -6,7 +5,7 @@ import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import {
-  DetailDrawer,
+  AppDrawer,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -31,11 +30,11 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import type { AdminPlan, AdminRegisteredUserDetail } from '@/lib/api/admin-client';
-import { formatDateTime } from '@/lib/date-utils';
-import { ORG_STATUS_CONFIG } from '@/lib/status-config';
+import type { AdminPlan, AdminRegisteredUserDetail } from '@/api/admin-client';
+import { formatDateTime } from '@/utils/date';
+import { ORG_STATUS_CONFIG } from '@/utils/status';
 import type { GiftSubscriptionForm } from '../registered-users.schemas';
-import { adminI18n, adminMessages } from '@/lib/i18n';
+import { adminI18n, adminMessages } from '@/i18n';
 
 type SelectedPricing = NonNullable<AdminPlan['pricing']>[number];
 
@@ -117,7 +116,7 @@ export function RegisteredUserDetailSheet({
   isDeletePending: boolean;
 }) {
   return (
-    <DetailDrawer
+    <AppDrawer
       open={open}
       onOpenChange={onOpenChange}
       title={adminMessages.registeredUsers.dialogs.detailTitle}
@@ -201,7 +200,7 @@ export function RegisteredUserDetailSheet({
           )}
         </div>
       ) : null}
-    </DetailDrawer>
+    </AppDrawer>
   );
 }
 

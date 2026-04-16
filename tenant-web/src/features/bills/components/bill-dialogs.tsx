@@ -1,9 +1,9 @@
-'use client';
 
 import type { UseFormReturn } from 'react-hook-form';
 import { Download, DollarSign, Share2 } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -22,8 +22,8 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { formatDate } from '@/lib/date-utils';
-import { BILL_STATUS_CONFIG } from '@/lib/status-config';
+import { formatDate } from '@/utils/date';
+import { BILL_STATUS_CONFIG } from '@/utils/status';
 import type { Bill, BillFeeItem, Payment, PaymentMethod } from '@/types';
 import {
   BILLS,
@@ -37,7 +37,7 @@ import {
   getBillDetailDescription,
   getBillPaymentSummary,
 } from '../bills.utils';
-import { tenantI18n, tenantMessages } from '@/lib/i18n';
+import { tenantI18n, tenantMessages } from '@/i18n';
 
 export function BillDetailDialog({
   open,
@@ -270,7 +270,13 @@ export function BillGenerateDialog({
           </div>
           <div className="space-y-2">
               <Label htmlFor="due_date">{tenantMessages.bills.dialogs.dueDateLabel}</Label>
-            <Input id="due_date" type="date" {...form.register('due_date')} />
+            <DateTimePicker
+              id="due_date"
+              mode="date"
+              value={form.watch('due_date')}
+              onChange={(value) => form.setValue('due_date', value)}
+              placeholder="选择到期日期"
+            />
             {form.formState.errors.due_date && (
               <p className="text-sm text-destructive">{form.formState.errors.due_date.message}</p>
             )}
@@ -341,11 +347,12 @@ export function BillPaymentDialog({
               <Label htmlFor="payment_date">
                 {tenantMessages.bills.dialogs.paymentDate} <span aria-hidden="true">*</span>
               </Label>
-              <Input
+              <DateTimePicker
                 id="payment_date"
-                type="date"
-                aria-required
-                {...form.register('payment_date')}
+                mode="date"
+                value={form.watch('payment_date')}
+                onChange={(value) => form.setValue('payment_date', value)}
+                placeholder="选择付款日期"
                 data-testid={BILLS.PAYMENT_DATE_INPUT}
               />
             </div>
@@ -372,11 +379,11 @@ export function BillPaymentDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="reference">{tenantMessages.bills.dialogs.reference}</Label>
-            <Input id="reference" {...form.register('reference')} />
+            <Input id="reference" placeholder="请输入交易号或参考号" {...form.register('reference')} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="notes">{tenantMessages.bills.dialogs.notesLabel}</Label>
-            <Input id="notes" {...form.register('notes')} />
+            <Input id="notes" placeholder="请输入备注" {...form.register('notes')} />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} data-testid={BILLS.CANCEL_BUTTON}>

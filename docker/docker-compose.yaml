@@ -1,17 +1,17 @@
 # Apartment Ultra Docker Compose 配置
 # ==================================================================
 # 使用方法:
-#   本地开发（推荐只启动中间件）:
-#     docker compose -f docker/docker-compose.middleware.yaml up -d
-#
 #   完整部署:
 #     docker compose -f docker/docker-compose.yaml --env-file .env.production up -d
 #
 #   本地完整部署（测试用）:
 #     docker compose -f docker/docker-compose.yaml --env-file docker/.env.docker up -d
+#
+#   可观测性服务（叠加使用）:
+#     docker compose -f docker/docker-compose.yaml -f docker/docker-compose.observability.yaml --env-file docker/.env.docker up -d
 # ==================================================================
 
-name: apartment-ultra-prod
+name: apartment-ultra
 
 services:
   postgres:
@@ -74,8 +74,8 @@ services:
     container_name: apartment_ultra_api
     environment:
       NODE_ENV: production
-      IS_DEV: ${IS_DEV:-false}
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-apartment_ultra}
+      REDIS_URL: redis://redis:6379
       SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
       CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
       DEBUG: "false"
@@ -106,7 +106,7 @@ services:
         max-size: "50m"
         max-file: "5"
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8000/health"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -120,13 +120,12 @@ services:
     image: apartment-ultra-tenant-web:${TENANT_WEB_IMAGE_TAG:-latest}
     build:
       context: ..
-      dockerfile: tenant-web/Dockerfile.prod
+      dockerfile: tenant-web/Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}
+        VITE_API_URL: ${VITE_API_URL:?VITE_API_URL is required}
     container_name: apartment_ultra_tenant_web
     environment:
       NODE_ENV: production
-      API_URL_SERVER: http://api:8000/api/v1
     ports:
       - "${TENANT_WEB_PORT:-3000}:3000"
     depends_on:
@@ -143,22 +142,21 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${TENANT_WEB_MEMORY:-1G}
+          memory: ${TENANT_WEB_MEMORY:-512M}
 
-  # 运营端 (admin-web) - 8080 端口独立访问
+  # 运营端 (admin-web)
   admin-web:
     image: apartment-ultra-admin-web:${ADMIN_WEB_IMAGE_TAG:-latest}
     build:
       context: ..
-      dockerfile: admin-web/Dockerfile.prod
+      dockerfile: admin-web/Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}
+        VITE_API_URL: ${VITE_API_URL:?VITE_API_URL is required}
     container_name: apartment_ultra_admin
     environment:
       NODE_ENV: production
-      API_URL_SERVER: http://api:8000/api/v1
     ports:
-      - "${ADMIN_WEB_PORT:-8080}:3001"
+      - "${ADMIN_WEB_PORT:-8080}:8080"
     depends_on:
       api:
         condition: service_healthy
@@ -173,7 +171,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${ADMIN_MEMORY:-1G}
+          memory: ${ADMIN_MEMORY:-512M}
 
   nginx:
     image: nginx:alpine

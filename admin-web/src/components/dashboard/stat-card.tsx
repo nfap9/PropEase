@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardContent } from '@apartment-ultra/shared-ui/components/ui';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 interface StatCardProps {
   title: string;

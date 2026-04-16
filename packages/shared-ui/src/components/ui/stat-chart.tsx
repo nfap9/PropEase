@@ -1,4 +1,3 @@
-'use client';
 
 import * as React from 'react';
 import {
@@ -87,7 +86,7 @@ export function StatChart<TData extends StatChartDataItem>({
           <RechartsBarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barGap={10}>
             <CartesianGrid strokeDasharray="4 4" stroke="hsl(var(--border))" vertical={false} />
             <XAxis
-              dataKey={xKey}
+              dataKey={xKey as string}
               axisLine={false}
               tickLine={false}
               tickMargin={10}

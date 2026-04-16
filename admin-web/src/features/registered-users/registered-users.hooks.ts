@@ -5,15 +5,15 @@ import {
   type AdminPlan,
   type AdminRegisteredUser,
   type AdminRegisteredUserDetail,
-} from '@/lib/api/admin-client';
-import { getErrorMessage } from '@/lib/utils/error';
+} from '@/api/admin-client';
+import { getErrorMessage } from '@/utils/error';
 import type { FilterActive, GiftSubscriptionForm } from './registered-users.schemas';
 import {
   buildGiftSubscriptionPayload,
   getGiftEligiblePlans,
   getRegisteredUsersActiveParam,
 } from './registered-users.utils';
-import { adminMessages } from '@/lib/i18n';
+import { adminMessages } from '@/i18n';
 
 interface UseRegisteredUsersDataOptions {
   activeFilter: FilterActive;

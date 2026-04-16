@@ -1,4 +1,3 @@
-'use client';
 
 import { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -14,8 +13,8 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { LeaseSigningDrawer } from './lease-signing-drawer';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
-import { useAuth } from '@/lib/auth/context';
-import { toDateInputValue } from '@/lib/date-utils';
+import { useAuth } from '@/auth/context';
+import { toDateInputValue } from '@/utils/date';
 import { DataTable } from '@/components/common/data-table';
 import type { Lease } from '@/types';
 import { createLeaseColumns } from '../leases.columns';
@@ -133,8 +132,7 @@ export function LeasesPageContent() {
     <PermissionPageGuard>
       <MainLayout>
         <ListPageLayout
-          title="租约管理"
-          titleTestId={LEASES.HEADING}
+          title=""
           maxWidth="full"
           className="w-full"
           actions={
@@ -153,6 +151,7 @@ export function LeasesPageContent() {
               columns={columns}
               data={filteredLeases}
               testid={LEASES.LIST}
+              useCard={false}
               toolbar={
                 <LeaseFilters
                   apartments={apartments?.map((apartment) => ({ id: apartment.id, name: apartment.name })) ?? []}

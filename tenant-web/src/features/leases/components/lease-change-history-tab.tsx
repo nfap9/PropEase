@@ -1,4 +1,3 @@
-'use client';
 
 import { useLeaseChangeLogs } from '../hooks/use-lease-operations';
 import { LeaseChangeLogs } from './lease-change-logs';

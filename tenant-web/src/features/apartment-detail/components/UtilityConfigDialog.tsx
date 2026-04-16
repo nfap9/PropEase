@@ -1,4 +1,3 @@
-'use client';
 
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,8 +17,8 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { Loader2, Zap } from 'lucide-react';
-import { utilityConfigApi } from '@/lib/api';
-import { getErrorMessage } from '@/lib/utils/error';
+import { utilityConfigApi } from '@/api';
+import { getErrorMessage } from '@/utils/error';
 
 const utilityConfigSchema = z.object({
   water_price_per_unit: z.number().min(0, '单价不能为负'),
@@ -121,7 +120,7 @@ export function UtilityConfigDialog({
                 id="water_price"
                 type="number"
                 step="0.01"
-                placeholder="如: 5.00"
+                placeholder="请输入水费单价"
                 {...form.register('water_price_per_unit', { valueAsNumber: true })}
               />
               {form.formState.errors.water_price_per_unit && (
@@ -137,7 +136,7 @@ export function UtilityConfigDialog({
                 id="electricity_price"
                 type="number"
                 step="0.01"
-                placeholder="如: 1.00"
+                placeholder="请输入电费单价"
                 {...form.register('electricity_price_per_unit', { valueAsNumber: true })}
               />
               {form.formState.errors.electricity_price_per_unit && (

@@ -1,9 +1,8 @@
-'use client';
 
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '@/lib/auth/context';
-import { invalidateOrgScopedQueries } from '@/lib/query-utils';
+import { useAuth } from '@/auth/context';
+import { invalidateOrgScopedQueries } from '@/hooks/query-utils';
 import {
   Select,
   SelectContent,
@@ -14,12 +13,12 @@ import {
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Building2, Plus } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { Organization } from '@/types';
 
 export function OrgSelector() {
   const { organization, organizations, setOrganization } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [pendingOrg, setPendingOrg] = useState<Organization | null>(null);
 
@@ -34,7 +33,7 @@ export function OrgSelector() {
       setOrganization(pendingOrg);
       invalidateOrgScopedQueries(queryClient);
       setPendingOrg(null);
-      router.refresh();
+      navigate(0); // refresh current route
     }
   };
 
@@ -44,7 +43,7 @@ export function OrgSelector() {
 
   if (organizations.length === 0) {
     return (
-      <Button variant="outline" size="sm" onClick={() => router.push('/organizations/new')} className="gap-2">
+      <Button variant="outline" size="sm" onClick={() => navigate('/organizations/new')} className="gap-2">
         <Plus className="h-4 w-4" />
         创建团队
       </Button>

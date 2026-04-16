@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
-import { billsApi, billFeeItemsApi } from '@/lib/api';
-import { shareBillSummary } from '@/lib/bills/share';
-import { getErrorMessage } from '@/lib/utils/error';
-import { filterEmptyStrings } from '@/lib/utils/form';
+import { billsApi, billFeeItemsApi } from '@/api';
+import { shareBillSummary } from '@/features/bills/share';
+import { getErrorMessage } from '@/utils/error';
+import { filterEmptyStrings } from '@/utils/form';
 import type { Bill, BillFeeItem, BillStatus } from '@/types';
 import type { GenerateBillsFormData, PaymentFormData } from './bills.schemas';
 import { buildBillPdfFilename, buildBillsExcelFilename, downloadBlob } from './bills.utils';
-import { tenantMessages } from '@/lib/i18n';
+import { tenantMessages } from '@/i18n';
 
 interface UseBillsDataOptions {
   orgId?: string;

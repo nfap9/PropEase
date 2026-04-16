@@ -2,10 +2,11 @@ import { Router } from 'express';
 import { adminAuthRouter } from './auth.js';
 import { adminInitRouter } from './init.js';
 import { adminServiceProductsRouter } from './service-products.js';
-import { adminStorefrontsRouter } from './storefronts.js';
 import { requireAdmin } from '../../../middlewares/requireAdmin.js';
 import { requireSystemInitialized } from '../../../middlewares/requireSystemInitialized.js';
 import * as ctrl from './admin.controller.js';
+import { billingAdminOrdersRouter } from '../billing/admin/orders.js';
+import { billingAdminUsagePricingRouter } from '../billing/admin/usage-pricing.js';
 
 const router: Router = Router();
 
@@ -21,8 +22,6 @@ router.use(requireAdmin);
 
 // 服务产品管理
 router.use(adminServiceProductsRouter);
-// 商店配置管理
-router.use(adminStorefrontsRouter);
 
 // --- users ---
 router.get('/users/me', ctrl.getMe);
@@ -64,7 +63,10 @@ router.get('/stats', ctrl.getStats);
 router.get('/income', ctrl.getAdminIncome);
 router.get('/usage-pricing', ctrl.getUsagePricing);
 router.put('/usage-pricing', ctrl.updateUsagePricing);
-router.get('/usage-orders', ctrl.listUsageOrders);
+
+// --- billing (new unified) ---
+router.use('/billing/orders', billingAdminOrdersRouter);
+router.use('/billing/usage-pricing', billingAdminUsagePricingRouter);
 
 // --- platform config ---
 router.get('/platform-config', ctrl.getPlatformConfig);

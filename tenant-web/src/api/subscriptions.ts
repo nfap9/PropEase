@@ -1,0 +1,95 @@
+import api from './client';
+import {
+  OrganizationSubscription,
+  SubscriptionOrder,
+  SubscribeRequest,
+  SubscriptionStatus,
+  OrganizationUsage,
+  StorefrontView,
+  StorefrontViewPricing,
+  StorefrontViewService,
+} from '@/types';
+
+export type StorefrontServicePricing = StorefrontViewPricing;
+export type StorefrontService = StorefrontViewService;
+
+export const subscriptionsApi = {
+  // Storefront
+  getStorefront: async (storefrontId?: string): Promise<StorefrontView> => {
+    const response = await api.get<StorefrontView>('/subscriptions/storefront', {
+      params: storefrontId ? { storefront_id: storefrontId } : undefined,
+    });
+    return response.data;
+  },
+
+  // Organization Subscription
+  getSubscription: async (orgId: string): Promise<OrganizationSubscription> => {
+    const response = await api.get<OrganizationSubscription>(
+      `/subscriptions/organizations/${orgId}/subscription`
+    );
+    return response.data;
+  },
+
+  getSubscriptionStatus: async (orgId: string): Promise<SubscriptionStatus> => {
+    const response = await api.get<SubscriptionStatus>(
+      `/subscriptions/organizations/${orgId}/subscription/status`
+    );
+    return response.data;
+  },
+
+  getUsage: async (orgId: string): Promise<OrganizationUsage> => {
+    const response = await api.get<OrganizationUsage>(
+      `/organizations/${orgId}/usage`
+    );
+    return response.data;
+  },
+
+  subscribe: async (orgId: string, data: SubscribeRequest): Promise<OrganizationSubscription> => {
+    const response = await api.post<OrganizationSubscription>(
+      `/subscriptions/organizations/${orgId}/subscription`,
+      data
+    );
+    return response.data;
+  },
+
+  // Orders
+  createOrder: async (orgId: string, data: { service_id: string; billing_months?: number }): Promise<SubscriptionOrder> => {
+    const response = await api.post<SubscriptionOrder>(
+      `/subscriptions/organizations/${orgId}/orders`,
+      data
+    );
+    return response.data;
+  },
+
+  getOrder: async (orgId: string, orderId: string): Promise<SubscriptionOrder> => {
+    const response = await api.get<SubscriptionOrder>(
+      `/subscriptions/organizations/${orgId}/orders/${orderId}`
+    );
+    return response.data;
+  },
+
+  previewOrder: async (orgId: string, data: { service_id: string; billing_months?: number }): Promise<{
+    action_type: 'purchase' | 'renew' | 'upgrade' | 'downgrade';
+    service_name: string;
+    current_service_name: string | null;
+    original_price: number;
+    credit: number;
+    final_price: number;
+    billing_months: number;
+  }> => {
+    const response = await api.post(`/subscriptions/organizations/${orgId}/orders/preview`, {
+      service_id: data.service_id,
+      billing_months: data.billing_months ?? 1,
+    });
+    return response.data;
+  },
+
+  simulatePay: async (orgId: string, orderId: string): Promise<{ message: string; order_id: string }> => {
+    const response = await api.post<{ message: string; order_id: string }>(
+      `/subscriptions/organizations/${orgId}/orders/${orderId}/simulate-pay`
+    );
+    return response.data;
+  },
+};
+
+export default subscriptionsApi;

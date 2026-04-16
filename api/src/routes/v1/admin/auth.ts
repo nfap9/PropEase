@@ -3,6 +3,10 @@ import { z } from 'zod';
 import { createAppError } from '../../../utils/appError.js';
 import { defaultAdminService } from '../../../services/admin.service.js';
 import { auditLog } from '../../../utils/audit.js';
+import { loginRateLimit } from '../../../middlewares/rateLimit.js';
+import { decodeToken, getTokenRemainingTtl } from '../../../utils/jwt.js';
+import { addToBlacklist } from '../../../lib/redis.js';
+import { requireAdmin } from '../../../middlewares/requireAdmin.js';
 
 const router: Router = Router();
 
@@ -11,7 +15,7 @@ const LoginSchema = z.object({
   password: z.string().min(1),
 });
 
-router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/login', loginRateLimit, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = LoginSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -24,6 +28,41 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
       adminUsername: parsed.data.username,
     });
     res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * @openapi
+ * /admin/auth/logout:
+ *   post:
+ *     summary: 运营后台退出登录
+ *     tags: [运营后台-认证]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 退出成功
+ *       401:
+ *         description: 未认证
+ */
+router.post('/logout', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const auth = req.headers.authorization;
+    if (!auth || !auth.startsWith('Bearer ')) {
+      return next(createAppError(401, 'Could not validate credentials'));
+    }
+    const token = auth.slice(7);
+    const payload = decodeToken(token);
+    const jti = payload?.jti as string | undefined;
+    if (jti) {
+      const ttl = getTokenRemainingTtl(token);
+      if (ttl > 0) {
+        await addToBlacklist(jti, ttl);
+      }
+    }
+    res.json({ message: '退出成功' });
   } catch (e) {
     next(e);
   }

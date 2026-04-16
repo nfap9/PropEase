@@ -10,7 +10,7 @@
 #
 # 环境变量:
 #   REGISTRY         - Docker Registry 地址 (默认: 无)
-#   NEXT_PUBLIC_API_URL - 前端 API 地址 (或从 .env.production 读取)
+#   VITE_API_URL     - 前端 API 地址 (或从 .env.production 读取)
 #   PLATFORM         - 目标平台 (默认: linux/amd64)
 # =========================================
 
@@ -95,14 +95,14 @@ echo -e "    - ${IMAGE_ADMIN_WEB}:${TAG}"
 echo ""
 
 # 获取 API URL
-if [ -z "$NEXT_PUBLIC_API_URL" ]; then
+if [ -z "$VITE_API_URL" ]; then
     if [ -f ".env.production" ]; then
-        NEXT_PUBLIC_API_URL=$(grep "^NEXT_PUBLIC_API_URL=" .env.production | cut -d'=' -f2-)
+        VITE_API_URL=$(grep "^VITE_API_URL=" .env.production | cut -d'=' -f2-)
     fi
 fi
 
-if [ -z "$NEXT_PUBLIC_API_URL" ] && ([ "$SAVE_IMAGES" = true ] || [ "$PUSH_IMAGES" = true ]); then
-    log_warn "NEXT_PUBLIC_API_URL 未设置，前端镜像构建可能失败"
+if [ -z "$VITE_API_URL" ] && ([ "$SAVE_IMAGES" = true ] || [ "$PUSH_IMAGES" = true ]); then
+    log_warn "VITE_API_URL 未设置，前端镜像构建可能失败"
 fi
 
 # 预拉取基础镜像
@@ -125,8 +125,8 @@ docker buildx build \
     --platform ${PLATFORM} \
     --load \
     ${NO_CACHE} \
-    --build-arg NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL}" \
-    -f tenant-web/Dockerfile.prod \
+    --build-arg VITE_API_URL="${VITE_API_URL}" \
+    -f tenant-web/Dockerfile \
     -t ${IMAGE_TENANT_WEB}:${TAG} \
     .
 
@@ -136,8 +136,8 @@ docker buildx build \
     --platform ${PLATFORM} \
     --load \
     ${NO_CACHE} \
-    --build-arg NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL}" \
-    -f admin-web/Dockerfile.prod \
+    --build-arg VITE_API_URL="${VITE_API_URL}" \
+    -f admin-web/Dockerfile \
     -t ${IMAGE_ADMIN_WEB}:${TAG} \
     .
 

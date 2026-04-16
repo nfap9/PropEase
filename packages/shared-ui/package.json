@@ -20,6 +20,7 @@
     "@apartment-ultra/api-contract": "workspace:*",
     "@apartment-ultra/web-api-client": "workspace:*",
     "@hookform/resolvers": "catalog:",
+    "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "catalog:",
     "@radix-ui/react-avatar": "catalog:",
     "@radix-ui/react-checkbox": "catalog:",
@@ -39,9 +40,10 @@
     "clsx": "catalog:",
     "date-fns": "catalog:",
     "lucide-react": "catalog:",
-    "next-themes": "catalog:",
     "react": "catalog:",
+    "react-dom": "catalog:",
     "react-hook-form": "catalog:",
+    "react-router-dom": "catalog:",
     "recharts": "catalog:",
     "sonner": "catalog:",
     "tailwind-merge": "catalog:",
@@ -49,7 +51,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "next": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
@@ -58,7 +59,6 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
   }

@@ -1,13 +1,12 @@
-'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { KeyRound, Pencil, Trash2 } from 'lucide-react';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import { TableActions } from '@/components/common/table-actions';
-import { formatDateTime } from '@/lib/date-utils';
-import { ORG_STATUS_CONFIG } from '@/lib/status-config';
-import type { AdminUser } from '@/lib/api/admin-client';
-import { adminMessages } from '@/lib/i18n';
+import { formatDateTime } from '@/utils/date';
+import { ORG_STATUS_CONFIG } from '@/utils/status';
+import type { AdminUser } from '@/api/admin-client';
+import { adminMessages } from '@/i18n';
 
 interface CreateAdminUsersColumnsOptions {
   onEdit: (user: AdminUser) => void;
@@ -44,7 +43,7 @@ export function createAdminUsersColumns({
       minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_active ? ORG_STATUS_CONFIG.active : ORG_STATUS_CONFIG.inactive;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
     {

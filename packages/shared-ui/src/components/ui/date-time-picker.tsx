@@ -1,4 +1,3 @@
-'use client';
 
 import * as React from 'react';
 import {
@@ -537,7 +536,7 @@ export function DateTimePicker({
         aria-required={required}
         data-testid={dataTestId}
         className={cn(
-          'border-input flex h-9 w-full items-center justify-between rounded-md bg-transparent px-3 py-2 text-sm shadow-sm transition-colors',
+          'border border-input flex h-9 w-full items-center justify-between rounded-md bg-transparent px-3 py-2 text-sm shadow-sm transition-colors',
           'focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-1',
           'disabled:cursor-not-allowed disabled:opacity-50',
           open && 'border-ring ring-ring ring-1',

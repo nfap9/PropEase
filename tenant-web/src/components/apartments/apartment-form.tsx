@@ -1,4 +1,3 @@
-'use client';
 
 import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
@@ -15,13 +14,11 @@ export const apartmentSchema = z.object({
   land_area: z.number().min(0).optional(),
   total_area: z.number().min(0).optional(),
   // 上游信息
-  landlord_name: z.string().optional(),
+  landlord_name: z.string().min(1, '请输入房东姓名'),
   landlord_contact: z.string().optional(),
-  contract_start: z.string().optional(),
-  contract_end: z.string().optional(),
-  landlord_rent: z.number().min(0).optional(),
-  // 经营成本
-  operating_cost: z.number().min(0).optional(),
+  contract_start: z.string().min(1, '请选择合同开始时间'),
+  contract_end: z.string().min(1, '请选择合同结束时间'),
+  landlord_rent: z.number().min(0, '请输入房东租金'),
 });
 
 export type ApartmentFormData = z.infer<typeof apartmentSchema>;
@@ -54,22 +51,26 @@ export function ApartmentForm({
   return (
     <form onSubmit={form.handleSubmit(onSubmit ?? (() => {}))} className="space-y-4" id={formId}>
       <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}name`}>公寓名称</Label>
+        <Label htmlFor={`${idPrefix}name`} required>
+          公寓名称
+        </Label>
         <Input
           id={`${idPrefix}name`}
           {...form.register('name')}
-          placeholder="例如：阳光公寓A栋"
+          placeholder="请输入公寓名称"
         />
         {form.formState.errors.name && (
           <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
         )}
       </div>
       <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}address`}>地址</Label>
+        <Label htmlFor={`${idPrefix}address`} required>
+          地址
+        </Label>
         <Input
           id={`${idPrefix}address`}
           {...form.register('address')}
-          placeholder="例如：北京市朝阳区xxx路xxx号"
+          placeholder="请输入公寓地址"
         />
         {form.formState.errors.address && (
           <p className="text-sm text-destructive">{form.formState.errors.address.message}</p>
@@ -87,7 +88,7 @@ export function ApartmentForm({
             type="number"
             min={1}
             {...numberRegister('floors', form)}
-            placeholder="如：5"
+            placeholder="请输入楼层数"
           />
         </div>
         <div className="space-y-2">
@@ -98,7 +99,7 @@ export function ApartmentForm({
             min={0}
             step={0.01}
             {...numberRegister('land_area', form)}
-            placeholder="如：2.5"
+            placeholder="请输入用地面积"
           />
         </div>
         <div className="space-y-2">
@@ -109,8 +110,18 @@ export function ApartmentForm({
             min={0}
             step={0.01}
             {...numberRegister('total_area', form)}
-            placeholder="如：500"
+            placeholder="请输入总面积"
           />
+        </div>
+      </div>
+
+      {/* 分割线 */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">上游信息</span>
         </div>
       </div>
 

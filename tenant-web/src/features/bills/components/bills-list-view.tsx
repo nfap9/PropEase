@@ -1,4 +1,3 @@
-'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { AlertCircle, Building2, ChevronDown, Download, FilePlus, FileSpreadsheet } from 'lucide-react';
@@ -25,7 +24,7 @@ import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import type { Bill, BillStatus } from '@/types';
 import { BILLS } from '../bills.schemas';
 import type { BillStats } from '../bills.utils';
-import { tenantMessages } from '@/lib/i18n';
+import { tenantMessages } from '@/i18n';
 
 interface BillsListViewProps {
   orgId?: string;
@@ -64,8 +63,7 @@ export function BillsListView({
 
   return (
     <ListPageLayout
-      title={tenantMessages.bills.list.heading}
-      titleTestId={BILLS.HEADING}
+      title=""
       maxWidth="full"
       className="w-full"
     >
@@ -107,6 +105,7 @@ export function BillsListView({
             columns={columns}
             data={bills}
             testid={BILLS.LIST}
+            useCard={false}
             toolbar={
               <PageToolbar className="justify-between gap-4">
                 <div className="flex items-center gap-4">

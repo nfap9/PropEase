@@ -44,6 +44,7 @@ export interface BillRepository {
   delete(id: string): Promise<void>;
   getLeaseIdsByOrg(orgId: string): Promise<string[]>;
   findByLeaseAndPeriod(leaseId: string, year: number, month: number): Promise<Bill | null>;
+  countByOrgId(orgId: string): Promise<number>;
 }
 
 /**
@@ -146,6 +147,12 @@ export function createBillRepository(db: DbClient): BillRepository {
     findByLeaseAndPeriod: async (leaseId: string, year: number, month: number) => {
       return db.bill.findFirst({
         where: { lease_id: leaseId, bill_year: year, bill_month: month },
+      });
+    },
+
+    countByOrgId: async (orgId: string) => {
+      return db.bill.count({
+        where: { lease: { room: { apartment: { organization_id: orgId } } } },
       });
     },
   };

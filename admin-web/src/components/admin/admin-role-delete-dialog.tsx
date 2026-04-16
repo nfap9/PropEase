@@ -1,8 +1,7 @@
-'use client';
 
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
-import type { AdminRole } from '@/lib/api/admin-client';
-import { adminI18n, adminMessages } from '@/lib/i18n';
+import type { AdminRole } from '@/api/admin-client';
+import { adminI18n, adminMessages } from '@/i18n';
 
 export interface AdminRoleDeleteDialogProps {
   open: boolean;

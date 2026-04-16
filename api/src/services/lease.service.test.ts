@@ -19,6 +19,12 @@ vi.mock('../lib/prisma.js', () => ({
     notification: {
       create: vi.fn(),
     },
+    lease: {
+      findFirst: vi.fn(), // 防止 billService.createInitialBill 警告
+    },
+    bill: {
+      findUnique: vi.fn().mockResolvedValue(null), // 防止 sendBillGenerated 警告
+    },
   },
 }));
 

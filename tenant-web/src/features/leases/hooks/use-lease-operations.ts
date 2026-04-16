@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
-import { leasesApi } from '@/lib/api';
-import { getErrorMessage } from '@/lib/utils/error';
+import { leasesApi } from '@/api';
+import { getErrorMessage } from '@/utils/error';
 import type {
   ChangeRoomFormData,
   RenewFormData,

@@ -1,10 +1,9 @@
-'use client';
 
 import { Check, Loader2, Settings2 } from 'lucide-react';
 import type { UseFormReturn } from 'react-hook-form';
 import { ApartmentForm } from '@/components/apartments';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
-import { EditRoomDialog } from '@/app/rooms/components/EditRoomDialog';
+import { EditRoomDialog } from '@/components/rooms/EditRoomDialog';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { WizardDialog } from '@apartment-ultra/shared-ui/components/ui';
@@ -116,8 +115,8 @@ export function CreateRoomDialog({
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <FormField label="房间号 *" htmlFor="room_number" error={form.formState.errors.room_number?.message}>
-                <Input id="room_number" {...form.register('room_number')} />
+              <FormField label="房间号" htmlFor="room_number" required error={form.formState.errors.room_number?.message}>
+                <Input id="room_number" placeholder="请输入房间号" {...form.register('room_number')} />
               </FormField>
               <div className="space-y-2">
                 <Label htmlFor="layout">户型</Label>
@@ -138,20 +137,21 @@ export function CreateRoomDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <FormField label="面积 (m²)" htmlFor="area">
-                <Input id="area" type="number" step="0.01" {...form.register('area', { valueAsNumber: true })} />
+                <Input id="area" type="number" step="0.01" placeholder="请输入面积" {...form.register('area', { valueAsNumber: true })} />
               </FormField>
-              <FormField label="月租 (元) *" htmlFor="monthly_rent" error={form.formState.errors.monthly_rent?.message}>
+              <FormField label="月租 (元)" htmlFor="monthly_rent" required error={form.formState.errors.monthly_rent?.message}>
                 <Input
                   id="monthly_rent"
                   type="number"
                   step="0.01"
+                  placeholder="请输入月租金额"
                   {...form.register('monthly_rent', { valueAsNumber: true })}
                 />
               </FormField>
             </div>
 
             <FormField label="备注" htmlFor="notes">
-              <Input id="notes" {...form.register('notes')} />
+              <Input id="notes" placeholder="请输入备注" {...form.register('notes')} />
             </FormField>
 
             <div className="space-y-2">
@@ -281,23 +281,25 @@ export function BatchCreateRoomDialog({
         >
             <div className="grid grid-cols-3 gap-4">
               <FormField label="楼层" htmlFor="floors" error={form.formState.errors.floors?.message}>
-                <Input id="floors" placeholder="如: 1,2,3 或 1-5" {...form.register('floors')} />
+                <Input id="floors" placeholder="请输入楼层号" {...form.register('floors')} />
               </FormField>
-              <FormField label="起始号" htmlFor="start_number" error={form.formState.errors.start_number?.message}>
+              <FormField label="起始号" htmlFor="start_number" required error={form.formState.errors.start_number?.message}>
                 <Input
                   id="start_number"
                   type="number"
                   min="1"
                   max="99"
+                  placeholder="请输入起始号"
                   {...form.register('start_number', { valueAsNumber: true })}
                 />
               </FormField>
-              <FormField label="结束号" htmlFor="end_number" error={form.formState.errors.end_number?.message}>
+              <FormField label="结束号" htmlFor="end_number" required error={form.formState.errors.end_number?.message}>
                 <Input
                   id="end_number"
                   type="number"
                   min="1"
                   max="99"
+                  placeholder="请输入结束号"
                   {...form.register('end_number', { valueAsNumber: true })}
                 />
               </FormField>
@@ -334,24 +336,26 @@ export function BatchCreateRoomDialog({
                 </Select>
               </div>
               <FormField label="面积 (m²)" htmlFor="batch-area">
-                <Input id="batch-area" type="number" step="0.01" {...form.register('area', { valueAsNumber: true })} />
+                <Input id="batch-area" type="number" step="0.01" placeholder="请输入面积" {...form.register('area', { valueAsNumber: true })} />
               </FormField>
               <FormField
-                label="月租 (元) *"
+                label="月租 (元)"
                 htmlFor="batch-monthly_rent"
+                required
                 error={form.formState.errors.monthly_rent?.message}
               >
                 <Input
                   id="batch-monthly_rent"
                   type="number"
                   step="0.01"
+                  placeholder="请输入月租金额"
                   {...form.register('monthly_rent', { valueAsNumber: true })}
                 />
               </FormField>
             </div>
 
             <FormField label="备注" htmlFor="batch-notes">
-              <Input id="batch-notes" {...form.register('notes')} />
+              <Input id="batch-notes" placeholder="请输入备注" {...form.register('notes')} />
             </FormField>
         </form>
       ) : (
@@ -595,16 +599,20 @@ function FormField({
   label,
   htmlFor,
   error,
+  required,
   children,
 }: {
   label: string;
   htmlFor: string;
   error?: string;
+  required?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={htmlFor}>{label}</Label>
+      <Label htmlFor={htmlFor} required={required}>
+        {label}
+      </Label>
       {children}
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </div>

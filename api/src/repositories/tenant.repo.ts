@@ -8,7 +8,9 @@ import { prisma } from '../lib/prisma.js';
 export interface TenantRepository {
   findById(id: string): Promise<Tenant | null>;
   findByIdAndOrg(id: string, orgId: string): Promise<Tenant | null>;
+  findByIds(ids: string[]): Promise<Tenant[]>;
   findByOrgId(orgId: string, search?: string): Promise<Tenant[]>;
+  countByOrgId(orgId: string): Promise<number>;
   create(data: Prisma.TenantCreateInput): Promise<Tenant>;
   update(id: string, data: Prisma.TenantUpdateInput): Promise<Tenant>;
   delete(id: string): Promise<void>;
@@ -26,6 +28,14 @@ export function createTenantRepository(db: DbClient): TenantRepository {
 
     findByIdAndOrg: async (id: string, orgId: string) => {
       return db.tenant.findFirst({ where: { id, organization_id: orgId } });
+    },
+
+    findByIds: async (ids: string[]) => {
+      return db.tenant.findMany({ where: { id: { in: ids } } });
+    },
+
+    countByOrgId: async (orgId: string) => {
+      return db.tenant.count({ where: { organization_id: orgId } });
     },
 
     findByOrgId: async (orgId: string, search?: string) => {

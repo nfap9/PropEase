@@ -1,4 +1,3 @@
-'use client';
 
 import { Plus } from 'lucide-react';
 import { useManagedItem } from '@apartment-ultra/shared-ui';
@@ -7,7 +6,7 @@ import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
 import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { DataTable } from '@/components/common/data-table';
-import type { AdminUser } from '@/lib/api/admin-client';
+import type { AdminUser } from '@/api/admin-client';
 import { createAdminUsersColumns } from '../users.columns';
 import { useAdminUsersData } from '../users.hooks';
 import { toCreateUserPayload, toResetPasswordPayload, toUpdateUserPayload } from '../users.utils';
@@ -43,7 +42,7 @@ export function UsersPageContent() {
 
   return (
     <ListPageLayout
-      title="管理账号"
+      title=""
       titleTestId="admin-users-heading"
       maxWidth="6xl"
       actions={
@@ -55,7 +54,7 @@ export function UsersPageContent() {
         </PageToolbar>
       }
     >
-      <DataTable columns={columns} data={users ?? []} testid="admin-users-list" />
+      <DataTable columns={columns} data={users ?? []} testid="admin-users-list" useCard={false} />
 
       <CreateUserDialog
         {...dialogState.dialogProps('create')}

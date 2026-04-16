@@ -4,6 +4,9 @@ import { getConsoleUser } from '../../utils/context.js';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { createAppError } from '../../utils/appError.js';
 import { defaultAuthService } from '../../services/auth.service.js';
+import { loginRateLimit, registerRateLimit } from '../../middlewares/rateLimit.js';
+import { decodeToken, getTokenRemainingTtl } from '../../utils/jwt.js';
+import { addToBlacklist } from '../../lib/redis.js';
 
 const router: Router = Router();
 
@@ -59,7 +62,7 @@ function zodToFieldErrors(e: z.ZodError): Array<{ field: string; message: string
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/register', registerRateLimit, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = RegisterSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -99,7 +102,7 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
  *       401:
  *         description: 认证失败
  */
-router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/login', loginRateLimit, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = LoginSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -153,6 +156,41 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
     }
     const result = await defaultAuthService.refreshToken(parsed.data.refresh_token);
     res.json(result);
+  } catch (e) {
+    next(e);
+  }
+});
+
+/**
+ * @openapi
+ * /auth/logout:
+ *   post:
+ *     summary: 退出登录
+ *     tags: [认证]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 退出成功
+ *       401:
+ *         description: 未认证
+ */
+router.post('/logout', requireConsoleAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const auth = req.headers.authorization;
+    if (!auth || !auth.startsWith('Bearer ')) {
+      return next(createAppError(401, 'Could not validate credentials'));
+    }
+    const token = auth.slice(7);
+    const payload = decodeToken(token);
+    const jti = payload?.jti as string | undefined;
+    if (jti) {
+      const ttl = getTokenRemainingTtl(token);
+      if (ttl > 0) {
+        await addToBlacklist(jti, ttl);
+      }
+    }
+    res.json({ message: '退出成功' });
   } catch (e) {
     next(e);
   }

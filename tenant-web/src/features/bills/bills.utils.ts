@@ -1,4 +1,4 @@
-import { formatDate } from '@/lib/date-utils';
+import { formatDate } from '@/utils/date';
 import type { Bill, BillStatus } from '@/types';
 
 export interface BillStats {

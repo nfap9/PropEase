@@ -1,6 +1,5 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
-import { prisma } from '../../lib/prisma.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
@@ -15,6 +14,12 @@ import {
   orgHasActiveSubscription,
 } from '../../utils/orgPlanLimits.js';
 import { defaultOrgService } from '../../services/organization.service.js';
+import { defaultOrgRepo } from '../../repositories/organization.repo.js';
+import { defaultApartmentRepo } from '../../repositories/apartment.repo.js';
+import { defaultRoomRepo } from '../../repositories/room.repo.js';
+import { defaultTenantRepo } from '../../repositories/tenant.repo.js';
+import { defaultLeaseRepo } from '../../repositories/lease.repo.js';
+import { defaultBillRepo } from '../../repositories/bill.repo.js';
 
 // ==================== Schemas ====================
 
@@ -139,17 +144,19 @@ export async function deletionPreview(req: Request, res: Response, next: NextFun
   try {
     await requireOrgMembership(req, 'orgId');
     const orgId = req.params.orgId;
-    const org = await prisma.organization.findUnique({ where: { id: orgId } });
+    const org = await defaultOrgRepo.findById(orgId);
     if (!org) return next(createAppError(404, NotFoundMessages.ORGANIZATION));
     const hasActiveSub = await orgHasActiveSubscription(orgId);
     const blockers: string[] = [];
     if (hasActiveSub) blockers.push('当前有有效订阅，需先取消订阅后再删除组织');
-    const [apartments, rooms, tenants, leases, bills] = await Promise.all([
-      prisma.apartment.count({ where: { organization_id: orgId } }),
-      prisma.room.count({ where: { apartment: { organization_id: orgId } } }),
-      prisma.tenant.count({ where: { organization_id: orgId } }),
-      prisma.lease.count({ where: { room: { apartment: { organization_id: orgId } } } }),
-      prisma.bill.count({ where: { lease: { room: { apartment: { organization_id: orgId } } } } }),
+    const [apartments, rooms, tenants] = await Promise.all([
+      defaultApartmentRepo.countByOrgId(orgId),
+      defaultRoomRepo.countByOrgId(orgId),
+      defaultTenantRepo.countByOrgId(orgId),
+    ]);
+    const [leases, bills] = await Promise.all([
+      defaultLeaseRepo.countByOrgId(orgId),
+      defaultBillRepo.countByOrgId(orgId),
     ]);
     res.json({
       can_delete: !hasActiveSub,
@@ -273,9 +280,9 @@ export async function getUsage(req: Request, res: Response, next: NextFunction) 
     const orgId = req.params.orgId;
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const org = await prisma.organization.findUnique({ where: { id: orgId } });
+    const org = await defaultOrgRepo.findById(orgId);
     if (!org) return next(createAppError(404, NotFoundMessages.ORGANIZATION));
-    const apartments_used = await prisma.apartment.count({ where: { organization_id: orgId } });
+    const apartments_used = await defaultApartmentRepo.countByOrgId(orgId);
     const [rooms_used, members_used, limits, planRecord, orgCount, maxOrgs] = await Promise.all([
       getRoomsUsedForLimitCheck(orgId, user.id),
       getMembersUsedForLimitCheck(orgId, user.id),

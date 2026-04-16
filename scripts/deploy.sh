@@ -171,7 +171,7 @@ if [ "$SKIP_BUILD" != "true" ]; then
     echo -e "  ${DIM}构建平台: linux/amd64${NC}"
     echo ""
 
-    API_URL=$(grep "^NEXT_PUBLIC_API_URL=" .env.production | cut -d'=' -f2-)
+    API_URL=$(grep "^VITE_API_URL=" .env.production | cut -d'=' -f2-)
 
     # 构建 API
     print_task "构建 API 镜像"
@@ -190,7 +190,7 @@ if [ "$SKIP_BUILD" != "true" ]; then
     # 构建租客端前端
     print_task "构建租客端前端镜像"
     echo ""
-    if docker buildx build --platform linux/amd64 --load -f tenant-web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=${API_URL} -t apartment-ultra-tenant-web:latest . 2>&1 | while IFS= read -r line; do
+    if docker buildx build --platform linux/amd64 --load -f tenant-web/Dockerfile --build-arg VITE_API_URL=${API_URL} -t apartment-ultra-tenant-web:latest . 2>&1 | while IFS= read -r line; do
         echo -e "  ${DIM}$line${NC}"
     done; then
         echo ""
@@ -204,7 +204,7 @@ if [ "$SKIP_BUILD" != "true" ]; then
     # 构建运营后台前端
     print_task "构建运营后台前端镜像"
     echo ""
-    if docker buildx build --platform linux/amd64 --load -f admin-web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL=${API_URL} -t apartment-ultra-admin-web:latest . 2>&1 | while IFS= read -r line; do
+    if docker buildx build --platform linux/amd64 --load -f admin-web/Dockerfile --build-arg VITE_API_URL=${API_URL} -t apartment-ultra-admin-web:latest . 2>&1 | while IFS= read -r line; do
         echo -e "  ${DIM}$line${NC}"
     done; then
         echo ""

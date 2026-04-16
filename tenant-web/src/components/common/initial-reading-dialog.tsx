@@ -1,16 +1,16 @@
-'use client';
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { FormDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { utilitiesApi } from '@/lib/api';
-import { filterEmptyStrings } from '@/lib/utils/form';
-import { getErrorMessage } from '@/lib/utils/error';
+import { utilitiesApi } from '@/api';
+import { filterEmptyStrings } from '@/utils/form';
+import { getErrorMessage } from '@/utils/error';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { Droplets, Zap } from 'lucide-react';
 
@@ -115,7 +115,7 @@ export function InitialReadingDialog({
         isHistoricalLeaseEntry ? (
           <>
             历史租约已创建，建议先记录当前表底数。历史月份数据可稍后前往
-            <Link href="/utilities?tab=history" className="mx-1 underline underline-offset-4">
+            <Link to="/utilities?tab=history" className="mx-1 underline underline-offset-4">
               历史水电记录
             </Link>
             继续补录。
@@ -142,7 +142,13 @@ export function InitialReadingDialog({
       </div>
       <div className="space-y-2">
         <Label htmlFor="initial-reading_date">读数日期</Label>
-        <Input id="initial-reading_date" type="date" {...form.register('reading_date')} />
+        <DateTimePicker
+          id="initial-reading_date"
+          mode="date"
+          value={form.watch('reading_date')}
+          onChange={(value) => form.setValue('reading_date', value)}
+          placeholder="选择读数日期"
+        />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">

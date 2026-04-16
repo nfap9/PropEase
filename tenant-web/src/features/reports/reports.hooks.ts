@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { reportsApi } from '@/lib/api';
+import { reportsApi } from '@/api';
 
 export function useReportsData(orgId: string | undefined, selectedYear: number) {
   const overviewQuery = useQuery({

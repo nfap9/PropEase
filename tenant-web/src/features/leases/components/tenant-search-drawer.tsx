@@ -1,4 +1,3 @@
-'use client';
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -6,8 +5,8 @@ import { Search, User } from 'lucide-react';
 import { DetailDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { tenantsApi } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { tenantsApi } from '@/api';
+import { cn } from '@/utils';
 import type { Tenant } from '@apartment-ultra/api-contract';
 
 interface TenantSearchDrawerProps {

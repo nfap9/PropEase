@@ -1,6 +1,5 @@
-'use client';
 
-import dynamic from 'next/dynamic';
+import { lazy } from 'react';
 import { useState } from 'react';
 import { Building2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -14,20 +13,13 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { useAuth } from '@/lib/auth/context';
+import { useAuth } from '@/auth/context';
 import { useReportsData } from '../reports.hooks';
 import { getReportYearOptions, REPORTS } from '../reports.schemas';
 import { ReportsOverviewTab } from './reports-overview-tab';
 
-const ReportsIncomeTab = dynamic(
-  () => import('./reports-income-tab').then((mod) => mod.ReportsIncomeTab),
-  { loading: () => <Skeleton className="h-[400px]" />, ssr: false }
-);
-
-const ReportsOccupancyTab = dynamic(
-  () => import('./reports-occupancy-tab').then((mod) => mod.ReportsOccupancyTab),
-  { loading: () => <Skeleton className="h-[400px]" />, ssr: false }
-);
+const ReportsIncomeTab = lazy(() => import('./reports-income-tab').then((mod) => ({ default: mod.ReportsIncomeTab })));
+const ReportsOccupancyTab = lazy(() => import('./reports-occupancy-tab').then((mod) => ({ default: mod.ReportsOccupancyTab })));
 
 type ReportTab = 'income' | 'occupancy' | 'overview';
 
@@ -72,10 +64,7 @@ export function ReportsPageContent() {
     <PermissionPageGuard>
       <MainLayout>
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold tracking-tight" data-testid={REPORTS.HEADING}>
-              经营分析
-            </h1>
+          <div className="flex items-center justify-end">
             <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(Number(value))}>
               <SelectTrigger className="w-[120px]" data-testid={REPORTS.YEAR_SELECT}>
                 <SelectValue />

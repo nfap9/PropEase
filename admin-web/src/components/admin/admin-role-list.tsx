@@ -1,11 +1,10 @@
-'use client';
 
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { SelectableSideList } from '@apartment-ultra/shared-ui/components/ui';
-import type { AdminRole } from '@/lib/api/admin-client';
+import type { AdminRole } from '@/api/admin-client';
 import { Plus, Trash2 } from 'lucide-react';
-import { adminI18n, adminMessages } from '@/lib/i18n';
+import { adminI18n, adminMessages } from '@/i18n';
 
 export interface AdminRoleListProps {
   roles: AdminRole[];
@@ -51,7 +50,7 @@ export function AdminRoleList({
 
   return (
     <SelectableSideList
-      title={<span data-testid="admin-roles-heading">{adminMessages.roles.heading}</span>}
+      title=""
       headerAction={
         <Button
           variant="outline"

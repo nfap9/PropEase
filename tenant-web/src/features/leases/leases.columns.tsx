@@ -1,12 +1,11 @@
-'use client';
 
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Ban, Pencil, Trash2 } from 'lucide-react';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
 import { TableActions, type TableAction } from '@/components/common/table-actions';
-import { formatDate } from '@/lib/date-utils';
-import { LEASE_STATUS_CONFIG } from '@/lib/status-config';
+import { formatDate } from '@/utils/date';
+import { LEASE_STATUS_CONFIG } from '@/utils/status';
 import type { Lease } from '@/types';
 
 interface CreateLeaseColumnsOptions {
@@ -33,7 +32,7 @@ export function createLeaseColumns({
         }
         return (
           <Link
-            href={`/leases/${row.original.id}`}
+            to={`/leases/${row.original.id}`}
             className="flex flex-col hover:underline"
           >
             {room.apartment && (
@@ -81,7 +80,7 @@ export function createLeaseColumns({
       minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_active ? LEASE_STATUS_CONFIG.active : LEASE_STATUS_CONFIG.inactive;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
       },
     },
     {

@@ -5,55 +5,43 @@ node_modules/
 .pnpm-store
 package-lock.json
 
-# api (Node/Express)：node_modules/、dist/、.env 已在上/下述规则中覆盖
-
 # Testing
 coverage/
-# Playwright - 统一放在 e2e/results/ 目录下
-e2e/results/
+e2e/
 test-results/
+*.playwright/
 playwright-report/
 blob-report/
-.playwright/
-.playwright-cli/
-.auth/
 
-# Next.js
-.next/
-out/
-
-# Production
+# Build
 build/
 dist/
+.next/
+out/
+tenant-web/public/sw.js
+tenant-web/public/workbox-*.js
 
-# Misc
-.DS_Store
-*.pem
-
-# Debug / Node
+# Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-.node_repl_history
+pnpm-debug.log*
 
-# Local env files
+# Env files
 .env
-.env*.local
-.env.production
-docker/.env.production
+.env.*
+!.env.example
 
-# Vercel
+# Vite
 .vercel
+admin-web/dist/
 
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
-# api 构建产物已由 dist/ 覆盖
 
-# Prisma generated client
+# Prisma
 api/src/generated/
-
 
 # IDE
 .idea/
@@ -62,11 +50,12 @@ api/src/generated/
 *.swp
 *.swo
 
-# Database
+# Misc
+.DS_Store
+*.pem
 *.db
 *.sqlite3
-.playwright-mcp/
-
-# git
 .worktrees/
 .omc
+.superpowers/
+.playwright-mcp/

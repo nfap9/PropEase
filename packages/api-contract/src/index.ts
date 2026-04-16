@@ -79,8 +79,6 @@ export type {
   StorefrontViewService,
   StorefrontViewPricing,
   StorefrontView,
-  PriceCalculationRequest,
-  PriceCalculationResult,
 } from './service-product.js';
 
 /** 公寓与房间 */
@@ -242,3 +240,19 @@ export type {
   AdminUsagePricing,
   AdminUsagePricingUpdate,
 } from './admin.js';
+
+/** 用量付费（统一订单） */
+export type {
+  BillingOrder,
+  BillingOrderType,
+  BillingOrderStatus,
+  BillingUsageDetails,
+  CreateSubscriptionOrderRequest,
+  CreateUsageOrderRequest,
+  CreateBillingOrderRequest,
+  BillingOrderListParams,
+  BillingOrderListResponse,
+  UsageUnitPricing,
+  AdminUsagePricingResponse,
+  AdminUsagePricingUpdateRequest,
+} from './billing.js';

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { PaymentMethod } from '@/types';
-import { tenantMessages } from '@/lib/i18n';
+import { tenantMessages } from '@/i18n';
 
 export const BILLS = {
   HEADING: 'bills-heading',

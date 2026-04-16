@@ -207,6 +207,27 @@ describe('config', () => {
 
       expect(config.isDev).toBe(false);
     });
+
+    it('IS_DEV=true 无法绕过生产环境安全检查', async () => {
+      // 即使设置 IS_DEV=true，生产环境仍应强制检查 SECRET_KEY
+      process.env.NODE_ENV = 'production';
+      process.env.IS_DEV = 'true';
+      process.env.SECRET_KEY = 'dev-secret-key-do-not-use-in-production';
+      process.env.DATABASE_URL = 'postgresql://user:pass@prod-db:5432/db';
+      process.env.CORS_ORIGINS = '["https://example.com"]';
+
+      const exitSpy = vi.spyOn(process, 'exit').mockImplementation((code) => {
+        throw new Error(`process.exit:${code}`);
+      });
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      await expect(import('./config.js')).rejects.toThrow('process.exit:1');
+      expect(exitSpy).toHaveBeenCalledWith(1);
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('SECRET_KEY'));
+
+      exitSpy.mockRestore();
+      errorSpy.mockRestore();
+    });
   });
 
   describe('微信支付条件验证', () => {

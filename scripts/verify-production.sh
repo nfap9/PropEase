@@ -58,7 +58,7 @@ if [ ! -f "$ENV_FILE" ]; then
     sed -i '' "s|POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -base64 24)|" "$ENV_FILE"
     sed -i '' "s|SECRET_KEY=.*|SECRET_KEY=$(openssl rand -hex 32)|" "$ENV_FILE"
     sed -i '' "s|CORS_ORIGINS=.*|CORS_ORIGINS=[\"http://localhost:3000\"]|" "$ENV_FILE"
-    sed -i '' "s|NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1|" "$ENV_FILE"
+    sed -i '' "s|VITE_API_URL=.*|VITE_API_URL=http://localhost:8000/api/v1|" "$ENV_FILE"
     sed -i '' "s|SERVER_NAME=.*|SERVER_NAME=localhost|" "$ENV_FILE"
 
     echo -e "  ${GREEN}✓${NC} 已创建测试环境配置"
@@ -73,7 +73,7 @@ echo ""
 echo -e "${DIM}▶ 构建 Docker 镜像${NC}"
 echo -e "  ${DIM}(这可能需要几分钟...)${NC}"
 
-API_URL=$(grep "^NEXT_PUBLIC_API_URL=" "$ENV_FILE" | cut -d'=' -f2-)
+API_URL=$(grep "^VITE_API_URL=" "$ENV_FILE" | cut -d'=' -f2-)
 
 # 构建 API 镜像
 BUILD_LOG=$(mktemp)
@@ -90,7 +90,7 @@ rm -f "$BUILD_LOG"
 
 # 构建租客端前端镜像
 BUILD_LOG=$(mktemp)
-if docker buildx build --load -f tenant-web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL="${API_URL}" -t apartment-ultra-tenant-web:latest . >"$BUILD_LOG" 2>&1; then
+if docker buildx build --load -f tenant-web/Dockerfile --build-arg VITE_API_URL="${API_URL}" -t apartment-ultra-tenant-web:latest . >"$BUILD_LOG" 2>&1; then
     echo -e "  ${GREEN}✓${NC} 租客端前端镜像构建成功"
 else
     echo -e "  ${RED}✗${NC} 租客端前端镜像构建失败"
@@ -103,7 +103,7 @@ rm -f "$BUILD_LOG"
 
 # 构建运营后台前端镜像
 BUILD_LOG=$(mktemp)
-if docker buildx build --load -f admin-web/Dockerfile.prod --build-arg NEXT_PUBLIC_API_URL="${API_URL}" -t apartment-ultra-admin-web:latest . >"$BUILD_LOG" 2>&1; then
+if docker buildx build --load -f admin-web/Dockerfile --build-arg VITE_API_URL="${API_URL}" -t apartment-ultra-admin-web:latest . >"$BUILD_LOG" 2>&1; then
     echo -e "  ${GREEN}✓${NC} 运营后台前端镜像构建成功"
 else
     echo -e "  ${RED}✗${NC} 运营后台前端镜像构建失败"

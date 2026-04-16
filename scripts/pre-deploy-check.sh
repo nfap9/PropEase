@@ -71,7 +71,7 @@ REQUIRED_VARS=(
     "POSTGRES_PASSWORD:数据库密码"
     "SECRET_KEY:JWT密钥"
     "CORS_ORIGINS:跨域配置"
-    "NEXT_PUBLIC_API_URL:API地址"
+    "VITE_API_URL:API地址"
 )
 
 for var_def in "${REQUIRED_VARS[@]}"; do
@@ -127,8 +127,8 @@ echo -e "${DIM}▶ 检查必要文件${NC}"
 
 REQUIRED_FILES=(
     "api/Dockerfile:API Dockerfile"
-    "tenant-web/Dockerfile.prod:租客端前端 Dockerfile"
-    "admin-web/Dockerfile.prod:运营后台前端 Dockerfile"
+    "tenant-web/Dockerfile:租客端前端 Dockerfile"
+    "admin-web/Dockerfile:运营后台前端 Dockerfile"
     "docker/docker-compose.yaml:Docker Compose 配置"
     "docker/nginx.conf.template:Nginx 配置"
     "api/prisma/schema.prisma:Prisma Schema"
@@ -172,11 +172,11 @@ fi
 echo ""
 echo -e "${DIM}▶ 检查 URL 配置${NC}"
 
-if [ -n "$NEXT_PUBLIC_API_URL" ]; then
-    if [[ "$NEXT_PUBLIC_API_URL" == http://localhost* ]] || [[ "$NEXT_PUBLIC_API_URL" == http://127.* ]]; then
-        check_warn "NEXT_PUBLIC_API_URL 使用本地地址，生产环境应使用服务器地址"
+if [ -n "$VITE_API_URL" ]; then
+    if [[ "$VITE_API_URL" == http://localhost* ]] || [[ "$VITE_API_URL" == http://127.* ]]; then
+        check_warn "VITE_API_URL 使用本地地址，生产环境应使用服务器地址"
     else
-        check_pass "NEXT_PUBLIC_API_URL 格式正确"
+        check_pass "VITE_API_URL 格式正确"
     fi
 fi
 

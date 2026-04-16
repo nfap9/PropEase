@@ -42,6 +42,18 @@ describe('jwt', () => {
       expect(payload?.type).toBe('admin');
       expect(payload?.sub).toBe('admin-user-1');
     });
+
+    it('tokens include unique jti for blacklisting', () => {
+      vi.setSystemTime(new Date('2025-01-01T00:00:00Z'));
+      const token1 = createAccessToken({ sub: 'user-1' });
+      const token2 = createAccessToken({ sub: 'user-1' });
+      const payload1 = decodeToken(token1);
+      const payload2 = decodeToken(token2);
+      // Each token should have a unique jti
+      expect(payload1?.jti).toBeDefined();
+      expect(payload2?.jti).toBeDefined();
+      expect(payload1?.jti).not.toBe(payload2?.jti);
+    });
   });
 
   describe('decodeToken invalid input', () => {

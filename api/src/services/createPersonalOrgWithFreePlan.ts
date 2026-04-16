@@ -4,16 +4,11 @@ import {
   createOrganizationRepository,
   type OrganizationRepository,
 } from '../repositories/organization.repo.js';
-import {
-  createSubscriptionRepository,
-  type SubscriptionRepository,
-} from '../repositories/subscription.repo.js';
 import type { DbClient, RepositoryFactory } from '../types/repository.types.js';
 
 interface PersonalOrgDependencies {
   createId?: () => string;
   getOrgRepo?: RepositoryFactory<OrganizationRepository>;
-  getSubscriptionRepo?: RepositoryFactory<SubscriptionRepository>;
   runInTransaction?: <T>(callback: (db: DbClient) => Promise<T>) => Promise<T>;
 }
 
@@ -25,7 +20,6 @@ function resolveDependencies(deps: PersonalOrgDependencies = {}) {
   return {
     createId: deps.createId ?? (() => ulid().toLowerCase()),
     getOrgRepo: deps.getOrgRepo ?? createOrganizationRepository,
-    getSubscriptionRepo: deps.getSubscriptionRepo ?? createSubscriptionRepository,
     runInTransaction: deps.runInTransaction ?? defaultRunInTransaction,
   };
 }
@@ -84,12 +78,13 @@ export async function createPersonalOrgWithFreePlan(
   const deps = resolveDependencies(rawDeps);
   const slug = `personal-${userId}`;
   const orgRepo = deps.getOrgRepo(prisma);
-  const subscriptionRepo = deps.getSubscriptionRepo(prisma);
   const existing = await orgRepo.findBySlug(slug);
   if (existing) return;
 
-  // 检查是否存在免费服务产品
-  const freeService = await subscriptionRepo.findActiveServiceByCode('free');
+  // 使用 billingOrderRepo 查找免费服务
+  const freeService = await prisma.serviceProduct.findFirst({
+    where: { code: 'free', is_active: true },
+  });
 
   if (freeService) {
     // 如果存在免费服务，自动开通（向后兼容）
@@ -112,7 +107,6 @@ export async function createPersonalOrgWithFreePlan(
 
     await deps.runInTransaction(async (db) => {
       const txOrgRepo = deps.getOrgRepo(db);
-      const txSubscriptionRepo = deps.getSubscriptionRepo(db);
 
       await txOrgRepo.create({
         id: orgId,
@@ -128,16 +122,19 @@ export async function createPersonalOrgWithFreePlan(
         role: 'owner',
       });
 
-      await txSubscriptionRepo.createSubscription({
-        id: subId,
-        organization: { connect: { id: orgId } },
-        service: { connect: { id: freeService.id } },
-        status: 'active',
-        billing_months: 1,
-        start_date: startDate,
-        end_date: endDate,
-        auto_renew: false,
-        limits_snapshot: limitsSnapshot,
+      // 使用 prisma 直接创建 subscription（因为在事务中）
+      await db.organizationSubscription.create({
+        data: {
+          id: subId,
+          organization_id: orgId,
+          service_id: freeService.id,
+          status: 'active',
+          billing_months: 1,
+          start_date: startDate,
+          end_date: endDate,
+          auto_renew: false,
+          limits_snapshot: limitsSnapshot as object,
+        },
       });
     });
   } else {

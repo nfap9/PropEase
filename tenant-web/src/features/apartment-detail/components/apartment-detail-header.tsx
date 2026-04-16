@@ -1,32 +1,35 @@
-'use client';
 
 import { ArrowLeft, Pencil, Zap } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import type { Apartment } from '@/types';
 
 interface ApartmentDetailHeaderProps {
-  apartmentName: string;
+  apartment: Apartment;
   onBack: () => void;
   onEdit: () => void;
   onOpenUtilityConfig?: () => void;
 }
 
 export function ApartmentDetailHeader({
-  apartmentName,
+  apartment,
   onBack,
   onEdit,
   onOpenUtilityConfig,
 }: ApartmentDetailHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={onBack}>
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-3 min-w-0">
+        <Button variant="ghost" size="icon" onClick={onBack} className="shrink-0">
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{apartmentName}</h1>
+        <div className="min-w-0">
+          <h1 className="text-xl font-semibold truncate">{apartment.name}</h1>
+          {apartment.address && (
+            <p className="text-sm text-muted-foreground truncate">{apartment.address}</p>
+          )}
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         {onOpenUtilityConfig && (
           <Button variant="outline" size="sm" onClick={onOpenUtilityConfig}>
             <Zap className="mr-2 h-4 w-4" />

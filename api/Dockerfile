@@ -11,7 +11,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY tsconfig.base.json tsconfig.base.json
 COPY api/package.json api/package.json
 COPY packages/ packages/
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # 复制 api 源码（排除测试文件）
 COPY api/src api/src

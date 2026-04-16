@@ -8,8 +8,6 @@ import type {
   StorefrontItem,
   StorefrontView,
   StorefrontViewService,
-  PriceCalculationRequest,
-  PriceCalculationResult,
 } from '@apartment-ultra/api-contract';
 import {
   createServiceProductRepository,
@@ -87,7 +85,6 @@ export interface ServiceProductService {
 
   // 商店视图
   getStorefrontView(storefrontId?: string): Promise<StorefrontView | null>;
-  calculatePrice(request: PriceCalculationRequest): Promise<PriceCalculationResult>;
 }
 
 /**
@@ -470,66 +467,6 @@ export function createServiceProductService(
         code: storefront.code,
         is_default: storefront.is_default,
         services,
-      };
-    },
-
-    async calculatePrice(request: PriceCalculationRequest): Promise<PriceCalculationResult> {
-      const repo = getRepo();
-      let storefront;
-      if (request.storefront_id) {
-        storefront = await repo.findStorefrontById(request.storefront_id);
-      } else {
-        storefront = await repo.findDefaultStorefront();
-      }
-
-      if (!storefront || !storefront.is_active) {
-        throw new AppError({ message: '商店配置不存在', statusCode: 404 });
-      }
-
-      // 查找服务
-      const item = storefront.items.find(
-        (i) => i.service_id === request.service_id && i.is_visible && i.service
-      );
-      if (!item || !item.service) {
-        throw new AppError({ message: '服务不在商店中', statusCode: 404 });
-      }
-
-      // 查找定价
-      const pricing = item.service.pricing.find((p) => p.months === request.months && p.is_active);
-      if (!pricing) {
-        throw new AppError({ message: '定价不存在', statusCode: 404 });
-      }
-
-      const originalPrice = Number(pricing.price);
-      let discountAmount = 0;
-      let finalPrice = originalPrice;
-      let giftMonths = 0;
-      let discount: PricingDiscount | undefined;
-
-      // 查找折扣
-      if (item.pricing_discounts) {
-        discount = findDiscount(item.pricing_discounts, request.months);
-      }
-
-      if (discount) {
-        if (discount.discount_type === 'percent' && discount.discount_value) {
-          discountAmount = originalPrice * (1 - discount.discount_value);
-          finalPrice = originalPrice - discountAmount;
-        } else if (discount.discount_type === 'fixed' && discount.discount_value) {
-          discountAmount = discount.discount_value;
-          finalPrice = originalPrice - discountAmount;
-        } else if (discount.discount_type === 'gift' && discount.gift_months) {
-          giftMonths = discount.gift_months;
-        }
-      }
-
-      return {
-        original_price: originalPrice,
-        discount_type: discount?.discount_type ?? null,
-        discount_value: discount?.discount_value ?? null,
-        discount_amount: discountAmount,
-        final_price: finalPrice,
-        gift_months: giftMonths,
       };
     },
   };

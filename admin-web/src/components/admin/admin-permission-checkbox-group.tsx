@@ -1,9 +1,8 @@
-'use client';
 
 import { useState } from 'react';
 import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
-import { getAdminPermissionGroups } from '@/lib/constants/admin-permissions';
-import { cn } from '@/lib/utils';
+import { getAdminPermissionGroups } from '@/constants/admin-permissions';
+import { cn } from '@/utils';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
 export interface AdminPermissionCheckboxGroupProps {

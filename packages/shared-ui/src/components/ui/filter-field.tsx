@@ -1,9 +1,8 @@
-'use client';
 
 import * as React from 'react';
 
 import { cn } from '../../lib/utils';
-import { Label } from './label';
+import { Label } from '../primitives/label';
 
 export interface FilterFieldProps extends React.HTMLAttributes<HTMLDivElement> {
   label: string;

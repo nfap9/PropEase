@@ -1,4 +1,3 @@
-'use client';
 
 import { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -8,7 +7,7 @@ import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { MainLayout } from '@/components/layout/main-layout';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { useAuth } from '@/lib/auth/context';
+import { useAuth } from '@/auth/context';
 import type { Bill, BillStatus } from '@/types';
 import { createBillsColumns } from '../bills.columns';
 import { useBillsData, useBillShare } from '../bills.hooks';

@@ -2,6 +2,9 @@ import { prisma } from '../lib/prisma.js';
 import type { ServiceProduct } from '@prisma/client';
 import { isSubscriptionActive } from './subscription.js';
 
+/** 已废弃：曾经用 -1 表示不限，现已废弃，保留大数值保证向后兼容 */
+const UNLIMITED_COUNT = 999999;
+
 const DEFAULT_FREE_LIMITS = {
   max_organizations: 1,
   max_apartments: 1,
@@ -10,6 +13,12 @@ const DEFAULT_FREE_LIMITS = {
   rooms_count_scope: 'organization' as const,
   members_count_scope: 'organization' as const,
 };
+
+/** 将 -1（曾经表示不限）转换为 UNLIMITED_COUNT，向后兼容旧数据 */
+function normalizeLimit(value: number | null | undefined): number {
+  if (value === null || value === undefined) return UNLIMITED_COUNT;
+  return value < 0 ? UNLIMITED_COUNT : value;
+}
 
 export type CountScope = 'organization' | 'user';
 
@@ -76,16 +85,20 @@ export async function getEffectivePlanLimits(orgId: string, userId?: string): Pr
     base = {
       max_organizations:
         useSnapshot && snapshot.max_organizations !== undefined
-          ? snapshot.max_organizations
-          : service.max_organizations,
+          ? normalizeLimit(snapshot.max_organizations)
+          : normalizeLimit(service.max_organizations),
       max_apartments:
         useSnapshot && snapshot.max_apartments !== undefined
-          ? snapshot.max_apartments
-          : service.max_apartments,
+          ? normalizeLimit(snapshot.max_apartments)
+          : normalizeLimit(service.max_apartments),
       max_rooms:
-        useSnapshot && snapshot.max_rooms !== undefined ? snapshot.max_rooms : service.max_rooms,
+        useSnapshot && snapshot.max_rooms !== undefined
+          ? normalizeLimit(snapshot.max_rooms)
+          : normalizeLimit(service.max_rooms),
       max_members:
-        useSnapshot && snapshot.max_members !== undefined ? snapshot.max_members : service.max_members,
+        useSnapshot && snapshot.max_members !== undefined
+          ? normalizeLimit(snapshot.max_members)
+          : normalizeLimit(service.max_members),
       // ServiceProduct 不再有 rooms_count_scope 和 members_count_scope，使用默认值
       rooms_count_scope: DEFAULT_FREE_LIMITS.rooms_count_scope as CountScope,
       members_count_scope: DEFAULT_FREE_LIMITS.members_count_scope as CountScope,

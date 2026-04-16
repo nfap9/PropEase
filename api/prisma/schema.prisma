@@ -46,6 +46,8 @@ model Organization {
   tenants             Tenant[]
   subscription        OrganizationSubscription?
   subscription_orders SubscriptionOrder[]
+  billing_orders      BillingOrder[]
+  usage_allowances    UsageAllowance[]
   user_balance        UserBalance?
   notification_templates  NotificationTemplate[]
   notification_deliveries NotificationDelivery[]
@@ -502,11 +504,13 @@ model OrganizationSubscription {
   pricing      ServicePricing?     @relation(fields: [pricing_id], references: [id], onDelete: SetNull)
   next_service ServiceProduct?     @relation("NextService", fields: [next_service_id], references: [id], onDelete: SetNull)
   orders       SubscriptionOrder[]
+  billing_orders BillingOrder[]
 
   @@index([service_id])
   @@map("organization_subscriptions")
 }
 
+// @deprecated 使用 BillingOrder 替代
 model SubscriptionOrder {
   id                           String    @id @db.VarChar(26)
   order_no                     String    @unique @db.VarChar(64)
@@ -544,6 +548,7 @@ model SubscriptionOrder {
   @@map("subscription_orders")
 }
 
+// @deprecated 使用 BillingOrder 替代
 model UsageQuota {
   id                   String   @id @db.VarChar(26)
   user_id              String   @db.VarChar(26)
@@ -565,6 +570,7 @@ model UsageQuota {
   @@map("usage_quotas")
 }
 
+// @deprecated 使用 BillingOrder 替代
 model UsageQuotaOrder {
   id                    String    @id @db.VarChar(26)
   order_no              String    @unique @db.VarChar(64)
@@ -638,10 +644,106 @@ model AdminUser {
 model PlatformConfig {
   id            String   @id @default("default") @db.VarChar(26)
   brand         Json?    @db.Json
+  /** @deprecated 使用 UsageUnitPricing 表替代 */
   usage_pricing Json?    @db.Json
   updated_at    DateTime @updatedAt
 
   @@map("platform_config")
+}
+
+// ============================================================
+// 计费模块（新 - 用量付费统一架构）
+// ============================================================
+
+// 统一订单表（替代 SubscriptionOrder 和 UsageQuotaOrder）
+model BillingOrder {
+  id              String    @id @db.VarChar(26)
+  order_no        String    @unique @db.VarChar(64)
+  order_type      String    @db.VarChar(20)  // 'subscription' | 'usage'
+
+  // 关联（subscription 必填 organization_id，usage 必填 user_id）
+  organization_id String?   @db.VarChar(26)
+  user_id         String?   @db.VarChar(26)
+
+  // 服务产品（subscription 用）
+  service_id      String?   @db.VarChar(26)
+  pricing_id      String?   @db.VarChar(26)
+  billing_months  Int?      // 订阅月数
+
+  // 用量明细（usage 用）
+  usage_details   Json?     // { orgs, apartments, rooms, members }
+
+  // 金额
+  amount          Decimal   @db.Decimal(10, 2)
+  original_amount Decimal?  @db.Decimal(10, 2)
+  currency        String    @default("CNY") @db.VarChar(10)
+  status          String    @default("pending") @db.VarChar(32)
+
+  // 支付
+  payment_method  String    @default("wechat_native") @db.VarChar(32)
+  code_url        String?   @db.VarChar(512)
+  wechat_transaction_id String? @db.VarChar(64)
+  paid_at         DateTime?
+  expires_at      DateTime
+
+  // 折扣
+  applied_discounts Json?
+  total_discount    Decimal? @db.Decimal(10, 2)
+  total_gift_months Int      @default(0)
+  balance_deduction Decimal? @db.Decimal(10, 2)
+
+  // 关联订阅
+  subscription_id String?   @db.VarChar(26)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  organization     Organization?              @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  service          ServiceProduct?            @relation(fields: [service_id], references: [id])
+  pricing          ServicePricing?            @relation(fields: [pricing_id], references: [id], onDelete: SetNull)
+  subscription     OrganizationSubscription?   @relation(fields: [subscription_id], references: [id], onDelete: SetNull)
+
+  @@index([organization_id])
+  @@index([user_id])
+  @@index([order_type])
+  @@index([status])
+  @@map("billing_orders")
+}
+
+// 用量单位定价表（替代 PlatformConfig.usage_pricing）
+model UsageUnitPricing {
+  id             String    @id @db.VarChar(26)
+  unit_type      String    @db.VarChar(20)  // 'org' | 'apartment' | 'room' | 'member'
+  price_per_unit Decimal   @db.Decimal(10, 2)
+  is_active      Boolean   @default(true)
+  valid_from     DateTime  @default(now())
+  valid_to       DateTime?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  @@unique([unit_type, valid_from])
+  @@map("usage_unit_pricing")
+}
+
+// 组织用量额度表（替代 UsageQuota，基于 organization）
+model UsageAllowance {
+  id               String    @id @db.VarChar(26)
+  organization_id  String    @db.VarChar(26)
+  year             Int
+  month            Int
+  orgs             Int       @default(0)
+  apartments       Int       @default(0)
+  rooms            Int       @default(0)
+  members          Int       @default(0)
+  billing_order_id String?   @db.VarChar(26)
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  organization Organization   @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+
+  @@unique([organization_id, year, month])
+  @@index([organization_id])
+  @@map("usage_allowances")
 }
 
 // 用户余额
@@ -688,6 +790,7 @@ model ServiceProduct {
   subscriptions    OrganizationSubscription[] @relation("NextService")
   current_subs     OrganizationSubscription[] @relation("CurrentService")
   orders           SubscriptionOrder[]
+  billing_orders   BillingOrder[]
 
   @@index([is_active])
   @@map("service_products")
@@ -709,6 +812,7 @@ model ServicePricing {
   service       ServiceProduct             @relation(fields: [service_id], references: [id], onDelete: Cascade)
   subscriptions OrganizationSubscription[]
   orders        SubscriptionOrder[]
+  billing_orders BillingOrder[]
 
   @@unique([service_id, months])
   @@index([service_id])

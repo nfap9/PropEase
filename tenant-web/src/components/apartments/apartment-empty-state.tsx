@@ -1,4 +1,3 @@
-'use client';
 
 import { Building2, Search } from 'lucide-react';
 import { Card, CardContent } from '@apartment-ultra/shared-ui/components/ui';

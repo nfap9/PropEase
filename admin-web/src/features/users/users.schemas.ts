@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { adminMessages } from '@/lib/i18n';
+import { adminMessages } from '@/i18n';
 
 export const adminPasswordSchema = z
   .string()

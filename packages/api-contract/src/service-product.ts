@@ -215,24 +215,3 @@ export interface StorefrontView {
   /** 可购买的服务列表 */
   services: StorefrontViewService[];
 }
-
-// ============================================================
-// 价格计算
-// ============================================================
-
-/** 价格计算请求 */
-export interface PriceCalculationRequest {
-  service_id: string;
-  months: number;
-  storefront_id?: string;
-}
-
-/** 价格计算结果 */
-export interface PriceCalculationResult {
-  original_price: number;
-  discount_type: DiscountType | null;
-  discount_value: number | null;
-  discount_amount: number;
-  final_price: number;
-  gift_months: number;
-}

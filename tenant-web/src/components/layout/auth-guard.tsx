@@ -1,7 +1,6 @@
-'use client';
 
-import { useAuth } from '@/lib/auth/context';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/auth/context';
+import { useNavigate } from 'react-router-dom';
 import { useEffect, ReactNode } from 'react';
 
 interface AuthGuardProps {
@@ -10,13 +9,13 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const { isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/login');
+      navigate('/login');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) {
     return (
