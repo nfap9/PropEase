@@ -88,7 +88,7 @@ export default function NotificationsPage() {
   return (
     <PermissionPageGuard>
       {canAccessNotifications ? (
-        <div className="min-h-screen bg-background px-4 py-4">
+        <div className="min-h-screen bg-background">
               {/* Header Section */}
               <div className="mx-auto max-w-4xl">
                 <div className="mb-4 flex items-start justify-end">

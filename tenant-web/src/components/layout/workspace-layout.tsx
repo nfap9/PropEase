@@ -81,7 +81,7 @@ export function WorkspaceLayout({ children }: { children: React.ReactNode }) {
           <Sidebar side="left" variant="sidebar" collapsible="icon" position="relative">
             <SidebarNavContent />
           </Sidebar>
-          <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+          <div className="min-h-0 flex-1 overflow-auto p-4 md:p-6">{children}</div>
         </div>
       </SidebarProvider>
     </NavProvider>
