@@ -58,54 +58,6 @@ export async function getStorefront(_req: Request, res: Response, next: NextFunc
   }
 }
 
-export async function calculatePrice(req: Request, res: Response, next: NextFunction) {
-  try {
-    const body = req.body as {
-      service_id?: string;
-      months?: number;
-      storefront_id?: string;
-    };
-
-    if (!body?.service_id || !body?.months) {
-      return next(createAppError(400, '缺少 service_id 或 months'));
-    }
-
-    const service = await defaultBillingService.getServiceById(body.service_id);
-
-    // 查找对应周期的定价
-    const pricing = await prisma.servicePricing.findFirst({
-      where: { service_id: body.service_id, months: body.months, is_active: true },
-    });
-
-    let price = 0;
-    let pricingId: string | undefined;
-
-    if (pricing) {
-      price = Number(pricing.price);
-      pricingId = pricing.id;
-    } else {
-      // 如果没有找到对应周期的定价，使用月价 * 月数
-      const monthlyPricing = await prisma.servicePricing.findFirst({
-        where: { service_id: body.service_id, months: 1, is_active: true },
-      });
-      if (monthlyPricing) {
-        price = Number(monthlyPricing.price) * body.months;
-        pricingId = monthlyPricing.id;
-      }
-    }
-
-    res.json({
-      service_id: body.service_id,
-      months: body.months,
-      price,
-      pricing_id: pricingId,
-      service_name: (service as { name?: string }).name,
-    });
-  } catch (e) {
-    next(e);
-  }
-}
-
 export async function previewOrder(req: Request, res: Response, next: NextFunction) {
   try {
     await requireOrgMembership(req, 'org_id');
@@ -183,25 +135,6 @@ export async function previewOrder(req: Request, res: Response, next: NextFuncti
       final_price: finalPrice,
       billing_months,
     });
-  } catch (e) {
-    next(e);
-  }
-}
-
-export async function listPlans(req: Request, res: Response, next: NextFunction) {
-  try {
-    const activeOnly = req.query.active_only !== 'false';
-    const services = await defaultBillingService.listServices(activeOnly);
-    res.json(services);
-  } catch (e) {
-    next(e);
-  }
-}
-
-export async function getPlan(req: Request, res: Response, next: NextFunction) {
-  try {
-    const service = await defaultBillingService.getServiceById(req.params.service_id);
-    res.json(service);
   } catch (e) {
     next(e);
   }

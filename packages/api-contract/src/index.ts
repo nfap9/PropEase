@@ -79,8 +79,6 @@ export type {
   StorefrontViewService,
   StorefrontViewPricing,
   StorefrontView,
-  PriceCalculationRequest,
-  PriceCalculationResult,
 } from './service-product.js';
 
 /** 公寓与房间 */

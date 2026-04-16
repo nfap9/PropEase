@@ -9,34 +9,6 @@ router.use(requireConsoleAuth);
 
 /**
  * @openapi
- * /reports:
- *   get:
- *     summary: 获取报表列表
- *     tags: [报表]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: 报表列表（暂为空）
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- */
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const orgId = await requireOrgMembership(req);
-    const reports = await defaultReportService.list(orgId);
-    res.json(reports);
-  } catch (e) {
-    next(e);
-  }
-});
-
-/**
- * @openapi
  * /reports/overview:
  *   get:
  *     summary: 获取概览统计

@@ -161,6 +161,8 @@ export const adminApiEndpoints = {
       password,
     }),
 
+  logout: () => adminApi.post('/admin/auth/logout'),
+
   getStats: () => adminApi.get<AdminPlatformStats>('/admin/stats'),
 
   getAdminIncome: (year: number) =>

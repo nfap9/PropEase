@@ -409,17 +409,6 @@ export async function updateUsagePricing(req: Request, res: Response, next: Next
   }
 }
 
-export async function listUsageOrders(req: Request, res: Response, next: NextFunction) {
-  try {
-    const skip = req.query.skip != null ? Number(req.query.skip) : undefined;
-    const limit = req.query.limit != null ? Number(req.query.limit) : undefined;
-    const list = await defaultAdminService.listUsageOrders(skip, limit);
-    res.json(list);
-  } catch (e) {
-    next(e);
-  }
-}
-
 // --- platform config ---
 export async function getPlatformConfig(_req: Request, res: Response, next: NextFunction) {
   try {

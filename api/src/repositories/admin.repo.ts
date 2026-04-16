@@ -5,7 +5,6 @@ import type {
   Organization,
   ServiceProduct,
   OrganizationSubscription,
-  UsageQuotaOrder,
   PlatformConfig,
   Prisma,
 } from '@prisma/client';
@@ -139,18 +138,6 @@ export interface AdminRepository {
       total_amount: Prisma.Decimal | null;
       paid_amount: Prisma.Decimal | null;
     }>
-  >;
-
-  // Usage Orders
-  listUsageOrders(
-    skip?: number,
-    limit?: number
-  ): Promise<
-    Array<
-      UsageQuotaOrder & {
-        user: { id: string; phone: string | null; full_name: string | null } | null;
-      }
-    >
   >;
 
   // Platform Config
@@ -382,15 +369,6 @@ export function createAdminRepository(db: DbClient): AdminRepository {
             { end_date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
           ],
         },
-      });
-    },
-
-    listUsageOrders: async (skip?: number, limit?: number) => {
-      return db.usageQuotaOrder.findMany({
-        skip,
-        take: limit ?? 50,
-        orderBy: { created_at: 'desc' },
-        include: { user: { select: { id: true, phone: true, full_name: true } } },
       });
     },
 

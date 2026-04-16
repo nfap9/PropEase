@@ -8,11 +8,6 @@ router.use(requireConsoleAuth);
 
 // storefront
 router.get('/storefront', ctrl.getStorefront);
-router.post('/storefront/calculate-price', ctrl.calculatePrice);
-
-// plans
-router.get('/plans', ctrl.listPlans);
-router.get('/plans/:service_id', ctrl.getPlan);
 
 // organization subscription
 router.get('/organizations/:org_id/subscription', ctrl.getSubscription);

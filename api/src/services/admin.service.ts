@@ -4,7 +4,6 @@ import type {
   User,
   Organization,
   OrganizationSubscription,
-  UsageQuotaOrder,
   Prisma,
 } from '@prisma/client';
 import type { ServiceProduct } from '@apartment-ultra/api-contract';
@@ -208,18 +207,6 @@ export interface AdminService {
   // Usage Pricing
   getUsagePricing(): Promise<UsagePricing>;
   updateUsagePricing(data: UpdateUsagePricingInput): Promise<UsagePricing>;
-
-  // Usage Orders
-  listUsageOrders(
-    skip?: number,
-    limit?: number
-  ): Promise<
-    Array<
-      UsageQuotaOrder & {
-        user: { id: string; phone: string | null; full_name: string | null } | null;
-      }
-    >
-  >;
 
   // Platform Config
   getPlatformConfig(): Promise<PlatformBrand>;
@@ -738,10 +725,6 @@ export function createAdminService(
       };
       await getRepo().updateUsagePricingConfig(toPrismaInputJsonValue(updated));
       return updated;
-    },
-
-    listUsageOrders: async (skip?: number, limit?: number) => {
-      return getRepo().listUsageOrders(skip, limit);
     },
 
     getPlatformConfig: async () => {

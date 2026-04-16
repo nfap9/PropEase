@@ -37,6 +37,7 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { cn } from '@apartment-ultra/shared-ui/lib/utils';
 import { adminMessages } from '@/lib/i18n';
 import { BreadcrumbNav } from './breadcrumb-nav';
+import { adminApiEndpoints } from '@/lib/api/admin-client';
 
 const ADMIN_NAV = [
   { href: '/', label: adminMessages.layout.nav.dashboard, icon: LayoutDashboard },
@@ -181,7 +182,12 @@ function AdminNavContent() {
                 <DropdownMenuContent className="w-64 rounded-xl" align="end" forceMount>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => {
+                    onClick={async () => {
+                      try {
+                        await adminApiEndpoints.logout();
+                      } catch {
+                        // 即使失败也继续清除本地状态
+                      }
                       localStorage.removeItem('admin_access_token');
                       window.location.href = '/login';
                     }}
