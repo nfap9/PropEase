@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/protected-route';
-import { AppShell } from '@/components/layout/app-shell';
+import { AppLayout } from '@/components/layout/app-layout';
 import { AppProviders } from '@/components/layout/providers';
 
 // Page components - lazy loaded for better code splitting
@@ -37,7 +37,7 @@ function RootLayout() {
 function ProtectedRoutesLayout() {
   return (
     <ProtectedRoute isAdmin>
-      <AppShell />
+      <AppLayout />
     </ProtectedRoute>
   );
 }

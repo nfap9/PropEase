@@ -2,12 +2,12 @@
 /**
  * AppProviders 组件
  *
- * 使用 useNavigate 的内部组件，必须在 RouterProvider 内部渲染
- * 这确保了 Router context 在调用 useNavigate 时已经建立
+ * 组合所有 Context Providers
  */
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { User, Organization } from '@/types';
 import { authApi, organizationsApi } from '@/api';
 import { AppToaster } from '@apartment-ultra/shared-ui/components/ui';
@@ -29,11 +29,20 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// 创建 QueryClient 实例
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 /**
- * 内部 AuthProvider 组件 - 使用 useNavigate
- * 必须在 RouterProvider 内部渲染
+ * AuthProvider 组件
  */
-function AuthProviderInner({ children }: { children: ReactNode }) {
+function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -165,13 +174,15 @@ export function useAuth() {
 
 /**
  * AppProviders 组件
- * 组合所有 providers，确保 useNavigate 在 Router context 内部调用
+ * 组合所有 providers
  */
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider>
-      <AuthProviderInner>{children}</AuthProviderInner>
-      <AppToaster />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AuthProvider>{children}</AuthProvider>
+        <AppToaster />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
