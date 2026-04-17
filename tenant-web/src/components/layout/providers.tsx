@@ -7,12 +7,21 @@
  */
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { User, Organization } from '@/types';
 import { authApi, organizationsApi } from '@/api';
 import { AppToaster } from '@apartment-ultra/shared-ui/components/ui';
 import { BrandConfigProvider } from '@/contexts/brand-config';
 import { ThemeProvider } from '@/components/theme/theme-provider';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 /** 认证 Context 类型定义 */
 interface AuthContextType {
@@ -204,11 +213,13 @@ export function useAuth() {
  */
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider>
-      <BrandConfigProvider>
-        <AuthProviderInner>{children}</AuthProviderInner>
-      </BrandConfigProvider>
-      <AppToaster />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <BrandConfigProvider>
+          <AuthProviderInner>{children}</AuthProviderInner>
+        </BrandConfigProvider>
+        <AppToaster />
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
