@@ -64,27 +64,6 @@ export default function LeasesPageContent() { ... }
 
 - 使用 Prettier，两个空格缩进，单引号，trailing comma
 
-
-## pages/ 与 features/ 职责划分
-
-| 目录 | 职责 | 复杂度阈值 |
-|------|------|-----------|
-| `pages/` | 路由入口 + 简单组装（< 100 行） | 简单页面 |
-| `features/` | 复杂业务逻辑、组件、hooks、schemas | 复杂页面（> 100 行） |
-
-```tsx
-// 简单页面（直接写在 pages/）
-export default function TenantsPage() {
-  return <TenantsPageContent />;
-}
-
-// 复杂页面（提取到 features/）
-// pages/leases/index.tsx          # 路由入口
-// features/leases/components/       # 业务组件
-// features/leases/hooks/          # useLeaseOperations
-// features/leases/leases.columns.tsx
-```
-
 ## API 客户端组织
 
 ```

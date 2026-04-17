@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useNavContext } from '@/components/layout/nav-context';
-import { getRouteMeta } from '@/components/layout/nav-config-v2';
+import { getRouteMeta } from '@/components/layout/nav-config';
 
 export interface BreadcrumbItem {
   href: string;
