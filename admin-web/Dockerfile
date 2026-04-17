@@ -46,7 +46,6 @@ COPY api/src api/src
 COPY api/prisma api/prisma
 COPY api/tsconfig.json api/
 COPY admin-web/src admin-web/src
-COPY admin-web/public admin-web/public
 COPY admin-web/vite.config.ts admin-web/
 COPY admin-web/tsconfig.json admin-web/
 COPY admin-web/tailwind.config.ts admin-web/
@@ -71,7 +70,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # 安装 serve 用于静态文件服务
-RUN corepack enable pnpm && pnpm add -g serve@14
+RUN npm install -g serve@14
 
 # 复制构建产物
 COPY --from=builder /app/admin-web/dist ./dist

@@ -120,19 +120,54 @@ docker exec apartment_ultra_db psql -U apartment_admin -d apartment_ultra -c "se
 
 ## 健康检查端点
 
+API 服务有多个健康检查端点：
+
+| 端点 | 说明 |
+|------|------|
+| `http://localhost:8000/health` | API 直接访问（不经过 Nginx） |
+| `http://localhost/health` | 通过 Nginx 代理 |
+| `http://localhost/api/v1/health` | 通过 Nginx 代理的 API 路径 |
+
 ```bash
-curl -s http://localhost:8000/health | jq .
+# API 直接访问
+curl -s http://localhost:8000/health
+
+# 通过 Nginx 访问
+curl -s http://localhost/api/v1/health
 ```
 
 正常响应:
 ```json
 {
   "status": "healthy",
+  "app": "Apartment Ultra API",
+  "version": "0.1.0",
+  "is_dev": false,
   "checks": {
     "database": { "status": "ok", "latency": 5 }
   }
 }
 ```
+
+---
+
+## pnpm 全局安装问题
+
+**症状**: 前端镜像构建失败，错误信息 `ERR_PNPM_NO_GLOBAL_BIN_DIR`
+
+**解决方案**: 已修复，Dockerfile 中改用 npm 安装 serve
+
+---
+
+## API 路径代理问题
+
+**症状**: Nginx 返回 `404 Not Found`，但 API 直接访问正常
+
+**原因**: Nginx 代理路径配置与 API 路由不匹配
+
+API 的路由前缀是 `/api/v1`，但健康检查在 `/health`（不在 `/api/v1/health`）
+
+**已修复**: nginx.conf.template 中已添加 `/api/v1/health` 的特殊处理
 
 ---
 
@@ -142,6 +177,15 @@ curl -s http://localhost:8000/health | jq .
 # API 日志
 docker logs -f apartment_ultra_api
 
+# Nginx 日志
+docker logs -f apartment_ultra_nginx
+
 # 审计日志
 docker logs -f apartment_ultra_api 2>&1 | grep AUDIT
+
+# 所有服务日志
+docker compose -f docker/docker-compose.yaml logs -f
+
+# 查看最近错误
+docker compose -f docker/docker-compose.yaml logs --tail 100 --since 10m | grep -i error
 ```

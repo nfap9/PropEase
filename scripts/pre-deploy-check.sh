@@ -1,207 +1,136 @@
 #!/bin/bash
 # ============================================
-# 部署前检查脚本
-# 用法: ./scripts/pre-deploy-check.sh [--env-file .env.production]
+# Apartment Ultra 部署前检查脚本
 # ============================================
 
 set -e
 
-# 颜色定义
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-DIM='\033[2m'
-NC='\033[0m'
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+ENV_FILE="$PROJECT_ROOT/.env.production"
 
-# 默认环境文件
-ENV_FILE="${1:-.env.production}"
-if [[ "$1" == "--env-file" ]]; then
-    ENV_FILE="$2"
-fi
-
-echo -e "${CYAN}╔════════════════════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}║${NC}          ${1}部署前检查${NC}                      ${CYAN}║${NC}"
-echo -e "${CYAN}╚════════════════════════════════════════════════════════╝${NC}"
+echo "============================================"
+echo "  部署前检查"
+echo "============================================"
 echo ""
 
 ERRORS=0
-WARNINGS=0
 
-# 检查结果记录
-check_pass() {
-    echo -e "  ${GREEN}✓${NC} $1"
-}
-
-check_fail() {
-    echo -e "  ${RED}✗${NC} $1"
-    ERRORS=$((ERRORS + 1))
-}
-
-check_warn() {
-    echo -e "  ${YELLOW}!${NC} $1"
-    WARNINGS=$((WARNINGS + 1))
-}
-
-# ============================================
-# 1. 检查环境变量文件
-# ============================================
-echo -e "${DIM}▶ 检查环境配置${NC}"
-
+# 检查环境变量文件
+echo "1. 检查环境变量文件..."
 if [ -f "$ENV_FILE" ]; then
-    check_pass "环境文件 $ENV_FILE 存在"
+    echo "   ✓ 环境变量文件存在: $ENV_FILE"
+
+    # 检查必填项
+    source "$ENV_FILE"
+
+    REQUIRED_VARS=(
+        "SECRET_KEY"
+        "POSTGRES_PASSWORD"
+        "CORS_ORIGINS"
+        "VITE_API_URL"
+        "SERVER_NAME"
+    )
+
+    for var in "${REQUIRED_VARS[@]}"; do
+        if [ -z "${!var}" ] || [ "${!var}" == "your-jwt-secret-key" ] || [ "${!var}" == "your-secure-password" ] || [ "${!var}" == "your-domain.com" ]; then
+            echo "   ✗ 必填项未设置或为默认值: $var"
+            ERRORS=$((ERRORS + 1))
+        else
+            echo "   ✓ $var 已设置"
+        fi
+    done
 else
-    check_fail "环境文件 $ENV_FILE 不存在"
-    echo -e "  ${DIM}提示: 复制 docker/.env.production.example 为 $ENV_FILE${NC}"
-    exit 1
-fi
-
-# 加载环境变量
-set -a
-source "$ENV_FILE"
-set +a
-
-# ============================================
-# 2. 检查必要环境变量
-# ============================================
-echo ""
-echo -e "${DIM}▶ 检查必要环境变量${NC}"
-
-REQUIRED_VARS=(
-    "POSTGRES_PASSWORD:数据库密码"
-    "SECRET_KEY:JWT密钥"
-    "CORS_ORIGINS:跨域配置"
-    "VITE_API_URL:API地址"
-)
-
-for var_def in "${REQUIRED_VARS[@]}"; do
-    var_name="${var_def%%:*}"
-    var_desc="${var_def#*:}"
-    if [ -n "${!var_name}" ]; then
-        # 检查是否是默认值
-        case "$var_name" in
-            "SECRET_KEY")
-                if [ "${!var_name}" = "dev-secret-key-do-not-use-in-production" ]; then
-                    check_fail "$var_desc 使用了开发默认值"
-                else
-                    check_pass "$var_desc 已配置"
-                fi
-                ;;
-            *)
-                check_pass "$var_desc 已配置"
-                ;;
-        esac
-    else
-        check_fail "$var_desc ($var_name) 未设置"
-    fi
-done
-
-# ============================================
-# 3. 检查 Docker 环境
-# ============================================
-echo ""
-echo -e "${DIM}▶ 检查 Docker 环境${NC}"
-
-if command -v docker &> /dev/null; then
-    check_pass "Docker 已安装"
-    if docker info &> /dev/null; then
-        check_pass "Docker 服务运行中"
-    else
-        check_fail "Docker 服务未运行"
-    fi
-else
-    check_fail "Docker 未安装"
-fi
-
-if command -v docker &> /dev/null && docker buildx version &> /dev/null; then
-    check_pass "Docker Buildx 可用"
-else
-    check_warn "Docker Buildx 不可用，跨平台构建可能失败"
-fi
-
-# ============================================
-# 4. 检查必要文件
-# ============================================
-echo ""
-echo -e "${DIM}▶ 检查必要文件${NC}"
-
-REQUIRED_FILES=(
-    "api/Dockerfile:API Dockerfile"
-    "tenant-web/Dockerfile:租客端前端 Dockerfile"
-    "admin-web/Dockerfile:运营后台前端 Dockerfile"
-    "docker/docker-compose.yaml:Docker Compose 配置"
-    "docker/nginx.conf.template:Nginx 配置"
-    "api/prisma/schema.prisma:Prisma Schema"
-)
-
-for file_def in "${REQUIRED_FILES[@]}"; do
-    file_path="${file_def%%:*}"
-    file_desc="${file_def#*:}"
-    if [ -f "$file_path" ]; then
-        check_pass "$file_desc 存在"
-    else
-        check_fail "$file_desc 不存在 ($file_path)"
-    fi
-done
-
-# ============================================
-# 5. 检查 TypeScript 编译
-# ============================================
-echo ""
-echo -e "${DIM}▶ 检查代码质量${NC}"
-
-echo -n "  检查 API TypeScript... "
-if pnpm --filter apartment-ultra-api exec tsc --noEmit 2>/dev/null; then
-    echo -e "${GREEN}✓${NC}"
-else
-    echo -e "${RED}✗${NC}"
+    echo "   ✗ 环境变量文件不存在: $ENV_FILE"
+    echo "     请先运行: ./scripts/setup-env.sh"
     ERRORS=$((ERRORS + 1))
 fi
 
-echo -n "  检查 Web TypeScript... "
-if pnpm --filter apartment-ultra-web exec tsc --noEmit 2>/dev/null; then
-    echo -e "${GREEN}✓${NC}"
+echo ""
+
+# 检查 Docker
+echo "2. 检查 Docker..."
+if docker info > /dev/null 2>&1; then
+    DOCKER_VERSION=$(docker --version | awk '{print $3}' | tr -d ',')
+    echo "   ✓ Docker 已安装: $DOCKER_VERSION"
 else
-    echo -e "${RED}✗${NC}"
+    echo "   ✗ Docker 未运行或当前用户没有权限"
     ERRORS=$((ERRORS + 1))
 fi
 
-# ============================================
-# 6. 检查 URL 配置
-# ============================================
+# 检查 Docker Compose
 echo ""
-echo -e "${DIM}▶ 检查 URL 配置${NC}"
+echo "3. 检查 Docker Compose..."
+if docker compose version > /dev/null 2>&1; then
+    COMPOSE_VERSION=$(docker compose version | awk '{print $4}' | tr -d ',')
+    echo "   ✓ Docker Compose 已安装: $COMPOSE_VERSION"
+else
+    echo "   ✗ Docker Compose 未安装"
+    ERRORS=$((ERRORS + 1))
+fi
 
-if [ -n "$VITE_API_URL" ]; then
-    if [[ "$VITE_API_URL" == http://localhost* ]] || [[ "$VITE_API_URL" == http://127.* ]]; then
-        check_warn "VITE_API_URL 使用本地地址，生产环境应使用服务器地址"
+# 检查端口占用
+echo ""
+echo "4. 检查端口占用..."
+PORTS=(80 5432 6379)
+for PORT in "${PORTS[@]}"; do
+    if lsof -i :$PORT > /dev/null 2>&1; then
+        echo "   ⚠ 端口 $PORT 已被占用"
     else
-        check_pass "VITE_API_URL 格式正确"
+        echo "   ✓ 端口 $PORT 可用"
     fi
-fi
+done
 
-if [ -n "$CORS_ORIGINS" ]; then
-    check_pass "CORS_ORIGINS 已配置"
+# 检查磁盘空间
+echo ""
+echo "5. 检查磁盘空间..."
+AVAILABLE=$(df -h . | awk 'NR==2 {print $4}')
+if [ "${AVAILABLE%s}" -lt 5 ]; then
+    echo "   ✗ 磁盘空间不足，建议至少 5GB 可用空间"
+    ERRORS=$((ERRORS + 1))
 else
-    check_fail "CORS_ORIGINS 未配置"
+    echo "   ✓ 可用空间: $AVAILABLE"
 fi
 
-# ============================================
-# 7. 汇总结果
-# ============================================
+# 检查必要文件
 echo ""
-echo -e "${DIM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
+echo "6. 检查必要文件..."
+DOCKER_FILES=(
+    "docker/docker-compose.yaml"
+    "docker/nginx.conf.template"
+    "api/Dockerfile"
+    "tenant-web/Dockerfile"
+    "admin-web/Dockerfile"
+)
 
-if [ $ERRORS -gt 0 ]; then
-    echo -e "${RED}发现 $ERRORS 个错误，$WARNINGS 个警告${NC}"
-    echo -e "${DIM}请修复错误后再部署${NC}"
+for file in "${DOCKER_FILES[@]}"; do
+    if [ -f "$PROJECT_ROOT/$file" ]; then
+        echo "   ✓ $file 存在"
+    else
+        echo "   ✗ $file 不存在"
+        ERRORS=$((ERRORS + 1))
+    fi
+done
+
+# 检查内存（Docker 建议至少 2GB）
+echo ""
+echo "7. 检查可用内存..."
+TOTAL_MEM=$(free -m | awk 'NR==2 {print $2}')
+if [ "$TOTAL_MEM" -lt 2048 ]; then
+    echo "   ⚠ 内存较低 ($TOTAL_MEM MB)，建议至少 2GB"
+else
+    echo "   ✓ 可用内存: ${TOTAL_MEM}MB"
+fi
+
+echo ""
+echo "============================================"
+if [ $ERRORS -eq 0 ]; then
+    echo "  检查通过! 可以继续部署。"
+    echo "============================================"
+    exit 0
+else
+    echo "  检查未通过，发现 $ERRORS 个错误。"
+    echo "  请修复上述问题后重试。"
+    echo "============================================"
     exit 1
-elif [ $WARNINGS -gt 0 ]; then
-    echo -e "${YELLOW}检查通过，但有 $WARNINGS 个警告${NC}"
-    echo -e "${DIM}建议处理警告后再部署${NC}"
-    exit 0
-else
-    echo -e "${GREEN}所有检查通过！${NC}"
-    exit 0
 fi

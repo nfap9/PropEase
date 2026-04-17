@@ -1,228 +1,157 @@
 #!/bin/bash
 # ============================================
-# 本地验证生产环境构建
-# 用法: ./scripts/verify-production.sh [--cleanup]
+# Apartment Ultra 生产环境验证脚本
 # ============================================
 
 set -e
 
-# 颜色定义
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-DIM='\033[2m'
-NC='\033[0m'
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+ENV_FILE="$PROJECT_ROOT/.env.production"
 
-CLEANUP=false
-for arg in "$@"; do
-    if [ "$arg" == "--cleanup" ]; then
-        CLEANUP=true
+echo "============================================"
+echo "  Apartment Ultra 生产环境验证"
+echo "============================================"
+echo ""
+
+# 加载环境变量
+if [ -f "$ENV_FILE" ]; then
+    source "$ENV_FILE"
+fi
+
+# 容器状态检查
+echo "1. 容器状态检查"
+echo "--------------------------------------------"
+CONTAINERS=(
+    "apartment_ultra_db"
+    "apartment_ultra_redis"
+    "apartment_ultra_api"
+    "apartment_ultra_tenant_web"
+    "apartment_ultra_admin"
+    "apartment_ultra_nginx"
+)
+
+ALL_RUNNING=true
+for container in "${CONTAINERS[@]}"; do
+    if docker ps | grep -q "$container"; then
+        STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$container" 2>/dev/null || echo "no-health-check")
+        if [ "$STATUS" = "healthy" ] || [ "$STATUS" = "no-health-check" ]; then
+            echo "   ✓ $container: 运行中"
+        else
+            echo "   ⚠ $container: $STATUS"
+        fi
+    else
+        echo "   ✗ $container: 未运行"
+        ALL_RUNNING=false
     fi
 done
 
-echo -e "${CYAN}╔════════════════════════════════════════════════════════╗${NC}"
-echo -e "${CYAN}║${NC}          ${1m本地生产环境验证${NC}                      ${CYAN}║${NC}"
-echo -e "${CYAN}╚════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-ENV_FILE=".env.production"
-COMPOSE_FILE="docker/docker-compose.yaml"
-
-# 清理函数
-cleanup() {
-    echo ""
-    echo -e "${DIM}▶ 清理环境...${NC}"
-    docker compose -f $COMPOSE_FILE --env-file $ENV_FILE down --volumes 2>/dev/null || true
-    echo -e "${GREEN}清理完成${NC}"
-}
-
-# 如果指定了 --cleanup 或按 Ctrl+C，执行清理
-if [ "$CLEANUP" = true ]; then
-    cleanup
-    exit 0
-fi
-
-trap cleanup EXIT
-
-# ============================================
-# 1. 检查环境文件
-# ============================================
-echo -e "${DIM}▶ 检查环境配置${NC}"
-
-if [ ! -f "$ENV_FILE" ]; then
-    echo -e "  ${YELLOW}!${NC} $ENV_FILE 不存在，创建测试配置..."
-    cp docker/.env.production.example "$ENV_FILE"
-
-    # 设置测试值
-    sed -i '' "s|POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -base64 24)|" "$ENV_FILE"
-    sed -i '' "s|SECRET_KEY=.*|SECRET_KEY=$(openssl rand -hex 32)|" "$ENV_FILE"
-    sed -i '' "s|CORS_ORIGINS=.*|CORS_ORIGINS=[\"http://localhost:3000\"]|" "$ENV_FILE"
-    sed -i '' "s|VITE_API_URL=.*|VITE_API_URL=http://localhost:8000/api/v1|" "$ENV_FILE"
-    sed -i '' "s|SERVER_NAME=.*|SERVER_NAME=localhost|" "$ENV_FILE"
-
-    echo -e "  ${GREEN}✓${NC} 已创建测试环境配置"
+# API 健康检查
+echo "2. API 健康检查"
+echo "--------------------------------------------"
+API_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health 2>/dev/null || echo "000")
+if [ "$API_HEALTH" = "200" ]; then
+    echo "   ✓ API 健康检查通过"
 else
-    echo -e "  ${GREEN}✓${NC} 环境文件存在"
+    echo "   ✗ API 健康检查失败 (HTTP $API_HEALTH)"
 fi
 
-# ============================================
-# 2. 构建 Docker 镜像
-# ============================================
+# API 版本检查
 echo ""
-echo -e "${DIM}▶ 构建 Docker 镜像${NC}"
-echo -e "  ${DIM}(这可能需要几分钟...)${NC}"
+echo "3. API 版本信息"
+echo "--------------------------------------------"
+API_VERSION=$(curl -s http://localhost:8000/health 2>/dev/null | grep -o '"version":"[^"]*"' | cut -d'"' -f4 || echo "未知")
+echo "   版本: $API_VERSION"
 
-API_URL=$(grep "^VITE_API_URL=" "$ENV_FILE" | cut -d'=' -f2-)
-
-# 构建 API 镜像
-BUILD_LOG=$(mktemp)
-if docker buildx build --load -f api/Dockerfile -t apartment-ultra-api:latest . >"$BUILD_LOG" 2>&1; then
-    echo -e "  ${GREEN}✓${NC} API 镜像构建成功"
+# 租客端检查
+echo ""
+echo "4. 租客端检查"
+echo "--------------------------------------------"
+TENANT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null || echo "000")
+if [ "$TENANT_STATUS" = "200" ]; then
+    echo "   ✓ 租客端可访问 (HTTP $TENANT_STATUS)"
 else
-    echo -e "  ${RED}✗${NC} API 镜像构建失败"
-    echo -e "  ${DIM}错误日志:${NC}"
-    tail -30 "$BUILD_LOG" | sed 's/^/    /'
-    rm -f "$BUILD_LOG"
-    exit 1
+    echo "   ✗ 租客端不可用 (HTTP $TENANT_STATUS)"
 fi
-rm -f "$BUILD_LOG"
 
-# 构建租客端前端镜像
-BUILD_LOG=$(mktemp)
-if docker buildx build --load -f tenant-web/Dockerfile --build-arg VITE_API_URL="${API_URL}" -t apartment-ultra-tenant-web:latest . >"$BUILD_LOG" 2>&1; then
-    echo -e "  ${GREEN}✓${NC} 租客端前端镜像构建成功"
+# 运营后台检查
+echo ""
+echo "5. 运营后台检查"
+echo "--------------------------------------------"
+ADMIN_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001 2>/dev/null || echo "000")
+if [ "$ADMIN_STATUS" = "200" ]; then
+    echo "   ✓ 运营后台可访问 (HTTP $ADMIN_STATUS)"
 else
-    echo -e "  ${RED}✗${NC} 租客端前端镜像构建失败"
-    echo -e "  ${DIM}错误日志:${NC}"
-    tail -30 "$BUILD_LOG" | sed 's/^/    /'
-    rm -f "$BUILD_LOG"
-    exit 1
+    echo "   ✗ 运营后台不可用 (HTTP $ADMIN_STATUS)"
 fi
-rm -f "$BUILD_LOG"
 
-# 构建运营后台前端镜像
-BUILD_LOG=$(mktemp)
-if docker buildx build --load -f admin-web/Dockerfile --build-arg VITE_API_URL="${API_URL}" -t apartment-ultra-admin-web:latest . >"$BUILD_LOG" 2>&1; then
-    echo -e "  ${GREEN}✓${NC} 运营后台前端镜像构建成功"
+# Nginx 代理检查
+echo ""
+echo "6. Nginx 代理检查"
+echo "--------------------------------------------"
+NGINX_API=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/api/health 2>/dev/null || echo "000")
+NGINX_WEB=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/ 2>/dev/null || echo "000")
+NGINX_ADMIN=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/admin 2>/dev/null || echo "000")
+
+if [ "$NGINX_API" = "200" ]; then
+    echo "   ✓ API 代理正常 (HTTP $NGINX_API)"
 else
-    echo -e "  ${RED}✗${NC} 运营后台前端镜像构建失败"
-    echo -e "  ${DIM}错误日志:${NC}"
-    tail -30 "$BUILD_LOG" | sed 's/^/    /'
-    rm -f "$BUILD_LOG"
-    exit 1
-fi
-rm -f "$BUILD_LOG"
-
-# ============================================
-# 3. 启动服务
-# ============================================
-echo ""
-echo -e "${DIM}▶ 启动服务${NC}"
-
-docker compose -f $COMPOSE_FILE --env-file $ENV_FILE up -d --no-build
-
-echo -e "  ${DIM}等待服务启动...${NC}"
-
-# 等待 API 健康
-MAX_WAIT=60
-WAITED=0
-while [ $WAITED -lt $MAX_WAIT ]; do
-    HEALTH=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health 2>/dev/null || echo "000")
-    if [ "$HEALTH" = "200" ]; then
-        echo -e "  ${GREEN}✓${NC} API 服务已就绪"
-        break
-    fi
-    echo -n "."
-    sleep 2
-    WAITED=$((WAITED + 2))
-done
-echo ""
-
-if [ "$HEALTH" != "200" ]; then
-    echo -e "  ${RED}✗${NC} API 服务启动超时"
-    echo -e "  ${DIM}日志:${NC}"
-    docker compose -f $COMPOSE_FILE --env-file $ENV_FILE logs api --tail 20 2>/dev/null | sed 's/^/    /'
-    exit 1
+    echo "   ✗ API 代理异常 (HTTP $NGINX_API)"
 fi
 
-# ============================================
-# 4. 健康检查
-# ============================================
-echo ""
-echo -e "${DIM}▶ 健康检查${NC}"
-
-# 检查 API
-API_HEALTH=$(curl -s http://localhost:8000/health 2>/dev/null)
-if echo "$API_HEALTH" | grep -q '"status":"healthy"'; then
-    echo -e "  ${GREEN}✓${NC} API 健康检查通过"
-    echo -e "  ${DIM}响应: $(echo "$API_HEALTH" | head -c 100)...${NC}"
+if [ "$NGINX_WEB" = "200" ]; then
+    echo "   ✓ 前端代理正常 (HTTP $NGINX_WEB)"
 else
-    echo -e "  ${RED}✗${NC} API 健康检查失败"
-    echo -e "  ${DIM}响应: $API_HEALTH${NC}"
+    echo "   ✗ 前端代理异常 (HTTP $NGINX_WEB)"
 fi
 
-# 检查租客端前端
-TENANT_WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null || echo "000")
-if [ "$TENANT_WEB_STATUS" = "200" ]; then
-    echo -e "  ${GREEN}✓${NC} 租客端前端服务响应正常"
+if [ "$NGINX_ADMIN" = "200" ]; then
+    echo "   ✓ 运营后台代理正常 (HTTP $NGINX_ADMIN)"
 else
-    echo -e "  ${YELLOW}!${NC} 租客端前端服务状态码: $TENANT_WEB_STATUS"
+    echo "   ✗ 运营后台代理异常 (HTTP $NGINX_ADMIN)"
 fi
 
-# 检查运营后台
-ADMIN_WEB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/admin 2>/dev/null || echo "000")
-if [ "$ADMIN_WEB_STATUS" = "200" ] || [ "$ADMIN_WEB_STATUS" = "302" ]; then
-    echo -e "  ${GREEN}✓${NC} 运营后台服务响应正常"
+# 数据库连接检查
+echo ""
+echo "7. 数据库连接检查"
+echo "--------------------------------------------"
+if docker exec apartment_ultra_db pg_isready -U "${POSTGRES_USER:-postgres}" > /dev/null 2>&1; then
+    echo "   ✓ PostgreSQL 连接正常"
 else
-    echo -e "  ${YELLOW}!${NC} 运营后台服务状态码: $ADMIN_WEB_STATUS"
+    echo "   ✗ PostgreSQL 连接异常"
 fi
 
-# 检查 Nginx
-NGINX_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/health 2>/dev/null || echo "000")
-if [ "$NGINX_STATUS" = "200" ]; then
-    echo -e "  ${GREEN}✓${NC} Nginx 代理正常"
+# Redis 连接检查
+echo ""
+echo "8. Redis 连接检查"
+echo "--------------------------------------------"
+if docker exec apartment_ultra_redis redis-cli ping > /dev/null 2>&1; then
+    echo "   ✓ Redis 连接正常"
 else
-    echo -e "  ${YELLOW}!${NC} Nginx 状态码: $NGINX_STATUS"
+    echo "   ✗ Redis 连接异常"
 fi
 
-# ============================================
-# 5. API 功能测试
-# ============================================
+# 日志检查（最近错误）
 echo ""
-echo -e "${DIM}▶ API 功能测试${NC}"
-
-# 测试管理员登录
-LOGIN_RESPONSE=$(curl -s -X POST http://localhost:8000/api/v1/admin/auth/login \
-    -H "Content-Type: application/json" \
-    -d '{"username":"admin","password":"Admin@123456"}' 2>/dev/null || echo '{"code":-1}')
-
-if echo "$LOGIN_RESPONSE" | grep -q '"code":0'; then
-    echo -e "  ${GREEN}✓${NC} 管理员登录成功"
+echo "9. 容器日志检查（最近错误）"
+echo "--------------------------------------------"
+ERRORS=$(docker compose -f "$PROJECT_ROOT/docker/docker-compose.yaml" logs --tail=50 --since=10m 2>/dev/null | grep -i "error\|fatal\|exception" | tail -5 || true)
+if [ -n "$ERRORS" ]; then
+    echo "   ⚠ 检测到潜在错误:"
+    echo "$ERRORS" | sed 's/^/      /'
 else
-    echo -e "  ${RED}✗${NC} 管理员登录失败"
-    echo -e "  ${DIM}响应: $LOGIN_RESPONSE${NC}"
+    echo "   ✓ 最近 10 分钟无明显错误"
 fi
 
-# ============================================
-# 6. 汇总
-# ============================================
 echo ""
-echo -e "${DIM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo "============================================"
+echo "  验证完成!"
+echo "============================================"
 echo ""
-echo -e "${GREEN}本地验证完成！${NC}"
+echo "访问地址:"
+echo "  租客端:   http://${SERVER_NAME:-localhost}"
+echo "  运营后台: http://${SERVER_NAME:-localhost}/admin"
+echo "  API:      http://${SERVER_NAME:-localhost}/api/v1"
 echo ""
-echo -e "访问地址:"
-echo -e "  ${CYAN}→${NC} 租客端: ${DIM}http://localhost:3000${NC}"
-echo -e "  ${CYAN}→${NC} 运营后台: ${DIM}http://localhost:80/admin${NC}"
-echo -e "  ${CYAN}→${NC} API:  ${DIM}http://localhost:8000/api/v1${NC}"
-echo -e "  ${CYAN}→${NC} 健康检查: ${DIM}http://localhost:8000/health${NC}"
-echo ""
-echo -e "管理员账号: ${DIM}admin / Admin@123456${NC}"
-echo ""
-echo -e "查看日志: ${DIM}docker compose -f $COMPOSE_FILE --env-file $ENV_FILE logs -f${NC}"
-echo -e "停止服务: ${DIM}./scripts/verify-production.sh --cleanup${NC}"
-echo ""
-
-# 不自动退出，保持容器运行
-trap - EXIT

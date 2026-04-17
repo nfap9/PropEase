@@ -71,7 +71,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # 安装 serve 用于静态文件服务
-RUN corepack enable pnpm && pnpm add -g serve@14
+RUN npm install -g serve@14
 
 # 复制构建产物
 COPY --from=builder /app/tenant-web/dist ./dist

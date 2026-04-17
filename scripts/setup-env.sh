@@ -1,93 +1,107 @@
 #!/bin/bash
-# =========================================
-# 初始化生产环境配置
-# =========================================
-# 使用方法: ./scripts/setup-env.sh
-# 会自动生成 .env.production 文件
-# =========================================
+# ============================================
+# Apartment Ultra 环境变量设置脚本
+# ============================================
 
 set -e
 
-# 颜色输出
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+ENV_FILE="$PROJECT_ROOT/.env.production"
+EXAMPLE_FILE="$PROJECT_ROOT/docker/.env.production.example"
 
-log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
-log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
-log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+echo "============================================"
+echo "  Apartment Ultra 环境变量设置向导"
+echo "============================================"
+echo ""
 
-ENV_FILE=".env.production"
-
-# 检查是否已存在
-if [ -f "$ENV_FILE" ]; then
-    log_warn "$ENV_FILE 已存在"
-    read -p "是否覆盖? (y/N): " confirm
-    if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
-        log_info "已取消"
-        exit 0
-    fi
-fi
-
-log_info "开始生成 $ENV_FILE..."
-
-# 获取服务器地址
-read -p "请输入服务器 IP 或域名: " SERVER_ADDR
-if [ -z "$SERVER_ADDR" ]; then
-    log_error "服务器地址不能为空"
+# 检查示例文件是否存在
+if [ ! -f "$EXAMPLE_FILE" ]; then
+    echo "错误: 找不到环境变量示例文件: $EXAMPLE_FILE"
     exit 1
 fi
 
-# 生成密钥
-log_info "生成密钥..."
-POSTGRES_PASSWORD=$(openssl rand -base64 32 | tr -d '/+=')
-SECRET_KEY=$(openssl rand -hex 64)
+# 如果已存在 .env.production，询问是否备份
+if [ -f "$ENV_FILE" ]; then
+    echo "检测到已存在的环境变量文件: $ENV_FILE"
+    read -p "是否备份现有文件? (y/n): " -n 1 -r
+    echo ""
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        BACKUP_FILE="$ENV_FILE.backup.$(date +%Y%m%d%H%M%S)"
+        cp "$ENV_FILE" "$BACKUP_FILE"
+        echo "已备份到: $BACKUP_FILE"
+    fi
+fi
 
-# 写入配置文件
-cat > $ENV_FILE << EOF
-# =========================================
-# Apartment Ultra 生产环境配置
-# 自动生成于 $(date '+%Y-%m-%d %H:%M:%S')
-# =========================================
-
-# ---- 数据库配置 ----
-POSTGRES_USER=apartment_admin
-POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-POSTGRES_DB=apartment_ultra
-
-# ---- API 配置 ----
-APP_NAME=Apartment Ultra API
-SECRET_KEY=${SECRET_KEY}
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
-
-# ---- CORS 配置 ----
-CORS_ORIGINS=["http://${SERVER_ADDR}"]
-
-# ---- 前端配置 ----
-VITE_API_URL=http://${SERVER_ADDR}/api/v1
-
-# ---- Nginx 配置 ----
-SERVER_NAME=${SERVER_ADDR}
-
-# ---- 微信支付配置（可选）----
-WECHAT_PAY_ENABLED=false
-
-# ---- 镜像标签 ----
-API_IMAGE_TAG=latest
-TENANT_WEB_IMAGE_TAG=latest
-ADMIN_WEB_IMAGE_TAG=latest
-EOF
-
-chmod 600 $ENV_FILE
-
-log_info "配置文件已生成: $ENV_FILE"
+# 复制示例文件
+cp "$EXAMPLE_FILE" "$ENV_FILE"
+echo "已创建环境变量文件: $ENV_FILE"
 echo ""
-echo "=========================================="
-echo "重要信息请保存:"
-echo "  数据库密码: $POSTGRES_PASSWORD"
-echo "=========================================="
+
+# 交互式设置必填项
+echo "============================================"
+echo "  请设置以下必填项:"
+echo "============================================"
+
+# SECRET_KEY
 echo ""
-log_info "现在可以执行部署:"
-echo "  DEPLOY_HOST=${SERVER_ADDR} ./scripts/deploy.sh"
+echo "1. SECRET_KEY (JWT 签名密钥)"
+echo "   - 推荐使用 32 位以上的随机字符串"
+read -p "   请输入 SECRET_KEY (或按 Enter 生成随机值): " SECRET_KEY
+if [ -z "$SECRET_KEY" ]; then
+    SECRET_KEY=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 48)
+    echo "   已生成随机密钥"
+fi
+
+# CORS_ORIGINS
+echo ""
+echo "2. CORS_ORIGINS (允许的跨域来源)"
+echo "   - 多个地址用逗号分隔"
+echo "   - 示例: http://localhost,https://your-domain.com"
+read -p "   请输入 CORS_ORIGINS: " CORS_ORIGINS
+
+# VITE_API_URL
+echo ""
+echo "3. VITE_API_URL (前端 API 地址)"
+echo "   - 生产环境应为你的域名: https://your-domain.com/api/v1"
+read -p "   请输入 VITE_API_URL: " VITE_API_URL
+
+# POSTGRES_PASSWORD
+echo ""
+echo "4. POSTGRES_PASSWORD (数据库密码)"
+read -p "   请输入 POSTGRES_PASSWORD: " POSTGRES_PASSWORD
+
+# SERVER_NAME
+echo ""
+echo "5. SERVER_NAME (服务器域名)"
+read -p "   请输入 SERVER_NAME (如: your-domain.com): " SERVER_NAME
+
+# 更新环境变量文件
+echo ""
+echo "============================================"
+echo "  更新环境变量文件..."
+echo "============================================"
+
+# 使用 sed 更新必填项
+sed -i.bak "s|your-jwt-secret-key|${SECRET_KEY}|g" "$ENV_FILE"
+sed -i.bak "s|your-secure-password|${POSTGRES_PASSWORD}|g" "$ENV_FILE"
+sed -i.bak "s|\"http://your-domain.com\"|\"${CORS_ORIGINS}\"|g" "$ENV_FILE"
+sed -i.bak "s|http://your-domain.com/api/v1|${VITE_API_URL}|g" "$ENV_FILE"
+sed -i.bak "s|your-domain.com|${SERVER_NAME}|g" "$ENV_FILE"
+
+# 移除备份文件
+rm -f "$ENV_FILE.bak"
+
+# 设置文件权限
+chmod 600 "$ENV_FILE"
+
+echo ""
+echo "============================================"
+echo "  环境变量设置完成!"
+echo "============================================"
+echo ""
+echo "下一步:"
+echo "  1. 检查并编辑: $ENV_FILE"
+echo "  2. 运行构建脚本: ./scripts/build-images.sh"
+echo "  3. 运行部署脚本: ./scripts/deploy.sh"
+echo ""

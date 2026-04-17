@@ -21,8 +21,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-apartment_ultra}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backup:/backup
@@ -48,8 +46,6 @@ services:
     image: redis:7-alpine
     container_name: apartment_ultra_redis
     command: redis-server --appendonly yes
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -90,8 +86,6 @@ services:
       WECHAT_CERT_SERIAL_NO: ${WECHAT_CERT_SERIAL_NO:-}
       WECHAT_PAY_NOTIFY_URL_BASE: ${WECHAT_PAY_NOTIFY_URL_BASE:-}
       WECHAT_PRIVATE_KEY: ${WECHAT_PRIVATE_KEY:-}
-    ports:
-      - "${API_PORT:-8000}:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -126,8 +120,6 @@ services:
     container_name: apartment_ultra_tenant_web
     environment:
       NODE_ENV: production
-    ports:
-      - "${TENANT_WEB_PORT:-3000}:3000"
     depends_on:
       api:
         condition: service_healthy
@@ -155,8 +147,6 @@ services:
     container_name: apartment_ultra_admin
     environment:
       NODE_ENV: production
-    ports:
-      - "${ADMIN_WEB_PORT:-8080}:8080"
     depends_on:
       api:
         condition: service_healthy
