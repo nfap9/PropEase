@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
-import { Building2, Plus } from 'lucide-react';
+import { Building2, Plus, Settings } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { useNavigate } from 'react-router-dom';
 import { Organization } from '@/types';
@@ -63,6 +63,15 @@ export function OrgSelector() {
               {org.name}
             </SelectItem>
           ))}
+          <div className="border-t pt-2 mt-2">
+            <button
+              onClick={() => navigate('/organizations')}
+              className="flex w-full items-center gap-2 px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <Settings className="h-4 w-4" />
+              管理团队
+            </button>
+          </div>
         </SelectContent>
       </Select>
 

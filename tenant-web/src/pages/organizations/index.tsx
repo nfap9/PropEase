@@ -5,7 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Building2, Check } from 'lucide-react';
+import { Building2, Check, Plus } from 'lucide-react';
 import { appToast } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/contexts/auth';
 import { organizationsApi } from '@/api';
@@ -159,8 +159,12 @@ export default function OrganizationsPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-8">
       <div className="w-full max-w-lg space-y-6">
-        <div className="text-center">
+        <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight">我的团队</h1>
+          <Button variant="outline" size="sm" onClick={() => navigate('/organizations/new')} className="gap-2">
+            <Plus className="h-4 w-4" />
+            创建新团队
+          </Button>
         </div>
         <div className="space-y-3">
           {organizations.map((org) => {
