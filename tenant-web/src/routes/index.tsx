@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate, RouteObject } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AppLayout } from '@/components/layout/app-layout';
+import { WorkspaceLayout } from '@/components/layout/workspace-layout';
 import { NotFound } from '@/routes/not-found';
 
 // 页面组件
@@ -78,14 +79,11 @@ const protectedRoutes: RouteObject[] = [
       { path: 'organizations/new', element: <OrganizationNewPage /> },
       {
         path: 'workspace/',
+        element: <WorkspaceLayout />,
         children: [...workspaceRoutes],
       },
     ],
   },
 ];
 
-export const router = createBrowserRouter([
-  ...publicRoutes,
-  ...protectedRoutes,
-  { path: '*', element: <NotFound /> },
-]);
+export const router = createBrowserRouter([...publicRoutes, ...protectedRoutes, { path: '*', element: <NotFound /> }]);
