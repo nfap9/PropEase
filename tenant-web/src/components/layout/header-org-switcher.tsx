@@ -11,7 +11,6 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/contexts/auth';
-import { useBrandConfig } from '@/contexts/brand-config';
 
 /**
  * Header 组织切换器
@@ -20,15 +19,14 @@ import { useBrandConfig } from '@/contexts/brand-config';
  */
 export function HeaderOrgSwitcher() {
   const { organization, organizations, setOrganization } = useAuth();
-  const { app_name } = useBrandConfig();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   if (organizations.length <= 1) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
         <Building2 className="h-4 w-4" />
-        <span>{organization?.name || app_name}</span>
+        <span>{organization?.name}</span>
       </div>
     );
   }
@@ -39,7 +37,7 @@ export function HeaderOrgSwitcher() {
         <Button
           variant="ghost"
           size="sm"
-          className="h-auto gap-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground"
+          className="h-auto gap-1.5 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <Building2 className="h-4 w-4" />
           <span className="max-w-[120px] truncate">{organization?.name}</span>
