@@ -8,7 +8,7 @@ import {
   SidebarTrigger,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { cn } from '@apartment-ultra/shared-ui/lib/utils';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { NavProvider, useNavContext } from './nav-context';
 import { ROUTE_META } from './nav-config-v2';
 
@@ -77,7 +77,7 @@ function SidebarNavContent() {
   );
 }
 
-export function WorkspaceLayout({ children }: { children: React.ReactNode }) {
+export function WorkspaceLayout() {
   return (
     <NavProvider>
       <SidebarProvider defaultOpen={true}>
@@ -85,7 +85,9 @@ export function WorkspaceLayout({ children }: { children: React.ReactNode }) {
           <Sidebar side="left" variant="sidebar" collapsible="icon" position="relative">
             <SidebarNavContent />
           </Sidebar>
-          <div className="min-h-0 flex-1 overflow-auto p-4 md:p-6">{children}</div>
+          <div className="min-h-0 flex-1 overflow-auto p-4 md:p-6">
+            <Outlet />
+          </div>
         </div>
       </SidebarProvider>
     </NavProvider>

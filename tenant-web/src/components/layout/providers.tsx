@@ -1,18 +1,17 @@
-
 /**
- * AppProviders 组件
+ * 认证 Provider
  *
- * 使用 useNavigate 的内部组件，必须在 RouterProvider 内部渲染
- * 这确保了 Router context 在调用 useNavigate 时已经建立
+ * 提供用户登录状态、组织信息、登录/登出方法
+ * 由于 logout 需要导航，使用 router.navigate 代替 useNavigate hook
  */
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { User, Organization } from '@/types';
 import { authApi, organizationsApi } from '@/api';
 import { AppToaster } from '@apartment-ultra/shared-ui/components/ui';
 import { BrandConfigProvider } from '@/contexts/brand-config';
 import { ThemeProvider } from '@/components/theme/theme-provider';
+import { router } from '@/routes';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,16 +61,15 @@ function resolveCurrentOrganization(
 }
 
 /**
- * 内部 AuthProvider 组件 - 使用 useNavigate
- * 必须在 RouterProvider 内部渲染
+ * AuthProvider 组件
+ * 注意：logout 使用 router.navigate 而不是 useNavigate，避免 Router context 依赖
  */
-function AuthProviderInner({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const queryClientRef = useRef(useQueryClient());
 
   const loadOrganizations = async (preferredOrgId?: string | null) => {
     try {
@@ -99,7 +97,7 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
     await loadOrganizations(preferredOrgId);
   };
 
-  const logout = React.useCallback(async () => {
+  const logout = useCallback(async () => {
     try {
       await authApi.logout();
     } catch {
@@ -112,10 +110,10 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
       setUser(null);
       setOrganization(null);
       setOrganizations([]);
-      queryClient.clear();
-      navigate('/login');
+      queryClientRef.current.clear();
+      router.navigate('/login');
     }
-  }, [queryClient, navigate]);
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -127,7 +125,7 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
           setUser(userData);
           await loadOrganizations();
         } catch {
-          logout();
+          await logout();
         }
       }
       setIsLoading(false);
@@ -144,19 +142,15 @@ function AuthProviderInner({ children }: { children: ReactNode }) {
     const userData = await authApi.getMe();
     setUser(userData);
 
-    // 加载组织列表，并检查本地存储的组织是否有效
     const orgs = await loadOrganizations();
     const savedOrgId = localStorage.getItem('current_organization_id');
-    const savedOrgIsValid = savedOrgId && orgs.some(org => org.id === savedOrgId);
+    const savedOrgIsValid = savedOrgId && orgs.some((org) => org.id === savedOrgId);
 
     if (savedOrgIsValid) {
-      // 保存的组织有效，进入工作台
       return '/workspace/dashboard';
     } else if (orgs.length > 0) {
-      // 没有保存的组织或已无效，但有其他组织，进入组织选择页面
       return '/organizations';
     } else {
-      // 没有组织，进入创建组织页面
       return '/organizations/new';
     }
   };
@@ -208,18 +202,18 @@ export function useAuth() {
 }
 
 /**
- * AppProviders 组件
- * 组合所有 providers，确保 useNavigate 在 Router context 内部调用
+ * AppProviders - 聚合 providers（不依赖 Router context）
+ * 用于 main.tsx 中 RouterProvider 外层
  */
-export function AppProviders({ children }: { children: ReactNode }) {
+export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <BrandConfigProvider>
-          <AuthProviderInner>{children}</AuthProviderInner>
+          {children}
         </BrandConfigProvider>
-        <AppToaster />
       </ThemeProvider>
+      <AppToaster />
     </QueryClientProvider>
   );
 }
