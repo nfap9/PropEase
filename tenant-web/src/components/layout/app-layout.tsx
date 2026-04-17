@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { OrgSelector } from '@/components/common/org-selector';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -101,7 +102,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* 头部 */}
         <header className="flex h-14 items-center justify-between border-b border-border bg-background px-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {currentNavItem && (
               <span className="text-sm font-medium text-foreground">
                 {currentNavItem.label}
@@ -110,6 +111,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            <OrgSelector />
             {/* 通知按钮 */}
             <Button variant="ghost" size="sm" asChild>
               <Link to="/workspace/notifications">
@@ -145,7 +147,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         {/* 页面内容 */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto p-6">
           {children || <Outlet />}
         </main>
       </div>
