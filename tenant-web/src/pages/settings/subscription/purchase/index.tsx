@@ -107,7 +107,7 @@ export default function SubscriptionPurchasePage() {
     onSuccess: (order) => {
       setSelectedService(null);
       setOrderPreview(null);
-      navigate(`/settings/subscription/pay?order_id=${order.id}`);
+      navigate(`/workspace/subscription/pay?order_id=${order.id}`);
     },
     onError: (error) =>
       appToast.error(
@@ -129,7 +129,7 @@ export default function SubscriptionPurchasePage() {
       queryClient.invalidateQueries({ queryKey: ['organization-usage', orgId] });
       setSelectedService(null);
       setOrderPreview(null);
-      navigate('/settings/subscription');
+      navigate('/workspace/subscription');
     },
     onError: (error) =>
       appToast.error(

@@ -48,7 +48,7 @@ function SubscriptionPayContent() {
       appToast.success('直接完成订阅成功（开发环境）');
       queryClient.invalidateQueries({ queryKey: ['subscription-status', orgId] });
       queryClient.invalidateQueries({ queryKey: ['organization-usage', orgId] });
-      navigate('/settings/subscription');
+      navigate('/workspace/subscription');
     },
     onError: (error) => {
       appToast.error(`直接完成订阅失败: ${error instanceof Error ? error.message : '未知错误'}`);
@@ -56,12 +56,12 @@ function SubscriptionPayContent() {
   });
 
   const handleBack = useCallback(() => {
-    navigate('/settings/subscription');
+    navigate('/workspace/subscription');
   }, [navigate]);
 
   useEffect(() => {
     if (order?.status === 'paid') {
-      navigate(`/settings/subscription/result?order_id=${orderId}&status=success`, { replace: true });
+      navigate(`/workspace/subscription/result?order_id=${orderId}&status=success`, { replace: true });
     }
   }, [order?.status, orderId, navigate]);
 

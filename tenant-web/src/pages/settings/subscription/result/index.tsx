@@ -29,7 +29,7 @@ function SubscriptionResultContent() {
   }, [isSuccess, orgId, queryClient]);
 
   const handleBack = () => {
-    navigate('/settings/subscription');
+    navigate('/workspace/subscription');
   };
 
   return (

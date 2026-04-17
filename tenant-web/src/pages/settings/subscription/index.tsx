@@ -60,7 +60,7 @@ export default function SubscriptionPage() {
     <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-end">
-          <Button onClick={() => navigate('/settings/subscription/purchase')} data-testid={SUBSCRIPTION.UPGRADE_BUTTON}>
+          <Button onClick={() => navigate('/workspace/subscription/purchase')} data-testid={SUBSCRIPTION.UPGRADE_BUTTON}>
             <ShoppingCart className="mr-2 h-4 w-4" />
             {tenantMessages.settings.subscriptionPage.buyService}
           </Button>
@@ -121,7 +121,7 @@ export default function SubscriptionPage() {
                 ) : (
                   <div className="flex flex-col items-center justify-center gap-4 py-4">
                     <p className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.noService}</p>
-                    <Button onClick={() => navigate('/settings/subscription/purchase')}>
+                    <Button onClick={() => navigate('/workspace/subscription/purchase')}>
                       <ShoppingCart className="mr-2 h-4 w-4" />
                       {tenantMessages.settings.subscriptionPage.buyService}
                     </Button>
@@ -243,7 +243,7 @@ export default function SubscriptionPage() {
                         {tenantMessages.settings.subscriptionPage.upgradeDescription}
                       </p>
                     </div>
-                    <Button onClick={() => navigate('/settings/subscription/purchase')}>
+                    <Button onClick={() => navigate('/workspace/subscription/purchase')}>
                       {tenantMessages.settings.subscriptionPage.viewServices}
                     </Button>
                   </div>
