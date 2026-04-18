@@ -95,7 +95,7 @@ export function EditRoomDialog({
         room_number: room.room_number,
         layout: room.layout || '',
         area: room.area || 0,
-        monthly_rent: room.monthly_rent,
+        monthly_rent: room.pricing?.monthly_rent ?? 0,
         notes: room.notes || '',
       });
       setFacilities(room.facilities);

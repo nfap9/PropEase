@@ -24,7 +24,7 @@ export type RoomBatchConfigData = z.infer<typeof roomBatchConfigSchema>;
 export const batchEditSchema = z.object({
   layout: z.string().optional(),
   area: z.number().min(0, '面积不能为负').optional(),
-  status: z.enum(['available', 'occupied', 'maintenance']).optional(),
+  maintenance: z.boolean().optional(),
 });
 
 export type BatchEditFormData = z.infer<typeof batchEditSchema>;

@@ -24,6 +24,7 @@ const selectedLease: Lease = {
     room_number: '101',
     layout: null,
     status: 'occupied',
+    maintenance: false,
     area: null,
     facilities: null,
     notes: null,

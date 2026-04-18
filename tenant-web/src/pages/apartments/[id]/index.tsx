@@ -85,7 +85,7 @@ export default function ApartmentDetailPage() {
     defaultValues: {
       layout: '',
       area: undefined,
-      status: undefined,
+      maintenance: undefined,
     },
   });
 

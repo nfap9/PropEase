@@ -51,7 +51,16 @@ export function createRoomRepository(db: DbClient): RoomRepository {
     },
 
     findByApartmentId: async (apartmentId: string) => {
-      return db.room.findMany({ where: { apartment_id: apartmentId } });
+      return db.room.findMany({
+        where: { apartment_id: apartmentId },
+        include: {
+          leases: {
+            where: { is_active: true },
+            select: { id: true, is_active: true },
+            take: 1,
+          },
+        },
+      });
     },
 
     findByOrgId: async (orgId: string) => {

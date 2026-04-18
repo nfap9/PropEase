@@ -144,15 +144,15 @@ export function useApartmentDetailData({
       data: BatchEditFormData;
     }) => {
       const updates = roomIds.map((roomId) => {
-        const updateData: Partial<Room> = {};
+        const updateData: Partial<Room> & { maintenance?: boolean } = {};
         if (data.layout !== undefined && data.layout !== '') {
           updateData.layout = data.layout;
         }
         if (data.area !== undefined) {
           updateData.area = data.area;
         }
-        if (data.status !== undefined) {
-          updateData.status = data.status;
+        if (data.maintenance !== undefined) {
+          updateData.maintenance = data.maintenance;
         }
         return roomsApi.update(orgId!, roomId, updateData);
       });

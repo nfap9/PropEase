@@ -65,7 +65,10 @@ export function useColumns({
       enableSorting: true,
       size: 120,
       minSize: 100,
-      cell: ({ row }) => `¥${row.original.monthly_rent.toLocaleString()}`,
+      cell: ({ row }) => {
+        const rent = row.original.pricing?.monthly_rent;
+        return rent ? `¥${rent.toLocaleString()}` : '-';
+      },
     },
     {
       accessorKey: 'status',

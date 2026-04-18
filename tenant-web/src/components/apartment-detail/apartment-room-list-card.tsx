@@ -257,7 +257,15 @@ export function ApartmentRoomListCard({
                           <div className="flex items-center gap-1">
                             <span className="font-mono text-sm font-medium">{room.room_number}</span>
                             <span
-                              className={`h-2 w-2 rounded-full ${statusConfig.variant === 'default' ? 'bg-muted-foreground' : statusConfig.variant === 'secondary' ? 'bg-blue-500' : statusConfig.variant === 'outline' ? 'bg-green-500' : 'bg-orange-500'}`}
+                              className={`h-2 w-2 rounded-full ${
+                                statusConfig.variant === 'success'
+                                  ? 'bg-green-500'
+                                  : statusConfig.variant === 'info'
+                                    ? 'bg-blue-500'
+                                    : statusConfig.variant === 'warning'
+                                      ? 'bg-amber-500'
+                                      : 'bg-muted-foreground'
+                              }`}
                             />
                           </div>
 

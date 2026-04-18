@@ -7,6 +7,7 @@ import { EditRoomDialog } from '@/components/rooms/EditRoomDialog';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
+import { Switch } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -432,24 +433,18 @@ export function BatchEditDialog({
             />
           </FormField>
 
-          <div className="space-y-2">
-            <Label htmlFor="batch-edit-status">状态</Label>
-            <Select
-              value={form.watch('status') || '__none__'}
-              onValueChange={(value) =>
-                form.setValue('status', value === '__none__' ? undefined : (value as RoomStatus))
-              }
-            >
-              <SelectTrigger className="min-w-[120px]">
-                <SelectValue placeholder="不修改" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">不修改</SelectItem>
-                <SelectItem value="available">空置</SelectItem>
-                <SelectItem value="occupied">已租</SelectItem>
-                <SelectItem value="maintenance">维修中</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="batch-edit-maintenance">设为维修中</Label>
+              <p className="text-sm text-muted-foreground">
+                开启后房间将标记为维修中状态
+              </p>
+            </div>
+            <Switch
+              id="batch-edit-maintenance"
+              checked={form.watch('maintenance') ?? false}
+              onCheckedChange={(checked) => form.setValue('maintenance', checked)}
+            />
           </div>
 
           <DialogFooter>

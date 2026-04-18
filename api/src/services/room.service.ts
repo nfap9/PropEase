@@ -29,6 +29,31 @@ interface RoomFacilities {
   appliances: FacilityItem[];
 }
 
+/** 房间状态类型 */
+export type RoomStatus = 'available' | 'occupied' | 'maintenance';
+
+/** 带租约信息的房间（数据库查询返回） */
+type RoomWithLeases = Room & {
+  maintenance?: boolean;
+  leases?: { is_active: boolean }[];
+};
+
+/**
+ * 根据维护标记和租约计算房间状态
+ */
+function computeRoomStatus(room: RoomWithLeases): RoomStatus {
+  // 优先判断维护状态
+  if (room.maintenance) {
+    return 'maintenance';
+  }
+  // 检查是否有活跃租约
+  const hasActiveLease = room.leases && room.leases.some((lease) => lease.is_active);
+  if (hasActiveLease) {
+    return 'occupied';
+  }
+  return 'available';
+}
+
 /**
  * 创建房间输入
  */
@@ -59,6 +84,7 @@ export interface UpdateRoomInput {
   room_number?: string;
   layout?: string;
   status?: 'available' | 'occupied' | 'maintenance';
+  maintenance?: boolean;
   area?: number;
   notes?: string;
   facilities?: RoomFacilities | null;
@@ -89,6 +115,7 @@ function buildCreateData(apartmentId: string, data: CreateRoomInput): Prisma.Roo
     area: data.area,
     notes: data.notes,
     status: data.status ?? 'available',
+    maintenance: false,
     facilities:
       data.facilities === undefined
         ? undefined
@@ -104,6 +131,7 @@ function buildUpdateData(existing: Room, data: UpdateRoomInput): Prisma.RoomUpda
     room_number: data.room_number ?? existing.room_number,
     layout: data.layout ?? existing.layout,
     status: data.status ?? existing.status,
+    maintenance: data.maintenance ?? (existing as RoomWithLeases).maintenance ?? false,
     area:
       data.area !== undefined
         ? data.area
@@ -149,8 +177,13 @@ export function createRoomService(
       if (!apartment) {
         throw createAppError(404, NotFoundMessages.APARTMENT);
       }
-      const rooms = await getRepo().findByApartmentId(apartmentId);
-      return sortRooms(rooms);
+      const rooms = await getRepo().findByApartmentId(apartmentId) as RoomWithLeases[];
+      // 计算每间房的状态
+      const roomsWithComputedStatus = rooms.map((room) => ({
+        ...room,
+        status: computeRoomStatus(room),
+      }));
+      return sortRooms(roomsWithComputedStatus);
     },
 
     create: async (orgId: string, apartmentId: string, data: CreateRoomInput) => {
@@ -178,6 +211,7 @@ export function createRoomService(
           area: data.area,
           notes: data.notes,
           status: 'available',
+          maintenance: false,
         };
         return createData;
       });

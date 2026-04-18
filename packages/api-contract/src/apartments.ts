@@ -100,6 +100,7 @@ export interface Room {
   room_number: string;
   layout: string | null;
   status: RoomStatus;
+  maintenance: boolean;
   area: number | null;
   facilities: RoomFacilities | null;
   notes: string | null;
@@ -128,6 +129,7 @@ export interface RoomUpdate {
   room_number?: string;
   layout?: string;
   status?: RoomStatus;
+  maintenance?: boolean;
   area?: number;
   notes?: string;
   facilities?: RoomFacilities | null;
