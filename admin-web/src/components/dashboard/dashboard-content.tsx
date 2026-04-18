@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Building2, Users, Home, TrendingUp, Clock, AlertTriangle, CreditCard, BarChart3 } from 'lucide-react';
+import { Users, CreditCard, BarChart3 } from 'lucide-react';
 import { adminApiEndpoints } from '@/api/admin-client';
 import { ChartCard } from '@/components/dashboard/chart-card';
-import { CollectionChart } from '@/components/dashboard/collection-chart';
 import { RevenueBreakdownChart } from '@/components/dashboard/revenue-breakdown-chart';
-import { OccupancyTrendChart } from '@/components/dashboard/occupancy-trend-chart';
 import { YearFilter } from '@/components/dashboard/year-filter';
 import { RefreshButton } from '@/components/dashboard/refresh-button';
 import { StatCardsSkeleton } from '@/components/dashboard/skeleton';
@@ -53,14 +51,6 @@ export function DashboardContent() {
   const stats = statsResponse?.data;
   const incomeData = incomeDataRaw ?? [];
 
-  // 处理收入数据：计算已收、未收、收租率
-  const collectionData = incomeData.map((item) => ({
-    period: item.period,
-    collected: item.collected_amount,
-    uncollected: item.total_amount - item.collected_amount,
-    collection_rate: item.collection_rate,
-  }));
-
   // 处理收入构成数据
   const revenueBreakdownData = incomeData.map((item) => ({
     period: item.period,
@@ -69,16 +59,6 @@ export function DashboardContent() {
     electricity: item.total_electricity,
     other: item.total_other,
   }));
-
-  // 处理入住率数据：计算空置率
-  const occupancyData = incomeData.map((item) => {
-    const occupancy = item.collection_rate > 0 ? item.collection_rate : (stats?.occupancy_rate ?? 0);
-    return {
-      period: item.period,
-      occupancy_rate: occupancy,
-      vacant_rate: 100 - occupancy,
-    };
-  });
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['admin'] });
@@ -91,10 +71,7 @@ export function DashboardContent() {
           <h1 className="text-2xl font-semibold">{adminMessages.dashboard.heading}</h1>
         </div>
         <StatCardsSkeleton />
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="h-96 animate-pulse rounded-xl bg-muted/20" />
-          <div className="h-96 animate-pulse rounded-xl bg-muted/20" />
-        </div>
+        <div className="h-96 animate-pulse rounded-xl bg-muted/20" />
       </div>
     );
   }
@@ -118,27 +95,8 @@ export function DashboardContent() {
         <RefreshButton onRefresh={handleRefresh} isLoading={statsLoading} />
       </div>
 
-      {/* KPI 指标区 - 第一行 */}
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-        <StatCard
-          title={adminMessages.dashboard.stats.apartments}
-          value={stats.apartments_count ?? 0}
-          icon={<Building2 className="h-5 w-5" />}
-          tone="primary"
-        />
-        <StatCard
-          title={adminMessages.dashboard.stats.rooms}
-          value={stats.rooms_count ?? 0}
-          icon={<Home className="h-5 w-5" />}
-        />
-        <StatCard
-          title={adminMessages.dashboard.stats.occupancy}
-          value={stats.occupancy_rate ?? 0}
-          format="percent"
-          precision={1}
-          icon={<TrendingUp className="h-5 w-5" />}
-          tone="success"
-        />
+      {/* KPI 指标区 */}
+      <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title={adminMessages.dashboard.stats.monthlyRevenue}
           value={stats.monthly_revenue ?? 0}
@@ -147,22 +105,6 @@ export function DashboardContent() {
           icon={<CreditCard className="h-5 w-5" />}
           tone="primary"
         />
-        <StatCard
-          title={adminMessages.dashboard.stats.pendingBills}
-          value={stats.pending_bills ?? 0}
-          icon={<Clock className="h-5 w-5" />}
-          tone="warning"
-        />
-        <StatCard
-          title={adminMessages.dashboard.stats.overdueBills}
-          value={stats.overdue_bills ?? 0}
-          icon={<AlertTriangle className="h-5 w-5" />}
-          tone="danger"
-        />
-      </div>
-
-      {/* KPI 指标区 - 第二行 */}
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
         <StatCard
           title={adminMessages.dashboard.stats.organizations}
           value={stats.organizations_count ?? 0}
@@ -179,13 +121,6 @@ export function DashboardContent() {
           icon={<BarChart3 className="h-5 w-5" />}
           tone="success"
         />
-        <StatCard
-          title={adminMessages.dashboard.stats.vacancyRate}
-          value={stats.occupancy_rate ? (100 - stats.occupancy_rate).toFixed(1) : '0.0'}
-          format="percent"
-          icon={<Home className="h-5 w-5" />}
-          tone="default"
-        />
       </div>
 
       {/* 年份筛选 */}
@@ -193,20 +128,10 @@ export function DashboardContent() {
         <YearFilter value={selectedYear} onChange={setSelectedYear} />
       </div>
 
-      {/* 图表区 - 第一行：收租分析 + 收入构成 */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCard title={adminMessages.dashboard.charts.collectionAnalysis}>
-          <CollectionChart data={collectionData} />
-        </ChartCard>
+      {/* 图表区：收入构成 */}
+      <div className="grid gap-6 lg:grid-cols-1">
         <ChartCard title={adminMessages.dashboard.charts.revenueBreakdown}>
           <RevenueBreakdownChart data={revenueBreakdownData} />
-        </ChartCard>
-      </div>
-
-      {/* 图表区 - 第二行：入住率趋势 */}
-      <div className="grid gap-6 lg:grid-cols-1">
-        <ChartCard title={adminMessages.dashboard.charts.occupancyTrend}>
-          <OccupancyTrendChart data={occupancyData} />
         </ChartCard>
       </div>
     </div>
