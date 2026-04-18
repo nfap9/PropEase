@@ -94,7 +94,7 @@ export function ContractInfoSection({
       </div>
 
       {/* Financials Card */}
-      <div className="rounded-2xl border border-amber-200/50 bg-gradient-to-br from-amber-50/50 to-orange-50/20 p-5 space-y-4">
+      <div className="rounded-2xl border border-border/60 bg-muted/20 p-5 space-y-4">
         <div className="flex items-center gap-2 text-sm font-medium text-foreground">
           <Banknote className="h-4 w-4 text-amber-600" />
           租金与押金
@@ -146,9 +146,12 @@ export function ContractInfoSection({
           </div>
         </div>
 
+        {/* Fee Items - 合并到同一卡片 */}
+        <FeeItemsEditor items={feeItems} onChange={onFeeItemsChange} />
+
         {/* Financial summary bar */}
         {(monthlyRent > 0 || totalMonthly > 0) && (
-          <div className="mt-3 rounded-xl bg-card/80 border border-amber-100/60 dark:border-amber-800/50 p-4 space-y-2">
+          <div className="mt-3 rounded-xl bg-card border border-border p-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">月租</span>
               <span className="font-medium">¥{monthlyRent.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</span>
@@ -159,7 +162,7 @@ export function ContractInfoSection({
                 <span className="font-medium">¥{totalMonthly.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}</span>
               </div>
             )}
-            <div className="h-px bg-amber-200/50 dark:bg-amber-800/50 my-1" />
+            <div className="h-px bg-border my-1" />
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-foreground">每月合计</span>
               <span className="text-lg font-bold text-amber-600">
@@ -224,9 +227,6 @@ export function ContractInfoSection({
           </div>
         </div>
       </div>
-
-      {/* Fee Items */}
-      <FeeItemsEditor items={feeItems} onChange={onFeeItemsChange} />
 
       {/* Notes */}
       <div className="rounded-2xl border border-border/60 bg-muted/20 p-5 space-y-3">

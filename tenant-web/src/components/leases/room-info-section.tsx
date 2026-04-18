@@ -48,33 +48,33 @@ export function RoomInfoSection({
 
       {/* Room Info Card - when room is pre-specified */}
       {isRoomSpecified && room ? (
-        <div className="rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50/60 to-orange-50/30 p-5 dark:from-amber-950/30 dark:to-orange-950/20">
+        <div className="rounded-2xl border border-border/60 bg-muted/20 p-5">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-card shadow-sm border border-amber-100 dark:border-amber-800/50">
-                <Building2 className="h-6 w-6 text-amber-600 dark:text-amber-500" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-card shadow-sm border border-border">
+                <Building2 className="h-6 w-6 text-amber-600" />
               </div>
               <div>
                 <p className="font-semibold text-foreground">{room.apartment?.name || '未知公寓'}</p>
                 <p className="text-sm text-muted-foreground">房间号 {room.room_number}</p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-500">
+            <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="h-4 w-4" />
               <span className="text-sm font-medium">已选择</span>
             </div>
           </div>
           <div className="mt-4 flex items-center gap-4">
-            <div className="h-px flex-1 bg-amber-200/50 dark:bg-amber-800/50" />
+            <div className="h-px flex-1 bg-border" />
           </div>
           <div className="mt-4 grid grid-cols-3 gap-4">
-            <div className="rounded-xl bg-card/80 px-4 py-3 text-center shadow-sm border border-amber-100/50 dark:border-amber-800/30">
+            <div className="rounded-xl bg-card px-4 py-3 text-center shadow-sm border border-border">
               <p className="text-xs text-muted-foreground mb-1">月租</p>
               <p className="text-lg font-bold text-foreground">
                 {room.pricing?.monthly_rent ? `¥${room.pricing.monthly_rent}` : '暂无定价'}
               </p>
             </div>
-            <div className="rounded-xl bg-card/80 px-4 py-3 text-center shadow-sm border border-amber-100/50 dark:border-amber-800/30">
+            <div className="rounded-xl bg-card px-4 py-3 text-center shadow-sm border border-border">
               <p className="text-xs text-muted-foreground mb-1">面积</p>
               <p className="text-lg font-bold text-foreground">{room.area || '—'}㎡</p>
             </div>
@@ -111,7 +111,13 @@ export function RoomInfoSection({
             </label>
             <Select
               value={form.watch('room_id') || ''}
-              onValueChange={(v) => form.setValue('room_id', v)}
+              onValueChange={(v) => {
+                form.setValue('room_id', v);
+                const room = rooms?.find((r) => r.id === v);
+                if (room?.pricing?.monthly_rent) {
+                  form.setValue('monthly_rent', room.pricing.monthly_rent);
+                }
+              }}
             >
               <SelectTrigger className="h-11 rounded-xl border-input bg-background shadow-sm">
                 <SelectValue placeholder="请选择空置房间" />
@@ -140,7 +146,7 @@ export function RoomInfoSection({
 
           {/* Selected room preview */}
           {selectedRoom && (
-            <div className="rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50/50 to-orange-50/20 p-4">
+            <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-semibold text-foreground">{selectedRoom.apartment?.name} — {selectedRoom.room_number}</p>
@@ -150,7 +156,7 @@ export function RoomInfoSection({
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-bold text-amber-600">
+                  <p className="text-xl font-bold text-foreground">
                     {selectedRoom.pricing?.monthly_rent ? `¥${selectedRoom.pricing.monthly_rent}` : '暂无定价'}
                   </p>
                   <p className="text-xs text-muted-foreground">月租</p>
