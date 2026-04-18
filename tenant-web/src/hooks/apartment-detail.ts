@@ -154,6 +154,9 @@ export function useApartmentDetailData({
         if (data.maintenance !== undefined) {
           updateData.maintenance = data.maintenance;
         }
+        if (data.monthly_rent !== undefined) {
+          updateData.monthly_rent = data.monthly_rent;
+        }
         return roomsApi.update(orgId!, roomId, updateData);
       });
 

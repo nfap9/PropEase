@@ -23,6 +23,7 @@ export type RoomWithLease = Room & {
 export interface RoomRepository {
   findById(id: string): Promise<Room | null>;
   findByIdWithApartment(id: string): Promise<RoomWithApartment | null>;
+  findByIdWithLeases(id: string): Promise<Room & { leases: { is_active: boolean }[] } | null>;
   findByApartmentId(apartmentId: string): Promise<Room[]>;
   findByOrgId(orgId: string): Promise<Room[]>;
   findByOrgIdWithLeases(orgId: string): Promise<RoomWithLease[]>;
@@ -50,6 +51,18 @@ export function createRoomRepository(db: DbClient): RoomRepository {
       }) as Promise<RoomWithApartment | null>;
     },
 
+    findByIdWithLeases: async (id: string) => {
+      return db.room.findUnique({
+        where: { id },
+        include: {
+          leases: {
+            where: { is_active: true },
+            select: { id: true, is_active: true },
+          },
+        },
+      });
+    },
+
     findByApartmentId: async (apartmentId: string) => {
       return db.room.findMany({
         where: { apartment_id: apartmentId },
@@ -59,6 +72,7 @@ export function createRoomRepository(db: DbClient): RoomRepository {
             select: { id: true, is_active: true },
             take: 1,
           },
+          pricing: true,
         },
       });
     },
@@ -70,8 +84,12 @@ export function createRoomRepository(db: DbClient): RoomRepository {
     },
 
     findByOrgIdWithLeases: async (orgId: string) => {
+      // 查询有活跃租约的房间
       return db.room.findMany({
-        where: { apartment: { organization_id: orgId }, status: 'occupied' },
+        where: {
+          apartment: { organization_id: orgId },
+          leases: { some: { is_active: true } },
+        },
         include: {
           apartment: { include: { utility_config: true } },
           leases: {

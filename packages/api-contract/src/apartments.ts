@@ -123,6 +123,7 @@ export interface RoomCreate {
   notes?: string;
   status?: RoomStatus;
   facilities?: RoomFacilities | null;
+  monthly_rent?: number;
 }
 
 export interface RoomUpdate {
@@ -133,6 +134,7 @@ export interface RoomUpdate {
   area?: number;
   notes?: string;
   facilities?: RoomFacilities | null;
+  monthly_rent?: number;
 }
 
 /** 批量创建房间 */
@@ -141,6 +143,7 @@ export interface RoomBatchCreate {
   layout?: string;
   area?: number;
   notes?: string;
+  monthly_rent?: number;
 }
 
 /** 水电配置 */

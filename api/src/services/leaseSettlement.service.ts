@@ -141,10 +141,8 @@ export async function settleLease(
       data: { is_active: false },
     });
 
-    await tx.room.update({
-      where: { id: lease.room_id },
-      data: { status: 'available' },
-    });
+    // 不再设置 room.status，status 由 maintenance 和活跃租约自动计算
+    // 由于租约已终止（is_active=false），房间状态将自动变为 available（除非 maintenance=true）
 
     await tx.leaseChangeLog.create({
       data: {

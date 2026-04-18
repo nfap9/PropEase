@@ -24,14 +24,11 @@ export function RoomCard({ room, apartmentName, onLease, onTerminate, onStatusCh
   return (
     <div
       className={cn(
-        'group relative rounded-xl border bg-card p-3 shadow-sm transition-all duration-200',
-        'hover:border-input hover:shadow-md',
+        'group relative rounded-xl border-2 bg-card p-3 shadow-sm transition-all duration-200',
+        'hover:shadow-md',
         status.borderClass
       )}
     >
-      {/* Status indicator bar */}
-      <div className={cn('absolute inset-x-0 top-0 h-0.5 rounded-t-xl', status.bgClass)} />
-
       {/* Card content */}
       <div className="space-y-1.5">
         {/* Header */}

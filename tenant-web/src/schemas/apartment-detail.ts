@@ -25,6 +25,7 @@ export const batchEditSchema = z.object({
   layout: z.string().optional(),
   area: z.number().min(0, '面积不能为负').optional(),
   maintenance: z.boolean().optional(),
+  monthly_rent: z.number().min(0, '租金不能为负').optional(),
 });
 
 export type BatchEditFormData = z.infer<typeof batchEditSchema>;

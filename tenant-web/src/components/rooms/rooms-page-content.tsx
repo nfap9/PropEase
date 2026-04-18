@@ -163,9 +163,21 @@ export function RoomsPageContent() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: RoomStatus }) =>
-      roomsApi.update(orgId!, id, { status }),
-    onSuccess: () => {
+    mutationFn: ({ id, maintenance }: { id: string; maintenance: boolean }) =>
+      roomsApi.update(orgId!, id, { maintenance }),
+    onSuccess: (updatedRoom) => {
+      // 遍历所有 all-rooms 相关的缓存并更新
+      const allRoomsKeys = queryClient.getQueriesData<Array<Room & { apartment?: unknown }>>({
+        queryKey: ['all-rooms', orgId],
+      });
+      for (const [key, data] of allRoomsKeys) {
+        if (Array.isArray(data)) {
+          queryClient.setQueryData(key, data.map((room) =>
+            room.id === updatedRoom.id ? { ...room, status: updatedRoom.status } : room
+          ));
+        }
+      }
+      // 同时 invalidate 确保其他依赖的数据也能更新
       queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       appToast.success('状态更新成功');
@@ -184,7 +196,9 @@ export function RoomsPageContent() {
   };
 
   const handleStatusChange = (room: Room, status: RoomStatus) => {
-    updateStatusMutation.mutate({ id: room.id, status });
+    // 状态现在通过 maintenance 标记计算，不再直接设置状态
+    // maintenance: true = 维修中, maintenance: false = 空置/有租约(由租约决定)
+    updateStatusMutation.mutate({ id: room.id, maintenance: status === 'maintenance' });
   };
 
   const getActiveLease = (roomId: string) => {

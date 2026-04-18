@@ -81,10 +81,7 @@ export function createLeaseRepository(db: DbClient): LeaseRepository {
 
       const [lease] = await prismaClient.$transaction([
         db.lease.create({ data: leaseData }),
-        db.room.update({
-          where: { id: roomId },
-          data: { status: 'occupied' },
-        }),
+        // 不再设置 status，status 由 maintenance 和活跃租约自动计算
       ]);
 
       return lease;
@@ -98,23 +95,13 @@ export function createLeaseRepository(db: DbClient): LeaseRepository {
       if (!prismaClient) {
         // 如果不在事务中，分步执行
         await db.lease.update({ where: { id }, data: { is_active: false } });
-        const otherActive = await db.lease.count({
-          where: { room_id: roomId, is_active: true, id: { not: id } },
-        });
-        if (otherActive === 0) {
-          await db.room.update({ where: { id: roomId }, data: { status: 'available' } });
-        }
+        // status 由 maintenance 和活跃租约自动计算，无需手动更新
         return;
       }
 
       await prismaClient.$transaction(async (tx) => {
         await tx.lease.update({ where: { id }, data: { is_active: false } });
-        const otherActive = await tx.lease.count({
-          where: { room_id: roomId, is_active: true, id: { not: id } },
-        });
-        if (otherActive === 0) {
-          await tx.room.update({ where: { id: roomId }, data: { status: 'available' } });
-        }
+        // status 由 maintenance 和活跃租约自动计算，无需手动更新
       });
     },
 
@@ -139,7 +126,8 @@ export function createLeaseRepository(db: DbClient): LeaseRepository {
         where: {
           room_id: { in: roomIds },
           is_active: true,
-          room: { status: 'occupied' },
+          // 不再通过 room.status 过滤，因为 status 现在是自动计算的
+          // 只要租约 is_active=true，房间状态就会是 occupied
         },
         include: { room: { include: { apartment: true } } },
       }) as Promise<LeaseWithRelations[]>;

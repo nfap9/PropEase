@@ -72,8 +72,12 @@ export function createReportRepository(db: DbClient): ReportRepository {
     },
 
     countOccupiedRooms: async (orgId: string) => {
+      // 统计有活跃租约的房间数量
       return db.room.count({
-        where: { apartment: { organization_id: orgId }, status: 'occupied' },
+        where: {
+          apartment: { organization_id: orgId },
+          leases: { some: { is_active: true } },
+        },
       });
     },
 
@@ -116,8 +120,12 @@ export function createReportRepository(db: DbClient): ReportRepository {
     },
 
     getRoomsMissingInitialReadings: async (orgId: string) => {
+      // 查找有活跃租约且没有初始读数的房间
       const rooms = await db.room.findMany({
-        where: { apartment: { organization_id: orgId }, status: 'occupied' },
+        where: {
+          apartment: { organization_id: orgId },
+          leases: { some: { is_active: true } },
+        },
         include: {
           leases: { where: { is_active: true }, take: 1, orderBy: { start_date: 'desc' } },
         },

@@ -203,7 +203,7 @@ export function ApartmentRoomListCard({
                       {selectedCount > 0 && `，已选 ${selectedCount}`})
                     </span>
                   </h4>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-[repeat(auto-fill,minmax(88px,1fr))] gap-1.5">
                     {group.rooms.map((room) => {
                       const isSelected = selectedRoomIds.has(room.id);
                       const statusConfig = ROOM_STATUS_CONFIG[room.status];
@@ -239,41 +239,43 @@ export function ApartmentRoomListCard({
                               handleClick();
                             }
                           }}
-                          className={`group relative flex min-w-[80px] cursor-pointer flex-col items-center rounded-lg border bg-card p-2 transition-all hover:bg-accent ${isSelected ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+                          className={`group relative flex h-16 cursor-pointer flex-col justify-between rounded-md border-2 bg-card px-2 py-1.5 transition-all hover:bg-accent ${
+                            isSelected
+                              ? 'ring-2 ring-primary ring-offset-1'
+                              : statusConfig.variant === 'success'
+                                ? 'border-green-500/60'
+                                : statusConfig.variant === 'info'
+                                  ? 'border-blue-500/60'
+                                  : statusConfig.variant === 'warning'
+                                    ? 'border-amber-500/60'
+                                    : 'border-border'
+                          }`}
                         >
                           {/* 选中角标 */}
                           {isSelected && (
                             <div
-                              className="pointer-events-none absolute -left-1.5 -top-1.5 z-10"
+                              className="pointer-events-none absolute -left-1 -top-1 z-10"
                               aria-label="已选房间"
                             >
-                              <div className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-primary bg-primary text-primary-foreground">
-                                <Check className="h-3 w-3" />
+                              <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-primary bg-primary text-primary-foreground">
+                                <Check className="h-2.5 w-2.5" />
                               </div>
                             </div>
                           )}
 
-                          {/* 房间号 + 状态指示 */}
-                          <div className="flex items-center gap-1">
-                            <span className="font-mono text-sm font-medium">{room.room_number}</span>
-                            <span
-                              className={`h-2 w-2 rounded-full ${
-                                statusConfig.variant === 'success'
-                                  ? 'bg-green-500'
-                                  : statusConfig.variant === 'info'
-                                    ? 'bg-blue-500'
-                                    : statusConfig.variant === 'warning'
-                                      ? 'bg-amber-500'
-                                      : 'bg-muted-foreground'
-                              }`}
-                            />
-                          </div>
+                          {/* 房间号 */}
+                          <span className="font-mono text-xs font-medium leading-none">{room.room_number}</span>
+
+                          {/* 户型面积 */}
+                          <span className="text-[10px] text-muted-foreground leading-none">
+                            {room.layout && room.area ? `${room.layout} ${room.area}m²` : room.layout || (room.area ? `${room.area}m²` : '')}
+                          </span>
 
                           {/* 租金 */}
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-[10px] text-muted-foreground leading-none">
                             {room.pricing?.monthly_rent
-                              ? `¥${room.pricing.monthly_rent.toLocaleString()}`
-                              : '暂无定价'}
+                              ? `¥${room.pricing.monthly_rent}`
+                              : '--'}
                           </span>
                         </div>
                       );

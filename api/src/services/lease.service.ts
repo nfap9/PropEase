@@ -425,15 +425,16 @@ export function createLeaseService(
       if (!newRoom || newRoom.apartment.organization_id !== orgId) {
         throw createAppError(404, '目标房间不存在');
       }
-      if (newRoom.status !== 'available') {
-        throw createAppError(400, '目标房间不可用，请选择其他房间');
+      // 房间可用性现在由 maintenance 标记和活跃租约决定
+      // 检查房间是否处于维护状态
+      if (newRoom.maintenance) {
+        throw createAppError(400, '目标房间处于维护中，请选择其他房间');
       }
 
       const oldRoomId = lease.room_id;
 
       await prisma.$transaction(async (tx) => {
-        await tx.room.update({ where: { id: newRoomId }, data: { status: 'occupied' } });
-        await tx.room.update({ where: { id: oldRoomId }, data: { status: 'available' } });
+        // 不再直接设置 status，status 由 maintenance 和活跃租约自动计算
         await tx.lease.update({ where: { id: leaseId }, data: { room_id: newRoomId } });
         await tx.leaseChangeLog.create({
           data: {

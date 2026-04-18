@@ -1,12 +1,19 @@
-import type { Prisma, Apartment, Room } from '@prisma/client';
+import type { Prisma, Apartment, Room, Lease } from '@prisma/client';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 import type { RoomStats } from '@apartment-ultra/api-contract';
 
 /**
+ * 房间带活跃租约信息的类型
+ */
+type RoomWithActiveLease = Room & {
+  leases: Pick<Lease, 'id' | 'is_active'>[];
+};
+
+/**
  * 公寓包含房间的类型
  */
-export type ApartmentWithRooms = Apartment & { rooms: Room[] };
+export type ApartmentWithRooms = Apartment & { rooms: RoomWithActiveLease[] };
 
 /**
  * 公寓带统计信息（本地扩展，保留 rooms 字段，room_stats 来自 api-contract）
@@ -47,7 +54,16 @@ export function createApartmentRepository(db: DbClient): ApartmentRepository {
     findByIdAndOrgWithRooms: async (id: string, orgId: string) => {
       return db.apartment.findFirst({
         where: { id, organization_id: orgId },
-        include: { rooms: true },
+        include: {
+          rooms: {
+            include: {
+              leases: {
+                where: { is_active: true },
+                select: { id: true, is_active: true },
+              },
+            },
+          },
+        },
       });
     },
 
@@ -58,7 +74,16 @@ export function createApartmentRepository(db: DbClient): ApartmentRepository {
     findByOrgIdWithRooms: async (orgId: string) => {
       return db.apartment.findMany({
         where: { organization_id: orgId },
-        include: { rooms: true },
+        include: {
+          rooms: {
+            include: {
+              leases: {
+                where: { is_active: true },
+                select: { id: true, is_active: true },
+              },
+            },
+          },
+        },
       });
     },
 
@@ -82,14 +107,30 @@ export function createApartmentRepository(db: DbClient): ApartmentRepository {
 
 /**
  * 计算房间统计信息
+ * 状态现在由 maintenance 标记和活跃租约自动计算
  */
-export function calculateRoomStats(rooms: Room[]): RoomStats {
-  return {
+export function calculateRoomStats(rooms: RoomWithActiveLease[]): RoomStats {
+  const stats = {
     total: rooms.length,
-    available: rooms.filter((r) => r.status === 'available').length,
-    occupied: rooms.filter((r) => r.status === 'occupied').length,
-    maintenance: rooms.filter((r) => r.status === 'maintenance').length,
+    available: 0,
+    occupied: 0,
+    maintenance: 0,
   };
+
+  for (const room of rooms) {
+    if (room.maintenance) {
+      stats.maintenance++;
+    } else {
+      const hasActiveLease = room.leases && room.leases.some((l) => l.is_active);
+      if (hasActiveLease) {
+        stats.occupied++;
+      } else {
+        stats.available++;
+      }
+    }
+  }
+
+  return stats;
 }
 
 /**

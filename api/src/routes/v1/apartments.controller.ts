@@ -59,8 +59,8 @@ export const RoomCreateSchema = z.object({
   layout: z.string().optional(),
   area: z.number().optional(),
   notes: z.string().optional(),
-  status: z.enum(['available', 'occupied', 'maintenance']).optional(),
   facilities: RoomFacilitiesSchema.nullable().optional(),
+  monthly_rent: z.number().min(0).optional(),
 });
 
 export const RoomBatchSchema = z.object({
@@ -68,15 +68,17 @@ export const RoomBatchSchema = z.object({
   layout: z.string().optional(),
   area: z.number().optional(),
   notes: z.string().optional(),
+  monthly_rent: z.number().min(0).optional(),
 });
 
 export const RoomUpdateSchema = z.object({
   room_number: z.string().optional(),
   layout: z.string().optional(),
-  status: z.enum(['available', 'occupied', 'maintenance']).optional(),
+  maintenance: z.boolean().optional(),
   area: z.number().optional(),
   notes: z.string().optional(),
   facilities: RoomFacilitiesSchema.nullable().optional(),
+  monthly_rent: z.number().min(0).optional(),
 });
 
 export const UtilityConfigSchema = z.object({

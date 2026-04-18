@@ -63,8 +63,8 @@ export interface CreateRoomInput {
   layout?: string;
   area?: number;
   notes?: string;
-  status?: 'available' | 'occupied' | 'maintenance';
   facilities?: RoomFacilities;
+  monthly_rent?: number;
 }
 
 /**
@@ -75,6 +75,7 @@ export interface BatchCreateRoomInput {
   layout?: string;
   area?: number;
   notes?: string;
+  monthly_rent?: number;
 }
 
 /**
@@ -83,11 +84,11 @@ export interface BatchCreateRoomInput {
 export interface UpdateRoomInput {
   room_number?: string;
   layout?: string;
-  status?: 'available' | 'occupied' | 'maintenance';
   maintenance?: boolean;
   area?: number;
   notes?: string;
   facilities?: RoomFacilities | null;
+  monthly_rent?: number;
 }
 
 /**
@@ -114,7 +115,6 @@ function buildCreateData(apartmentId: string, data: CreateRoomInput): Prisma.Roo
     layout: data.layout,
     area: data.area,
     notes: data.notes,
-    status: data.status ?? 'available',
     maintenance: false,
     facilities:
       data.facilities === undefined
@@ -130,8 +130,7 @@ function buildUpdateData(existing: Room, data: UpdateRoomInput): Prisma.RoomUpda
   const result: Prisma.RoomUpdateInput = {
     room_number: data.room_number ?? existing.room_number,
     layout: data.layout ?? existing.layout,
-    status: data.status ?? existing.status,
-    maintenance: data.maintenance ?? (existing as RoomWithLeases).maintenance ?? false,
+    maintenance: data.maintenance ?? existing.maintenance,
     area:
       data.area !== undefined
         ? data.area
@@ -192,7 +191,20 @@ export function createRoomService(
       if (!apartment) {
         throw createAppError(404, NotFoundMessages.APARTMENT);
       }
-      return getRepo().create(buildCreateData(apartmentId, data));
+      const room = await getRepo().create(buildCreateData(apartmentId, data));
+
+      // 创建房间定价（如果提供了月租）
+      if (data.monthly_rent !== undefined) {
+        await prisma.roomPricing.create({
+          data: {
+            id: ulid().toLowerCase(),
+            room_id: room.id,
+            monthly_rent: data.monthly_rent,
+          },
+        });
+      }
+
+      return room;
     },
 
     batchCreate: async (orgId: string, apartmentId: string, data: BatchCreateRoomInput) => {
@@ -210,13 +222,29 @@ export function createRoomService(
           layout: data.layout,
           area: data.area,
           notes: data.notes,
-          status: 'available',
           maintenance: false,
         };
         return createData;
       });
 
-      return getRepo().createBatch(roomsData);
+      const rooms = await getRepo().createBatch(roomsData);
+
+      // 为所有房间创建定价（如果提供了月租）
+      if (data.monthly_rent !== undefined) {
+        await Promise.all(
+          rooms.map((room) =>
+            prisma.roomPricing.create({
+              data: {
+                id: ulid().toLowerCase(),
+                room_id: room.id,
+                monthly_rent: data.monthly_rent!,
+              },
+            })
+          )
+        );
+      }
+
+      return rooms;
     },
 
     update: async (orgId: string, roomId: string, data: UpdateRoomInput) => {
@@ -224,7 +252,27 @@ export function createRoomService(
       if (!existing || existing.apartment.organization_id !== orgId) {
         throw createAppError(404, NotFoundMessages.ROOM);
       }
-      return getRepo().update(roomId, buildUpdateData(existing, data));
+      const updated = await getRepo().update(roomId, buildUpdateData(existing, data));
+
+      // 处理月租更新
+      if (data.monthly_rent !== undefined) {
+        await prisma.roomPricing.upsert({
+          where: { room_id: roomId },
+          update: { monthly_rent: data.monthly_rent },
+          create: {
+            id: ulid().toLowerCase(),
+            room_id: roomId,
+            monthly_rent: data.monthly_rent,
+          },
+        });
+      }
+
+      // 获取带租约信息用于计算状态
+      const roomWithLeases = await getRepo().findByIdWithLeases(roomId);
+      return {
+        ...updated,
+        status: computeRoomStatus(roomWithLeases as RoomWithLeases),
+      };
     },
 
     delete: async (orgId: string, roomId: string) => {

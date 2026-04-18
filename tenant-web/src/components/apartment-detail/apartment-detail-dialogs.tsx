@@ -433,6 +433,26 @@ export function BatchEditDialog({
             />
           </FormField>
 
+          <FormField label="月租 (元)" htmlFor="batch-edit-monthly_rent">
+            <Input
+              id="batch-edit-monthly_rent"
+              type="number"
+              step="0.01"
+              placeholder="不修改"
+              value={form.watch('monthly_rent') ?? ''}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                if (nextValue === '') {
+                  form.setValue('monthly_rent', undefined);
+                  return;
+                }
+
+                const parsed = parseFloat(nextValue);
+                form.setValue('monthly_rent', isNaN(parsed) ? undefined : parsed);
+              }}
+            />
+          </FormField>
+
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label htmlFor="batch-edit-maintenance">设为维修中</Label>

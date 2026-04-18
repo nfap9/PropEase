@@ -86,6 +86,7 @@ export default function ApartmentDetailPage() {
       layout: '',
       area: undefined,
       maintenance: undefined,
+      monthly_rent: undefined,
     },
   });
 
