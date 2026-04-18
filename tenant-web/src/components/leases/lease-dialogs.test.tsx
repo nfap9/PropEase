@@ -24,10 +24,10 @@ const selectedLease: Lease = {
     room_number: '101',
     layout: null,
     status: 'occupied',
-    monthly_rent: 1800,
     area: null,
     facilities: null,
     notes: null,
+    pricing: { id: 'pricing-1', room_id: 'room-1', monthly_rent: 1800, effective_date: '2026-03-28T00:00:00.000Z' },
     created_at: '2026-03-28T00:00:00.000Z',
     apartment: {
       id: 'apartment-1',

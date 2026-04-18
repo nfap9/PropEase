@@ -100,18 +100,24 @@ export interface Room {
   room_number: string;
   layout: string | null;
   status: RoomStatus;
-  monthly_rent: number;
   area: number | null;
   facilities: RoomFacilities | null;
   notes: string | null;
   apartment?: Apartment;
+  pricing?: RoomPricing | null;
   created_at: string;
+}
+
+export interface RoomPricing {
+  id: string;
+  room_id: string;
+  monthly_rent: number;
+  effective_date: string;
 }
 
 export interface RoomCreate {
   room_number: string;
   layout?: string;
-  monthly_rent: number;
   area?: number;
   notes?: string;
   status?: RoomStatus;
@@ -122,7 +128,6 @@ export interface RoomUpdate {
   room_number?: string;
   layout?: string;
   status?: RoomStatus;
-  monthly_rent?: number;
   area?: number;
   notes?: string;
   facilities?: RoomFacilities | null;
@@ -132,7 +137,6 @@ export interface RoomUpdate {
 export interface RoomBatchCreate {
   room_numbers: string[];
   layout?: string;
-  monthly_rent: number;
   area?: number;
   notes?: string;
 }

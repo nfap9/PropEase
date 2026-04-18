@@ -88,10 +88,10 @@ export function RoomsPageContent() {
       if (filters.layout && room.layout !== filters.layout) {
         return false;
       }
-      if (filters.rentMin !== null && room.monthly_rent < filters.rentMin) {
+      if (filters.rentMin !== null && (room.pricing?.monthly_rent ?? 0) < filters.rentMin) {
         return false;
       }
-      if (filters.rentMax !== null && room.monthly_rent > filters.rentMax) {
+      if (filters.rentMax !== null && (room.pricing?.monthly_rent ?? 0) > filters.rentMax) {
         return false;
       }
       if (filters.areaMin !== null && (room.area === null || room.area < filters.areaMin)) {

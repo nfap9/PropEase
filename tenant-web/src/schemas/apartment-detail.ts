@@ -8,26 +8,16 @@ export const roomSchema = z.object({
   room_number: z.string().min(1, '请输入房间号'),
   layout: z.string().optional(),
   area: z.number().min(0, '面积不能为负').optional(),
-  monthly_rent: z.number().min(0, '租金不能为负'),
   notes: z.string().optional(),
 });
 
 export type RoomFormData = z.infer<typeof roomSchema>;
 
-export const roomBatchConfigSchema = z
-  .object({
-    floors: z.string().min(1, '请输入楼层'),
-    start_number: z.number().min(1, '起始号最小为1').max(99, '起始号最大为99'),
-    end_number: z.number().min(1, '结束号最小为1').max(99, '结束号最大为99'),
-    layout: z.string().optional(),
-    monthly_rent: z.number().min(0, '租金不能为负'),
-    area: z.number().min(0, '面积不能为负').optional(),
-    notes: z.string().optional(),
-  })
-  .refine((data) => data.end_number >= data.start_number, {
-    message: '结束号必须大于等于起始号',
-    path: ['end_number'],
-  });
+export const roomBatchConfigSchema = z.object({
+  floors: z.string().min(1, '请输入楼层'),
+  room_numbers: z.string().min(1, '请输入房间号'),
+  notes: z.string().optional(),
+});
 
 export type RoomBatchConfigData = z.infer<typeof roomBatchConfigSchema>;
 

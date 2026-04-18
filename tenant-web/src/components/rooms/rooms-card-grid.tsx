@@ -61,8 +61,14 @@ export function RoomCard({ room, apartmentName, onLease, onTerminate, onStatusCh
 
         {/* Rent */}
         <div className="flex items-baseline gap-0.5">
-          <span className="text-sm font-bold text-foreground">¥{room.monthly_rent.toLocaleString()}</span>
-          <span className="text-[10px] text-muted-foreground">/月</span>
+          {room.pricing?.monthly_rent ? (
+            <>
+              <span className="text-sm font-bold text-foreground">¥{room.pricing.monthly_rent.toLocaleString()}</span>
+              <span className="text-[10px] text-muted-foreground">/月</span>
+            </>
+          ) : (
+            <span className="text-xs text-muted-foreground">暂无定价</span>
+          )}
         </div>
 
         {/* Quick actions - visible on hover */}

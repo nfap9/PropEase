@@ -6,7 +6,7 @@ import { FacilitySelectorDialog } from '@/components/common/facility-selector-di
 import { EditRoomDialog } from '@/components/rooms/EditRoomDialog';
 import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { WizardDialog } from '@apartment-ultra/shared-ui/components/ui';
+import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -34,19 +34,6 @@ import {
 } from '@/schemas/apartment-detail';
 import type { GeneratedFloorRooms } from '@/utils/apartment-detail';
 import { getFacilitiesSummary } from '@/utils/apartment-detail';
-
-const batchCreateRoomSteps = [
-  {
-    id: 'config',
-    title: '批量配置',
-    description: '设置楼层、房号范围和默认属性。',
-  },
-  {
-    id: 'confirm',
-    title: '确认房间',
-    description: '确认要创建的房间，并支持整层勾选。',
-  },
-] as const;
 
 export function ApartmentEditDialog({
   open,
@@ -139,15 +126,6 @@ export function CreateRoomDialog({
               <FormField label="面积 (m²)" htmlFor="area">
                 <Input id="area" type="number" step="0.01" placeholder="请输入面积" {...form.register('area', { valueAsNumber: true })} />
               </FormField>
-              <FormField label="月租 (元)" htmlFor="monthly_rent" required error={form.formState.errors.monthly_rent?.message}>
-                <Input
-                  id="monthly_rent"
-                  type="number"
-                  step="0.01"
-                  placeholder="请输入月租金额"
-                  {...form.register('monthly_rent', { valueAsNumber: true })}
-                />
-              </FormField>
             </div>
 
             <FormField label="备注" htmlFor="notes">
@@ -192,247 +170,165 @@ export function CreateRoomDialog({
 export function BatchCreateRoomDialog({
   open,
   onOpenChange,
-  step,
-  onStepChange,
   form,
   generatedRooms,
   selectedRooms,
-  onInitializeSelection,
   onToggleAll,
   onToggleFloor,
   onToggleRoom,
-  onSubmitConfig,
   onSubmitRooms,
   isPending,
-  onResetSelection,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  step: 'config' | 'confirm';
-  onStepChange: (step: 'config' | 'confirm') => void;
   form: UseFormReturn<RoomBatchConfigData>;
   generatedRooms: GeneratedFloorRooms[];
   selectedRooms: Set<string>;
-  onInitializeSelection: () => void;
   onToggleAll: (select: boolean) => void;
   onToggleFloor: (roomNumbers: string[], select: boolean) => void;
   onToggleRoom: (roomNumber: string) => void;
-  onSubmitConfig: () => void;
   onSubmitRooms: () => void;
   isPending: boolean;
-  onResetSelection: () => void;
 }) {
   const totalGeneratedRooms = generatedRooms.reduce((sum, floorGroup) => sum + floorGroup.rooms.length, 0);
 
   return (
-    <WizardDialog
+    <AppDrawer
       open={open}
-      onOpenChange={(nextOpen) => {
-        onOpenChange(nextOpen);
-        if (!nextOpen) {
-          onStepChange('config');
-          onResetSelection();
-        }
-      }}
+      onOpenChange={onOpenChange}
       title="批量添加房间"
-      description={
-        step === 'config'
-          ? '设置楼层和房间号范围，支持多楼层（如 1,2,3 或 1-5）'
-          : '点击房间号切换选中状态，只添加激活的房间'
-      }
-      steps={batchCreateRoomSteps}
-      currentStep={step === 'config' ? 0 : 1}
-      onPrevious={() => onStepChange('config')}
-      onNext={form.handleSubmit(() => {
-        onInitializeSelection();
-        onSubmitConfig();
-      })}
-      onComplete={onSubmitRooms}
-      nextLabel="下一步"
-      completeLabel={
-        isPending ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            创建中...
-          </>
-        ) : (
-          <>确认添加 ({selectedRooms.size} 个房间)</>
-        )
-      }
-      completeDisabled={selectedRooms.size === 0 || isPending}
-      size="lg"
-      contentTestId="batch-create-room-dialog"
-      bodyClassName="max-h-[70vh]"
-      footerExtra={
-        step === 'confirm' ? (
+      description="设置楼层和房间号范围，点击房间号切换启用状态"
+      size="xl"
+      className="!w-[1100px] sm:!w-[1100px]"
+      footer={
+        <div className="flex w-full items-center justify-between">
           <p className="text-sm text-muted-foreground">
             已选择 <span className="font-medium text-foreground">{selectedRooms.size}</span> 个房间
           </p>
-        ) : null
-      }
-    >
-      {step === 'config' ? (
-        <form
-          onSubmit={form.handleSubmit(() => {
-            onInitializeSelection();
-            onSubmitConfig();
-          })}
-          className="space-y-4"
-        >
-            <div className="grid grid-cols-3 gap-4">
-              <FormField label="楼层" htmlFor="floors" error={form.formState.errors.floors?.message}>
-                <Input id="floors" placeholder="请输入楼层号" {...form.register('floors')} />
-              </FormField>
-              <FormField label="起始号" htmlFor="start_number" required error={form.formState.errors.start_number?.message}>
-                <Input
-                  id="start_number"
-                  type="number"
-                  min="1"
-                  max="99"
-                  placeholder="请输入起始号"
-                  {...form.register('start_number', { valueAsNumber: true })}
-                />
-              </FormField>
-              <FormField label="结束号" htmlFor="end_number" required error={form.formState.errors.end_number?.message}>
-                <Input
-                  id="end_number"
-                  type="number"
-                  min="1"
-                  max="99"
-                  placeholder="请输入结束号"
-                  {...form.register('end_number', { valueAsNumber: true })}
-                />
-              </FormField>
-            </div>
-
-            <div className="rounded-md bg-muted p-3">
-              <p className="mb-2 text-sm text-muted-foreground">
-                将生成 {totalGeneratedRooms} 个房间（{generatedRooms.length} 层 × {generatedRooms[0]?.rooms.length || 0}{' '}
-                间/层）
-              </p>
-              <div className="max-h-24 space-y-1 overflow-y-auto font-mono text-sm">
-                {generatedRooms.map(({ floor, rooms }) => (
-                  <div key={floor}>
-                    {floor}楼: {rooms[0]} - {rooms[rooms.length - 1]}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="batch-layout">户型</Label>
-                <Select value={form.watch('layout') || ''} onValueChange={(value) => form.setValue('layout', value)}>
-                  <SelectTrigger className="min-w-[120px]">
-                    <SelectValue placeholder="选择户型" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LAYOUT_OPTIONS.map((layout) => (
-                      <SelectItem key={layout} value={layout}>
-                        {layout}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <FormField label="面积 (m²)" htmlFor="batch-area">
-                <Input id="batch-area" type="number" step="0.01" placeholder="请输入面积" {...form.register('area', { valueAsNumber: true })} />
-              </FormField>
-              <FormField
-                label="月租 (元)"
-                htmlFor="batch-monthly_rent"
-                required
-                error={form.formState.errors.monthly_rent?.message}
-              >
-                <Input
-                  id="batch-monthly_rent"
-                  type="number"
-                  step="0.01"
-                  placeholder="请输入月租金额"
-                  {...form.register('monthly_rent', { valueAsNumber: true })}
-                />
-              </FormField>
-            </div>
-
-            <FormField label="备注" htmlFor="batch-notes">
-              <Input id="batch-notes" placeholder="请输入备注" {...form.register('notes')} />
-            </FormField>
-        </form>
-      ) : (
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => onToggleAll(true)}>
-              全选
+          <div className="flex gap-3">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              取消
             </Button>
-            <Button variant="outline" size="sm" onClick={() => onToggleAll(false)}>
-              取消全选
+            <Button
+              type="button"
+              onClick={onSubmitRooms}
+              disabled={selectedRooms.size === 0 || isPending}
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  创建中...
+                </>
+              ) : (
+                <>确认添加 ({selectedRooms.size})</>
+              )}
             </Button>
-          </div>
-
-          <div className="max-h-[420px] space-y-4 overflow-y-auto">
-            {generatedRooms.map(({ floor, rooms }) => {
-              const selectedCount = rooms.filter((roomNumber) => selectedRooms.has(roomNumber)).length;
-              const allSelected = selectedCount === rooms.length;
-              const someSelected = selectedCount > 0 && !allSelected;
-
-              return (
-                <div key={floor} className="rounded-lg border p-3">
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant={allSelected ? 'default' : 'outline'}
-                        size="sm"
-                        className="h-7"
-                        onClick={() => onToggleFloor(rooms, !allSelected)}
-                      >
-                        {allSelected ? (
-                          <Check className="mr-1 h-4 w-4" />
-                        ) : someSelected ? (
-                          <span className="mr-1 flex h-4 w-4 items-center justify-center text-xs">-</span>
-                        ) : (
-                          <span className="mr-1 h-4 w-4" />
-                        )}
-                        {floor}楼
-                      </Button>
-                      <span className="text-sm text-muted-foreground">
-                        ({selectedCount}/{rooms.length})
-                      </span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-xs"
-                      onClick={() => onToggleFloor(rooms, !allSelected)}
-                    >
-                      {allSelected ? '取消整层' : '选择整层'}
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {rooms.map((roomNumber) => {
-                      const isSelected = selectedRooms.has(roomNumber);
-                      return (
-                        <button
-                          key={roomNumber}
-                          type="button"
-                          onClick={() => onToggleRoom(roomNumber)}
-                          className={`rounded-md px-3 py-1.5 font-mono text-sm transition-colors ${
-                            isSelected
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                          }`}
-                        >
-                          {roomNumber}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </div>
-      )}
-    </WizardDialog>
+      }
+    >
+      <div className="space-y-4">
+        <form className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="floors" required>
+                楼层
+              </Label>
+              <Input id="floors" placeholder="如 1,2,3 或 1-5" {...form.register('floors')} />
+              <p className="text-sm text-muted-foreground">支持多楼层（如 1,2,3 或 1-5）</p>
+              {form.formState.errors.floors?.message && (
+                <p className="text-sm text-destructive">{form.formState.errors.floors.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="room_numbers" required>
+                房间号
+              </Label>
+              <Input id="room_numbers" placeholder="如 1,2,3 或 1-5" {...form.register('room_numbers')} />
+              <p className="text-sm text-muted-foreground">支持多房间号（如 1,2,3 或 1-5）</p>
+              {form.formState.errors.room_numbers?.message && (
+                <p className="text-sm text-destructive">{form.formState.errors.room_numbers.message}</p>
+              )}
+            </div>
+          </div>
+        </form>
+
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => onToggleAll(true)}>
+            全选
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => onToggleAll(false)}>
+            取消全选
+          </Button>
+        </div>
+
+        <div className="text-sm text-muted-foreground">
+          将生成 {totalGeneratedRooms} 个房间，点击房间号启用/禁用
+        </div>
+
+        <div className="max-h-[400px] space-y-4 overflow-y-auto">
+          {generatedRooms.map(({ floor, rooms }) => {
+            const selectedCount = rooms.filter((roomNumber) => selectedRooms.has(roomNumber)).length;
+            const allSelected = selectedCount === rooms.length;
+            const someSelected = selectedCount > 0 && !allSelected;
+
+            return (
+              <div key={floor} className="rounded-lg border p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant={allSelected ? 'default' : 'outline'}
+                      size="sm"
+                      className="h-7"
+                      onClick={() => onToggleFloor(rooms, !allSelected)}
+                    >
+                      {allSelected ? (
+                        <Check className="mr-1 h-4 w-4" />
+                      ) : someSelected ? (
+                        <span className="mr-1 flex h-4 w-4 items-center justify-center text-xs">-</span>
+                      ) : (
+                        <span className="mr-1 h-4 w-4" />
+                      )}
+                      {floor}楼
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      ({selectedCount}/{rooms.length})
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => onToggleFloor(rooms, !allSelected)}
+                  >
+                    {allSelected ? '取消整层' : '选择整层'}
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {rooms.map((roomNumber) => {
+                    const isSelected = selectedRooms.has(roomNumber);
+                    return (
+                      <button
+                        key={roomNumber}
+                        type="button"
+                        onClick={() => onToggleRoom(roomNumber)}
+                        className={`rounded-md px-3 py-1.5 font-mono text-sm transition-colors ${
+                          isSelected
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        }`}
+                      >
+                        {roomNumber}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </AppDrawer>
   );
 }
 

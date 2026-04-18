@@ -106,7 +106,6 @@ model Room {
   room_number  String   @db.VarChar(50)
   layout       String?  @db.VarChar(50)
   status       String   @default("available") @db.VarChar(20)
-  monthly_rent Decimal  @db.Decimal(10, 2)
   area         Decimal? @db.Decimal(10, 2)
   facilities   Json?
   notes        String?  @db.VarChar(500)
@@ -116,10 +115,24 @@ model Room {
   apartment        Apartment        @relation(fields: [apartment_id], references: [id], onDelete: Cascade)
   leases           Lease[]
   utility_readings UtilityReading[]
+  pricing          RoomPricing?
 
   @@index([status])
   @@index([apartment_id])
   @@map("rooms")
+}
+
+model RoomPricing {
+  id          String   @id @db.VarChar(26)
+  room_id     String   @unique @db.VarChar(26)
+  monthly_rent Decimal @db.Decimal(10, 2)
+  effective_date DateTime @default(now())
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  room Room @relation(fields: [room_id], references: [id], onDelete: Cascade)
+
+  @@map("room_pricing")
 }
 
 model Tenant {

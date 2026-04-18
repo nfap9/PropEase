@@ -36,7 +36,6 @@ export interface CreateRoomInput {
   apartment_id: string;
   room_number: string;
   layout?: string;
-  monthly_rent: number;
   area?: number;
   notes?: string;
   status?: 'available' | 'occupied' | 'maintenance';
@@ -49,7 +48,6 @@ export interface CreateRoomInput {
 export interface BatchCreateRoomInput {
   room_numbers: string[];
   layout?: string;
-  monthly_rent: number;
   area?: number;
   notes?: string;
 }
@@ -61,7 +59,6 @@ export interface UpdateRoomInput {
   room_number?: string;
   layout?: string;
   status?: 'available' | 'occupied' | 'maintenance';
-  monthly_rent?: number;
   area?: number;
   notes?: string;
   facilities?: RoomFacilities | null;
@@ -89,7 +86,6 @@ function buildCreateData(apartmentId: string, data: CreateRoomInput): Prisma.Roo
     apartment: { connect: { id: apartmentId } },
     room_number: data.room_number,
     layout: data.layout,
-    monthly_rent: data.monthly_rent,
     area: data.area,
     notes: data.notes,
     status: data.status ?? 'available',
@@ -108,7 +104,6 @@ function buildUpdateData(existing: Room, data: UpdateRoomInput): Prisma.RoomUpda
     room_number: data.room_number ?? existing.room_number,
     layout: data.layout ?? existing.layout,
     status: data.status ?? existing.status,
-    monthly_rent: data.monthly_rent ?? Number(existing.monthly_rent),
     area:
       data.area !== undefined
         ? data.area
@@ -174,17 +169,18 @@ export function createRoomService(
         throw createAppError(404, NotFoundMessages.APARTMENT);
       }
 
-      const roomsData = data.room_numbers.map((roomNumber) =>
-        buildCreateData(apartmentId, {
-          apartment_id: apartmentId,
+      const roomsData = data.room_numbers.map((roomNumber) => {
+        const createData: Prisma.RoomCreateInput = {
+          id: ulid().toLowerCase(),
+          apartment: { connect: { id: apartmentId } },
           room_number: roomNumber,
           layout: data.layout,
-          monthly_rent: data.monthly_rent,
           area: data.area,
           notes: data.notes,
           status: 'available',
-        })
-      );
+        };
+        return createData;
+      });
 
       return getRepo().createBatch(roomsData);
     },

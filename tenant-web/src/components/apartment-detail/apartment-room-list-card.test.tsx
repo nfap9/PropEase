@@ -11,10 +11,10 @@ const rooms: Room[] = [
     room_number: '101',
     layout: '一室一厅',
     area: 32,
-    monthly_rent: 2200,
     status: 'available',
     notes: null,
     facilities: null,
+    pricing: { id: 'pricing-1', room_id: 'room-1', monthly_rent: 2200, effective_date: '2026-03-28T00:00:00.000Z' },
     created_at: '2026-03-28T00:00:00.000Z',
   },
 ];

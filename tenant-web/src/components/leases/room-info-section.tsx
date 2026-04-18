@@ -70,7 +70,9 @@ export function RoomInfoSection({
           <div className="mt-4 grid grid-cols-3 gap-4">
             <div className="rounded-xl bg-card/80 px-4 py-3 text-center shadow-sm border border-amber-100/50 dark:border-amber-800/30">
               <p className="text-xs text-muted-foreground mb-1">月租</p>
-              <p className="text-lg font-bold text-foreground">¥{room.monthly_rent}</p>
+              <p className="text-lg font-bold text-foreground">
+                {room.pricing?.monthly_rent ? `¥${room.pricing.monthly_rent}` : '暂无定价'}
+              </p>
             </div>
             <div className="rounded-xl bg-card/80 px-4 py-3 text-center shadow-sm border border-amber-100/50 dark:border-amber-800/30">
               <p className="text-xs text-muted-foreground mb-1">面积</p>
@@ -120,7 +122,9 @@ export function RoomInfoSection({
                   .map((r: Room) => (
                     <SelectItem key={r.id} value={r.id} className="rounded-lg">
                       <span className="font-medium">{r.room_number}</span>
-                      <span className="ml-2 text-muted-foreground">¥{r.monthly_rent}/月</span>
+                      <span className="ml-2 text-muted-foreground">
+                        {r.pricing?.monthly_rent ? `¥${r.pricing.monthly_rent}/月` : '暂无定价'}
+                      </span>
                       {r.area && <span className="ml-2 text-muted-foreground text-xs">{r.area}㎡</span>}
                     </SelectItem>
                   ))}
@@ -146,7 +150,9 @@ export function RoomInfoSection({
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-bold text-amber-600">¥{selectedRoom.monthly_rent}</p>
+                  <p className="text-xl font-bold text-amber-600">
+                    {selectedRoom.pricing?.monthly_rent ? `¥${selectedRoom.pricing.monthly_rent}` : '暂无定价'}
+                  </p>
                   <p className="text-xs text-muted-foreground">月租</p>
                 </div>
               </div>

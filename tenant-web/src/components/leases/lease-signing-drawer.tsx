@@ -154,7 +154,7 @@ export function LeaseSigningDrawer({
         tenant_notes: '',
         start_date: new Date().toISOString().split('T')[0],
         end_date: '',
-        monthly_rent: room.monthly_rent,
+        monthly_rent: room.pricing?.monthly_rent ?? 0,
         deposit: 0,
         water_rate: utilityConfig?.water_price_per_unit ?? 0,
         electricity_rate: utilityConfig?.electricity_price_per_unit ?? 0,

@@ -50,7 +50,6 @@ export default function ApartmentDetailPage() {
   const [isEditApartmentOpen, setIsEditApartmentOpen] = useState(false);
   const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
   const [isBatchCreateRoomOpen, setIsBatchCreateRoomOpen] = useState(false);
-  const [batchCreateStep, setBatchCreateStep] = useState<'config' | 'confirm'>('config');
   const [isEditRoomOpen, setIsEditRoomOpen] = useState(false);
   const [isDeleteRoomOpen, setIsDeleteRoomOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
@@ -69,7 +68,6 @@ export default function ApartmentDetailPage() {
       room_number: '',
       layout: '',
       area: 0,
-      monthly_rent: 0,
       notes: '',
     },
   });
@@ -77,11 +75,7 @@ export default function ApartmentDetailPage() {
     resolver: zodResolver(roomBatchConfigSchema),
     defaultValues: {
       floors: '1',
-      start_number: 1,
-      end_number: 10,
-      layout: '',
-      monthly_rent: 0,
-      area: 0,
+      room_numbers: '1-10',
       notes: '',
     },
   });
@@ -117,7 +111,6 @@ export default function ApartmentDetailPage() {
     },
     onBatchRoomsCreated: () => {
       setIsBatchCreateRoomOpen(false);
-      setBatchCreateStep('config');
       batchCreateRoomForm.reset();
       resetGeneratedSelection();
     },
@@ -283,24 +276,16 @@ export default function ApartmentDetailPage() {
         <BatchCreateRoomDialog
           open={isBatchCreateRoomOpen}
           onOpenChange={setIsBatchCreateRoomOpen}
-          step={batchCreateStep}
-          onStepChange={setBatchCreateStep}
           form={batchCreateRoomForm}
           generatedRooms={generatedRooms}
           selectedRooms={selectedRooms}
-          onInitializeSelection={initializeSelectedRooms}
           onToggleAll={toggleAll}
           onToggleFloor={toggleFloor}
           onToggleRoom={toggleRoom}
-          onSubmitConfig={() => setBatchCreateStep('confirm')}
           onSubmitRooms={() =>
-            batchCreateRoomMutation.mutate({
-              roomNumbers: Array.from(selectedRooms),
-              config: batchCreateRoomForm.getValues(),
-            })
+            batchCreateRoomMutation.mutate(Array.from(selectedRooms))
           }
           isPending={batchCreateRoomMutation.isPending}
-          onResetSelection={resetGeneratedSelection}
         />
 
         <RoomEditDialog

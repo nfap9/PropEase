@@ -88,19 +88,9 @@ export function useApartmentDetailData({
   });
 
   const batchCreateRoomMutation = useMutation({
-    mutationFn: ({
-      roomNumbers,
-      config,
-    }: {
-      roomNumbers: string[];
-      config: RoomBatchConfigData;
-    }) =>
+    mutationFn: (roomNumbers: string[]) =>
       roomsApi.batchCreate(orgId!, apartmentId, {
         room_numbers: roomNumbers,
-        layout: config.layout || undefined,
-        monthly_rent: config.monthly_rent,
-        area: config.area || undefined,
-        notes: config.notes || undefined,
       }),
     onSuccess: (createdRooms) => {
       invalidateRooms();
@@ -215,14 +205,20 @@ export function useApartmentFormSync(
 
 export function useGeneratedRoomSelection(batchCreateRoomForm: UseFormReturn<RoomBatchConfigData>) {
   const floors = batchCreateRoomForm.watch('floors');
-  const startNumber = batchCreateRoomForm.watch('start_number');
-  const endNumber = batchCreateRoomForm.watch('end_number');
+  const roomNumbers = batchCreateRoomForm.watch('room_numbers');
   const generatedRooms = useMemo(
-    () => buildGeneratedRoomGroups(floors || '1', startNumber || 1, endNumber || 10),
-    [floors, startNumber, endNumber]
+    () => buildGeneratedRoomGroups(floors || '1', roomNumbers || '1-10'),
+    [floors, roomNumbers]
   );
 
   const [selectedRooms, setSelectedRooms] = useState<Set<string>>(new Set());
+
+  // Auto-initialize selection when generated rooms change
+  useEffect(() => {
+    if (generatedRooms.length > 0) {
+      setSelectedRooms(new Set(generatedRooms.flatMap((floorGroup) => floorGroup.rooms)));
+    }
+  }, [generatedRooms]);
 
   const initializeSelectedRooms = () => {
     setSelectedRooms(new Set(generatedRooms.flatMap((floorGroup) => floorGroup.rooms)));

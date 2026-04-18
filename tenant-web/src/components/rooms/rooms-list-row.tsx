@@ -62,7 +62,11 @@ export function RoomListRow({ room, apartmentName, onLease, onTerminate, onStatu
 
       {/* Rent */}
       <div className="min-w-[90px]">
-        <span className="text-sm font-semibold text-foreground">¥{room.monthly_rent.toLocaleString()}</span>
+        {room.pricing?.monthly_rent ? (
+          <span className="text-sm font-semibold text-foreground">¥{room.pricing.monthly_rent.toLocaleString()}</span>
+        ) : (
+          <span className="text-xs text-muted-foreground">暂无定价</span>
+        )}
       </div>
 
       {/* Notes */}

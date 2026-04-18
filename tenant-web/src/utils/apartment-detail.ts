@@ -47,21 +47,40 @@ export const parseFloors = (floorsStr: string): number[] => {
   return Array.from(floors).sort((left, right) => left - right);
 };
 
+export const parseRoomNumbers = (roomNumbersStr: string): number[] => {
+  const roomNumbers = new Set<number>();
+  const parts = roomNumbersStr.split(',').map((segment) => segment.trim());
+
+  for (const part of parts) {
+    if (part.includes('-')) {
+      const [start, end] = part.split('-').map((segment) => parseInt(segment.trim(), 10));
+      if (!isNaN(start) && !isNaN(end)) {
+        for (let num = start; num <= end; num += 1) {
+          roomNumbers.add(num);
+        }
+      }
+      continue;
+    }
+
+    const num = parseInt(part, 10);
+    if (!isNaN(num)) {
+      roomNumbers.add(num);
+    }
+  }
+
+  return Array.from(roomNumbers).sort((left, right) => left - right);
+};
+
 export const buildGeneratedRoomGroups = (
   floorsValue: string,
-  startNumber: number,
-  endNumber: number
+  roomNumbersStr: string
 ): GeneratedFloorRooms[] => {
   const floors = parseFloors(floorsValue || '1');
-  const safeStart = startNumber || 1;
-  const safeEnd = endNumber || 10;
+  const roomNumbers = parseRoomNumbers(roomNumbersStr || '1-10');
 
   return floors.map((floor) => ({
     floor,
-    rooms: Array.from({ length: safeEnd - safeStart + 1 }, (_, index) => {
-      const number = safeStart + index;
-      return `${floor}${String(number).padStart(2, '0')}`;
-    }),
+    rooms: roomNumbers.map((num) => `${floor}${String(num).padStart(2, '0')}`),
   }));
 };
 

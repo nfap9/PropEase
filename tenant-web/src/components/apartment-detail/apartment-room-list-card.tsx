@@ -250,7 +250,9 @@ export function ApartmentRoomListCard({
 
                           {/* 租金 */}
                           <span className="text-xs text-muted-foreground">
-                            ¥{room.monthly_rent.toLocaleString()}
+                            {room.pricing?.monthly_rent
+                              ? `¥${room.pricing.monthly_rent.toLocaleString()}`
+                              : '暂无定价'}
                           </span>
                         </div>
                       );

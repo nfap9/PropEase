@@ -155,7 +155,7 @@ export function LeaseFormDialog({
         tenant_id: '',
         start_date: new Date().toISOString().split('T')[0],
         end_date: '',
-        monthly_rent: room.monthly_rent,
+        monthly_rent: room.pricing?.monthly_rent ?? 0,
         deposit: 0,
         water_rate: waterPrice,
         electricity_rate: elecPrice,
@@ -304,7 +304,7 @@ export function LeaseFormDialog({
                       ?.filter((r) => r.status === 'available')
                       .map((r: Room) => (
                         <SelectItem key={r.id} value={r.id}>
-                          {r.room_number} - ¥{r.monthly_rent}/月
+                          {r.room_number} {r.pricing?.monthly_rent ? `- ¥${r.pricing.monthly_rent}/月` : '- 暂无定价'}
                         </SelectItem>
                       ))}
                   </SelectContent>
