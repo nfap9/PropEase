@@ -80,6 +80,25 @@ export interface AppDrawerProps {
  * 1. 内置统一头部、内容区、底部结构；
  * 2. 默认开启粘性头尾和内容滚动；
  * 3. 统一了尺寸、留白和视觉样式，减少页面重复实现。
+ *
+ * @example
+ * ```tsx
+ * <AppDrawer
+ *   open={open}
+ *   onOpenChange={setOpen}
+ *   title="编辑房间"
+ *   description="修改房间信息和价格"
+ *   headerAction={<Button variant="ghost" size="sm">删除</Button>}
+ *   footer={
+ *     <>
+ *       <Button variant="outline" onClick={() => setOpen(false)}>取消</Button>
+ *       <Button onClick={handleSave}>保存</Button>
+ *     </>
+ *   }
+ * >
+ *   {children}
+ * </AppDrawer>
+ * ```
  */
 export function AppDrawer({
   open,
@@ -124,7 +143,19 @@ export function AppDrawer({
           </div>
         </SheetHeader>
 
-        <div className={cn('scrollbar-subtle flex-1 overflow-y-auto px-6 py-5', bodyClassName)}>{children}</div>
+        <div
+          className={cn(
+            'flex-1 overflow-y-auto px-6 py-5',
+            // 内联 scrollbar 样式，避免依赖 web 项目的 CSS 类
+            '[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:bg-transparent',
+            '[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border',
+            '[&::-webkit-scrollbar-thumb]:hover:bg-muted-foreground/30',
+            'scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-border',
+            bodyClassName
+          )}
+        >
+          {children}
+        </div>
 
         {footer ? (
           <SheetFooter
@@ -177,7 +208,17 @@ export function CommonDrawer({
         {header ? (
           <div className="border-border/60 bg-background/95 sticky top-0 z-10 border-b px-6 py-4">{header}</div>
         ) : null}
-        <div className="scrollbar-subtle flex-1 overflow-y-auto px-6 py-5">{children}</div>
+        <div
+          className={cn(
+            'flex-1 overflow-y-auto px-6 py-5',
+            '[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:bg-transparent',
+            '[&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border',
+            '[&::-webkit-scrollbar-thumb]:hover:bg-muted-foreground/30',
+            'scrollbar-thin scrollbar-thumb-rounded-full scrollbar-thumb-border'
+          )}
+        >
+          {children}
+        </div>
         {footer ? (
           <div className="border-border/60 bg-background/95 sticky bottom-0 z-10 border-t px-6 py-4">{footer}</div>
         ) : null}
