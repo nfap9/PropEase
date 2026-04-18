@@ -6,7 +6,14 @@ import { useSettleLease } from '@/hooks/use-lease-operations';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Alert, AlertDescription } from '@apartment-ultra/shared-ui/components/ui';
 import { AlertTriangle } from 'lucide-react';
@@ -39,24 +46,16 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
   };
 
   return (
-    <AppDrawer
-      open={open}
-      onOpenChange={onOpenChange}
-      title="退租结算"
-      description="完成租约的最终结算，包括最后一期账单和押金处理"
-      footer={
-        <>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            取消
-          </Button>
-          <Button type="submit" disabled={settleLease.isPending} variant="destructive">
-            {settleLease.isPending ? '处理中...' : '确认退租结算'}
-          </Button>
-        </>
-      }
-    >
-      <FormProvider {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col overflow-hidden p-0">
+        <SheetHeader className="border-b px-6 py-5 text-left">
+          <SheetTitle>退租结算</SheetTitle>
+          <SheetDescription>完成租约的最终结算，包括最后一期账单和押金处理</SheetDescription>
+        </SheetHeader>
+
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          <FormProvider {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription className="text-amber-800 dark:text-amber-200">
@@ -140,8 +139,21 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
               </CardContent>
             </Card>
           )}
-        </form>
-      </FormProvider>
-    </AppDrawer>
+          </form>
+          </FormProvider>
+        </div>
+
+        <SheetFooter className="border-t px-6 py-4">
+          <div className="flex gap-3">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              取消
+            </Button>
+            <Button type="submit" disabled={settleLease.isPending} variant="destructive">
+              {settleLease.isPending ? '处理中...' : '确认退租结算'}
+            </Button>
+          </div>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }

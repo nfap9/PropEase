@@ -15,13 +15,19 @@ import {
   AlertDialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
 import {
-  AppDrawer,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -132,12 +138,13 @@ export function RegisteredUserDetailSheet({
   isDeletePending: boolean;
 }) {
   return (
-    <AppDrawer
-      open={open}
-      onOpenChange={onOpenChange}
-      title={adminMessages.registeredUsers.dialogs.detailTitle}
-      size="sm"
-    >
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col overflow-hidden p-0">
+        <SheetHeader className="border-b px-6 py-5 text-left">
+          <SheetTitle>{adminMessages.registeredUsers.dialogs.detailTitle}</SheetTitle>
+        </SheetHeader>
+
+        <div className="flex-1 overflow-y-auto px-6 py-5">
       {detailUserId ? (
         <div>
           {detailLoading ? (
@@ -215,8 +222,10 @@ export function RegisteredUserDetailSheet({
             <p className="text-sm text-muted-foreground">{adminMessages.registeredUsers.dialogs.loadFailed}</p>
           )}
         </div>
+        </div>
       ) : null}
-    </AppDrawer>
+    </SheetContent>
+    </Sheet>
   );
 }
 

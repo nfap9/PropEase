@@ -15,8 +15,15 @@ import {
   AlertDialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import { Switch } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -203,41 +210,15 @@ export function BatchCreateRoomDialog({
   const totalGeneratedRooms = generatedRooms.reduce((sum, floorGroup) => sum + floorGroup.rooms.length, 0);
 
   return (
-    <AppDrawer
-      open={open}
-      onOpenChange={onOpenChange}
-      title="批量添加房间"
-      description="设置楼层和房间号范围，点击房间号切换启用状态"
-      size="xl"
-      className="!w-[1100px] sm:!w-[1100px]"
-      footer={
-        <div className="flex w-full items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            已选择 <span className="font-medium text-foreground">{selectedRooms.size}</span> 个房间
-          </p>
-          <div className="flex gap-3">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              取消
-            </Button>
-            <Button
-              type="button"
-              onClick={onSubmitRooms}
-              disabled={selectedRooms.size === 0 || isPending}
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  创建中...
-                </>
-              ) : (
-                <>确认添加 ({selectedRooms.size})</>
-              )}
-            </Button>
-          </div>
-        </div>
-      }
-    >
-      <div className="space-y-4">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:max-w-4xl flex flex-col overflow-hidden p-0">
+        <SheetHeader className="border-b px-6 py-5 text-left">
+          <SheetTitle>批量添加房间</SheetTitle>
+          <SheetDescription>设置楼层和房间号范围，点击房间号切换启用状态</SheetDescription>
+        </SheetHeader>
+
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          <div className="space-y-4">
         <form className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -337,8 +318,37 @@ export function BatchCreateRoomDialog({
             );
           })}
         </div>
-      </div>
-    </AppDrawer>
+        </div>
+        </div>
+
+        <SheetFooter className="border-t px-6 py-4">
+          <div className="flex w-full items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              已选择 <span className="font-medium text-foreground">{selectedRooms.size}</span> 个房间
+            </p>
+            <div className="flex gap-3">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                取消
+              </Button>
+              <Button
+                type="button"
+                onClick={onSubmitRooms}
+                disabled={selectedRooms.size === 0 || isPending}
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    创建中...
+                  </>
+                ) : (
+                  <>确认添加 ({selectedRooms.size})</>
+                )}
+              </Button>
+            </div>
+          </div>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 

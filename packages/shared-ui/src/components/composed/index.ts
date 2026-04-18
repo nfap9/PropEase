@@ -1,5 +1,4 @@
 export * from './app-dialog';
-export * from './app-drawer';
 export * from './chart';
 export * from './data-table';
 export * from './date-time-picker';
