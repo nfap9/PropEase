@@ -2,7 +2,7 @@
 import * as React from 'react';
 
 import { cn } from '../../lib/utils';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../shadcn/dialog';
 
 type AppDialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 

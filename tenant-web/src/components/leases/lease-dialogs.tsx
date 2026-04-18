@@ -1,9 +1,19 @@
 
 import type { UseFormReturn } from 'react-hook-form';
+import { FormProvider, Controller } from 'react-hook-form';
 import { Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
@@ -12,14 +22,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
@@ -53,7 +55,7 @@ export function LeaseEditDialog({
           <AlertTitle>提示</AlertTitle>
           <AlertDescription>已出账单不受影响；后续生成的账单将按新的租约信息计算。</AlertDescription>
         </Alert>
-        <Form {...form}>
+        <FormProvider {...form}>
           <form id="edit-lease-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <input type="hidden" {...form.register('room_id')} />
             <input type="hidden" {...form.register('tenant_id')} />
@@ -76,106 +78,108 @@ export function LeaseEditDialog({
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="start_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>开始日期 *</FormLabel>
-                    <FormControl>
-                      <DateTimePicker
-                        id="edit-start_date"
-                        mode="date"
-                        value={field.value}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        data-testid={LEASES.START_DATE_INPUT}
-                        placeholder="选择开始日期"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              <div className="space-y-2">
+                <Label htmlFor="edit-start_date">开始日期 *</Label>
+                <Controller
+                  name="start_date"
+                  control={form.control}
+                  render={({ field }) => (
+                    <DateTimePicker
+                      id="edit-start_date"
+                      mode="date"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      data-testid={LEASES.START_DATE_INPUT}
+                      placeholder="选择开始日期"
+                    />
+                  )}
+                />
+                {form.formState.errors.start_date && (
+                  <p className="text-sm text-destructive">{form.formState.errors.start_date.message}</p>
                 )}
-              />
-              <FormField
-                control={form.control}
-                name="end_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>结束日期</FormLabel>
-                    <FormControl>
-                      <DateTimePicker
-                        id="edit-end_date"
-                        mode="date"
-                        value={field.value}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        data-testid={LEASES.END_DATE_INPUT}
-                        placeholder="选择结束日期"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-end_date">结束日期</Label>
+                <Controller
+                  name="end_date"
+                  control={form.control}
+                  render={({ field }) => (
+                    <DateTimePicker
+                      id="edit-end_date"
+                      mode="date"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      data-testid={LEASES.END_DATE_INPUT}
+                      placeholder="选择结束日期"
+                    />
+                  )}
+                />
+                {form.formState.errors.end_date && (
+                  <p className="text-sm text-destructive">{form.formState.errors.end_date.message}</p>
                 )}
-              />
+              </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="monthly_rent"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>月租 (元) *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        {...field}
-                        onChange={(event) => field.onChange(event.target.value === '' ? 0 : Number(event.target.value))}
-                        value={field.value ?? ''}
-                        data-testid={LEASES.MONTHLY_RENT_INPUT}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              <div className="space-y-2">
+                <Label htmlFor="edit-monthly_rent">月租 (元) *</Label>
+                <Controller
+                  name="monthly_rent"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Input
+                      id="edit-monthly_rent"
+                      type="number"
+                      step="0.01"
+                      {...field}
+                      onChange={(event) => field.onChange(event.target.value === '' ? 0 : Number(event.target.value))}
+                      value={field.value ?? ''}
+                      data-testid={LEASES.MONTHLY_RENT_INPUT}
+                    />
+                  )}
+                />
+                {form.formState.errors.monthly_rent && (
+                  <p className="text-sm text-destructive">{form.formState.errors.monthly_rent.message}</p>
                 )}
-              />
-              <FormField
-                control={form.control}
-                name="deposit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>押金 (元)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        {...field}
-                        onChange={(event) => field.onChange(event.target.value === '' ? 0 : Number(event.target.value))}
-                        value={field.value ?? ''}
-                        data-testid={LEASES.DEPOSIT_INPUT}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-deposit">押金 (元)</Label>
+                <Controller
+                  name="deposit"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Input
+                      id="edit-deposit"
+                      type="number"
+                      step="0.01"
+                      {...field}
+                      onChange={(event) => field.onChange(event.target.value === '' ? 0 : Number(event.target.value))}
+                      value={field.value ?? ''}
+                      data-testid={LEASES.DEPOSIT_INPUT}
+                    />
+                  )}
+                />
+                {form.formState.errors.deposit && (
+                  <p className="text-sm text-destructive">{form.formState.errors.deposit.message}</p>
                 )}
-              />
+              </div>
             </div>
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>备注</FormLabel>
-                  <FormControl>
-                    <Input id="edit-notes" {...field} value={field.value ?? ''} data-testid={LEASES.NOTES_INPUT} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            <div className="space-y-2">
+              <Label htmlFor="edit-notes">备注</Label>
+              <Controller
+                name="notes"
+                control={form.control}
+                render={({ field }) => (
+                  <Input id="edit-notes" {...field} value={field.value ?? ''} data-testid={LEASES.NOTES_INPUT} />
+                )}
+              />
+              {form.formState.errors.notes && (
+                <p className="text-sm text-destructive">{form.formState.errors.notes.message}</p>
               )}
-            />
+            </div>
             <DialogFooter>
               <Button
                 type="button"
@@ -190,7 +194,7 @@ export function LeaseEditDialog({
               </Button>
             </DialogFooter>
           </form>
-        </Form>
+        </FormProvider>
       </DialogContent>
     </Dialog>
   );
@@ -208,19 +212,24 @@ export function LeaseTerminateDialog({
   isPending: boolean;
 }) {
   return (
-    <ConfirmDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title="确认终止租约"
-      description="确定要终止此租约吗？终止后房间将变为空置状态。"
-      cancelLabel="取消"
-      confirmLabel={isPending ? '处理中...' : '确认终止'}
-      onConfirm={onConfirm}
-      isPending={isPending}
-      contentTestId={LEASES.TERMINATE_DIALOG}
-      cancelTestId={LEASES.CANCEL_BUTTON}
-      confirmTestId={LEASES.CONFIRM_TERMINATE_BTN}
-    />
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent data-testid={LEASES.TERMINATE_DIALOG}>
+        <AlertDialogHeader>
+          <AlertDialogTitle>确认终止租约</AlertDialogTitle>
+          <AlertDialogDescription>确定要终止此租约吗？终止后房间将变为空置状态。</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel data-testid={LEASES.CANCEL_BUTTON}>取消</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={onConfirm}
+            disabled={isPending}
+            data-testid={LEASES.CONFIRM_TERMINATE_BTN}
+          >
+            {isPending ? '处理中...' : '确认终止'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
@@ -236,19 +245,24 @@ export function LeaseDeleteDialog({
   isPending: boolean;
 }) {
   return (
-    <ConfirmDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title="确认删除"
-      description="确定要删除此租约吗？此操作不可撤销。"
-      cancelLabel="取消"
-      confirmLabel={isPending ? '删除中...' : '删除'}
-      onConfirm={onConfirm}
-      isPending={isPending}
-      intent="destructive"
-      contentTestId={LEASES.DELETE_DIALOG}
-      cancelTestId={LEASES.CANCEL_BUTTON}
-      confirmTestId={LEASES.CONFIRM_DELETE_BTN}
-    />
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent data-testid={LEASES.DELETE_DIALOG}>
+        <AlertDialogHeader>
+          <AlertDialogTitle>确认删除</AlertDialogTitle>
+          <AlertDialogDescription>确定要删除此租约吗？此操作不可撤销。</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel data-testid={LEASES.CANCEL_BUTTON}>取消</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={onConfirm}
+            disabled={isPending}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            data-testid={LEASES.CONFIRM_DELETE_BTN}
+          >
+            {isPending ? '删除中...' : '删除'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

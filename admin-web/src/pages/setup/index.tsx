@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { adminApiEndpoints, AdminTokenResponse } from '@/api/admin-client';
@@ -13,15 +13,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 
@@ -150,7 +141,7 @@ export default function AdminSetupPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
+          <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {error && (
                 <p className="flex items-center gap-2 text-sm text-destructive">
@@ -159,53 +150,51 @@ export default function AdminSetupPage() {
                 </p>
               )}
 
-              <FormField
+              <Controller
                 control={form.control}
                 name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>用户名</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="请输入用户名（字母、数字、下划线）"
-                        {...field}
-                        autoComplete="username"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                render={({ field, fieldState }) => (
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">用户名</label>
+                    <Input
+                      placeholder="请输入用户名（字母、数字、下划线）"
+                      {...field}
+                      autoComplete="username"
+                    />
+                    {fieldState.error && (
+                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                    )}
+                  </div>
                 )}
               />
 
-              <FormField
+              <Controller
                 control={form.control}
                 name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>显示名称（可选）</FormLabel>
-                    <FormControl>
-                      <Input placeholder="请输入显示名称" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                render={({ field, fieldState }) => (
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">显示名称（可选）</label>
+                    <Input placeholder="请输入显示名称" {...field} />
+                    {fieldState.error && (
+                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                    )}
+                  </div>
                 )}
               />
 
-              <FormField
+              <Controller
                 control={form.control}
                 name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>密码</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="请输入密码"
-                        {...field}
-                        autoComplete="new-password"
-                      />
-                    </FormControl>
-                    <FormDescription className="space-y-1">
+                render={({ field, fieldState }) => (
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">密码</label>
+                    <Input
+                      type="password"
+                      placeholder="请输入密码"
+                      {...field}
+                      autoComplete="new-password"
+                    />
+                    <div className="space-y-1">
                       <p className="text-xs">密码要求：</p>
                       <ul className="grid grid-cols-2 gap-1 text-xs">
                         <li className="flex items-center gap-1">
@@ -249,28 +238,30 @@ export default function AdminSetupPage() {
                           特殊字符
                         </li>
                       </ul>
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
+                    </div>
+                    {fieldState.error && (
+                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                    )}
+                  </div>
                 )}
               />
 
-              <FormField
+              <Controller
                 control={form.control}
                 name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>确认密码</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="请再次输入密码"
-                        {...field}
-                        autoComplete="new-password"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                render={({ field, fieldState }) => (
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">确认密码</label>
+                    <Input
+                      type="password"
+                      placeholder="请再次输入密码"
+                      {...field}
+                      autoComplete="new-password"
+                    />
+                    {fieldState.error && (
+                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                    )}
+                  </div>
                 )}
               />
 
@@ -289,7 +280,7 @@ export default function AdminSetupPage() {
                 )}
               </Button>
             </form>
-          </Form>
+          </FormProvider>
         </CardContent>
       </Card>
     </div>

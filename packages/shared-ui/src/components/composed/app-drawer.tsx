@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as SheetPrimitive from '@radix-ui/react-dialog';
 
 import { cn } from '../../lib/utils';
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from './sheet';
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '../shadcn/sheet';
 
 type DrawerSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 type DrawerSide = 'left' | 'right' | 'top' | 'bottom';

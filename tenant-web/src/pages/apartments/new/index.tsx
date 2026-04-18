@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
@@ -42,10 +42,10 @@ export default function NewApartmentPage() {
     mutationFn: (data: ApartmentFormData) => apartmentsApi.create(orgId!, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
-      appToast.success('公寓创建成功');
+      toast.success('公寓创建成功');
       navigate('/workspace/apartments');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const numberRegister = (name: keyof ApartmentFormData) => ({

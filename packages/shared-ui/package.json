@@ -7,9 +7,11 @@
   "exports": {
     ".": "./src/index.ts",
     "./components": "./src/components/index.ts",
-    "./components/ui": "./src/components/ui/index.ts",
+    "./components/shadcn": "./src/components/shadcn/index.ts",
+    "./components/ui": "./src/components/ui-compat.ts",
+    "./components/composed": "./src/components/composed/index.ts",
     "./hooks": "./src/hooks/index.ts",
-    "./lib/utils": "./src/lib/utils/index.ts",
+    "./lib/utils": "./src/lib/utils.ts",
     "./lib/i18n": "./src/lib/i18n/index.ts",
     "./tokens": "./src/tokens/index.ts",
     "./styles/theme.css": "./src/styles/theme.css"
@@ -19,8 +21,6 @@
     "test:run": "vitest run"
   },
   "dependencies": {
-    "@apartment-ultra/api-contract": "workspace:*",
-    "@apartment-ultra/web-api-client": "workspace:*",
     "@hookform/resolvers": "catalog:",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "catalog:",

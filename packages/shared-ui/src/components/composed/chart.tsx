@@ -3,8 +3,7 @@ import * as React from 'react';
 import { BarChart3 } from 'lucide-react';
 
 import { cn } from '../../lib/utils';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
-import { EmptyState } from './empty-state';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../shadcn/card';
 
 /**
  * 统一的图表系列配置。
@@ -103,12 +102,11 @@ export function ChartContainer({
       </CardHeader>
       <CardContent className={cn('p-5 sm:p-6', contentClassName)}>
         {empty ? (
-          <EmptyState
-            className="border-0 bg-transparent shadow-none"
-            icon={<BarChart3 className="h-10 w-10" />}
-            title={emptyTitle}
-            description={emptyDescription}
-          />
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <BarChart3 className="h-10 w-10 text-muted-foreground mb-4" />
+            <p className="text-lg font-medium">{emptyTitle}</p>
+            {emptyDescription && <p className="text-sm text-muted-foreground mt-1">{emptyDescription}</p>}
+          </div>
         ) : (
           children
         )}

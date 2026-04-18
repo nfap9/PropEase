@@ -1,6 +1,6 @@
 
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
@@ -57,7 +57,8 @@ export function RoomFilters({
   return (
     <div data-testid={testids?.FILTER_TOGGLE}>
       <div className="flex flex-wrap gap-4">
-        <FilterField label="搜索">
+        <div>
+          <Label className="mb-2 block">搜索</Label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -68,9 +69,10 @@ export function RoomFilters({
               className="pl-10"
             />
           </div>
-        </FilterField>
+        </div>
 
-        <FilterField label="公寓">
+        <div>
+          <Label className="mb-2 block">公寓</Label>
           <Select
             value={filters.apartmentId || 'all'}
             onValueChange={(value) =>
@@ -89,9 +91,10 @@ export function RoomFilters({
               ))}
             </SelectContent>
           </Select>
-        </FilterField>
+        </div>
 
-        <FilterField label="状态">
+        <div>
+          <Label className="mb-2 block">状态</Label>
           <Select
             value={filters.status || 'all'}
             onValueChange={(value) =>
@@ -108,9 +111,10 @@ export function RoomFilters({
               <SelectItem value="maintenance">维修中</SelectItem>
             </SelectContent>
           </Select>
-        </FilterField>
+        </div>
 
-        <FilterField label="户型">
+        <div>
+          <Label className="mb-2 block">户型</Label>
           <Select
             value={filters.layout || 'all'}
             onValueChange={(value) => onFilterChange('layout', value === 'all' ? null : value)}
@@ -127,9 +131,10 @@ export function RoomFilters({
               ))}
             </SelectContent>
           </Select>
-        </FilterField>
+        </div>
 
-        <FilterField label="月租范围">
+        <div>
+          <Label className="mb-2 block">月租范围</Label>
           <div className="flex items-center gap-1">
             <Input
               type="number"
@@ -153,9 +158,10 @@ export function RoomFilters({
               data-testid={testids?.RENT_MAX_INPUT}
             />
           </div>
-        </FilterField>
+        </div>
 
-        <FilterField label="面积范围">
+        <div>
+          <Label className="mb-2 block">面积范围</Label>
           <div className="flex items-center gap-1">
             <Input
               type="number"
@@ -179,7 +185,7 @@ export function RoomFilters({
               data-testid={testids?.AREA_MAX_INPUT}
             />
           </div>
-        </FilterField>
+        </div>
 
         {hasActiveFilters && (
           <Button

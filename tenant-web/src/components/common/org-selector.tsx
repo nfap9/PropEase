@@ -10,7 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
 import { Building2, Plus, Settings } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { useNavigate } from 'react-router-dom';
@@ -75,15 +84,20 @@ export function OrgSelector() {
         </SelectContent>
       </Select>
 
-      <ConfirmDialog
-        open={!!pendingOrg}
-        onOpenChange={(open) => !open && handleCancelSwitch()}
-        title="确认切换团队"
-        description={`确定要切换到团队 "${pendingOrg?.name ?? ''}" 吗？切换后页面将刷新以加载新团队的数据。`}
-        cancelLabel="取消"
-        confirmLabel="确认切换"
-        onConfirm={handleConfirmSwitch}
-      />
+      <AlertDialog open={!!pendingOrg} onOpenChange={(open) => !open && handleCancelSwitch()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>确认切换团队</AlertDialogTitle>
+            <AlertDialogDescription>
+              确定要切换到团队 "{pendingOrg?.name ?? ''}" 吗？切换后页面将刷新以加载新团队的数据。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSwitch}>确认切换</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

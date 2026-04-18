@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 
 /** 预置费用类型 */
 const PREDEFINED_FEE_TYPES = [
@@ -86,11 +86,11 @@ export function LeaseFeeItemsTab({ leaseId, orgId }: LeaseFeeItemsTabProps) {
     }>) => leasesApi.setLeaseFeeItems(orgId, leaseId, feeItems),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
-      appToast.success('费用项目已更新');
+      toast.success('费用项目已更新');
       setOpenDialog(false);
     },
     onError: () => {
-      appToast.error('更新费用项目失败');
+      toast.error('更新费用项目失败');
     },
   });
 

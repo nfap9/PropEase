@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { FormDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
@@ -63,10 +63,10 @@ export function CreateTenantDialog({ orgId, open, onOpenChange, onSuccess }: Cre
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       onOpenChange(false);
       form.reset();
-      appToast.success('租客创建成功');
+      toast.success('租客创建成功');
       onSuccess?.(newTenant);
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const handleSubmit = (data: TenantFormData) => {

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
@@ -31,9 +31,9 @@ export default function AdminOrganizationDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'organization', id] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'organizations'] });
-      appToast.success('已更新');
+      toast.success('已更新');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '操作失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '操作失败，请重试')),
   });
 
   if (isLoading || !org) {

@@ -2,8 +2,6 @@
 import { Plus } from 'lucide-react';
 import { useManagedItem } from '@apartment-ultra/shared-ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
-import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { DataTable } from '@/components/common/data-table';
 import type { AdminUser } from '@/api/admin-client';
@@ -41,19 +39,14 @@ export function UsersPageContent() {
   }
 
   return (
-    <ListPageLayout
-      title=""
-      titleTestId="admin-users-heading"
-      maxWidth="6xl"
-      actions={
-        <PageToolbar>
-          <Button onClick={() => dialogState.openAction('create')} data-testid="admin-users-create-btn">
-            <Plus className="mr-2 h-4 w-4" />
-            新建账号
-          </Button>
-        </PageToolbar>
-      }
-    >
+    <div className="mx-auto max-w-6xl">
+      <div className="flex flex-wrap items-center gap-2 sm:justify-end mb-4">
+        <Button onClick={() => dialogState.openAction('create')} data-testid="admin-users-create-btn">
+          <Plus className="mr-2 h-4 w-4" />
+          新建账号
+        </Button>
+      </div>
+
       <DataTable columns={columns} data={users ?? []} testid="admin-users-list" useCard={false} />
 
       <CreateUserDialog
@@ -102,6 +95,6 @@ export function UsersPageContent() {
         onConfirm={() => dialogState.selectedItem && deleteMutation.mutate(dialogState.selectedItem.id)}
         isPending={deleteMutation.isPending}
       />
-    </ListPageLayout>
+    </div>
   );
 }

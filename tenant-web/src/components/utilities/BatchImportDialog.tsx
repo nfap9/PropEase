@@ -1,7 +1,7 @@
 
 import { useRef, useState } from 'react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components';
 import {
   Select,
   SelectContent,
@@ -9,9 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { WizardDialog } from '@apartment-ultra/shared-ui/components/ui';
+import { AppDialog } from '@apartment-ultra/shared-ui/components/composed';
 import { Upload, FileSpreadsheet } from 'lucide-react';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { Apartment, Room } from '@/types';
 import { getErrorMessage } from '@/utils/error';
 
@@ -160,14 +160,14 @@ export function BatchImportDialog({
 
     const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
     if (ext === '.numbers') {
-      appToast.error(
+      toast.error(
         '请上传 .xlsx 格式的 Excel 文件，不支持 Apple Numbers (.numbers) 格式。请在 Numbers 中通过「文件 → 导出为 → Excel」另存为 .xlsx 后上传'
       );
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
     if (ext !== '.xlsx' && ext !== '.xls') {
-      appToast.error('请上传 .xlsx 或 .xls 格式的 Excel 文件');
+      toast.error('请上传 .xlsx 或 .xls 格式的 Excel 文件');
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -176,7 +176,7 @@ export function BatchImportDialog({
       const records = await parseExcelFile(file);
 
       if (records.length === 0) {
-        appToast.error('Excel 文件中没有有效数据');
+        toast.error('Excel 文件中没有有效数据');
         return;
       }
 
@@ -216,11 +216,11 @@ export function BatchImportDialog({
       }
 
       if (unmatchedKeys.length > 0) {
-        appToast.warning(`以下房间未找到匹配: ${unmatchedKeys.join(', ')}`);
+        toast.warning(`以下房间未找到匹配: ${unmatchedKeys.join(', ')}`);
       }
 
       if (matchedRecords.length === 0) {
-        appToast.error('没有匹配到任何房间');
+        toast.error('没有匹配到任何房间');
         return;
       }
 
@@ -233,7 +233,7 @@ export function BatchImportDialog({
     } catch (err) {
       const msg = String(err);
       const hint = msg.includes('解析失败') ? '请确认文件为 .xlsx 格式（若使用 Numbers，需先导出为 Excel）' : undefined;
-      appToast.error(hint ?? getErrorMessage(err, '导入失败，请重试'));
+      toast.error(hint ?? getErrorMessage(err, '导入失败，请重试'));
     }
 
     if (fileInputRef.current) {
@@ -242,24 +242,49 @@ export function BatchImportDialog({
   };
 
   return (
-    <WizardDialog
+    <AppDialog
       open={open}
       onOpenChange={handleDialogOpenChange}
       title="批量导入水电读数"
       description="按步骤选择导入月份并上传已填写的 Excel 模板。"
-      steps={batchImportSteps}
-      currentStep={currentStep}
-      onPrevious={() => setCurrentStep(0)}
-      onNext={() => setCurrentStep(1)}
-      nextLabel="下一步"
-      completeLabel="上传后自动导入"
-      completeDisabled
       size="md"
       contentTestId="utilities-batch-import-dialog"
-      footerExtra={
-        currentStep === 1 ? (
-          <p className="text-sm text-muted-foreground">支持 `.xlsx` / `.xls`，导入日期默认使用今天。</p>
-        ) : null
+      footer={
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {batchImportSteps.map((step, index) => (
+              <div
+                key={step.id}
+                className={`flex items-center gap-1 text-sm ${
+                  index <= currentStep ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                <div
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
+                    index <= currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                  }`}
+                >
+                  {index + 1}
+                </div>
+                <span>{step.title}</span>
+                {index < batchImportSteps.length - 1 && <span className="mx-1">/</span>}
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            {currentStep > 0 && (
+              <Button variant="outline" onClick={() => setCurrentStep(0)}>
+                上一步
+              </Button>
+            )}
+            {currentStep < batchImportSteps.length - 1 && (
+              <Button onClick={() => setCurrentStep(1)}>下一步</Button>
+            )}
+            {currentStep === batchImportSteps.length - 1 && (
+              <Button disabled>上传后自动导入</Button>
+            )}
+          </div>
+        </div>
       }
     >
       <div className="space-y-6">
@@ -335,6 +360,6 @@ export function BatchImportDialog({
           </div>
         ) : null}
       </div>
-    </WizardDialog>
+    </AppDialog>
   );
 }

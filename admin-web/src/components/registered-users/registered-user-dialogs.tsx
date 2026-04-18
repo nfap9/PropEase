@@ -1,9 +1,19 @@
 
 import type { UseFormReturn } from 'react-hook-form';
+import { FormProvider, Controller } from 'react-hook-form';
 import { Gift } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   AppDrawer,
   Dialog,
@@ -12,14 +22,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -50,17 +52,24 @@ export function DisableRegisteredUserDialog({
   isPending: boolean;
 }) {
   return (
-    <ConfirmDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title={adminMessages.registeredUsers.dialogs.disableTitle}
-      description={adminMessages.registeredUsers.dialogs.disableDescription}
-      cancelLabel={adminMessages.common.cancel}
-      confirmLabel={isPending ? adminMessages.common.processing : adminMessages.registeredUsers.dialogs.disableConfirm}
-      onConfirm={onConfirm}
-      isPending={isPending}
-      intent="destructive"
-    />
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{adminMessages.registeredUsers.dialogs.disableTitle}</AlertDialogTitle>
+          <AlertDialogDescription>{adminMessages.registeredUsers.dialogs.disableDescription}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={onConfirm}
+            disabled={isPending}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {isPending ? adminMessages.common.processing : adminMessages.registeredUsers.dialogs.disableConfirm}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
@@ -76,17 +85,24 @@ export function DeleteRegisteredUserDialog({
   isPending: boolean;
 }) {
   return (
-    <ConfirmDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title={adminMessages.registeredUsers.dialogs.deleteTitle}
-      description={adminMessages.registeredUsers.dialogs.deleteDescription}
-      cancelLabel={adminMessages.common.cancel}
-      confirmLabel={isPending ? adminMessages.common.processing : adminMessages.registeredUsers.dialogs.deleteConfirm}
-      onConfirm={onConfirm}
-      isPending={isPending}
-      intent="destructive"
-    />
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{adminMessages.registeredUsers.dialogs.deleteTitle}</AlertDialogTitle>
+          <AlertDialogDescription>{adminMessages.registeredUsers.dialogs.deleteDescription}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={onConfirm}
+            disabled={isPending}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {isPending ? adminMessages.common.processing : adminMessages.registeredUsers.dialogs.deleteConfirm}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
@@ -235,22 +251,20 @@ export function GiftSubscriptionDialog({
           <DialogDescription>{adminMessages.registeredUsers.dialogs.giftDescription}</DialogDescription>
         </DialogHeader>
         {detail ? (
-          <Form {...form}>
+          <FormProvider {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
+              <Controller
                 control={form.control}
                 name="organization_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{adminMessages.registeredUsers.dialogs.targetOrganization}</FormLabel>
+                render={({ field, fieldState }) => (
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">{adminMessages.registeredUsers.dialogs.targetOrganization}</label>
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={adminMessages.registeredUsers.dialogs.targetOrganizationPlaceholder}
-                          />
-                        </SelectTrigger>
-                      </FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={adminMessages.registeredUsers.dialogs.targetOrganizationPlaceholder}
+                        />
+                      </SelectTrigger>
                       <SelectContent>
                         {detail.organizations.map((organization) => (
                           <SelectItem key={organization.id} value={organization.id}>
@@ -259,17 +273,19 @@ export function GiftSubscriptionDialog({
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
-                  </FormItem>
+                    {fieldState.error && (
+                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                    )}
+                  </div>
                 )}
               />
 
-              <FormField
+              <Controller
                 control={form.control}
                 name="service_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{adminMessages.registeredUsers.dialogs.targetService}</FormLabel>
+                render={({ field, fieldState }) => (
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">{adminMessages.registeredUsers.dialogs.targetService}</label>
                     <Select
                       value={field.value}
                       onValueChange={(value) => {
@@ -279,17 +295,15 @@ export function GiftSubscriptionDialog({
                         form.setValue('pricing_id', nextPricingId, { shouldValidate: true });
                       }}
                     >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={
-                              plansLoading
-                                ? adminMessages.registeredUsers.dialogs.loadingPlans
-                                : adminMessages.registeredUsers.dialogs.targetServicePlaceholder
-                            }
-                          />
-                        </SelectTrigger>
-                      </FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={
+                            plansLoading
+                              ? adminMessages.registeredUsers.dialogs.loadingPlans
+                              : adminMessages.registeredUsers.dialogs.targetServicePlaceholder
+                          }
+                        />
+                      </SelectTrigger>
                       <SelectContent>
                         {plans.map((plan) => (
                           <SelectItem key={plan.id} value={plan.id}>
@@ -298,23 +312,23 @@ export function GiftSubscriptionDialog({
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
-                  </FormItem>
+                    {fieldState.error && (
+                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                    )}
+                  </div>
                 )}
               />
 
-              <FormField
+              <Controller
                 control={form.control}
                 name="pricing_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{adminMessages.registeredUsers.dialogs.targetPricing}</FormLabel>
+                render={({ field, fieldState }) => (
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">{adminMessages.registeredUsers.dialogs.targetPricing}</label>
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={adminMessages.registeredUsers.dialogs.targetPricingPlaceholder} />
-                        </SelectTrigger>
-                      </FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={adminMessages.registeredUsers.dialogs.targetPricingPlaceholder} />
+                      </SelectTrigger>
                       <SelectContent>
                         {(selectedGiftPlan?.pricing ?? []).map((pricing) => (
                           <SelectItem key={pricing.id} value={pricing.id}>
@@ -323,28 +337,30 @@ export function GiftSubscriptionDialog({
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
-                  </FormItem>
+                    {fieldState.error && (
+                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                    )}
+                  </div>
                 )}
               />
 
-              <FormField
+              <Controller
                 control={form.control}
                 name="gift_months"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{adminMessages.registeredUsers.dialogs.extraMonths}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min={0}
-                        max={24}
-                        value={field.value}
-                        onChange={(event) => field.onChange(event.target.value)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                render={({ field, fieldState }) => (
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">{adminMessages.registeredUsers.dialogs.extraMonths}</label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={24}
+                      value={field.value}
+                      onChange={(event) => field.onChange(event.target.value)}
+                    />
+                    {fieldState.error && (
+                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                    )}
+                  </div>
                 )}
               />
 
@@ -369,7 +385,7 @@ export function GiftSubscriptionDialog({
                 </Button>
               </DialogFooter>
             </form>
-          </Form>
+          </FormProvider>
         ) : (
           <p className="text-sm text-muted-foreground">{adminMessages.registeredUsers.dialogs.noUserSelected}</p>
         )}

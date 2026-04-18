@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Download, Loader2 } from 'lucide-react';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { utilitiesApi, UtilityExportRoom } from '@/api/utilities';
 import { getErrorMessage } from '@/utils/error';
 import { useAuth } from '@/contexts/auth';
@@ -67,7 +67,7 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
       const rooms = await utilitiesApi.exportRooms(orgId, exportYear, exportMonth, range);
 
       if (rooms.length === 0) {
-        appToast.warning('没有待录入的房间');
+        toast.warning('没有待录入的房间');
         return;
       }
 
@@ -108,10 +108,10 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
       a.click();
       window.URL.revokeObjectURL(url);
 
-      appToast.success(`已导出 ${rooms.length} 个待录入房间`);
+      toast.success(`已导出 ${rooms.length} 个待录入房间`);
       onOpenChange(false);
     } catch (err) {
-      appToast.error(getErrorMessage(err, '导出失败，请重试'));
+      toast.error(getErrorMessage(err, '导出失败，请重试'));
     } finally {
       setIsExporting(false);
     }
@@ -136,7 +136,7 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
     a.download = '水电读数空白模板.xlsx';
     a.click();
     window.URL.revokeObjectURL(url);
-    appToast.success('已下载空白模板');
+    toast.success('已下载空白模板');
   };
 
   return (

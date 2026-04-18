@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
-import { SplitSettingsPanel } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { permissionsApi } from '@/api/permissions';
 import { organizationsApi } from '@/api';
@@ -67,12 +66,12 @@ export default function PermissionsPage() {
         permission_codes: data.codes,
       }),
     onSuccess: () => {
-      appToast.success(tenantMessages.settings.permissions.saved);
+      toast.success(tenantMessages.settings.permissions.saved);
       queryClient.invalidateQueries({
         queryKey: ['role-permissions', organization?.id],
       });
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const handleTogglePermission = (code: string) => {
@@ -137,24 +136,30 @@ export default function PermissionsPage() {
     <PermissionPageGuard>
       <div className="space-y-6">
 
-        <SplitSettingsPanel
-          className="h-[calc(100vh-12rem)]"
-          sidebarTestId={PERMISSIONS.ROLE_LIST}
-          contentTestId={PERMISSIONS.PERMISSION_PANEL}
-          sidebar={<OrgRoleList selectedRole={selectedRole} onSelectRole={setSelectedRole} showOwner />}
+        <div
+          className="flex h-[calc(100vh-12rem)] rounded-lg border bg-card"
+          data-testid={PERMISSIONS.PERMISSION_PANEL}
         >
-          <OrgRoleDetailPanel
-            role={selectedRole}
-            selectedPermissions={selectedPermissions}
-            groupedPermissions={groupedPermissions ?? null}
-            onTogglePermission={handleTogglePermission}
-            onToggleResource={handleToggleResource}
-            onSave={handleSave}
-            isOwner={isOwner}
-            isLoadingRolePermissions={rolePermissionsLoading}
-            isSaving={updateMutation.isPending}
-          />
-        </SplitSettingsPanel>
+          <div
+            className="w-56 shrink-0 border-r p-4"
+            data-testid={PERMISSIONS.ROLE_LIST}
+          >
+            <OrgRoleList selectedRole={selectedRole} onSelectRole={setSelectedRole} showOwner />
+          </div>
+          <div className="flex-1 overflow-auto p-6">
+            <OrgRoleDetailPanel
+              role={selectedRole}
+              selectedPermissions={selectedPermissions}
+              groupedPermissions={groupedPermissions ?? null}
+              onTogglePermission={handleTogglePermission}
+              onToggleResource={handleToggleResource}
+              onSave={handleSave}
+              isOwner={isOwner}
+              isLoadingRolePermissions={rolePermissionsLoading}
+              isSaving={updateMutation.isPending}
+            />
+          </div>
+        </div>
       </div>
     </PermissionPageGuard>
   );

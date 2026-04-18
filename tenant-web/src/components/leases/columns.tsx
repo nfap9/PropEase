@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Ban, Pencil, Trash2 } from 'lucide-react';
-import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/shadcn';
 import { TableActions, type TableAction } from '@/components/common/table-actions';
 import { formatDate } from '@/utils/date';
 import { LEASE_STATUS_CONFIG } from '@/utils/status';
@@ -80,7 +80,7 @@ export function createLeaseColumns({
       minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_active ? LEASE_STATUS_CONFIG.active : LEASE_STATUS_CONFIG.inactive;
-        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
       },
     },
     {

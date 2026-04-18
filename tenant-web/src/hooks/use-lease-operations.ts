@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { leasesApi } from '@/api';
 import { getErrorMessage } from '@/utils/error';
 import type {
@@ -38,9 +38,9 @@ export function useChangeRoom(orgId: string, leaseId: string) {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
-      appToast.success('换房成功');
+      toast.success('换房成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '换房失败')),
+    onError: (error) => toast.error(getErrorMessage(error, '换房失败')),
   });
 }
 
@@ -52,9 +52,9 @@ export function useRenew(orgId: string, leaseId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
-      appToast.success('续约成功');
+      toast.success('续约成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '续约失败')),
+    onError: (error) => toast.error(getErrorMessage(error, '续约失败')),
   });
 }
 
@@ -66,9 +66,9 @@ export function useUpdateTenant(orgId: string, leaseId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
-      appToast.success('租客更新成功');
+      toast.success('租客更新成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新租客失败')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新租客失败')),
   });
 }
 
@@ -80,9 +80,9 @@ export function useChangeRent(orgId: string, leaseId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
-      appToast.success('房租变更成功');
+      toast.success('房租变更成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '变更房租失败')),
+    onError: (error) => toast.error(getErrorMessage(error, '变更房租失败')),
   });
 }
 
@@ -94,9 +94,9 @@ export function useChangeUtilityRates(orgId: string, leaseId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
-      appToast.success('水电单价变更成功');
+      toast.success('水电单价变更成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '变更水电单价失败')),
+    onError: (error) => toast.error(getErrorMessage(error, '变更水电单价失败')),
   });
 }
 
@@ -108,9 +108,9 @@ export function useChangeDeposit(orgId: string, leaseId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
-      appToast.success('押金变更成功');
+      toast.success('押金变更成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '变更押金失败')),
+    onError: (error) => toast.error(getErrorMessage(error, '变更押金失败')),
   });
 }
 
@@ -122,9 +122,9 @@ export function useUpdateFeeItems(orgId: string, leaseId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
-      appToast.success('费用项目更新成功');
+      toast.success('费用项目更新成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新费用项目失败')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新费用项目失败')),
   });
 }
 
@@ -137,8 +137,8 @@ export function useSettleLease(orgId: string, leaseId: string) {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
-      appToast.success('退租结算成功');
+      toast.success('退租结算成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '退租结算失败')),
+    onError: (error) => toast.error(getErrorMessage(error, '退租结算失败')),
   });
 }

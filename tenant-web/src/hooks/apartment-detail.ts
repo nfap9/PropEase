@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import type { UseFormReturn } from 'react-hook-form';
 import { apartmentsApi, roomsApi } from '@/api';
 import { getErrorMessage } from '@/utils/error';
@@ -71,9 +71,9 @@ export function useApartmentDetailData({
     onSuccess: () => {
       invalidateApartment();
       onApartmentUpdated();
-      appToast.success('公寓信息更新成功');
+      toast.success('公寓信息更新成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const createRoomMutation = useMutation({
@@ -82,9 +82,9 @@ export function useApartmentDetailData({
     onSuccess: () => {
       invalidateRooms();
       onRoomCreated();
-      appToast.success('房间创建成功');
+      toast.success('房间创建成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const batchCreateRoomMutation = useMutation({
@@ -96,9 +96,9 @@ export function useApartmentDetailData({
       invalidateRooms();
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       onBatchRoomsCreated(createdRooms.length);
-      appToast.success(`成功创建 ${createdRooms.length} 个房间`);
+      toast.success(`成功创建 ${createdRooms.length} 个房间`);
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '批量创建失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '批量创建失败，请重试')),
   });
 
   const updateRoomMutation = useMutation({
@@ -120,9 +120,9 @@ export function useApartmentDetailData({
     onSuccess: () => {
       invalidateRooms();
       onRoomUpdated();
-      appToast.success('房间信息更新成功');
+      toast.success('房间信息更新成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const deleteRoomMutation = useMutation({
@@ -130,9 +130,9 @@ export function useApartmentDetailData({
     onSuccess: () => {
       invalidateRooms();
       onRoomDeleted();
-      appToast.success('房间删除成功');
+      toast.success('房间删除成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const batchUpdateMutation = useMutation({
@@ -165,9 +165,9 @@ export function useApartmentDetailData({
     onSuccess: () => {
       invalidateRooms();
       onBatchUpdated();
-      appToast.success('批量更新成功');
+      toast.success('批量更新成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '批量更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '批量更新失败，请重试')),
   });
 
   const batchDeleteMutation = useMutation({
@@ -175,9 +175,9 @@ export function useApartmentDetailData({
     onSuccess: () => {
       invalidateRooms();
       onBatchDeleted();
-      appToast.success('批量删除成功');
+      toast.success('批量删除成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '批量删除失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '批量删除失败，请重试')),
   });
 
   return {

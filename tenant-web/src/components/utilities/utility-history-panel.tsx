@@ -2,7 +2,7 @@
 import { lazy } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -19,7 +19,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@apartment-ultra/shared-ui/components/ui';
+} from '@apartment-ultra/shared-ui/components/shadcn';
 import { apartmentsApi, billsApi, leasesApi, utilitiesApi } from '@/api';
 import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
@@ -143,9 +143,9 @@ export function UtilityHistoryPanel({ orgId }: { orgId: string }) {
       queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
       setIsEditOpen(false);
       setSelectedUtility(null);
-      appToast.success('水电读数更新成功');
+      toast.success('水电读数更新成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   return (

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import {
   adminApiEndpoints,
   type AdminPlan,
@@ -90,9 +90,9 @@ export function useRegisteredUsersData({
       invalidateUsers();
       invalidateDetail();
       onUserDisabled();
-      appToast.success(adminMessages.registeredUsers.toast.updated);
+      toast.success(adminMessages.registeredUsers.toast.updated);
     },
-    onError: (error) => appToast.error(getErrorMessage(error, adminMessages.registeredUsers.errors.action)),
+    onError: (error) => toast.error(getErrorMessage(error, adminMessages.registeredUsers.errors.action)),
   });
 
   const deleteUserMutation = useMutation({
@@ -100,9 +100,9 @@ export function useRegisteredUsersData({
     onSuccess: (_, deletedUserId) => {
       invalidateUsers();
       onUserDeleted(deletedUserId);
-      appToast.success(adminMessages.registeredUsers.toast.deleted);
+      toast.success(adminMessages.registeredUsers.toast.deleted);
     },
-    onError: (error) => appToast.error(getErrorMessage(error, adminMessages.registeredUsers.errors.delete)),
+    onError: (error) => toast.error(getErrorMessage(error, adminMessages.registeredUsers.errors.delete)),
   });
 
   const giftSubscriptionMutation = useMutation({
@@ -112,9 +112,9 @@ export function useRegisteredUsersData({
       queryClient.invalidateQueries({ queryKey: ['admin', 'subscriptions'] });
       invalidateDetail();
       onGiftSuccess();
-      appToast.success(adminMessages.registeredUsers.toast.gifted);
+      toast.success(adminMessages.registeredUsers.toast.gifted);
     },
-    onError: (error) => appToast.error(getErrorMessage(error, adminMessages.registeredUsers.errors.gift)),
+    onError: (error) => toast.error(getErrorMessage(error, adminMessages.registeredUsers.errors.gift)),
   });
 
   return {

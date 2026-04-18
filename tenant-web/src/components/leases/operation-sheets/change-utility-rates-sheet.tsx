@@ -1,18 +1,11 @@
 
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { changeUtilityRatesSchema, type ChangeUtilityRatesFormData } from '@/schemas/lease-operations';
 import { useChangeUtilityRates } from '@/hooks/use-lease-operations';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
@@ -81,49 +74,43 @@ export function ChangeUtilityRatesSheet({
         </>
       }
     >
-      <Form {...form}>
+      <FormProvider {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="waterRate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>新水价 (元/吨) *</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            <div className="space-y-2">
+              <Label htmlFor="waterRate">新水价 (元/吨) *</Label>
+              <Controller
+                name="waterRate"
+                control={form.control}
+                render={({ field }) => <Input type="number" step="0.01" {...field} />}
+              />
+              {form.formState.errors.waterRate && (
+                <p className="text-sm text-destructive">{form.formState.errors.waterRate.message}</p>
               )}
-            />
-            <FormField
-              control={form.control}
-              name="electricityRate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>新电价 (元/度) *</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="electricityRate">新电价 (元/度) *</Label>
+              <Controller
+                name="electricityRate"
+                control={form.control}
+                render={({ field }) => <Input type="number" step="0.01" {...field} />}
+              />
+              {form.formState.errors.electricityRate && (
+                <p className="text-sm text-destructive">{form.formState.errors.electricityRate.message}</p>
               )}
-            />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="effectiveFromYear"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>生效年份 *</FormLabel>
+            <div className="space-y-2">
+              <Label htmlFor="effectiveFromYear">生效年份 *</Label>
+              <Controller
+                name="effectiveFromYear"
+                control={form.control}
+                render={({ field }) => (
                   <Select onValueChange={field.onChange} value={String(field.value)}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       {years.map((y) => (
                         <SelectItem key={y} value={String(y)}>
@@ -132,22 +119,22 @@ export function ChangeUtilityRatesSheet({
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
+                )}
+              />
+              {form.formState.errors.effectiveFromYear && (
+                <p className="text-sm text-destructive">{form.formState.errors.effectiveFromYear.message}</p>
               )}
-            />
-            <FormField
-              control={form.control}
-              name="effectiveFromMonth"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>生效月份 *</FormLabel>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="effectiveFromMonth">生效月份 *</Label>
+              <Controller
+                name="effectiveFromMonth"
+                control={form.control}
+                render={({ field }) => (
                   <Select onValueChange={field.onChange} value={String(field.value)}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       {months.map((m) => (
                         <SelectItem key={m} value={String(m)}>
@@ -156,13 +143,15 @@ export function ChangeUtilityRatesSheet({
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
+                )}
+              />
+              {form.formState.errors.effectiveFromMonth && (
+                <p className="text-sm text-destructive">{form.formState.errors.effectiveFromMonth.message}</p>
               )}
-            />
+            </div>
           </div>
         </form>
-      </Form>
+      </FormProvider>
     </AppDrawer>
   );
 }

@@ -3,9 +3,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { AlertCircle, Building2, ChevronDown, Download, FilePlus, FileSpreadsheet } from 'lucide-react';
 import { DataTable } from '@/components/common/data-table';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
-import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
-import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components';
 import { Card, CardContent } from '@apartment-ultra/shared-ui/components/ui';
 import {
   DropdownMenu,
@@ -62,11 +60,7 @@ export function BillsListView({
   }
 
   return (
-    <ListPageLayout
-      title=""
-      maxWidth="full"
-      className="w-full"
-    >
+    <div className="w-full space-y-4">
       <div className="space-y-4">
         <Card>
           <CardContent className="p-5 sm:p-6">
@@ -107,13 +101,14 @@ export function BillsListView({
             testid={BILLS.LIST}
             useCard={false}
             toolbar={
-              <PageToolbar className="justify-between gap-4">
+              <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <Button onClick={onGenerate} data-testid={BILLS.GENERATE_BUTTON}>
                     <FilePlus className="mr-2 h-4 w-4" />
                     {tenantMessages.bills.list.generate}
                   </Button>
-                  <FilterField label="状态">
+                  <div>
+                    <Label className="mb-2 block">状态</Label>
                     <Select
                       value={statusFilter}
                       onValueChange={(value) => onStatusFilterChange(value as BillStatus | 'all')}
@@ -129,7 +124,7 @@ export function BillsListView({
                         <SelectItem value="overdue">{tenantMessages.bills.list.overdue}</SelectItem>
                       </SelectContent>
                     </Select>
-                  </FilterField>
+                  </div>
                 </div>
 
                 <DropdownMenu>
@@ -151,11 +146,11 @@ export function BillsListView({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </PageToolbar>
+              </div>
             }
           />
         )}
       </div>
-    </ListPageLayout>
+    </div>
   );
 }

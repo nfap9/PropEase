@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { MoreHorizontal, Home, RefreshCw, User, TrendingUp, Droplets, DollarSign, Layers, LogOut, Plus, Trash2 } from 'lucide-react';
 import { leasesApi } from '@/api';
 import { ChangeRoomSheet } from './operation-sheets/change-room-sheet';
@@ -94,11 +94,11 @@ export function OperationsDropdown({ orgId, leaseId, lease }: OperationsDropdown
     }>) => leasesApi.setLeaseFeeItems(orgId, leaseId, feeItems),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
-      appToast.success('费用项目已更新');
+      toast.success('费用项目已更新');
       setFeeItemsDialogOpen(false);
     },
     onError: () => {
-      appToast.error('更新费用项目失败');
+      toast.error('更新费用项目失败');
     },
   });
 

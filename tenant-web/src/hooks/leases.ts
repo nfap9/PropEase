@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { apartmentsApi, leasesApi } from '@/api';
 import { getErrorMessage } from '@/utils/error';
 import { filterEmptyStrings } from '@/utils/form';
@@ -37,9 +37,9 @@ export function useLeasesData({ orgId, onUpdateSuccess, onTerminateSuccess, onDe
     onSuccess: () => {
       invalidateLeases();
       onUpdateSuccess();
-      appToast.success('租约更新成功');
+      toast.success('租约更新成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const terminateMutation = useMutation({
@@ -48,9 +48,9 @@ export function useLeasesData({ orgId, onUpdateSuccess, onTerminateSuccess, onDe
       invalidateLeases();
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
       onTerminateSuccess();
-      appToast.success('租约已终止');
+      toast.success('租约已终止');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '终止失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '终止失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -58,9 +58,9 @@ export function useLeasesData({ orgId, onUpdateSuccess, onTerminateSuccess, onDe
     onSuccess: () => {
       invalidateLeases();
       onDeleteSuccess();
-      appToast.success('租约删除成功');
+      toast.success('租约删除成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   return {

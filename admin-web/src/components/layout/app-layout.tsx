@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
-import { cn } from '@apartment-ultra/shared-ui/lib/utils';
+import { cn } from '@apartment-ultra/shared-ui';
 import {
   NAV_SECTIONS,
   findNavItem,

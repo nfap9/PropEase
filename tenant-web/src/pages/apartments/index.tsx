@@ -4,11 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { useConfirmAction } from '@apartment-ultra/shared-ui';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -63,9 +72,9 @@ export default function ApartmentsPage() {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsEditOpen(false);
       setSelectedApartment(null);
-      appToast.success('公寓更新成功');
+      toast.success('公寓更新成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -73,9 +82,9 @@ export default function ApartmentsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       deleteConfirm.close();
-      appToast.success('公寓删除成功');
+      toast.success('公寓删除成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const handleEdit = (apartment: ApartmentWithStats) => {
@@ -201,19 +210,30 @@ export default function ApartmentsPage() {
           </DialogContent>
         </Dialog>
 
-        <ConfirmDialog
-          {...deleteConfirm.dialogProps}
-          title="确认删除"
-          description={`确定要删除公寓 "${deleteConfirm.selectedItem?.name ?? ''}" 吗？此操作不可撤销，关联的房间数据也将被删除。`}
-          cancelLabel="取消"
-          confirmLabel={deleteMutation.isPending ? '删除中...' : '删除'}
-          onConfirm={() => deleteMutation.mutate(deleteConfirm.selectedItem!.id)}
-          isPending={deleteMutation.isPending}
-          intent="destructive"
-          contentTestId="apartments-delete-confirm-dialog"
-          cancelTestId="apartments-cancel-btn"
-          confirmTestId="apartments-confirm-delete-btn"
-        />
+        <AlertDialog
+          open={deleteConfirm.dialogProps.open}
+          onOpenChange={deleteConfirm.dialogProps.onOpenChange}
+        >
+          <AlertDialogContent data-testid="apartments-delete-confirm-dialog">
+            <AlertDialogHeader>
+              <AlertDialogTitle>确认删除</AlertDialogTitle>
+              <AlertDialogDescription>
+                确定要删除公寓 "{deleteConfirm.selectedItem?.name ?? ''}" 吗？此操作不可撤销，关联的房间数据也将被删除。
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid="apartments-cancel-btn">取消</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteMutation.mutate(deleteConfirm.selectedItem!.id)}
+                disabled={deleteMutation.isPending}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                data-testid="apartments-confirm-delete-btn"
+              >
+                {deleteMutation.isPending ? '删除中...' : '删除'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
     </PermissionPageGuard>
   );
 }

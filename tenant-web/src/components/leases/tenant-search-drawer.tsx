@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Search, User } from 'lucide-react';
-import { DetailDrawer } from '@apartment-ultra/shared-ui/components/ui';
+import { AppDrawer } from '@apartment-ultra/shared-ui/components/composed';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantsApi } from '@/api';
@@ -40,7 +40,7 @@ export function TenantSearchDrawer({ orgId, open, onOpenChange, onSelect }: Tena
   );
 
   return (
-    <DetailDrawer
+    <AppDrawer
       open={open}
       onOpenChange={onOpenChange}
       title="选择已有租客"
@@ -92,6 +92,6 @@ export function TenantSearchDrawer({ orgId, open, onOpenChange, onSelect }: Tena
           )}
         </div>
       </div>
-    </DetailDrawer>
+    </AppDrawer>
   );
 }

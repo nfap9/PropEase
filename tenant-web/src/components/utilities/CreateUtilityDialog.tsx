@@ -5,7 +5,16 @@ import { z } from 'zod';
 import { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle } from 'lucide-react';
-import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -404,22 +413,35 @@ export function CreateUtilityDialog({
         </form>
       </DialogContent>
       {existingReading && (
-        <ConfirmDialog
+        <AlertDialog
           open={!!existingReading}
           onOpenChange={() => setExistingReading(null)}
-          title="该账期已有读数"
-          description={`${existingReading.room?.apartment?.name} - ${existingReading.room?.room_number} ${existingReading.period_year}年${existingReading.period_month}月已有读数记录。确定要覆盖吗？`}
-          cancelLabel="取消"
-          confirmLabel="确认覆盖"
-          onConfirm={() => {
-            onSubmit({
-              ...form.getValues(),
-              anomaly_reason: form.getValues('anomaly_reason')?.trim() || undefined,
-            });
-            form.reset();
-            setExistingReading(null);
-          }}
-        />
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>该账期已有读数</AlertDialogTitle>
+              <AlertDialogDescription>
+                {existingReading.room?.apartment?.name} - {existingReading.room?.room_number}{' '}
+                {existingReading.period_year}年{existingReading.period_month}月已有读数记录。确定要覆盖吗？
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>取消</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  onSubmit({
+                    ...form.getValues(),
+                    anomaly_reason: form.getValues('anomaly_reason')?.trim() || undefined,
+                  });
+                  form.reset();
+                  setExistingReading(null);
+                }}
+              >
+                确认覆盖
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </Dialog>
   );

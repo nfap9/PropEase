@@ -5,8 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Building2 } from 'lucide-react';
 import { useConfirmAction, useListFilters, useSelection } from '@apartment-ultra/shared-ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
-import { PageToolbar } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { LeaseSigningDrawer } from './lease-signing-drawer';
@@ -125,19 +123,13 @@ export function LeasesPageContent() {
 
   return (
     <PermissionPageGuard>
-      <ListPageLayout
-          title=""
-          maxWidth="full"
-          className="w-full"
-          actions={
-            <PageToolbar>
-              <Button onClick={() => setIsCreateOpen(true)} data-testid={LEASES.NEW_BUTTON}>
-                <Plus className="mr-2 h-4 w-4" />
-                新增租约
-              </Button>
-            </PageToolbar>
-          }
-        >
+      <div className="w-full space-y-4">
+        <div className="flex items-center justify-between">
+          <Button onClick={() => setIsCreateOpen(true)} data-testid={LEASES.NEW_BUTTON}>
+            <Plus className="mr-2 h-4 w-4" />
+            新增租约
+          </Button>
+        </div>
           {leasesLoading ? (
             <Skeleton className="h-96" />
           ) : (
@@ -156,7 +148,7 @@ export function LeasesPageContent() {
               }
             />
           )}
-        </ListPageLayout>
+        </div>
 
         <LeaseSigningDrawer
           orgId={orgId}

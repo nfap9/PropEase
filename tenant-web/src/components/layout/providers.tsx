@@ -8,7 +8,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { User, Organization } from '@/types';
 import { authApi, organizationsApi } from '@/api';
-import { AppToaster } from '@apartment-ultra/shared-ui/components/ui';
+import { Toaster } from 'sonner';
 import { BrandConfigProvider } from '@/contexts/brand-config';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { router } from '@/routes';
@@ -217,7 +217,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
           <AuthProvider>{children}</AuthProvider>
         </BrandConfigProvider>
       </ThemeProvider>
-      <AppToaster />
+      <Toaster />
     </QueryClientProvider>
   );
 }

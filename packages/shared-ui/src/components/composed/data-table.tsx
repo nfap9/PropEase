@@ -19,10 +19,10 @@ import {
 } from 'lucide-react';
 
 import { cn } from '../../lib/utils';
-import { Button } from './button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
-import { Skeleton } from './skeleton';
-import { Card } from './card';
+import { Button } from '../shadcn/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../shadcn/select';
+import { Skeleton } from '../shadcn/skeleton';
+import { Card } from '../shadcn/card';
 import { Pagination } from './pagination';
 
 type RowClassName<TData> = string | ((row: TData) => string | undefined);

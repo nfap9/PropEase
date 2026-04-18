@@ -10,7 +10,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { User, Organization } from '@/types';
 import { authApi, organizationsApi } from '@/api';
-import { AppToaster } from '@apartment-ultra/shared-ui/components/ui';
+import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 
 /** 认证 Context 类型定义 */
@@ -181,7 +181,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>{children}</AuthProvider>
-        <AppToaster />
+        <Toaster />
       </ThemeProvider>
     </QueryClientProvider>
   );

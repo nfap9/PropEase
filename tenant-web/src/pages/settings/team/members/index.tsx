@@ -4,14 +4,23 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { useAsyncDialogSubmit } from '@apartment-ultra/shared-ui';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
 import { DataTable } from '@/components/common/data-table';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
 import { FormDialog } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
@@ -109,9 +118,9 @@ export default function TeamMembersPage() {
         queryKey: ['organization-members', organization?.id],
       });
       inviteSubmit.handleSuccess();
-      appToast.success(tenantMessages.settings.team.toasts.inviteSent);
+      toast.success(tenantMessages.settings.team.toasts.inviteSent);
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '邀请失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '邀请失败，请重试')),
   });
 
   const removeMemberMutation = useMutation({
@@ -121,9 +130,9 @@ export default function TeamMembersPage() {
         queryKey: ['organization-members', organization?.id],
       });
       removeMemberSubmit.handleSuccess();
-      appToast.success(tenantMessages.settings.team.toasts.memberRemoved);
+      toast.success(tenantMessages.settings.team.toasts.memberRemoved);
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '移除失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '移除失败，请重试')),
   });
 
   const handleRemoveMember = (member: OrganizationMember) => {
@@ -273,22 +282,31 @@ export default function TeamMembersPage() {
         </div>
       </FormDialog>
 
-      <ConfirmDialog
+      <AlertDialog
         open={isRemoveMemberOpen}
         onOpenChange={setIsRemoveMemberOpen}
-        title={tenantMessages.settings.team.removeDialogTitle}
-        description={tenantMessages.settings.team.removeDialogDescription}
-        cancelLabel="取消"
-        confirmLabel={
-          removeMemberMutation.isPending
-            ? tenantMessages.settings.team.removeDialogSubmitting
-            : tenantMessages.settings.team.removeDialogConfirm
-        }
-        onConfirm={() => removeMemberMutation.mutate(selectedMember!.id)}
-        isPending={removeMemberMutation.isPending}
-        intent="destructive"
-        contentTestId={TEAM_SETTINGS.REMOVE_MEMBER_DIALOG}
-      />
+      >
+        <AlertDialogContent data-testid={TEAM_SETTINGS.REMOVE_MEMBER_DIALOG}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tenantMessages.settings.team.removeDialogTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tenantMessages.settings.team.removeDialogDescription}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => removeMemberMutation.mutate(selectedMember!.id)}
+              disabled={removeMemberMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {removeMemberMutation.isPending
+                ? tenantMessages.settings.team.removeDialogSubmitting
+                : tenantMessages.settings.team.removeDialogConfirm}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PermissionPageGuard>
   );
 }

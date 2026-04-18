@@ -2,7 +2,7 @@
 import * as React from 'react';
 
 import { cn } from '../../lib/utils';
-import { Button, type ButtonProps } from './button';
+import { Button, type ButtonProps } from '../shadcn/button';
 import { AppDialog, type AppDialogProps } from './app-dialog';
 
 type FormDialogSize = NonNullable<AppDialogProps['size']>;

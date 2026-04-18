@@ -1,19 +1,12 @@
 
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { renewSchema, type RenewFormData } from '@/schemas/lease-operations';
 import { useRenew } from '@/hooks/use-lease-operations';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
 
 interface RenewSheetProps {
@@ -55,41 +48,39 @@ export function RenewSheet({ open, onOpenChange, orgId, leaseId, currentEndDate 
         </>
       }
     >
-      <Form {...form}>
+      <FormProvider {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="newEndDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>新结束日期 *</FormLabel>
-                <FormControl>
-                  <DateTimePicker
-                    mode="date"
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="选择新结束日期"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          <div className="space-y-2">
+            <Label htmlFor="newEndDate">新结束日期 *</Label>
+            <Controller
+              name="newEndDate"
+              control={form.control}
+              render={({ field }) => (
+                <DateTimePicker
+                  mode="date"
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="选择新结束日期"
+                />
+              )}
+            />
+            {form.formState.errors.newEndDate && (
+              <p className="text-sm text-destructive">{form.formState.errors.newEndDate.message}</p>
             )}
-          />
-          <FormField
-            control={form.control}
-            name="reason"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>原因备注</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="可选" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="reason">原因备注</Label>
+            <Controller
+              name="reason"
+              control={form.control}
+              render={({ field }) => <Input {...field} placeholder="可选" />}
+            />
+            {form.formState.errors.reason && (
+              <p className="text-sm text-destructive">{form.formState.errors.reason.message}</p>
             )}
-          />
+          </div>
         </form>
-      </Form>
+      </FormProvider>
     </AppDrawer>
   );
 }

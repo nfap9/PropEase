@@ -1,6 +1,6 @@
 
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
@@ -12,14 +12,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { AdminPermissionCheckboxGroup } from './admin-permission-checkbox-group';
 import { adminMessages } from '@/i18n';
@@ -71,19 +63,19 @@ export function AdminRoleCreateDialog({
           <DialogTitle>{adminMessages.roles.createDialog.title}</DialogTitle>
           <DialogDescription>{adminMessages.roles.createDialog.description}</DialogDescription>
         </DialogHeader>
-        <Form {...form}>
+        <FormProvider {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
+            <Controller
               control={form.control}
               name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{adminMessages.roles.createDialog.nameLabel}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={adminMessages.roles.createDialog.namePlaceholder} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">{adminMessages.roles.createDialog.nameLabel}</label>
+                  <Input placeholder={adminMessages.roles.createDialog.namePlaceholder} {...field} />
+                  {fieldState.error && (
+                    <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                  )}
+                </div>
               )}
             />
             <AdminPermissionCheckboxGroup
@@ -100,7 +92,7 @@ export function AdminRoleCreateDialog({
               </Button>
             </DialogFooter>
           </form>
-        </Form>
+        </FormProvider>
       </DialogContent>
     </Dialog>
   );

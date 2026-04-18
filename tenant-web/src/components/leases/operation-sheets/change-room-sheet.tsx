@@ -1,5 +1,5 @@
 
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { changeRoomSchema, type ChangeRoomFormData } from '@/schemas/lease-operations';
@@ -7,15 +7,8 @@ import { useChangeRoom } from '@/hooks/use-lease-operations';
 import { roomsApi, apartmentsApi } from '@/api';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
@@ -77,20 +70,18 @@ export function ChangeRoomSheet({ open, onOpenChange, orgId, leaseId }: ChangeRo
         </>
       }
     >
-      <Form {...form}>
+      <FormProvider {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="newRoomId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>目标房间 *</FormLabel>
+          <div className="space-y-2">
+            <Label htmlFor="newRoomId">目标房间 *</Label>
+            <Controller
+              name="newRoomId"
+              control={form.control}
+              render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="选择目标房间" />
-                    </SelectTrigger>
-                  </FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择目标房间" />
+                  </SelectTrigger>
                   <SelectContent>
                     {availableRooms.map((room) => (
                       <SelectItem key={room.id} value={room.id}>
@@ -99,43 +90,43 @@ export function ChangeRoomSheet({ open, onOpenChange, orgId, leaseId }: ChangeRo
                     ))}
                   </SelectContent>
                 </Select>
-                <FormMessage />
-              </FormItem>
+              )}
+            />
+            {form.formState.errors.newRoomId && (
+              <p className="text-sm text-destructive">{form.formState.errors.newRoomId.message}</p>
             )}
-          />
-          <FormField
-            control={form.control}
-            name="changeDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>变更日期 *</FormLabel>
-                <FormControl>
-                  <DateTimePicker
-                    mode="date"
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="选择变更日期"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="changeDate">变更日期 *</Label>
+            <Controller
+              name="changeDate"
+              control={form.control}
+              render={({ field }) => (
+                <DateTimePicker
+                  mode="date"
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="选择变更日期"
+                />
+              )}
+            />
+            {form.formState.errors.changeDate && (
+              <p className="text-sm text-destructive">{form.formState.errors.changeDate.message}</p>
             )}
-          />
-          <FormField
-            control={form.control}
-            name="reason"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>原因备注</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="可选" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="reason">原因备注</Label>
+            <Controller
+              name="reason"
+              control={form.control}
+              render={({ field }) => <Input {...field} placeholder="可选" />}
+            />
+            {form.formState.errors.reason && (
+              <p className="text-sm text-destructive">{form.formState.errors.reason.message}</p>
             )}
-          />
+          </div>
         </form>
-      </Form>
+      </FormProvider>
     </AppDrawer>
   );
 }

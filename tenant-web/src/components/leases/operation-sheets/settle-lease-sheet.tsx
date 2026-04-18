@@ -1,18 +1,11 @@
 
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { settleLeaseSchema, type SettleLeaseFormData } from '@/schemas/lease-operations';
 import { useSettleLease } from '@/hooks/use-lease-operations';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Alert, AlertDescription } from '@apartment-ultra/shared-ui/components/ui';
@@ -62,7 +55,7 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
         </>
       }
     >
-      <Form {...form}>
+      <FormProvider {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40">
             <AlertTriangle className="h-4 w-4" />
@@ -72,61 +65,59 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
           </Alert>
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="finalWaterReading"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>最终水表读数</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" {...field} placeholder="请输入" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            <div className="space-y-2">
+              <Label htmlFor="finalWaterReading">最终水表读数</Label>
+              <Controller
+                name="finalWaterReading"
+                control={form.control}
+                render={({ field }) => (
+                  <Input type="number" step="0.01" {...field} placeholder="请输入" />
+                )}
+              />
+              {form.formState.errors.finalWaterReading && (
+                <p className="text-sm text-destructive">{form.formState.errors.finalWaterReading.message}</p>
               )}
-            />
-            <FormField
-              control={form.control}
-              name="finalElectricityReading"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>最终电表读数</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="0.01" {...field} placeholder="请输入" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="finalElectricityReading">最终电表读数</Label>
+              <Controller
+                name="finalElectricityReading"
+                control={form.control}
+                render={({ field }) => (
+                  <Input type="number" step="0.01" {...field} placeholder="请输入" />
+                )}
+              />
+              {form.formState.errors.finalElectricityReading && (
+                <p className="text-sm text-destructive">{form.formState.errors.finalElectricityReading.message}</p>
               )}
-            />
+            </div>
           </div>
 
-          <FormField
-            control={form.control}
-            name="penaltyAmount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>违约金金额</FormLabel>
-                <FormControl>
-                  <Input type="number" step="0.01" {...field} placeholder="如有违约金请输入" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          <div className="space-y-2">
+            <Label htmlFor="penaltyAmount">违约金金额</Label>
+            <Controller
+              name="penaltyAmount"
+              control={form.control}
+              render={({ field }) => (
+                <Input type="number" step="0.01" {...field} placeholder="如有违约金请输入" />
+              )}
+            />
+            {form.formState.errors.penaltyAmount && (
+              <p className="text-sm text-destructive">{form.formState.errors.penaltyAmount.message}</p>
             )}
-          />
+          </div>
 
-          <FormField
-            control={form.control}
-            name="remarks"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>备注</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="可选备注" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          <div className="space-y-2">
+            <Label htmlFor="remarks">备注</Label>
+            <Controller
+              name="remarks"
+              control={form.control}
+              render={({ field }) => <Input {...field} placeholder="可选备注" />}
+            />
+            {form.formState.errors.remarks && (
+              <p className="text-sm text-destructive">{form.formState.errors.remarks.message}</p>
             )}
-          />
+          </div>
 
           {(watchForm.finalWaterReading !== undefined || watchForm.finalElectricityReading !== undefined) && (
             <Card>
@@ -150,7 +141,7 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
             </Card>
           )}
         </form>
-      </Form>
+      </FormProvider>
     </AppDrawer>
   );
 }

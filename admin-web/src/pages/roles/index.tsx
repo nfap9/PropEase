@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
-import { SplitSettingsPanel } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { adminApiEndpoints, AdminRole, AdminRoleUpdate } from '@/api/admin-client';
 import { getErrorMessage } from '@/utils/error';
 import { AdminRoleList } from '@/components/admin/admin-role-list';
@@ -47,18 +46,18 @@ export default function AdminRolesPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
       setIsCreateOpen(false);
       setCreatePermissionCodes([]);
-      appToast.success(adminMessages.roles.toast.created);
+      toast.success(adminMessages.roles.toast.created);
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: AdminRoleUpdate }) => adminApiEndpoints.updateRole(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
-      appToast.success(adminMessages.roles.toast.saved);
+      toast.success(adminMessages.roles.toast.saved);
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '保存失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '保存失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -67,9 +66,9 @@ export default function AdminRolesPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] });
       setIsDeleteOpen(false);
       setSelectedRole(null);
-      appToast.success(adminMessages.roles.toast.deleted);
+      toast.success(adminMessages.roles.toast.deleted);
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const handleSelectRole = (role: AdminRole) => {
@@ -122,10 +121,8 @@ export default function AdminRolesPage() {
 
   return (
     <>
-      <SplitSettingsPanel
-        className="h-[calc(100vh-8rem)]"
-        sidebarTestId="admin-roles-list"
-        sidebar={
+      <div className="flex h-[calc(100vh-8rem)]">
+        <aside data-testid="admin-roles-list" className="w-56 shrink-0">
           <AdminRoleList
             roles={roles}
             selectedRoleId={selectedRole?.id ?? null}
@@ -134,16 +131,17 @@ export default function AdminRolesPage() {
             onDeleteRole={handleDeleteRole}
             isLoading={rolesLoading}
           />
-        }
-      >
-        <AdminRoleDetailPanel
-          role={selectedRole}
-          draftPermissionCodes={draftPermissionCodes}
-          onTogglePermission={handleToggleDraftPermission}
-          onSave={handleSave}
-          isSaving={updateMutation.isPending}
-        />
-      </SplitSettingsPanel>
+        </aside>
+        <main className="flex min-w-0 flex-1 flex-col">
+          <AdminRoleDetailPanel
+            role={selectedRole}
+            draftPermissionCodes={draftPermissionCodes}
+            onTogglePermission={handleToggleDraftPermission}
+            onSave={handleSave}
+            isSaving={updateMutation.isPending}
+          />
+        </main>
+      </div>
 
       <AdminRoleCreateDialog
         open={isCreateOpen}

@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { LoaderCircle, ShieldCheck } from 'lucide-react';
@@ -14,14 +14,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { adminMessages } from '@/i18n';
 
@@ -188,50 +180,50 @@ export default function AdminLoginPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                <Form {...form}>
+                <FormProvider {...form}>
                     <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                       {error ? (
                         <div className="rounded-2xl border border-destructive/15 bg-destructive/10 p-3 text-sm text-destructive">
                           {error}
                         </div>
                       ) : null}
-                      <FormField
+                      <Controller
                         control={form.control}
                         name="username"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{adminMessages.login.form.username}</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder={adminMessages.login.form.usernamePlaceholder}
-                                className={AUTH_INPUT_CLASSNAME}
-                                {...field}
-                                autoComplete="username"
-                                data-testid="admin-username-input"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                        render={({ field, fieldState }) => (
+                          <div className="space-y-1">
+                            <label className="text-sm font-medium">{adminMessages.login.form.username}</label>
+                            <Input
+                              placeholder={adminMessages.login.form.usernamePlaceholder}
+                              className={AUTH_INPUT_CLASSNAME}
+                              {...field}
+                              autoComplete="username"
+                              data-testid="admin-username-input"
+                            />
+                            {fieldState.error && (
+                              <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                            )}
+                          </div>
                         )}
                       />
-                      <FormField
+                      <Controller
                         control={form.control}
                         name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{adminMessages.login.form.password}</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="password"
-                                placeholder={adminMessages.login.form.passwordPlaceholder}
-                                className={AUTH_INPUT_CLASSNAME}
-                                {...field}
-                                autoComplete="current-password"
-                                data-testid="admin-password-input"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                        render={({ field, fieldState }) => (
+                          <div className="space-y-1">
+                            <label className="text-sm font-medium">{adminMessages.login.form.password}</label>
+                            <Input
+                              type="password"
+                              placeholder={adminMessages.login.form.passwordPlaceholder}
+                              className={AUTH_INPUT_CLASSNAME}
+                              {...field}
+                              autoComplete="current-password"
+                              data-testid="admin-password-input"
+                            />
+                            {fieldState.error && (
+                              <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                            )}
+                          </div>
                         )}
                       />
                       <Button
@@ -243,7 +235,7 @@ export default function AdminLoginPage() {
                         {isSubmitting ? adminMessages.login.form.submitting : adminMessages.login.form.submit}
                       </Button>
                     </form>
-                  </Form>
+                  </FormProvider>
               </CardContent>
               <div className="border-t border-border/70 px-5 pb-5 pt-5 text-sm text-muted-foreground sm:px-6 sm:pb-6">
                 {adminMessages.login.footer}

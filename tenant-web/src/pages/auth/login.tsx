@@ -2,21 +2,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/contexts/auth';
 import { getPostAuthRedirectPath } from '@/utils/auth-redirect';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { useBrandConfig } from '@/contexts/brand-config';
 import { AuthLoadingScreen } from '@/components/auth/auth-loading-screen';
 import { AuthShell } from '@/components/auth/auth-shell';
@@ -95,58 +88,62 @@ export default function LoginPage() {
           </div>
         }
       >
-        <Form {...passwordForm}>
+        <FormProvider {...passwordForm}>
           <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-5">
             {error && (
               <div className="rounded-2xl border border-destructive/15 bg-destructive/10 p-3 text-sm text-destructive">
                 {error}
               </div>
             )}
-            <FormField
-              control={passwordForm.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>{tenantMessages.auth.login.phone}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="tel"
-                      placeholder={tenantMessages.auth.login.phonePlaceholder}
-                      autoComplete="tel"
-                      className={AUTH_INPUT_CLASSNAME}
-                      {...field}
-                      data-testid="auth-phone-input"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            <div className="space-y-2">
+              <Label htmlFor="phone" required>
+                {tenantMessages.auth.login.phone}
+              </Label>
+              <Controller
+                name="phone"
+                control={passwordForm.control}
+                render={({ field }) => (
+                  <Input
+                    type="tel"
+                    placeholder={tenantMessages.auth.login.phonePlaceholder}
+                    autoComplete="tel"
+                    className={AUTH_INPUT_CLASSNAME}
+                    {...field}
+                    data-testid="auth-phone-input"
+                  />
+                )}
+              />
+              {passwordForm.formState.errors.phone && (
+                <p className="text-sm text-destructive">{passwordForm.formState.errors.phone.message}</p>
               )}
-            />
-            <FormField
-              control={passwordForm.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>{tenantMessages.auth.login.password}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder={tenantMessages.auth.login.passwordPlaceholder}
-                      autoComplete="current-password"
-                      className={AUTH_INPUT_CLASSNAME}
-                      {...field}
-                      data-testid="auth-password-input"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" required>
+                {tenantMessages.auth.login.password}
+              </Label>
+              <Controller
+                name="password"
+                control={passwordForm.control}
+                render={({ field }) => (
+                  <Input
+                    type="password"
+                    placeholder={tenantMessages.auth.login.passwordPlaceholder}
+                    autoComplete="current-password"
+                    className={AUTH_INPUT_CLASSNAME}
+                    {...field}
+                    data-testid="auth-password-input"
+                  />
+                )}
+              />
+              {passwordForm.formState.errors.password && (
+                <p className="text-sm text-destructive">{passwordForm.formState.errors.password.message}</p>
               )}
-            />
+            </div>
             <Button type="submit" className="h-11 w-full text-sm" disabled={isLoading} data-testid="auth-login-button">
               {isLoading ? tenantMessages.auth.login.submitting : tenantMessages.auth.login.submit}
             </Button>
           </form>
-        </Form>
+        </FormProvider>
       </AuthShell>
     </div>
   );

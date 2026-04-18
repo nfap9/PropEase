@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
@@ -110,7 +110,7 @@ export default function SubscriptionPurchasePage() {
       navigate(`/workspace/subscription/pay?order_id=${order.id}`);
     },
     onError: (error) =>
-      appToast.error(
+      toast.error(
         getErrorMessage(error, tenantMessages.settings.subscriptionPage.purchase.createOrderFailed)
       ),
   });
@@ -124,7 +124,7 @@ export default function SubscriptionPurchasePage() {
         auto_renew: true,
       }),
     onSuccess: () => {
-      appToast.success(tenantMessages.settings.subscriptionPage.purchase.subscribeSuccess);
+      toast.success(tenantMessages.settings.subscriptionPage.purchase.subscribeSuccess);
       queryClient.invalidateQueries({ queryKey: ['subscription-status', orgId] });
       queryClient.invalidateQueries({ queryKey: ['organization-usage', orgId] });
       setSelectedService(null);
@@ -132,7 +132,7 @@ export default function SubscriptionPurchasePage() {
       navigate('/workspace/subscription');
     },
     onError: (error) =>
-      appToast.error(
+      toast.error(
         getErrorMessage(error, tenantMessages.settings.subscriptionPage.purchase.subscribeFailed)
       ),
   });

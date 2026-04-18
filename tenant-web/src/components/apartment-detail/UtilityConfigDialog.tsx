@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -84,12 +84,12 @@ export function UtilityConfigDialog({
         electricity_price_per_unit: data.electricity_price_per_unit,
       }),
     onSuccess: () => {
-      appToast.success('水电单价已保存');
+      toast.success('水电单价已保存');
       queryClient.invalidateQueries({ queryKey: ['utility-config', orgId, apartmentId] });
       onOpenChange(false);
     },
     onError: (error) => {
-      appToast.error(getErrorMessage(error, '保存失败，请重试'));
+      toast.error(getErrorMessage(error, '保存失败，请重试'));
     },
   });
 

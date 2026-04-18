@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { usePlans, useCreatePlan, useUpdatePlan, useDeletePlan, useUpdatePlanPricing } from '@/hooks/billing';
-import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminPlan, AdminPlanPricingCreate } from '@/api/admin-client';
 import type { PlanPricing } from '@apartment-ultra/api-contract';
 
@@ -43,9 +43,9 @@ export function PlansPageContent() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium">{plan.name}</h3>
-                    <StatusBadge variant={plan.is_active ? 'success' : 'default'}>
+                    <Badge variant={plan.is_active ? 'success' : 'default'}>
                       {plan.is_active ? '启用' : '停用'}
-                    </StatusBadge>
+                    </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">{plan.description || '无描述'}</p>
                   <div className="flex gap-4 mt-2 text-xs text-muted-foreground">

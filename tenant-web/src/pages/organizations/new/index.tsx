@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Building2, ArrowLeft } from 'lucide-react';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth';
 import { organizationsApi } from '@/api';
 import { getErrorMessage } from '@/utils/error';
@@ -75,11 +75,11 @@ export default function CreateOrganizationPage() {
     onSuccess: async (createdOrganization) => {
       await refreshOrganizations(createdOrganization.id);
       setOrganization(createdOrganization);
-      appToast.success('团队创建成功');
+      toast.success('团队创建成功');
       navigate(DEFAULT_ORGANIZATION_HOME_PATH, { replace: true });
     },
     onError: (error) => {
-      appToast.error(getErrorMessage(error, '创建团队失败，请重试'));
+      toast.error(getErrorMessage(error, '创建团队失败，请重试'));
     },
   });
 

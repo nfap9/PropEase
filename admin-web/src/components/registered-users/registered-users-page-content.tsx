@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useConfirmAction, useListFilters } from '@apartment-ultra/shared-ui';
 import { DataTable } from '@/components/common/data-table';
-import { ListPageLayout } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { giftSubscriptionSchema, type FilterActive, type GiftSubscriptionForm } from '@/schemas/registered-users';
 import { createRegisteredUsersColumns } from '@/components/registered-users/columns';
@@ -107,11 +106,7 @@ export function RegisteredUsersPageContent() {
   }
 
   return (
-    <ListPageLayout
-      title=""
-      titleTestId="admin-registered-users-heading"
-      maxWidth="6xl"
-    >
+    <div className="mx-auto max-w-6xl">
       <DataTable
         columns={columns}
         data={users ?? []}
@@ -177,6 +172,6 @@ export function RegisteredUsersPageContent() {
         onSubmit={(values) => giftSubscriptionMutation.mutate(values)}
         isPending={giftSubscriptionMutation.isPending}
       />
-    </ListPageLayout>
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { useAsyncDialogSubmit } from '@apartment-ultra/shared-ui';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { PermissionGuard } from '@/components/common/permission-guard';
@@ -76,9 +76,9 @@ export default function TeamSettingsPage() {
       queryClient.invalidateQueries({ queryKey: ['organization-members', updatedOrg.id] });
       setOrganization(updatedOrg);
       editOrgSubmit.handleSuccess();
-      appToast.success(tenantMessages.settings.team.toasts.teamUpdated);
+      toast.success(tenantMessages.settings.team.toasts.teamUpdated);
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const handleEditOrg = () => {

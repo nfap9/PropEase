@@ -1,5 +1,15 @@
 
-import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
+import { cn } from '@apartment-ultra/shared-ui';
 import type { AdminRole } from '@/api/admin-client';
 import { adminI18n, adminMessages } from '@/i18n';
 
@@ -18,21 +28,31 @@ export function AdminRoleDeleteDialog({ open, onOpenChange, role, onConfirm, isP
   const isSystemRole = role?.is_system ?? false;
 
   return (
-    <ConfirmDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title={adminMessages.roles.deleteDialog.title}
-      description={
-        isSystemRole
-          ? adminI18n.t('roles.deleteDialog.builtinDescription', { name: role?.name ?? '' })
-          : adminI18n.t('roles.deleteDialog.confirmDescription', { name: role?.name ?? '' })
-      }
-      cancelLabel={adminMessages.common.cancel}
-      confirmLabel={isPending ? adminMessages.common.deleting : adminMessages.common.delete}
-      onConfirm={onConfirm}
-      isPending={isPending}
-      intent="destructive"
-      hideConfirm={isSystemRole}
-    />
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{adminMessages.roles.deleteDialog.title}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {isSystemRole
+              ? adminI18n.t('roles.deleteDialog.builtinDescription', { name: role?.name ?? '' })
+              : adminI18n.t('roles.deleteDialog.confirmDescription', { name: role?.name ?? '' })}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{adminMessages.common.cancel}</AlertDialogCancel>
+          {!isSystemRole && (
+            <AlertDialogAction
+              onClick={onConfirm}
+              disabled={isPending}
+              className={cn(
+                'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+              )}
+            >
+              {isPending ? adminMessages.common.deleting : adminMessages.common.delete}
+            </AlertDialogAction>
+          )}
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

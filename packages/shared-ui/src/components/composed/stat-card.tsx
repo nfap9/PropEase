@@ -2,7 +2,7 @@ import * as React from 'react';
 import { ArrowDownRight, ArrowRight, ArrowUpRight } from 'lucide-react';
 
 import { cn } from '../../lib/utils';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../shadcn/card';
 
 type StatTone = 'default' | 'primary' | 'success' | 'warning' | 'danger';
 type StatDirection = 'up' | 'down' | 'neutral';

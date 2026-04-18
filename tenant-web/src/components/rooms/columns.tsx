@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
-import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/shadcn';
 import { TableActions, TableAction } from '@/components/common/table-actions';
 import { Room, RoomStatus } from '@/types';
 import { ROOM_STATUS_CONFIG } from '@/utils/status';
@@ -78,7 +78,7 @@ export function useColumns({
       minSize: 80,
       cell: ({ row }) => {
         const status = ROOM_STATUS_CONFIG[row.original.status];
-        return <StatusBadge variant={status.variant}>{status.label}</StatusBadge>;
+        return <Badge variant={status.variant}>{status.label}</Badge>;
       },
     },
     {

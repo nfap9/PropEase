@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { DataTable, StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
+import { DataTable, Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { useBillingOrders } from '@/hooks/billing';
 import {
   formatOrderAmount,
@@ -37,9 +37,9 @@ export function OrdersPageContent() {
       header: '类型',
       size: 100,
       cell: ({ row }) => (
-        <StatusBadge variant={row.original.order_type === 'subscription' ? 'info' : 'warning'}>
+        <Badge variant={row.original.order_type === 'subscription' ? 'info' : 'warning'}>
           {getOrderTypeLabel(row.original.order_type)}
-        </StatusBadge>
+        </Badge>
       ),
     },
     {
@@ -60,9 +60,9 @@ export function OrdersPageContent() {
           expired: 'default',
         };
         return (
-          <StatusBadge variant={statusMap[row.original.status] ?? 'default'}>
+          <Badge variant={statusMap[row.original.status] ?? 'default'}>
             {getOrderStatusLabel(row.original.status)}
-          </StatusBadge>
+          </Badge>
         );
       },
     },

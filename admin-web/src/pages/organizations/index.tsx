@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { DataTable } from '@/components/common/data-table';
 import { TableActions } from '@/components/common/table-actions';
-import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
-import { FilterField } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { ORG_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/utils/status';
 import {
   Select,
@@ -47,9 +47,9 @@ export default function AdminOrganizationsPage() {
       adminApiEndpoints.setOrganizationActive(id, { is_active }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'organizations'] });
-      appToast.success(adminMessages.organizations.toast.updated);
+      toast.success(adminMessages.organizations.toast.updated);
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '操作失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '操作失败，请重试')),
   });
 
   const columns: ColumnDef<AdminOrganization>[] = [
@@ -78,7 +78,7 @@ export default function AdminOrganizationsPage() {
         const config = row.original.is_personal
           ? BOOLEAN_YES_NO_CONFIG.yes
           : BOOLEAN_YES_NO_CONFIG.no;
-        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
       },
     },
     {
@@ -90,7 +90,7 @@ export default function AdminOrganizationsPage() {
         const config = row.original.is_active
           ? ORG_STATUS_CONFIG.active
           : ORG_STATUS_CONFIG.inactive;
-        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
       },
     },
     {
@@ -163,7 +163,8 @@ export default function AdminOrganizationsPage() {
         testid="admin-organizations-list"
         useCard={false}
         toolbar={
-          <FilterField label="状态">
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs text-muted-foreground">状态</Label>
             <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as FilterActive)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={adminMessages.organizations.filters.statusPlaceholder} />
@@ -174,7 +175,7 @@ export default function AdminOrganizationsPage() {
                 <SelectItem value="inactive">{adminMessages.organizations.filters.inactive}</SelectItem>
               </SelectContent>
             </Select>
-          </FilterField>
+          </div>
         }
       />
     </div>

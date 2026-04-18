@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
-import { WizardDrawer } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { AppDrawer } from '@apartment-ultra/shared-ui/components/composed';
 import { leaseSigningSchema, type LeaseSigningFormData } from '@/schemas/leases';
 import { leasesApi, apartmentsApi, roomsApi, tenantsApi, utilityConfigApi } from '@/api';
 import { toDateInputValue } from '@/utils/date';
@@ -269,7 +270,7 @@ export function LeaseSigningDrawer({
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       onOpenChange(false);
       form.reset();
-      appToast.success('签约成功');
+      toast.success('签约成功');
       const roomId = createdLease.room_id;
       const startDate = createdLease.start_date;
       const isHistoricalEntry = variables.start_date < toDateInputValue(new Date());
@@ -285,7 +286,7 @@ export function LeaseSigningDrawer({
       });
       onSuccess?.();
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '签约失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '签约失败，请重试')),
   });
 
   const handleSubmit = (data: LeaseSigningFormData) => {
@@ -326,32 +327,61 @@ export function LeaseSigningDrawer({
 
   return (
     <>
-      <WizardDrawer
+      <AppDrawer
         open={open}
         onOpenChange={handleDrawerOpenChange}
         title={getDialogTitle()}
         description={getDialogDescription()}
-        steps={leaseSigningSteps}
-        currentStep={currentStep}
-        onNext={handleNextStep}
-        onPrevious={handlePreviousStep}
-        onComplete={() => {
-          void form.handleSubmit(handleSubmit)();
-        }}
-        completeLabel={createMutation.isPending ? '签约中...' : '确认签约'}
-        nextLabel="下一步"
-        previousLabel="上一步"
-        isPending={createMutation.isPending}
-        contentTestId="lease-signing-drawer"
-        footerExtra={
-          currentStep === 2 ? (
-            <p className="text-sm text-muted-foreground">
-              签约完成后将自动刷新数据
-            </p>
-          ) : null
-        }
         size="lg"
+        contentTestId="lease-signing-drawer"
+        footer={
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {leaseSigningSteps.map((step, index) => (
+                <div
+                  key={step.id}
+                  className={`flex items-center gap-1 text-sm ${
+                    index <= currentStep ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  <div
+                    className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
+                      index <= currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                    }`}
+                  >
+                    {index + 1}
+                  </div>
+                  <span>{step.title}</span>
+                  {index < leaseSigningSteps.length - 1 && <span className="mx-1">/</span>}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              {currentStep > 0 && (
+                <Button variant="outline" onClick={handlePreviousStep}>
+                  上一步
+                </Button>
+              )}
+              {currentStep < leaseSigningSteps.length - 1 && (
+                <Button onClick={handleNextStep}>下一步</Button>
+              )}
+              {currentStep === leaseSigningSteps.length - 1 && (
+                <Button
+                  onClick={() => {
+                    void form.handleSubmit(handleSubmit)();
+                  }}
+                  disabled={createMutation.isPending}
+                >
+                  {createMutation.isPending ? '签约中...' : '确认签约'}
+                </Button>
+              )}
+            </div>
+          </div>
+        }
       >
+        {currentStep === 2 && (
+          <p className="mb-4 text-sm text-muted-foreground">签约完成后将自动刷新数据</p>
+        )}
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
           className="space-y-6"
@@ -379,7 +409,7 @@ export function LeaseSigningDrawer({
             />
           ) : null}
         </form>
-      </WizardDrawer>
+      </AppDrawer>
 
       <TenantSearchDrawer
         orgId={orgId}

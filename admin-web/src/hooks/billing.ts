@@ -1,6 +1,6 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import {
   adminApiEndpoints,
   type BillingOrderListParams,
@@ -54,9 +54,9 @@ export function useCreatePlan() {
     mutationFn: (data: AdminPlanCreate) => adminApiEndpoints.createPlan(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'billing', 'plans'] });
-      appToast.success('套餐创建成功');
+      toast.success('套餐创建成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 }
 
@@ -68,9 +68,9 @@ export function useUpdatePlan() {
       adminApiEndpoints.updatePlan(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'billing', 'plans'] });
-      appToast.success('套餐更新成功');
+      toast.success('套餐更新成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 }
 
@@ -81,9 +81,9 @@ export function useDeletePlan() {
     mutationFn: (id: string) => adminApiEndpoints.deletePlan(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'billing', 'plans'] });
-      appToast.success('套餐删除成功');
+      toast.success('套餐删除成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 }
 
@@ -95,9 +95,9 @@ export function useUpdatePlanPricing() {
       adminApiEndpoints.updatePlanPricing(planId, pricing),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'billing', 'plans'] });
-      appToast.success('价格设置已更新');
+      toast.success('价格设置已更新');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 }
 
@@ -157,9 +157,9 @@ export function useBillingUsagePricing() {
       adminApiEndpoints.updateBillingUsagePricing(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'billing', 'usage-pricing'] });
-      appToast.success('用量单价更新成功');
+      toast.success('用量单价更新成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   return {

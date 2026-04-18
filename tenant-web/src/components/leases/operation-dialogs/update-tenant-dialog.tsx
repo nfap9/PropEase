@@ -1,19 +1,12 @@
 
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { updateTenantSchema, type UpdateTenantFormData } from '@/schemas/lease-operations';
 import { useUpdateTenant } from '@/hooks/use-lease-operations';
 import { tenantsApi } from '@/api';
 import { FormDialog } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
   SelectContent,
@@ -59,19 +52,17 @@ export function UpdateTenantDialog({ open, onOpenChange, orgId, leaseId }: Updat
       isPending={updateTenant.isPending}
       submitLabel={updateTenant.isPending ? '提交中...' : '确认更换'}
     >
-      <Form {...form}>
-        <FormField
-          control={form.control}
-          name="newTenantId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>新租客 *</FormLabel>
+      <FormProvider {...form}>
+        <div className="space-y-2">
+          <Label htmlFor="newTenantId">新租客 *</Label>
+          <Controller
+            name="newTenantId"
+            control={form.control}
+            render={({ field }) => (
               <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="选择新租客" />
-                  </SelectTrigger>
-                </FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="选择新租客" />
+                </SelectTrigger>
                 <SelectContent>
                   {tenants?.map((tenant) => (
                     <SelectItem key={tenant.id} value={tenant.id}>
@@ -80,11 +71,13 @@ export function UpdateTenantDialog({ open, onOpenChange, orgId, leaseId }: Updat
                   ))}
                 </SelectContent>
               </Select>
-              <FormMessage />
-            </FormItem>
+            )}
+          />
+          {form.formState.errors.newTenantId && (
+            <p className="text-sm text-destructive">{form.formState.errors.newTenantId.message}</p>
           )}
-        />
-      </Form>
+        </div>
+      </FormProvider>
     </FormDialog>
   );
 }

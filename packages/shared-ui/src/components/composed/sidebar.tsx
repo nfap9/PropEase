@@ -6,18 +6,18 @@ import { PanelLeft } from 'lucide-react';
 
 import { useIsMobile } from '../../hooks/use-mobile';
 import { cn } from '../../lib/utils';
-import { Button } from './button';
-import { Input } from './input';
-import { Separator } from './separator';
+import { Button } from '../shadcn/button';
+import { Input } from '../shadcn/input';
+import { Separator } from '../shadcn/separator';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from './sheet';
-import { Skeleton } from './skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
+} from '../shadcn/sheet';
+import { Skeleton } from '../shadcn/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../shadcn/tooltip';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;

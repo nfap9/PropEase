@@ -10,7 +10,7 @@ import { ORDER_STATUS_CONFIG } from '@/utils/status';
 import { ArrowLeft, Loader2, Zap } from 'lucide-react';
 import { subscriptionsApi } from '@/api';
 import { useAuth } from '@/contexts/auth';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { tenantI18n, tenantMessages } from '@/i18n';
 
 const POLL_INTERVAL_MS = 2500;
@@ -45,13 +45,13 @@ function SubscriptionPayContent() {
       await subscriptionsApi.simulatePay(orgId, orderId);
     },
     onSuccess: () => {
-      appToast.success('直接完成订阅成功（开发环境）');
+      toast.success('直接完成订阅成功（开发环境）');
       queryClient.invalidateQueries({ queryKey: ['subscription-status', orgId] });
       queryClient.invalidateQueries({ queryKey: ['organization-usage', orgId] });
       navigate('/workspace/subscription');
     },
     onError: (error) => {
-      appToast.error(`直接完成订阅失败: ${error instanceof Error ? error.message : '未知错误'}`);
+      toast.error(`直接完成订阅失败: ${error instanceof Error ? error.message : '未知错误'}`);
     },
   });
 

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { apartmentsApi, roomsApi, utilitiesApi, leasesApi, billsApi } from '@/api';
 import { filterEmptyStrings } from '@/utils/form';
 import { getErrorMessage } from '@/utils/error';
@@ -216,9 +216,9 @@ function useCreateUtility({ orgId, queryClient }: UseCreateUtilityOptions) {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
-      appToast.success('水电读数录入成功');
+      toast.success('水电读数录入成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '录入失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '录入失败，请重试')),
   });
 }
 
@@ -235,9 +235,9 @@ function useUpdateUtility({ orgId, queryClient }: UseUpdateUtilityOptions) {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       queryClient.invalidateQueries({ queryKey: ['bills', orgId] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
-      appToast.success('水电读数更新成功');
+      toast.success('水电读数更新成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 }
 
@@ -253,8 +253,8 @@ function useBatchImportUtility({ orgId, queryClient }: UseBatchImportUtilityOpti
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
-      appToast.success('批量导入成功');
+      toast.success('批量导入成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '批量导入失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '批量导入失败，请重试')),
   });
 }

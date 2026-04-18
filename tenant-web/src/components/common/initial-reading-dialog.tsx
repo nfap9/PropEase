@@ -11,7 +11,7 @@ import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { utilitiesApi } from '@/api';
 import { filterEmptyStrings } from '@/utils/form';
 import { getErrorMessage } from '@/utils/error';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { Droplets, Zap } from 'lucide-react';
 
 const schema = z.object({
@@ -87,10 +87,10 @@ export function InitialReadingDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       onOpenChange(false);
-      appToast.success('初始水电读数已录入');
+      toast.success('初始水电读数已录入');
       onSuccess?.();
     },
-    onError: (error: unknown) => appToast.error(getErrorMessage(error, '录入失败，请重试')),
+    onError: (error: unknown) => toast.error(getErrorMessage(error, '录入失败，请重试')),
   });
 
   const handleSkip = () => {

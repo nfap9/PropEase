@@ -1,7 +1,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { KeyRound, Pencil, Trash2 } from 'lucide-react';
-import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { TableActions } from '@/components/common/table-actions';
 import { formatDateTime } from '@/utils/date';
 import { ORG_STATUS_CONFIG } from '@/utils/status';
@@ -43,7 +43,7 @@ export function createAdminUsersColumns({
       minSize: 80,
       cell: ({ row }) => {
         const config = row.original.is_active ? ORG_STATUS_CONFIG.active : ORG_STATUS_CONFIG.inactive;
-        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
       },
     },
     {

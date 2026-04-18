@@ -1,11 +1,11 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { StatusBadge } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/shadcn';
 import { LEASE_STATUS_CONFIG } from '@/utils/status';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantReachabilityApi, tenantsApi, leasesApi } from '@/api';
@@ -76,11 +76,11 @@ export default function TenantDetailPage() {
     onSuccess: (_tenant, nextOptOut) => {
       queryClient.invalidateQueries({ queryKey: ['tenant', orgId, tenantId] });
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
-      appToast.success(nextOptOut ? '已暂停短信触达' : '已恢复短信触达');
+      toast.success(nextOptOut ? '已暂停短信触达' : '已恢复短信触达');
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : '操作失败，请稍后重试';
-      appToast.error(message);
+      toast.error(message);
     },
   });
 
@@ -146,7 +146,7 @@ export default function TenantDetailPage() {
         const config = row.original.is_active
           ? LEASE_STATUS_CONFIG.active
           : LEASE_STATUS_CONFIG.inactive;
-        return <StatusBadge variant={config.variant}>{config.label}</StatusBadge>;
+        return <Badge variant={config.variant}>{config.label}</Badge>;
       },
     },
     {
@@ -260,9 +260,9 @@ export default function TenantDetailPage() {
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <StatusBadge variant={getTenantSmsReachabilityVariant(smsStatus)}>
+                    <Badge variant={getTenantSmsReachabilityVariant(smsStatus)}>
                       {getTenantSmsReachabilityLabel(smsStatus)}
-                    </StatusBadge>
+                    </Badge>
                     {tenant.sms_opt_out_at && (
                       <span className="text-sm text-muted-foreground">
                         暂停于 {formatDateTime(tenant.sms_opt_out_at)}
@@ -375,9 +375,9 @@ export default function TenantDetailPage() {
                     >
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <StatusBadge variant={getDeliveryStatusVariant(delivery.status)}>
+                          <Badge variant={getDeliveryStatusVariant(delivery.status)}>
                             {getDeliveryStatusLabel(delivery.status)}
-                          </StatusBadge>
+                          </Badge>
                           <span className="font-medium">
                             {getTenantReachabilityEventLabel(delivery.event_type)}
                           </span>

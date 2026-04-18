@@ -2,8 +2,8 @@ import * as React from 'react';
 import { useTheme } from './theme-provider';
 import { Monitor, Moon, Sun } from 'lucide-react';
 
-import { Button } from './button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './dropdown-menu';
+import { Button } from '../shadcn/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../shadcn/dropdown-menu';
 
 export interface ThemeToggleLabels {
   toggle: string;

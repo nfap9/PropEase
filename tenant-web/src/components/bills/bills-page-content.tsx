@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAsyncDialogSubmit, usePageQueryState } from '@apartment-ultra/shared-ui';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/contexts/auth';
@@ -65,7 +65,7 @@ export function BillsPageContent() {
     close: () => setIsGenerateOpen(false),
     reset: () => generateForm.reset(getDefaultGenerateValues()),
     afterSuccess: (created, skipped) => {
-      appToast.success(`出账完成：新增 ${created} 笔，跳过 ${skipped} 笔`);
+      toast.success(`出账完成：新增 ${created} 笔，跳过 ${skipped} 笔`);
     },
   });
 

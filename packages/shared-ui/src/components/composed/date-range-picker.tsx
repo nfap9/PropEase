@@ -20,7 +20,7 @@ import {
 import { CalendarRange, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 import { cn } from '../../lib/utils';
-import { Button } from './button';
+import { Button } from '../shadcn/button';
 
 const WEEKDAY_LABELS = ['一', '二', '三', '四', '五', '六', '日'] as const;
 

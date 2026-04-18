@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { appToast } from '@apartment-ultra/shared-ui/components/ui';
+import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { useConfirmAction } from '@apartment-ultra/shared-ui';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
@@ -21,7 +21,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { ConfirmDialog } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
 import { ColumnDef } from '@tanstack/react-table';
 import { tenantsApi } from '@/api';
 import { filterEmptyStrings } from '@/utils/form';
@@ -102,9 +111,9 @@ export default function TenantsPage() {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsCreateOpen(false);
       createForm.reset();
-      appToast.success('租客创建成功');
+      toast.success('租客创建成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '创建失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
   const updateMutation = useMutation({
@@ -114,9 +123,9 @@ export default function TenantsPage() {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsEditOpen(false);
       setSelectedTenant(null);
-      appToast.success('租客信息更新成功');
+      toast.success('租客信息更新成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
   const deleteMutation = useMutation({
@@ -124,9 +133,9 @@ export default function TenantsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       deleteConfirm.close();
-      appToast.success('租客删除成功');
+      toast.success('租客删除成功');
     },
-    onError: (error) => appToast.error(getErrorMessage(error, '删除失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const handleEdit = (tenant: Tenant) => {
@@ -401,19 +410,30 @@ export default function TenantsPage() {
           </DialogContent>
         </Dialog>
 
-        <ConfirmDialog
-          {...deleteConfirm.dialogProps}
-          title="确认删除"
-          description={`确定要删除租客 "${deleteConfirm.selectedItem?.name ?? ''}" 吗？此操作不可撤销。`}
-          cancelLabel="取消"
-          confirmLabel={deleteMutation.isPending ? '删除中...' : '删除'}
-          onConfirm={() => deleteMutation.mutate(deleteConfirm.selectedItem!.id)}
-          isPending={deleteMutation.isPending}
-          intent="destructive"
-          contentTestId={TENANTS.DELETE_DIALOG}
-          cancelTestId={TENANTS.CANCEL_BUTTON}
-          confirmTestId={TENANTS.CONFIRM_DELETE_BTN}
-        />
+        <AlertDialog
+          open={deleteConfirm.dialogProps.open}
+          onOpenChange={deleteConfirm.dialogProps.onOpenChange}
+        >
+          <AlertDialogContent data-testid={TENANTS.DELETE_DIALOG}>
+            <AlertDialogHeader>
+              <AlertDialogTitle>确认删除</AlertDialogTitle>
+              <AlertDialogDescription>
+                确定要删除租客 "{deleteConfirm.selectedItem?.name ?? ''}" 吗？此操作不可撤销。
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid={TENANTS.CANCEL_BUTTON}>取消</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteMutation.mutate(deleteConfirm.selectedItem!.id)}
+                disabled={deleteMutation.isPending}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                data-testid={TENANTS.CONFIRM_DELETE_BTN}
+              >
+                {deleteMutation.isPending ? '删除中...' : '删除'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
     </PermissionPageGuard>
   );
 }

@@ -1,18 +1,11 @@
 
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { changeRentSchema, type ChangeRentFormData } from '@/schemas/lease-operations';
 import { useChangeRent } from '@/hooks/use-lease-operations';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { AppDrawer } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
@@ -73,34 +66,30 @@ export function ChangeRentSheet({ open, onOpenChange, orgId, leaseId, currentRen
         </>
       }
     >
-      <Form {...form}>
+      <FormProvider {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="newRent"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>新月租 (元) *</FormLabel>
-                <FormControl>
-                  <Input type="number" step="0.01" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
+          <div className="space-y-2">
+            <Label htmlFor="newRent">新月租 (元) *</Label>
+            <Controller
+              name="newRent"
               control={form.control}
-              name="effectiveFromYear"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>生效年份 *</FormLabel>
+              render={({ field }) => <Input type="number" step="0.01" {...field} />}
+            />
+            {form.formState.errors.newRent && (
+              <p className="text-sm text-destructive">{form.formState.errors.newRent.message}</p>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="effectiveFromYear">生效年份 *</Label>
+              <Controller
+                name="effectiveFromYear"
+                control={form.control}
+                render={({ field }) => (
                   <Select onValueChange={field.onChange} value={String(field.value)}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       {years.map((y) => (
                         <SelectItem key={y} value={String(y)}>
@@ -109,22 +98,22 @@ export function ChangeRentSheet({ open, onOpenChange, orgId, leaseId, currentRen
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
+                )}
+              />
+              {form.formState.errors.effectiveFromYear && (
+                <p className="text-sm text-destructive">{form.formState.errors.effectiveFromYear.message}</p>
               )}
-            />
-            <FormField
-              control={form.control}
-              name="effectiveFromMonth"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>生效月份 *</FormLabel>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="effectiveFromMonth">生效月份 *</Label>
+              <Controller
+                name="effectiveFromMonth"
+                control={form.control}
+                render={({ field }) => (
                   <Select onValueChange={field.onChange} value={String(field.value)}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       {months.map((m) => (
                         <SelectItem key={m} value={String(m)}>
@@ -133,26 +122,26 @@ export function ChangeRentSheet({ open, onOpenChange, orgId, leaseId, currentRen
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
+                )}
+              />
+              {form.formState.errors.effectiveFromMonth && (
+                <p className="text-sm text-destructive">{form.formState.errors.effectiveFromMonth.message}</p>
               )}
-            />
+            </div>
           </div>
-          <FormField
-            control={form.control}
-            name="reason"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>原因备注</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="可选" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          <div className="space-y-2">
+            <Label htmlFor="reason">原因备注</Label>
+            <Controller
+              name="reason"
+              control={form.control}
+              render={({ field }) => <Input {...field} placeholder="可选" />}
+            />
+            {form.formState.errors.reason && (
+              <p className="text-sm text-destructive">{form.formState.errors.reason.message}</p>
             )}
-          />
+          </div>
         </form>
-      </Form>
+      </FormProvider>
     </AppDrawer>
   );
 }

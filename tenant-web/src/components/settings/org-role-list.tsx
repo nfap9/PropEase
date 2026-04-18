@@ -1,5 +1,5 @@
 
-import { SelectableSideList } from '@apartment-ultra/shared-ui/components/ui';
+import { cn } from '@/utils';
 import type { MemberRole } from '@/types';
 import { tenantMessages } from '@/i18n';
 
@@ -16,7 +16,7 @@ export const EDITABLE_ORG_ROLES: MemberRole[] = ['admin', 'member', 'viewer'];
 export interface OrgRoleListProps {
   selectedRole: MemberRole;
   onSelectRole: (role: MemberRole) => void;
-  /** 是否展示创建者（仅作说明，选中时右侧显示“拥有全部权限”） */
+  /** 是否展示创建者（仅作说明，选中时右侧显示"拥有全部权限"） */
   showOwner?: boolean;
 }
 
@@ -26,18 +26,26 @@ export interface OrgRoleListProps {
  */
 export function OrgRoleList({ selectedRole, onSelectRole, showOwner = true }: OrgRoleListProps) {
   const roles: MemberRole[] = showOwner ? ['owner', ...EDITABLE_ORG_ROLES] : EDITABLE_ORG_ROLES;
-  const items = roles.map((role) => ({
-    id: role,
-    value: role,
-    label: ROLE_LABELS[role],
-  }));
 
   return (
-    <SelectableSideList
-      title={<span className="font-medium text-muted-foreground">{tenantMessages.settings.team.labels.teamRoles}</span>}
-      items={items}
-      selectedId={selectedRole}
-      onSelect={onSelectRole}
-    />
+    <div className="space-y-1">
+      <span className="font-medium text-muted-foreground">{tenantMessages.settings.team.labels.teamRoles}</span>
+      <div className="space-y-1">
+        {roles.map((role) => (
+          <button
+            key={role}
+            onClick={() => onSelectRole(role)}
+            className={cn(
+              'w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors',
+              selectedRole === role
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-transparent bg-muted/50 text-muted-foreground hover:bg-muted'
+            )}
+          >
+            {ROLE_LABELS[role]}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

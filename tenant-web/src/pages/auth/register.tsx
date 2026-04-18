@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '@/contexts/auth';
@@ -10,14 +10,7 @@ import { getPostAuthRedirectPath } from '@/utils/auth-redirect';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { useBrandConfig } from '@/contexts/brand-config';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { AuthLoadingScreen } from '@/components/auth/auth-loading-screen';
 import { AuthShell } from '@/components/auth/auth-shell';
 import { tenantMessages } from '@/i18n';
@@ -106,88 +99,96 @@ export default function RegisterPage() {
           </div>
         }
       >
-        <Form {...form}>
+        <FormProvider {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             {error && (
               <div className="rounded-2xl border border-destructive/15 bg-destructive/10 p-3 text-sm text-destructive">
                 {error}
               </div>
             )}
-            <FormField
-              control={form.control}
-              name="full_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>{tenantMessages.auth.register.name}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={tenantMessages.auth.register.namePlaceholder} autoComplete="name" {...field} data-testid="auth-name-input" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            <div className="space-y-2">
+              <Label htmlFor="full_name" required>
+                {tenantMessages.auth.register.name}
+              </Label>
+              <Controller
+                name="full_name"
+                control={form.control}
+                render={({ field }) => (
+                  <Input placeholder={tenantMessages.auth.register.namePlaceholder} autoComplete="name" {...field} data-testid="auth-name-input" />
+                )}
+              />
+              {form.formState.errors.full_name && (
+                <p className="text-sm text-destructive">{form.formState.errors.full_name.message}</p>
               )}
-            />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>{tenantMessages.auth.register.phone}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="tel"
-                      placeholder={tenantMessages.auth.register.phonePlaceholder}
-                      autoComplete="tel"
-                      {...field}
-                      data-testid="auth-phone-input"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone" required>
+                {tenantMessages.auth.register.phone}
+              </Label>
+              <Controller
+                name="phone"
+                control={form.control}
+                render={({ field }) => (
+                  <Input
+                    type="tel"
+                    placeholder={tenantMessages.auth.register.phonePlaceholder}
+                    autoComplete="tel"
+                    {...field}
+                    data-testid="auth-phone-input"
+                  />
+                )}
+              />
+              {form.formState.errors.phone && (
+                <p className="text-sm text-destructive">{form.formState.errors.phone.message}</p>
               )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>{tenantMessages.auth.register.password}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder={tenantMessages.auth.register.passwordPlaceholder}
-                      autoComplete="new-password"
-                      {...field}
-                      data-testid="auth-password-input"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" required>
+                {tenantMessages.auth.register.password}
+              </Label>
+              <Controller
+                name="password"
+                control={form.control}
+                render={({ field }) => (
+                  <Input
+                    type="password"
+                    placeholder={tenantMessages.auth.register.passwordPlaceholder}
+                    autoComplete="new-password"
+                    {...field}
+                    data-testid="auth-password-input"
+                  />
+                )}
+              />
+              {form.formState.errors.password && (
+                <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
               )}
-            />
-            <FormField
-              control={form.control}
-              name="confirm_password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>{tenantMessages.auth.register.confirmPassword}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder={tenantMessages.auth.register.confirmPasswordPlaceholder}
-                      autoComplete="new-password"
-                      {...field}
-                      data-testid="auth-confirm-password-input"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm_password" required>
+                {tenantMessages.auth.register.confirmPassword}
+              </Label>
+              <Controller
+                name="confirm_password"
+                control={form.control}
+                render={({ field }) => (
+                  <Input
+                    type="password"
+                    placeholder={tenantMessages.auth.register.confirmPasswordPlaceholder}
+                    autoComplete="new-password"
+                    {...field}
+                    data-testid="auth-confirm-password-input"
+                  />
+                )}
+              />
+              {form.formState.errors.confirm_password && (
+                <p className="text-sm text-destructive">{form.formState.errors.confirm_password.message}</p>
               )}
-            />
+            </div>
             <Button type="submit" className="h-11 w-full text-sm" disabled={isLoading} data-testid="auth-register-button">
               {isLoading ? tenantMessages.auth.register.submitting : tenantMessages.auth.register.submit}
             </Button>
           </form>
-        </Form>
+        </FormProvider>
       </AuthShell>
     </div>
   );
