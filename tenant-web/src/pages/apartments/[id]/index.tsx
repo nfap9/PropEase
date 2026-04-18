@@ -52,6 +52,7 @@ export default function ApartmentDetailPage() {
   const [isBatchCreateRoomOpen, setIsBatchCreateRoomOpen] = useState(false);
   const [isEditRoomOpen, setIsEditRoomOpen] = useState(false);
   const [isDeleteRoomOpen, setIsDeleteRoomOpen] = useState(false);
+  const [isBatchSelectMode, setIsBatchSelectMode] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [newRoomFacilities, setNewRoomFacilities] = useState<RoomFacilities | null>(null);
   const [facilityDialogOpen, setFacilityDialogOpen] = useState(false);
@@ -180,6 +181,18 @@ export default function ApartmentDetailPage() {
     }
   };
 
+  const handleToggleBatchSelectMode = () => {
+    setIsBatchSelectMode((prev) => !prev);
+    if (isBatchSelectMode) {
+      clearRoomSelection();
+    }
+  };
+
+  const handleClearSelection = () => {
+    clearRoomSelection();
+    setIsBatchSelectMode(false);
+  };
+
   if (authLoading || apartmentLoading) {
     return (
       <div className="space-y-6">
@@ -226,6 +239,7 @@ export default function ApartmentDetailPage() {
                 roomsLoading={roomsLoading}
                 roomGroups={roomGroups}
                 selectedRoomIds={selectedRoomIds}
+                isBatchSelectMode={isBatchSelectMode}
                 isBatchDeletePending={batchDeleteMutation.isPending}
                 onOpenCreateRoom={() => setIsCreateRoomOpen(true)}
                 onOpenBatchCreate={() => setIsBatchCreateRoomOpen(true)}
@@ -236,6 +250,8 @@ export default function ApartmentDetailPage() {
                 onToggleRoomSelection={toggleRoomSelection}
                 onEditRoom={handleEditRoom}
                 onDeleteRoom={handleDeleteRoom}
+                onToggleBatchSelectMode={handleToggleBatchSelectMode}
+                onClearSelection={handleClearSelection}
               />
             </TabsContent>
           </Tabs>

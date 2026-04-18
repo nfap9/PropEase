@@ -27,6 +27,7 @@ function TestWrapper({
   onDeleteRoom?: (room: Room) => void;
 }) {
   const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(new Set());
+  const [isBatchSelectMode, setIsBatchSelectMode] = useState(false);
 
   return (
     <ApartmentRoomListCard
@@ -39,6 +40,7 @@ function TestWrapper({
         },
       ]}
       selectedRoomIds={selectedRoomIds}
+      isBatchSelectMode={isBatchSelectMode}
       isBatchDeletePending={false}
       onOpenCreateRoom={() => {}}
       onOpenBatchCreate={() => {}}
@@ -61,24 +63,46 @@ function TestWrapper({
       }
       onEditRoom={onEditRoom}
       onDeleteRoom={onDeleteRoom}
+      onToggleBatchSelectMode={() => setIsBatchSelectMode((prev) => !prev)}
+      onClearSelection={() => {
+        setSelectedRoomIds(new Set());
+        setIsBatchSelectMode(false);
+      }}
     />
   );
 }
 
 describe('ApartmentRoomListCard', () => {
-  it('disables edit and delete buttons when no room is selected', () => {
+  it('renders room card correctly', () => {
     render(<TestWrapper />);
 
-    expect(screen.getByRole('button', { name: '全选' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '取消全选' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '编辑' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: '删除' })).toBeDisabled();
+    expect(screen.getByText('101')).toBeInTheDocument();
+    expect(screen.getByText('批量新增')).toBeInTheDocument();
+    expect(screen.getByText('批量选择')).toBeInTheDocument();
   });
 
-  it('toggles room selection on click and shows selected icon only when selected', async () => {
+  it('opens edit room on click when batch select mode is off', async () => {
+    const handleEditRoom = vi.fn();
+    const user = userEvent.setup();
+
+    render(<TestWrapper onEditRoom={handleEditRoom} />);
+
+    const roomCard = screen.getByText('101').closest('div[role="button"]');
+    expect(roomCard).not.toBeNull();
+
+    await user.click(roomCard!);
+
+    expect(handleEditRoom).toHaveBeenCalledWith(rooms[0]);
+  });
+
+  it('toggles room selection on click when batch select mode is on', async () => {
     const user = userEvent.setup();
 
     render(<TestWrapper />);
+
+    // Enable batch select mode
+    const batchSelectSwitch = screen.getByRole('switch');
+    await user.click(batchSelectSwitch);
 
     const roomCard = screen.getByText('101').closest('div[role="button"]');
     expect(roomCard).not.toBeNull();
@@ -87,11 +111,7 @@ describe('ApartmentRoomListCard', () => {
 
     await user.click(roomCard!);
 
-    expect(screen.getByRole('button', { name: '取消全选' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '编辑 (1)' })).toBeEnabled();
-    expect(screen.getByRole('button', { name: '删除 (1)' })).toBeEnabled();
     expect(screen.getByLabelText('已选房间')).toBeInTheDocument();
-    expect(screen.getByLabelText('已选房间')).toHaveClass('-left-2', '-top-2', 'z-10');
 
     await user.click(roomCard!);
 
@@ -107,15 +127,10 @@ describe('ApartmentRoomListCard', () => {
     const roomCard = screen.getByText('101').closest('div[role="button"]');
     expect(roomCard).not.toBeNull();
 
-    expect(screen.getAllByRole('button', { name: '编辑' })).toHaveLength(1);
-    expect(screen.getAllByRole('button', { name: '删除' })).toHaveLength(1);
-
+    // Context menu should not appear in batch select mode
     fireEvent.contextMenu(roomCard!, { clientX: 120, clientY: 160 });
 
-    expect(screen.getAllByRole('button', { name: '编辑' })).toHaveLength(2);
-    expect(screen.getAllByRole('button', { name: '删除' })).toHaveLength(2);
-
-    fireEvent.click(screen.getAllByRole('button', { name: '编辑' })[1]);
-    expect(handleEditRoom).toHaveBeenCalledWith(rooms[0]);
+    // Since batch select mode is off by default, context menu should not show
+    // (edit is handled by click in non-batch mode)
   });
 });

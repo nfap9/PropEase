@@ -1,11 +1,11 @@
 
 import { useEffect, useState } from 'react';
-import { Check, ChevronDown, Home, Layers, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Check, Home, Layers, Pencil, Plus, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Switch } from '@apartment-ultra/shared-ui/components/ui';
 import { ROOM_STATUS_CONFIG } from '@/utils/status';
 import type { Room } from '@/types';
 import type { RoomStatus } from '@/types';
@@ -16,6 +16,7 @@ interface ApartmentRoomListCardProps {
   rooms?: Room[];
   roomGroups: FloorRoomGroup[];
   selectedRoomIds: Set<string>;
+  isBatchSelectMode: boolean;
   isBatchDeletePending: boolean;
   onOpenCreateRoom: () => void;
   onOpenBatchCreate: () => void;
@@ -26,6 +27,8 @@ interface ApartmentRoomListCardProps {
   onToggleRoomSelection: (roomId: string) => void;
   onEditRoom: (room: Room) => void;
   onDeleteRoom: (room: Room) => void;
+  onToggleBatchSelectMode: () => void;
+  onClearSelection: () => void;
 }
 
 export function ApartmentRoomListCard({
@@ -33,6 +36,7 @@ export function ApartmentRoomListCard({
   rooms,
   roomGroups,
   selectedRoomIds,
+  isBatchSelectMode,
   isBatchDeletePending,
   onOpenCreateRoom,
   onOpenBatchCreate,
@@ -43,6 +47,8 @@ export function ApartmentRoomListCard({
   onToggleRoomSelection,
   onEditRoom,
   onDeleteRoom,
+  onToggleBatchSelectMode,
+  onClearSelection,
 }: ApartmentRoomListCardProps) {
   const [contextMenu, setContextMenu] = useState<{
     room: Room;
@@ -88,61 +94,18 @@ export function ApartmentRoomListCard({
           </CardDescription>
         </div>
         <div className="flex items-center gap-2">
-          {/* 选中时的操作浮层 */}
-          {hasSelection && (
-            <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-1.5">
-              <span className="text-sm text-muted-foreground">
-                已选 {selectedRoomIds.size}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onOpenBatchEdit}
-                className="h-8"
-              >
-                <Pencil className="mr-1 h-4 w-4" />
-                批量编辑
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onDeleteSelected}
-                disabled={isBatchDeletePending}
-                className="h-8 text-destructive hover:text-destructive"
-              >
-                <Trash2 className="mr-1 h-4 w-4" />
-                删除
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onSelectAllRooms(false)}
-                className="h-8"
-              >
-                取消
-              </Button>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">批量选择</span>
+            <Switch
+              checked={isBatchSelectMode}
+              onCheckedChange={onToggleBatchSelectMode}
+            />
+          </div>
 
-          {/* 批量操作下拉菜单 */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                批量操作
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onOpenBatchCreate}>
-                <Layers className="mr-2 h-4 w-4" />
-                批量添加
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onSelectAllRooms(!isAllSelected)}>
-                <Check className="mr-2 h-4 w-4" />
-                {isAllSelected ? '取消全选' : '全选'}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button variant="outline" size="sm" onClick={onOpenBatchCreate}>
+            <Layers className="mr-2 h-4 w-4" />
+            批量新增
+          </Button>
 
           <Button size="sm" onClick={onOpenCreateRoom}>
             <Plus className="mr-2 h-4 w-4" />
@@ -165,6 +128,43 @@ export function ApartmentRoomListCard({
                   {ROOM_STATUS_CONFIG[status].label}
                 </Badge>
               ))}
+
+              {/* 批量选择模式开启时显示的操作栏 */}
+              {isBatchSelectMode && (
+                <>
+                  <div className="h-4 w-px bg-border" />
+                  <span className="text-sm text-muted-foreground">
+                    已选 {selectedRoomIds.size}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onOpenBatchEdit}
+                    className="h-8"
+                  >
+                    <Pencil className="mr-1 h-4 w-4" />
+                    批量编辑
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onDeleteSelected}
+                    disabled={isBatchDeletePending}
+                    className="h-8 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="mr-1 h-4 w-4" />
+                    删除
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onClearSelection}
+                    className="h-8"
+                  >
+                    取消
+                  </Button>
+                </>
+              )}
             </div>
 
             {roomGroups.map((group) => {
@@ -172,28 +172,30 @@ export function ApartmentRoomListCard({
               return (
                 <div key={group.floor} className="space-y-2">
                   <h4 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onToggleFloorSelection(group.rooms, selectedCount !== group.rooms.length)
-                      }
-                      className="rounded p-0.5 hover:bg-accent"
-                      aria-label={`${group.floor} 楼全选切换`}
-                    >
-                      <div
-                        className={`flex h-4 w-4 items-center justify-center rounded border-2 ${
-                          selectedCount === group.rooms.length && group.rooms.length > 0
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : selectedCount > 0
-                              ? 'border-primary bg-primary/20'
-                              : 'border-muted-foreground'
-                        }`}
+                    {isBatchSelectMode && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onToggleFloorSelection(group.rooms, selectedCount !== group.rooms.length)
+                        }
+                        className="rounded p-0.5 hover:bg-accent"
+                        aria-label={`${group.floor} 楼全选切换`}
                       >
-                        {selectedCount === group.rooms.length && group.rooms.length > 0 && (
-                          <Check className="h-3 w-3" />
-                        )}
-                      </div>
-                    </button>
+                        <div
+                          className={`flex h-4 w-4 items-center justify-center rounded border-2 ${
+                            selectedCount === group.rooms.length && group.rooms.length > 0
+                              ? 'border-primary bg-primary text-primary-foreground'
+                              : selectedCount > 0
+                                ? 'border-primary bg-primary/20'
+                                : 'border-muted-foreground'
+                          }`}
+                        >
+                          {selectedCount === group.rooms.length && group.rooms.length > 0 && (
+                            <Check className="h-3 w-3" />
+                          )}
+                        </div>
+                      </button>
+                    )}
                     <Layers className="h-4 w-4" />
                     {group.floor} 楼
                     <span className="text-xs">
@@ -205,14 +207,25 @@ export function ApartmentRoomListCard({
                     {group.rooms.map((room) => {
                       const isSelected = selectedRoomIds.has(room.id);
                       const statusConfig = ROOM_STATUS_CONFIG[room.status];
+                      const handleClick = () => {
+                        if (isBatchSelectMode) {
+                          onToggleRoomSelection(room.id);
+                        } else {
+                          onEditRoom(room);
+                        }
+                      };
                       return (
                         <div
                           key={room.id}
                           role="button"
                           tabIndex={0}
                           aria-pressed={isSelected}
-                          onClick={() => onToggleRoomSelection(room.id)}
+                          onClick={handleClick}
                           onContextMenu={(event) => {
+                            if (isBatchSelectMode) {
+                              event.preventDefault();
+                              return;
+                            }
                             event.preventDefault();
                             setContextMenu({
                               room,
@@ -223,7 +236,7 @@ export function ApartmentRoomListCard({
                           onKeyDown={(event) => {
                             if (event.key === 'Enter' || event.key === ' ') {
                               event.preventDefault();
-                              onToggleRoomSelection(room.id);
+                              handleClick();
                             }
                           }}
                           className={`group relative flex min-w-[80px] cursor-pointer flex-col items-center rounded-lg border bg-card p-2 transition-all hover:bg-accent ${isSelected ? 'ring-2 ring-primary ring-offset-1' : ''}`}

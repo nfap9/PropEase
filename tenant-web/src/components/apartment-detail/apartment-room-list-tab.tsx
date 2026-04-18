@@ -8,6 +8,7 @@ interface ApartmentRoomListTabProps {
   roomsLoading: boolean;
   roomGroups: FloorRoomGroup[];
   selectedRoomIds: Set<string>;
+  isBatchSelectMode: boolean;
   isBatchDeletePending: boolean;
   onOpenCreateRoom: () => void;
   onOpenBatchCreate: () => void;
@@ -18,6 +19,8 @@ interface ApartmentRoomListTabProps {
   onToggleRoomSelection: (roomId: string) => void;
   onEditRoom: (room: Room) => void;
   onDeleteRoom: (room: Room) => void;
+  onToggleBatchSelectMode: () => void;
+  onClearSelection: () => void;
 }
 
 export function ApartmentRoomListTab({
@@ -25,6 +28,7 @@ export function ApartmentRoomListTab({
   roomsLoading,
   roomGroups,
   selectedRoomIds,
+  isBatchSelectMode,
   isBatchDeletePending,
   onOpenCreateRoom,
   onOpenBatchCreate,
@@ -35,6 +39,8 @@ export function ApartmentRoomListTab({
   onToggleRoomSelection,
   onEditRoom,
   onDeleteRoom,
+  onToggleBatchSelectMode,
+  onClearSelection,
 }: ApartmentRoomListTabProps) {
   return (
     <ApartmentRoomListCard
@@ -42,6 +48,7 @@ export function ApartmentRoomListTab({
       roomsLoading={roomsLoading}
       roomGroups={roomGroups}
       selectedRoomIds={selectedRoomIds}
+      isBatchSelectMode={isBatchSelectMode}
       isBatchDeletePending={isBatchDeletePending}
       onOpenCreateRoom={onOpenCreateRoom}
       onOpenBatchCreate={onOpenBatchCreate}
@@ -52,6 +59,8 @@ export function ApartmentRoomListTab({
       onToggleRoomSelection={onToggleRoomSelection}
       onEditRoom={onEditRoom}
       onDeleteRoom={onDeleteRoom}
+      onToggleBatchSelectMode={onToggleBatchSelectMode}
+      onClearSelection={onClearSelection}
     />
   );
 }
