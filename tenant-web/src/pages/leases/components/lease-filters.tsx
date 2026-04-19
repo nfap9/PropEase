@@ -1,7 +1,7 @@
 
 import { Search, X, Building2 } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerComponent } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
@@ -68,13 +68,13 @@ export function LeaseFilters({ apartments, filters, onFilterChange, onClearFilte
 
       {/* 开始日期范围 */}
       <div className="flex items-center gap-1">
-        <DatePickerInput
+        <DatePickerComponent
           className="h-9 w-[140px]"
           value={filters.startDateFrom || ''}
           onChange={(value) => onFilterChange('startDateFrom', value || null)}
         />
         <span className="text-muted-foreground">-</span>
-        <DatePickerInput
+        <DatePickerComponent
           className="h-9 w-[140px]"
           value={filters.startDateTo || ''}
           onChange={(value) => onFilterChange('startDateTo', value || null)}
@@ -83,13 +83,13 @@ export function LeaseFilters({ apartments, filters, onFilterChange, onClearFilte
 
       {/* 结束日期范围 */}
       <div className="flex items-center gap-1">
-        <DatePickerInput
+        <DatePickerComponent
           className="h-9 w-[140px]"
           value={filters.endDateFrom || ''}
           onChange={(value) => onFilterChange('endDateFrom', value || null)}
         />
         <span className="text-muted-foreground">-</span>
-        <DatePickerInput
+        <DatePickerComponent
           className="h-9 w-[140px]"
           value={filters.endDateTo || ''}
           onChange={(value) => onFilterChange('endDateTo', value || null)}

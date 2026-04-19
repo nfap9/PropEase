@@ -17,15 +17,22 @@ function Calendar({
   buttonVariant = "ghost",
   formatters,
   components,
+  fromYear,
+  toYear,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
 }) {
   const defaultClassNames = getDefaultClassNames()
 
+  // 将 fromYear/toYear 转换为 startMonth/endMonth
+  const startMonth = fromYear ? new Date(fromYear, 0, 1) : undefined;
+  const endMonth = toYear ? new Date(toYear, 11, 31) : undefined;
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      fixedWeeks
       className={cn(
         "bg-background group/calendar p-3 [--cell-size:2rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
@@ -33,6 +40,8 @@ function Calendar({
         className
       )}
       captionLayout={captionLayout}
+      startMonth={startMonth}
+      endMonth={endMonth}
       formatters={{
         formatMonthDropdown: (date) =>
           date.toLocaleString("default", { month: "short" }),
@@ -44,7 +53,7 @@ function Calendar({
           "relative flex flex-col gap-4 md:flex-row",
           defaultClassNames.months
         ),
-        month: cn("flex w-full flex-col gap-4", defaultClassNames.month),
+        month: cn("flex w-full flex-col", defaultClassNames.month),
         nav: cn(
           "absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1",
           defaultClassNames.nav
@@ -88,7 +97,7 @@ function Calendar({
           "text-muted-foreground flex-1 select-none rounded-md text-[0.8rem] font-normal",
           defaultClassNames.weekday
         ),
-        week: cn("mt-2 flex w-full", defaultClassNames.week),
+        week: cn("mt-2 flex w-full h-[--cell-size]", defaultClassNames.week),
         week_number_header: cn(
           "w-[--cell-size] select-none",
           defaultClassNames.week_number_header

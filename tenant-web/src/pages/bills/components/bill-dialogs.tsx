@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerComponent } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
@@ -270,7 +270,7 @@ export function BillGenerateDialog({
           </div>
           <div className="space-y-2">
               <Label htmlFor="due_date">{tenantMessages.bills.dialogs.dueDateLabel}</Label>
-            <DatePickerInput
+            <DatePickerComponent
               id="due_date"
               value={form.watch('due_date') || ''}
               onChange={(value) => form.setValue('due_date', value)}
@@ -345,7 +345,7 @@ export function BillPaymentDialog({
               <Label htmlFor="payment_date">
                 {tenantMessages.bills.dialogs.paymentDate} <span aria-hidden="true">*</span>
               </Label>
-              <DatePickerInput
+              <DatePickerComponent
                 id="payment_date"
                 value={form.watch('payment_date') || ''}
                 onChange={(value) => form.setValue('payment_date', value)}

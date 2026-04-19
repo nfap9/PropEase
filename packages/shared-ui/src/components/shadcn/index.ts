@@ -9,7 +9,7 @@ export * from './calendar';
 export * from './card';
 export * from './checkbox';
 export * from './data-table';
-export * from './date-picker-input';
+export * from './date-picker';
 export * from './dialog';
 export * from './dropdown-menu';
 export * from './input';

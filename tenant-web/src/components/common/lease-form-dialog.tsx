@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerComponent } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -331,7 +331,7 @@ export function LeaseFormDialog({
               <Label htmlFor="start_date" required>
                 开始日期
               </Label>
-              <DatePickerInput
+              <DatePickerComponent
                 id="start_date"
                 value={form.watch('start_date') || ''}
                 onChange={(value) => {
@@ -349,7 +349,7 @@ export function LeaseFormDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="end_date">结束日期</Label>
-              <DatePickerInput
+              <DatePickerComponent
                 id="end_date"
                 value={form.watch('end_date') || ''}
                 onChange={(value) => {

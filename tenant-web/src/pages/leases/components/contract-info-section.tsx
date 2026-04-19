@@ -3,7 +3,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { CalendarDays, Banknote, Droplets, Zap, FileText, AlertCircle } from 'lucide-react';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerComponent } from '@apartment-ultra/shared-ui/components/ui';
 import { FeeItemsEditor, type FeeItem } from '@/components/common/fee-items-editor';
 import type { LeaseSigningFormData } from '@/schemas/leases';
 
@@ -51,7 +51,7 @@ export function ContractInfoSection({
             <Label htmlFor="start_date" className="text-sm font-medium">
               开始日期 <span className="text-destructive">*</span>
             </Label>
-            <DatePickerInput
+            <DatePickerComponent
               id="start_date"
               value={form.watch('start_date') || ''}
               onChange={(value) => {
@@ -75,7 +75,7 @@ export function ContractInfoSection({
             <Label htmlFor="end_date" className="text-sm font-medium">
               结束日期
             </Label>
-            <DatePickerInput
+            <DatePickerComponent
               id="end_date"
               value={form.watch('end_date') || ''}
               onChange={(value) => {

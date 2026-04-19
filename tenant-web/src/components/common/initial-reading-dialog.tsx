@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerComponent } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { utilitiesApi } from '@/api';
@@ -148,7 +148,7 @@ export function InitialReadingDialog({
               name="reading_date"
               control={form.control}
               render={({ field }) => (
-                <DatePickerInput
+                <DatePickerComponent
                   id="initial-reading_date"
                   value={field.value || ''}
                   onChange={field.onChange}

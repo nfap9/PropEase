@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { renewSchema, type RenewFormData } from '@/schemas/lease-operations';
 import { useRenew } from '@/hooks/use-lease-operations';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerComponent } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -55,7 +55,7 @@ export function RenewSheet({ open, onOpenChange, orgId, leaseId, currentEndDate 
               name="newEndDate"
               control={form.control}
               render={({ field }) => (
-                <DatePickerInput
+                <DatePickerComponent
                   value={field.value || ''}
                   onChange={field.onChange}
                 />

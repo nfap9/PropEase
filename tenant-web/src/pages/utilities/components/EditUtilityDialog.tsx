@@ -14,7 +14,7 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Alert, AlertDescription, AlertTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerComponent } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -114,7 +114,7 @@ export function EditUtilityDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-reading_date">读数日期</Label>
-            <DatePickerInput
+            <DatePickerComponent
               id="edit-reading_date"
               value={form.watch('reading_date') || ''}
               onChange={(value) => form.setValue('reading_date', value)}
