@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -228,14 +229,6 @@ export function LeaseFormDialog({
     createMutation.mutate({ ...data, fee_items: feeItems });
   };
 
-  const setDateFieldValue = (field: 'start_date' | 'end_date', value: string) => {
-    form.setValue(field, value, {
-      shouldDirty: true,
-      shouldTouch: true,
-      shouldValidate: true,
-    });
-  };
-
   const getDialogTitle = () => {
     if (isRoomSpecified) {
       return '签约';
@@ -338,11 +331,16 @@ export function LeaseFormDialog({
               <Label htmlFor="start_date" required>
                 开始日期
               </Label>
-              <Input
+              <DatePickerInput
                 id="start_date"
-                type="date"
                 value={form.watch('start_date') || ''}
-                onChange={(e) => setDateFieldValue('start_date', e.target.value)}
+                onChange={(value) => {
+                  form.setValue('start_date', value, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  });
+                }}
                 data-testid="leases-start-date-input"
               />
               {form.formState.errors.start_date && (
@@ -351,11 +349,16 @@ export function LeaseFormDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="end_date">结束日期</Label>
-              <Input
+              <DatePickerInput
                 id="end_date"
-                type="date"
                 value={form.watch('end_date') || ''}
-                onChange={(e) => setDateFieldValue('end_date', e.target.value)}
+                onChange={(value) => {
+                  form.setValue('end_date', value, {
+                    shouldDirty: true,
+                    shouldTouch: true,
+                    shouldValidate: true,
+                  });
+                }}
                 data-testid="leases-end-date-input"
               />
             </div>

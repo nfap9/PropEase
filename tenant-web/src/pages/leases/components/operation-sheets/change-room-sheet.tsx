@@ -6,6 +6,7 @@ import { changeRoomSchema, type ChangeRoomFormData } from '@/schemas/lease-opera
 import { useChangeRoom } from '@/hooks/use-lease-operations';
 import { roomsApi, apartmentsApi } from '@/api';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -100,10 +101,9 @@ export function ChangeRoomSheet({ open, onOpenChange, orgId, leaseId }: ChangeRo
               name="changeDate"
               control={form.control}
               render={({ field }) => (
-                <Input
-                  type="date"
+                <DatePickerInput
                   value={field.value || ''}
-                  onChange={(e) => field.onChange(e.target.value)}
+                  onChange={field.onChange}
                 />
               )}
             />

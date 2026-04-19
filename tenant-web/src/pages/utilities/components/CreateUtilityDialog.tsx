@@ -25,6 +25,7 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Alert, AlertDescription, AlertTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -277,11 +278,10 @@ export function CreateUtilityDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="reading_date">读数日期 *</Label>
-            <Input
+            <DatePickerInput
               id="reading_date"
-              type="date"
               value={form.watch('reading_date') || ''}
-              onChange={(e) => form.setValue('reading_date', e.target.value)}
+              onChange={(value) => form.setValue('reading_date', value)}
             />
           </div>
           <div className="space-y-2">

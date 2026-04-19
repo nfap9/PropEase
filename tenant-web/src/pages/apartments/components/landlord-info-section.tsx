@@ -1,5 +1,6 @@
 
 import { UseFormReturn } from 'react-hook-form';
+import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { ApartmentFormData } from './apartment-form';
@@ -43,11 +44,10 @@ export function LandlordInfoSection({ form }: LandlordInfoSectionProps) {
           <Label htmlFor="contract_start" required>
             合同开始
           </Label>
-          <Input
+          <DatePickerInput
             id="contract_start"
-            type="date"
             value={form.watch('contract_start') || ''}
-            onChange={(e) => form.setValue('contract_start', e.target.value)}
+            onChange={(value) => form.setValue('contract_start', value)}
           />
           {form.formState.errors.contract_start && (
             <p className="text-sm text-destructive">{form.formState.errors.contract_start.message}</p>
@@ -57,11 +57,10 @@ export function LandlordInfoSection({ form }: LandlordInfoSectionProps) {
           <Label htmlFor="contract_end" required>
             合同结束
           </Label>
-          <Input
+          <DatePickerInput
             id="contract_end"
-            type="date"
             value={form.watch('contract_end') || ''}
-            onChange={(e) => form.setValue('contract_end', e.target.value)}
+            onChange={(value) => form.setValue('contract_end', value)}
           />
           {form.formState.errors.contract_end && (
             <p className="text-sm text-destructive">{form.formState.errors.contract_end.message}</p>

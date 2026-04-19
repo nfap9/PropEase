@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import type { Lease } from '@/types';
 import { LEASES, type LeaseEditFormData } from '@/schemas/leases';
@@ -83,13 +84,10 @@ export function LeaseEditDialog({
                   name="start_date"
                   control={form.control}
                   render={({ field }) => (
-                    <Input
+                    <DatePickerInput
                       id="edit-start_date"
-                      type="date"
                       value={field.value || ''}
                       onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      name={field.name}
                       data-testid={LEASES.START_DATE_INPUT}
                     />
                   )}
@@ -104,13 +102,10 @@ export function LeaseEditDialog({
                   name="end_date"
                   control={form.control}
                   render={({ field }) => (
-                    <Input
+                    <DatePickerInput
                       id="edit-end_date"
-                      type="date"
                       value={field.value || ''}
                       onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      name={field.name}
                       data-testid={LEASES.END_DATE_INPUT}
                     />
                   )}

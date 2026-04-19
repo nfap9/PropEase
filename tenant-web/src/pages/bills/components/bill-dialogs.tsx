@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
@@ -269,11 +270,10 @@ export function BillGenerateDialog({
           </div>
           <div className="space-y-2">
               <Label htmlFor="due_date">{tenantMessages.bills.dialogs.dueDateLabel}</Label>
-            <Input
+            <DatePickerInput
               id="due_date"
-              type="date"
               value={form.watch('due_date') || ''}
-              onChange={(e) => form.setValue('due_date', e.target.value)}
+              onChange={(value) => form.setValue('due_date', value)}
             />
             {form.formState.errors.due_date && (
               <p className="text-sm text-destructive">{form.formState.errors.due_date.message}</p>
@@ -345,11 +345,10 @@ export function BillPaymentDialog({
               <Label htmlFor="payment_date">
                 {tenantMessages.bills.dialogs.paymentDate} <span aria-hidden="true">*</span>
               </Label>
-              <Input
+              <DatePickerInput
                 id="payment_date"
-                type="date"
                 value={form.watch('payment_date') || ''}
-                onChange={(e) => form.setValue('payment_date', e.target.value)}
+                onChange={(value) => form.setValue('payment_date', value)}
                 data-testid={BILLS.PAYMENT_DATE_INPUT}
               />
             </div>

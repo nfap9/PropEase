@@ -1,11 +1,13 @@
 
 import { useForm } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { apartmentsApi } from '@/api';
@@ -160,10 +162,16 @@ export default function NewApartmentPage() {
                 <Label htmlFor="contract_start" required>
                   合同开始
                 </Label>
-                <Input
-                  id="contract_start"
-                  type="date"
-                  {...form.register('contract_start')}
+                <Controller
+                  name="contract_start"
+                  control={form.control}
+                  render={({ field }) => (
+                    <DatePickerInput
+                      id="contract_start"
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                    />
+                  )}
                 />
                 {form.formState.errors.contract_start && (
                   <p className="text-sm text-destructive">{form.formState.errors.contract_start.message}</p>
@@ -173,10 +181,16 @@ export default function NewApartmentPage() {
                 <Label htmlFor="contract_end" required>
                   合同结束
                 </Label>
-                <Input
-                  id="contract_end"
-                  type="date"
-                  {...form.register('contract_end')}
+                <Controller
+                  name="contract_end"
+                  control={form.control}
+                  render={({ field }) => (
+                    <DatePickerInput
+                      id="contract_end"
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                    />
+                  )}
                 />
                 {form.formState.errors.contract_end && (
                   <p className="text-sm text-destructive">{form.formState.errors.contract_end.message}</p>

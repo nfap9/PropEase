@@ -1,6 +1,7 @@
 
 import { Search, X, Building2 } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { DatePickerInput } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
@@ -67,35 +68,31 @@ export function LeaseFilters({ apartments, filters, onFilterChange, onClearFilte
 
       {/* 开始日期范围 */}
       <div className="flex items-center gap-1">
-        <Input
-          type="date"
+        <DatePickerInput
           className="h-9 w-[140px]"
           value={filters.startDateFrom || ''}
-          onChange={(e) => onFilterChange('startDateFrom', e.target.value || null)}
+          onChange={(value) => onFilterChange('startDateFrom', value || null)}
         />
         <span className="text-muted-foreground">-</span>
-        <Input
-          type="date"
+        <DatePickerInput
           className="h-9 w-[140px]"
           value={filters.startDateTo || ''}
-          onChange={(e) => onFilterChange('startDateTo', e.target.value || null)}
+          onChange={(value) => onFilterChange('startDateTo', value || null)}
         />
       </div>
 
       {/* 结束日期范围 */}
       <div className="flex items-center gap-1">
-        <Input
-          type="date"
+        <DatePickerInput
           className="h-9 w-[140px]"
           value={filters.endDateFrom || ''}
-          onChange={(e) => onFilterChange('endDateFrom', e.target.value || null)}
+          onChange={(value) => onFilterChange('endDateFrom', value || null)}
         />
         <span className="text-muted-foreground">-</span>
-        <Input
-          type="date"
+        <DatePickerInput
           className="h-9 w-[140px]"
           value={filters.endDateTo || ''}
-          onChange={(e) => onFilterChange('endDateTo', e.target.value || null)}
+          onChange={(value) => onFilterChange('endDateTo', value || null)}
         />
       </div>
 
