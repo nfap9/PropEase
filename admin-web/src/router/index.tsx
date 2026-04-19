@@ -113,4 +113,4 @@ export const router = createBrowserRouter([
       },
     ],
   },
-]);
+], { basename: '/admin/' });

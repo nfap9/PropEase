@@ -74,7 +74,7 @@ export function createLeaseRepository(db: DbClient): LeaseRepository {
       return db.lease.create({ data });
     },
 
-    createWithRoomUpdate: async (leaseData: Prisma.LeaseCreateInput, roomId: string) => {
+    createWithRoomUpdate: async (leaseData: Prisma.LeaseCreateInput, _roomId: string) => {
       if (!prismaClient) {
         throw new Error('Transaction not available');
       }
@@ -91,7 +91,7 @@ export function createLeaseRepository(db: DbClient): LeaseRepository {
       return db.lease.update({ where: { id }, data });
     },
 
-    terminate: async (id: string, roomId: string) => {
+    terminate: async (id: string, _roomId: string) => {
       if (!prismaClient) {
         // 如果不在事务中，分步执行
         await db.lease.update({ where: { id }, data: { is_active: false } });

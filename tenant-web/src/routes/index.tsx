@@ -86,4 +86,4 @@ const protectedRoutes: RouteObject[] = [
   },
 ];
 
-export const router = createBrowserRouter([...publicRoutes, ...protectedRoutes, { path: '*', element: <NotFound /> }]);
+export const router = createBrowserRouter([...publicRoutes, ...protectedRoutes, { path: '*', element: <NotFound /> }], { basename: '/tenant/' });
