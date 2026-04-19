@@ -222,8 +222,9 @@ export function RegisteredUserDetailSheet({
             <p className="text-sm text-muted-foreground">{adminMessages.registeredUsers.dialogs.loadFailed}</p>
           )}
         </div>
+        )
+        : null}
         </div>
-      ) : null}
     </SheetContent>
     </Sheet>
   );

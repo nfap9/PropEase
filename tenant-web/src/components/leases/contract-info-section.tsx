@@ -1,7 +1,6 @@
 
 import { UseFormReturn } from 'react-hook-form';
 import { CalendarDays, Banknote, Droplets, Zap, FileText, AlertCircle } from 'lucide-react';
-import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { FeeItemsEditor, type FeeItem } from '@/components/common/fee-items-editor';
@@ -59,13 +58,12 @@ export function ContractInfoSection({
             <Label htmlFor="start_date" className="text-sm font-medium">
               开始日期 <span className="text-destructive">*</span>
             </Label>
-            <DateTimePicker
+            <Input
               id="start_date"
-              mode="date"
-              value={form.watch('start_date')}
-              onChange={(value) => setDateFieldValue('start_date', value)}
+              type="date"
+              value={form.watch('start_date') || ''}
+              onChange={(e) => setDateFieldValue('start_date', e.target.value)}
               data-testid="leases-start-date-input"
-              placeholder="选择开始日期"
               className="rounded-xl shadow-sm"
             />
             {errors.start_date && (
@@ -79,13 +77,12 @@ export function ContractInfoSection({
             <Label htmlFor="end_date" className="text-sm font-medium">
               结束日期
             </Label>
-            <DateTimePicker
+            <Input
               id="end_date"
-              mode="date"
-              value={form.watch('end_date')}
-              onChange={(value) => setDateFieldValue('end_date', value)}
+              type="date"
+              value={form.watch('end_date') || ''}
+              onChange={(e) => setDateFieldValue('end_date', e.target.value)}
               data-testid="leases-end-date-input"
-              placeholder="留空表示无固定期限"
               className="rounded-xl shadow-sm"
             />
             <p className="text-xs text-muted-foreground">留空表示无固定期限租约</p>

@@ -1,7 +1,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import { AlertCircle, Building2, ChevronDown, Download, FilePlus, FileSpreadsheet } from 'lucide-react';
-import { DataTable } from '@/components/common/data-table';
+import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components';
 import { Card, CardContent } from '@apartment-ultra/shared-ui/components/ui';

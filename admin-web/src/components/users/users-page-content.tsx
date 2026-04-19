@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react';
 import { useManagedItem } from '@apartment-ultra/shared-ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { DataTable } from '@/components/common/data-table';
+import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminUser } from '@/api/admin-client';
 import { createAdminUsersColumns } from '@/components/users/columns';
 import { useAdminUsersData } from '@/hooks/users';

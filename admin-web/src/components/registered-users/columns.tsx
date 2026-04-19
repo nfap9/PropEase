@@ -2,11 +2,18 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Eye, Power, PowerOff, Trash2 } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { TableActions } from '@/components/common/table-actions';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { formatDateTime } from '@/utils/date';
 import { ORG_STATUS_CONFIG } from '@/utils/status';
 import type { AdminRegisteredUser } from '@/api/admin-client';
 import { adminMessages } from '@/i18n';
+import { MoreHorizontal } from 'lucide-react';
 
 interface CreateRegisteredUsersColumnsOptions {
   onView: (userId: string) => void;
@@ -44,42 +51,39 @@ export function createRegisteredUsersColumns({
     {
       id: 'actions',
       header: adminMessages.registeredUsers.columns.actions,
-      size: 180,
-      minSize: 160,
+      size: 80,
+      minSize: 60,
       cell: ({ row }) => {
         const user = row.original;
         return (
-          <TableActions
-            actions={[
-              {
-                icon: Eye,
-                label: adminMessages.registeredUsers.actions.detail,
-                onClick: () => onView(user.id),
-              },
-              ...(user.is_active
-                ? [
-                    {
-                      icon: PowerOff,
-                      label: adminMessages.registeredUsers.actions.disable,
-                      variant: 'destructive' as const,
-                      onClick: () => onDisable(user.id),
-                    },
-                  ]
-                : [
-                    {
-                      icon: Power,
-                      label: adminMessages.registeredUsers.actions.enable,
-                      onClick: () => onEnable(user.id),
-                    },
-                  ]),
-              {
-                icon: Trash2,
-                label: adminMessages.registeredUsers.actions.delete,
-                variant: 'destructive',
-                onClick: () => onDelete(user.id),
-              },
-            ]}
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onView(user.id)}>
+                <Eye className="mr-2 h-4 w-4" />
+                {adminMessages.registeredUsers.actions.detail}
+              </DropdownMenuItem>
+              {user.is_active ? (
+                <DropdownMenuItem onClick={() => onDisable(user.id)} className="text-destructive">
+                  <PowerOff className="mr-2 h-4 w-4" />
+                  {adminMessages.registeredUsers.actions.disable}
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={() => onEnable(user.id)}>
+                  <Power className="mr-2 h-4 w-4" />
+                  {adminMessages.registeredUsers.actions.enable}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => onDelete(user.id)} className="text-destructive">
+                <Trash2 className="mr-2 h-4 w-4" />
+                {adminMessages.registeredUsers.actions.delete}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
     },

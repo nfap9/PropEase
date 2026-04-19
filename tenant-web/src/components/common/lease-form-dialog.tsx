@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -339,13 +338,12 @@ export function LeaseFormDialog({
               <Label htmlFor="start_date" required>
                 开始日期
               </Label>
-              <DateTimePicker
+              <Input
                 id="start_date"
-                mode="date"
-                value={form.watch('start_date')}
-                onChange={(value) => setDateFieldValue('start_date', value)}
+                type="date"
+                value={form.watch('start_date') || ''}
+                onChange={(e) => setDateFieldValue('start_date', e.target.value)}
                 data-testid="leases-start-date-input"
-                placeholder="选择开始日期"
               />
               {form.formState.errors.start_date && (
                 <p className="text-sm text-destructive">{form.formState.errors.start_date.message}</p>
@@ -353,13 +351,12 @@ export function LeaseFormDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="end_date">结束日期</Label>
-              <DateTimePicker
+              <Input
                 id="end_date"
-                mode="date"
-                value={form.watch('end_date')}
-                onChange={(value) => setDateFieldValue('end_date', value)}
+                type="date"
+                value={form.watch('end_date') || ''}
+                onChange={(e) => setDateFieldValue('end_date', e.target.value)}
                 data-testid="leases-end-date-input"
-                placeholder="选择结束日期"
               />
             </div>
           </div>

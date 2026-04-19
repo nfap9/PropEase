@@ -1,7 +1,6 @@
 
 import { Search, X, Building2 } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DateRangePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
@@ -66,25 +65,39 @@ export function LeaseFilters({ apartments, filters, onFilterChange, onClearFilte
         />
       </div>
 
-      {/* 开始日期 */}
-      <DateRangePicker
-        value={{ from: filters.startDateFrom, to: filters.startDateTo }}
-        placeholder="开始日期"
-        onChange={(range) => {
-          onFilterChange('startDateFrom', range.from);
-          onFilterChange('startDateTo', range.to);
-        }}
-      />
+      {/* 开始日期范围 */}
+      <div className="flex items-center gap-1">
+        <Input
+          type="date"
+          className="h-9 w-[140px]"
+          value={filters.startDateFrom || ''}
+          onChange={(e) => onFilterChange('startDateFrom', e.target.value || null)}
+        />
+        <span className="text-muted-foreground">-</span>
+        <Input
+          type="date"
+          className="h-9 w-[140px]"
+          value={filters.startDateTo || ''}
+          onChange={(e) => onFilterChange('startDateTo', e.target.value || null)}
+        />
+      </div>
 
-      {/* 结束日期 */}
-      <DateRangePicker
-        value={{ from: filters.endDateFrom, to: filters.endDateTo }}
-        placeholder="结束日期"
-        onChange={(range) => {
-          onFilterChange('endDateFrom', range.from);
-          onFilterChange('endDateTo', range.to);
-        }}
-      />
+      {/* 结束日期范围 */}
+      <div className="flex items-center gap-1">
+        <Input
+          type="date"
+          className="h-9 w-[140px]"
+          value={filters.endDateFrom || ''}
+          onChange={(e) => onFilterChange('endDateFrom', e.target.value || null)}
+        />
+        <span className="text-muted-foreground">-</span>
+        <Input
+          type="date"
+          className="h-9 w-[140px]"
+          value={filters.endDateTo || ''}
+          onChange={(e) => onFilterChange('endDateTo', e.target.value || null)}
+        />
+      </div>
 
       {/* 清除筛选 */}
       {hasActiveFilters && (

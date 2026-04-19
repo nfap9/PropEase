@@ -5,7 +5,15 @@ import { useQuery } from '@tanstack/react-query';
 import { updateTenantSchema, type UpdateTenantFormData } from '@/schemas/lease-operations';
 import { useUpdateTenant } from '@/hooks/use-lease-operations';
 import { tenantsApi } from '@/api';
-import { FormDialog } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Select,
@@ -43,41 +51,49 @@ export function UpdateTenantDialog({ open, onOpenChange, orgId, leaseId }: Updat
   };
 
   return (
-    <FormDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title="编辑租客"
-      description="将租约的租客更换为其他已存在的租客"
-      onSubmit={form.handleSubmit(onSubmit)}
-      isPending={updateTenant.isPending}
-      submitLabel={updateTenant.isPending ? '提交中...' : '确认更换'}
-    >
-      <FormProvider {...form}>
-        <div className="space-y-2">
-          <Label htmlFor="newTenantId">新租客 *</Label>
-          <Controller
-            name="newTenantId"
-            control={form.control}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger>
-                  <SelectValue placeholder="选择新租客" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tenants?.map((tenant) => (
-                    <SelectItem key={tenant.id} value={tenant.id}>
-                      {tenant.name} {tenant.phone && `(${tenant.phone})`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-          {form.formState.errors.newTenantId && (
-            <p className="text-sm text-destructive">{form.formState.errors.newTenantId.message}</p>
-          )}
-        </div>
-      </FormProvider>
-    </FormDialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>编辑租客</DialogTitle>
+          <DialogDescription>将租约的租客更换为其他已存在的租客</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormProvider {...form}>
+            <div className="space-y-2">
+              <Label htmlFor="newTenantId">新租客 *</Label>
+              <Controller
+                name="newTenantId"
+                control={form.control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择新租客" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tenants?.map((tenant) => (
+                        <SelectItem key={tenant.id} value={tenant.id}>
+                          {tenant.name} {tenant.phone && `(${tenant.phone})`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {form.formState.errors.newTenantId && (
+                <p className="text-sm text-destructive">{form.formState.errors.newTenantId.message}</p>
+              )}
+            </div>
+          </FormProvider>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              取消
+            </Button>
+            <Button type="submit" disabled={updateTenant.isPending}>
+              {updateTenant.isPending ? '提交中...' : '确认更换'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -4,8 +4,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
-import { FormDialog } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { utilitiesApi } from '@/api';
@@ -107,81 +114,83 @@ export function InitialReadingDialog({
   };
 
   return (
-    <FormDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title="录入初始水电读数"
-      description={
-        isHistoricalLeaseEntry ? (
-          <>
-            历史租约已创建，建议先记录当前表底数。历史月份数据可稍后前往
-            <Link to="/utilities?tab=history" className="mx-1 underline underline-offset-4">
-              历史水电记录
-            </Link>
-            继续补录。
-          </>
-        ) : (
-          '签约后需记录初始水电表读数，便于后续出账计算。可填写后保存，或跳过稍后在水电录入页补录。'
-        )
-      }
-      size="sm"
-      onSubmit={form.handleSubmit(handleSubmit)}
-      cancelLabel="跳过"
-      cancelVariant="ghost"
-      onCancel={handleSkip}
-      submitLabel={saveMutation.isPending ? '保存中...' : '保存'}
-      isPending={saveMutation.isPending}
-    >
-      <div className="space-y-2">
-        <Label>房间</Label>
-        <Input value={roomDisplay} disabled />
-      </div>
-      <div className="space-y-2">
-        <Label>月份</Label>
-        <Input value={`${periodYear}年${periodMonth}月`} disabled />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="initial-reading_date">读数日期</Label>
-        <DateTimePicker
-          id="initial-reading_date"
-          mode="date"
-          value={form.watch('reading_date')}
-          onChange={(value) => form.setValue('reading_date', value)}
-          placeholder="选择读数日期"
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="initial-water">
-            <span className="flex items-center gap-2">
-              <Droplets className="h-4 w-4 text-blue-500" />
-              水表读数 (m³)
-            </span>
-          </Label>
-          <Input
-            id="initial-water"
-            type="number"
-            step="0.01"
-            placeholder="选填"
-            {...form.register('water_reading', { valueAsNumber: true })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="initial-electricity">
-            <span className="flex items-center gap-2">
-              <Zap className="h-4 w-4 text-yellow-500" />
-              电表读数 (kWh)
-            </span>
-          </Label>
-          <Input
-            id="initial-electricity"
-            type="number"
-            step="0.01"
-            placeholder="选填"
-            {...form.register('electricity_reading', { valueAsNumber: true })}
-          />
-        </div>
-      </div>
-    </FormDialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>录入初始水电读数</DialogTitle>
+          <DialogDescription>
+            {isHistoricalLeaseEntry ? (
+              <>
+                历史租约已创建，建议先记录当前表底数。历史月份数据可稍后前往
+                <Link to="/utilities?tab=history" className="mx-1 underline underline-offset-4">
+                  历史水电记录
+                </Link>
+                继续补录。
+              </>
+            ) : (
+              '签约后需记录初始水电表读数，便于后续出账计算。可填写后保存，或跳过稍后在水电录入页补录。'
+            )}
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label>房间</Label>
+            <Input value={roomDisplay} disabled />
+          </div>
+          <div className="space-y-2">
+            <Label>月份</Label>
+            <Input value={`${periodYear}年${periodMonth}月`} disabled />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="initial-reading_date">读数日期</Label>
+            <Input
+              id="initial-reading_date"
+              type="date"
+              {...form.register('reading_date')}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="initial-water">
+                <span className="flex items-center gap-2">
+                  <Droplets className="h-4 w-4 text-blue-500" />
+                  水表读数 (m³)
+                </span>
+              </Label>
+              <Input
+                id="initial-water"
+                type="number"
+                step="0.01"
+                placeholder="选填"
+                {...form.register('water_reading', { valueAsNumber: true })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="initial-electricity">
+                <span className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-yellow-500" />
+                  电表读数 (kWh)
+                </span>
+              </Label>
+              <Input
+                id="initial-electricity"
+                type="number"
+                step="0.01"
+                placeholder="选填"
+                {...form.register('electricity_reading', { valueAsNumber: true })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={handleSkip}>
+              跳过
+            </Button>
+            <Button type="submit" disabled={saveMutation.isPending}>
+              {saveMutation.isPending ? '保存中...' : '保存'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

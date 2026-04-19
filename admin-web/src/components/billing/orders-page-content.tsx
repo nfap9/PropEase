@@ -1,7 +1,8 @@
 
 import { useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { DataTable, Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import { useBillingOrders } from '@/hooks/billing';
 import {
   formatOrderAmount,
@@ -121,7 +122,7 @@ export function OrdersPageContent() {
         </div>
       </div>
 
-      <DataTable columns={columns} data={orders} isLoading={loading} getRowId={(row) => row.id} emptyTitle="暂无订单" />
+      <DataTable columns={columns} data={orders} loading={loading} getRowId={(row) => row.id} emptyTitle="暂无订单" />
 
       {total > pageSize && (
         <div className="flex justify-center gap-2">

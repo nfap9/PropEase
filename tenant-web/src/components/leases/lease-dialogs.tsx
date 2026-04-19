@@ -14,7 +14,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -84,15 +83,14 @@ export function LeaseEditDialog({
                   name="start_date"
                   control={form.control}
                   render={({ field }) => (
-                    <DateTimePicker
+                    <Input
                       id="edit-start_date"
-                      mode="date"
-                      value={field.value}
+                      type="date"
+                      value={field.value || ''}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       name={field.name}
                       data-testid={LEASES.START_DATE_INPUT}
-                      placeholder="选择开始日期"
                     />
                   )}
                 />
@@ -106,15 +104,14 @@ export function LeaseEditDialog({
                   name="end_date"
                   control={form.control}
                   render={({ field }) => (
-                    <DateTimePicker
+                    <Input
                       id="edit-end_date"
-                      mode="date"
-                      value={field.value}
+                      type="date"
+                      value={field.value || ''}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       name={field.name}
                       data-testid={LEASES.END_DATE_INPUT}
-                      placeholder="选择结束日期"
                     />
                   )}
                 />

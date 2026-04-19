@@ -5,7 +5,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { FormDialog } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantsApi } from '@/api';
@@ -74,54 +82,61 @@ export function CreateTenantDialog({ orgId, open, onOpenChange, onSuccess }: Cre
   };
 
   return (
-    <FormDialog
-      open={open}
-      onOpenChange={onOpenChange}
-      title="新增租客"
-      description="填写租客信息"
-      size="md"
-      onSubmit={form.handleSubmit(handleSubmit)}
-      submitLabel={createMutation.isPending ? '创建中...' : '创建'}
-      isPending={createMutation.isPending}
-    >
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="tenant-name" required>
-            姓名
-          </Label>
-          <Input id="tenant-name" placeholder="请输入租客姓名" {...form.register('name')} />
-          {form.formState.errors.name && (
-            <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="tenant-phone" required>
-            联系电话
-          </Label>
-          <Input id="tenant-phone" placeholder="请输入联系电话" {...form.register('phone')} />
-          {form.formState.errors.phone && (
-            <p className="text-sm text-destructive">{form.formState.errors.phone.message}</p>
-          )}
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="tenant-id_card">身份证号</Label>
-        <Input id="tenant-id_card" placeholder="请输入身份证号" {...form.register('id_card')} />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="tenant-emergency_contact">紧急联系人</Label>
-          <Input id="tenant-emergency_contact" placeholder="请输入紧急联系人" {...form.register('emergency_contact')} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="tenant-emergency_phone">紧急联系电话</Label>
-          <Input id="tenant-emergency_phone" placeholder="请输入紧急联系电话" {...form.register('emergency_phone')} />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="tenant-notes">备注</Label>
-        <Input id="tenant-notes" placeholder="请输入备注" {...form.register('notes')} />
-      </div>
-    </FormDialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>新增租客</DialogTitle>
+          <DialogDescription>填写租客信息</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="tenant-name" required>
+                姓名
+              </Label>
+              <Input id="tenant-name" placeholder="请输入租客姓名" {...form.register('name')} />
+              {form.formState.errors.name && (
+                <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tenant-phone" required>
+                联系电话
+              </Label>
+              <Input id="tenant-phone" placeholder="请输入联系电话" {...form.register('phone')} />
+              {form.formState.errors.phone && (
+                <p className="text-sm text-destructive">{form.formState.errors.phone.message}</p>
+              )}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="tenant-id_card">身份证号</Label>
+            <Input id="tenant-id_card" placeholder="请输入身份证号" {...form.register('id_card')} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="tenant-emergency_contact">紧急联系人</Label>
+              <Input id="tenant-emergency_contact" placeholder="请输入紧急联系人" {...form.register('emergency_contact')} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tenant-emergency_phone">紧急联系电话</Label>
+              <Input id="tenant-emergency_phone" placeholder="请输入紧急联系电话" {...form.register('emergency_phone')} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="tenant-notes">备注</Label>
+            <Input id="tenant-notes" placeholder="请输入备注" {...form.register('notes')} />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              取消
+            </Button>
+            <Button type="submit" disabled={createMutation.isPending}>
+              {createMutation.isPending ? '创建中...' : '创建'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

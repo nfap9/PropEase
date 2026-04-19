@@ -2,10 +2,16 @@
 import { Link } from 'react-router-dom';
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@apartment-ultra/shared-ui/components/shadcn';
-import { TableActions, TableAction } from '@/components/common/table-actions';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Room, RoomStatus } from '@/types';
 import { ROOM_STATUS_CONFIG } from '@/utils/status';
-import { FileText, Ban, Wrench, CheckCircle } from 'lucide-react';
+import { FileText, Ban, Wrench, CheckCircle, MoreHorizontal } from 'lucide-react';
 
 export interface UseColumnsOptions {
   onLease: (room: Room) => void;
@@ -90,41 +96,49 @@ export function useColumns({
     },
     {
       id: 'actions',
-      size: 140,
-      minSize: 120,
+      size: 80,
+      minSize: 60,
       cell: ({ row }) => {
         const room = row.original;
         const isAvailable = room.status === 'available';
         const isOccupied = room.status === 'occupied';
         const isMaintenance = room.status === 'maintenance';
 
-        const actions: TableAction[] = [
-          {
-            label: '签约',
-            icon: FileText,
-            onClick: () => onLease(room),
-            show: isAvailable,
-          },
-          {
-            label: '退租',
-            icon: Ban,
-            onClick: () => onTerminate(room),
-            show: isOccupied,
-          },
-          {
-            label: '开始维修',
-            icon: Wrench,
-            onClick: () => onStatusChange(room, 'maintenance'),
-            show: isAvailable,
-          },
-          {
-            label: '完成维修',
-            icon: CheckCircle,
-            onClick: () => onStatusChange(room, 'available'),
-            show: isMaintenance,
-          },
-        ];
-        return <TableActions actions={actions} maxInline={2} />;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {isAvailable && (
+                <DropdownMenuItem onClick={() => onLease(room)}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  签约
+                </DropdownMenuItem>
+              )}
+              {isOccupied && (
+                <DropdownMenuItem onClick={() => onTerminate(room)} className="text-destructive">
+                  <Ban className="mr-2 h-4 w-4" />
+                  退租
+                </DropdownMenuItem>
+              )}
+              {isAvailable && (
+                <DropdownMenuItem onClick={() => onStatusChange(room, 'maintenance')}>
+                  <Wrench className="mr-2 h-4 w-4" />
+                  开始维修
+                </DropdownMenuItem>
+              )}
+              {isMaintenance && (
+                <DropdownMenuItem onClick={() => onStatusChange(room, 'available')}>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  完成维修
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
       },
     },
   ];

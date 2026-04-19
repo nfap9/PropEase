@@ -9,7 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { AppDialog } from '@apartment-ultra/shared-ui/components/composed';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
 import { Upload, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 import { Apartment, Room } from '@/types';
@@ -242,53 +248,14 @@ export function BatchImportDialog({
   };
 
   return (
-    <AppDialog
-      open={open}
-      onOpenChange={handleDialogOpenChange}
-      title="批量导入水电读数"
-      description="按步骤选择导入月份并上传已填写的 Excel 模板。"
-      size="md"
-      contentTestId="utilities-batch-import-dialog"
-      footer={
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {batchImportSteps.map((step, index) => (
-              <div
-                key={step.id}
-                className={`flex items-center gap-1 text-sm ${
-                  index <= currentStep ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                <div
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
-                    index <= currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted'
-                  }`}
-                >
-                  {index + 1}
-                </div>
-                <span>{step.title}</span>
-                {index < batchImportSteps.length - 1 && <span className="mx-1">/</span>}
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            {currentStep > 0 && (
-              <Button variant="outline" onClick={() => setCurrentStep(0)}>
-                上一步
-              </Button>
-            )}
-            {currentStep < batchImportSteps.length - 1 && (
-              <Button onClick={() => setCurrentStep(1)}>下一步</Button>
-            )}
-            {currentStep === batchImportSteps.length - 1 && (
-              <Button disabled>上传后自动导入</Button>
-            )}
-          </div>
-        </div>
-      }
-    >
-      <div className="space-y-6">
-        {currentStep === 0 ? (
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+      <DialogContent data-testid="utilities-batch-import-dialog">
+        <DialogHeader>
+          <DialogTitle>批量导入水电读数</DialogTitle>
+          <DialogDescription>按步骤选择导入月份并上传已填写的 Excel 模板。</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-6">
+          {currentStep === 0 ? (
           <div className="space-y-4">
             <h4 className="text-sm font-medium">导入月份</h4>
             <div className="grid grid-cols-2 gap-4">
@@ -359,7 +326,43 @@ export function BatchImportDialog({
             <p>• 导入将写入所选的导入月份，记录日期为今天</p>
           </div>
         ) : null}
-      </div>
-    </AppDialog>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {batchImportSteps.map((step, index) => (
+              <div
+                key={step.id}
+                className={`flex items-center gap-1 text-sm ${
+                  index <= currentStep ? 'text-primary' : 'text-muted-foreground'
+                }`}
+              >
+                <div
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
+                    index <= currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                  }`}
+                >
+                  {index + 1}
+                </div>
+                <span>{step.title}</span>
+                {index < batchImportSteps.length - 1 && <span className="mx-1">/</span>}
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            {currentStep > 0 && (
+              <Button variant="outline" onClick={() => setCurrentStep(0)}>
+                上一步
+              </Button>
+            )}
+            {currentStep < batchImportSteps.length - 1 && (
+              <Button onClick={() => setCurrentStep(1)}>下一步</Button>
+            )}
+            {currentStep === batchImportSteps.length - 1 && (
+              <Button disabled>上传后自动导入</Button>
+            )}
+          </div>
+        </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

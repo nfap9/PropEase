@@ -12,7 +12,7 @@ import { InitialReadingDialog } from '@/components/common/initial-reading-dialog
 import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
 import { useAuth } from '@/contexts/auth';
 import { toDateInputValue } from '@/utils/date';
-import { DataTable } from '@/components/common/data-table';
+import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import type { Lease } from '@/types';
 import { createLeaseColumns } from '@/components/leases/columns';
 import { useLeasesData } from '@/hooks/leases';

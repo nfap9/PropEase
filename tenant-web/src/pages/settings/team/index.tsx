@@ -10,7 +10,14 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { FormDialog } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
@@ -176,29 +183,34 @@ export default function TeamSettingsPage() {
         )}
       </div>
 
-      <FormDialog
-        open={isEditOrgOpen}
-        onOpenChange={setIsEditOrgOpen}
-        title={tenantMessages.settings.team.editDialogTitle}
-        description={tenantMessages.settings.team.editDialogDescription}
-        onSubmit={editOrgForm.handleSubmit(
-          (data) => organization && updateOrgMutation.mutate({ id: organization.id, data })
-        )}
-        submitLabel={
-          updateOrgMutation.isPending
-            ? tenantMessages.settings.team.editSubmitting
-            : tenantMessages.settings.team.editSubmit
-        }
-        isPending={updateOrgMutation.isPending}
-        contentTestId={TEAM_SETTINGS.EDIT_ORG_DIALOG}
-      >
-        <div className="space-y-2">
-          <Label htmlFor="edit-name">
-            团队名称 <span aria-hidden="true">*</span>
-          </Label>
-          <Input id="edit-name" aria-required {...editOrgForm.register('name')} />
-        </div>
-      </FormDialog>
+      <Dialog open={isEditOrgOpen} onOpenChange={setIsEditOrgOpen}>
+        <DialogContent data-testid={TEAM_SETTINGS.EDIT_ORG_DIALOG}>
+          <DialogHeader>
+            <DialogTitle>{tenantMessages.settings.team.editDialogTitle}</DialogTitle>
+            <DialogDescription>{tenantMessages.settings.team.editDialogDescription}</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={editOrgForm.handleSubmit(
+            (data) => organization && updateOrgMutation.mutate({ id: organization.id, data })
+          )} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">
+                团队名称 <span aria-hidden="true">*</span>
+              </Label>
+              <Input id="edit-name" aria-required {...editOrgForm.register('name')} />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsEditOrgOpen(false)}>
+                取消
+              </Button>
+              <Button type="submit" disabled={updateOrgMutation.isPending}>
+                {updateOrgMutation.isPending
+                  ? tenantMessages.settings.team.editSubmitting
+                  : tenantMessages.settings.team.editSubmit}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </PermissionPageGuard>
   );
 }

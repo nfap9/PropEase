@@ -5,7 +5,7 @@ import type { UseFormReturn } from 'react-hook-form';
 import { apartmentsApi, roomsApi } from '@/api';
 import { getErrorMessage } from '@/utils/error';
 import { filterEmptyStrings } from '@/utils/form';
-import type { Apartment, Room, RoomFacilities, RoomStatus } from '@/types';
+import type { Apartment, Room, RoomFacilities, RoomStatus, RoomUpdate } from '@/types';
 import type {
   ApartmentFormData,
   BatchEditFormData,
@@ -144,7 +144,7 @@ export function useApartmentDetailData({
       data: BatchEditFormData;
     }) => {
       const updates = roomIds.map((roomId) => {
-        const updateData: Partial<Room> & { maintenance?: boolean } = {};
+        const updateData: RoomUpdate = {};
         if (data.layout !== undefined && data.layout !== '') {
           updateData.layout = data.layout;
         }

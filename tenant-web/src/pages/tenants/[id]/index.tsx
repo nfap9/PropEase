@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { Link } from 'react-router-dom';
-import { DataTable } from '@/components/common/data-table';
+import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import { formatDate, formatDateTime } from '@/utils/date';
 import { ColumnDef } from '@tanstack/react-table';
 import {

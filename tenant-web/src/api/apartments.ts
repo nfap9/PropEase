@@ -4,6 +4,7 @@ import {
   ApartmentWithStats,
   Room,
   RoomBatchCreate,
+  RoomUpdate,
   UtilityConfig,
   UtilityConfigCreate,
   UtilityConfigUpdate,
@@ -79,7 +80,7 @@ export const roomsApi = {
     return response.data;
   },
 
-  update: async (orgId: string, id: string, data: Partial<Room>): Promise<Room> => {
+  update: async (orgId: string, id: string, data: RoomUpdate): Promise<Room> => {
     const response = await api.put<Room>(`/apartments/rooms/${id}`, data, {
       params: { org_id: orgId },
     });

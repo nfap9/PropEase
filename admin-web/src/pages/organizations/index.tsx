@@ -2,10 +2,16 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { DataTable } from '@/components/common/data-table';
-import { TableActions } from '@/components/common/table-actions';
+import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { ORG_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/utils/status';
 import {
   Select,
@@ -21,6 +27,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Eye, Power, PowerOff } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { adminMessages } from '@/i18n';
+import { MoreHorizontal } from 'lucide-react';
 
 type FilterActive = 'all' | 'active' | 'inactive';
 
@@ -103,44 +110,50 @@ export default function AdminOrganizationsPage() {
     {
       id: 'actions',
       header: adminMessages.organizations.columns.actions,
-      size: 140,
-      minSize: 120,
+      size: 80,
+      minSize: 60,
       cell: ({ row }) => {
         const org = row.original;
         return (
-          <TableActions
-            actions={[
-              {
-                icon: Eye,
-                label: adminMessages.organizations.actions.detail,
-                onClick: () => navigate(`/organizations/${org.id}`),
-              },
-              ...(org.is_active
-                ? [
-                    {
-                      icon: PowerOff,
-                      label: adminMessages.organizations.actions.disable,
-                      variant: 'destructive' as const,
-                      onClick: () =>
-                        setActiveMutation.mutate({
-                          id: org.id,
-                          is_active: false,
-                        }),
-                    },
-                  ]
-                : [
-                    {
-                      icon: Power,
-                      label: adminMessages.organizations.actions.enable,
-                      onClick: () =>
-                        setActiveMutation.mutate({
-                          id: org.id,
-                          is_active: true,
-                        }),
-                    },
-                  ]),
-            ]}
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate(`/organizations/${org.id}`)}>
+                <Eye className="mr-2 h-4 w-4" />
+                {adminMessages.organizations.actions.detail}
+              </DropdownMenuItem>
+              {org.is_active ? (
+                <DropdownMenuItem
+                  onClick={() =>
+                    setActiveMutation.mutate({
+                      id: org.id,
+                      is_active: false,
+                    })
+                  }
+                  className="text-destructive"
+                >
+                  <PowerOff className="mr-2 h-4 w-4" />
+                  {adminMessages.organizations.actions.disable}
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  onClick={() =>
+                    setActiveMutation.mutate({
+                      id: org.id,
+                      is_active: true,
+                    })
+                  }
+                >
+                  <Power className="mr-2 h-4 w-4" />
+                  {adminMessages.organizations.actions.enable}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
     },

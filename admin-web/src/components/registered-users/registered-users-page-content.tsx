@@ -3,7 +3,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useConfirmAction, useListFilters } from '@apartment-ultra/shared-ui';
-import { DataTable } from '@/components/common/data-table';
+import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { giftSubscriptionSchema, type FilterActive, type GiftSubscriptionForm } from '@/schemas/registered-users';
 import { createRegisteredUsersColumns } from '@/components/registered-users/columns';

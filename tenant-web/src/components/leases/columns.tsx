@@ -3,10 +3,17 @@ import { Link } from 'react-router-dom';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Ban, Pencil, Trash2 } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/shadcn';
-import { TableActions, type TableAction } from '@/components/common/table-actions';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { formatDate } from '@/utils/date';
 import { LEASE_STATUS_CONFIG } from '@/utils/status';
 import type { Lease } from '@/types';
+import { MoreHorizontal } from 'lucide-react';
 
 interface CreateLeaseColumnsOptions {
   onEdit: (lease: Lease) => void;
@@ -85,32 +92,35 @@ export function createLeaseColumns({
     },
     {
       id: 'actions',
-      size: 140,
-      minSize: 120,
+      size: 80,
+      minSize: 60,
       cell: ({ row }) => {
         const lease = row.original;
-        const actions: TableAction[] = [
-          {
-            label: '编辑',
-            icon: Pencil,
-            onClick: () => onEdit(lease),
-          },
-          {
-            label: '终止',
-            icon: Ban,
-            onClick: () => onTerminate(lease),
-            show: lease.is_active,
-            testId: 'leases-terminate-btn',
-          },
-          {
-            label: '删除',
-            icon: Trash2,
-            onClick: () => onDelete(lease),
-            variant: 'destructive',
-          },
-        ];
-
-        return <TableActions actions={actions} maxInline={2} />;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit(lease)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                编辑
+              </DropdownMenuItem>
+              {lease.is_active && (
+                <DropdownMenuItem onClick={() => onTerminate(lease)} className="text-destructive">
+                  <Ban className="mr-2 h-4 w-4" />
+                  终止
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => onDelete(lease)} className="text-destructive">
+                <Trash2 className="mr-2 h-4 w-4" />
+                删除
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
       },
     },
   ];

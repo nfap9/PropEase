@@ -8,8 +8,7 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { useConfirmAction } from '@apartment-ultra/shared-ui';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { DataTable } from '@/components/common/data-table';
-import { TableActions, TableAction } from '@/components/common/table-actions';
+import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
@@ -31,6 +30,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@apartment-ultra/shared-ui/components/ui';
 import { ColumnDef } from '@tanstack/react-table';
 import { tenantsApi } from '@/api';
 import { filterEmptyStrings } from '@/utils/form';
@@ -39,6 +44,7 @@ import { useAuth } from '@/contexts/auth';
 import { Tenant } from '@/types';
 import { Plus, Pencil, Trash2, Phone, User, Building2 } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { MoreHorizontal } from 'lucide-react';
 
 // 注意: 实际使用时从 testids 导入 TENANTS 常量
 const TENANTS = {
@@ -197,26 +203,29 @@ export default function TenantsPage() {
     },
     {
       id: 'actions',
-      size: 100,
-      minSize: 80,
+      size: 80,
+      minSize: 60,
       cell: ({ row }) => {
         const tenant = row.original;
-        const actions: TableAction[] = [
-          {
-            label: '编辑',
-            icon: Pencil,
-            onClick: () => handleEdit(tenant),
-            testId: TENANTS.EDIT_BUTTON,
-          },
-          {
-            label: '删除',
-            icon: Trash2,
-            onClick: () => handleDelete(tenant),
-            variant: 'destructive',
-            testId: TENANTS.DELETE_BUTTON,
-          },
-        ];
-        return <TableActions actions={actions} />;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleEdit(tenant)} data-testid={TENANTS.EDIT_BUTTON}>
+                <Pencil className="mr-2 h-4 w-4" />
+                编辑
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDelete(tenant)} className="text-destructive" data-testid={TENANTS.DELETE_BUTTON}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                删除
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
       },
     },
   ];

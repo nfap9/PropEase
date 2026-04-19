@@ -3,7 +3,6 @@ import type { UseFormReturn } from 'react-hook-form';
 import { Download, DollarSign, Share2 } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import {
   Dialog,
   DialogContent,
@@ -270,12 +269,11 @@ export function BillGenerateDialog({
           </div>
           <div className="space-y-2">
               <Label htmlFor="due_date">{tenantMessages.bills.dialogs.dueDateLabel}</Label>
-            <DateTimePicker
+            <Input
               id="due_date"
-              mode="date"
-              value={form.watch('due_date')}
-              onChange={(value) => form.setValue('due_date', value)}
-              placeholder="选择到期日期"
+              type="date"
+              value={form.watch('due_date') || ''}
+              onChange={(e) => form.setValue('due_date', e.target.value)}
             />
             {form.formState.errors.due_date && (
               <p className="text-sm text-destructive">{form.formState.errors.due_date.message}</p>
@@ -347,12 +345,11 @@ export function BillPaymentDialog({
               <Label htmlFor="payment_date">
                 {tenantMessages.bills.dialogs.paymentDate} <span aria-hidden="true">*</span>
               </Label>
-              <DateTimePicker
+              <Input
                 id="payment_date"
-                mode="date"
-                value={form.watch('payment_date')}
-                onChange={(value) => form.setValue('payment_date', value)}
-                placeholder="选择付款日期"
+                type="date"
+                value={form.watch('payment_date') || ''}
+                onChange={(e) => form.setValue('payment_date', e.target.value)}
                 data-testid={BILLS.PAYMENT_DATE_INPUT}
               />
             </div>

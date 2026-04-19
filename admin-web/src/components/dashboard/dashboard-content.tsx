@@ -8,7 +8,7 @@ import { YearFilter } from '@/components/dashboard/year-filter';
 import { RefreshButton } from '@/components/dashboard/refresh-button';
 import { StatCardsSkeleton } from '@/components/dashboard/skeleton';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { StatCard } from '@apartment-ultra/shared-ui/components/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminPlatformStats } from '@apartment-ultra/api-contract';
 import type { AxiosResponse } from 'axios';
 import { adminMessages } from '@/i18n';
@@ -97,30 +97,66 @@ export function DashboardContent() {
 
       {/* KPI 指标区 */}
       <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title={adminMessages.dashboard.stats.monthlyRevenue}
-          value={stats.monthly_revenue ?? 0}
-          format="currency"
-          precision={2}
-          icon={<CreditCard className="h-5 w-5" />}
-          tone="primary"
-        />
-        <StatCard
-          title={adminMessages.dashboard.stats.organizations}
-          value={stats.organizations_count ?? 0}
-          icon={<Users className="h-5 w-5" />}
-        />
-        <StatCard
-          title={adminMessages.dashboard.stats.users}
-          value={stats.users_count ?? 0}
-          icon={<Users className="h-5 w-5" />}
-        />
-        <StatCard
-          title={adminMessages.dashboard.stats.subscriptions}
-          value={stats.active_subscriptions_count ?? 0}
-          icon={<BarChart3 className="h-5 w-5" />}
-          tone="success"
-        />
+        <Card>
+          <CardHeader className="flex flex-row items-start justify-between gap-4 pb-2">
+            <CardDescription className="text-sm font-medium">
+              {adminMessages.dashboard.stats.monthlyRevenue}
+            </CardDescription>
+            <div className="text-primary flex h-11 w-11 items-center justify-center rounded-2xl border border-border/60 bg-background/80 shadow-sm">
+              <CreditCard className="h-5 w-5" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-foreground text-3xl font-semibold tracking-tight">
+              ¥{stats.monthly_revenue?.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '0.00'}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-start justify-between gap-4 pb-2">
+            <CardDescription className="text-sm font-medium">
+              {adminMessages.dashboard.stats.organizations}
+            </CardDescription>
+            <div className="text-primary flex h-11 w-11 items-center justify-center rounded-2xl border border-border/60 bg-background/80 shadow-sm">
+              <Users className="h-5 w-5" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-foreground text-3xl font-semibold tracking-tight">
+              {stats.organizations_count ?? 0}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-start justify-between gap-4 pb-2">
+            <CardDescription className="text-sm font-medium">
+              {adminMessages.dashboard.stats.users}
+            </CardDescription>
+            <div className="text-primary flex h-11 w-11 items-center justify-center rounded-2xl border border-border/60 bg-background/80 shadow-sm">
+              <Users className="h-5 w-5" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-foreground text-3xl font-semibold tracking-tight">
+              {stats.users_count ?? 0}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-start justify-between gap-4 pb-2">
+            <CardDescription className="text-sm font-medium">
+              {adminMessages.dashboard.stats.subscriptions}
+            </CardDescription>
+            <div className="text-[hsl(var(--success))] flex h-11 w-11 items-center justify-center rounded-2xl border border-[hsl(var(--success))/0.2] bg-[hsl(var(--success))/0.1] shadow-sm">
+              <BarChart3 className="h-5 w-5" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-foreground text-3xl font-semibold tracking-tight">
+              {stats.active_subscriptions_count ?? 0}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* 年份筛选 */}

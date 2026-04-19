@@ -6,7 +6,6 @@ import { changeRoomSchema, type ChangeRoomFormData } from '@/schemas/lease-opera
 import { useChangeRoom } from '@/hooks/use-lease-operations';
 import { roomsApi, apartmentsApi } from '@/api';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DateTimePicker } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import {
@@ -101,11 +100,10 @@ export function ChangeRoomSheet({ open, onOpenChange, orgId, leaseId }: ChangeRo
               name="changeDate"
               control={form.control}
               render={({ field }) => (
-                <DateTimePicker
-                  mode="date"
-                  value={field.value}
-                  onChange={field.onChange}
-                  placeholder="选择变更日期"
+                <Input
+                  type="date"
+                  value={field.value || ''}
+                  onChange={(e) => field.onChange(e.target.value)}
                 />
               )}
             />

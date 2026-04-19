@@ -9,7 +9,7 @@ import { useAsyncDialogSubmit } from '@apartment-ultra/shared-ui';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
-import { DataTable } from '@/components/common/data-table';
+import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import {
   AlertDialog,
@@ -21,7 +21,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
-import { FormDialog } from '@apartment-ultra/shared-ui/components/ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
@@ -233,54 +240,59 @@ export default function TeamMembersPage() {
         )}
       </div>
 
-      <FormDialog
-        open={isInviteOpen}
-        onOpenChange={setIsInviteOpen}
-        title={tenantMessages.settings.team.inviteDialogTitle}
-        description={tenantMessages.settings.team.inviteDialogDescription}
-        onSubmit={inviteForm.handleSubmit((data) => inviteMutation.mutate(data))}
-        submitLabel={
-          inviteMutation.isPending
-            ? tenantMessages.settings.team.inviteSubmitting
-            : tenantMessages.settings.team.inviteSubmit
-        }
-        isPending={inviteMutation.isPending}
-        contentTestId={TEAM_SETTINGS.INVITE_DIALOG}
-      >
-        <div className="space-y-2">
-          <Label htmlFor="phone">
-            手机号 <span aria-hidden="true">*</span>
-          </Label>
-          <Input
-            id="phone"
-            type="tel"
-            placeholder={tenantMessages.settings.team.phonePlaceholder}
-            aria-required
-            {...inviteForm.register('phone')}
-          />
-          {inviteForm.formState.errors.phone && (
-            <p className="text-sm text-destructive">{inviteForm.formState.errors.phone.message}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="role">
-            {tenantMessages.settings.team.labels.inviteIdentity} <span aria-hidden="true">*</span>
-          </Label>
-          <Select
-            value={inviteForm.watch('role')}
-            onValueChange={(value: MemberRole) => inviteForm.setValue('role', value)}
-          >
-            <SelectTrigger id="role">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="admin">{tenantMessages.settings.team.roles.admin}</SelectItem>
-              <SelectItem value="member">{tenantMessages.settings.team.roles.member}</SelectItem>
-              <SelectItem value="viewer">{tenantMessages.settings.team.roles.viewer}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </FormDialog>
+      <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+        <DialogContent data-testid={TEAM_SETTINGS.INVITE_DIALOG}>
+          <DialogHeader>
+            <DialogTitle>{tenantMessages.settings.team.inviteDialogTitle}</DialogTitle>
+            <DialogDescription>{tenantMessages.settings.team.inviteDialogDescription}</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={inviteForm.handleSubmit((data) => inviteMutation.mutate(data))} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="phone">
+                手机号 <span aria-hidden="true">*</span>
+              </Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder={tenantMessages.settings.team.phonePlaceholder}
+                aria-required
+                {...inviteForm.register('phone')}
+              />
+              {inviteForm.formState.errors.phone && (
+                <p className="text-sm text-destructive">{inviteForm.formState.errors.phone.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">
+                {tenantMessages.settings.team.labels.inviteIdentity} <span aria-hidden="true">*</span>
+              </Label>
+              <Select
+                value={inviteForm.watch('role')}
+                onValueChange={(value: MemberRole) => inviteForm.setValue('role', value)}
+              >
+                <SelectTrigger id="role">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">{tenantMessages.settings.team.roles.admin}</SelectItem>
+                  <SelectItem value="member">{tenantMessages.settings.team.roles.member}</SelectItem>
+                  <SelectItem value="viewer">{tenantMessages.settings.team.roles.viewer}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsInviteOpen(false)}>
+                取消
+              </Button>
+              <Button type="submit" disabled={inviteMutation.isPending}>
+                {inviteMutation.isPending
+                  ? tenantMessages.settings.team.inviteSubmitting
+                  : tenantMessages.settings.team.inviteSubmit}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog
         open={isRemoveMemberOpen}

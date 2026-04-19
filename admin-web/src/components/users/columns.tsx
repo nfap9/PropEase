@@ -2,11 +2,18 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { KeyRound, Pencil, Trash2 } from 'lucide-react';
 import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { TableActions } from '@/components/common/table-actions';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { formatDateTime } from '@/utils/date';
 import { ORG_STATUS_CONFIG } from '@/utils/status';
 import type { AdminUser } from '@/api/admin-client';
 import { adminMessages } from '@/i18n';
+import { MoreHorizontal } from 'lucide-react';
 
 interface CreateAdminUsersColumnsOptions {
   onEdit: (user: AdminUser) => void;
@@ -56,23 +63,36 @@ export function createAdminUsersColumns({
     {
       id: 'actions',
       header: '操作',
-      size: 140,
-      minSize: 120,
-      cell: ({ row }) => (
-        <TableActions
-          actions={[
-            { icon: Pencil, label: '编辑', onClick: () => onEdit(row.original) },
-            { icon: KeyRound, label: '重置密码', onClick: () => onResetPassword(row.original) },
-            {
-              icon: Trash2,
-              label: '删除',
-              variant: 'destructive',
-              onClick: () => onDelete(row.original),
-              show: !row.original.is_system,
-            },
-          ]}
-        />
-      ),
+      size: 80,
+      minSize: 60,
+      cell: ({ row }) => {
+        const user = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit(user)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                编辑
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onResetPassword(user)}>
+                <KeyRound className="mr-2 h-4 w-4" />
+                重置密码
+              </DropdownMenuItem>
+              {!user.is_system && (
+                <DropdownMenuItem onClick={() => onDelete(user)} className="text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  删除
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
     },
   ];
 }
