@@ -27,10 +27,10 @@ import {
   useGeneratedRoomSelection,
   useRoomBatchSelection,
 } from '@/hooks/apartment-detail';
-import { ApartmentDetailHeader } from '@/components/apartment-detail/apartment-detail-header';
-import { ApartmentOverviewTab } from '@/components/apartment-detail/apartment-overview-tab';
-import { ApartmentRoomListTab } from '@/components/apartment-detail/apartment-room-list-tab';
-import { UtilityConfigDialog } from '@/components/apartment-detail/UtilityConfigDialog';
+import { ApartmentDetailHeader } from '@/pages/apartments/detail/components/apartment-detail-header';
+import { ApartmentOverviewTab } from '@/pages/apartments/detail/components/apartment-overview-tab';
+import { ApartmentRoomListTab } from '@/pages/apartments/detail/components/apartment-room-list-tab';
+import { UtilityConfigDialog } from '@/pages/apartments/detail/components/UtilityConfigDialog';
 import {
   ApartmentEditDialog,
   BatchCreateRoomDialog,
@@ -38,7 +38,7 @@ import {
   CreateRoomDialog,
   DeleteRoomDialog,
   RoomEditDialog,
-} from '@/components/apartment-detail/apartment-detail-dialogs';
+} from '@/pages/apartments/detail/components/apartment-detail-dialogs';
 
 export default function ApartmentDetailPage() {
   const params = useParams();

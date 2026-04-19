@@ -7,7 +7,7 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/contexts/auth';
 import type { Bill, BillStatus } from '@/types';
-import { createBillsColumns } from '@/components/bills/columns';
+import { createBillsColumns } from '@/pages/bills/components/columns';
 import { useBillsData, useBillShare } from '@/hooks/bills';
 import {
   generateBillsSchema,
@@ -18,11 +18,11 @@ import {
   type PaymentFormData,
 } from '@/schemas/bills';
 import { buildBillStats, filterBillsByStatus, getBillStatusFilter } from '@/utils/bills';
-import { BillsListView } from '@/components/bills/bills-list-view';
+import { BillsListView } from '@/pages/bills/components/bills-list-view';
 
-const BillDetailDialog = lazy(() => import('@/components/bills/bill-dialogs').then((mod) => ({ default: mod.BillDetailDialog })));
-const BillGenerateDialog = lazy(() => import('@/components/bills/bill-dialogs').then((mod) => ({ default: mod.BillGenerateDialog })));
-const BillPaymentDialog = lazy(() => import('@/components/bills/bill-dialogs').then((mod) => ({ default: mod.BillPaymentDialog })));
+const BillDetailDialog = lazy(() => import('@/pages/bills/components/bill-dialogs').then((mod) => ({ default: mod.BillDetailDialog })));
+const BillGenerateDialog = lazy(() => import('@/pages/bills/components/bill-dialogs').then((mod) => ({ default: mod.BillGenerateDialog })));
+const BillPaymentDialog = lazy(() => import('@/pages/bills/components/bill-dialogs').then((mod) => ({ default: mod.BillPaymentDialog })));
 
 function BillsFallback() {
   return (

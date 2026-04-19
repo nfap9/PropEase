@@ -11,8 +11,8 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { useBrandConfig } from '@/contexts/brand-config';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
 import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { AuthLoadingScreen } from '@/components/auth/auth-loading-screen';
-import { AuthShell } from '@/components/auth/auth-shell';
+import { AuthLoadingScreen } from '@/pages/auth/components/auth-loading-screen';
+import { AuthShell } from '@/pages/auth/components/auth-shell';
 import { tenantMessages } from '@/i18n';
 
 // 手机号验证正则

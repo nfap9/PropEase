@@ -12,7 +12,7 @@ import { apartmentsApi } from '@/api';
 import { useAuth } from '@/contexts/auth';
 import { getErrorMessage } from '@/utils/error';
 import { filterEmptyStrings } from '@/utils/form';
-import { apartmentSchema, type ApartmentFormData } from '@/components/apartments';
+import { apartmentSchema, type ApartmentFormData } from '@/pages/apartments/components';
 
 export default function NewApartmentPage() {
   const navigate = useNavigate();

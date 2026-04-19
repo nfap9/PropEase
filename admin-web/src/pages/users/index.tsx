@@ -4,10 +4,10 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import type { AdminUser } from '@/api/admin-client';
-import { createAdminUsersColumns } from '@/components/users/columns';
+import { createAdminUsersColumns } from '@/pages/users/components/columns';
 import { useAdminUsersData } from '@/hooks/users';
 import { toCreateUserPayload, toResetPasswordPayload, toUpdateUserPayload } from '@/utils/users';
-import { CreateUserDialog, DeleteUserDialog, EditUserDialog, ResetPasswordDialog } from '@/components/users/user-dialogs';
+import { CreateUserDialog, DeleteUserDialog, EditUserDialog, ResetPasswordDialog } from '@/pages/users/components/user-dialogs';
 
 type UserDialogAction = 'create' | 'edit' | 'reset' | 'delete';
 

@@ -14,10 +14,10 @@ import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/contexts/auth';
 import { useReportsData } from '@/hooks/reports';
 import { getReportYearOptions, REPORTS } from '@/schemas/reports';
-import { ReportsOverviewTab } from '@/components/reports/reports-overview-tab';
+import { ReportsOverviewTab } from '@/pages/reports/components/reports-overview-tab';
 
-const ReportsIncomeTab = lazy(() => import('@/components/reports/reports-income-tab').then((mod) => ({ default: mod.ReportsIncomeTab })));
-const ReportsOccupancyTab = lazy(() => import('@/components/reports/reports-occupancy-tab').then((mod) => ({ default: mod.ReportsOccupancyTab })));
+const ReportsIncomeTab = lazy(() => import('@/pages/reports/components/reports-income-tab').then((mod) => ({ default: mod.ReportsIncomeTab })));
+const ReportsOccupancyTab = lazy(() => import('@/pages/reports/components/reports-occupancy-tab').then((mod) => ({ default: mod.ReportsOccupancyTab })));
 
 type ReportTab = 'income' | 'occupancy' | 'overview';
 

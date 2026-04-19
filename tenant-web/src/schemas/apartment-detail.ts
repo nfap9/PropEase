@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { RoomStatus } from '@/types';
-import { apartmentSchema, type ApartmentFormData } from '@/components/apartments';
+import { apartmentSchema, type ApartmentFormData } from '@/pages/apartments/components';
 
 export { apartmentSchema, type ApartmentFormData };
 

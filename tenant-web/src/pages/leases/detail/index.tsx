@@ -7,10 +7,10 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { leasesApi } from '@/api';
 import { useAuth } from '@/contexts/auth';
-import { LeaseDetailTabs } from '@/components/leases/lease-detail-tabs';
-import { LeaseDetailInfo } from '@/components/leases/lease-detail-info';
-import { LeaseChangeHistoryTab } from '@/components/leases/lease-change-history-tab';
-import { OperationsDropdown } from '@/components/leases/operations-dropdown';
+import { LeaseDetailTabs } from '@/pages/leases/components/lease-detail-tabs';
+import { LeaseDetailInfo } from '@/pages/leases/components/lease-detail-info';
+import { LeaseChangeHistoryTab } from '@/pages/leases/components/lease-change-history-tab';
+import { OperationsDropdown } from '@/pages/leases/components/operations-dropdown';
 
 export default function LeaseDetailPageRoute() {
   const { id } = useParams<{ id: string }>();

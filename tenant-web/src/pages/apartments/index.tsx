@@ -40,7 +40,7 @@ import {
   ApartmentForm,
   apartmentSchema,
   type ApartmentFormData,
-} from '@/components/apartments';
+} from '@/pages/apartments/components';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
 

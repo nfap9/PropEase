@@ -9,15 +9,15 @@ import { useAuth } from '@/contexts/auth';
 import { Room, RoomStatus } from '@/types';
 import { Building2 } from 'lucide-react';
 
-import { RoomsStatsBar } from '@/components/rooms/rooms-stats-bar';
-import { RoomsSearchBar } from '@/components/rooms/rooms-search-bar';
-import { RoomsViewToggle, type ViewMode } from '@/components/rooms/rooms-view-toggle';
-import { RoomsGroupedView } from '@/components/rooms/rooms-grouped-view';
-import { RoomFiltersState } from '@/components/rooms/room-filters';
-import { LeaseSigningDrawer } from '@/components/leases/lease-signing-drawer';
+import { RoomsStatsBar } from '@/pages/rooms/components/rooms-stats-bar';
+import { RoomsSearchBar } from '@/pages/rooms/components/rooms-search-bar';
+import { RoomsViewToggle, type ViewMode } from '@/pages/rooms/components/rooms-view-toggle';
+import { RoomsGroupedView } from '@/pages/rooms/components/rooms-grouped-view';
+import { RoomFiltersState } from '@/pages/rooms/components/room-filters';
+import { LeaseSigningDrawer } from '@/pages/leases/components/lease-signing-drawer';
 import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
-import { TerminateDialog } from '@/components/rooms/TerminateDialog';
+import { TerminateDialog } from '@/pages/rooms/components/TerminateDialog';
 
 export default function RoomsPage() {
   const queryClient = useQueryClient();

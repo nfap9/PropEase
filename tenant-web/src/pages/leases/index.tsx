@@ -6,14 +6,14 @@ import { useConfirmAction, useListFilters, useSelection } from '@apartment-ultra
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { LeaseSigningDrawer } from '@/components/leases/lease-signing-drawer';
+import { LeaseSigningDrawer } from '@/pages/leases/components/lease-signing-drawer';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
 import { useAuth } from '@/contexts/auth';
 import { toDateInputValue } from '@/utils/date';
 import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import type { Lease } from '@/types';
-import { createLeaseColumns } from '@/components/leases/columns';
+import { createLeaseColumns } from '@/pages/leases/components/columns';
 import { useLeasesData } from '@/hooks/leases';
 import {
   getDefaultLeaseFilters,
@@ -23,8 +23,8 @@ import {
   type LeaseFiltersState,
 } from '@/schemas/leases';
 import { filterLeases } from '@/utils/leases';
-import { LeaseDeleteDialog, LeaseEditDialog, LeaseTerminateDialog } from '@/components/leases/lease-dialogs';
-import { LeaseFilters } from '@/components/leases/lease-filters';
+import { LeaseDeleteDialog, LeaseEditDialog, LeaseTerminateDialog } from '@/pages/leases/components/lease-dialogs';
+import { LeaseFilters } from '@/pages/leases/components/lease-filters';
 
 export default function LeasesPage() {
   const { organization, isLoading: authLoading } = useAuth();

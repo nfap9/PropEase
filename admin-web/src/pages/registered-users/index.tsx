@@ -5,7 +5,7 @@ import { useConfirmAction, useListFilters } from '@apartment-ultra/shared-ui';
 import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { giftSubscriptionSchema, type FilterActive, type GiftSubscriptionForm } from '@/schemas/registered-users';
-import { createRegisteredUsersColumns } from '@/components/registered-users/columns';
+import { createRegisteredUsersColumns } from '@/pages/registered-users/components/columns';
 import { useRegisteredUsersData } from '@/hooks/registered-users';
 import { getDefaultGiftFormValues, getSelectedGiftPlan } from '@/utils/registered-users';
 import {
@@ -13,8 +13,8 @@ import {
   DisableRegisteredUserDialog,
   GiftSubscriptionDialog,
   RegisteredUserDetailSheet,
-} from '@/components/registered-users/registered-user-dialogs';
-import { RegisteredUsersToolbar } from '@/components/registered-users/registered-users-toolbar';
+} from '@/pages/registered-users/components/registered-user-dialogs';
+import { RegisteredUsersToolbar } from '@/pages/registered-users/components/registered-users-toolbar';
 
 interface RegisteredUsersFiltersState {
   activeFilter: FilterActive;

@@ -10,17 +10,17 @@ import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/contexts/auth';
 import { Plus, Upload, Download, Building2, AlertCircle, Droplets, TrendingUp, Clock } from 'lucide-react';
 import type { RoomMissingInitialReading, UtilityReading } from '@/types';
-import { pendingUtilityBillColumns } from '@/components/utilities/columns';
+import { pendingUtilityBillColumns } from '@/pages/utilities/components/columns';
 import { UTILITIES } from '@/constants/utilities';
 import type { PendingUtilityBillRow } from '@/types/utilities';
 import { useUtilitiesData } from '@/hooks/use-utilities';
 
-const CreateUtilityDialog = lazy(() => import('@/components/utilities/CreateUtilityDialog').then((mod) => ({ default: mod.CreateUtilityDialog })));
-const ExportTemplateDialog = lazy(() => import('@/components/utilities/ExportTemplateDialog').then((mod) => ({ default: mod.ExportTemplateDialog })));
-const BatchImportDialog = lazy(() => import('@/components/utilities/BatchImportDialog').then((mod) => ({ default: mod.BatchImportDialog })));
+const CreateUtilityDialog = lazy(() => import('@/pages/utilities/components/CreateUtilityDialog').then((mod) => ({ default: mod.CreateUtilityDialog })));
+const ExportTemplateDialog = lazy(() => import('@/pages/utilities/components/ExportTemplateDialog').then((mod) => ({ default: mod.ExportTemplateDialog })));
+const BatchImportDialog = lazy(() => import('@/pages/utilities/components/BatchImportDialog').then((mod) => ({ default: mod.BatchImportDialog })));
 const InitialReadingDialog = lazy(() => import('@/components/common/initial-reading-dialog').then((mod) => ({ default: mod.InitialReadingDialog })));
-const EditUtilityDialog = lazy(() => import('@/components/utilities/EditUtilityDialog').then((mod) => ({ default: mod.EditUtilityDialog })));
-const UtilityHistoryPanel = lazy(() => import('@/components/utilities/utility-history-panel').then((mod) => ({ default: mod.UtilityHistoryPanel })));
+const EditUtilityDialog = lazy(() => import('@/pages/utilities/components/EditUtilityDialog').then((mod) => ({ default: mod.EditUtilityDialog })));
+const UtilityHistoryPanel = lazy(() => import('@/pages/utilities/components/utility-history-panel').then((mod) => ({ default: mod.UtilityHistoryPanel })));
 
 export default function UtilitiesPage() {
   const navigate = useNavigate();

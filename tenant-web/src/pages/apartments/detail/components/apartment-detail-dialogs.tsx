@@ -1,9 +1,9 @@
 
 import { Check, Loader2, Settings2 } from 'lucide-react';
 import type { UseFormReturn } from 'react-hook-form';
-import { ApartmentForm } from '@/components/apartments';
+import { ApartmentForm } from '@/pages/apartments/components';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
-import { EditRoomDialog } from '@/components/rooms/EditRoomDialog';
+import { EditRoomDialog } from '@/pages/rooms/components/EditRoomDialog';
 import {
   AlertDialog,
   AlertDialogAction,

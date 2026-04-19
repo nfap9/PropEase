@@ -4,7 +4,7 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { usePermissions } from '@/hooks/use-permissions';
 import { canAccessRule } from '@/utils/permission-access';
 import { Loader2 } from 'lucide-react';
-import { DashboardContent } from './dashboard-content';
+import { DashboardContent } from './components/dashboard-content';
 
 export default function DashboardPage() {
   const { isLoading, organization } = useAuth();
