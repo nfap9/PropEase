@@ -19,6 +19,7 @@ export interface Bill {
   bill_month: number;
   due_date: string;
   rent_amount: number;
+  deposit_amount?: number;
   water_amount: number;
   electricity_amount: number;
   other_amount: number;

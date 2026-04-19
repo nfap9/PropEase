@@ -95,6 +95,12 @@ export function BillDetailDialog({
                   <span className="text-muted-foreground">{tenantMessages.bills.dialogs.rent}</span>
                   <span>¥{Number(billDetail.rent_amount).toLocaleString()}</span>
                 </div>
+                {(billDetail.deposit_amount ?? 0) > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">{tenantMessages.bills.dialogs.deposit}</span>
+                    <span>¥{Number(billDetail.deposit_amount).toLocaleString()}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{tenantMessages.bills.dialogs.water}</span>
                   <span>¥{Number(billDetail.water_amount).toLocaleString()}</span>

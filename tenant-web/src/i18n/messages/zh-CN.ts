@@ -116,6 +116,7 @@ export const tenantZhCNMessages = {
       rent: '租金',
       water: '水费',
       electricity: '电费',
+      deposit: '押金',
       otherFees: '其他费用',
       feeDetails: '费用明细',
       total: '账单合计',
