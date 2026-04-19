@@ -12,7 +12,7 @@ const UsersPage = React.lazy(() => import('@/pages/users/index').then(m => ({ de
 const RegisteredUsersPage = React.lazy(() => import('@/pages/registered-users/index').then(m => ({ default: m.default })));
 const RolesPage = React.lazy(() => import('@/pages/roles/index').then(m => ({ default: m.default })));
 const OrganizationsPage = React.lazy(() => import('@/pages/organizations/index').then(m => ({ default: m.default })));
-const OrganizationDetailPage = React.lazy(() => import('@/pages/organizations/[id]/index').then(m => ({ default: m.default })));
+const OrganizationDetailPage = React.lazy(() => import('@/pages/organizations/detail/index').then(m => ({ default: m.default })));
 const BrandPage = React.lazy(() => import('@/pages/brand/index').then(m => ({ default: m.default })));
 const BillingPlansPage = React.lazy(() => import('@/pages/billing/plans/index').then(m => ({ default: m.default })));
 const BillingOrdersPage = React.lazy(() => import('@/pages/billing/orders/index').then(m => ({ default: m.default })));
