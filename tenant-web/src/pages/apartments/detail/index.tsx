@@ -10,6 +10,7 @@ import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/contexts/auth';
+import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import type { Room, RoomFacilities } from '@/types';
 import {
   apartmentFormDefaultValues,
@@ -45,7 +46,15 @@ export default function ApartmentDetailPage() {
   const apartmentId = params.id as string;
   const navigate = useNavigate();
   const { organization, isLoading: authLoading } = useAuth();
+  const { hasPermission } = usePermissions();
   const orgId = organization?.id;
+
+  // 权限检查
+  const canEditApartment = hasPermission(PERMISSIONS.APARTMENT_EDIT);
+  const canEditUtility = hasPermission(PERMISSIONS.UTILITY_EDIT);
+  const canCreateRoom = hasPermission(PERMISSIONS.ROOM_CREATE);
+  const canEditRoom = hasPermission(PERMISSIONS.ROOM_EDIT);
+  const canDeleteRoom = hasPermission(PERMISSIONS.ROOM_DELETE);
 
   const [isEditApartmentOpen, setIsEditApartmentOpen] = useState(false);
   const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false);
@@ -221,6 +230,8 @@ export default function ApartmentDetailPage() {
             onBack={() => navigate('/workspace/apartments')}
             onEdit={handleEditApartment}
             onOpenUtilityConfig={() => setIsUtilityConfigOpen(true)}
+            canEdit={canEditApartment}
+            canEditUtility={canEditUtility}
           />
 
           <Tabs defaultValue="info" className="flex flex-col">
@@ -252,6 +263,9 @@ export default function ApartmentDetailPage() {
                 onDeleteRoom={handleDeleteRoom}
                 onToggleBatchSelectMode={handleToggleBatchSelectMode}
                 onClearSelection={handleClearSelection}
+                canCreateRoom={canCreateRoom}
+                canEditRoom={canEditRoom}
+                canDeleteRoom={canDeleteRoom}
               />
             </TabsContent>
           </Tabs>

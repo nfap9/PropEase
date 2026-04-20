@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/contexts/auth';
+import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import type { Bill, BillStatus } from '@/types';
 import { createBillsColumns } from '@/pages/bills/components/columns';
 import { useBillsData, useBillShare } from '@/hooks/bills';
@@ -35,7 +36,12 @@ function BillsFallback() {
 
 export default function BillsPage() {
   const { organization, isLoading: authLoading } = useAuth();
+  const { hasPermission } = usePermissions();
   const orgId = organization?.id;
+
+  // 权限检查
+  const canGenerateBill = hasPermission(PERMISSIONS.BILL_CREATE);
+  const canEditBill = hasPermission(PERMISSIONS.BILL_EDIT);
 
   const statusFilterQuery = usePageQueryState<BillStatus | 'all'>({
     queryKey: 'status',
@@ -148,6 +154,7 @@ export default function BillsPage() {
         onStatusFilterChange={statusFilterQuery.setValue}
         onGenerate={() => setIsGenerateOpen(true)}
         onExport={(type) => exportExcel(type, statusFilterQuery.value)}
+        canGenerateBill={canGenerateBill}
       />
 
       <Suspense fallback={null}>
@@ -168,6 +175,7 @@ export default function BillsPage() {
           onPayment={handlePaymentFromDetail}
           onShare={() => billDetail && handleShareBill(billDetail, billFeeItems ?? [])}
           onExportPdf={exportPdf}
+          canEditBill={canEditBill}
         />
 
         <BillGenerateDialog

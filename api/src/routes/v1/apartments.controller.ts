@@ -1,6 +1,6 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
-import { requireOrgMembership } from '../../utils/orgContext.js';
+import { requireOrgMembership, requirePermission } from '../../utils/orgContext.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
 import { Messages, NotFoundMessages } from '../../messages.js';
@@ -106,6 +106,7 @@ export async function list(req: Request, res: Response, next: NextFunction) {
 export async function create(req: Request, res: Response, next: NextFunction) {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'apartment:create');
     const user = getConsoleUser(req);
     const limits = await getEffectivePlanLimits(orgId, user?.id);
     const apartmentsUsed = await defaultApartmentRepo.countByOrgId(orgId);
@@ -134,6 +135,7 @@ export async function get(req: Request, res: Response, next: NextFunction) {
 export async function update(req: Request, res: Response, next: NextFunction) {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'apartment:edit');
     const parsed = ApartmentUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const apt = await defaultApartmentService.update(orgId, req.params.id, parsed.data);
@@ -146,6 +148,7 @@ export async function update(req: Request, res: Response, next: NextFunction) {
 export async function del(req: Request, res: Response, next: NextFunction) {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'apartment:delete');
     await defaultApartmentService.delete(orgId, req.params.id);
     res.locals.successMessage = Messages.APARTMENT_DELETED;
     res.json({});
@@ -178,6 +181,7 @@ export async function getRoom(req: Request, res: Response, next: NextFunction) {
 export async function createRoom(req: Request, res: Response, next: NextFunction) {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'room:create');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const limits = await getEffectivePlanLimits(orgId, user.id);
@@ -204,6 +208,7 @@ export async function createRoom(req: Request, res: Response, next: NextFunction
 export async function updateRoom(req: Request, res: Response, next: NextFunction) {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'room:edit');
     const parsed = RoomUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const updated = await defaultRoomService.update(orgId, req.params.roomId, {
@@ -219,6 +224,7 @@ export async function updateRoom(req: Request, res: Response, next: NextFunction
 export async function deleteRoom(req: Request, res: Response, next: NextFunction) {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'room:delete');
     await defaultRoomService.delete(orgId, req.params.roomId);
     res.locals.successMessage = Messages.ROOM_DELETED;
     res.json({});
@@ -230,6 +236,7 @@ export async function deleteRoom(req: Request, res: Response, next: NextFunction
 export async function batchCreateRooms(req: Request, res: Response, next: NextFunction) {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'room:create');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const limits = await getEffectivePlanLimits(orgId, user.id);
@@ -272,6 +279,7 @@ export async function getUtilityConfig(req: Request, res: Response, next: NextFu
 export async function createUtilityConfig(req: Request, res: Response, next: NextFunction) {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'utility:create');
     await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
     const parsed = UtilityConfigSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
@@ -285,6 +293,7 @@ export async function createUtilityConfig(req: Request, res: Response, next: Nex
 export async function updateUtilityConfig(req: Request, res: Response, next: NextFunction) {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'utility:edit');
     await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
     const parsed = UtilityConfigSchema.partial().safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
@@ -298,6 +307,7 @@ export async function updateUtilityConfig(req: Request, res: Response, next: Nex
 export async function deleteUtilityConfig(req: Request, res: Response, next: NextFunction) {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'utility:delete');
     await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
     await defaultUtilityConfigService.delete(req.params.apartmentId);
     res.status(204).send();

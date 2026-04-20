@@ -29,6 +29,12 @@ interface ApartmentRoomListCardProps {
   onDeleteRoom: (room: Room) => void;
   onToggleBatchSelectMode: () => void;
   onClearSelection: () => void;
+  /** 是否有创建房间权限 */
+  canCreateRoom?: boolean;
+  /** 是否有编辑房间权限 */
+  canEditRoom?: boolean;
+  /** 是否有删除房间权限 */
+  canDeleteRoom?: boolean;
 }
 
 export function ApartmentRoomListCard({
@@ -49,6 +55,9 @@ export function ApartmentRoomListCard({
   onDeleteRoom,
   onToggleBatchSelectMode,
   onClearSelection,
+  canCreateRoom = true,
+  canEditRoom = true,
+  canDeleteRoom = true,
 }: ApartmentRoomListCardProps) {
   const [contextMenu, setContextMenu] = useState<{
     room: Room;
@@ -94,23 +103,31 @@ export function ApartmentRoomListCard({
           </CardDescription>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">批量选择</span>
-            <Switch
-              checked={isBatchSelectMode}
-              onCheckedChange={onToggleBatchSelectMode}
-            />
-          </div>
+          {canEditRoom && (
+            <>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">批量选择</span>
+                <Switch
+                  checked={isBatchSelectMode}
+                  onCheckedChange={onToggleBatchSelectMode}
+                />
+              </div>
 
-          <Button variant="outline" size="sm" onClick={onOpenBatchCreate}>
-            <Layers className="mr-2 h-4 w-4" />
-            批量新增
-          </Button>
+              {canCreateRoom && (
+                <Button variant="outline" size="sm" onClick={onOpenBatchCreate}>
+                  <Layers className="mr-2 h-4 w-4" />
+                  批量新增
+                </Button>
+              )}
+            </>
+          )}
 
-          <Button size="sm" onClick={onOpenCreateRoom}>
-            <Plus className="mr-2 h-4 w-4" />
-            新增房间
-          </Button>
+          {canCreateRoom && (
+            <Button size="sm" onClick={onOpenCreateRoom}>
+              <Plus className="mr-2 h-4 w-4" />
+              新增房间
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent className="pt-0">
@@ -136,25 +153,29 @@ export function ApartmentRoomListCard({
                   <span className="text-sm text-muted-foreground">
                     已选 {selectedRoomIds.size}
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onOpenBatchEdit}
-                    className="h-8"
-                  >
-                    <Pencil className="mr-1 h-4 w-4" />
-                    批量编辑
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onDeleteSelected}
-                    disabled={isBatchDeletePending}
-                    className="h-8 text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="mr-1 h-4 w-4" />
-                    删除
-                  </Button>
+                  {canEditRoom && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onOpenBatchEdit}
+                      className="h-8"
+                    >
+                      <Pencil className="mr-1 h-4 w-4" />
+                      批量编辑
+                    </Button>
+                  )}
+                  {canDeleteRoom && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onDeleteSelected}
+                      disabled={isBatchDeletePending}
+                      className="h-8 text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      删除
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -299,28 +320,32 @@ export function ApartmentRoomListCard({
           onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
         >
-          <button
-            type="button"
-            className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground"
-            onClick={() => {
-              onEditRoom(contextMenu.room);
-              setContextMenu(null);
-            }}
-          >
-            <Pencil className="mr-2 h-4 w-4" />
-            编辑
-          </button>
-          <button
-            type="button"
-            className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm text-destructive outline-none transition-colors hover:bg-accent hover:text-destructive"
-            onClick={() => {
-              onDeleteRoom(contextMenu.room);
-              setContextMenu(null);
-            }}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            删除
-          </button>
+          {canEditRoom && (
+            <button
+              type="button"
+              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground"
+              onClick={() => {
+                onEditRoom(contextMenu.room);
+                setContextMenu(null);
+              }}
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              编辑
+            </button>
+          )}
+          {canDeleteRoom && (
+            <button
+              type="button"
+              className="flex w-full items-center rounded-sm px-2 py-1.5 text-sm text-destructive outline-none transition-colors hover:bg-accent hover:text-destructive"
+              onClick={() => {
+                onDeleteRoom(contextMenu.room);
+                setContextMenu(null);
+              }}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              删除
+            </button>
+          )}
         </div>
       )}
     </Card>

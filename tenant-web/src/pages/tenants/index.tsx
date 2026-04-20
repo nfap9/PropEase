@@ -41,6 +41,7 @@ import { tenantsApi } from '@/api';
 import { filterEmptyStrings } from '@/utils/form';
 import { getErrorMessage } from '@/utils/error';
 import { useAuth } from '@/contexts/auth';
+import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import { Tenant } from '@/types';
 import { Plus, Pencil, Trash2, Phone, User, Building2 } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
@@ -82,7 +83,13 @@ type TenantFormData = z.infer<typeof tenantSchema>;
 export default function TenantsPage() {
   const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
+  const { hasPermission } = usePermissions();
   const orgId = organization?.id;
+
+  // 权限检查
+  const canCreateTenant = hasPermission(PERMISSIONS.TENANT_CREATE);
+  const canEditTenant = hasPermission(PERMISSIONS.TENANT_EDIT);
+  const canDeleteTenant = hasPermission(PERMISSIONS.TENANT_DELETE);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -215,14 +222,18 @@ export default function TenantsPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleEdit(tenant)} data-testid={TENANTS.EDIT_BUTTON}>
-                <Pencil className="mr-2 h-4 w-4" />
-                编辑
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDelete(tenant)} className="text-destructive" data-testid={TENANTS.DELETE_BUTTON}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                删除
-              </DropdownMenuItem>
+              {canEditTenant && (
+                <DropdownMenuItem onClick={() => handleEdit(tenant)} data-testid={TENANTS.EDIT_BUTTON}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  编辑
+                </DropdownMenuItem>
+              )}
+              {canDeleteTenant && (
+                <DropdownMenuItem onClick={() => handleDelete(tenant)} className="text-destructive" data-testid={TENANTS.DELETE_BUTTON}>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  删除
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -254,10 +265,12 @@ export default function TenantsPage() {
     <PermissionPageGuard>
       <div className="space-y-6">
           <div className="flex items-center justify-end">
-            <Button onClick={() => setIsCreateOpen(true)} data-testid={TENANTS.NEW_BUTTON}>
-              <Plus className="mr-2 h-4 w-4" />
-              新增租客
-            </Button>
+            {canCreateTenant && (
+              <Button onClick={() => setIsCreateOpen(true)} data-testid={TENANTS.NEW_BUTTON}>
+                <Plus className="mr-2 h-4 w-4" />
+                新增租客
+              </Button>
+            )}
           </div>
 
           {tenantsLoading ? (

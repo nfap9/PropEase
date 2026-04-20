@@ -10,6 +10,7 @@ import { LeaseSigningDrawer } from '@/pages/leases/components/lease-signing-draw
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
 import { useAuth } from '@/contexts/auth';
+import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import { toDateInputValue } from '@/utils/date';
 import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import type { Lease } from '@/types';
@@ -28,7 +29,13 @@ import { LeaseFilters } from '@/pages/leases/components/lease-filters';
 
 export default function LeasesPage() {
   const { organization, isLoading: authLoading } = useAuth();
+  const { hasPermission } = usePermissions();
   const orgId = organization?.id;
+
+  // 权限检查
+  const canCreateLease = hasPermission(PERMISSIONS.LEASE_CREATE);
+  const canEditLease = hasPermission(PERMISSIONS.LEASE_EDIT);
+  const canDeleteLease = hasPermission(PERMISSIONS.LEASE_DELETE);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [pendingInitialReading, setPendingInitialReading] = useState<LeaseCreatedParams | null>(null);
@@ -113,8 +120,10 @@ export default function LeasesPage() {
         },
         onTerminate: terminateConfirm.openFor,
         onDelete: deleteConfirm.openFor,
+        canEditLease,
+        canDeleteLease,
       }),
-    [deleteConfirm.openFor, terminateConfirm.openFor, editForm]
+    [deleteConfirm.openFor, terminateConfirm.openFor, editForm, canEditLease, canDeleteLease]
   );
 
   const handleFilterChange = useCallback(
@@ -158,10 +167,12 @@ export default function LeasesPage() {
     <PermissionPageGuard>
       <div className="w-full space-y-4">
         <div className="flex items-center justify-between">
-          <Button onClick={() => setIsCreateOpen(true)} data-testid={LEASES.NEW_BUTTON}>
-            <Plus className="mr-2 h-4 w-4" />
-            新增租约
-          </Button>
+          {canCreateLease && (
+            <Button onClick={() => setIsCreateOpen(true)} data-testid={LEASES.NEW_BUTTON}>
+              <Plus className="mr-2 h-4 w-4" />
+              新增租约
+            </Button>
+          )}
         </div>
         {leasesLoading ? (
           <Skeleton className="h-96" />

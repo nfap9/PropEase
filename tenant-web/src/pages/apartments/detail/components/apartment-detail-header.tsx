@@ -8,6 +8,10 @@ interface ApartmentDetailHeaderProps {
   onBack: () => void;
   onEdit: () => void;
   onOpenUtilityConfig?: () => void;
+  /** 是否有编辑公寓权限 */
+  canEdit?: boolean;
+  /** 是否有编辑水电配置权限 */
+  canEditUtility?: boolean;
 }
 
 export function ApartmentDetailHeader({
@@ -15,6 +19,8 @@ export function ApartmentDetailHeader({
   onBack,
   onEdit,
   onOpenUtilityConfig,
+  canEdit = true,
+  canEditUtility = true,
 }: ApartmentDetailHeaderProps) {
   return (
     <div className="flex items-center justify-between gap-4">
@@ -30,16 +36,18 @@ export function ApartmentDetailHeader({
         </div>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        {onOpenUtilityConfig && (
+        {onOpenUtilityConfig && canEditUtility && (
           <Button variant="outline" size="sm" onClick={onOpenUtilityConfig}>
             <Zap className="mr-2 h-4 w-4" />
             水电配置
           </Button>
         )}
-        <Button variant="outline" size="sm" onClick={onEdit}>
-          <Pencil className="mr-2 h-4 w-4" />
-          编辑
-        </Button>
+        {canEdit && (
+          <Button variant="outline" size="sm" onClick={onEdit}>
+            <Pencil className="mr-2 h-4 w-4" />
+            编辑
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -19,12 +19,18 @@ interface CreateLeaseColumnsOptions {
   onEdit: (lease: Lease) => void;
   onTerminate: (lease: Lease) => void;
   onDelete: (lease: Lease) => void;
+  /** 是否有编辑租约权限 */
+  canEditLease?: boolean;
+  /** 是否有删除租约权限 */
+  canDeleteLease?: boolean;
 }
 
 export function createLeaseColumns({
   onEdit,
   onTerminate,
   onDelete,
+  canEditLease = true,
+  canDeleteLease = true,
 }: CreateLeaseColumnsOptions): ColumnDef<Lease>[] {
   return [
     {
@@ -104,20 +110,24 @@ export function createLeaseColumns({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(lease)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                编辑
-              </DropdownMenuItem>
-              {lease.is_active && (
+              {canEditLease && (
+                <DropdownMenuItem onClick={() => onEdit(lease)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  编辑
+                </DropdownMenuItem>
+              )}
+              {canEditLease && lease.is_active && (
                 <DropdownMenuItem onClick={() => onTerminate(lease)} className="text-destructive">
                   <Ban className="mr-2 h-4 w-4" />
                   终止
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem onClick={() => onDelete(lease)} className="text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                删除
-              </DropdownMenuItem>
+              {canDeleteLease && (
+                <DropdownMenuItem onClick={() => onDelete(lease)} className="text-destructive">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  删除
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );

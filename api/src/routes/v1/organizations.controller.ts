@@ -1,6 +1,6 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
-import { requireOrgMembership } from '../../utils/orgContext.js';
+import { requireOrgMembership, requirePermission } from '../../utils/orgContext.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
 import { Messages, NotFoundMessages } from '../../messages.js';
@@ -129,7 +129,8 @@ export async function get(req: Request, res: Response, next: NextFunction) {
 
 export async function update(req: Request, res: Response, next: NextFunction) {
   try {
-    await requireOrgMembership(req, 'orgId');
+    const orgId = await requireOrgMembership(req, 'orgId');
+    await requirePermission(req, orgId, 'settings:edit');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const parsed = UpdateOrgSchema.safeParse(req.body);
@@ -217,8 +218,8 @@ export async function getMembers(req: Request, res: Response, next: NextFunction
 
 export async function addMember(req: Request, res: Response, next: NextFunction) {
   try {
-    await requireOrgMembership(req, 'orgId');
-    const orgId = req.params.orgId;
+    const orgId = await requireOrgMembership(req, 'orgId');
+    await requirePermission(req, orgId, 'member:create');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const limits = await getEffectivePlanLimits(orgId, user.id);
@@ -248,8 +249,8 @@ export async function addMember(req: Request, res: Response, next: NextFunction)
 
 export async function updateMember(req: Request, res: Response, next: NextFunction) {
   try {
-    const orgId = req.params.orgId;
-    await requireOrgMembership(req, 'orgId');
+    const orgId = await requireOrgMembership(req, 'orgId');
+    await requirePermission(req, orgId, 'member:edit');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const role_id = (req.query.role_id as string) ?? req.body?.role_id;
@@ -273,7 +274,8 @@ export async function updateMember(req: Request, res: Response, next: NextFuncti
 
 export async function removeMember(req: Request, res: Response, next: NextFunction) {
   try {
-    await requireOrgMembership(req, 'orgId');
+    const orgId = await requireOrgMembership(req, 'orgId');
+    await requirePermission(req, orgId, 'member:delete');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     await defaultOrgService.removeMember(req.params.orgId, req.params.userId, user.id);

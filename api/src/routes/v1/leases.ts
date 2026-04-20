@@ -1,7 +1,7 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
-import { requireOrgMembership } from '../../utils/orgContext.js';
+import { requireOrgMembership, requirePermission } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
 import { Messages } from '../../messages.js';
 import { defaultLeaseService } from '../../services/lease.service.js';
@@ -191,6 +191,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'lease:create');
     const parsed = LeaseCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const lease = await defaultLeaseService.create(orgId, parsed.data);
@@ -292,6 +293,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'lease:edit');
     const parsed = LeaseUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const lease = await defaultLeaseService.update(orgId, req.params.id, parsed.data);
@@ -324,6 +326,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
 router.post('/:id/terminate', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'lease:delete');
     await defaultLeaseService.terminate(orgId, req.params.id);
     res.locals.successMessage = Messages.LEASE_TERMINATED;
     res.json({});
@@ -355,6 +358,7 @@ router.post('/:id/terminate', async (req: Request, res: Response, next: NextFunc
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'lease:delete');
     await defaultLeaseService.delete(orgId, req.params.id);
     res.status(204).send();
   } catch (e) {
@@ -368,6 +372,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
 router.post('/:id/change-room', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'lease:edit');
     const parsed = ChangeRoomSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const result = await defaultLeaseService.changeRoom(
@@ -389,6 +394,7 @@ router.post('/:id/change-room', async (req: Request, res: Response, next: NextFu
 router.post('/:id/renew', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'lease:edit');
     const parsed = RenewSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const result = await defaultLeaseService.renew(orgId, req.params.id, parsed.data.newEndDate, parsed.data.reason);
@@ -404,6 +410,7 @@ router.post('/:id/renew', async (req: Request, res: Response, next: NextFunction
 router.post('/:id/update-tenant', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'lease:edit');
     const parsed = UpdateTenantSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const result = await defaultLeaseService.updateTenant(orgId, req.params.id, parsed.data.newTenantId);
@@ -419,6 +426,7 @@ router.post('/:id/update-tenant', async (req: Request, res: Response, next: Next
 router.post('/:id/change-rent', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'lease:edit');
     const parsed = ChangeRentSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const result = await defaultLeaseService.changeRent(
@@ -441,6 +449,7 @@ router.post('/:id/change-rent', async (req: Request, res: Response, next: NextFu
 router.post('/:id/change-utility-rates', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'lease:edit');
     const parsed = ChangeUtilityRatesSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const result = await defaultLeaseService.changeUtilityRates(
@@ -463,6 +472,7 @@ router.post('/:id/change-utility-rates', async (req: Request, res: Response, nex
 router.post('/:id/change-deposit', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'lease:edit');
     const parsed = ChangeDepositSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const result = await defaultLeaseService.changeDeposit(
@@ -483,6 +493,7 @@ router.post('/:id/change-deposit', async (req: Request, res: Response, next: Nex
 router.post('/:id/update-fee-items', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'lease:edit');
     const parsed = UpdateFeeItemsSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const result = await defaultLeaseService.updateFeeItems(
@@ -504,6 +515,7 @@ router.post('/:id/update-fee-items', async (req: Request, res: Response, next: N
 router.post('/:id/set-fee-items', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'lease:edit');
     const parsed = SetLeaseFeeItemsSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const result = await defaultLeaseService.setLeaseFeeItems(
@@ -523,6 +535,7 @@ router.post('/:id/set-fee-items', async (req: Request, res: Response, next: Next
 router.post('/:id/settle', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'lease:edit');
     const parsed = SettleSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const result = await settleLease({

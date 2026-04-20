@@ -1,7 +1,7 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { z } from 'zod';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
-import { requireOrgMembership } from '../../utils/orgContext.js';
+import { requireOrgMembership, requirePermission } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
 import { defaultTenantService } from '../../services/tenant.service.js';
 
@@ -95,6 +95,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'tenant:create');
     const parsed = TenantCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const tenant = await defaultTenantService.create(orgId, parsed.data);
@@ -184,6 +185,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'tenant:edit');
     const parsed = TenantUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const tenant = await defaultTenantService.update(orgId, req.params.id, parsed.data);
@@ -216,6 +218,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    await requirePermission(req, orgId, 'tenant:delete');
     await defaultTenantService.delete(orgId, req.params.id);
     res.status(204).send();
   } catch (e) {

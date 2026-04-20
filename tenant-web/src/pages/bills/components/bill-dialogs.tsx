@@ -51,6 +51,7 @@ export function BillDetailDialog({
   onPayment,
   onShare,
   onExportPdf,
+  canEditBill = true,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -63,6 +64,8 @@ export function BillDetailDialog({
   onPayment: () => void;
   onShare: () => void;
   onExportPdf: (billId: string) => void;
+  /** 是否有编辑账单权限 */
+  canEditBill?: boolean;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -190,7 +193,7 @@ export function BillDetailDialog({
             ) : null}
 
             <DialogFooter className="flex gap-2 sm:gap-0">
-              {billDetail.status !== 'paid' && (
+              {billDetail.status !== 'paid' && canEditBill && (
                 <Button onClick={onPayment} data-testid={BILLS.PAY_BUTTON}>
                   <DollarSign className="mr-2 h-4 w-4" />
                   {tenantMessages.bills.columns.recordPayment}

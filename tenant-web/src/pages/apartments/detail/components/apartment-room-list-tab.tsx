@@ -21,6 +21,12 @@ interface ApartmentRoomListTabProps {
   onDeleteRoom: (room: Room) => void;
   onToggleBatchSelectMode: () => void;
   onClearSelection: () => void;
+  /** 是否有创建房间权限 */
+  canCreateRoom?: boolean;
+  /** 是否有编辑房间权限 */
+  canEditRoom?: boolean;
+  /** 是否有删除房间权限 */
+  canDeleteRoom?: boolean;
 }
 
 export function ApartmentRoomListTab({
@@ -41,6 +47,9 @@ export function ApartmentRoomListTab({
   onDeleteRoom,
   onToggleBatchSelectMode,
   onClearSelection,
+  canCreateRoom = true,
+  canEditRoom = true,
+  canDeleteRoom = true,
 }: ApartmentRoomListTabProps) {
   return (
     <ApartmentRoomListCard
@@ -61,6 +70,9 @@ export function ApartmentRoomListTab({
       onDeleteRoom={onDeleteRoom}
       onToggleBatchSelectMode={onToggleBatchSelectMode}
       onClearSelection={onClearSelection}
+      canCreateRoom={canCreateRoom}
+      canEditRoom={canEditRoom}
+      canDeleteRoom={canDeleteRoom}
     />
   );
 }

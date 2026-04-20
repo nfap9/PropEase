@@ -34,6 +34,8 @@ interface BillsListViewProps {
   onStatusFilterChange: (value: BillStatus | 'all') => void;
   onGenerate: () => void;
   onExport: (type: 'all' | 'unfinished') => void;
+  /** 是否有生成账单权限 */
+  canGenerateBill?: boolean;
 }
 
 export function BillsListView({
@@ -46,6 +48,7 @@ export function BillsListView({
   onStatusFilterChange,
   onGenerate,
   onExport,
+  canGenerateBill = true,
 }: BillsListViewProps) {
   const pendingBillCount = stats.pending + stats.partial + stats.overdue;
 
@@ -103,10 +106,12 @@ export function BillsListView({
             toolbar={
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <Button onClick={onGenerate} data-testid={BILLS.GENERATE_BUTTON}>
-                    <FilePlus className="mr-2 h-4 w-4" />
-                    {tenantMessages.bills.list.generate}
-                  </Button>
+                  {canGenerateBill && (
+                    <Button onClick={onGenerate} data-testid={BILLS.GENERATE_BUTTON}>
+                      <FilePlus className="mr-2 h-4 w-4" />
+                      {tenantMessages.bills.list.generate}
+                    </Button>
+                  )}
                   <div>
                     <Label className="mb-2 block">状态</Label>
                     <Select
