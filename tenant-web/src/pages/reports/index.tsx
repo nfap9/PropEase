@@ -36,7 +36,6 @@ export default function ReportsPage() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [activeTab, setActiveTab] = useState<ReportTab>('income');
   const { overview, incomeReport, incomeLoading, occupancyReport, occupancyLoading } = useReportsData(
-    orgId,
     selectedYear
   );
 

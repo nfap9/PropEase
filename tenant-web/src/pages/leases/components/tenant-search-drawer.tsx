@@ -28,7 +28,7 @@ export function TenantSearchDrawer({ orgId, open, onOpenChange, onSelect }: Tena
 
   const { data: tenants, isLoading } = useQuery({
     queryKey: ['tenants', orgId, search],
-    queryFn: () => tenantsApi.list(orgId, search || undefined),
+    queryFn: () => tenantsApi.list(search || undefined),
     enabled: !!orgId,
   });
 

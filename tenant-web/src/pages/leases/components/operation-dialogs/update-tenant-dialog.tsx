@@ -36,11 +36,11 @@ export function UpdateTenantDialog({ open, onOpenChange, orgId, leaseId }: Updat
     defaultValues: { newTenantId: '' },
   });
 
-  const updateTenant = useUpdateTenant(orgId, leaseId);
+  const updateTenant = useUpdateTenant(leaseId);
 
   const { data: tenants } = useQuery({
     queryKey: ['tenants', orgId],
-    queryFn: () => tenantsApi.list(orgId),
+    queryFn: () => tenantsApi.list(),
     enabled: open,
   });
 

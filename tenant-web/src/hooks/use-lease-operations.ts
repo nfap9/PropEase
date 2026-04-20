@@ -13,44 +13,44 @@ import type {
   SettleLeaseFormData,
 } from '@/schemas/lease-operations';
 
-export function useLeaseDetail(orgId: string, leaseId: string) {
+export function useLeaseDetail(leaseId: string) {
   return useQuery({
     queryKey: ['lease', leaseId],
-    queryFn: () => leasesApi.get(orgId, leaseId),
-    enabled: Boolean(orgId) && Boolean(leaseId),
+    queryFn: () => leasesApi.get(leaseId),
+    enabled: Boolean(leaseId),
   });
 }
 
-export function useLeaseChangeLogs(orgId: string, leaseId: string) {
+export function useLeaseChangeLogs(leaseId: string) {
   return useQuery({
     queryKey: ['lease-change-logs', leaseId],
-    queryFn: () => leasesApi.getChangeLogs(orgId, leaseId),
-    enabled: Boolean(orgId) && Boolean(leaseId),
+    queryFn: () => leasesApi.getChangeLogs(leaseId),
+    enabled: Boolean(leaseId),
   });
 }
 
-export function useChangeRoom(orgId: string, leaseId: string) {
+export function useChangeRoom(leaseId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: ChangeRoomFormData) =>
-      leasesApi.changeRoom(orgId, leaseId, data),
+      leasesApi.changeRoom(leaseId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases'] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
-      queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
       toast.success('换房成功');
     },
     onError: (error) => toast.error(getErrorMessage(error, '换房失败')),
   });
 }
 
-export function useRenew(orgId: string, leaseId: string) {
+export function useRenew(leaseId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: RenewFormData) =>
-      leasesApi.renew(orgId, leaseId, data),
+      leasesApi.renew(leaseId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases'] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
       toast.success('续约成功');
     },
@@ -58,13 +58,13 @@ export function useRenew(orgId: string, leaseId: string) {
   });
 }
 
-export function useUpdateTenant(orgId: string, leaseId: string) {
+export function useUpdateTenant(leaseId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: UpdateTenantFormData) =>
-      leasesApi.updateTenant(orgId, leaseId, data),
+      leasesApi.updateTenant(leaseId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases'] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
       toast.success('租客更新成功');
     },
@@ -72,13 +72,13 @@ export function useUpdateTenant(orgId: string, leaseId: string) {
   });
 }
 
-export function useChangeRent(orgId: string, leaseId: string) {
+export function useChangeRent(leaseId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: ChangeRentFormData) =>
-      leasesApi.changeRent(orgId, leaseId, data),
+      leasesApi.changeRent(leaseId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases'] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
       toast.success('房租变更成功');
     },
@@ -86,13 +86,13 @@ export function useChangeRent(orgId: string, leaseId: string) {
   });
 }
 
-export function useChangeUtilityRates(orgId: string, leaseId: string) {
+export function useChangeUtilityRates(leaseId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: ChangeUtilityRatesFormData) =>
-      leasesApi.changeUtilityRates(orgId, leaseId, data),
+      leasesApi.changeUtilityRates(leaseId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases'] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
       toast.success('水电单价变更成功');
     },
@@ -100,13 +100,13 @@ export function useChangeUtilityRates(orgId: string, leaseId: string) {
   });
 }
 
-export function useChangeDeposit(orgId: string, leaseId: string) {
+export function useChangeDeposit(leaseId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: ChangeDepositFormData) =>
-      leasesApi.changeDeposit(orgId, leaseId, data),
+      leasesApi.changeDeposit(leaseId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases'] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
       toast.success('押金变更成功');
     },
@@ -114,13 +114,13 @@ export function useChangeDeposit(orgId: string, leaseId: string) {
   });
 }
 
-export function useUpdateFeeItems(orgId: string, leaseId: string) {
+export function useUpdateFeeItems(leaseId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: UpdateFeeItemsFormData) =>
-      leasesApi.updateFeeItems(orgId, leaseId, data),
+      leasesApi.updateFeeItems(leaseId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases'] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
       toast.success('费用项目更新成功');
     },
@@ -128,15 +128,15 @@ export function useUpdateFeeItems(orgId: string, leaseId: string) {
   });
 }
 
-export function useSettleLease(orgId: string, leaseId: string) {
+export function useSettleLease(leaseId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: SettleLeaseFormData) =>
-      leasesApi.settleLease(orgId, leaseId, data),
+      leasesApi.settleLease(leaseId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['leases'] });
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
-      queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
       toast.success('退租结算成功');
     },
     onError: (error) => toast.error(getErrorMessage(error, '退租结算失败')),

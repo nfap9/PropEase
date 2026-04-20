@@ -57,7 +57,7 @@ export default function ApartmentsPage() {
 
   const { data: apartments, isLoading: apartmentsLoading } = useQuery({
     queryKey: ['apartments', orgId],
-    queryFn: () => apartmentsApi.list(orgId!),
+    queryFn: () => apartmentsApi.list(),
     enabled: !!orgId,
   });
 
@@ -67,7 +67,7 @@ export default function ApartmentsPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: ApartmentFormData }) =>
-      apartmentsApi.update(orgId!, id, filterEmptyStrings(data)),
+      apartmentsApi.update(id, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       setIsEditOpen(false);
@@ -78,7 +78,7 @@ export default function ApartmentsPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apartmentsApi.delete(orgId!, id),
+    mutationFn: (id: string) => apartmentsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       deleteConfirm.close();

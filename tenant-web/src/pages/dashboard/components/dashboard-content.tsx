@@ -66,7 +66,7 @@ function QuickActions() {
 function RoomStatusCard({ orgId }: { orgId: string }) {
   const { data: apartments, isLoading: apartmentsLoading } = useQuery({
     queryKey: ['apartments', orgId],
-    queryFn: () => apartmentsApi.list(orgId),
+    queryFn: () => apartmentsApi.list(),
     enabled: !!orgId,
   });
 
@@ -74,7 +74,7 @@ function RoomStatusCard({ orgId }: { orgId: string }) {
 
   const { data: allRooms = [], isLoading: roomsLoading } = useQuery({
     queryKey: ['rooms-all', orgId, apartmentIds],
-    queryFn: () => roomsApi.listAll(orgId, apartmentIds),
+    queryFn: () => roomsApi.listAll(apartmentIds),
     enabled: !!orgId && apartmentIds.length > 0,
   });
 
@@ -138,13 +138,13 @@ function BillStatusCard({ orgId }: { orgId: string }) {
 
   const { data: bills = [], isLoading } = useQuery({
     queryKey: ['bills-monthly', orgId, currentYear, currentMonth],
-    queryFn: () => billsApi.list(orgId, { year: currentYear, month: currentMonth }),
+    queryFn: () => billsApi.list({ year: currentYear, month: currentMonth }),
     enabled: !!orgId,
   });
 
   const { data: leases = [] } = useQuery({
     queryKey: ['leases', orgId],
-    queryFn: () => leasesApi.list(orgId, true),
+    queryFn: () => leasesApi.list(true),
     enabled: !!orgId,
   });
 
@@ -314,7 +314,7 @@ function RevenueChartCard({ orgId }: { orgId: string }) {
 
   const { data: incomeData = [], isLoading } = useQuery({
     queryKey: ['income-year', orgId, currentYear],
-    queryFn: () => reportsApi.getIncome(orgId, currentYear),
+    queryFn: () => reportsApi.getIncome(currentYear),
     enabled: !!orgId,
   });
 
@@ -430,7 +430,7 @@ export function DashboardContent() {
 
   const { data: overview } = useQuery({
     queryKey: ['dashboard-overview', orgId],
-    queryFn: () => reportsApi.getOverview(orgId!),
+    queryFn: () => reportsApi.getOverview(),
     enabled: !!orgId,
   });
 

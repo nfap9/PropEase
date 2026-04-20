@@ -115,6 +115,15 @@ export function createApiClient(options: CreateApiClientOptions): AxiosInstance 
       if (accessToken && config.headers) {
         config.headers.Authorization = `Bearer ${accessToken}`;
       }
+
+      // 自动附加 org_id 到 header（如果调用方没有手动指定）
+      if (!config.headers['x-org-id']) {
+        const orgId = localStorage.getItem('current_organization_id');
+        if (orgId && config.headers) {
+          config.headers['x-org-id'] = orgId;
+        }
+      }
+
       return config;
     },
     (error) => Promise.reject(error)

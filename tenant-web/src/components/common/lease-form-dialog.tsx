@@ -99,14 +99,14 @@ export function LeaseFormDialog({
   // 获取公寓列表（需要选择房间时）
   const { data: apartments } = useQuery({
     queryKey: ['apartments', orgId],
-    queryFn: () => apartmentsApi.list(orgId),
+    queryFn: () => apartmentsApi.list(),
     enabled: !!orgId && !isRoomSpecified,
   });
 
   // 获取房间列表（需要选择房间时）
   const { data: rooms } = useQuery({
     queryKey: ['rooms', orgId, selectedApartmentId],
-    queryFn: () => roomsApi.list(orgId, selectedApartmentId!),
+    queryFn: () => roomsApi.list(selectedApartmentId!),
     enabled: !!orgId && !isRoomSpecified && selectedApartmentId !== null,
   });
 
@@ -118,7 +118,7 @@ export function LeaseFormDialog({
 
   useEffect(() => {
     if (effectiveApartmentId && open) {
-      utilityConfigApi.get(orgId, effectiveApartmentId).then(setUtilityConfig).catch(() => {
+      utilityConfigApi.get(effectiveApartmentId).then(setUtilityConfig).catch(() => {
         // 如果没有配置，忽略错误
         setUtilityConfig(null);
       });
@@ -195,7 +195,7 @@ export function LeaseFormDialog({
           notes: item.notes || undefined,
         }));
       }
-      return leasesApi.create(orgId, payload as Parameters<typeof leasesApi.create>[1]);
+      return leasesApi.create(payload as Parameters<typeof leasesApi.create>[0]);
     },
     onSuccess: (createdLease, variables) => {
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });

@@ -9,7 +9,7 @@ interface LeaseChangeHistoryTabProps {
 }
 
 export function LeaseChangeHistoryTab({ leaseId, orgId }: LeaseChangeHistoryTabProps) {
-  const { data: logs, isLoading } = useLeaseChangeLogs(orgId, leaseId);
+  const { data: logs, isLoading } = useLeaseChangeLogs(leaseId);
 
   if (isLoading) {
     return (

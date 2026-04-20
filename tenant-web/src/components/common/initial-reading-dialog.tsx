@@ -82,7 +82,6 @@ export function InitialReadingDialog({
   const saveMutation = useMutation({
     mutationFn: (data: FormData) =>
       utilitiesApi.create(
-        orgId,
         filterEmptyStrings({
           room_id: roomId,
           period_year: periodYear,

@@ -40,7 +40,7 @@ export default function NewApartmentPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: ApartmentFormData) => apartmentsApi.create(orgId!, filterEmptyStrings(data)),
+    mutationFn: (data: ApartmentFormData) => apartmentsApi.create(filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       toast.success('公寓创建成功');

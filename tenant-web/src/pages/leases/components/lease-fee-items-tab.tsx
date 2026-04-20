@@ -72,7 +72,7 @@ export function LeaseFeeItemsTab({ leaseId, orgId }: LeaseFeeItemsTabProps) {
 
   const { data: lease, isLoading } = useQuery({
     queryKey: ['lease', leaseId],
-    queryFn: () => leasesApi.get(orgId, leaseId),
+    queryFn: () => leasesApi.get(leaseId),
   });
 
   const setFeeItemsMutation = useMutation({
@@ -83,7 +83,7 @@ export function LeaseFeeItemsTab({ leaseId, orgId }: LeaseFeeItemsTabProps) {
       fee_cycle: BillingCycle;
       quantity?: number;
       notes?: string;
-    }>) => leasesApi.setLeaseFeeItems(orgId, leaseId, feeItems),
+    }>) => leasesApi.setLeaseFeeItems(leaseId, feeItems),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
       toast.success('费用项目已更新');

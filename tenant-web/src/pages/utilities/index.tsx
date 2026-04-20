@@ -49,7 +49,7 @@ export default function UtilitiesPage() {
   } | null>(null);
   const [editingUtility, setEditingUtility] = useState<UtilityReading | null>(null);
 
-  const utilitiesData = useUtilitiesData({ orgId });
+  const utilitiesData = useUtilitiesData();
   const {
     apartments,
     allRooms,

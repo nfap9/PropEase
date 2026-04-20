@@ -84,7 +84,6 @@ export default function BillsPage() {
     exportPdf,
     exportExcel,
   } = useBillsData({
-    orgId,
     selectedBillId,
     isDetailOpen,
     onPaymentSuccess: paymentSubmit.handleSuccess,

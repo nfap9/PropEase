@@ -1,23 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
 import { reportsApi } from '@/api';
 
-export function useReportsData(orgId: string | undefined, selectedYear: number) {
+export function useReportsData(selectedYear: number) {
   const overviewQuery = useQuery({
-    queryKey: ['dashboard-overview', orgId],
-    queryFn: () => reportsApi.getOverview(orgId!),
-    enabled: Boolean(orgId),
+    queryKey: ['dashboard-overview'],
+    queryFn: () => reportsApi.getOverview(),
   });
 
   const incomeReportQuery = useQuery({
-    queryKey: ['income-report', orgId, selectedYear],
-    queryFn: () => reportsApi.getIncome(orgId!, selectedYear),
-    enabled: Boolean(orgId),
+    queryKey: ['income-report', selectedYear],
+    queryFn: () => reportsApi.getIncome(selectedYear),
   });
 
   const occupancyReportQuery = useQuery({
-    queryKey: ['occupancy-report', orgId, selectedYear],
-    queryFn: () => reportsApi.getOccupancy(orgId!, selectedYear),
-    enabled: Boolean(orgId),
+    queryKey: ['occupancy-report', selectedYear],
+    queryFn: () => reportsApi.getOccupancy(selectedYear),
   });
 
   return {

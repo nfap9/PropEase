@@ -49,13 +49,13 @@ export default function RoomsPage() {
 
   const { data: apartments, isLoading: apartmentsLoading } = useQuery({
     queryKey: ['apartments', orgId],
-    queryFn: () => apartmentsApi.list(orgId!),
+    queryFn: () => apartmentsApi.list(),
     enabled: !!orgId,
   });
 
   const { data: leases } = useQuery({
     queryKey: ['leases', orgId],
-    queryFn: () => leasesApi.list(orgId!, true),
+    queryFn: () => leasesApi.list(true),
     enabled: !!orgId,
   });
 
@@ -64,7 +64,7 @@ export default function RoomsPage() {
     queryFn: async () => {
       if (!apartments || apartments.length === 0) return [];
       const apartmentIds = apartments.map((apt) => apt.id);
-      const rooms = await roomsApi.listAll(orgId!, apartmentIds);
+      const rooms = await roomsApi.listAll(apartmentIds);
       const apartmentMap = new Map(apartments.map((apt) => [apt.id, apt]));
       return rooms.map((room) => ({
         ...room,
@@ -147,7 +147,7 @@ export default function RoomsPage() {
   };
 
   const terminateLeaseMutation = useMutation({
-    mutationFn: (leaseId: string) => leasesApi.terminate(orgId!, leaseId),
+    mutationFn: (leaseId: string) => leasesApi.terminate(leaseId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
       queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
@@ -161,7 +161,7 @@ export default function RoomsPage() {
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, maintenance }: { id: string; maintenance: boolean }) =>
-      roomsApi.update(orgId!, id, { maintenance }),
+      roomsApi.update(id, { maintenance }),
     onSuccess: (updatedRoom) => {
       const allRoomsKeys = queryClient.getQueriesData<Array<Room & { apartment?: unknown }>>({
         queryKey: ['all-rooms', orgId],

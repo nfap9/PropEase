@@ -53,7 +53,7 @@ export function ChangeUtilityRatesSheet({
     },
   });
 
-  const changeUtilityRates = useChangeUtilityRates(orgId, leaseId);
+  const changeUtilityRates = useChangeUtilityRates(leaseId);
 
   const onSubmit = (data: ChangeUtilityRatesFormData) => {
     changeUtilityRates.mutate(data, {

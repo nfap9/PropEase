@@ -38,17 +38,17 @@ export function ChangeRoomSheet({ open, onOpenChange, orgId, leaseId }: ChangeRo
     defaultValues: { newRoomId: '', changeDate: '', reason: '' },
   });
 
-  const changeRoom = useChangeRoom(orgId, leaseId);
+  const changeRoom = useChangeRoom(leaseId);
 
   const { data: apartments } = useQuery({
-    queryKey: ['apartments', orgId],
-    queryFn: () => apartmentsApi.list(orgId),
+    queryKey: ['apartments'],
+    queryFn: () => apartmentsApi.list(),
     enabled: open,
   });
 
   const { data: rooms } = useQuery({
-    queryKey: ['all-rooms', orgId, apartments?.map((a) => a.id)],
-    queryFn: () => roomsApi.listAll(orgId, apartments?.map((a) => a.id) || []),
+    queryKey: ['all-rooms', apartments?.map((a) => a.id)],
+    queryFn: () => roomsApi.listAll(apartments?.map((a) => a.id) || []),
     enabled: open && !!apartments,
   });
 

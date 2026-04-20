@@ -35,7 +35,7 @@ export function TenantSelect({
 }: TenantSelectProps) {
   const { data: tenants } = useQuery({
     queryKey: ['tenants', orgId],
-    queryFn: () => tenantsApi.list(orgId),
+    queryFn: () => tenantsApi.list(),
     enabled: !!orgId,
   });
 

@@ -4,68 +4,57 @@ import type { BillFeeItem } from '@/types';
 
 export const billsApi = {
   list: async (
-    orgId: string,
     filters?: { lease_id?: string; year?: number; month?: number; status?: BillStatus }
   ): Promise<Bill[]> => {
     const response = await api.get<Bill[]>('/bills', {
-      params: { org_id: orgId, ...filters },
+      params: { ...filters },
     });
     return response.data;
   },
 
-  get: async (orgId: string, id: string): Promise<Bill> => {
-    const response = await api.get<Bill>(`/bills/${id}`, { params: { org_id: orgId } });
+  get: async (id: string): Promise<Bill> => {
+    const response = await api.get<Bill>(`/bills/${id}`);
     return response.data;
   },
 
-  create: async (orgId: string, data: Partial<Bill>): Promise<Bill> => {
-    const response = await api.post<Bill>('/bills', data, { params: { org_id: orgId } });
+  create: async (data: Partial<Bill>): Promise<Bill> => {
+    const response = await api.post<Bill>('/bills', data);
     return response.data;
   },
 
-  update: async (orgId: string, id: string, data: Partial<Bill>): Promise<Bill> => {
-    const response = await api.put<Bill>(`/bills/${id}`, data, { params: { org_id: orgId } });
+  update: async (id: string, data: Partial<Bill>): Promise<Bill> => {
+    const response = await api.put<Bill>(`/bills/${id}`, data);
     return response.data;
   },
 
   generate: async (
-    orgId: string,
     data: { bill_year: number; bill_month: number; due_date: string; lease_ids?: string[] }
   ): Promise<{ created: number; skipped: number }> => {
-    const response = await api.post<{ created: number; skipped: number }>('/bills/generate', data, {
-      params: { org_id: orgId },
-    });
+    const response = await api.post<{ created: number; skipped: number }>('/bills/generate', data);
     return response.data;
   },
 
-  getPayments: async (orgId: string, billId: string): Promise<Payment[]> => {
-    const response = await api.get<Payment[]>(`/bills/${billId}/payments`, {
-      params: { org_id: orgId },
-    });
+  getPayments: async (billId: string): Promise<Payment[]> => {
+    const response = await api.get<Payment[]>(`/bills/${billId}/payments`);
     return response.data;
   },
 
   createPayment: async (
-    orgId: string,
     billId: string,
     data: Partial<Payment>
   ): Promise<Payment> => {
-    const response = await api.post<Payment>(`/bills/${billId}/payments`, data, {
-      params: { org_id: orgId },
-    });
+    const response = await api.post<Payment>(`/bills/${billId}/payments`, data);
     return response.data;
   },
 
-  exportPdf: async (orgId: string, billId: string): Promise<Blob> => {
+  exportPdf: async (billId: string): Promise<Blob> => {
     const response = await api.get(`/bills/${billId}/pdf`, {
-      params: { org_id: orgId },
       responseType: 'blob',
     });
     return response.data;
   },
 
   exportExcel: async (
-    orgId: string,
     filters?: {
       status?: BillStatus;
       year?: number;
@@ -74,7 +63,7 @@ export const billsApi = {
     }
   ): Promise<Blob> => {
     const response = await api.get('/bills/export/excel', {
-      params: { org_id: orgId, ...filters },
+      params: { ...filters },
       responseType: 'blob',
     });
     return response.data;
@@ -82,10 +71,8 @@ export const billsApi = {
 };
 
 export const billFeeItemsApi = {
-  list: async (orgId: string, billId: string): Promise<BillFeeItem[]> => {
-    const response = await api.get<BillFeeItem[]>(`/bills/${billId}/fee-items`, {
-      params: { org_id: orgId },
-    });
+  list: async (billId: string): Promise<BillFeeItem[]> => {
+    const response = await api.get<BillFeeItem[]>(`/bills/${billId}/fee-items`);
     return response.data;
   },
 };

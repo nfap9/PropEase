@@ -105,8 +105,8 @@ export default function TeamMembersPage() {
   });
 
   const { data: roles } = useQuery({
-    queryKey: ['org-roles', organization?.id],
-    queryFn: () => permissionsApi.getOrgRoles(organization!.id),
+    queryKey: ['org-roles'],
+    queryFn: () => permissionsApi.getOrgRoles(),
     enabled: !!organization,
   });
 

@@ -44,7 +44,6 @@ export default function LeasesPage() {
   });
 
   const { apartments, leases, leasesLoading, updateMutation, terminateMutation, deleteMutation } = useLeasesData({
-    orgId,
     onUpdateSuccess: () => {
       setIsEditOpen(false);
       setSelectedLease(null);

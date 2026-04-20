@@ -171,7 +171,7 @@ export function CreateUtilityDialog({
       form.watch('period_month'),
     ],
     queryFn: () =>
-      utilitiesApi.list(orgId, {
+      utilitiesApi.list({
         room_id: form.watch('room_id') || undefined,
         period_year: form.watch('period_year'),
         period_month: form.watch('period_month'),

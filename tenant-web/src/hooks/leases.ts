@@ -6,34 +6,31 @@ import { filterEmptyStrings } from '@/utils/form';
 import type { LeaseEditFormData } from '@/schemas/leases';
 
 interface UseLeasesDataOptions {
-  orgId?: string;
   onUpdateSuccess: () => void;
   onTerminateSuccess: () => void;
   onDeleteSuccess: () => void;
 }
 
-export function useLeasesData({ orgId, onUpdateSuccess, onTerminateSuccess, onDeleteSuccess }: UseLeasesDataOptions) {
+export function useLeasesData({ onUpdateSuccess, onTerminateSuccess, onDeleteSuccess }: UseLeasesDataOptions) {
   const queryClient = useQueryClient();
 
   const apartmentsQuery = useQuery({
-    queryKey: ['apartments', orgId],
-    queryFn: () => apartmentsApi.list(orgId!),
-    enabled: Boolean(orgId),
+    queryKey: ['apartments'],
+    queryFn: () => apartmentsApi.list(),
   });
 
   const leasesQuery = useQuery({
-    queryKey: ['leases', orgId],
-    queryFn: () => leasesApi.list(orgId!),
-    enabled: Boolean(orgId),
+    queryKey: ['leases'],
+    queryFn: () => leasesApi.list(),
   });
 
   const invalidateLeases = () => {
-    queryClient.invalidateQueries({ queryKey: ['leases', orgId] });
+    queryClient.invalidateQueries({ queryKey: ['leases'] });
   };
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: LeaseEditFormData }) =>
-      leasesApi.update(orgId!, id, filterEmptyStrings(data)),
+      leasesApi.update(id, filterEmptyStrings(data)),
     onSuccess: () => {
       invalidateLeases();
       onUpdateSuccess();
@@ -43,10 +40,10 @@ export function useLeasesData({ orgId, onUpdateSuccess, onTerminateSuccess, onDe
   });
 
   const terminateMutation = useMutation({
-    mutationFn: (id: string) => leasesApi.terminate(orgId!, id),
+    mutationFn: (id: string) => leasesApi.terminate(id),
     onSuccess: () => {
       invalidateLeases();
-      queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
       onTerminateSuccess();
       toast.success('租约已终止');
     },
@@ -54,7 +51,7 @@ export function useLeasesData({ orgId, onUpdateSuccess, onTerminateSuccess, onDe
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => leasesApi.delete(orgId!, id),
+    mutationFn: (id: string) => leasesApi.delete(id),
     onSuccess: () => {
       invalidateLeases();
       onDeleteSuccess();

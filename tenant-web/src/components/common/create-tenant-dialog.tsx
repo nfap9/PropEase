@@ -66,7 +66,7 @@ export function CreateTenantDialog({ orgId, open, onOpenChange, onSuccess }: Cre
   }, [open, form]);
 
   const createMutation = useMutation({
-    mutationFn: (data: TenantFormData) => tenantsApi.create(orgId, filterEmptyStrings(data)),
+    mutationFn: (data: TenantFormData) => tenantsApi.create(filterEmptyStrings(data)),
     onSuccess: (newTenant: Tenant) => {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       onOpenChange(false);

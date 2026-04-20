@@ -9,60 +9,50 @@ import type { Bill, UtilityReading } from '@/types';
 import type { PendingUtilityBillRow } from '@/types/utilities';
 import { getBillingDeadline, getUsage } from '@/utils/utilities';
 
-interface UseUtilitiesDataOptions {
-  orgId: string | undefined;
-}
-
-export function useUtilitiesData({ orgId }: UseUtilitiesDataOptions) {
+export function useUtilitiesData() {
   const queryClient = useQueryClient();
   const today = useMemo(() => new Date(), []);
   const currentYear = today.getFullYear();
   const currentMonth = today.getMonth() + 1;
 
   const { data: apartments = [] } = useQuery({
-    queryKey: ['apartments', orgId],
-    queryFn: () => apartmentsApi.list(orgId!),
-    enabled: !!orgId,
+    queryKey: ['apartments'],
+    queryFn: () => apartmentsApi.list(),
   });
 
   const { data: allRooms = [] } = useQuery({
-    queryKey: ['allRooms', orgId],
-    queryFn: () => roomsApi.listAll(orgId!, apartments.map((a) => a.id)),
-    enabled: !!orgId && apartments.length > 0,
+    queryKey: ['allRooms'],
+    queryFn: () => roomsApi.listAll(apartments.map((a) => a.id)),
+    enabled: apartments.length > 0,
   });
 
   const { data: activeLeases = [] } = useQuery({
-    queryKey: ['leases', orgId, true],
-    queryFn: () => leasesApi.list(orgId!, true),
-    enabled: !!orgId,
+    queryKey: ['leases', true],
+    queryFn: () => leasesApi.list(true),
   });
 
   const { data: monthUtilities = [], isLoading: monthUtilitiesLoading } = useQuery({
-    queryKey: ['utilities', orgId, 'period', currentYear, currentMonth],
+    queryKey: ['utilities', 'period', currentYear, currentMonth],
     queryFn: () =>
-      utilitiesApi.list(orgId!, {
+      utilitiesApi.list({
         period_year: currentYear,
         period_month: currentMonth,
       }),
-    enabled: !!orgId,
   });
 
   const { data: latestPreviousReadings = {} } = useQuery({
-    queryKey: ['utilities', 'latest-before', orgId, currentYear, currentMonth],
-    queryFn: () => utilitiesApi.getLatestBefore(orgId!, currentYear, currentMonth),
-    enabled: !!orgId,
+    queryKey: ['utilities', 'latest-before', currentYear, currentMonth],
+    queryFn: () => utilitiesApi.getLatestBefore(currentYear, currentMonth),
   });
 
   const { data: currentMonthBills = [] } = useQuery({
-    queryKey: ['bills', orgId, currentYear, currentMonth],
-    queryFn: () => billsApi.list(orgId!, { year: currentYear, month: currentMonth }),
-    enabled: !!orgId,
+    queryKey: ['bills', currentYear, currentMonth],
+    queryFn: () => billsApi.list({ year: currentYear, month: currentMonth }),
   });
 
   const { data: roomsMissingInitial = [] } = useQuery({
-    queryKey: ['utilities', 'rooms-missing-initial', orgId],
-    queryFn: () => utilitiesApi.getRoomsMissingInitial(orgId!),
-    enabled: !!orgId,
+    queryKey: ['utilities', 'rooms-missing-initial'],
+    queryFn: () => utilitiesApi.getRoomsMissingInitial(),
   });
 
   const apartmentRooms = useMemo(() => {
@@ -179,9 +169,9 @@ export function useUtilitiesData({ orgId }: UseUtilitiesDataOptions) {
       .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
   }, [activeLeases, latestPreviousReadings, currentMonth, currentMonthBills, currentYear, monthUtilities, today]);
 
-  const createMutation = useCreateUtility({ orgId, queryClient });
-  const updateMutation = useUpdateUtility({ orgId, queryClient });
-  const batchImportMutation = useBatchImportUtility({ orgId, queryClient });
+  const createMutation = useCreateUtility({ queryClient });
+  const updateMutation = useUpdateUtility({ queryClient });
+  const batchImportMutation = useBatchImportUtility({ queryClient });
 
   return {
     apartments,
@@ -204,18 +194,17 @@ export function useUtilitiesData({ orgId }: UseUtilitiesDataOptions) {
 }
 
 interface UseCreateUtilityOptions {
-  orgId: string | undefined;
   queryClient: ReturnType<typeof useQueryClient>;
 }
 
-function useCreateUtility({ orgId, queryClient }: UseCreateUtilityOptions) {
+function useCreateUtility({ queryClient }: UseCreateUtilityOptions) {
   return useMutation({
-    mutationFn: (data: Parameters<typeof utilitiesApi.create>[1]) =>
-      utilitiesApi.create(orgId!, filterEmptyStrings(data)),
+    mutationFn: (data: Parameters<typeof utilitiesApi.create>[0]) =>
+      utilitiesApi.create(filterEmptyStrings(data)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['utilities'] });
+      queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });
       toast.success('水电读数录入成功');
     },
     onError: (error) => toast.error(getErrorMessage(error, '录入失败，请重试')),
@@ -223,18 +212,17 @@ function useCreateUtility({ orgId, queryClient }: UseCreateUtilityOptions) {
 }
 
 interface UseUpdateUtilityOptions {
-  orgId: string | undefined;
   queryClient: ReturnType<typeof useQueryClient>;
 }
 
-function useUpdateUtility({ orgId, queryClient }: UseUpdateUtilityOptions) {
+function useUpdateUtility({ queryClient }: UseUpdateUtilityOptions) {
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof utilitiesApi.update>[2] }) =>
-      utilitiesApi.update(orgId!, id, filterEmptyStrings(data)),
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof utilitiesApi.update>[1] }) =>
+      utilitiesApi.update(id, filterEmptyStrings(data)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['bills', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['utilities'] });
+      queryClient.invalidateQueries({ queryKey: ['bills'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });
       toast.success('水电读数更新成功');
     },
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
@@ -242,17 +230,16 @@ function useUpdateUtility({ orgId, queryClient }: UseUpdateUtilityOptions) {
 }
 
 interface UseBatchImportUtilityOptions {
-  orgId: string | undefined;
   queryClient: ReturnType<typeof useQueryClient>;
 }
 
-function useBatchImportUtility({ orgId, queryClient }: UseBatchImportUtilityOptions) {
+function useBatchImportUtility({ queryClient }: UseBatchImportUtilityOptions) {
   return useMutation({
-    mutationFn: (data: Parameters<typeof utilitiesApi.batchCreate>[1]) => utilitiesApi.batchCreate(orgId!, data),
+    mutationFn: (data: Parameters<typeof utilitiesApi.batchCreate>[0]) => utilitiesApi.batchCreate(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['utilities'] });
+      queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });
       toast.success('批量导入成功');
     },
     onError: (error) => toast.error(getErrorMessage(error, '批量导入失败，请重试')),

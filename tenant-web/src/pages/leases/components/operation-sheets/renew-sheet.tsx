@@ -30,7 +30,7 @@ export function RenewSheet({ open, onOpenChange, orgId, leaseId, currentEndDate 
     defaultValues: { newEndDate: '', reason: '' },
   });
 
-  const renew = useRenew(orgId, leaseId);
+  const renew = useRenew(leaseId);
 
   const onSubmit = (data: RenewFormData) => {
     renew.mutate(data, {

@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { permissionsApi } from '@/api/permissions';
@@ -9,17 +8,14 @@ import { useAuth } from '@/contexts/auth';
  *
  * 用于获取和检查当前用户在当前组织中的权限
  */
-export function usePermissions(orgId?: string) {
+export function usePermissions() {
   const { organization } = useAuth();
-  const targetOrgId = orgId || organization?.id;
 
   const { data: permissions = [], isLoading, error } = useQuery({
-    queryKey: ['my-permissions', targetOrgId],
+    queryKey: ['my-permissions'],
     queryFn: async () => {
-      if (!targetOrgId) return [];
-      return permissionsApi.getMyPermissions(targetOrgId);
+      return permissionsApi.getMyPermissions();
     },
-    enabled: !!targetOrgId,
     staleTime: 5 * 60 * 1000, // 5 分钟缓存
   });
 

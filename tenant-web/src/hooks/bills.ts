@@ -11,7 +11,6 @@ import { buildBillPdfFilename, buildBillsExcelFilename, downloadBlob } from '@/u
 import { tenantMessages } from '@/i18n';
 
 interface UseBillsDataOptions {
-  orgId?: string;
   selectedBillId: string | null;
   isDetailOpen: boolean;
   onPaymentSuccess: () => void;
@@ -19,7 +18,6 @@ interface UseBillsDataOptions {
 }
 
 export function useBillsData({
-  orgId,
   selectedBillId,
   isDetailOpen,
   onPaymentSuccess,
@@ -28,30 +26,29 @@ export function useBillsData({
   const queryClient = useQueryClient();
 
   const billsQuery = useQuery({
-    queryKey: ['bills', orgId],
-    queryFn: () => billsApi.list(orgId!),
-    enabled: Boolean(orgId),
+    queryKey: ['bills'],
+    queryFn: () => billsApi.list(),
   });
 
   const billDetailQuery = useQuery({
-    queryKey: ['bills', orgId, selectedBillId],
-    queryFn: () => billsApi.get(orgId!, selectedBillId!),
-    enabled: Boolean(orgId && selectedBillId && isDetailOpen),
+    queryKey: ['bills', selectedBillId],
+    queryFn: () => billsApi.get(selectedBillId!),
+    enabled: Boolean(selectedBillId && isDetailOpen),
   });
 
   const billFeeItemsQuery = useQuery({
-    queryKey: ['bills', orgId, selectedBillId, 'fee-items'],
-    queryFn: () => billFeeItemsApi.list(orgId!, selectedBillId!),
-    enabled: Boolean(orgId && selectedBillId && isDetailOpen),
+    queryKey: ['bills', selectedBillId, 'fee-items'],
+    queryFn: () => billFeeItemsApi.list(selectedBillId!),
+    enabled: Boolean(selectedBillId && isDetailOpen),
   });
 
   const invalidateBills = () => {
-    queryClient.invalidateQueries({ queryKey: ['bills', orgId] });
+    queryClient.invalidateQueries({ queryKey: ['bills'] });
   };
 
   const paymentMutation = useMutation({
     mutationFn: ({ billId, data }: { billId: string; data: PaymentFormData }) =>
-      billsApi.createPayment(orgId!, billId, filterEmptyStrings(data)),
+      billsApi.createPayment(billId, filterEmptyStrings(data)),
     onSuccess: () => {
       invalidateBills();
       onPaymentSuccess();
@@ -61,17 +58,17 @@ export function useBillsData({
   });
 
   const generateMutation = useMutation({
-    mutationFn: (data: GenerateBillsFormData) => billsApi.generate(orgId!, data),
+    mutationFn: (data: GenerateBillsFormData) => billsApi.generate(data),
     onSuccess: (result) => {
       invalidateBills();
-      queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });
       onGenerateSuccess(result.created, result.skipped);
     },
     onError: (error) => toast.error(getErrorMessage(error, tenantMessages.bills.errors.generate)),
   });
 
   const exportPdf = async (billId: string) => {
-    const blob = await billsApi.exportPdf(orgId!, billId);
+    const blob = await billsApi.exportPdf(billId);
     downloadBlob(blob, buildBillPdfFilename(billId));
   };
 
@@ -82,7 +79,7 @@ export function useBillsData({
         filters.status = statusFilter;
       }
 
-      const blob = await billsApi.exportExcel(orgId!, { ...filters, exportType });
+      const blob = await billsApi.exportExcel({ ...filters, exportType });
       downloadBlob(blob, buildBillsExcelFilename(exportType));
       toast.success(tenantMessages.bills.toast.exportSuccess);
     } catch (error) {

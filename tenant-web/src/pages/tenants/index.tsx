@@ -91,7 +91,7 @@ export default function TenantsPage() {
 
   const { data: tenants, isLoading: tenantsLoading } = useQuery({
     queryKey: ['tenants', orgId],
-    queryFn: () => tenantsApi.list(orgId!),
+    queryFn: () => tenantsApi.list(),
     enabled: !!orgId,
   });
 
@@ -112,7 +112,7 @@ export default function TenantsPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: TenantFormData) => tenantsApi.create(orgId!, filterEmptyStrings(data)),
+    mutationFn: (data: TenantFormData) => tenantsApi.create(filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsCreateOpen(false);
@@ -124,7 +124,7 @@ export default function TenantsPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: TenantFormData }) =>
-      tenantsApi.update(orgId!, id, filterEmptyStrings(data)),
+      tenantsApi.update(id, filterEmptyStrings(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       setIsEditOpen(false);
@@ -135,7 +135,7 @@ export default function TenantsPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => tenantsApi.delete(orgId!, id),
+    mutationFn: (id: string) => tenantsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       deleteConfirm.close();

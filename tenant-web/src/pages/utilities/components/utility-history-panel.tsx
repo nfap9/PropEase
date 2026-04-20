@@ -61,13 +61,13 @@ export function UtilityHistoryPanel({ orgId }: { orgId: string }) {
 
   const { data: apartments } = useQuery({
     queryKey: ['apartments', orgId],
-    queryFn: () => apartmentsApi.list(orgId),
+    queryFn: () => apartmentsApi.list(),
     enabled: !!orgId,
   });
 
   const { data: activeLeases = [], isLoading: leasesLoading } = useQuery({
     queryKey: ['leases', orgId, true],
-    queryFn: () => leasesApi.list(orgId, true),
+    queryFn: () => leasesApi.list(true),
     enabled: !!orgId,
   });
 
@@ -93,13 +93,13 @@ export function UtilityHistoryPanel({ orgId }: { orgId: string }) {
 
   const { data: leaseUtilities = [], isLoading: utilitiesLoading } = useQuery({
     queryKey: ['utilities', orgId, selectedLease?.room_id],
-    queryFn: () => utilitiesApi.list(orgId, { room_id: selectedLease!.room_id }),
+    queryFn: () => utilitiesApi.list({ room_id: selectedLease!.room_id }),
     enabled: !!selectedLease?.room_id,
   });
 
   const { data: leaseBills = [], isLoading: billsLoading } = useQuery({
     queryKey: ['bills', orgId, selectedLeaseId],
-    queryFn: () => billsApi.list(orgId, { lease_id: selectedLeaseId! }),
+    queryFn: () => billsApi.list({ lease_id: selectedLeaseId! }),
     enabled: !!selectedLeaseId,
   });
 
@@ -136,8 +136,8 @@ export function UtilityHistoryPanel({ orgId }: { orgId: string }) {
   }, [leaseBills, leaseUtilities, selectedLease]);
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof utilitiesApi.update>[2] }) =>
-      utilitiesApi.update(orgId, id, filterEmptyStrings(data)),
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof utilitiesApi.update>[1] }) =>
+      utilitiesApi.update(id, filterEmptyStrings(data) as Parameters<typeof utilitiesApi.update>[1]),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });

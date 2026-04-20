@@ -36,7 +36,7 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
     },
   });
 
-  const settleLease = useSettleLease(orgId, leaseId);
+  const settleLease = useSettleLease(leaseId);
   const watchForm = form.watch();
 
   const onSubmit = (data: SettleLeaseFormData) => {

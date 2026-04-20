@@ -29,7 +29,7 @@ export function ChangeDepositDialog({ open, onOpenChange, orgId, leaseId, curren
     defaultValues: { newDeposit: currentDeposit, reason: '' },
   });
 
-  const changeDeposit = useChangeDeposit(orgId, leaseId);
+  const changeDeposit = useChangeDeposit(leaseId);
 
   const onSubmit = (data: ChangeDepositFormData) => {
     changeDeposit.mutate(data, {

@@ -91,7 +91,7 @@ export function OperationsDropdown({ orgId, leaseId, lease }: OperationsDropdown
       fee_cycle: BillingCycle;
       quantity?: number;
       notes?: string;
-    }>) => leasesApi.setLeaseFeeItems(orgId, leaseId, feeItems),
+    }>) => leasesApi.setLeaseFeeItems(leaseId, feeItems),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lease', leaseId] });
       toast.success('费用项目已更新');

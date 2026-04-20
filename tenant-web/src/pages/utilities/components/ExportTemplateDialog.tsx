@@ -64,7 +64,7 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
     setIsExporting(true);
     try {
       const range = daysRange > 0 ? daysRange : undefined;
-      const rooms = await utilitiesApi.exportRooms(orgId, exportYear, exportMonth, range);
+      const rooms = await utilitiesApi.exportRooms(exportYear, exportMonth, range);
 
       if (rooms.length === 0) {
         toast.warning('没有待录入的房间');

@@ -44,23 +44,19 @@ export const permissionsApi = {
   /**
    * 获取组织角色列表
    */
-  getOrgRoles: async (orgId: string): Promise<OrgRole[]> => {
-    const response = await api.get<OrgRole[]>('/permissions/org-roles', {
-      params: { org_id: orgId },
-    });
+  getOrgRoles: async (): Promise<OrgRole[]> => {
+    const response = await api.get<OrgRole[]>('/permissions/org-roles');
     return response.data;
   },
 
   /**
    * 创建角色
    */
-  createOrgRole: async (orgId: string, data: {
+  createOrgRole: async (data: {
     name: string;
     description?: string;
   }): Promise<OrgRole> => {
-    const response = await api.post<OrgRole>('/permissions/org-roles', data, {
-      params: { org_id: orgId },
-    });
+    const response = await api.post<OrgRole>('/permissions/org-roles', data);
     return response.data;
   },
 
@@ -82,19 +78,16 @@ export const permissionsApi = {
   /**
    * 删除角色
    */
-  deleteOrgRole: async (orgId: string, roleId: string): Promise<void> => {
-    await api.delete(`/permissions/org-roles/${roleId}`, {
-      params: { org_id: orgId },
-    });
+  deleteOrgRole: async (roleId: string): Promise<void> => {
+    await api.delete(`/permissions/org-roles/${roleId}`);
   },
 
   /**
    * 获取角色权限
    */
-  getRolePermissions: async (orgId: string, roleId: string): Promise<RolePermissions> => {
+  getRolePermissions: async (roleId: string): Promise<RolePermissions> => {
     const response = await api.get<RolePermissions>(
-      `/permissions/org-roles/${roleId}/permissions`,
-      { params: { org_id: orgId } }
+      `/permissions/org-roles/${roleId}/permissions`
     );
     return response.data;
   },
@@ -103,24 +96,19 @@ export const permissionsApi = {
    * 更新角色权限
    */
   updateRolePermissions: async (
-    orgId: string,
     roleId: string,
     permissionCodes: string[]
   ): Promise<void> => {
     await api.put(`/permissions/org-roles/${roleId}/permissions`, {
       permission_codes: permissionCodes,
-    }, {
-      params: { org_id: orgId },
     });
   },
 
   /**
    * 获取当前用户在组织中的权限
    */
-  getMyPermissions: async (orgId: string): Promise<string[]> => {
-    const response = await api.get<string[]>('/permissions/me', {
-      params: { org_id: orgId },
-    });
+  getMyPermissions: async (): Promise<string[]> => {
+    const response = await api.get<string[]>('/permissions/me');
     return response.data;
   },
 };

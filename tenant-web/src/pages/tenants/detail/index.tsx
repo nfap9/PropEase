@@ -46,21 +46,21 @@ export default function TenantDetailPage() {
   // 获取租客信息
   const { data: tenant, isLoading: tenantLoading } = useQuery({
     queryKey: ['tenant', orgId, tenantId],
-    queryFn: () => tenantsApi.get(orgId!, tenantId),
+    queryFn: () => tenantsApi.get(tenantId),
     enabled: !!orgId,
   });
 
   // 获取所有租约，前端过滤该租客的租约
   const { data: allLeases, isLoading: leasesLoading } = useQuery({
     queryKey: ['leases', orgId],
-    queryFn: () => leasesApi.list(orgId!),
+    queryFn: () => leasesApi.list(),
     enabled: !!orgId,
   });
 
   const { data: deliveries = [], isLoading: deliveriesLoading } = useQuery({
     queryKey: ['tenant-reachability', 'deliveries', orgId, tenantId],
     queryFn: () =>
-      tenantReachabilityApi.listDeliveries(orgId!, {
+      tenantReachabilityApi.listDeliveries({
         tenant_id: tenantId,
         limit: 5,
       }),
@@ -69,7 +69,7 @@ export default function TenantDetailPage() {
 
   const toggleSmsMutation = useMutation({
     mutationFn: (nextOptOut: boolean) =>
-      tenantsApi.update(orgId!, tenantId, {
+      tenantsApi.update(tenantId, {
         sms_opt_out: nextOptOut,
         sms_opt_out_reason: nextOptOut ? '管理员手动暂停短信触达' : null,
       }),

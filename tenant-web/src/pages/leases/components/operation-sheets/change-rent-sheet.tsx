@@ -45,7 +45,7 @@ export function ChangeRentSheet({ open, onOpenChange, orgId, leaseId, currentRen
     },
   });
 
-  const changeRent = useChangeRent(orgId, leaseId);
+  const changeRent = useChangeRent(leaseId);
 
   const onSubmit = (data: ChangeRentFormData) => {
     changeRent.mutate(data, {

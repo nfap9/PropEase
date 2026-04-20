@@ -21,7 +21,6 @@ import {
 
 interface UseApartmentDetailDataOptions {
   apartmentId: string;
-  orgId?: string;
   onApartmentUpdated: () => void;
   onRoomCreated: () => void;
   onBatchRoomsCreated: (count: number) => void;
@@ -33,7 +32,6 @@ interface UseApartmentDetailDataOptions {
 
 export function useApartmentDetailData({
   apartmentId,
-  orgId,
   onApartmentUpdated,
   onRoomCreated,
   onBatchRoomsCreated,
@@ -45,29 +43,27 @@ export function useApartmentDetailData({
   const queryClient = useQueryClient();
 
   const apartmentQuery = useQuery({
-    queryKey: ['apartment', orgId, apartmentId],
-    queryFn: () => apartmentsApi.get(orgId!, apartmentId),
-    enabled: Boolean(orgId),
+    queryKey: ['apartment', apartmentId],
+    queryFn: () => apartmentsApi.get(apartmentId),
   });
 
   const roomsQuery = useQuery({
-    queryKey: ['rooms', orgId, apartmentId],
-    queryFn: () => roomsApi.list(orgId!, apartmentId),
-    enabled: Boolean(orgId),
+    queryKey: ['rooms', apartmentId],
+    queryFn: () => roomsApi.list(apartmentId),
   });
 
   const invalidateApartment = () => {
-    queryClient.invalidateQueries({ queryKey: ['apartment', orgId, apartmentId] });
-    queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
+    queryClient.invalidateQueries({ queryKey: ['apartment', apartmentId] });
+    queryClient.invalidateQueries({ queryKey: ['apartments'] });
   };
 
   const invalidateRooms = () => {
-    queryClient.invalidateQueries({ queryKey: ['rooms', orgId, apartmentId] });
+    queryClient.invalidateQueries({ queryKey: ['rooms', apartmentId] });
   };
 
   const updateApartmentMutation = useMutation({
     mutationFn: (data: ApartmentFormData) =>
-      apartmentsApi.update(orgId!, apartmentId, filterEmptyStrings(data)),
+      apartmentsApi.update(apartmentId, filterEmptyStrings(data)),
     onSuccess: () => {
       invalidateApartment();
       onApartmentUpdated();
@@ -78,7 +74,7 @@ export function useApartmentDetailData({
 
   const createRoomMutation = useMutation({
     mutationFn: (data: RoomFormData & { status: RoomStatus; facilities?: RoomFacilities | null }) =>
-      roomsApi.create(orgId!, apartmentId, filterEmptyStrings(data)),
+      roomsApi.create(apartmentId, filterEmptyStrings(data)),
     onSuccess: () => {
       invalidateRooms();
       onRoomCreated();
@@ -89,12 +85,12 @@ export function useApartmentDetailData({
 
   const batchCreateRoomMutation = useMutation({
     mutationFn: (roomNumbers: string[]) =>
-      roomsApi.batchCreate(orgId!, apartmentId, {
+      roomsApi.batchCreate(apartmentId, {
         room_numbers: roomNumbers,
       }),
     onSuccess: (createdRooms) => {
       invalidateRooms();
-      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['apartments'] });
       onBatchRoomsCreated(createdRooms.length);
       toast.success(`成功创建 ${createdRooms.length} 个房间`);
     },
@@ -110,7 +106,6 @@ export function useApartmentDetailData({
       data: RoomFormData & { facilities?: RoomFacilities | null };
     }) =>
       roomsApi.update(
-        orgId!,
         roomId,
         filterEmptyStrings({
           ...data,
@@ -126,7 +121,7 @@ export function useApartmentDetailData({
   });
 
   const deleteRoomMutation = useMutation({
-    mutationFn: (roomId: string) => roomsApi.delete(orgId!, roomId),
+    mutationFn: (roomId: string) => roomsApi.delete(roomId),
     onSuccess: () => {
       invalidateRooms();
       onRoomDeleted();
@@ -157,7 +152,7 @@ export function useApartmentDetailData({
         if (data.monthly_rent !== undefined) {
           updateData.monthly_rent = data.monthly_rent;
         }
-        return roomsApi.update(orgId!, roomId, updateData);
+        return roomsApi.update(roomId, updateData);
       });
 
       return Promise.all(updates);
@@ -171,7 +166,7 @@ export function useApartmentDetailData({
   });
 
   const batchDeleteMutation = useMutation({
-    mutationFn: (roomIds: string[]) => Promise.all(roomIds.map((roomId) => roomsApi.delete(orgId!, roomId))),
+    mutationFn: (roomIds: string[]) => Promise.all(roomIds.map((roomId) => roomsApi.delete(roomId))),
     onSuccess: () => {
       invalidateRooms();
       onBatchDeleted();

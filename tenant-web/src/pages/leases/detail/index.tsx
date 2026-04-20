@@ -20,8 +20,8 @@ export default function LeaseDetailPageRoute() {
 
   const { data: lease, isLoading } = useQuery({
     queryKey: ['lease', id],
-    queryFn: () => leasesApi.get(orgId!, id!),
-    enabled: Boolean(orgId) && Boolean(id),
+    queryFn: () => leasesApi.get(id!),
+    enabled: Boolean(id),
   });
 
   if (!id) {

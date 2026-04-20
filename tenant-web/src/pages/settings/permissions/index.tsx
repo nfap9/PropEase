@@ -38,7 +38,7 @@ export default function PermissionsPage() {
 
   const { data: roles, isLoading: rolesLoading } = useQuery({
     queryKey: ['org-roles', organization?.id],
-    queryFn: () => permissionsApi.getOrgRoles(organization!.id),
+    queryFn: () => permissionsApi.getOrgRoles(),
     enabled: !!organization,
   });
 
@@ -46,7 +46,7 @@ export default function PermissionsPage() {
     queryKey: ['role-permissions', selectedRole?.id],
     queryFn: async () => {
       if (!selectedRole || !organization) return null;
-      return permissionsApi.getRolePermissions(organization.id, selectedRole.id);
+      return permissionsApi.getRolePermissions(selectedRole.id);
     },
     enabled: !!selectedRole && !!organization,
   });
@@ -61,7 +61,7 @@ export default function PermissionsPage() {
   const isOwner = currentMember?.role_name === '组织所有者';
 
   const createMutation = useMutation({
-    mutationFn: (data: { name: string; description?: string }) => permissionsApi.createOrgRole(organization!.id, data),
+    mutationFn: (data: { name: string; description?: string }) => permissionsApi.createOrgRole(data),
     onSuccess: () => {
       toast.success('角色创建成功');
       queryClient.invalidateQueries({ queryKey: ['org-roles', organization?.id] });
@@ -73,7 +73,7 @@ export default function PermissionsPage() {
   const updateMutation = useMutation({
     mutationFn: ({ roleId, codes }: { roleId: string; codes: string[] }) => {
       if (!organization) throw new Error('No organization selected');
-      return permissionsApi.updateRolePermissions(organization.id, roleId, codes);
+      return permissionsApi.updateRolePermissions(roleId, codes);
     },
     onSuccess: () => {
       toast.success(tenantMessages.settings.permissions.saved);
@@ -86,7 +86,7 @@ export default function PermissionsPage() {
   const deleteMutation = useMutation({
     mutationFn: (roleId: string) => {
       if (!organization) throw new Error('No organization selected');
-      return permissionsApi.deleteOrgRole(organization.id, roleId);
+      return permissionsApi.deleteOrgRole(roleId);
     },
     onSuccess: () => {
       toast.success('角色删除成功');

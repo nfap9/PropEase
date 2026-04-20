@@ -47,7 +47,7 @@ export function UtilityConfigDialog({
   // 获取现有配置
   const { data: config, isLoading } = useQuery({
     queryKey: ['utility-config', orgId, apartmentId],
-    queryFn: () => utilityConfigApi.get(orgId, apartmentId),
+    queryFn: () => utilityConfigApi.get(apartmentId),
     enabled: !!orgId && !!apartmentId && open,
     retry: false,
   });
@@ -79,7 +79,7 @@ export function UtilityConfigDialog({
   // 保存配置
   const saveMutation = useMutation({
     mutationFn: (data: UtilityConfigFormData) =>
-      utilityConfigApi.createOrUpdate(orgId, apartmentId, {
+      utilityConfigApi.createOrUpdate(apartmentId, {
         water_price_per_unit: data.water_price_per_unit,
         electricity_price_per_unit: data.electricity_price_per_unit,
       }),

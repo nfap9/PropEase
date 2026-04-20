@@ -104,14 +104,14 @@ export function LeaseSigningDrawer({
   // 获取公寓列表
   const { data: apartments } = useQuery({
     queryKey: ['apartments', orgId],
-    queryFn: () => apartmentsApi.list(orgId),
+    queryFn: () => apartmentsApi.list(),
     enabled: !!orgId && !isRoomSpecified,
   });
 
   // 获取房间列表
   const { data: rooms } = useQuery({
     queryKey: ['rooms', orgId, selectedApartmentId],
-    queryFn: () => roomsApi.list(orgId, selectedApartmentId!),
+    queryFn: () => roomsApi.list(selectedApartmentId!),
     enabled: !!orgId && !isRoomSpecified && selectedApartmentId !== null,
   });
 
@@ -124,7 +124,7 @@ export function LeaseSigningDrawer({
   useEffect(() => {
     if (effectiveApartmentId && open) {
       utilityConfigApi
-        .get(orgId, effectiveApartmentId)
+        .get(effectiveApartmentId)
         .then(setUtilityConfig)
         .catch(() => {
           setUtilityConfig(null);
@@ -212,10 +212,10 @@ export function LeaseSigningDrawer({
     mutationFn: async (data: LeaseSigningFormData) => {
       let tenantId = '';
       if (data.tenant_id_card) {
-        const existingTenants = await tenantsApi.list(orgId, data.tenant_id_card);
+        const existingTenants = await tenantsApi.list(data.tenant_id_card);
         const found = existingTenants.find((t) => t.id_card === data.tenant_id_card);
         if (found) {
-          const updated = await tenantsApi.update(orgId, found.id, {
+          const updated = await tenantsApi.update(found.id, {
             name: data.tenant_name,
             phone: data.tenant_phone,
             id_card: data.tenant_id_card,
@@ -225,7 +225,7 @@ export function LeaseSigningDrawer({
           });
           tenantId = updated.id;
         } else {
-          const created = await tenantsApi.create(orgId, {
+          const created = await tenantsApi.create({
             name: data.tenant_name,
             phone: data.tenant_phone,
             id_card: data.tenant_id_card,
@@ -236,7 +236,7 @@ export function LeaseSigningDrawer({
           tenantId = created.id;
         }
       } else {
-        const created = await tenantsApi.create(orgId, {
+        const created = await tenantsApi.create({
           name: data.tenant_name,
           phone: data.tenant_phone,
           id_card: data.tenant_id_card,
@@ -268,7 +268,7 @@ export function LeaseSigningDrawer({
           notes: item.notes || undefined,
         }));
       }
-      const lease = await leasesApi.create(orgId, filterEmptyStrings(leaseData));
+      const lease = await leasesApi.create(filterEmptyStrings(leaseData));
       return lease;
     },
     onSuccess: (createdLease, variables) => {

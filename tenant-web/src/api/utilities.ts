@@ -15,7 +15,6 @@ export type { BatchUtilityReadingData, RoomMissingInitialReading, UtilityExportR
 
 export const utilitiesApi = {
   list: async (
-    orgId: string,
     filters?: {
       room_id?: string;
       period_year?: number;
@@ -26,7 +25,6 @@ export const utilitiesApi = {
     const { room_id, period_year, period_month, apartment_id } = filters ?? {};
     const response = await api.get<UtilityReading[]>('/utilities', {
       params: {
-        org_id: orgId,
         room_id: room_id || undefined,
         period_year: period_year ?? undefined,
         period_month: period_month ?? undefined,
@@ -37,13 +35,11 @@ export const utilitiesApi = {
   },
 
   getLatestBefore: async (
-    orgId: string,
     periodYear: number,
     periodMonth: number
   ): Promise<Record<string, UtilityReading>> => {
     const response = await api.get<Record<string, UtilityReading>>('/utilities/latest-before', {
       params: {
-        org_id: orgId,
         period_year: periodYear,
         period_month: periodMonth,
       },
@@ -51,61 +47,47 @@ export const utilitiesApi = {
     return response.data;
   },
 
-  get: async (orgId: string, id: string): Promise<UtilityReading> => {
-    const response = await api.get<UtilityReading>(`/utilities/${id}`, {
-      params: { org_id: orgId },
-    });
+  get: async (id: string): Promise<UtilityReading> => {
+    const response = await api.get<UtilityReading>(`/utilities/${id}`);
     return response.data;
   },
 
-  create: async (orgId: string, data: UtilityReadingMutationData): Promise<UtilityReading> => {
-    const response = await api.post<UtilityReading>('/utilities', data, {
-      params: { org_id: orgId },
-    });
+  create: async (data: UtilityReadingMutationData): Promise<UtilityReading> => {
+    const response = await api.post<UtilityReading>('/utilities', data);
     return response.data;
   },
 
   update: async (
-    orgId: string,
     id: string,
     data: UtilityReadingMutationData
   ): Promise<UtilityReading> => {
-    const response = await api.put<UtilityReading>(`/utilities/${id}`, data, {
-      params: { org_id: orgId },
-    });
+    const response = await api.put<UtilityReading>(`/utilities/${id}`, data);
     return response.data;
   },
 
-  delete: async (orgId: string, id: string): Promise<void> => {
-    await api.delete(`/utilities/${id}`, { params: { org_id: orgId } });
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/utilities/${id}`);
   },
 
-  batchCreate: async (orgId: string, data: BatchUtilityReadingData): Promise<UtilityReading[]> => {
-    const response = await api.post<UtilityReading[]>('/utilities/batch', data, {
-      params: { org_id: orgId },
-    });
+  batchCreate: async (data: BatchUtilityReadingData): Promise<UtilityReading[]> => {
+    const response = await api.post<UtilityReading[]>('/utilities/batch', data);
     return response.data;
   },
 
-  getRoomsMissingInitial: async (orgId: string): Promise<RoomMissingInitialReading[]> => {
+  getRoomsMissingInitial: async (): Promise<RoomMissingInitialReading[]> => {
     const response = await api.get<RoomMissingInitialReading[]>(
-      '/utilities/rooms-missing-initial',
-      {
-        params: { org_id: orgId },
-      }
+      '/utilities/rooms-missing-initial'
     );
     return response.data;
   },
 
   exportRooms: async (
-    orgId: string,
     periodYear: number,
     periodMonth: number,
     daysRange?: number
   ): Promise<UtilityExportRoom[]> => {
     const response = await api.get<UtilityExportRoom[]>('/utilities/export', {
       params: {
-        org_id: orgId,
         period_year: periodYear,
         period_month: periodMonth,
         days_range: daysRange,

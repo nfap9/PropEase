@@ -104,7 +104,6 @@ export default function ApartmentDetailPage() {
     batchDeleteMutation,
   } = useApartmentDetailData({
     apartmentId,
-    orgId,
     onApartmentUpdated: () => setIsEditApartmentOpen(false),
     onRoomCreated: () => {
       setIsCreateRoomOpen(false);
