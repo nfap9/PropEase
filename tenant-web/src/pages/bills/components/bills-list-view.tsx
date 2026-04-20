@@ -51,7 +51,7 @@ export function BillsListView({
     <div className="w-full space-y-4">
       <div className="space-y-4">
         <Card>
-          <div className="grid grid-cols-4 gap-4 p-5 sm:p-6">
+          <div className="grid grid-cols-4 gap-4">
             <div className="min-w-0">
               <div className="text-sm text-muted-foreground">{tenantMessages.bills.list.total}</div>
               <div className="mt-2 text-2xl font-semibold tracking-tight">{stats.total}</div>

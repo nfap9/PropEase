@@ -39,25 +39,24 @@ export function EntryTab({
 }: EntryTabProps) {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <MonthStatsCard
-          recordedCount={recordedCount}
-          totalCount={totalCount}
-          missingCount={missingCount}
-          readyToBillCount={readyToBillCount}
-          overdueCount={overdueCount}
-        />
-        <div className="flex gap-2">
-          <Button variant="outlined" onClick={onExportTemplate} icon={<Download className="h-4 w-4" />}>
-            导出模版
-          </Button>
-          <Button variant="outlined" onClick={onBatchImport} icon={<Upload className="h-4 w-4" />}>
-            批量导入
-          </Button>
-          <Button type="primary" onClick={onAdd} icon={<Plus className="h-4 w-4" />}>
-            录入读数
-          </Button>
-        </div>
+      <MonthStatsCard
+        recordedCount={recordedCount}
+        totalCount={totalCount}
+        missingCount={missingCount}
+        readyToBillCount={readyToBillCount}
+        overdueCount={overdueCount}
+      />
+
+      <div className="flex gap-2">
+        <Button variant="outlined" onClick={onExportTemplate} icon={<Download className="h-4 w-4" />}>
+          导出模版
+        </Button>
+        <Button variant="outlined" onClick={onBatchImport} icon={<Upload className="h-4 w-4" />}>
+          批量导入
+        </Button>
+        <Button type="primary" onClick={onAdd} icon={<Plus className="h-4 w-4" />}>
+          录入读数
+        </Button>
       </div>
 
       <PendingBillTable data={bills} onEntry={onEntry} onUpdate={onUpdate} />
