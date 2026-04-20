@@ -48,6 +48,8 @@ import {
 } from '@apartment-ultra/shared-ui/components/ui';
 import { ColumnDef } from '@tanstack/react-table';
 import { organizationsApi } from '@/api';
+import { permissionsApi } from '@/api/permissions';
+import type { OrgRole } from '@/api/permissions';
 import { getErrorMessage } from '@/utils/error';
 import { formatDateTime } from '@/utils/date';
 import { OrganizationMember, MemberRole } from '@/types';
@@ -84,11 +86,10 @@ const ROLE_COLORS: Record<string, 'default' | 'secondary' | 'destructive' | 'out
   '一般合伙人': 'secondary',
 };
 
-// 角色ID映射（从数据库迁移得知）
-const ROLE_OPTIONS = [
-  { role_id: '01kpfr00000000000000002', role_name: '公寓管理人', label: tenantMessages.settings.team.roles.admin },
-  { role_id: '01kpfr00000000000000003', role_name: '一般合伙人', label: tenantMessages.settings.team.roles.member },
-];
+// 获取角色选项，过滤掉"组织所有者"（不能分配给新成员）
+function getAssignableRoles(roles: OrgRole[]) {
+  return roles.filter((role) => role.name !== '组织所有者');
+}
 
 export default function TeamMembersPage() {
   const { user, organization } = useAuth();
@@ -103,9 +104,17 @@ export default function TeamMembersPage() {
     enabled: !!organization,
   });
 
+  const { data: roles } = useQuery({
+    queryKey: ['org-roles', organization?.id],
+    queryFn: () => permissionsApi.getOrgRoles(organization!.id),
+    enabled: !!organization,
+  });
+
+  const assignableRoles = roles ? getAssignableRoles(roles) : [];
+
   const inviteForm = useForm<InviteFormData>({
     resolver: zodResolver(inviteSchema),
-    defaultValues: { phone: '', role_id: ROLE_OPTIONS[1]?.role_id || '' },
+    defaultValues: { phone: '', role_id: assignableRoles[0]?.id || '' },
   });
 
   const inviteSubmit = useAsyncDialogSubmit({
@@ -135,10 +144,11 @@ export default function TeamMembersPage() {
   });
 
   const removeMemberMutation = useMutation({
-    mutationFn: (memberId: string) => organizationsApi.removeMember(organization!.id, memberId),
-    onSuccess: () => {
+    mutationFn: ({ orgId, memberId }: { orgId: string; memberId: string }) =>
+      organizationsApi.removeMember(orgId, memberId),
+    onSuccess: (_, { orgId }) => {
       queryClient.invalidateQueries({
-        queryKey: ['organization-members', organization?.id],
+        queryKey: ['organization-members', orgId],
       });
       removeMemberSubmit.handleSuccess();
       toast.success(tenantMessages.settings.team.toasts.memberRemoved);
@@ -278,9 +288,9 @@ export default function TeamMembersPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ROLE_OPTIONS.map((option) => (
-                    <SelectItem key={option.role_id} value={option.role_id}>
-                      {option.label}
+                  {assignableRoles.map((role) => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -314,7 +324,7 @@ export default function TeamMembersPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => removeMemberMutation.mutate(selectedMember!.id)}
+              onClick={() => organization && removeMemberMutation.mutate({ orgId: organization.id, memberId: selectedMember!.user_id })}
               disabled={removeMemberMutation.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

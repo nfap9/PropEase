@@ -84,8 +84,7 @@ export const organizationsApi = {
   ): Promise<OrganizationMember> => {
     const response = await api.post<OrganizationMember>(
       `/organizations/${orgId}/members`,
-      null,
-      { params: { phone: data.user_phone, role_id: data.role_id } }
+      { phone: data.user_phone, role_id: data.role_id }
     );
     return response.data;
   },

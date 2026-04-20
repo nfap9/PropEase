@@ -288,9 +288,9 @@ export const tenantZhCNMessages = {
         joinedAt: '加入时间',
       },
       roles: {
-        owner: '创建者',
-        admin: '管理成员',
-        member: '协作成员',
+        owner: '组织所有者',
+        admin: '公寓管理人',
+        member: '一般合伙人',
         viewer: '只读成员',
       },
       actions: {

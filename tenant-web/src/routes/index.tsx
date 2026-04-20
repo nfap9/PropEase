@@ -24,8 +24,9 @@ import ReportsPage from '@/pages/reports/index';
 import UtilitiesPage from '@/pages/utilities/index';
 import UtilitiesHistoryPage from '@/pages/utilities/history';
 import NotificationsPage from '@/pages/notifications/index';
-import SettingsTeamPage from '@/pages/settings/team';
+import SettingsTeamPage from '@/pages/settings/team/detail';
 import SettingsTeamMembersPage from '@/pages/settings/team/members';
+import TeamPage from '@/pages/settings/team';
 import SettingsPermissionsPage from '@/pages/settings/permissions';
 import SettingsSubscriptionPage from '@/pages/settings/subscription';
 import SettingsSubscriptionPurchasePage from '@/pages/settings/subscription/purchase';
@@ -55,8 +56,15 @@ const workspaceRoutes: RouteObject[] = [
   { path: 'reports', element: <ReportsPage /> },
   { path: 'utilities', element: <UtilitiesPage /> },
   { path: 'utilities/history', element: <UtilitiesHistoryPage /> },
-  { path: 'team', element: <SettingsTeamPage /> },
-  { path: 'team/members', element: <SettingsTeamMembersPage /> },
+  {
+    path: 'team',
+    element: <TeamPage />,
+    children: [
+      { index: true, element: <Navigate to="info" replace /> },
+      { path: 'info', element: <SettingsTeamPage /> },
+      { path: 'members', element: <SettingsTeamMembersPage /> },
+    ],
+  },
   { path: 'permissions', element: <SettingsPermissionsPage /> },
   { path: 'subscription', element: <SettingsSubscriptionPage /> },
   { path: 'subscription/purchase', element: <SettingsSubscriptionPurchasePage /> },
