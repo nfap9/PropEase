@@ -1,13 +1,14 @@
+
 import { Plus } from 'lucide-react';
-import { useManagedItem } from '@apartment-ultra/shared-ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Table } from 'antd';
+import type { TableProps } from 'antd';
+import { Skeleton } from 'antd';
 import type { AdminUser } from '@/api/admin-client';
 import { createAdminUsersColumns } from '@/pages/users/components/columns';
 import { useAdminUsersData } from '@/hooks/users';
 import { toCreateUserPayload, toResetPasswordPayload, toUpdateUserPayload } from '@/utils/users';
 import { CreateUserDialog, DeleteUserDialog, EditUserDialog, ResetPasswordDialog } from '@/pages/users/components/user-dialogs';
+import { useManagedItem } from '@/hooks';
 
 type UserDialogAction = 'create' | 'edit' | 'reset' | 'delete';
 
@@ -28,6 +29,14 @@ export default function AdminUsersPage() {
     onDelete: (user) => dialogState.openFor('delete', user),
   });
 
+  const tableProps: TableProps<AdminUser> = {
+    dataSource: users ?? [],
+    columns,
+    rowKey: (record) => record.id,
+    pagination: false,
+    scroll: { x: 'max-content' },
+  };
+
   if (usersLoading) {
     return (
       <div className="mx-auto max-w-6xl">
@@ -46,7 +55,7 @@ export default function AdminUsersPage() {
         </Button>
       </div>
 
-      <DataTable columns={columns} data={users ?? []} testid="admin-users-list" useCard={false} />
+      <Table {...tableProps} data-testid="admin-users-list" />
 
       <CreateUserDialog
         {...dialogState.dialogProps('create')}

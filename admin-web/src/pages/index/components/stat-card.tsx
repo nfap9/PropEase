@@ -1,5 +1,5 @@
-import { Card, CardHeader, CardContent } from '@apartment-ultra/shared-ui/components/ui';
-import { cn } from '@/utils';
+
+import { Card } from 'antd';
 
 interface StatCardProps {
   title: string;
@@ -24,14 +24,11 @@ export function StatCard({ title, value, isPercentage, isCurrency, className }: 
   return (
     <Card
       data-testid={`stat-card-${slugify(title)}`}
-      className={cn('transition-shadow hover:shadow-sm', className)}
+      className={className}
+      styles={{ body: { padding: '12px 16px' } }}
     >
-      <CardHeader className="pb-2">
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
-      </CardHeader>
-      <CardContent>
-        <p className="text-2xl font-bold">{formatValue(value, isPercentage, isCurrency)}</p>
-      </CardContent>
+      <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
+      <p className="text-2xl font-bold text-gray-900">{formatValue(value, isPercentage, isCurrency)}</p>
     </Card>
   );
 }

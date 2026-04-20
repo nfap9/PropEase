@@ -1,8 +1,25 @@
-
 /**
  * 主题 Provider
- *
- * 提供深色/浅色模式的主题支持
- * 重新导出自共享 UI 包
  */
-export { ThemeProvider } from '@apartment-ultra/shared-ui/components/ui';
+import { ConfigProvider } from 'antd';
+import type { ThemeConfig } from 'antd';
+import { ReactNode } from 'react';
+
+interface ThemeProviderProps {
+  children: ReactNode;
+}
+
+export function ThemeProvider({ children }: ThemeProviderProps) {
+  const theme: ThemeConfig = {
+    token: {
+      colorPrimary: '#2563eb',
+      borderRadius: 8,
+    },
+  };
+
+  return (
+    <ConfigProvider theme={theme}>
+      {children}
+    </ConfigProvider>
+  );
+}

@@ -1,89 +1,90 @@
 
-import type { ColumnDef } from '@tanstack/react-table';
-import { KeyRound, Pencil, Trash2 } from 'lucide-react';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import type { MenuProps } from 'antd';
+import { Dropdown, Tag } from 'antd';
+import { Button } from 'antd';
 import { formatDateTime } from '@/utils/date';
 import { ORG_STATUS_CONFIG } from '@/utils/status';
-import type { AdminUser } from '@/api/admin-client';
-import { adminMessages } from '@/i18n';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Pencil, KeyRound, Trash2 } from 'lucide-react';
 
 interface CreateAdminUsersColumnsOptions {
-  onEdit: (user: AdminUser) => void;
-  onResetPassword: (user: AdminUser) => void;
-  onDelete: (user: AdminUser) => void;
+  onEdit: (user: any) => void;
+  onResetPassword: (user: any) => void;
+  onDelete: (user: any) => void;
 }
+
+const statusColorMap: Record<string, string> = {
+  success: 'success',
+  warning: 'warning',
+  destructive: 'error',
+  default: 'default',
+  info: 'processing',
+};
 
 export function createAdminUsersColumns({
   onEdit,
   onResetPassword,
   onDelete,
-}: CreateAdminUsersColumnsOptions): ColumnDef<AdminUser>[] {
+}: CreateAdminUsersColumnsOptions) {
   return [
-    { accessorKey: 'username', header: '用户名', size: 140, minSize: 100 },
-    { accessorKey: 'name', header: '姓名', size: 120, minSize: 80 },
+    { title: '用户名', dataIndex: 'username', key: 'username', width: 140 },
+    { title: '姓名', dataIndex: 'name', key: 'name', width: 120 },
     {
-      accessorKey: 'email',
-      header: '邮箱',
-      size: 200,
-      minSize: 150,
-      cell: ({ row }) => row.original.email ?? '—',
+      title: '邮箱',
+      dataIndex: 'email',
+      key: 'email',
+      width: 200,
+      render: (email: any) => email ?? '—',
     },
     {
-      accessorKey: 'is_active',
-      header: '状态',
-      size: 100,
-      minSize: 80,
-      cell: ({ row }) => {
-        const config = row.original.is_active ? ORG_STATUS_CONFIG.active : ORG_STATUS_CONFIG.inactive;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+      title: '状态',
+      dataIndex: 'is_active',
+      key: 'is_active',
+      width: 100,
+      render: (_: any, user: any) => {
+        const config = user.is_active ? ORG_STATUS_CONFIG.active : ORG_STATUS_CONFIG.inactive;
+        return <Tag color={statusColorMap[config.variant] || 'default'}>{config.label}</Tag>;
       },
     },
     {
-      accessorKey: 'last_login_at',
-      header: '最后登录',
-      size: 180,
-      minSize: 150,
-      cell: ({ row }) => (row.original.last_login_at ? formatDateTime(row.original.last_login_at) : '—'),
+      title: '最后登录',
+      dataIndex: 'last_login_at',
+      key: 'last_login_at',
+      width: 180,
+      render: (last_login_at: any) => last_login_at ? formatDateTime(last_login_at) : '—',
     },
     {
-      id: 'actions',
-      header: '操作',
-      size: 80,
-      minSize: 60,
-      cell: ({ row }) => {
-        const user = row.original;
+      title: '操作',
+      key: 'actions',
+      width: 80,
+      render: (_: any, user: any) => {
+        const menuItems: MenuProps['items'] = [
+          {
+            key: 'edit',
+            icon: <Pencil className="h-4 w-4" />,
+            label: '编辑',
+            onClick: () => onEdit(user),
+          },
+          {
+            key: 'reset',
+            icon: <KeyRound className="h-4 w-4" />,
+            label: '重置密码',
+            onClick: () => onResetPassword(user),
+          },
+          ...(!user.is_system ? [{
+            key: 'delete',
+            icon: <Trash2 className="h-4 w-4" />,
+            label: '删除',
+            danger: true,
+            onClick: () => onDelete(user),
+          }] : []),
+        ];
+
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(user)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                编辑
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onResetPassword(user)}>
-                <KeyRound className="mr-2 h-4 w-4" />
-                重置密码
-              </DropdownMenuItem>
-              {!user.is_system && (
-                <DropdownMenuItem onClick={() => onDelete(user)} className="text-destructive">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  删除
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+            <Button type="text" size="small">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </Dropdown>
         );
       },
     },

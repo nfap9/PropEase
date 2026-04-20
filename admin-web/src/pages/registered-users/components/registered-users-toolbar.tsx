@@ -1,12 +1,5 @@
 
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Select } from 'antd';
 import type { FilterActive } from '@/schemas/registered-users';
 import { adminMessages } from '@/i18n';
 
@@ -22,16 +15,11 @@ export function RegisteredUsersToolbar({
   return (
     <div className="flex flex-wrap items-center gap-4 sm:justify-start">
       <div className="flex flex-col gap-1">
-        <Label className="text-xs text-muted-foreground">状态</Label>
-        <Select value={activeFilter} onValueChange={(value) => onActiveFilterChange(value as FilterActive)}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={adminMessages.registeredUsers.toolbar.statusPlaceholder} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{adminMessages.registeredUsers.toolbar.all}</SelectItem>
-            <SelectItem value="active">{adminMessages.registeredUsers.toolbar.active}</SelectItem>
-            <SelectItem value="inactive">{adminMessages.registeredUsers.toolbar.inactive}</SelectItem>
-          </SelectContent>
+        <span className="text-xs text-gray-500">状态</span>
+        <Select value={activeFilter} onChange={(value) => onActiveFilterChange(value as FilterActive)} style={{ width: 120 }}>
+          <Select.Option value="all">{adminMessages.registeredUsers.toolbar.all}</Select.Option>
+          <Select.Option value="active">{adminMessages.registeredUsers.toolbar.active}</Select.Option>
+          <Select.Option value="inactive">{adminMessages.registeredUsers.toolbar.inactive}</Select.Option>
         </Select>
       </div>
     </div>

@@ -1,6 +1,7 @@
+
 import { useState } from 'react';
 import { usePlans, useCreatePlan, useUpdatePlan, useDeletePlan, useUpdatePlanPricing } from '@/hooks/billing';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { Tag } from 'antd';
 import type { AdminPlan, AdminPlanPricingCreate } from '@/api/admin-client';
 import type { PlanPricing } from '@apartment-ultra/api-contract';
 
@@ -25,30 +26,30 @@ export default function BillingPlansPage() {
         <div />
         <button
           onClick={() => setShowCreateDialog(true)}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
         >
           新建服务
         </button>
       </div>
 
       {loading ? (
-        <div className="text-center py-8 text-muted-foreground">加载中...</div>
+        <div className="text-center py-8 text-gray-500">加载中...</div>
       ) : plans.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">暂无服务方案</div>
+        <div className="text-center py-8 text-gray-500">暂无服务方案</div>
       ) : (
         <div className="grid gap-4">
           {plans.map((plan: AdminPlan) => (
-            <div key={plan.id} className="bg-card rounded-lg border border-border p-4">
+            <div key={plan.id} className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium">{plan.name}</h3>
-                    <Badge variant={plan.is_active ? 'success' : 'default'}>
+                    <Tag color={plan.is_active ? 'success' : 'default'}>
                       {plan.is_active ? '启用' : '停用'}
-                    </Badge>
+                    </Tag>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">{plan.description || '无描述'}</p>
-                  <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+                  <p className="text-sm text-gray-500 mt-1">{plan.description || '无描述'}</p>
+                  <div className="flex gap-4 mt-2 text-xs text-gray-500">
                     <span>代码: {plan.code}</span>
                     <span>排序: {plan.sort_order}</span>
                   </div>
@@ -56,13 +57,13 @@ export default function BillingPlansPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setEditingPricing(plan)}
-                    className="px-3 py-1 text-sm border border-border rounded hover:bg-accent"
+                    className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
                   >
                     价格设置
                   </button>
                   <button
                     onClick={() => setEditingPlan(plan)}
-                    className="px-3 py-1 text-sm border border-border rounded hover:bg-accent"
+                    className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
                   >
                     编辑
                   </button>
@@ -72,7 +73,7 @@ export default function BillingPlansPage() {
                         deletePlan.mutate(plan.id);
                       }
                     }}
-                    className="px-3 py-1 text-sm border border-destructive/20 text-destructive rounded hover:bg-destructive/10"
+                    className="px-3 py-1 text-sm border border-red-200 text-red-500 rounded hover:bg-red-50"
                   >
                     删除
                   </button>
@@ -80,17 +81,17 @@ export default function BillingPlansPage() {
               </div>
               {plan.pricing && plan.pricing.length > 0 && (
                 <div className="mt-3 pt-3 border-t">
-                  <p className="text-xs text-muted-foreground mb-2">定价:</p>
+                  <p className="text-xs text-gray-500 mb-2">定价:</p>
                   <div className="flex flex-wrap gap-2">
                     {plan.pricing?.map((p: PlanPricing) => (
-                      <span key={p.id} className="text-sm bg-muted px-2 py-1 rounded">
+                      <span key={p.id} className="text-sm bg-gray-100 px-2 py-1 rounded">
                         {p.months}个月 ¥{p.price}
                       </span>
                     ))}
                   </div>
                 </div>
               )}
-              <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
+              <div className="mt-3 pt-3 border-t text-xs text-gray-500">
                 <span>公寓: {plan.max_apartments === -1 ? '不限' : plan.max_apartments}</span>
                 <span className="mx-2">|</span>
                 <span>房间: {plan.max_rooms === -1 ? '不限' : plan.max_rooms}</span>
@@ -175,7 +176,7 @@ function PlanDialog({ plan, onClose, onSubmit, isPending }: PlanDialogProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-background rounded-lg p-6 w-full max-w-md border border-border shadow-lg">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md border border-gray-200 shadow-lg">
         <h2 className="text-lg font-semibold mb-4">{plan ? '编辑服务' : '新建服务'}</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -185,7 +186,7 @@ function PlanDialog({ plan, onClose, onSubmit, isPending }: PlanDialogProps) {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full border border-input rounded px-3 py-2 bg-background"
+              className="w-full border border-gray-300 rounded px-3 py-2 bg-white"
               placeholder="如：基础版"
             />
           </div>
@@ -196,7 +197,7 @@ function PlanDialog({ plan, onClose, onSubmit, isPending }: PlanDialogProps) {
               required
               value={formData.code}
               onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-              className="w-full border border-input rounded px-3 py-2 bg-background"
+              className="w-full border border-gray-300 rounded px-3 py-2 bg-white"
               placeholder="如：basic"
               disabled={!!plan}
             />
@@ -206,7 +207,7 @@ function PlanDialog({ plan, onClose, onSubmit, isPending }: PlanDialogProps) {
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full border border-input rounded px-3 py-2 bg-background"
+              className="w-full border border-gray-300 rounded px-3 py-2 bg-white"
               rows={2}
             />
           </div>
@@ -218,7 +219,7 @@ function PlanDialog({ plan, onClose, onSubmit, isPending }: PlanDialogProps) {
                 min="0"
                 value={formData.max_apartments}
                 onChange={(e) => setFormData({ ...formData, max_apartments: e.target.valueAsNumber || 0 })}
-                className="w-full border border-input rounded px-3 py-2 bg-background"
+                className="w-full border border-gray-300 rounded px-3 py-2 bg-white"
               />
             </div>
             <div>
@@ -228,7 +229,7 @@ function PlanDialog({ plan, onClose, onSubmit, isPending }: PlanDialogProps) {
                 min="0"
                 value={formData.max_rooms}
                 onChange={(e) => setFormData({ ...formData, max_rooms: e.target.valueAsNumber || 0 })}
-                className="w-full border border-input rounded px-3 py-2 bg-background"
+                className="w-full border border-gray-300 rounded px-3 py-2 bg-white"
               />
             </div>
             <div>
@@ -238,7 +239,7 @@ function PlanDialog({ plan, onClose, onSubmit, isPending }: PlanDialogProps) {
                 min="0"
                 value={formData.max_members}
                 onChange={(e) => setFormData({ ...formData, max_members: e.target.valueAsNumber || 0 })}
-                className="w-full border border-input rounded px-3 py-2 bg-background"
+                className="w-full border border-gray-300 rounded px-3 py-2 bg-white"
               />
             </div>
           </div>
@@ -252,10 +253,10 @@ function PlanDialog({ plan, onClose, onSubmit, isPending }: PlanDialogProps) {
             <label htmlFor="is_active" className="text-sm">启用</label>
           </div>
           <div className="flex justify-end gap-2 pt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 border border-input rounded hover:bg-accent">
+            <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
               取消
             </button>
-            <button type="submit" disabled={isPending} className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50">
+            <button type="submit" disabled={isPending} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
               {isPending ? '保存中...' : '保存'}
             </button>
           </div>
@@ -287,7 +288,7 @@ function PricingDialog({ plan, onClose, onSubmit, isPending }: PricingDialogProp
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-background rounded-lg p-6 w-full max-w-md border border-border shadow-lg">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md border border-gray-200 shadow-lg">
         <h2 className="text-lg font-semibold mb-4">价格设置 - {plan.name}</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           {pricingList.map((p, i) => (
@@ -303,7 +304,7 @@ function PricingDialog({ plan, onClose, onSubmit, isPending }: PricingDialogProp
                     list[i].months = parseInt(e.target.value) || 1;
                     setPricingList(list);
                   }}
-                  className="w-full border border-input rounded px-3 py-2 bg-background"
+                  className="w-full border border-gray-300 rounded px-3 py-2 bg-white"
                 />
               </div>
               <div className="flex-1">
@@ -318,13 +319,13 @@ function PricingDialog({ plan, onClose, onSubmit, isPending }: PricingDialogProp
                     list[i].price = parseFloat(e.target.value) || 0;
                     setPricingList(list);
                   }}
-                  className="w-full border border-input rounded px-3 py-2 bg-background"
+                  className="w-full border border-gray-300 rounded px-3 py-2 bg-white"
                 />
               </div>
               <button
                 type="button"
                 onClick={() => setPricingList(pricingList.filter((_, idx) => idx !== i))}
-                className="mt-6 text-destructive hover:text-destructive/80"
+                className="mt-6 text-red-500 hover:text-red-600"
               >
                 删除
               </button>
@@ -333,15 +334,15 @@ function PricingDialog({ plan, onClose, onSubmit, isPending }: PricingDialogProp
           <button
             type="button"
             onClick={() => setPricingList([...pricingList, { months: 1, price: 0 }])}
-            className="text-sm text-primary hover:text-primary/80"
+            className="text-sm text-blue-600 hover:text-blue-700"
           >
             + 添加定价
           </button>
           <div className="flex justify-end gap-2 pt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 border border-input rounded hover:bg-accent">
+            <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
               取消
             </button>
-            <button type="submit" disabled={isPending} className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50">
+            <button type="submit" disabled={isPending} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
               {isPending ? '保存中...' : '保存'}
             </button>
           </div>

@@ -1,9 +1,10 @@
-import { useMemo, useState, type FormEvent } from 'react';
+
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useConfirmAction, useListFilters } from '@apartment-ultra/shared-ui';
-import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Table, Input } from 'antd';
+import type { TableProps } from 'antd';
+import { Skeleton } from 'antd';
 import { giftSubscriptionSchema, type FilterActive, type GiftSubscriptionForm } from '@/schemas/registered-users';
 import { createRegisteredUsersColumns } from '@/pages/registered-users/components/columns';
 import { useRegisteredUsersData } from '@/hooks/registered-users';
@@ -15,6 +16,7 @@ import {
   RegisteredUserDetailSheet,
 } from '@/pages/registered-users/components/registered-user-dialogs';
 import { RegisteredUsersToolbar } from '@/pages/registered-users/components/registered-users-toolbar';
+import { useListFilters, useConfirmAction } from '@/hooks';
 
 interface RegisteredUsersFiltersState {
   activeFilter: FilterActive;
@@ -81,12 +83,12 @@ export default function AdminRegisteredUsersPage() {
     [deleteConfirm.openFor, disableConfirm.openFor, setActiveMutation]
   );
 
-  const handleSearchChange = (value: string) => {
-    setFilter('search', value);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilter('search', e.target.value);
   };
 
-  const handleSearchSubmit = (value: string) => {
-    patchFilters({ searchSubmitted: value });
+  const handleSearchSubmit = () => {
+    patchFilters({ searchSubmitted: filters.search });
   };
 
   const openGiftDialog = () => {
@@ -96,6 +98,24 @@ export default function AdminRegisteredUsersPage() {
 
     giftForm.reset(getDefaultGiftFormValues(detail));
     setIsGiftOpen(true);
+  };
+
+  const filteredUsers = useMemo(() => {
+    if (!filters.searchSubmitted) return users ?? [];
+    const lowerFilter = filters.searchSubmitted.toLowerCase();
+    return (users ?? []).filter(
+      (user) =>
+        user.full_name?.toLowerCase().includes(lowerFilter) ||
+        user.phone?.includes(lowerFilter)
+    );
+  }, [users, filters.searchSubmitted]);
+
+  const tableProps: TableProps = {
+    dataSource: filteredUsers,
+    columns,
+    rowKey: (record: any) => record.id,
+    pagination: { pageSize: 20, showSizeChanger: true, showTotal: (total: number) => `共 ${total} 条` },
+    scroll: { x: 'max-content' },
   };
 
   if (usersLoading) {
@@ -109,22 +129,21 @@ export default function AdminRegisteredUsersPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <DataTable
-        columns={columns}
-        data={users ?? []}
-        testid="admin-registered-users-list"
-        enableGlobalSearch={true}
-        globalFilter={filters.search}
-        onGlobalFilterChange={handleSearchChange}
-        onGlobalSearchSubmit={handleSearchSubmit}
-        searchPlaceholder="搜索用户名、手机号..."
-        toolbar={
-          <RegisteredUsersToolbar
-            activeFilter={filters.activeFilter}
-            onActiveFilterChange={(value) => setFilter('activeFilter', value)}
-          />
-        }
-      />
+      <div className="mb-4 flex items-center gap-4">
+        <Input.Search
+          placeholder="搜索用户名、手机号..."
+          value={filters.search}
+          onChange={handleSearchChange}
+          onSearch={handleSearchSubmit}
+          style={{ width: 300 }}
+        />
+        <RegisteredUsersToolbar
+          activeFilter={filters.activeFilter}
+          onActiveFilterChange={(value) => setFilter('activeFilter', value)}
+        />
+      </div>
+
+      <Table {...tableProps} data-testid="admin-registered-users-list" />
 
       <DisableRegisteredUserDialog
         {...disableConfirm.dialogProps}

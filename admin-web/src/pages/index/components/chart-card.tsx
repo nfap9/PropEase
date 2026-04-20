@@ -1,4 +1,5 @@
-import { Card, CardHeader, CardContent } from '@apartment-ultra/shared-ui/components/ui';
+
+import { Card } from 'antd';
 
 interface ChartCardProps {
   title: string;
@@ -7,11 +8,11 @@ interface ChartCardProps {
 
 export function ChartCard({ title, children }: ChartCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <p className="text-xl font-semibold">{title}</p>
-      </CardHeader>
-      <CardContent className="p-6">{children}</CardContent>
+    <Card styles={{ body: { padding: 0 } }}>
+      <div className="px-4 py-3 border-b">
+        <p className="text-xl font-semibold text-gray-900">{title}</p>
+      </div>
+      <div className="p-6">{children}</div>
     </Card>
   );
 }

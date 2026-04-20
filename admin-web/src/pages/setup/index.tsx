@@ -5,15 +5,7 @@ import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { adminApiEndpoints, AdminTokenResponse } from '@/api/admin-client';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Input, Card } from 'antd';
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 
 const schema = z
@@ -125,163 +117,161 @@ export default function AdminSetupPage() {
   // 检查状态时显示加载
   if (isChecking) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30">
-        <div className="text-muted-foreground">检查系统状态...</div>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-gray-500">检查系统状态...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>系统初始化</CardTitle>
-          <CardDescription>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
+      <Card className="w-full max-w-md" styles={{ body: { padding: '24px' } }}>
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold">系统初始化</h2>
+          <p className="mt-1 text-sm text-gray-500">
             创建第一个超级管理员账号，完成系统初始化
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FormProvider {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {error && (
-                <p className="flex items-center gap-2 text-sm text-destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  {error}
-                </p>
+          </p>
+        </div>
+        <FormProvider {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {error && (
+              <p className="flex items-center gap-2 text-sm text-red-500">
+                <AlertCircle className="h-4 w-4" />
+                {error}
+              </p>
+            )}
+
+            <Controller
+              control={form.control}
+              name="username"
+              render={({ field, fieldState }) => (
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">用户名</label>
+                  <Input
+                    placeholder="请输入用户名（字母、数字、下划线）"
+                    {...field}
+                    autoComplete="username"
+                  />
+                  {fieldState.error && (
+                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
+                  )}
+                </div>
               )}
+            />
 
-              <Controller
-                control={form.control}
-                name="username"
-                render={({ field, fieldState }) => (
+            <Controller
+              control={form.control}
+              name="name"
+              render={({ field, fieldState }) => (
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">显示名称（可选）</label>
+                  <Input placeholder="请输入显示名称" {...field} />
+                  {fieldState.error && (
+                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
+                  )}
+                </div>
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="password"
+              render={({ field, fieldState }) => (
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">密码</label>
+                  <Input
+                    type="password"
+                    placeholder="请输入密码"
+                    {...field}
+                    autoComplete="new-password"
+                  />
                   <div className="space-y-1">
-                    <label className="text-sm font-medium">用户名</label>
-                    <Input
-                      placeholder="请输入用户名（字母、数字、下划线）"
-                      {...field}
-                      autoComplete="username"
-                    />
-                    {fieldState.error && (
-                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
-                    )}
+                    <p className="text-xs">密码要求：</p>
+                    <ul className="grid grid-cols-2 gap-1 text-xs">
+                      <li className="flex items-center gap-1">
+                        {password.length >= 8 ? (
+                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <AlertCircle className="h-3 w-3 text-gray-400" />
+                        )}
+                        至少8个字符
+                      </li>
+                      <li className="flex items-center gap-1">
+                        {/[A-Z]/.test(password) ? (
+                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <AlertCircle className="h-3 w-3 text-gray-400" />
+                        )}
+                        大写字母
+                      </li>
+                      <li className="flex items-center gap-1">
+                        {/[a-z]/.test(password) ? (
+                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <AlertCircle className="h-3 w-3 text-gray-400" />
+                        )}
+                        小写字母
+                      </li>
+                      <li className="flex items-center gap-1">
+                        {/[0-9]/.test(password) ? (
+                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <AlertCircle className="h-3 w-3 text-gray-400" />
+                        )}
+                        数字
+                      </li>
+                      <li className="flex items-center gap-1">
+                        {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password) ? (
+                          <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <AlertCircle className="h-3 w-3 text-gray-400" />
+                        )}
+                        特殊字符
+                      </li>
+                    </ul>
                   </div>
-                )}
-              />
+                  {fieldState.error && (
+                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
+                  )}
+                </div>
+              )}
+            />
 
-              <Controller
-                control={form.control}
-                name="name"
-                render={({ field, fieldState }) => (
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium">显示名称（可选）</label>
-                    <Input placeholder="请输入显示名称" {...field} />
-                    {fieldState.error && (
-                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
-                    )}
-                  </div>
-                )}
-              />
+            <Controller
+              control={form.control}
+              name="confirmPassword"
+              render={({ field, fieldState }) => (
+                <div className="space-y-1">
+                  <label className="text-sm font-medium">确认密码</label>
+                  <Input
+                    type="password"
+                    placeholder="请再次输入密码"
+                    {...field}
+                    autoComplete="new-password"
+                  />
+                  {fieldState.error && (
+                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
+                  )}
+                </div>
+              )}
+            />
 
-              <Controller
-                control={form.control}
-                name="password"
-                render={({ field, fieldState }) => (
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium">密码</label>
-                    <Input
-                      type="password"
-                      placeholder="请输入密码"
-                      {...field}
-                      autoComplete="new-password"
-                    />
-                    <div className="space-y-1">
-                      <p className="text-xs">密码要求：</p>
-                      <ul className="grid grid-cols-2 gap-1 text-xs">
-                        <li className="flex items-center gap-1">
-                          {password.length >= 8 ? (
-                            <CheckCircle2 className="h-3 w-3 text-green-500" />
-                          ) : (
-                            <AlertCircle className="h-3 w-3 text-muted-foreground" />
-                          )}
-                          至少8个字符
-                        </li>
-                        <li className="flex items-center gap-1">
-                          {/[A-Z]/.test(password) ? (
-                            <CheckCircle2 className="h-3 w-3 text-green-500" />
-                          ) : (
-                            <AlertCircle className="h-3 w-3 text-muted-foreground" />
-                          )}
-                          大写字母
-                        </li>
-                        <li className="flex items-center gap-1">
-                          {/[a-z]/.test(password) ? (
-                            <CheckCircle2 className="h-3 w-3 text-green-500" />
-                          ) : (
-                            <AlertCircle className="h-3 w-3 text-muted-foreground" />
-                          )}
-                          小写字母
-                        </li>
-                        <li className="flex items-center gap-1">
-                          {/[0-9]/.test(password) ? (
-                            <CheckCircle2 className="h-3 w-3 text-green-500" />
-                          ) : (
-                            <AlertCircle className="h-3 w-3 text-muted-foreground" />
-                          )}
-                          数字
-                        </li>
-                        <li className="flex items-center gap-1">
-                          {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password) ? (
-                            <CheckCircle2 className="h-3 w-3 text-green-500" />
-                          ) : (
-                            <AlertCircle className="h-3 w-3 text-muted-foreground" />
-                          )}
-                          特殊字符
-                        </li>
-                      </ul>
-                    </div>
-                    {fieldState.error && (
-                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
-                    )}
-                  </div>
-                )}
-              />
-
-              <Controller
-                control={form.control}
-                name="confirmPassword"
-                render={({ field, fieldState }) => (
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium">确认密码</label>
-                    <Input
-                      type="password"
-                      placeholder="请再次输入密码"
-                      {...field}
-                      autoComplete="new-password"
-                    />
-                    {fieldState.error && (
-                      <p className="text-sm text-destructive">{fieldState.error.message}</p>
-                    )}
-                  </div>
-                )}
-              />
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isSubmitting || !passwordValidation.valid}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    初始化中...
-                  </>
-                ) : (
-                  '完成初始化'
-                )}
-              </Button>
-            </form>
-          </FormProvider>
-        </CardContent>
+            <Button
+              htmlType="submit"
+              className="w-full"
+              disabled={isSubmitting || !passwordValidation.valid}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  初始化中...
+                </>
+              ) : (
+                '完成初始化'
+              )}
+            </Button>
+          </form>
+        </FormProvider>
       </Card>
     </div>
   );

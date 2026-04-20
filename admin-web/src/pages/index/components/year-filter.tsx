@@ -1,5 +1,5 @@
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@apartment-ultra/shared-ui/components/ui';
+import { Select } from 'antd';
 
 interface YearFilterProps {
   value: number;
@@ -13,18 +13,13 @@ export function YearFilter({ value, onChange }: YearFilterProps) {
   return (
     <Select
       value={String(value)}
-      onValueChange={(v) => onChange(Number(v))}
+      onChange={(v) => onChange(Number(v))}
     >
-      <SelectTrigger className="w-36">
-        <SelectValue placeholder="选择年份" />
-      </SelectTrigger>
-      <SelectContent>
-        {years.map((year) => (
-          <SelectItem key={year} value={String(year)}>
-            {year}年
-          </SelectItem>
-        ))}
-      </SelectContent>
+      {years.map((year) => (
+        <Select.Option key={year} value={String(year)}>
+          {year}年
+        </Select.Option>
+      ))}
     </Select>
   );
 }

@@ -1,7 +1,8 @@
+
 import { useState } from 'react';
-import type { ColumnDef } from '@tanstack/react-table';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
+import { Tag, Table } from 'antd';
+import type { TableProps } from 'antd';
+import { Select } from 'antd';
 import { useBillingOrders } from '@/hooks/billing';
 import {
   formatOrderAmount,
@@ -11,14 +12,6 @@ import {
   BILLING_ORDER_TYPE_OPTIONS,
 } from '@/types/billing';
 import type { BillingOrder, BillingOrderStatus, BillingOrderType } from '@apartment-ultra/api-contract';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
 
 export default function BillingOrdersPage() {
   const [typeFilter, setTypeFilter] = useState<BillingOrderType | undefined>();
@@ -33,60 +26,86 @@ export default function BillingOrdersPage() {
     offset: page * pageSize,
   });
 
-  const columns: ColumnDef<BillingOrder>[] = [
+  const columns = [
     {
-      accessorKey: 'order_no',
-      header: '订单号',
-      size: 180,
-      cell: ({ row }) => <span className="font-mono text-sm">{row.original.order_no}</span>,
+      title: '订单号',
+      dataIndex: 'order_no',
+      key: 'order_no',
+      width: 180,
+      render: (order_no: any) => <span className="font-mono text-sm">{order_no}</span>,
     },
     {
-      accessorKey: 'order_type',
-      header: '类型',
-      size: 100,
-      cell: ({ row }) => (
-        <Badge variant={row.original.order_type === 'subscription' ? 'info' : 'warning'}>
-          {getOrderTypeLabel(row.original.order_type)}
-        </Badge>
+      title: '类型',
+      dataIndex: 'order_type',
+      key: 'order_type',
+      width: 100,
+      render: (_: any, order: any) => (
+        <Tag color={order.order_type === 'subscription' ? 'processing' : 'warning'}>
+          {getOrderTypeLabel(order.order_type)}
+        </Tag>
       ),
     },
     {
-      accessorKey: 'amount',
-      header: '金额',
-      size: 100,
-      cell: ({ row }) => formatOrderAmount(row.original),
+      title: '金额',
+      dataIndex: 'amount',
+      key: 'amount',
+      width: 100,
+      render: (_: any, order: any) => formatOrderAmount(order),
     },
     {
-      accessorKey: 'status',
-      header: '状态',
-      size: 100,
-      cell: ({ row }) => {
-        const statusMap: Record<BillingOrderStatus, 'success' | 'warning' | 'destructive' | 'default'> = {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      width: 100,
+      render: (_: any, order: any) => {
+        const statusColorMap: Record<string, string> = {
           pending: 'warning',
           paid: 'success',
-          cancelled: 'destructive',
+          cancelled: 'error',
           expired: 'default',
         };
         return (
-          <Badge variant={statusMap[row.original.status] ?? 'default'}>
-            {getOrderStatusLabel(row.original.status)}
-          </Badge>
+          <Tag color={statusColorMap[order.status] ?? 'default'}>
+            {getOrderStatusLabel(order.status)}
+          </Tag>
         );
       },
     },
     {
-      accessorKey: 'organization_id',
-      header: '组织',
-      size: 200,
-      cell: ({ row }) => row.original.organization_id ?? '-',
+      title: '组织',
+      dataIndex: 'organization_id',
+      key: 'organization_id',
+      width: 200,
+      render: (organization_id: any) => organization_id ?? '-',
     },
     {
-      accessorKey: 'created_at',
-      header: '创建时间',
-      size: 180,
-      cell: ({ row }) => new Date(row.original.created_at).toLocaleString('zh-CN'),
+      title: '创建时间',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      width: 180,
+      render: (created_at: any) => new Date(created_at).toLocaleString('zh-CN'),
     },
   ];
+
+  const tableProps: TableProps = {
+    dataSource: orders,
+    columns,
+    loading,
+    rowKey: (record: any) => record.id,
+    pagination: {
+      current: page + 1,
+      pageSize,
+      total,
+      showSizeChanger: true,
+      showQuickJumper: true,
+      pageSizeOptions: ['10', '20', '50', '100'],
+      showTotal: (total: number) => `共 ${total} 条`,
+    },
+    onChange: (pagination) => {
+      setPage((pagination.current ?? 1) - 1);
+    },
+    scroll: { x: 'max-content' },
+  };
 
   return (
     <div className="space-y-6">
@@ -94,67 +113,45 @@ export default function BillingOrdersPage() {
         <h1 className="text-2xl font-semibold">订单管理</h1>
         <p className="mt-1 text-sm text-gray-500">查看和管理所有订单</p>
       </div>
-      <DataTable
-        columns={columns}
-        data={orders}
-        loading={loading}
-        getRowId={(row) => row.id}
-        emptyTitle="暂无订单"
-        enablePagination={true}
-        manualPagination={true}
-        pageCount={Math.ceil(total / pageSize)}
-        pagination={{ pageIndex: page, pageSize }}
-        onPaginationChange={({ pageIndex }) => setPage(pageIndex)}
-        total={total}
-        toolbar={
-          <div className="flex gap-4">
-            <div className="flex items-center gap-2">
-              <Label className="text-sm">类型:</Label>
-              <Select
-                value={typeFilter ?? 'all'}
-                onValueChange={(v) => {
-                  setTypeFilter(v === 'all' ? undefined : (v as BillingOrderType));
-                  setPage(0);
-                }}
-              >
-                <SelectTrigger className="w-[120px]">
-                  <SelectValue placeholder="全部" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">全部</SelectItem>
-                  {BILLING_ORDER_TYPE_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <Label className="text-sm">状态:</Label>
-              <Select
-                value={statusFilter ?? 'all'}
-                onValueChange={(v) => {
-                  setStatusFilter(v === 'all' ? undefined : (v as BillingOrderStatus));
-                  setPage(0);
-                }}
-              >
-                <SelectTrigger className="w-[120px]">
-                  <SelectValue placeholder="全部" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">全部</SelectItem>
-                  {BILLING_ORDER_STATUS_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        }
-      />
+      <div className="flex gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm">类型:</span>
+          <Select
+            value={typeFilter ?? 'all'}
+            onChange={(v) => {
+              setTypeFilter(v === 'all' ? undefined : (v as BillingOrderType));
+              setPage(0);
+            }}
+            style={{ width: 120 }}
+          >
+            <Select.Option value="all">全部</Select.Option>
+            {BILLING_ORDER_TYPE_OPTIONS.map((opt) => (
+              <Select.Option key={opt.value} value={opt.value}>
+                {opt.label}
+              </Select.Option>
+            ))}
+          </Select>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm">状态:</span>
+          <Select
+            value={statusFilter ?? 'all'}
+            onChange={(v) => {
+              setStatusFilter(v === 'all' ? undefined : (v as BillingOrderStatus));
+              setPage(0);
+            }}
+            style={{ width: 120 }}
+          >
+            <Select.Option value="all">全部</Select.Option>
+            {BILLING_ORDER_STATUS_OPTIONS.map((opt) => (
+              <Select.Option key={opt.value} value={opt.value}>
+                {opt.label}
+              </Select.Option>
+            ))}
+          </Select>
+        </div>
+      </div>
+      <Table {...tableProps} />
     </div>
   );
 }

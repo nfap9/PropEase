@@ -1,33 +1,21 @@
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Table, Dropdown, Tag, Button } from 'antd';
+import type { TableProps } from 'antd';
+import { Select } from 'antd';
+import { Skeleton } from 'antd';
 import { ORG_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/utils/status';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { adminApiEndpoints, AdminOrganization } from '@/api/admin-client';
+  adminApiEndpoints,
+  AdminOrganization,
+} from '@/api/admin-client';
 import { getErrorMessage } from '@/utils/error';
 import { formatDateTime } from '@/utils/date';
-import { ColumnDef } from '@tanstack/react-table';
-import { Eye, Power, PowerOff } from 'lucide-react';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Eye, Power, PowerOff, MoreHorizontal } from 'lucide-react';
 import { adminMessages } from '@/i18n';
-import { MoreHorizontal } from 'lucide-react';
 
 type FilterActive = 'all' | 'active' | 'inactive';
 
@@ -59,105 +47,103 @@ export default function AdminOrganizationsPage() {
     onError: (error) => toast.error(getErrorMessage(error, '操作失败，请重试')),
   });
 
-  const columns: ColumnDef<AdminOrganization>[] = [
+  const columns = [
     {
-      accessorKey: 'name',
-      header: adminMessages.organizations.columns.name,
-      size: 200,
-      minSize: 150,
-      cell: ({ row }) => (
+      title: adminMessages.organizations.columns.name,
+      dataIndex: 'name',
+      key: 'name',
+      width: 200,
+      render: (name: any, org: any) => (
         <Link
-          to={`/organizations/${row.original.id}`}
-          className="font-medium text-primary hover:underline"
+          to={`/organizations/${org.id}`}
+          className="font-medium text-blue-600 hover:underline"
         >
-          {row.original.name}
+          {name}
         </Link>
       ),
     },
-    { accessorKey: 'slug', header: 'Slug', size: 150, minSize: 120 },
-    { accessorKey: 'plan', header: adminMessages.organizations.columns.service, size: 140, minSize: 100 },
+    { title: 'Slug', dataIndex: 'slug', key: 'slug', width: 150 },
+    { title: adminMessages.organizations.columns.service, dataIndex: 'plan', key: 'plan', width: 140 },
     {
-      accessorKey: 'is_personal',
-      header: adminMessages.organizations.columns.personal,
-      size: 100,
-      minSize: 80,
-      cell: ({ row }) => {
-        const config = row.original.is_personal
+      title: adminMessages.organizations.columns.personal,
+      dataIndex: 'is_personal',
+      key: 'is_personal',
+      width: 100,
+      render: (is_personal: any) => {
+        const config = is_personal
           ? BOOLEAN_YES_NO_CONFIG.yes
           : BOOLEAN_YES_NO_CONFIG.no;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <Tag color={config.variant === 'success' ? 'success' : config.variant === 'warning' ? 'warning' : config.variant === 'destructive' ? 'error' : 'default'}>{config.label}</Tag>;
       },
     },
     {
-      accessorKey: 'is_active',
-      header: adminMessages.organizations.columns.status,
-      size: 100,
-      minSize: 80,
-      cell: ({ row }) => {
-        const config = row.original.is_active
+      title: adminMessages.organizations.columns.status,
+      dataIndex: 'is_active',
+      key: 'is_active',
+      width: 100,
+      render: (is_active: any) => {
+        const config = is_active
           ? ORG_STATUS_CONFIG.active
           : ORG_STATUS_CONFIG.inactive;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <Tag color={config.variant === 'success' ? 'success' : config.variant === 'warning' ? 'warning' : config.variant === 'destructive' ? 'error' : 'default'}>{config.label}</Tag>;
       },
     },
     {
-      accessorKey: 'created_at',
-      header: adminMessages.organizations.columns.createdAt,
-      size: 180,
-      minSize: 150,
-      cell: ({ row }) => formatDateTime(row.original.created_at),
+      title: adminMessages.organizations.columns.createdAt,
+      dataIndex: 'created_at',
+      key: 'created_at',
+      width: 180,
+      render: (created_at: any) => formatDateTime(created_at),
     },
     {
-      id: 'actions',
-      header: adminMessages.organizations.columns.actions,
-      size: 80,
-      minSize: 60,
-      cell: ({ row }) => {
-        const org = row.original;
+      title: adminMessages.organizations.columns.actions,
+      key: 'actions',
+      width: 80,
+      render: (_: any, org: any) => {
+        const menuItems = [
+          {
+            key: 'detail',
+            icon: <Eye className="h-4 w-4" />,
+            label: adminMessages.organizations.actions.detail,
+            onClick: () => navigate(`/organizations/${org.id}`),
+          },
+          org.is_active ? {
+            key: 'disable',
+            icon: <PowerOff className="h-4 w-4" />,
+            label: adminMessages.organizations.actions.disable,
+            danger: true,
+            onClick: () => setActiveMutation.mutate({ id: org.id, is_active: false }),
+          } : {
+            key: 'enable',
+            icon: <Power className="h-4 w-4" />,
+            label: adminMessages.organizations.actions.enable,
+            onClick: () => setActiveMutation.mutate({ id: org.id, is_active: true }),
+          },
+        ];
+
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigate(`/organizations/${org.id}`)}>
-                <Eye className="mr-2 h-4 w-4" />
-                {adminMessages.organizations.actions.detail}
-              </DropdownMenuItem>
-              {org.is_active ? (
-                <DropdownMenuItem
-                  onClick={() =>
-                    setActiveMutation.mutate({
-                      id: org.id,
-                      is_active: false,
-                    })
-                  }
-                  className="text-destructive"
-                >
-                  <PowerOff className="mr-2 h-4 w-4" />
-                  {adminMessages.organizations.actions.disable}
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem
-                  onClick={() =>
-                    setActiveMutation.mutate({
-                      id: org.id,
-                      is_active: true,
-                    })
-                  }
-                >
-                  <Power className="mr-2 h-4 w-4" />
-                  {adminMessages.organizations.actions.enable}
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Dropdown
+            menu={{
+              items: menuItems.filter(Boolean),
+            }}
+            trigger={['click']}
+          >
+            <Button type="text" size="small">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </Dropdown>
         );
       },
     },
   ];
+
+  const tableProps: TableProps = {
+    dataSource: organizations ?? [],
+    columns,
+    rowKey: (record: any) => record.id,
+    pagination: false,
+    scroll: { x: 'max-content' },
+  };
 
   if (isLoading) {
     return (
@@ -170,27 +156,17 @@ export default function AdminOrganizationsPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <DataTable
-        columns={columns}
-        data={organizations ?? []}
-        testid="admin-organizations-list"
-        useCard={false}
-        toolbar={
-          <div className="flex flex-col gap-1">
-            <Label className="text-xs text-muted-foreground">状态</Label>
-            <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as FilterActive)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={adminMessages.organizations.filters.statusPlaceholder} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{adminMessages.organizations.filters.all}</SelectItem>
-                <SelectItem value="active">{adminMessages.organizations.filters.active}</SelectItem>
-                <SelectItem value="inactive">{adminMessages.organizations.filters.inactive}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        }
-      />
+      <div className="mb-4 flex items-center gap-4">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs text-gray-500">状态</span>
+          <Select value={activeFilter} onChange={(v) => setActiveFilter(v as FilterActive)} style={{ width: 120 }}>
+            <Select.Option value="all">{adminMessages.organizations.filters.all}</Select.Option>
+            <Select.Option value="active">{adminMessages.organizations.filters.active}</Select.Option>
+            <Select.Option value="inactive">{adminMessages.organizations.filters.inactive}</Select.Option>
+          </Select>
+        </div>
+      </div>
+      <Table {...tableProps} data-testid="admin-organizations-list" />
     </div>
   );
 }
