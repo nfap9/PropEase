@@ -30,14 +30,14 @@ import { ApartmentDetailHeader } from '@/pages/apartments/detail/components/apar
 import { ApartmentOverviewTab } from '@/pages/apartments/detail/components/apartment-overview-tab';
 import { ApartmentRoomListTab } from '@/pages/apartments/detail/components/apartment-room-list-tab';
 import { UtilityConfigDialog } from '@/pages/apartments/detail/components/UtilityConfigDialog';
+import { ApartmentEditDialog } from '@/pages/apartments/detail/components/apartment-edit-dialog';
 import {
-  ApartmentEditDialog,
   BatchCreateRoomDialog,
   BatchEditDialog,
   CreateRoomDialog,
   DeleteRoomDialog,
   RoomEditDialog,
-} from '@/pages/apartments/detail/components/apartment-detail-dialogs';
+} from '@/pages/apartments/detail/components/room-dialogs';
 
 export default function ApartmentDetailPage() {
   const params = useParams();

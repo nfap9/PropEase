@@ -2,15 +2,14 @@ import { lazy, Suspense, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Button, Tabs } from 'antd';
+import { Tabs } from 'antd';
 import { useAuth } from '@/contexts/auth';
-import { Plus, Upload, Download } from 'lucide-react';
 import type { RoomMissingInitialReading, UtilityReading } from '@/types';
 import type { PendingUtilityBillRow } from '@/types/utilities';
 import { useUtilitiesData } from '@/hooks/use-utilities';
-import { MonthStatsCard, useMonthStats } from './components/MonthStatsCard';
-import { PendingBillTable } from './components/PendingBillTable';
-import { MissingInitialWarning } from './components/MissingInitialWarning';
+import { useMonthStats } from './components/MonthStatsCard';
+import { EntryTab } from './tabs/EntryTab';
+import { HistoryTab } from './tabs/HistoryTab';
 
 const CreateUtilityDialog = lazy(() =>
   import('@/pages/utilities/components/CreateUtilityDialog').then((mod) => ({ default: mod.CreateUtilityDialog }))
@@ -26,9 +25,6 @@ const InitialReadingDialog = lazy(() =>
 );
 const EditUtilityDialog = lazy(() =>
   import('@/pages/utilities/components/EditUtilityDialog').then((mod) => ({ default: mod.EditUtilityDialog }))
-);
-const UtilityHistoryPanel = lazy(() =>
-  import('@/pages/utilities/components/UtilityHistoryPanel').then((mod) => ({ default: mod.UtilityHistoryPanel }))
 );
 
 export default function UtilitiesPage() {
@@ -142,7 +138,7 @@ export default function UtilitiesPage() {
               label: '历史记录',
               children: (
                 <Suspense fallback={<div className="flex h-40 items-center justify-center text-gray-400">加载中...</div>}>
-                  <UtilityHistoryPanel orgId={orgId} />
+                  <HistoryTab orgId={orgId} />
                 </Suspense>
               ),
             },
@@ -208,68 +204,6 @@ export default function UtilitiesPage() {
   );
 }
 
-// --- Entry Tab ---
-interface EntryTabProps {
-  recordedCount: number;
-  totalCount: number;
-  missingCount: number;
-  readyToBillCount: number;
-  overdueCount: number;
-  bills: PendingUtilityBillRow[];
-  missingRooms: RoomMissingInitialReading[];
-  onEntry: (record: PendingUtilityBillRow) => void;
-  onUpdate: (record: PendingUtilityBillRow) => void;
-  onMissingEntry: (room: RoomMissingInitialReading) => void;
-  onExportTemplate: () => void;
-  onBatchImport: () => void;
-  onAdd: () => void;
-}
-
-function EntryTab({
-  recordedCount,
-  totalCount,
-  missingCount,
-  readyToBillCount,
-  overdueCount,
-  bills,
-  missingRooms,
-  onEntry,
-  onUpdate,
-  onMissingEntry,
-  onExportTemplate,
-  onBatchImport,
-  onAdd,
-}: EntryTabProps) {
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <MonthStatsCard
-          recordedCount={recordedCount}
-          totalCount={totalCount}
-          missingCount={missingCount}
-          readyToBillCount={readyToBillCount}
-          overdueCount={overdueCount}
-        />
-        <div className="flex gap-2">
-          <Button variant="outlined" onClick={onExportTemplate} icon={<Download className="h-4 w-4" />}>
-            导出模版
-          </Button>
-          <Button variant="outlined" onClick={onBatchImport} icon={<Upload className="h-4 w-4" />}>
-            批量导入
-          </Button>
-          <Button type="primary" onClick={onAdd} icon={<Plus className="h-4 w-4" />}>
-            录入读数
-          </Button>
-        </div>
-      </div>
-
-      <PendingBillTable data={bills} onEntry={onEntry} onUpdate={onUpdate} />
-
-      <MissingInitialWarning rooms={missingRooms} onEntry={onMissingEntry} />
-    </div>
-  );
-}
-
 // --- Placeholders ---
 function PageLoading() {
   return (
@@ -290,6 +224,3 @@ function NoOrgPlaceholder() {
     </div>
   );
 }
-
-// 重新导出 MonthStatsCard（包含 useMonthStats）
-export { MonthStatsCard, useMonthStats } from './components/MonthStatsCard';

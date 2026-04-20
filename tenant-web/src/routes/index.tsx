@@ -22,7 +22,6 @@ import LeaseDetailPage from '@/pages/leases/detail';
 import BillsPage from '@/pages/bills/index';
 import ReportsPage from '@/pages/reports/index';
 import UtilitiesPage from '@/pages/utilities/index';
-import UtilitiesHistoryPage from '@/pages/utilities/history';
 import NotificationsPage from '@/pages/notifications/index';
 import SettingsTeamPage from '@/pages/settings/team/detail';
 import SettingsTeamMembersPage from '@/pages/settings/team/members';
@@ -55,7 +54,6 @@ const workspaceRoutes: RouteObject[] = [
   { path: 'bills', element: <BillsPage /> },
   { path: 'reports', element: <ReportsPage /> },
   { path: 'utilities', element: <UtilitiesPage /> },
-  { path: 'utilities/history', element: <UtilitiesHistoryPage /> },
   {
     path: 'team',
     element: <TeamPage />,

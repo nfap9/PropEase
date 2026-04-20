@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { HistoryFilters } from './HistoryFilters';
-import { HistoryTable } from './HistoryTable';
-import { EditUtilityDialog } from './EditUtilityDialog';
+import { HistoryFilters } from '../components/HistoryFilters';
+import { HistoryTable } from '../components/HistoryTable';
+import { EditUtilityDialog } from '../components/EditUtilityDialog';
 import { apartmentsApi } from '@/api/apartments';
 import { billsApi } from '@/api/bills';
 import { leasesApi } from '@/api/leases';
@@ -35,11 +35,11 @@ interface LeaseMonthRow {
   electricityFee: number;
 }
 
-interface UtilityHistoryPanelProps {
+interface HistoryTabProps {
   orgId: string;
 }
 
-export function UtilityHistoryPanel({ orgId }: UtilityHistoryPanelProps) {
+export function HistoryTab({ orgId }: HistoryTabProps) {
   const queryClient = useQueryClient();
 
   const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);

@@ -20,9 +20,9 @@ import {
 import { buildBillStats, filterBillsByStatus, getBillStatusFilter } from '@/utils/bills';
 import { BillsListView } from '@/pages/bills/components/bills-list-view';
 
-const BillDetailDialog = lazy(() => import('@/pages/bills/components/bill-dialogs').then((mod) => ({ default: mod.BillDetailDialog })));
-const BillGenerateDialog = lazy(() => import('@/pages/bills/components/bill-dialogs').then((mod) => ({ default: mod.BillGenerateDialog })));
-const BillPaymentDialog = lazy(() => import('@/pages/bills/components/bill-dialogs').then((mod) => ({ default: mod.BillPaymentDialog })));
+const BillDetailDialog = lazy(() => import('@/pages/bills/components/bill-detail-dialog').then((mod) => ({ default: mod.BillDetailDialog })));
+const BillGenerateDialog = lazy(() => import('@/pages/bills/components/bill-generate-dialog').then((mod) => ({ default: mod.BillGenerateDialog })));
+const BillPaymentDialog = lazy(() => import('@/pages/bills/components/bill-payment-dialog').then((mod) => ({ default: mod.BillPaymentDialog })));
 
 function BillsFallback() {
   return (

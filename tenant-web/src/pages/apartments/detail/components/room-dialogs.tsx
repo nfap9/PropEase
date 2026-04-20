@@ -1,14 +1,12 @@
 
 import { Check, Loader2, Settings2 } from 'lucide-react';
 import type { UseFormReturn } from 'react-hook-form';
-import { ApartmentForm } from '@/pages/apartments/components';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
 import { EditRoomDialog } from '@/pages/rooms/components/EditRoomDialog';
-import { Modal, Drawer, Button, Input, Select, Switch, message } from 'antd';
+import { Modal, Drawer, Button, Input, Select, Switch } from 'antd';
 import { Label } from '@/components/common/label';
-import type { Room, RoomFacilities, RoomStatus } from '@/types';
+import type { Room, RoomFacilities } from '@/types';
 import {
-  type ApartmentFormData,
   type BatchEditFormData,
   type RoomBatchConfigData,
   type RoomFormData,
@@ -17,36 +15,27 @@ import {
 import type { GeneratedFloorRooms } from '@/utils/apartment-detail';
 import { getFacilitiesSummary } from '@/utils/apartment-detail';
 
-export function ApartmentEditDialog({
-  open,
-  onOpenChange,
-  form,
-  onSubmit,
-  isPending,
+function FormField({
+  label,
+  htmlFor,
+  error,
+  required,
+  children,
 }: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  form: UseFormReturn<ApartmentFormData>;
-  onSubmit: (data: ApartmentFormData) => void;
-  isPending: boolean;
+  label: string;
+  htmlFor: string;
+  error?: string;
+  required?: boolean;
+  children: React.ReactNode;
 }) {
   return (
-    <Modal
-      open={open}
-      onCancel={() => onOpenChange(false)}
-      title="编辑公寓"
-      footer={[
-        <Button key="cancel" onClick={() => onOpenChange(false)}>
-          取消
-        </Button>,
-        <Button key="submit" type="primary" loading={isPending} onClick={form.handleSubmit(onSubmit)}>
-          {isPending ? '保存中...' : '保存'}
-        </Button>,
-      ]}
-    >
-      <p className="mb-4 text-sm text-gray-600">修改公寓信息</p>
-      <ApartmentForm form={form} mode="edit" onSubmit={onSubmit} />
-    </Modal>
+    <div className="space-y-2">
+      <Label htmlFor={htmlFor} required={required}>
+        {label}
+      </Label>
+      {children}
+      {error ? <p className="text-sm text-red-500">{error}</p> : null}
+    </div>
   );
 }
 
@@ -480,29 +469,5 @@ export function RoomEditDialog({
 }) {
   return (
     <EditRoomDialog open={open} onOpenChange={onOpenChange} onSubmit={onSubmit} isPending={isPending} room={room} />
-  );
-}
-
-function FormField({
-  label,
-  htmlFor,
-  error,
-  required,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  error?: string;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={htmlFor} required={required}>
-        {label}
-      </Label>
-      {children}
-      {error ? <p className="text-sm text-red-500">{error}</p> : null}
-    </div>
   );
 }
