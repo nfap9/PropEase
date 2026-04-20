@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from 'antd';
-import { leasesApi } from '@/api';
+import { leasesApi } from '@/api/leases';
 import { useAuth } from '@/contexts/auth';
 import { LeaseDetailTabs } from '@/pages/leases/components/lease-detail-tabs';
 import { LeaseDetailInfo } from '@/pages/leases/components/lease-detail-info';

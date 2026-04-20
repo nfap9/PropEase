@@ -8,7 +8,7 @@ import { Building2, Check, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, Button, Input } from 'antd';
 import { useAuth } from '@/contexts/auth';
-import { organizationsApi } from '@/api';
+import { organizationsApi } from '@/api/organizations';
 import { getErrorMessage } from '@/utils/error';
 import {
   DEFAULT_ORGANIZATION_HOME_PATH,

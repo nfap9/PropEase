@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { Modal, Button, Input, message } from 'antd';
 import { Label } from '@/components/common/label';
 import { Loader2, Zap } from 'lucide-react';
-import { utilityConfigApi } from '@/api';
+import { utilityConfigApi } from '@/api/apartments';
 import { getErrorMessage } from '@/utils/error';
 
 const utilityConfigSchema = z.object({

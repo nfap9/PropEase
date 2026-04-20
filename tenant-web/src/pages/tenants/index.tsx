@@ -11,7 +11,7 @@ import { Table, Button, Input, Modal, Dropdown, Skeleton, Tag } from 'antd';
 import type { MenuProps } from 'antd';
 import { useConfirmAction } from '@/hooks/use-confirm-action';
 import { ColumnDef } from '@tanstack/react-table';
-import { tenantsApi } from '@/api';
+import { tenantsApi } from '@/api/tenants';
 import { filterEmptyStrings } from '@/utils/form';
 import { getErrorMessage } from '@/utils/error';
 import { useAuth } from '@/contexts/auth';

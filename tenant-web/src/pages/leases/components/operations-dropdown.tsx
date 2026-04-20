@@ -6,7 +6,7 @@ import { Dropdown, Button, Input, Select, Modal } from 'antd';
 import type { MenuProps } from 'antd';
 import { toast } from 'sonner';
 import { MoreHorizontal, Home, RefreshCw, User, TrendingUp, Droplets, DollarSign, Layers, LogOut, Plus, Trash2 } from 'lucide-react';
-import { leasesApi } from '@/api';
+import { leasesApi } from '@/api/leases';
 import { Label } from '@/components/common/label';
 import { ChangeRoomSheet } from './operation-sheets/change-room-sheet';
 import { RenewSheet } from './operation-sheets/renew-sheet';

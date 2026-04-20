@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { leasesApi } from '@/api';
+import { leasesApi } from '@/api/leases';
 import { Button, Card, Input, Select, Modal } from 'antd';
 import { Label } from '@/components/common/label';
 import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react';

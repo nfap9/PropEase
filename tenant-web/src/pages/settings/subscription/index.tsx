@@ -10,7 +10,7 @@ import {
   Calendar,
   ShoppingCart,
 } from 'lucide-react';
-import { subscriptionsApi } from '@/api';
+import { subscriptionsApi } from '@/api/subscriptions';
 import { useAuth } from '@/contexts/auth';
 import { tenantI18n, tenantMessages } from '@/i18n';
 

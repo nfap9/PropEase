@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, Tag, Skeleton } from 'antd';
 import { ORDER_STATUS_CONFIG, type BadgeVariant } from '@/utils/status';
 import { ArrowLeft, Loader2, Zap } from 'lucide-react';
-import { subscriptionsApi } from '@/api';
+import { subscriptionsApi } from '@/api/subscriptions';
 import { useAuth } from '@/contexts/auth';
 import { toast } from 'sonner';
 import { tenantI18n, tenantMessages } from '@/i18n';

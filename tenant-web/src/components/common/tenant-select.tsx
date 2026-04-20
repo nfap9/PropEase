@@ -1,7 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Select } from 'antd';
-import { tenantsApi } from '@/api';
+import { tenantsApi } from '@/api/tenants';
 import { cn } from '@/utils';
 
 interface TenantSelectProps {

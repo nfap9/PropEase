@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { updateTenantSchema, type UpdateTenantFormData } from '@/schemas/lease-operations';
 import { useUpdateTenant } from '@/hooks/use-lease-operations';
-import { tenantsApi } from '@/api';
+import { tenantsApi } from '@/api/tenants';
 import { Modal, Button, Select } from 'antd';
 import { Label } from '@/components/common/label';
 

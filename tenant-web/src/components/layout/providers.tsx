@@ -7,7 +7,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { User, Organization } from '@/types';
-import { authApi, organizationsApi } from '@/api';
+import { authApi } from '@/api/auth';
+import { organizationsApi } from '@/api/organizations';
 import { Toaster } from 'sonner';
 import { BrandConfigProvider } from '@/contexts/brand-config';
 import { ThemeProvider } from '@/components/theme/theme-provider';
@@ -17,6 +18,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000,
+      gcTime: 10 * 60 * 1000,
       refetchOnWindowFocus: false,
     },
   },
@@ -121,9 +123,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (token) {
         document.cookie = `access_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
         try {
-          const userData = await authApi.getMe();
+          // 并行执行：用户数据和组织列表没有依赖关系
+          const [userData] = await Promise.all([
+            authApi.getMe(),
+            loadOrganizations(),
+          ]);
           setUser(userData);
-          await loadOrganizations();
         } catch {
           await logout();
         }

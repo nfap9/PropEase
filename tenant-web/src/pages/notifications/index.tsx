@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { NotificationCategory } from '@apartment-ultra/api-contract';
@@ -232,7 +232,7 @@ function EmptyState() {
   );
 }
 
-function NotificationItem({
+const NotificationItem = React.memo(function NotificationItem({
   item,
   onMarkRead,
   onOpen,
@@ -350,4 +350,4 @@ function NotificationItem({
       </div>
     </div>
   );
-}
+});

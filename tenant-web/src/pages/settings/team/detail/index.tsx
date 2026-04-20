@@ -10,7 +10,7 @@ import { Label } from '@/components/common/label';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
-import { organizationsApi } from '@/api';
+import { organizationsApi } from '@/api/organizations';
 import { getErrorMessage } from '@/utils/error';
 import { formatDate } from '@/utils/date';
 import { MemberRole, OrganizationUsage } from '@/types';

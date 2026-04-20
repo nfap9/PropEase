@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { apartmentsApi, roomsApi, utilitiesApi, leasesApi, billsApi } from '@/api';
+import { apartmentsApi, roomsApi } from '@/api/apartments';
+import { utilitiesApi } from '@/api/utilities';
+import { leasesApi } from '@/api/leases';
+import { billsApi } from '@/api/bills';
 import { filterEmptyStrings } from '@/utils/form';
 import { getErrorMessage } from '@/utils/error';
 import { formatDate } from '@/utils/date';

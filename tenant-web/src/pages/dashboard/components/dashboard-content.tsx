@@ -18,7 +18,10 @@ import {
   Zap,
 } from 'lucide-react';
 import { MobileDashboardStats } from '@/components/layout/mobile-dashboard-stats';
-import { apartmentsApi, billsApi, leasesApi, reportsApi, roomsApi } from '@/api';
+import { apartmentsApi, roomsApi } from '@/api/apartments';
+import { billsApi } from '@/api/bills';
+import { leasesApi } from '@/api/leases';
+import { reportsApi } from '@/api/reports';
 import { useAuth } from '@/contexts/auth';
 import { useBrandConfig } from '@/contexts/brand-config';
 import { tenantMessages } from '@/i18n';

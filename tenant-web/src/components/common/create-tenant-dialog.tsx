@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import { Modal, Button, Input, message } from 'antd';
 import { Label } from '@/components/common/label';
-import { tenantsApi } from '@/api';
+import { tenantsApi } from '@/api/tenants';
 import { filterEmptyStrings } from '@/utils/form';
 import { getErrorMessage } from '@/utils/error';
 import { Tenant } from '@/types';

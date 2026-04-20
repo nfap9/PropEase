@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { leasesApi } from '@/api';
+import { leasesApi } from '@/api/leases';
 import { getErrorMessage } from '@/utils/error';
 import type {
   ChangeRoomFormData,

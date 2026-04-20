@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import type { UseFormReturn } from 'react-hook-form';
-import { apartmentsApi, roomsApi } from '@/api';
+import { apartmentsApi, roomsApi } from '@/api/apartments';
 import { getErrorMessage } from '@/utils/error';
 import { filterEmptyStrings } from '@/utils/form';
 import type { Apartment, Room, RoomFacilities, RoomStatus, RoomUpdate } from '@/types';

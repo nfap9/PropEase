@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { changeRoomSchema, type ChangeRoomFormData } from '@/schemas/lease-operations';
 import { useChangeRoom } from '@/hooks/use-lease-operations';
-import { roomsApi, apartmentsApi } from '@/api';
+import { roomsApi, apartmentsApi } from '@/api/apartments';
 import { Button, Drawer, Input, Select, DatePicker } from 'antd';
 import { Label } from '@/components/common/label';
 

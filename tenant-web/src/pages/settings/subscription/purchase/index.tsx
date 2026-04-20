@@ -15,7 +15,7 @@ import {
   RefreshCw,
   PlusCircle,
 } from 'lucide-react';
-import { subscriptionsApi } from '@/api';
+import { subscriptionsApi } from '@/api/subscriptions';
 import { getErrorMessage } from '@/utils/error';
 import { useAuth } from '@/contexts/auth';
 import type { StorefrontService, StorefrontServicePricing } from '@/api/subscriptions';

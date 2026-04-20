@@ -9,7 +9,7 @@ import { Modal, Skeleton, Button } from 'antd';
 import type { MenuProps } from 'antd';
 import { useConfirmAction } from '@/hooks/use-confirm-action';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { apartmentsApi } from '@/api';
+import { apartmentsApi } from '@/api/apartments';
 import { useAuth } from '@/contexts/auth';
 import { ApartmentWithStats } from '@/types';
 import { Building2, Plus } from 'lucide-react';

@@ -7,7 +7,9 @@ import type { MenuProps } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Label } from '@/components/common/label';
 import { LEASE_STATUS_CONFIG } from '@/utils/status';
-import { tenantReachabilityApi, tenantsApi, leasesApi } from '@/api';
+import { tenantReachabilityApi } from '@/api/tenant-reachability';
+import { tenantsApi } from '@/api/tenants';
+import { leasesApi } from '@/api/leases';
 import { useAuth } from '@/contexts/auth';
 import { Lease } from '@/types';
 import {

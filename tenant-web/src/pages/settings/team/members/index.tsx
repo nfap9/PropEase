@@ -12,7 +12,7 @@ import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
 import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { organizationsApi } from '@/api';
+import { organizationsApi } from '@/api/organizations';
 import { permissionsApi } from '@/api/permissions';
 import type { OrgRole } from '@/api/permissions';
 import { getErrorMessage } from '@/utils/error';

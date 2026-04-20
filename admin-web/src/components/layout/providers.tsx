@@ -9,7 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { User, Organization } from '@/types';
-import { authApi, organizationsApi } from '@/api';
+import { authApi } from '@/api/auth';
+import { organizationsApi } from '@/api/organizations';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 
@@ -34,6 +35,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000,
+      gcTime: 10 * 60 * 1000,
       refetchOnWindowFocus: false,
     },
   },
@@ -81,10 +83,13 @@ function AuthProvider({ children }: { children: ReactNode }) {
       const token = localStorage.getItem('access_token');
       if (token) {
         try {
-          const userData = await authApi.getMe();
+          // 并行执行：用户数据和组织列表没有依赖关系
+          const [userData, orgs] = await Promise.all([
+            authApi.getMe(),
+            loadOrganizations(),
+          ]);
           setUser(userData);
 
-          const orgs = await loadOrganizations();
           if (orgs.length > 0) {
             const savedOrgId = localStorage.getItem('current_organization_id');
             if (savedOrgId) {

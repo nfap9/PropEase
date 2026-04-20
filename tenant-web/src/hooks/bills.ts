@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { billsApi, billFeeItemsApi } from '@/api';
+import { billsApi } from '@/api/bills';
+import { billFeeItemsApi } from '@/api/feeTypes';
 import { shareBillSummary } from '@/utils/bills-share';
 import { getErrorMessage } from '@/utils/error';
 import { filterEmptyStrings } from '@/utils/form';

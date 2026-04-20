@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { Button, Input, DatePicker } from 'antd';
 import dayjs from 'dayjs';
 import { Label } from '@/components/common/label';
-import { apartmentsApi } from '@/api';
+import { apartmentsApi } from '@/api/apartments';
 import { useAuth } from '@/contexts/auth';
 import { getErrorMessage } from '@/utils/error';
 import { filterEmptyStrings } from '@/utils/form';

@@ -8,7 +8,7 @@ import { Modal, Alert, Button, Input, DatePicker, Select, Radio } from 'antd';
 import { Label } from '@/components/common/label';
 import { Apartment, Room, UtilityReading } from '@/types';
 import { Droplets, Zap } from 'lucide-react';
-import { utilitiesApi } from '@/api';
+import { utilitiesApi } from '@/api/utilities';
 import dayjs from 'dayjs';
 
 const optionalNumberField = z.union([z.number().min(0), z.nan().transform(() => undefined)]).optional();
