@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { permissionsApi } from '@/api/permissions';
 import { useAuth } from '@/contexts/auth';
-import type { SystemRole } from '@/types';
 
 /**
  * 权限 Hook
@@ -14,16 +13,15 @@ export function usePermissions(orgId?: string) {
   const { organization } = useAuth();
   const targetOrgId = orgId || organization?.id;
 
-  const { data: response, isLoading, error } = useQuery({
+  const { data: permissions = [], isLoading, error } = useQuery({
     queryKey: ['my-permissions', targetOrgId],
-    queryFn: () => (targetOrgId ? permissionsApi.getMyPermissions(targetOrgId) : null),
+    queryFn: async () => {
+      if (!targetOrgId) return [];
+      return permissionsApi.getMyPermissions(targetOrgId);
+    },
     enabled: !!targetOrgId,
     staleTime: 5 * 60 * 1000, // 5 分钟缓存
   });
-
-  const permissions = response?.permissions || [];
-  const systemRoles = response?.system_roles || [];
-  const isSuperAdmin = response?.is_super_admin || false;
 
   useEffect(() => {
     if (error) {
@@ -35,7 +33,6 @@ export function usePermissions(orgId?: string) {
    * 检查是否拥有单个权限
    */
   const hasPermission = (code: string): boolean => {
-    if (isSuperAdmin) return true;
     return permissions.includes(code);
   };
 
@@ -43,7 +40,6 @@ export function usePermissions(orgId?: string) {
    * 检查是否拥有任一权限
    */
   const hasAnyPermission = (codes: string[]): boolean => {
-    if (isSuperAdmin) return true;
     return codes.some((code) => permissions.includes(code));
   };
 
@@ -51,27 +47,16 @@ export function usePermissions(orgId?: string) {
    * 检查是否拥有所有权限
    */
   const hasAllPermissions = (codes: string[]): boolean => {
-    if (isSuperAdmin) return true;
     return codes.every((code) => permissions.includes(code));
-  };
-
-  /**
-   * 检查是否拥有系统角色
-   */
-  const hasSystemRole = (role: string): boolean => {
-    return systemRoles.includes(role as SystemRole);
   };
 
   return {
     permissions,
-    systemRoles,
-    isSuperAdmin,
     isLoading,
     error,
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
-    hasSystemRole,
   };
 }
 

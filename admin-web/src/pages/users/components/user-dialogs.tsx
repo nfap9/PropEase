@@ -23,14 +23,7 @@ import {
   DialogTitle,
 } from '@apartment-ultra/shared-ui/components/ui';
 import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
-import type { AdminRole, AdminUser } from '@/api/admin-client';
+import type { AdminUser } from '@/api/admin-client';
 import { adminI18n, adminMessages } from '@/i18n';
 import {
   createUserSchema,
@@ -45,13 +38,11 @@ import { getDefaultCreateUserFormValues, getDefaultResetPasswordValues, getEditU
 export function CreateUserDialog({
   open,
   onOpenChange,
-  roles,
   onSubmit,
   isPending,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  roles: AdminRole[] | undefined;
   onSubmit: (data: CreateUserForm) => void;
   isPending: boolean;
 }) {
@@ -127,30 +118,6 @@ export function CreateUserDialog({
                 </div>
               )}
             />
-            <Controller
-              control={form.control}
-              name="role_id"
-              render={({ field, fieldState }) => (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">{adminMessages.users.fields.accountRole}</label>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={adminMessages.users.fields.selectRolePlaceholder} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(roles ?? []).map((role) => (
-                        <SelectItem key={role.id} value={role.id}>
-                          {role.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {fieldState.error && (
-                    <p className="text-sm text-destructive">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
-            />
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 {adminMessages.common.cancel}
@@ -170,14 +137,12 @@ export function EditUserDialog({
   open,
   onOpenChange,
   user,
-  roles,
   onSubmit,
   isPending,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   user: AdminUser | null;
-  roles: AdminRole[] | undefined;
   onSubmit: (data: EditUserForm) => void;
   isPending: boolean;
 }) {
@@ -220,30 +185,6 @@ export function EditUserDialog({
                 <div className="space-y-1">
                   <label className="text-sm font-medium">{adminMessages.users.fields.email}</label>
                   <Input type="email" {...field} />
-                  {fieldState.error && (
-                    <p className="text-sm text-destructive">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
-            />
-            <Controller
-              control={form.control}
-              name="role_id"
-              render={({ field, fieldState }) => (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">{adminMessages.users.fields.accountRole}</label>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={adminMessages.users.fields.selectRolePlaceholder} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(roles ?? []).map((role) => (
-                        <SelectItem key={role.id} value={role.id}>
-                          {role.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   {fieldState.error && (
                     <p className="text-sm text-destructive">{fieldState.error.message}</p>
                   )}

@@ -42,7 +42,7 @@ export default function NotificationsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { organization } = useAuth();
-  const { permissions, hasPermission, isSuperAdmin } = usePermissions();
+  const { permissions, hasPermission } = usePermissions();
   const [statusFilter, setStatusFilter] = useState<'all' | 'unread'>('all');
   const [categoryFilter, setCategoryFilter] = useState<NotificationCategory | 'all'>('all');
   const canAccessNotifications = canAccessRule(
@@ -50,7 +50,6 @@ export default function NotificationsPage() {
     {
       organization,
       permissions,
-      isSuperAdmin,
       hasPermission,
     }
   );

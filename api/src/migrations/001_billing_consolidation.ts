@@ -115,7 +115,7 @@ async function migrate() {
       user: {
         include: {
           organization_memberships: {
-            where: { role: 'owner' },
+            where: { role: { name: '公寓所有者' } },
             take: 1,
           },
         },
@@ -126,7 +126,7 @@ async function migrate() {
 
   for (const quota of usageQuotas) {
     // 尝试找到用户的默认组织
-    const orgId = quota.user.organization_memberships[0]?.organization_id;
+    const orgId = quota.user?.organization_memberships[0]?.organization_id;
 
     if (!orgId) {
       console.log(`   跳过配额 ${quota.id}：用户 ${quota.user_id} 没有关联组织`);

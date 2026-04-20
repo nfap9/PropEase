@@ -31,7 +31,8 @@ router.get('/quota', async (req: Request, res: Response, next: NextFunction) => 
 
     // 获取用户的组织
     const membership = await prisma.organizationMember.findFirst({
-      where: { user_id: user.id, role: 'owner' },
+      where: { user_id: user.id },
+      include: { role: true },
     });
 
     if (!membership) {
@@ -65,7 +66,8 @@ router.post('/orders', async (req: Request, res: Response, next: NextFunction) =
 
     // 获取用户的组织
     const membership = await prisma.organizationMember.findFirst({
-      where: { user_id: user.id, role: 'owner' },
+      where: { user_id: user.id },
+      include: { role: true },
     });
 
     if (!membership) {

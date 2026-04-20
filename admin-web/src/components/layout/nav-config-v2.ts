@@ -74,12 +74,6 @@ const MAIN_NAV_ITEMS: NavItem[] = [
     icon: UserCircle,
   },
   {
-    id: 'roles',
-    href: '/roles',
-    label: adminMessages.layout.nav.roles,
-    icon: Shield,
-  },
-  {
     id: 'organizations',
     href: '/organizations',
     label: adminMessages.layout.nav.organizations,
@@ -134,7 +128,6 @@ export const ROUTE_META: Record<string, RouteMeta> = {
   '/brand': { sectionItemId: 'brand' },
   '/users': { sectionItemId: 'users' },
   '/registered-users': { sectionItemId: 'registered-users' },
-  '/roles': { sectionItemId: 'roles' },
   '/organizations': { sectionItemId: 'organizations' },
   '/organizations/:id': { sectionItemId: 'organizations', detailLabel: '团队详情' },
   '/billing': { sectionItemId: 'billing-plans' },

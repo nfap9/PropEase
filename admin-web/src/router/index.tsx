@@ -10,7 +10,6 @@ const SetupPage = React.lazy(() => import('@/pages/setup/index').then(m => ({ de
 const DashboardPage = React.lazy(() => import('@/pages/index').then(m => ({ default: m.default })));
 const UsersPage = React.lazy(() => import('@/pages/users/index').then(m => ({ default: m.default })));
 const RegisteredUsersPage = React.lazy(() => import('@/pages/registered-users/index').then(m => ({ default: m.default })));
-const RolesPage = React.lazy(() => import('@/pages/roles/index').then(m => ({ default: m.default })));
 const OrganizationsPage = React.lazy(() => import('@/pages/organizations/index').then(m => ({ default: m.default })));
 const OrganizationDetailPage = React.lazy(() => import('@/pages/organizations/detail/index').then(m => ({ default: m.default })));
 const BrandPage = React.lazy(() => import('@/pages/brand/index').then(m => ({ default: m.default })));
@@ -68,10 +67,6 @@ export const router = createBrowserRouter([
           {
             path: 'registered-users',
             element: <React.Suspense fallback={<LoadingFallback />}><RegisteredUsersPage /></React.Suspense>,
-          },
-          {
-            path: 'roles',
-            element: <React.Suspense fallback={<LoadingFallback />}><RolesPage /></React.Suspense>,
           },
           {
             path: 'organizations',

@@ -14,7 +14,7 @@ type UserDialogAction = 'create' | 'edit' | 'reset' | 'delete';
 export default function AdminUsersPage() {
   const dialogState = useManagedItem<AdminUser, UserDialogAction>();
 
-  const { users, usersLoading, roles, createMutation, updateMutation, resetMutation, deleteMutation } =
+  const { users, usersLoading, createMutation, updateMutation, resetMutation, deleteMutation } =
     useAdminUsersData({
       onCreateSuccess: dialogState.close,
       onUpdateSuccess: dialogState.close,
@@ -50,7 +50,6 @@ export default function AdminUsersPage() {
 
       <CreateUserDialog
         {...dialogState.dialogProps('create')}
-        roles={roles}
         onSubmit={(data) => createMutation.mutate(toCreateUserPayload(data))}
         isPending={createMutation.isPending}
       />
@@ -58,7 +57,6 @@ export default function AdminUsersPage() {
       <EditUserDialog
         {...dialogState.dialogProps('edit')}
         user={dialogState.selectedItem}
-        roles={roles}
         onSubmit={(data) => {
           if (!dialogState.selectedItem) {
             return;

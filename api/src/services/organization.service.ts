@@ -1,4 +1,4 @@
-import type { Organization, OrganizationMember, Prisma } from '@prisma/client';
+import type { Organization, OrganizationMember, OrgRole, Prisma } from '@prisma/client';
 import { ulid } from 'ulid';
 import {
   createOrganizationRepository,
@@ -9,8 +9,7 @@ import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
 import {
-  DEFAULT_ORG_ROLE_PERMISSIONS,
-  toPermissionCodes,
+  DEFAULT_ORG_ROLES,
 } from '../constants/permissionDefaults.js';
 import {
   compareBooleanDesc,
@@ -41,14 +40,21 @@ export interface UpdateOrgInput {
  */
 export interface AddMemberInput {
   phone: string;
-  role: string;
+  role_id: string;
+}
+
+/**
+ * 更新成员角色输入
+ */
+export interface UpdateMemberRoleInput {
+  role_id: string;
 }
 
 /**
  * Organization Service 接口
  */
 export interface OrganizationService {
-  listByUser(userId: string): Promise<Array<Organization & { role: string }>>;
+  listByUser(userId: string): Promise<Array<{ org: Organization; role: OrgRole }>>;
   getById(orgId: string, userId: string): Promise<Organization>;
   getPersonalOrg(userId: string): Promise<Organization>;
   create(userId: string, data: CreateOrgInput): Promise<Organization>;
@@ -59,7 +65,7 @@ export interface OrganizationService {
   updateMemberRole(
     orgId: string,
     userId: string,
-    role: string,
+    role_id: string,
     requesterId: string
   ): Promise<MemberWithUser>;
   removeMember(orgId: string, userId: string, requesterId: string): Promise<void>;
@@ -72,39 +78,24 @@ export interface OrganizationService {
 export function createOrganizationService(
   getRepo: () => OrganizationRepository = () => createOrganizationRepository(prisma)
 ): OrganizationService {
-  const memberRolePriority = (role?: string | null): number => {
-    switch (role) {
-      case 'owner':
-        return 0;
-      case 'admin':
-        return 1;
-      case 'member':
-        return 2;
-      case 'viewer':
-        return 3;
-      default:
-        return 99;
-    }
-  };
-
   return {
     listByUser: async (userId: string) => {
       const orgsWithMembers = await getRepo().findByUserId(userId);
-      return orgsWithMembers
-        .map((org) => {
-        const member = org.members.find((m) => m.user_id === userId);
-        return {
-          ...org,
-          members: undefined,
-          role: member?.role ?? 'member',
-        } as Organization & { role: string };
-      })
-        .sort(
-          (left, right) =>
-            compareBooleanDesc(left.is_personal, right.is_personal) ||
-            compareBooleanDesc(left.is_active, right.is_active) ||
-            compareNaturalText(left.name, right.name)
-        );
+      const result: Array<{ org: Organization; role: OrgRole }> = [];
+
+      for (const org of orgsWithMembers) {
+        const member = await getRepo().findMemberWithRole(org.id, userId);
+        if (member) {
+          result.push({ org, role: member.role });
+        }
+      }
+
+      return result.sort(
+        (left, right) =>
+          compareBooleanDesc(left.org.is_personal, right.org.is_personal) ||
+          compareBooleanDesc(left.org.is_active, right.org.is_active) ||
+          compareNaturalText(left.org.name, right.org.name)
+      );
     },
 
     getById: async (orgId: string, userId: string) => {
@@ -146,35 +137,56 @@ export function createOrganizationService(
 
       const orgId = ulid().toLowerCase();
 
-      // 初始化组织角色权限
-      const rolePermissions: Record<string, string[]> = {
-        owner: toPermissionCodes(DEFAULT_ORG_ROLE_PERMISSIONS.admin), // owner 拥有所有权限
-        admin: toPermissionCodes(DEFAULT_ORG_ROLE_PERMISSIONS.admin),
-        member: toPermissionCodes(DEFAULT_ORG_ROLE_PERMISSIONS.member),
-        viewer: toPermissionCodes(DEFAULT_ORG_ROLE_PERMISSIONS.viewer),
-      };
+      // 在事务中创建组织和预制角色
+      const org = await prisma.$transaction(async (tx) => {
+        // 创建组织
+        const newOrg = await tx.organization.create({
+          data: {
+            id: orgId,
+            name: data.name,
+            slug: finalSlug,
+            is_personal: false,
+          },
+        });
 
-      const org = await getRepo().create({
-        id: orgId,
-        name: data.name,
-        slug: finalSlug,
-        is_personal: false,
-        settings: { role_permissions: rolePermissions } as Prisma.InputJsonValue,
-      });
+        // 创建三个预制角色
+        for (const roleDef of DEFAULT_ORG_ROLES) {
+          await tx.orgRole.create({
+            data: {
+              id: ulid().toLowerCase(),
+              organization_id: orgId,
+              name: roleDef.name,
+              description: roleDef.description,
+              is_system: roleDef.is_system,
+              permissions: roleDef.permissions,
+            },
+          });
+        }
 
-      await getRepo().createMember({
-        id: ulid().toLowerCase(),
-        organization: { connect: { id: orgId } },
-        user: { connect: { id: userId } },
-        role: 'owner',
+        // 找到"公寓所有者"角色的 ID
+        const ownerRole = await tx.orgRole.findUnique({
+          where: { organization_id_name: { organization_id: orgId, name: '组织所有者' } },
+        });
+
+        // 创建组织所有者成员
+        await tx.organizationMember.create({
+          data: {
+            id: ulid().toLowerCase(),
+            organization_id: orgId,
+            user_id: userId,
+            role_id: ownerRole!.id,
+          },
+        });
+
+        return newOrg;
       });
 
       return org;
     },
 
     update: async (orgId: string, userId: string, data: UpdateOrgInput) => {
-      const member = await getRepo().findMember(orgId, userId);
-      if (!member || (member.role !== 'owner' && member.role !== 'admin')) {
+      const member = await getRepo().findMemberWithRole(orgId, userId);
+      if (!member || member.role.name !== '组织所有者') {
         throw createAppError(403, '权限不足');
       }
 
@@ -187,8 +199,8 @@ export function createOrganizationService(
     },
 
     delete: async (orgId: string, userId: string, confirmedName: string) => {
-      const member = await getRepo().findMember(orgId, userId);
-      if (!member || member.role !== 'owner') {
+      const member = await getRepo().findMemberWithRole(orgId, userId);
+      if (!member || member.role.name !== '组织所有者') {
         throw createAppError(403, '只有组织所有者可以删除组织');
       }
 
@@ -204,7 +216,7 @@ export function createOrganizationService(
       const members = await getRepo().findMembersByOrgId(orgId);
       return [...members].sort(
         (left, right) =>
-          compareNumberAsc(memberRolePriority(left.role), memberRolePriority(right.role)) ||
+          compareNumberAsc(left.role.is_system ? 0 : 1, right.role.is_system ? 0 : 1) ||
           compareNaturalText(left.user?.full_name, right.user?.full_name) ||
           compareNaturalText(left.user?.phone, right.user?.phone) ||
           compareDateAsc(left.created_at, right.created_at)
@@ -222,25 +234,46 @@ export function createOrganizationService(
         throw createAppError(409, '用户已在组织中');
       }
 
+      // 验证角色是否存在
+      const role = await prisma.orgRole.findUnique({
+        where: { id: data.role_id },
+      });
+      if (!role || role.organization_id !== orgId) {
+        throw createAppError(400, '无效的角色');
+      }
+
       await getRepo().createMember({
         id: ulid().toLowerCase(),
         organization: { connect: { id: orgId } },
         user: { connect: { id: targetUser.id } },
-        role: data.role,
+        role: { connect: { id: data.role_id } },
       });
 
       const members = await getRepo().findMembersByOrgId(orgId);
       return members.find((m) => m.user_id === targetUser.id)!;
     },
 
-    updateMemberRole: async (orgId: string, userId: string, role: string, requesterId: string) => {
-      const requester = await getRepo().findMember(orgId, requesterId);
-      if (!requester || (requester.role !== 'owner' && requester.role !== 'admin')) {
+    updateMemberRole: async (
+      orgId: string,
+      userId: string,
+      role_id: string,
+      requesterId: string
+    ) => {
+      const requester = await getRepo().findMemberWithRole(orgId, requesterId);
+      if (!requester || requester.role.name !== '组织所有者') {
         throw createAppError(403, '仅所有者可修改角色');
       }
 
+      // 验证角色是否存在
+      const role = await prisma.orgRole.findUnique({
+        where: { id: role_id },
+      });
+      if (!role || role.organization_id !== orgId) {
+        throw createAppError(400, '无效的角色');
+      }
+
       const count = await getRepo().updateMember(orgId, userId, {
-        role,
+        role_id,
       } as Partial<OrganizationMember>);
       if (count === 0) {
         throw createAppError(404, NotFoundMessages.MEMBER);
@@ -252,8 +285,8 @@ export function createOrganizationService(
     },
 
     removeMember: async (orgId: string, userId: string, requesterId: string) => {
-      const requester = await getRepo().findMember(orgId, requesterId);
-      if (!requester || (requester.role !== 'owner' && requester.role !== 'admin')) {
+      const requester = await getRepo().findMemberWithRole(orgId, requesterId);
+      if (!requester || requester.role.name !== '组织所有者') {
         throw createAppError(403, '仅所有者可移除成员');
       }
 

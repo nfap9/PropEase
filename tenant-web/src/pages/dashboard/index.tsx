@@ -8,7 +8,7 @@ import { DashboardContent } from './components/dashboard-content';
 
 export default function DashboardPage() {
   const { isLoading, organization } = useAuth();
-  const { permissions, hasPermission, isSuperAdmin } = usePermissions();
+  const { permissions, hasPermission } = usePermissions();
 
   if (isLoading) {
     return (
@@ -23,7 +23,6 @@ export default function DashboardPage() {
     {
       organization,
       permissions,
-      isSuperAdmin,
       hasPermission,
     }
   );

@@ -1,12 +1,13 @@
-import type { Prisma, Organization, OrganizationMember, User } from '@prisma/client';
+import type { Prisma, Organization, OrganizationMember, User, OrgRole } from '@prisma/client';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
 /**
- * 组织成员包含用户信息
+ * 组织成员包含用户信息和角色信息
  */
 export type MemberWithUser = OrganizationMember & {
   user: User | null;
+  role: OrgRole;
 };
 
 /**
@@ -21,6 +22,7 @@ export interface OrganizationRepository {
   update(id: string, data: Prisma.OrganizationUpdateInput): Promise<Organization>;
   delete(id: string): Promise<void>;
   findMember(orgId: string, userId: string): Promise<OrganizationMember | null>;
+  findMemberWithRole(orgId: string, userId: string): Promise<(OrganizationMember & { role: OrgRole }) | null>;
   findMembersByOrgId(orgId: string): Promise<MemberWithUser[]>;
   createMember(data: Prisma.OrganizationMemberCreateInput): Promise<OrganizationMember>;
   updateMember(orgId: string, userId: string, data: Partial<OrganizationMember>): Promise<number>;
@@ -75,10 +77,17 @@ export function createOrganizationRepository(db: DbClient): OrganizationReposito
       });
     },
 
+    findMemberWithRole: async (orgId: string, userId: string) => {
+      return db.organizationMember.findFirst({
+        where: { organization_id: orgId, user_id: userId },
+        include: { role: true },
+      }) as Promise<(OrganizationMember & { role: OrgRole }) | null>;
+    },
+
     findMembersByOrgId: async (orgId: string) => {
       return db.organizationMember.findMany({
         where: { organization_id: orgId },
-        include: { user: true },
+        include: { user: true, role: true },
       }) as Promise<MemberWithUser[]>;
     },
 

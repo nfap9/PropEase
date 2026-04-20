@@ -37,13 +37,6 @@ export function createAdminUsersColumns({
       cell: ({ row }) => row.original.email ?? '—',
     },
     {
-      accessorKey: 'role_name',
-      header: adminMessages.users.columns.role,
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => row.original.role_name ?? '—',
-    },
-    {
       accessorKey: 'is_active',
       header: '状态',
       size: 100,

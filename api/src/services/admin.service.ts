@@ -1,6 +1,5 @@
 import type {
   AdminUser,
-  AdminRole,
   User,
   Organization,
   OrganizationSubscription,
@@ -9,7 +8,6 @@ import type {
 import type { ServiceProduct } from '@apartment-ultra/api-contract';
 import type {
   AdminRepository,
-  AdminUserWithRole,
   SubscriptionWithRelations,
 } from '../repositories/admin.repo.js';
 import { defaultAdminRepo } from '../repositories/admin.repo.js';
@@ -41,7 +39,6 @@ export interface CreateAdminUserInput {
   password: string;
   name: string;
   email?: string;
-  role_id: string;
 }
 
 /**
@@ -50,25 +47,7 @@ export interface CreateAdminUserInput {
 export interface UpdateAdminUserInput {
   name?: string;
   email?: string;
-  role_id?: string;
   is_active?: boolean;
-}
-
-/**
- * 创建角色输入
- */
-export interface CreateAdminRoleInput {
-  name: string;
-  permissions?: string[] | Record<string, unknown>;
-  is_system?: boolean;
-}
-
-/**
- * 更新角色输入
- */
-export interface UpdateAdminRoleInput {
-  name?: string;
-  permissions?: string[] | Record<string, unknown>;
 }
 
 /**
@@ -131,20 +110,13 @@ export interface AdminService {
   login(username: string, password: string): Promise<AdminLoginResult>;
 
   // Admin Users
-  getMe(adminId: string): Promise<AdminUserWithRole>;
-  listAdmins(skip?: number, limit?: number): Promise<AdminUserWithRole[]>;
+  getMe(adminId: string): Promise<AdminUser>;
+  listAdmins(skip?: number, limit?: number): Promise<AdminUser[]>;
   createAdminUser(data: CreateAdminUserInput): Promise<AdminUser>;
-  getAdminUser(userId: string): Promise<AdminUserWithRole>;
+  getAdminUser(userId: string): Promise<AdminUser>;
   updateAdminUser(userId: string, data: UpdateAdminUserInput): Promise<AdminUser>;
   deleteAdminUser(userId: string): Promise<void>;
   resetAdminPassword(userId: string, newPassword: string): Promise<void>;
-
-  // Admin Roles
-  listAdminRoles(): Promise<AdminRole[]>;
-  getAdminRole(roleId: string): Promise<AdminRole>;
-  createAdminRole(data: CreateAdminRoleInput): Promise<AdminRole>;
-  updateAdminRole(roleId: string, data: UpdateAdminRoleInput): Promise<AdminRole>;
-  deleteAdminRole(roleId: string): Promise<void>;
 
   // Organizations
   listOrganizations(skip?: number, limit?: number, isActive?: boolean): Promise<Organization[]>;
@@ -250,10 +222,6 @@ export function createAdminService(
     },
 
     createAdminUser: async (data: CreateAdminUserInput) => {
-      const role = await getRepo().findAdminRoleById(data.role_id);
-      if (!role) {
-        throw createAppError(404, NotFoundMessages.ROLE);
-      }
       const existing = await getRepo().findAdminByUsernameOnly(data.username);
       if (existing) {
         throw createAppError(409, '用户名已存在');
@@ -265,7 +233,6 @@ export function createAdminService(
         password_hash: hash,
         name: data.name,
         email: data.email,
-        role: { connect: { id: data.role_id } },
       });
     },
 
@@ -285,13 +252,6 @@ export function createAdminService(
       const updateData: Prisma.AdminUserUpdateInput = {};
       if (data.name != null) updateData.name = data.name;
       if (data.email !== undefined) updateData.email = data.email;
-      if (data.role_id != null) {
-        const role = await getRepo().findAdminRoleById(data.role_id);
-        if (!role) {
-          throw createAppError(404, NotFoundMessages.ROLE);
-        }
-        updateData.role = { connect: { id: data.role_id } };
-      }
       if (data.is_active !== undefined) updateData.is_active = data.is_active;
       return getRepo().updateAdmin(userId, updateData);
     },
@@ -314,57 +274,6 @@ export function createAdminService(
       }
       const hash = await hashPassword(newPassword);
       await getRepo().updateAdmin(userId, { password_hash: hash });
-    },
-
-    listAdminRoles: async () => {
-      return getRepo().listAdminRoles();
-    },
-
-    getAdminRole: async (roleId: string) => {
-      const role = await getRepo().findAdminRoleById(roleId);
-      if (!role) {
-        throw createAppError(404, NotFoundMessages.ROLE);
-      }
-      return role;
-    },
-
-    createAdminRole: async (data: CreateAdminRoleInput) => {
-      const permissions = Array.isArray(data.permissions)
-        ? data.permissions
-        : (data.permissions ?? []);
-      return getRepo().createAdminRole({
-        id: ulid().toLowerCase(),
-        name: data.name,
-        permissions: toPrismaInputJsonValue(permissions),
-        is_system: data.is_system ?? false,
-      });
-    },
-
-    updateAdminRole: async (roleId: string, data: UpdateAdminRoleInput) => {
-      const existing = await getRepo().findAdminRoleById(roleId);
-      if (!existing) {
-        throw createAppError(404, NotFoundMessages.ROLE);
-      }
-      const updateData: Prisma.AdminRoleUpdateInput = {};
-      if (data.name != null) updateData.name = data.name;
-      if (data.permissions !== undefined) {
-        updateData.permissions = toPrismaInputJsonValue(data.permissions);
-      }
-      return getRepo().updateAdminRole(roleId, updateData);
-    },
-
-    deleteAdminRole: async (roleId: string) => {
-      const existing = await getRepo().findAdminRoleWithUsers(roleId);
-      if (!existing) {
-        throw createAppError(404, NotFoundMessages.ROLE);
-      }
-      if (existing.is_system) {
-        throw createAppError(400, '系统角色不可删除');
-      }
-      if (existing.users.length > 0) {
-        throw createAppError(400, '该角色下仍有用户，无法删除');
-      }
-      await getRepo().deleteAdminRole(roleId);
     },
 
     listOrganizations: async (skip?: number, limit?: number, isActive?: boolean) => {
@@ -422,7 +331,7 @@ export function createAdminService(
           id: m.organization.id,
           name: m.organization.name,
           slug: m.organization.slug,
-          role: m.role,
+          role: (m as { role_id?: string }).role_id ?? '',
         })),
       };
     },

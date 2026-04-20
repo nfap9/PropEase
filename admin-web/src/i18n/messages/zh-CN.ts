@@ -30,7 +30,6 @@ export const adminZhCNMessages = {
       brand: '界面信息',
       users: '管理账号',
       registeredUsers: '用户管理',
-      roles: '分工设置',
       organizations: '团队管理',
       servicePricing: '服务方案',
       storefront: '商品展示',
@@ -105,31 +104,6 @@ export const adminZhCNMessages = {
     },
     toast: {
       saved: '已保存，系统界面将显示新配置',
-    },
-  },
-  roles: {
-    heading: '分工设置',
-    createButton: '新建分工',
-    builtin: '内置',
-    deleteAriaLabel: '删除分工 {name}',
-    emptyState: '请从左侧选择一项分工',
-    readonlyHint: '内置分工仅可查看，不可修改',
-    createDialog: {
-      title: '新建分工',
-      description: '填写分工名称，并勾选该分工可使用的功能',
-      nameLabel: '分工名称',
-      namePlaceholder: '如：平台协作',
-      nameValidation: '请输入分工名称',
-    },
-    deleteDialog: {
-      title: '确认删除',
-      builtinDescription: '内置分工「{name}」不可删除。',
-      confirmDescription: '确定要删除分工「{name}」吗？此操作不可恢复。',
-    },
-    toast: {
-      created: '分工创建成功',
-      saved: '功能设置已保存',
-      deleted: '分工已删除',
     },
   },
   users: {

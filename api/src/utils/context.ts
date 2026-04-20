@@ -26,7 +26,6 @@ export interface ConsoleUser {
 export interface AdminUser {
   id: string;           // 管理员 ID
   username: string;     // 用户名
-  role_id: string;      // 角色 ID
 }
 
 /**

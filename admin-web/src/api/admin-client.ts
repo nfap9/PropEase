@@ -11,9 +11,6 @@ import type {
   AdminUserCreate,
   AdminUserUpdate,
   AdminPasswordReset,
-  AdminRole,
-  AdminRoleCreate,
-  AdminRoleUpdate,
   AdminOrganization,
   AdminOrganizationSetActive,
   AdminRegisteredUserOrg,
@@ -56,9 +53,6 @@ export type {
   AdminUserCreate,
   AdminUserUpdate,
   AdminPasswordReset,
-  AdminRole,
-  AdminRoleCreate,
-  AdminRoleUpdate,
   AdminOrganization,
   AdminOrganizationSetActive,
   AdminRegisteredUserOrg,
@@ -189,14 +183,6 @@ export const adminApiEndpoints = {
   deleteUser: (id: string) => adminApi.delete(`/admin/users/${id}`),
   resetUserPassword: (id: string, data: AdminPasswordReset) =>
     adminApi.post(`/admin/users/${id}/reset-password`, data),
-
-  // 运营角色
-  listRoles: (params?: { skip?: number; limit?: number }) =>
-    adminApi.get<AdminRole[]>('/admin/roles', { params }),
-  createRole: (data: AdminRoleCreate) => adminApi.post<AdminRole>('/admin/roles', data),
-  updateRole: (id: string, data: AdminRoleUpdate) =>
-    adminApi.put<AdminRole>(`/admin/roles/${id}`, data),
-  deleteRole: (id: string) => adminApi.delete(`/admin/roles/${id}`),
 
   // 组织
   listOrganizations: (params?: { skip?: number; limit?: number; is_active?: boolean }) =>

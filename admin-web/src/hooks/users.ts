@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { adminApiEndpoints, type AdminRole, type AdminUser } from '@/api/admin-client';
+import { adminApiEndpoints, type AdminUser } from '@/api/admin-client';
 import { getErrorMessage } from '@/utils/error';
 import type { AdminPasswordReset, AdminUserCreate, AdminUserUpdate } from '@/api/admin-client';
 import { adminMessages } from '@/i18n';
@@ -25,14 +25,6 @@ export function useAdminUsersData({
     queryFn: async () => {
       const response = await adminApiEndpoints.listUsers({ limit: 200 });
       return (response.data ?? []) as AdminUser[];
-    },
-  });
-
-  const rolesQuery = useQuery({
-    queryKey: ['admin', 'roles'],
-    queryFn: async () => {
-      const response = await adminApiEndpoints.listRoles({ limit: 100 });
-      return (response.data ?? []) as AdminRole[];
     },
   });
 
@@ -84,7 +76,6 @@ export function useAdminUsersData({
   return {
     users: usersQuery.data,
     usersLoading: usersQuery.isLoading,
-    roles: rolesQuery.data,
     createMutation,
     updateMutation,
     resetMutation,

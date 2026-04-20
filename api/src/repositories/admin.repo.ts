@@ -1,6 +1,5 @@
 import type {
   AdminUser,
-  AdminRole,
   User,
   Organization,
   ServiceProduct,
@@ -15,17 +14,12 @@ import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
 /**
- * AdminUser 包含角色信息
- */
-export type AdminUserWithRole = AdminUser & { role: AdminRole | null };
-
-/**
  * User 包含组织成员信息
  */
 export type UserWithOrgs = User & {
   organization_memberships: Array<{
     organization: { id: string; name: string; slug: string };
-    role: string;
+    role_id: string;
   }>;
 };
 
@@ -36,10 +30,6 @@ export type SubscriptionWithRelations = OrganizationSubscription & {
   service: ServiceProduct | null;
   organization: Organization | null;
 };
-
-type AdminUserWithRoleRecord = Prisma.AdminUserGetPayload<{
-  include: { role: true };
-}>;
 
 type UserWithOrgsRecord = Prisma.UserGetPayload<{
   include: {
@@ -67,23 +57,15 @@ export type UserListItem = Pick<User, 'id' | 'phone' | 'full_name' | 'is_active'
  */
 export interface AdminRepository {
   // Admin Auth
-  findAdminByUsername(username: string): Promise<AdminUserWithRole | null>;
+  findAdminByUsername(username: string): Promise<AdminUser | null>;
 
   // Admin Users
-  findAdminById(id: string): Promise<AdminUserWithRole | null>;
-  listAdmins(skip?: number, limit?: number): Promise<AdminUserWithRole[]>;
+  findAdminById(id: string): Promise<AdminUser | null>;
+  listAdmins(skip?: number, limit?: number): Promise<AdminUser[]>;
   findAdminByUsernameOnly(username: string): Promise<AdminUser | null>;
   createAdmin(data: Prisma.AdminUserCreateInput): Promise<AdminUser>;
   updateAdmin(id: string, data: Prisma.AdminUserUpdateInput): Promise<AdminUser>;
   deleteAdmin(id: string): Promise<void>;
-
-  // Admin Roles
-  findAdminRoleById(id: string): Promise<AdminRole | null>;
-  listAdminRoles(): Promise<AdminRole[]>;
-  createAdminRole(data: Prisma.AdminRoleCreateInput): Promise<AdminRole>;
-  updateAdminRole(id: string, data: Prisma.AdminRoleUpdateInput): Promise<AdminRole>;
-  deleteAdminRole(id: string): Promise<void>;
-  findAdminRoleWithUsers(id: string): Promise<(AdminRole & { users: AdminUser[] }) | null>;
 
   // Organizations
   listOrganizations(
@@ -153,29 +135,23 @@ export interface AdminRepository {
 export function createAdminRepository(db: DbClient): AdminRepository {
   return {
     findAdminByUsername: async (username: string) => {
-      const admin: AdminUserWithRoleRecord | null = await db.adminUser.findUnique({
+      return db.adminUser.findUnique({
         where: { username },
-        include: { role: true },
       });
-      return admin;
     },
 
     findAdminById: async (id: string) => {
-      const admin: AdminUserWithRoleRecord | null = await db.adminUser.findUnique({
+      return db.adminUser.findUnique({
         where: { id },
-        include: { role: true },
       });
-      return admin;
     },
 
     listAdmins: async (skip?: number, limit?: number) => {
-      const admins: AdminUserWithRoleRecord[] = await db.adminUser.findMany({
+      return db.adminUser.findMany({
         skip,
         take: limit,
         orderBy: [{ is_active: 'desc' }, { created_at: 'desc' }],
-        include: { role: true },
       });
-      return admins;
     },
 
     findAdminByUsernameOnly: async (username: string) => {
@@ -192,35 +168,6 @@ export function createAdminRepository(db: DbClient): AdminRepository {
 
     deleteAdmin: async (id: string) => {
       await db.adminUser.delete({ where: { id } });
-    },
-
-    findAdminRoleById: async (id: string) => {
-      return db.adminRole.findUnique({ where: { id } });
-    },
-
-    listAdminRoles: async () => {
-      return db.adminRole.findMany({
-        orderBy: [{ is_system: 'desc' }, { name: 'asc' }],
-      });
-    },
-
-    createAdminRole: async (data: Prisma.AdminRoleCreateInput) => {
-      return db.adminRole.create({ data });
-    },
-
-    updateAdminRole: async (id: string, data: Prisma.AdminRoleUpdateInput) => {
-      return db.adminRole.update({ where: { id }, data });
-    },
-
-    deleteAdminRole: async (id: string) => {
-      await db.adminRole.delete({ where: { id } });
-    },
-
-    findAdminRoleWithUsers: async (id: string) => {
-      return db.adminRole.findUnique({
-        where: { id },
-        include: { users: true },
-      });
     },
 
     listOrganizations: async (

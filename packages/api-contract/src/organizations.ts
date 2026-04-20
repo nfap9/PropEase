@@ -62,7 +62,9 @@ export interface OrganizationMember {
   id: string;
   organization_id: string;
   user_id: string;
-  role: MemberRole;
+  role_id: string;
+  role_name: string;
+  is_system_role: boolean;
   user?: User;
   user_phone: string | null;
   user_full_name: string;

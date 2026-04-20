@@ -32,13 +32,6 @@ router.put('/users/:user_id', ctrl.updateUser);
 router.delete('/users/:user_id', ctrl.deleteUser);
 router.post('/users/:user_id/reset-password', ctrl.resetPassword);
 
-// --- roles ---
-router.get('/roles', ctrl.listRoles);
-router.get('/roles/:role_id', ctrl.getRole);
-router.post('/roles', ctrl.createRole);
-router.put('/roles/:role_id', ctrl.updateRole);
-router.delete('/roles/:role_id', ctrl.deleteRole);
-
 // --- organizations ---
 router.get('/organizations', ctrl.listOrganizations);
 router.get('/organizations/:org_id', ctrl.getOrganization);

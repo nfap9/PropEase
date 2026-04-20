@@ -70,7 +70,12 @@ export async function list(req: Request, res: Response, next: NextFunction) {
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const result = await defaultOrgService.listByUser(user.id);
-    res.json(result);
+    // Return array of organizations with their role info
+    const orgs = result.map(({ org, role }) => ({
+      ...toOrgResponse(org),
+      role: role.name,
+    }));
+    res.json(orgs);
   } catch (e) {
     next(e);
   }
@@ -196,7 +201,9 @@ export async function getMembers(req: Request, res: Response, next: NextFunction
         id: m.id,
         organization_id: m.organization_id,
         user_id: m.user_id,
-        role: m.role,
+        role_id: m.role_id,
+        role_name: m.role.name,
+        is_system_role: m.role.is_system,
         joined_at: m.created_at,
         created_at: m.created_at,
         user_phone: m.user?.phone ?? null,
@@ -219,14 +226,16 @@ export async function addMember(req: Request, res: Response, next: NextFunction)
     if (members_used >= limits.max_members)
       return next(createAppError(403, `当前服务最多允许 ${limits.max_members} 名成员`));
     const phone = (req.query.phone as string) ?? (req.body?.phone as string);
-    const role = ((req.query.role as string) ?? req.body?.role ?? 'member') as string;
+    const role_id = ((req.query.role_id as string) ?? req.body?.role_id) as string;
     if (!phone) return next(createAppError(400, '缺少 phone'));
-    const m = await defaultOrgService.addMember(orgId, { phone, role });
+    if (!role_id) return next(createAppError(400, '缺少 role_id'));
+    const m = await defaultOrgService.addMember(orgId, { phone, role_id });
     res.status(201).json({
       id: m.id,
       organization_id: m.organization_id,
       user_id: m.user_id,
-      role: m.role,
+      role_id: m.role_id,
+      role_name: m.role.name,
       joined_at: m.created_at,
       created_at: m.created_at,
       user_phone: m.user?.phone ?? null,
@@ -243,14 +252,15 @@ export async function updateMember(req: Request, res: Response, next: NextFuncti
     await requireOrgMembership(req, 'orgId');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const role = (req.query.role as string) ?? req.body?.role;
-    if (!role) return next(createAppError(400, '缺少 role'));
-    const m = await defaultOrgService.updateMemberRole(orgId, req.params.userId, role, user.id);
+    const role_id = (req.query.role_id as string) ?? req.body?.role_id;
+    if (!role_id) return next(createAppError(400, '缺少 role_id'));
+    const m = await defaultOrgService.updateMemberRole(orgId, req.params.userId, role_id, user.id);
     res.json({
       id: m.id,
       organization_id: m.organization_id,
       user_id: m.user_id,
-      role: m.role,
+      role_id: m.role_id,
+      role_name: m.role.name,
       joined_at: m.created_at,
       created_at: m.created_at,
       user_phone: m.user?.phone ?? null,

@@ -5,6 +5,7 @@ import {
   type OrganizationRepository,
 } from '../repositories/organization.repo.js';
 import type { DbClient, RepositoryFactory } from '../types/repository.types.js';
+import { DEFAULT_ORG_ROLES } from '../constants/permissionDefaults.js';
 
 interface PersonalOrgDependencies {
   createId?: () => string;
@@ -42,11 +43,31 @@ async function createPersonalOrgRecords(
       is_personal: true,
     });
 
+    // 创建三个预制角色
+    for (const roleDef of DEFAULT_ORG_ROLES) {
+      await db.orgRole.create({
+        data: {
+          id: deps.createId(),
+          organization_id: orgId,
+          name: roleDef.name,
+          description: roleDef.description,
+          is_system: roleDef.is_system,
+          permissions: roleDef.permissions,
+        },
+      });
+    }
+
+    // 找到"公寓所有者"角色的 ID
+    const ownerRole = await db.orgRole.findUnique({
+      where: { organization_id_name: { organization_id: orgId, name: '组织所有者' } },
+    });
+
+    // 创建组织所有者成员
     await orgRepo.createMember({
       id: memberId,
       organization: { connect: { id: orgId } },
       user: { connect: { id: userId } },
-      role: 'owner',
+      role: { connect: { id: ownerRole!.id } },
     });
   });
 }
@@ -115,11 +136,31 @@ export async function createPersonalOrgWithFreePlan(
         is_personal: true,
       });
 
+      // 创建三个预制角色
+      for (const roleDef of DEFAULT_ORG_ROLES) {
+        await db.orgRole.create({
+          data: {
+            id: deps.createId(),
+            organization_id: orgId,
+            name: roleDef.name,
+            description: roleDef.description,
+            is_system: roleDef.is_system,
+            permissions: roleDef.permissions,
+          },
+        });
+      }
+
+      // 找到"公寓所有者"角色的 ID
+      const ownerRole = await db.orgRole.findUnique({
+        where: { organization_id_name: { organization_id: orgId, name: '组织所有者' } },
+      });
+
+      // 创建组织所有者成员
       await txOrgRepo.createMember({
         id: memberId,
         organization: { connect: { id: orgId } },
         user: { connect: { id: userId } },
-        role: 'owner',
+        role: { connect: { id: ownerRole!.id } },
       });
 
       // 使用 prisma 直接创建 subscription（因为在事务中）

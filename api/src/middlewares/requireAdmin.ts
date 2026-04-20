@@ -42,7 +42,6 @@ export async function requireAdmin(
   }
   const admin = await prisma.adminUser.findUnique({
     where: { id: adminUserId },
-    include: { role: true },
   });
   if (!admin || !admin.is_active) {
     next(createAppError(401, 'User not found'));
@@ -51,7 +50,6 @@ export async function requireAdmin(
   req.adminUser = {
     id: admin.id,
     username: admin.username,
-    role_id: admin.role_id,
   };
   next();
 }

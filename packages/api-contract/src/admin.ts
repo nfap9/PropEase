@@ -34,8 +34,6 @@ export interface AdminUser {
   username: string;
   name: string;
   email: string | null;
-  role_id: string;
-  role_name: string | null;
   is_active: boolean;
   /** 系统预置账号不可删除 */
   is_system: boolean;
@@ -48,37 +46,16 @@ export interface AdminUserCreate {
   password: string;
   name: string;
   email?: string | null;
-  role_id: string;
 }
 
 export interface AdminUserUpdate {
   name?: string | null;
   email?: string | null;
-  role_id?: string | null;
   is_active?: boolean | null;
 }
 
 export interface AdminPasswordReset {
   new_password: string;
-}
-
-/** 运营角色 */
-export interface AdminRole {
-  id: string;
-  name: string;
-  permissions: string[];
-  is_system: boolean;
-  created_at: string;
-}
-
-export interface AdminRoleCreate {
-  name: string;
-  permissions?: string[];
-}
-
-export interface AdminRoleUpdate {
-  name?: string | null;
-  permissions?: string[] | null;
 }
 
 /** 运营侧组织 */

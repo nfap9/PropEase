@@ -213,7 +213,7 @@ async function notifyOrgAdmins(
   getOrgRepo: () => OrganizationRepository
 ): Promise<void> {
   const members = await getOrgRepo().findMembersByOrgId(orgId);
-  const admins = members.filter((m) => m.role === 'owner' || m.role === 'admin');
+  const admins = members.filter((m) => m.role.name === '组织所有者' || m.role.name === '公寓管理人');
 
   for (const member of admins) {
     await prisma.notification.create({

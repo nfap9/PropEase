@@ -76,15 +76,16 @@ export const organizationsApi = {
   /**
    * 添加组织成员
    * @param orgId 组织 ID
-   * @param data 成员手机号和角色
+   * @param data 成员手机号和角色ID
    */
   addMember: async (
     orgId: string,
-    data: { user_phone: string; role: MemberRole }
+    data: { user_phone: string; role_id: string }
   ): Promise<OrganizationMember> => {
-    const params = new URLSearchParams({ phone: data.user_phone, role: data.role });
     const response = await api.post<OrganizationMember>(
-      `/organizations/${orgId}/members?${params}`
+      `/organizations/${orgId}/members`,
+      null,
+      { params: { phone: data.user_phone, role_id: data.role_id } }
     );
     return response.data;
   },
@@ -93,16 +94,17 @@ export const organizationsApi = {
    * 更新组织成员角色
    * @param orgId 组织 ID
    * @param memberId 成员 ID
-   * @param data 新的角色
+   * @param data 新的角色ID
    */
   updateMember: async (
     orgId: string,
     memberId: string,
-    data: { role: MemberRole }
+    data: { role_id: string }
   ): Promise<OrganizationMember> => {
-    const params = new URLSearchParams({ role: data.role });
     const response = await api.put<OrganizationMember>(
-      `/organizations/${orgId}/members/${memberId}?${params}`
+      `/organizations/${orgId}/members/${memberId}`,
+      null,
+      { params: { role_id: data.role_id } }
     );
     return response.data;
   },

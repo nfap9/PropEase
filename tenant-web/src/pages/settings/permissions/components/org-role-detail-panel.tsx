@@ -1,19 +1,10 @@
-
 import { useState } from 'react';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Card, CardContent } from '@apartment-ultra/shared-ui/components/ui';
 import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import type { MemberRole, Permission } from '@/types';
-import { ChevronDown, ChevronRight, Shield, Save } from 'lucide-react';
+import type { OrgRole, Permission } from '@/api/permissions';
+import { ChevronDown, ChevronRight, Save } from 'lucide-react';
 import { tenantMessages } from '@/i18n';
-
-const ROLE_LABELS: Record<MemberRole, string> = {
-  owner: tenantMessages.settings.team.roles.owner,
-  admin: tenantMessages.settings.team.roles.admin,
-  member: tenantMessages.settings.team.roles.member,
-  viewer: tenantMessages.settings.team.roles.viewer,
-};
 
 const RESOURCE_LABELS: Record<string, string> = {
   apartment: '公寓管理',
@@ -36,7 +27,7 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 export interface OrgRoleDetailPanelProps {
-  role: MemberRole;
+  role: OrgRole | null;
   selectedPermissions: Set<string>;
   groupedPermissions: Record<string, Permission[]> | null;
   onTogglePermission: (code: string) => void;
@@ -48,7 +39,7 @@ export interface OrgRoleDetailPanelProps {
 }
 
 /**
- * 成员身份功能详情：右侧树形面板。每个模块可展开显示功能列表；勾选模块内全部即表示该模块全部功能。
+ * 角色权限详情：右侧树形面板
  */
 export function OrgRoleDetailPanel({
   role,
@@ -61,7 +52,8 @@ export function OrgRoleDetailPanel({
   isLoadingRolePermissions,
   isSaving,
 }: OrgRoleDetailPanelProps) {
-  const readOnly = role === 'owner';
+  // 只有组织所有者才能修改
+  const readOnly = !isOwner;
   const entries = groupedPermissions ? Object.entries(groupedPermissions) : [];
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set(entries.map(([k]) => k)));
 
@@ -74,58 +66,40 @@ export function OrgRoleDetailPanel({
     });
   };
 
+  if (!role) {
+    return (
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex flex-1 items-center justify-center text-muted-foreground">请选择一个角色</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      <div className="border-b p-4">
-        <h3 className="font-semibold">{ROLE_LABELS[role]}</h3>
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="border-b p-4 pt-0">
+        <h3 className="font-semibold">{role.name}</h3>
+        {role.description && <p className="mt-1 text-sm text-muted-foreground">{role.description}</p>}
         {readOnly && (
-          <p className="mt-1 text-sm text-muted-foreground">
-            {tenantMessages.settings.permissions.creatorHint}
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{tenantMessages.settings.permissions.creatorHint}</p>
         )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
-        {readOnly ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Shield className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">{tenantMessages.settings.permissions.creatorFullAccessTitle}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {tenantMessages.settings.permissions.creatorFullAccessDescription}
-              </p>
-            </CardContent>
-          </Card>
-        ) : !isOwner ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Shield className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">{tenantMessages.settings.permissions.readonlyTitle}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {tenantMessages.settings.permissions.readonlyDescription}
-              </p>
-            </CardContent>
-          </Card>
-        ) : isLoadingRolePermissions ? (
+        {isLoadingRolePermissions ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
               <Skeleton key={i} className="h-32" />
             ))}
           </div>
         ) : entries.length > 0 ? (
-          <div className="space-y-0.5 rounded-md border p-3">
-            <p className="mb-2 text-sm font-medium leading-none">{tenantMessages.settings.team.labels.availableFeatures}</p>
+          <div className="py-3">
             <ul className="space-y-0.5">
               {entries.map(([resource, permissions]) => {
                 const isOpen = expanded.has(resource);
-                const allChecked =
-                  permissions.length > 0 &&
-                  permissions.every((p) => selectedPermissions.has(p.code));
-                const groupCount = permissions.filter((p) =>
-                  selectedPermissions.has(p.code)
-                ).length;
+                const allChecked = permissions.length > 0 && permissions.every((p) => selectedPermissions.has(p.code));
+                const groupCount = permissions.filter((p) => selectedPermissions.has(p.code)).length;
                 return (
-                  <li key={resource} className="rounded-md">
+                  <li key={resource}>
                     <div className="flex items-center gap-2 py-1.5 pr-2">
                       <button
                         type="button"
@@ -134,13 +108,10 @@ export function OrgRoleDetailPanel({
                         aria-expanded={isOpen}
                         aria-label={isOpen ? '收起' : '展开'}
                       >
-                        {isOpen ? (
-                          <ChevronDown className="h-4 w-4" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4" />
-                        )}
+                        {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                       </button>
                       <Checkbox
+                        disabled={readOnly}
                         id={`org-res-${resource}`}
                         checked={allChecked}
                         onCheckedChange={() => onToggleResource(resource, permissions)}
@@ -161,17 +132,18 @@ export function OrgRoleDetailPanel({
                       <ul className="ml-2 space-y-0.5 border-l border-muted pb-1 pl-6">
                         {permissions.map((permission) => (
                           <li
-                            key={permission.id}
+                            key={permission.code}
                             className="-ml-px flex items-center gap-2 border-b border-muted/50 py-1 pl-2 last:border-b-0"
                           >
                             <Checkbox
-                              id={`org-perm-${permission.id}`}
+                              disabled={readOnly}
+                              id={`org-perm-${permission.code}`}
                               checked={selectedPermissions.has(permission.code)}
                               onCheckedChange={() => onTogglePermission(permission.code)}
                               className="shrink-0"
                             />
                             <label
-                              htmlFor={`org-perm-${permission.id}`}
+                              htmlFor={`org-perm-${permission.code}`}
                               className="flex-1 cursor-pointer select-none text-sm"
                             >
                               {permission.name ||
@@ -190,7 +162,7 @@ export function OrgRoleDetailPanel({
       </div>
 
       {!readOnly && isOwner && groupedPermissions && Object.keys(groupedPermissions).length > 0 && (
-        <div className="border-t p-4">
+        <div className="border-t p-2">
           <Button onClick={onSave} disabled={isSaving}>
             <Save className="mr-2 h-4 w-4" />
             {isSaving ? tenantMessages.settings.team.editSubmitting : '保存更改'}

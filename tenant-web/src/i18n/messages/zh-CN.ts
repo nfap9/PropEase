@@ -293,6 +293,9 @@ export const tenantZhCNMessages = {
         member: '协作成员',
         viewer: '只读成员',
       },
+      actions: {
+        addRole: '新增角色',
+      },
       inviteButton: '邀请团队成员',
       inviteSubmit: '发送邀请',
       inviteSubmitting: '邀请中...',

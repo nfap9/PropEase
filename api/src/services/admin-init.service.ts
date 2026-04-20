@@ -5,8 +5,6 @@ import { hashPassword } from '../utils/security.js';
 import { createAdminAccessToken } from '../utils/jwt.js';
 import { BusinessCode } from '@apartment-ultra/api-contract';
 
-const SUPER_ADMIN_ROLE_NAME = '超级管理员';
-
 /**
  * 初始化输入
  */
@@ -78,22 +76,7 @@ export async function setupInitialAdmin(input: SetupInput): Promise<SetupResult>
     throw createAppError(400, passwordValidation.message!);
   }
 
-  // 3. 确保超级管理员角色存在
-  let role = await prisma.adminRole.findFirst({
-    where: { name: SUPER_ADMIN_ROLE_NAME },
-  });
-  if (!role) {
-    role = await prisma.adminRole.create({
-      data: {
-        id: ulid().toLowerCase(),
-        name: SUPER_ADMIN_ROLE_NAME,
-        permissions: ['*'],
-        is_system: true,
-      },
-    });
-  }
-
-  // 4. 创建超级管理员
+  // 3. 创建超级管理员
   const passwordHash = await hashPassword(input.password);
   const admin = await prisma.adminUser.create({
     data: {
@@ -101,7 +84,6 @@ export async function setupInitialAdmin(input: SetupInput): Promise<SetupResult>
       username: input.username.trim(),
       password_hash: passwordHash,
       name: input.name?.trim() || '超级管理员',
-      role_id: role.id,
       is_active: true,
       is_system: true,
     },

@@ -5,50 +5,34 @@ import { getConsoleUser } from '../../utils/context.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
 import { defaultPermissionService } from '../../services/permission.service.js';
-import {
-  SYSTEM_ROLES,
-  type SystemRole,
-  type OrgMemberRole,
-} from '../../constants/permissionDefaults.js';
-
-const UpdateRolePermissionsSchema = z.object({
-  permission_codes: z.array(z.string().min(1)).max(200),
-});
+import { prisma } from '../../lib/prisma.js';
 
 const router: Router = Router();
 
-const GrantSystemRoleSchema = z.object({
-  user_id: z.string(),
-  role: z.enum(SYSTEM_ROLES),
+const CreateOrgRoleSchema = z.object({
+  name: z.string().min(1).max(50),
+  description: z.string().max(255).optional(),
 });
-const RevokeSystemRoleSchema = z.object({
-  user_id: z.string(),
-  role: z.enum(SYSTEM_ROLES),
+
+const UpdateOrgRoleSchema = z.object({
+  name: z.string().min(1).max(50).optional(),
+  description: z.string().max(255).optional(),
+  permissions: z.array(z.string()).optional(),
+});
+
+const UpdatePermissionsSchema = z.object({
+  permission_codes: z.array(z.string()).max(200),
 });
 
 router.use(requireConsoleAuth);
 
 /**
- * @openapi
- * /permissions:
- *   get:
- *     summary: 获取所有权限列表
- *     tags: [权限管理]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: 权限列表
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Permission'
+ * GET /permissions
+ * 获取所有权限列表（静态定义）
  */
-router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
+router.get('/', (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const list = await defaultPermissionService.listAll();
+    const list = defaultPermissionService.listAll();
     res.json(list);
   } catch (e) {
     next(e);
@@ -56,28 +40,12 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
 });
 
 /**
- * @openapi
- * /permissions/grouped:
- *   get:
- *     summary: 获取分组权限列表
- *     tags: [权限管理]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: 按模块分组的权限列表
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               additionalProperties:
- *                 type: array
- *                 items:
- *                   $ref: '#/components/schemas/Permission'
+ * GET /permissions/grouped
+ * 获取分组权限列表
  */
-router.get('/grouped', async (_req: Request, res: Response, next: NextFunction) => {
+router.get('/grouped', (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const grouped = await defaultPermissionService.listGrouped();
+    const grouped = defaultPermissionService.listGrouped();
     res.json(grouped);
   } catch (e) {
     next(e);
@@ -85,48 +53,16 @@ router.get('/grouped', async (_req: Request, res: Response, next: NextFunction) 
 });
 
 /**
- * @openapi
- * /permissions/organization/{org_id}/roles/{role}:
- *   get:
- *     summary: 获取组织角色的权限
- *     tags: [权限管理]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: org_id
- *         required: true
- *         schema:
- *           type: string
- *       - in: path
- *         name: role
- *         required: true
- *         schema:
- *           type: string
- *           enum: [owner, admin, member]
- *     responses:
- *       200:
- *         description: 角色权限列表
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 role:
- *                   type: string
- *                 permissions:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Permission'
+ * GET /permissions/org-roles
+ * 获取组织角色列表
  */
 router.get(
-  '/organization/:org_id/roles/:role',
+  '/org-roles',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await requireOrgMembership(req, 'org_id');
-      const role = req.params.role as OrgMemberRole;
-      const result = await defaultPermissionService.getRolePermissions(req.params.org_id, role);
-      res.json(result);
+      const orgId = await requireOrgMembership(req);
+      const roles = await defaultPermissionService.listOrgRoles(orgId);
+      res.json(roles);
     } catch (e) {
       next(e);
     }
@@ -134,63 +70,133 @@ router.get(
 );
 
 /**
- * @openapi
- * /permissions/organization/{org_id}/roles/{role}:
- *   put:
- *     summary: 更新组织角色的权限
- *     tags: [权限管理]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: org_id
- *         required: true
- *         schema:
- *           type: string
- *       - in: path
- *         name: role
- *         required: true
- *         schema:
- *           type: string
- *           enum: [owner, admin, member]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [permission_codes]
- *             properties:
- *               permission_codes:
- *                 type: array
- *                 items:
- *                   type: string
- *     responses:
- *       200:
- *         description: 更新成功
+ * POST /permissions/org-roles
+ * 创建角色
  */
-router.put(
-  '/organization/:org_id/roles/:role',
+router.post(
+  '/org-roles',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = getConsoleUser(req);
       if (!user) return next(createAppError(401, '未授权或登录已过期'));
-      await requireOrgMembership(req, 'org_id');
-      const role = req.params.role as OrgMemberRole;
-      const parsed = UpdateRolePermissionsSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const fieldErrors = parsed.error.errors.map((e) => ({
-          field: e.path.join('.'),
-          message: e.message,
-        }));
-        return next(createAppError(422, '参数校验失败', { fieldErrors }));
+
+      const orgId = await requireOrgMembership(req);
+
+      // 检查用户是否是所有者
+      const member = await prisma.organizationMember.findFirst({
+        where: { organization_id: orgId, user_id: user.id },
+        include: { role: true },
+      });
+
+      if (!member || member.role.name !== '组织所有者') {
+        return next(createAppError(403, '仅所有者可创建角色'));
       }
-      await defaultPermissionService.updateRolePermissions(
-        req.params.org_id,
-        role,
-        parsed.data.permission_codes,
-        user.id
+
+      const parsed = CreateOrgRoleSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return next(createAppError(422, '参数校验失败'));
+      }
+
+      const role = await defaultPermissionService.createOrgRole(
+        orgId,
+        parsed.data.name,
+        parsed.data.description
       );
+
+      res.status(201).json(role);
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+/**
+ * GET /permissions/org-roles/:role_id
+ * 获取角色详情
+ */
+router.get(
+  '/org-roles/:role_id',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await requireOrgMembership(req);
+      const role = await defaultPermissionService.getOrgRole(req.params.role_id);
+      if (!role) {
+        return next(createAppError(404, '角色不存在'));
+      }
+      res.json(role);
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+/**
+ * PUT /permissions/org-roles/:role_id
+ * 更新角色
+ */
+router.put(
+  '/org-roles/:role_id',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = getConsoleUser(req);
+      if (!user) return next(createAppError(401, '未授权或登录已过期'));
+
+      const orgId = await requireOrgMembership(req);
+
+      // 检查用户是否是所有者
+      const member = await prisma.organizationMember.findFirst({
+        where: { organization_id: orgId, user_id: user.id },
+        include: { role: true },
+      });
+
+      if (!member || member.role.name !== '组织所有者') {
+        return next(createAppError(403, '仅所有者可修改角色'));
+      }
+
+      const parsed = UpdateOrgRoleSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return next(createAppError(422, '参数校验失败'));
+      }
+
+      const role = await defaultPermissionService.updateOrgRole(
+        req.params.role_id,
+        parsed.data
+      );
+
+      res.json(role);
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+/**
+ * DELETE /permissions/org-roles/:role_id
+ * 删除角色
+ */
+router.delete(
+  '/org-roles/:role_id',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = getConsoleUser(req);
+      if (!user) return next(createAppError(401, '未授权或登录已过期'));
+
+      const orgId = await requireOrgMembership(req);
+
+      // 检查用户是否是所有者
+      const member = await prisma.organizationMember.findFirst({
+        where: { organization_id: orgId, user_id: user.id },
+        include: { role: true },
+      });
+
+      console.log('[DELETE role] user.id:', user.id, 'orgId:', orgId);
+      console.log('[DELETE role] member:', member?.id, 'role.name:', member?.role?.name);
+
+      if (!member || member.role.name !== '组织所有者') {
+        return next(createAppError(403, '仅所有者可删除角色'));
+      }
+
+      await defaultPermissionService.deleteOrgRole(req.params.role_id, user.id);
       res.json({ message: 'ok' });
     } catch (e) {
       next(e);
@@ -199,188 +205,86 @@ router.put(
 );
 
 /**
- * @openapi
- * /permissions/me:
- *   get:
- *     summary: 获取当前用户的权限
- *     tags: [权限管理]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: 当前用户的权限列表
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: string
+ * GET /permissions/org-roles/:role_id/permissions
+ * 获取角色权限
+ */
+router.get(
+  '/org-roles/:role_id/permissions',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await requireOrgMembership(req);
+      const permissions = await defaultPermissionService.getRolePermissions(
+        req.params.role_id
+      );
+      res.json(permissions);
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+/**
+ * PUT /permissions/org-roles/:role_id/permissions
+ * 更新角色权限
+ */
+router.put(
+  '/org-roles/:role_id/permissions',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = getConsoleUser(req);
+      if (!user) return next(createAppError(401, '未授权或登录已过期'));
+
+      const orgId = await requireOrgMembership(req);
+
+      // 检查用户是否是所有者
+      const member = await prisma.organizationMember.findFirst({
+        where: { organization_id: orgId, user_id: user.id },
+        include: { role: true },
+      });
+
+      if (!member || member.role.name !== '组织所有者') {
+        return next(createAppError(403, '仅所有者可修改角色权限'));
+      }
+
+      // 检查目标角色是否是"组织所有者"，不允许修改
+      const targetRole = await defaultPermissionService.getOrgRole(req.params.role_id);
+      if (targetRole?.name === '组织所有者') {
+        return next(createAppError(403, '无法修改组织所有者的权限'));
+      }
+
+      const parsed = UpdatePermissionsSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return next(createAppError(422, '参数校验失败'));
+      }
+
+      await defaultPermissionService.updateRolePermissions(
+        req.params.role_id,
+        parsed.data.permission_codes,
+        user.id
+      );
+
+      res.json({ message: 'ok' });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+/**
+ * GET /permissions/me
+ * 获取当前用户的权限
  */
 router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const orgId = await requireOrgMembership(req, 'org_id');
-    const result = await defaultPermissionService.getMyPermissions(user.id, orgId);
-    res.json(result);
-  } catch (e) {
-    next(e);
-  }
-});
 
-/**
- * @openapi
- * /permissions/system-roles:
- *   get:
- *     summary: 获取系统角色配置列表
- *     tags: [权限管理]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: 系统角色配置列表
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   role:
- *                     type: string
- *                   name:
- *                     type: string
- *                   permissions:
- *                     type: array
- *                     items:
- *                       type: string
- */
-router.get('/system-roles', async (_req: Request, res: Response, next: NextFunction) => {
-  try {
-    const list = await defaultPermissionService.listSystemRoleConfigs();
-    res.json(list);
-  } catch (e) {
-    next(e);
-  }
-});
-
-/**
- * @openapi
- * /permissions/system-roles/grant:
- *   post:
- *     summary: 授予系统角色
- *     tags: [权限管理]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [user_id, role]
- *             properties:
- *               user_id:
- *                 type: string
- *               role:
- *                 type: string
- *                 enum: [super_admin, platform_admin]
- *     responses:
- *       200:
- *         description: 授予成功
- *       403:
- *         description: 需要超级管理员权限
- */
-router.post('/system-roles/grant', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const user = getConsoleUser(req);
-    if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    if (!(await defaultPermissionService.isSuperAdmin(user.id))) {
-      return next(createAppError(403, '需要超级管理员权限'));
-    }
-    const parsed = GrantSystemRoleSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    await defaultPermissionService.grantSystemRole(
-      parsed.data.user_id,
-      parsed.data.role as SystemRole,
-      user.id
+    const orgId = await requireOrgMembership(req);
+    const permissions = await defaultPermissionService.getMyPermissions(
+      user.id,
+      orgId
     );
-    res.json({ message: '角色授予成功' });
-  } catch (e) {
-    next(e);
-  }
-});
-
-/**
- * @openapi
- * /permissions/system-roles/revoke:
- *   post:
- *     summary: 撤销系统角色
- *     tags: [权限管理]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [user_id, role]
- *             properties:
- *               user_id:
- *                 type: string
- *               role:
- *                 type: string
- *                 enum: [super_admin, platform_admin]
- *     responses:
- *       200:
- *         description: 撤销成功
- *       403:
- *         description: 需要超级管理员权限
- */
-router.post('/system-roles/revoke', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const user = getConsoleUser(req);
-    if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    if (!(await defaultPermissionService.isSuperAdmin(user.id))) {
-      return next(createAppError(403, '需要超级管理员权限'));
-    }
-    const parsed = RevokeSystemRoleSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    await defaultPermissionService.revokeSystemRole(
-      parsed.data.user_id,
-      parsed.data.role as SystemRole
-    );
-    res.json({ message: '角色撤销成功' });
-  } catch (e) {
-    next(e);
-  }
-});
-
-/**
- * @openapi
- * /permissions/system-roles/me:
- *   get:
- *     summary: 获取当前用户的系统角色
- *     tags: [权限管理]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: 系统角色列表
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: string
- */
-router.get('/system-roles/me', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const user = getConsoleUser(req);
-    if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const roles = await defaultPermissionService.getMySystemRoles(user.id);
-    res.json(roles);
+    res.json(permissions);
   } catch (e) {
     next(e);
   }

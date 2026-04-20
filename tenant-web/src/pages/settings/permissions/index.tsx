@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -6,29 +5,25 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { permissionsApi } from '@/api/permissions';
 import { organizationsApi } from '@/api';
 import { getErrorMessage } from '@/utils/error';
-import { MemberRole, Permission } from '@/types';
+import type { OrgRole, Permission } from '@/api/permissions';
 import { useAuth } from '@/contexts/auth';
-import { OrgRoleList } from '@/pages/settings/components/org-role-list';
-import { OrgRoleDetailPanel } from '@/pages/settings/components/org-role-detail-panel';
+import {
+  OrgRoleList,
+  OrgRoleCreateDialog,
+  OrgRoleDeleteDialog,
+} from '@/pages/settings/permissions/components/org-role-list';
+import { OrgRoleDetailPanel } from '@/pages/settings/permissions/components/org-role-detail-panel';
 import { Shield } from 'lucide-react';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantMessages } from '@/i18n';
 
-// 注意: 实际使用时从 testids 导入 PERMISSIONS 常量
-const PERMISSIONS = {
-  HEADING: 'permissions-heading',
-  ROLE_LIST: 'permissions-role-list',
-  PERMISSION_PANEL: 'permissions-permission-panel',
-  SAVE_BUTTON: 'permissions-save-btn',
-  ROLE_TAB: 'permissions-role-tab',
-  CREATE_ROLE_BTN: 'permissions-create-role-btn',
-} as const;
-
 export default function PermissionsPage() {
   const { organization, user } = useAuth();
   const queryClient = useQueryClient();
-  const [selectedRole, setSelectedRole] = useState<MemberRole>('admin');
+  const [selectedRole, setSelectedRole] = useState<OrgRole | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set());
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const { data: members } = useQuery({
     queryKey: ['organization-members', organization?.id],
@@ -41,37 +36,67 @@ export default function PermissionsPage() {
     queryFn: permissionsApi.getGrouped,
   });
 
+  const { data: roles, isLoading: rolesLoading } = useQuery({
+    queryKey: ['org-roles', organization?.id],
+    queryFn: () => permissionsApi.getOrgRoles(organization!.id),
+    enabled: !!organization,
+  });
+
   const { data: rolePermissions, isLoading: rolePermissionsLoading } = useQuery({
-    queryKey: ['role-permissions', organization?.id, selectedRole],
+    queryKey: ['role-permissions', selectedRole?.id],
     queryFn: async () => {
-      if (!organization) return null;
-      const response = await permissionsApi.getRolePermissions(organization.id, selectedRole);
-      return response;
+      if (!selectedRole || !organization) return null;
+      return permissionsApi.getRolePermissions(organization.id, selectedRole.id);
     },
-    enabled: !!organization && selectedRole !== 'owner',
+    enabled: !!selectedRole && !!organization,
   });
 
   useEffect(() => {
     if (rolePermissions?.permissions) {
-      setSelectedPermissions(new Set(rolePermissions.permissions.map((p: Permission) => p.code)));
+      setSelectedPermissions(new Set(rolePermissions.permissions));
     }
   }, [rolePermissions]);
 
   const currentMember = members?.find((m: { user_id: string }) => m.user_id === user?.id);
-  const isOwner = currentMember?.role === 'owner';
+  const isOwner = currentMember?.role_name === '组织所有者';
+
+  const createMutation = useMutation({
+    mutationFn: (data: { name: string; description?: string }) => permissionsApi.createOrgRole(organization!.id, data),
+    onSuccess: () => {
+      toast.success('角色创建成功');
+      queryClient.invalidateQueries({ queryKey: ['org-roles', organization?.id] });
+      setIsCreateOpen(false);
+    },
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
+  });
 
   const updateMutation = useMutation({
-    mutationFn: (data: { role: MemberRole; codes: string[] }) =>
-      permissionsApi.updateRolePermissions(organization!.id, data.role, {
-        permission_codes: data.codes,
-      }),
+    mutationFn: ({ roleId, codes }: { roleId: string; codes: string[] }) => {
+      if (!organization) throw new Error('No organization selected');
+      return permissionsApi.updateRolePermissions(organization.id, roleId, codes);
+    },
     onSuccess: () => {
       toast.success(tenantMessages.settings.permissions.saved);
-      queryClient.invalidateQueries({
-        queryKey: ['role-permissions', organization?.id],
-      });
+      queryClient.invalidateQueries({ queryKey: ['org-roles', organization?.id] });
+      queryClient.invalidateQueries({ queryKey: ['role-permissions', selectedRole?.id] });
     },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
+    onError: (error) => toast.error(getErrorMessage(error, '保存失败，请重试')),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (roleId: string) => {
+      if (!organization) throw new Error('No organization selected');
+      return permissionsApi.deleteOrgRole(organization.id, roleId);
+    },
+    onSuccess: () => {
+      toast.success('角色删除成功');
+      queryClient.invalidateQueries({ queryKey: ['org-roles', organization?.id] });
+      setIsDeleteOpen(false);
+      if (selectedRole && selectedRole.id === deleteMutation.variables) {
+        setSelectedRole(null);
+      }
+    },
+    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
   const handleTogglePermission = (code: string) => {
@@ -98,10 +123,29 @@ export default function PermissionsPage() {
   };
 
   const handleSave = () => {
+    if (!selectedRole) return;
     updateMutation.mutate({
-      role: selectedRole,
+      roleId: selectedRole.id,
       codes: Array.from(selectedPermissions),
     });
+  };
+
+  const handleSelectRole = (role: OrgRole) => {
+    setSelectedRole(role);
+  };
+
+  const handleAddRole = () => {
+    setIsCreateOpen(true);
+  };
+
+  const handleDeleteRole = (role: OrgRole) => {
+    setSelectedRole(role);
+    setIsDeleteOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!selectedRole) return;
+    deleteMutation.mutate(selectedRole.id);
   };
 
   if (!organization) {
@@ -112,7 +156,7 @@ export default function PermissionsPage() {
     );
   }
 
-  if (permissionsLoading) {
+  if (rolesLoading || permissionsLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
@@ -134,33 +178,45 @@ export default function PermissionsPage() {
 
   return (
     <PermissionPageGuard>
-      <div className="space-y-6">
-
-        <div
-          className="flex h-[calc(100vh-12rem)] rounded-lg border bg-card"
-          data-testid={PERMISSIONS.PERMISSION_PANEL}
-        >
-          <div
-            className="w-56 shrink-0 border-r p-4"
-            data-testid={PERMISSIONS.ROLE_LIST}
-          >
-            <OrgRoleList selectedRole={selectedRole} onSelectRole={setSelectedRole} showOwner />
-          </div>
-          <div className="flex-1 overflow-auto p-6">
-            <OrgRoleDetailPanel
-              role={selectedRole}
-              selectedPermissions={selectedPermissions}
-              groupedPermissions={groupedPermissions ?? null}
-              onTogglePermission={handleTogglePermission}
-              onToggleResource={handleToggleResource}
-              onSave={handleSave}
-              isOwner={isOwner}
-              isLoadingRolePermissions={rolePermissionsLoading}
-              isSaving={updateMutation.isPending}
-            />
-          </div>
+      <div className="flex h-full rounded-lg border bg-card">
+        <div className="w-56 shrink-0 border-r p-4">
+          <OrgRoleList
+            roles={roles ?? []}
+            selectedRoleId={selectedRole?.id ?? null}
+            onSelectRole={handleSelectRole}
+            onAddRole={handleAddRole}
+            onDeleteRole={handleDeleteRole}
+          />
+        </div>
+        <div className="flex-1 overflow-auto p-4">
+          <OrgRoleDetailPanel
+            role={selectedRole}
+            selectedPermissions={selectedPermissions}
+            groupedPermissions={groupedPermissions ?? null}
+            onTogglePermission={handleTogglePermission}
+            onToggleResource={handleToggleResource}
+            onSave={handleSave}
+            isOwner={isOwner}
+            isLoadingRolePermissions={rolePermissionsLoading}
+            isSaving={updateMutation.isPending}
+          />
         </div>
       </div>
+
+      <OrgRoleCreateDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onSubmit={(name, description) => createMutation.mutate({ name, description })}
+        isPending={createMutation.isPending}
+      />
+
+      <OrgRoleDeleteDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        role={selectedRole}
+        onConfirm={handleDeleteConfirm}
+        isPending={deleteMutation.isPending}
+      />
     </PermissionPageGuard>
   );
 }

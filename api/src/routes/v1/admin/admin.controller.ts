@@ -20,13 +20,11 @@ export const AdminUserCreateSchema = z.object({
   password: z.string().min(1),
   name: z.string(),
   email: z.string().optional(),
-  role_id: z.string(),
 });
 
 export const AdminUserUpdateSchema = z.object({
   name: z.string().optional(),
   email: z.string().optional(),
-  role_id: z.string().optional(),
   is_active: z.boolean().optional(),
 });
 
@@ -38,17 +36,6 @@ export const ResetPasswordSchema = z
   .refine((d) => d.password !== undefined || d.new_password !== undefined, {
     message: '需要 password 或 new_password',
   });
-
-export const AdminRoleCreateSchema = z.object({
-  name: z.string(),
-  permissions: z.union([z.array(z.string()), z.record(z.unknown())]).optional(),
-  is_system: z.boolean().optional(),
-});
-
-export const AdminRoleUpdateSchema = z.object({
-  name: z.string().optional(),
-  permissions: z.union([z.array(z.string()), z.record(z.unknown())]).optional(),
-});
 
 export const UsagePricingUpdateSchema = z.object({
   price_per_org: z.number().min(0).optional(),
@@ -144,66 +131,6 @@ export async function resetPassword(req: Request, res: Response, next: NextFunct
     await defaultAdminService.resetAdminPassword(req.params.user_id, newPassword);
     auditAdminAction(req, 'admin:user:reset_password', req.params.user_id);
     res.json({ message: 'ok' });
-  } catch (e) {
-    next(e);
-  }
-}
-
-// --- roles ---
-export async function listRoles(_req: Request, res: Response, next: NextFunction) {
-  try {
-    const list = await defaultAdminService.listAdminRoles();
-    res.json(list);
-  } catch (e) {
-    next(e);
-  }
-}
-
-export async function getRole(req: Request, res: Response, next: NextFunction) {
-  try {
-    const role = await defaultAdminService.getAdminRole(req.params.role_id);
-    res.json(role);
-  } catch (e) {
-    next(e);
-  }
-}
-
-export async function createRole(req: Request, res: Response, next: NextFunction) {
-  try {
-    const parsed = AdminRoleCreateSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const role = await defaultAdminService.createAdminRole({
-      name: parsed.data.name,
-      permissions: parsed.data.permissions,
-      is_system: parsed.data.is_system,
-    });
-    auditAdminAction(req, 'admin:role:create', role.id, { name: parsed.data.name });
-    res.status(201).json(role);
-  } catch (e) {
-    next(e);
-  }
-}
-
-export async function updateRole(req: Request, res: Response, next: NextFunction) {
-  try {
-    const parsed = AdminRoleUpdateSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const role = await defaultAdminService.updateAdminRole(req.params.role_id, {
-      name: parsed.data.name,
-      permissions: parsed.data.permissions,
-    });
-    auditAdminAction(req, 'admin:role:update', req.params.role_id, parsed.data);
-    res.json(role);
-  } catch (e) {
-    next(e);
-  }
-}
-
-export async function deleteRole(req: Request, res: Response, next: NextFunction) {
-  try {
-    await defaultAdminService.deleteAdminRole(req.params.role_id);
-    auditAdminAction(req, 'admin:role:delete', req.params.role_id);
-    res.status(204).send();
   } catch (e) {
     next(e);
   }

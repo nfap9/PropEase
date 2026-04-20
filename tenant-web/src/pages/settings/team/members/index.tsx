@@ -67,24 +67,28 @@ const phoneRegex = /^1[3-9]\d{9}$/;
 
 const inviteSchema = z.object({
   phone: z.string().regex(phoneRegex, tenantMessages.settings.team.phoneValidation),
-  role: z.enum(['owner', 'admin', 'member', 'viewer']),
+  role_id: z.string(),
 });
 
 type InviteFormData = z.infer<typeof inviteSchema>;
 
-const ROLE_LABELS: Record<MemberRole, string> = {
-  owner: tenantMessages.settings.team.roles.owner,
-  admin: tenantMessages.settings.team.roles.admin,
-  member: tenantMessages.settings.team.roles.member,
-  viewer: tenantMessages.settings.team.roles.viewer,
+const ROLE_LABELS: Record<string, string> = {
+  '组织所有者': tenantMessages.settings.team.roles.owner,
+  '公寓管理人': tenantMessages.settings.team.roles.admin,
+  '一般合伙人': tenantMessages.settings.team.roles.member,
 };
 
-const ROLE_COLORS: Record<MemberRole, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  owner: 'default',
-  admin: 'default',
-  member: 'secondary',
-  viewer: 'outline',
+const ROLE_COLORS: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  '组织所有者': 'default',
+  '公寓管理人': 'default',
+  '一般合伙人': 'secondary',
 };
+
+// 角色ID映射（从数据库迁移得知）
+const ROLE_OPTIONS = [
+  { role_id: '01kpfr00000000000000002', role_name: '公寓管理人', label: tenantMessages.settings.team.roles.admin },
+  { role_id: '01kpfr00000000000000003', role_name: '一般合伙人', label: tenantMessages.settings.team.roles.member },
+];
 
 export default function TeamMembersPage() {
   const { user, organization } = useAuth();
@@ -101,7 +105,7 @@ export default function TeamMembersPage() {
 
   const inviteForm = useForm<InviteFormData>({
     resolver: zodResolver(inviteSchema),
-    defaultValues: { phone: '', role: 'member' },
+    defaultValues: { phone: '', role_id: ROLE_OPTIONS[1]?.role_id || '' },
   });
 
   const inviteSubmit = useAsyncDialogSubmit({
@@ -118,7 +122,7 @@ export default function TeamMembersPage() {
     mutationFn: (data: InviteFormData) =>
       organizationsApi.addMember(organization!.id, {
         user_phone: data.phone,
-        role: data.role as MemberRole,
+        role_id: data.role_id,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -148,7 +152,7 @@ export default function TeamMembersPage() {
   };
 
   const currentMember = members?.find((m: OrganizationMember) => m.user_id === user?.id);
-  const canManage = currentMember?.role === 'owner' || currentMember?.role === 'admin';
+  const canManage = currentMember?.role_name === '组织所有者' || currentMember?.role_name === '公寓管理人';
 
   const memberColumns: ColumnDef<OrganizationMember>[] = [
     {
@@ -176,7 +180,7 @@ export default function TeamMembersPage() {
       header: tenantMessages.settings.team.labels.identity,
       size: 100,
       minSize: 80,
-      cell: ({ row }) => <Badge variant={ROLE_COLORS[row.original.role]}>{ROLE_LABELS[row.original.role]}</Badge>,
+      cell: ({ row }) => <Badge variant={ROLE_COLORS[row.original.role_name] ?? 'outline'}>{ROLE_LABELS[row.original.role_name] ?? row.original.role_name}</Badge>,
     },
     {
       accessorKey: 'joined_at',
@@ -263,20 +267,22 @@ export default function TeamMembersPage() {
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="role">
+              <Label htmlFor="role_id">
                 {tenantMessages.settings.team.labels.inviteIdentity} <span aria-hidden="true">*</span>
               </Label>
               <Select
-                value={inviteForm.watch('role')}
-                onValueChange={(value: MemberRole) => inviteForm.setValue('role', value)}
+                value={inviteForm.watch('role_id')}
+                onValueChange={(value: string) => inviteForm.setValue('role_id', value)}
               >
-                <SelectTrigger id="role">
+                <SelectTrigger id="role_id">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">{tenantMessages.settings.team.roles.admin}</SelectItem>
-                  <SelectItem value="member">{tenantMessages.settings.team.roles.member}</SelectItem>
-                  <SelectItem value="viewer">{tenantMessages.settings.team.roles.viewer}</SelectItem>
+                  {ROLE_OPTIONS.map((option) => (
+                    <SelectItem key={option.role_id} value={option.role_id}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
