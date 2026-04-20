@@ -104,6 +104,5 @@ export default function SubscriptionsPageContent() { ... }
 ## 相关文档
 
 - [仓库总览](../README.md)
-- [前端统一规范](../docs/frontend-conventions.md)
-- [命名规范](../docs/naming-conventions.md)
+- [布局与间距规范](../docs/layout-conventions.md)
 - [API 契约说明](../docs/api-contract/README.md)

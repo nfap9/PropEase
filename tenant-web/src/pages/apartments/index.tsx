@@ -108,9 +108,9 @@ export default function ApartmentsPage() {
 
   if (authLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-page">
         <Skeleton.Input active size="large" style={{ width: 200, height: 32 }} />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-card-gap md:grid-cols-2 lg:grid-cols-3">
           <Skeleton active className="h-48" />
           <Skeleton active className="h-48" />
           <Skeleton active className="h-48" />
@@ -131,7 +131,7 @@ export default function ApartmentsPage() {
 
   return (
     <PermissionPageGuard>
-      <div className="space-y-4">
+      <div className="space-y-page">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <ApartmentSearchBar value={searchQuery} onChange={setSearchQuery} />
             <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
@@ -147,14 +147,14 @@ export default function ApartmentsPage() {
           </div>
 
           {apartmentsLoading ? (
-            <div className="mx-auto grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="mx-auto grid max-w-7xl gap-card-gap sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               <Skeleton active className="h-48" />
               <Skeleton active className="h-48" />
               <Skeleton active className="h-48" />
             </div>
           ) : filteredApartments && filteredApartments.length > 0 ? (
             <div
-              className="mx-auto grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              className="mx-auto grid max-w-7xl gap-card-gap sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
               data-testid="apartments-list"
             >
               {filteredApartments.map((apartment) => (

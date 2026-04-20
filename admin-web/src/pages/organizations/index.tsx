@@ -147,16 +147,16 @@ export default function AdminOrganizationsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-6xl">
-        <Skeleton className="mb-4 h-8 w-48" />
+      <div className="mx-auto max-w-6xl space-y-page">
+        <Skeleton className="h-8 w-48" />
         <Skeleton className="h-64 w-full" />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <div className="mb-4 flex items-center gap-4">
+    <div className="mx-auto max-w-6xl space-y-page">
+      <div className="flex items-center gap-4">
         <div className="flex flex-col gap-1">
           <span className="text-xs text-gray-500">状态</span>
           <Select value={activeFilter} onChange={(v) => setActiveFilter(v as FilterActive)} style={{ width: 120 }}>

@@ -17,7 +17,7 @@ export default function BillingPlansPage() {
   const [editingPricing, setEditingPricing] = useState<AdminPlan | null>(null);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-page">
       <div>
         <h1 className="text-2xl font-semibold">服务方案</h1>
         <p className="text-sm text-gray-500 mt-1">配置订阅服务套餐及价格</p>
@@ -37,7 +37,7 @@ export default function BillingPlansPage() {
       ) : plans.length === 0 ? (
         <div className="text-center py-8 text-gray-500">暂无服务方案</div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-card-gap">
           {plans.map((plan: AdminPlan) => (
             <div key={plan.id} className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="flex justify-between items-start">

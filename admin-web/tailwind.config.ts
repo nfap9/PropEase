@@ -76,6 +76,10 @@ const config: Config = {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
+  		},
+  		spacing: {
+  			page: '24px',
+  			'card-gap': '16px',
   		}
   	}
   },

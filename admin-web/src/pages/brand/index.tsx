@@ -86,12 +86,12 @@ export default function AdminBrandPage() {
   }
 
   return (
-    <div className="mx-auto max-w-xl">
-      <h2 className="mb-4 text-xl font-semibold" data-testid="admin-brand-heading">{adminMessages.brand.heading}</h2>
+    <div className="mx-auto max-w-xl space-y-page">
+      <h2 className="text-xl font-semibold" data-testid="admin-brand-heading">{adminMessages.brand.heading}</h2>
       <Card styles={{ body: { padding: '24px' } }}>
-        <div className="mb-4">
+        <div>
           <h3 className="text-lg font-semibold">{adminMessages.brand.title}</h3>
-          <p className="mt-1 text-sm text-gray-500">{adminMessages.brand.description}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{adminMessages.brand.description}</p>
         </div>
         <FormProvider {...form}>
           <form

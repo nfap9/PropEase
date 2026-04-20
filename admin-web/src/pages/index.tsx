@@ -32,7 +32,7 @@ export default function AdminDashboardPage() {
 
   if (statsLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-page">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">{adminMessages.dashboard.heading}</h1>
         </div>
@@ -54,13 +54,13 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-page">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{adminMessages.dashboard.heading}</h1>
         <RefreshButton onRefresh={handleRefresh} isLoading={statsLoading} />
       </div>
 
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-card-gap grid-cols-2 sm:grid-cols-2 lg:grid-cols-4">
         <Card styles={{ body: { padding: '12px 16px' } }}>
           <div className="flex flex-row items-start justify-between gap-4 pb-2">
             <p className="text-sm font-medium text-gray-500">

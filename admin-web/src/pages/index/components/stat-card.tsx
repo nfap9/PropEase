@@ -22,13 +22,9 @@ function slugify(title: string): string {
 
 export function StatCard({ title, value, isPercentage, isCurrency, className }: StatCardProps) {
   return (
-    <Card
-      data-testid={`stat-card-${slugify(title)}`}
-      className={className}
-      styles={{ body: { padding: '12px 16px' } }}
-    >
-      <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
-      <p className="text-2xl font-bold text-gray-900">{formatValue(value, isPercentage, isCurrency)}</p>
+    <Card data-testid={`stat-card-${slugify(title)}`} className={className}>
+      <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+      <p className="text-2xl font-bold text-foreground">{formatValue(value, isPercentage, isCurrency)}</p>
     </Card>
   );
 }

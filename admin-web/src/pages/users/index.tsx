@@ -39,16 +39,16 @@ export default function AdminUsersPage() {
 
   if (usersLoading) {
     return (
-      <div className="mx-auto max-w-6xl">
-        <Skeleton className="mb-4 h-8 w-48" />
+      <div className="mx-auto max-w-6xl space-y-page">
+        <Skeleton className="h-8 w-48" />
         <Skeleton className="h-64 w-full" />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <div className="flex flex-wrap items-center gap-2 sm:justify-end mb-4">
+    <div className="mx-auto max-w-6xl space-y-page">
+      <div className="flex flex-wrap items-center gap-2 sm:justify-end">
         <Button onClick={() => dialogState.openAction('create')} data-testid="admin-users-create-btn">
           <Plus className="mr-2 h-4 w-4" />
           新建账号

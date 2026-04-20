@@ -37,16 +37,16 @@ export default function AdminOrganizationDetailPage() {
 
   if (isLoading || !org) {
     return (
-      <div className="mx-auto max-w-2xl">
-        <Skeleton className="mb-4 h-8 w-32" />
+      <div className="mx-auto max-w-2xl space-y-page">
+        <Skeleton className="h-8 w-32" />
         <Skeleton className="h-48 w-full" />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <div className="mb-4 flex items-center gap-2">
+    <div className="mx-auto max-w-2xl space-y-page">
+      <div className="flex items-center gap-2">
         <Link to="/organizations">
           <Button type="text">
             <ArrowLeft className="h-4 w-4" />
@@ -106,7 +106,7 @@ export default function AdminOrganizationDetailPage() {
         </div>
       </Card>
 
-      <p className="mt-4 text-sm text-gray-500">
+      <p className="text-sm text-gray-500">
         {adminMessages.organizations.subscriptionHint}
       </p>
     </div>

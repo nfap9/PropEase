@@ -128,8 +128,8 @@ export default function AdminRegisteredUsersPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <div className="mb-4 flex items-center gap-4">
+    <div className="mx-auto max-w-6xl space-y-page">
+      <div className="flex items-center gap-4">
         <Input.Search
           placeholder="搜索用户名、手机号..."
           value={filters.search}
