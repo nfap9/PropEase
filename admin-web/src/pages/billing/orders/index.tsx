@@ -11,6 +11,14 @@ import {
   BILLING_ORDER_TYPE_OPTIONS,
 } from '@/types/billing';
 import type { BillingOrder, BillingOrderStatus, BillingOrderType } from '@apartment-ultra/api-contract';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@apartment-ultra/shared-ui/components/ui';
+import { Label } from '@apartment-ultra/shared-ui/components/ui';
 
 export default function BillingOrdersPage() {
   const [typeFilter, setTypeFilter] = useState<BillingOrderType | undefined>();
@@ -84,70 +92,69 @@ export default function BillingOrdersPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">订单管理</h1>
-        <p className="text-sm text-gray-500 mt-1">查看和管理所有订单</p>
+        <p className="mt-1 text-sm text-gray-500">查看和管理所有订单</p>
       </div>
-      <div className="flex gap-4 items-center">
-        <div className="flex gap-2 items-center">
-          <label className="text-sm text-foreground">类型:</label>
-          <select
-            className="border border-input rounded px-2 py-1 text-sm bg-background"
-            value={typeFilter ?? ''}
-            onChange={(e) => {
-              setTypeFilter(e.target.value ? (e.target.value as BillingOrderType) : undefined);
-              setPage(0);
-            }}
-          >
-            <option value="">全部</option>
-            {BILLING_ORDER_TYPE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex gap-2 items-center">
-          <label className="text-sm text-foreground">状态:</label>
-          <select
-            className="border border-input rounded px-2 py-1 text-sm bg-background"
-            value={statusFilter ?? ''}
-            onChange={(e) => {
-              setStatusFilter(e.target.value ? (e.target.value as BillingOrderStatus) : undefined);
-              setPage(0);
-            }}
-          >
-            <option value="">全部</option>
-            {BILLING_ORDER_STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <DataTable columns={columns} data={orders} loading={loading} getRowId={(row) => row.id} emptyTitle="暂无订单" />
-
-      {total > pageSize && (
-        <div className="flex justify-center gap-2">
-          <button
-            className="px-3 py-1 border rounded disabled:opacity-50"
-            disabled={page === 0}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            上一页
-          </button>
-          <span className="px-3 py-1">
-            第 {page + 1} 页，共 {Math.ceil(total / pageSize)} 页
-          </span>
-          <button
-            className="px-3 py-1 border rounded disabled:opacity-50"
-            disabled={(page + 1) * pageSize >= total}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            下一页
-          </button>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        data={orders}
+        loading={loading}
+        getRowId={(row) => row.id}
+        emptyTitle="暂无订单"
+        enablePagination={true}
+        manualPagination={true}
+        pageCount={Math.ceil(total / pageSize)}
+        pagination={{ pageIndex: page, pageSize }}
+        onPaginationChange={({ pageIndex }) => setPage(pageIndex)}
+        total={total}
+        toolbar={
+          <div className="flex gap-4">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm">类型:</Label>
+              <Select
+                value={typeFilter ?? 'all'}
+                onValueChange={(v) => {
+                  setTypeFilter(v === 'all' ? undefined : (v as BillingOrderType));
+                  setPage(0);
+                }}
+              >
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="全部" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部</SelectItem>
+                  {BILLING_ORDER_TYPE_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm">状态:</Label>
+              <Select
+                value={statusFilter ?? 'all'}
+                onValueChange={(v) => {
+                  setStatusFilter(v === 'all' ? undefined : (v as BillingOrderStatus));
+                  setPage(0);
+                }}
+              >
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="全部" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部</SelectItem>
+                  {BILLING_ORDER_STATUS_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        }
+      />
     </div>
   );
 }

@@ -1,10 +1,6 @@
-import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Users, CreditCard, BarChart3 } from 'lucide-react';
 import { adminApiEndpoints } from '@/api/admin-client';
-import { ChartCard } from '@/pages/index/components/chart-card';
-import { RevenueBreakdownChart } from '@/pages/index/components/revenue-breakdown-chart';
-import { YearFilter } from '@/pages/index/components/year-filter';
 import { RefreshButton } from '@/pages/index/components/refresh-button';
 import { StatCardsSkeleton } from '@/pages/index/components/skeleton';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
@@ -13,20 +9,8 @@ import type { AdminPlatformStats } from '@apartment-ultra/api-contract';
 import type { AxiosResponse } from 'axios';
 import { adminMessages } from '@/i18n';
 
-interface IncomeDataItem {
-  period: string;
-  total_rent: number;
-  total_water: number;
-  total_electricity: number;
-  total_other: number;
-  total_amount: number;
-  collected_amount: number;
-  collection_rate: number;
-}
-
 export default function AdminDashboardPage() {
   const queryClient = useQueryClient();
-  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
 
   const {
     data: statsResponse,
@@ -40,24 +24,7 @@ export default function AdminDashboardPage() {
     },
   });
 
-  const { data: incomeDataRaw } = useQuery({
-    queryKey: ['admin', 'income', selectedYear],
-    queryFn: async () => {
-      const res = await adminApiEndpoints.getAdminIncome(selectedYear);
-      return res.data as IncomeDataItem[];
-    },
-  });
-
   const stats = statsResponse?.data;
-  const incomeData = incomeDataRaw ?? [];
-
-  const revenueBreakdownData = incomeData.map((item) => ({
-    period: item.period,
-    rent: item.total_rent,
-    water: item.total_water,
-    electricity: item.total_electricity,
-    other: item.total_other,
-  }));
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ['admin'] });
@@ -154,16 +121,6 @@ export default function AdminDashboardPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="flex items-center gap-4">
-        <YearFilter value={selectedYear} onChange={setSelectedYear} />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-1">
-        <ChartCard title={adminMessages.dashboard.charts.revenueBreakdown}>
-          <RevenueBreakdownChart data={revenueBreakdownData} />
-        </ChartCard>
       </div>
     </div>
   );

@@ -120,6 +120,7 @@ export interface AdminStats {
   apartments_count: number;
   rooms_count: number;
   active_subscriptions_count: number;
+  monthly_revenue: number;
 }
 
 /**
@@ -634,12 +635,14 @@ export function createAdminService(
         apartments_count,
         rooms_count,
         active_subscriptions_count,
+        monthly_revenue,
       ] = await Promise.all([
         getRepo().countOrganizations(),
         getRepo().countUsersTotal(),
         getRepo().countApartments(),
         getRepo().countRooms(),
         getRepo().countActiveSubscriptions(),
+        getRepo().sumMonthlyRevenue(),
       ]);
       return {
         organizations_count,
@@ -647,6 +650,7 @@ export function createAdminService(
         apartments_count,
         rooms_count,
         active_subscriptions_count,
+        monthly_revenue,
       };
     },
 

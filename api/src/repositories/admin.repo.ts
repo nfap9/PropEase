@@ -122,6 +122,7 @@ export interface AdminRepository {
   countApartments(): Promise<number>;
   countRooms(): Promise<number>;
   countActiveSubscriptions(): Promise<number>;
+  sumMonthlyRevenue(): Promise<number>;
 
   // Income Reports
   getBillsByYear(
@@ -370,6 +371,29 @@ export function createAdminRepository(db: DbClient): AdminRepository {
           ],
         },
       });
+    },
+
+    sumMonthlyRevenue: async () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+
+      // Get start and end of current month
+      const startOfMonth = new Date(year, month - 1, 1);
+      const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+
+      const result = await db.billingOrder.aggregate({
+        where: {
+          status: 'paid',
+          paid_at: {
+            gte: startOfMonth,
+            lte: endOfMonth,
+          },
+        },
+        _sum: { amount: true },
+      });
+
+      return Number(result._sum.amount ?? 0);
     },
 
     getPlatformConfig: async () => {
