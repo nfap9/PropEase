@@ -23,6 +23,7 @@
     "axios": "catalog:",
     "clsx": "catalog:",
     "date-fns": "catalog:",
+    "dayjs": "^1.11.20",
     "exceljs": "catalog:",
     "lucide-react": "catalog:",
     "react": "catalog:",
