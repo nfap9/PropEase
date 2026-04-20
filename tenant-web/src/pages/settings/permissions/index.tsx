@@ -14,7 +14,7 @@ import {
 } from '@/pages/settings/permissions/components/org-role-list';
 import { OrgRoleDetailPanel } from '@/pages/settings/permissions/components/org-role-detail-panel';
 import { Shield } from 'lucide-react';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from 'antd';
 import { tenantMessages } from '@/i18n';
 
 export default function PermissionsPage() {

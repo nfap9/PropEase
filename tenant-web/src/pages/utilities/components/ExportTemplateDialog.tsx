@@ -1,23 +1,7 @@
 
 import { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Modal, Button, Input, Select } from 'antd';
+import { Label } from '@/components/common/label';
 import { Download, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { utilitiesApi, UtilityExportRoom } from '@/api/utilities';
@@ -140,87 +124,73 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>导出待录入模板</DialogTitle>
-          <DialogDescription>
-            导出近期需要录入水电读数的房间列表，填写「当前水表」「当前电表」后使用批量导入
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>年份</Label>
-              <Select value={exportYear.toString()} onValueChange={(v) => setExportYear(Number(v))}>
-                <SelectTrigger className="min-w-[120px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
-                    <SelectItem key={year} value={year.toString()}>
-                      {year}年
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>月份</Label>
-              <Select value={exportMonth.toString()} onValueChange={(v) => setExportMonth(Number(v))}>
-                <SelectTrigger className="min-w-[120px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                    <SelectItem key={month} value={month.toString()}>
-                      {month}月
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
+    <Modal
+      open={open}
+      onCancel={() => onOpenChange(false)}
+      title="导出待录入模板"
+      footer={[
+        <Button key="cancel" onClick={() => onOpenChange(false)}>
+          取消
+        </Button>,
+        <Button key="export" type="primary" onClick={handleExport} loading={isExporting} icon={<Download className="h-4 w-4" />}>
+          {isExporting ? '导出中...' : '导出模板'}
+        </Button>,
+      ]}
+    >
+      <div className="mb-4 text-sm text-gray-600">
+        导出近期需要录入水电读数的房间列表，填写「当前水表」「当前电表」后使用批量导入
+      </div>
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>导出范围（天）</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                min={0}
-                max={60}
-                value={daysRange === 0 ? '' : daysRange}
-                placeholder="0=全部"
-                onChange={(e) => {
-                  const v = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
-                  setDaysRange(Number.isNaN(v) ? 0 : Math.min(60, Math.max(0, v)));
-                }}
-                className="w-24"
-              />
-              <span className="text-sm text-muted-foreground">
-                {daysRange <= 0 ? '全部待录入房间' : `近期 ${daysRange} 天内应出账${getDateRangeDescription()}`}
-              </span>
-            </div>
+            <Label>年份</Label>
+            <Select value={exportYear.toString()} onChange={(v) => setExportYear(Number(v))} className="w-full">
+              {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
+                <Select.Option key={year} value={year.toString()}>
+                  {year}年
+                </Select.Option>
+              ))}
+            </Select>
           </div>
-
-          <div className="flex items-center justify-between pt-2">
-            <Button variant="link" onClick={downloadBlankTemplate} className="text-sm">
-              下载空白模板
-            </Button>
+          <div className="space-y-2">
+            <Label>月份</Label>
+            <Select value={exportMonth.toString()} onChange={(v) => setExportMonth(Number(v))} className="w-full">
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                <Select.Option key={month} value={month.toString()}>
+                  {month}月
+                </Select.Option>
+              ))}
+            </Select>
           </div>
         </div>
 
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            取消
+        <div className="space-y-2">
+          <Label>导出范围（天）</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              min={0}
+              max={60}
+              value={daysRange === 0 ? '' : daysRange}
+              placeholder="0=全部"
+              onChange={(e) => {
+                const v = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
+                setDaysRange(Number.isNaN(v) ? 0 : Math.min(60, Math.max(0, v)));
+              }}
+              className="w-24"
+            />
+            <span className="text-sm text-gray-500">
+              {daysRange <= 0 ? '全部待录入房间' : `近期 ${daysRange} 天内应出账${getDateRangeDescription()}`}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-2">
+          <Button type="link" onClick={downloadBlankTemplate} className="text-sm p-0">
+            下载空白模板
           </Button>
-          <Button onClick={handleExport} disabled={isExporting}>
-            {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-            {isExporting ? '导出中...' : '导出模板'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </Modal>
   );
 }

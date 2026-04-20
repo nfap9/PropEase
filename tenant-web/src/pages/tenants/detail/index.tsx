@@ -2,12 +2,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Card, Button, Tag, Skeleton, Table, Dropdown } from 'antd';
+import type { MenuProps } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { Badge } from '@apartment-ultra/shared-ui/components/shadcn';
+import { Label } from '@/components/common/label';
 import { LEASE_STATUS_CONFIG } from '@/utils/status';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
 import { tenantReachabilityApi, tenantsApi, leasesApi } from '@/api';
 import { useAuth } from '@/contexts/auth';
 import { Lease } from '@/types';
@@ -20,12 +19,10 @@ import {
   FileText,
   Building2,
   MessageSquareMore,
+  MoreHorizontal,
 } from 'lucide-react';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { Link } from 'react-router-dom';
-import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import { formatDate, formatDateTime } from '@/utils/date';
-import { ColumnDef } from '@tanstack/react-table';
 import {
   getDeliveryStatusLabel,
   getDeliveryStatusVariant,
@@ -34,6 +31,14 @@ import {
   getTenantSmsReachabilityStatus,
   getTenantSmsReachabilityVariant,
 } from '@/utils/tenant-reachability';
+
+const STATUS_VARIANT_MAP: Record<string, string> = {
+  default: 'default',
+  success: 'green',
+  warning: 'orange',
+  destructive: 'red',
+  outline: 'default',
+};
 
 export default function TenantDetailPage() {
   const params = useParams();
@@ -91,14 +96,18 @@ export default function TenantDetailPage() {
   const isLoading = authLoading || tenantLoading;
 
   // 租约表格列定义
-  const leaseColumns: ColumnDef<Lease>[] = [
+  const leaseColumns: Array<{
+    key: string;
+    title: string;
+    width?: number;
+    render: (_: any, record: Lease) => React.ReactNode;
+  }> = [
     {
-      accessorKey: 'room',
-      header: '房间',
-      size: 180,
-      minSize: 150,
-      cell: ({ row }) => {
-        const room = row.original.room;
+      key: 'room',
+      title: '房间',
+      width: 180,
+      render: (_, record) => {
+        const room = record.room;
         if (!room) return '-';
         const apartment = room.apartment;
         return (
@@ -106,7 +115,7 @@ export default function TenantDetailPage() {
             {apartment && (
               <Link
                 to={`/workspace/apartments/${apartment.id}`}
-                className="text-xs text-muted-foreground hover:underline"
+                className="text-xs text-gray-500 hover:underline"
               >
                 {apartment.name}
               </Link>
@@ -117,59 +126,52 @@ export default function TenantDetailPage() {
       },
     },
     {
-      accessorKey: 'start_date',
-      header: '开始日期',
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => formatDate(row.original.start_date),
+      key: 'start_date',
+      title: '开始日期',
+      width: 120,
+      render: (_, record) => formatDate(record.start_date),
     },
     {
-      accessorKey: 'end_date',
-      header: '结束日期',
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => (row.original.end_date ? formatDate(row.original.end_date) : '长期'),
+      key: 'end_date',
+      title: '结束日期',
+      width: 120,
+      render: (_, record) => (record.end_date ? formatDate(record.end_date) : '长期'),
     },
     {
-      accessorKey: 'monthly_rent',
-      header: '月租',
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => `¥${row.original.monthly_rent.toLocaleString()}`,
+      key: 'monthly_rent',
+      title: '月租',
+      width: 120,
+      render: (_, record) => `¥${record.monthly_rent.toLocaleString()}`,
     },
     {
-      accessorKey: 'is_active',
-      header: '状态',
-      size: 100,
-      minSize: 80,
-      cell: ({ row }) => {
-        const config = row.original.is_active
+      key: 'is_active',
+      title: '状态',
+      width: 100,
+      render: (_, record) => {
+        const config = record.is_active
           ? LEASE_STATUS_CONFIG.active
           : LEASE_STATUS_CONFIG.inactive;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+        return <Tag color={STATUS_VARIANT_MAP[config.variant] || 'green'}>{config.label}</Tag>;
       },
     },
     {
-      id: 'actions',
-      size: 100,
-      minSize: 80,
-      cell: ({ row }) => {
-        const lease = row.original;
-        return (
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/leases?highlight=${lease.id}`}>查看详情</Link>
-          </Button>
-        );
-      },
+      key: 'actions',
+      title: '操作',
+      width: 100,
+      render: (_, record) => (
+        <Link to={`/leases?highlight=${record.id}`}>
+          <Button variant="outlined" size="small">查看详情</Button>
+        </Link>
+      ),
     },
   ];
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32" />
-        <Skeleton className="h-64" />
+        <Skeleton.Input active size="large" style={{ width: 200, height: 32 }} />
+        <Skeleton active paragraph={{ rows: 4 }} />
+        <Skeleton active paragraph={{ rows: 8 }} />
       </div>
     );
   }
@@ -177,7 +179,7 @@ export default function TenantDetailPage() {
   if (!tenant) {
     return (
       <div className="flex h-full flex-col items-center justify-center space-y-4">
-        <User className="h-16 w-16 text-muted-foreground" />
+        <User className="h-16 w-16 text-gray-400" />
         <h2 className="text-xl font-semibold">租客不存在</h2>
         <Button onClick={() => navigate('/tenants')}>返回租客列表</Button>
       </div>
@@ -191,28 +193,20 @@ export default function TenantDetailPage() {
       <div className="space-y-6">
           {/* 返回按钮 */}
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/tenants')}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+            <Button variant="text" size="small" onClick={() => navigate('/tenants')} icon={<ArrowLeft className="h-4 w-4" />} />
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
             {/* 基本信息 */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  基本信息
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <Card size="small" title={<><User className="h-5 w-5 inline mr-2" />基本信息</>}>
+              <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-muted-foreground">姓名</Label>
+                    <Label className="text-gray-500">姓名</Label>
                     <p className="font-medium">{tenant.name}</p>
                   </div>
                   <div>
-                    <Label className="flex items-center gap-1 text-muted-foreground">
+                    <Label className="flex items-center gap-1 text-gray-500">
                       <Phone className="h-3 w-3" />
                       电话
                     </Label>
@@ -221,7 +215,7 @@ export default function TenantDetailPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="flex items-center gap-1 text-muted-foreground">
+                    <Label className="flex items-center gap-1 text-gray-500">
                       <CreditCard className="h-3 w-3" />
                       身份证号
                     </Label>
@@ -230,216 +224,183 @@ export default function TenantDetailPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-muted-foreground">紧急联系人</Label>
+                    <Label className="text-gray-500">紧急联系人</Label>
                     <p className="font-medium">{tenant.emergency_contact || '-'}</p>
                   </div>
                   <div>
-                    <Label className="text-muted-foreground">紧急联系电话</Label>
+                    <Label className="text-gray-500">紧急联系电话</Label>
                     <p className="font-medium">{tenant.emergency_phone || '-'}</p>
                   </div>
                 </div>
                 {tenant.notes && (
                   <div>
-                    <Label className="text-muted-foreground">备注</Label>
+                    <Label className="text-gray-500">备注</Label>
                     <p className="font-medium">{tenant.notes}</p>
                   </div>
                 )}
-              </CardContent>
+              </div>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquareMore className="h-5 w-5" />
-                  触达状态
-                </CardTitle>
-                <CardDescription>
-                  当前短信正式触达状态与最近的退订边界
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={getTenantSmsReachabilityVariant(smsStatus)}>
-                      {getTenantSmsReachabilityLabel(smsStatus)}
-                    </Badge>
-                    {tenant.sms_opt_out_at && (
-                      <span className="text-sm text-muted-foreground">
-                        暂停于 {formatDateTime(tenant.sms_opt_out_at)}
-                      </span>
-                    )}
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">短信接收号码</Label>
-                    <p className="font-medium">{tenant.phone || '暂未填写手机号'}</p>
-                  </div>
-                  {tenant.sms_opt_out_reason && (
-                    <div>
-                      <Label className="text-muted-foreground">暂停原因</Label>
-                      <p className="font-medium">{tenant.sms_opt_out_reason}</p>
-                    </div>
+            <Card size="small" title={<><MessageSquareMore className="h-5 w-5 inline mr-2" />触达状态</>} extra={<span className="text-sm text-gray-500">当前短信正式触达状态与最近的退订边界</span>}>
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Tag color={getTenantSmsReachabilityVariant(smsStatus)}>
+                    {getTenantSmsReachabilityLabel(smsStatus)}
+                  </Tag>
+                  {tenant.sms_opt_out_at && (
+                    <span className="text-sm text-gray-500">
+                      暂停于 {formatDateTime(tenant.sms_opt_out_at)}
+                    </span>
                   )}
-                  <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
-                    账单生成、到期前提醒和逾期催缴会优先走短信。没有手机号或已退订时，系统会保留发送记录并标记为“已跳过”。
-                  </div>
-                  <Button
-                    variant={tenant.sms_opt_out ? 'outline' : 'destructive'}
-                    onClick={() => toggleSmsMutation.mutate(!tenant.sms_opt_out)}
-                    disabled={toggleSmsMutation.isPending}
-                  >
-                    {tenant.sms_opt_out ? '恢复短信触达' : '暂停短信触达'}
-                  </Button>
                 </div>
-              </CardContent>
+                <div>
+                  <Label className="text-gray-500">短信接收号码</Label>
+                  <p className="font-medium">{tenant.phone || '暂未填写手机号'}</p>
+                </div>
+                {tenant.sms_opt_out_reason && (
+                  <div>
+                    <Label className="text-gray-500">暂停原因</Label>
+                    <p className="font-medium">{tenant.sms_opt_out_reason}</p>
+                  </div>
+                )}
+                <div className="rounded-lg border bg-gray-50 p-3 text-sm text-gray-500">
+                  账单生成、到期前提醒和逾期催缴会优先走短信。没有手机号或已退订时，系统会保留发送记录并标记为"已跳过"。
+                </div>
+                <Button
+                  type={tenant.sms_opt_out ? 'default' : 'primary'}
+                  danger={!tenant.sms_opt_out}
+                  onClick={() => toggleSmsMutation.mutate(!tenant.sms_opt_out)}
+                  loading={toggleSmsMutation.isPending}
+                >
+                  {tenant.sms_opt_out ? '恢复短信触达' : '暂停短信触达'}
+                </Button>
+              </div>
             </Card>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                当前租约
-              </CardTitle>
-              <CardDescription>
-                {activeLease ? '租客当前生效的租约' : '暂无生效租约'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {activeLease ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-muted-foreground">房间</Label>
-                      <p className="font-medium">
-                        {activeLease.room?.apartment?.name && (
-                          <span className="text-muted-foreground">
-                            {activeLease.room.apartment.name} -
-                          </span>
-                        )}{' '}
-                        {activeLease.room?.room_number || '-'}
-                      </p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">月租</Label>
-                      <p className="font-medium">¥{activeLease.monthly_rent.toLocaleString()}</p>
-                    </div>
+          <Card size="small" title={<><FileText className="h-5 w-5 inline mr-2" />当前租约</>} extra={<span className="text-sm text-gray-500">{activeLease ? '租客当前生效的租约' : '暂无生效租约'}</span>}>
+            {activeLease ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-500">房间</Label>
+                    <p className="font-medium">
+                      {activeLease.room?.apartment?.name && (
+                        <span className="text-gray-500">
+                          {activeLease.room.apartment.name} -
+                        </span>
+                      )}{' '}
+                      {activeLease.room?.room_number || '-'}
+                    </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-muted-foreground">开始日期</Label>
-                      <p className="font-medium">{formatDate(activeLease.start_date)}</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">结束日期</Label>
-                      <p className="font-medium">
-                        {activeLease.end_date ? formatDate(activeLease.end_date) : '长期'}
-                      </p>
-                    </div>
+                  <div>
+                    <Label className="text-gray-500">月租</Label>
+                    <p className="font-medium">¥{activeLease.monthly_rent.toLocaleString()}</p>
                   </div>
-                  {activeLease.deposit && activeLease.deposit > 0 && (
-                    <div>
-                      <Label className="text-muted-foreground">押金</Label>
-                      <p className="font-medium">¥{activeLease.deposit.toLocaleString()}</p>
-                    </div>
-                  )}
-                  <Button variant="outline" className="w-full" asChild>
-                    <Link to={`/leases?highlight=${activeLease.id}`}>查看租约详情</Link>
-                  </Button>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <AlertCircle className="mb-4 h-12 w-12 text-muted-foreground" />
-                  <p className="text-muted-foreground">该租客暂无生效租约</p>
-                  <Button className="mt-4" asChild>
-                    <Link to={`/leases?tenant=${tenantId}`}>创建租约</Link>
-                  </Button>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-gray-500">开始日期</Label>
+                    <p className="font-medium">{formatDate(activeLease.start_date)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-gray-500">结束日期</Label>
+                    <p className="font-medium">
+                      {activeLease.end_date ? formatDate(activeLease.end_date) : '长期'}
+                    </p>
+                  </div>
                 </div>
-              )}
-            </CardContent>
+                {activeLease.deposit && activeLease.deposit > 0 && (
+                  <div>
+                    <Label className="text-gray-500">押金</Label>
+                    <p className="font-medium">¥{activeLease.deposit.toLocaleString()}</p>
+                  </div>
+                )}
+                <Link to={`/leases?highlight=${activeLease.id}`}>
+                  <Button variant="outlined" block>查看租约详情</Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <AlertCircle className="mb-4 h-12 w-12 text-gray-400" />
+                <p className="text-gray-500">该租客暂无生效租约</p>
+                <Link to={`/leases?tenant=${tenantId}`}>
+                  <Button className="mt-4" type="primary">创建租约</Button>
+                </Link>
+              </div>
+            )}
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>最近触达记录</CardTitle>
-              <CardDescription>快速确认最近一次发送、失败或跳过原因</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {deliveriesLoading ? (
-                <Skeleton className="h-40" />
-              ) : deliveries.length > 0 ? (
-                <div className="space-y-3">
-                  {deliveries.map((delivery) => (
-                    <div
-                      key={delivery.id}
-                      className="flex flex-col gap-2 rounded-lg border p-4 md:flex-row md:items-start md:justify-between"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant={getDeliveryStatusVariant(delivery.status)}>
-                            {getDeliveryStatusLabel(delivery.status)}
-                          </Badge>
-                          <span className="font-medium">
-                            {getTenantReachabilityEventLabel(delivery.event_type)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {delivery.status_reason || delivery.content}
-                        </p>
+          <Card size="small" title="最近触达记录" extra={<span className="text-sm text-gray-500">快速确认最近一次发送、失败或跳过原因</span>}>
+            {deliveriesLoading ? (
+              <Skeleton active paragraph={{ rows: 4 }} />
+            ) : deliveries.length > 0 ? (
+              <div className="space-y-3">
+                {deliveries.map((delivery) => (
+                  <div
+                    key={delivery.id}
+                    className="flex flex-col gap-2 rounded-lg border p-4 md:flex-row md:items-start md:justify-between"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Tag color={getDeliveryStatusVariant(delivery.status)}>
+                          {getDeliveryStatusLabel(delivery.status)}
+                        </Tag>
+                        <span className="font-medium">
+                          {getTenantReachabilityEventLabel(delivery.event_type)}
+                        </span>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {formatDateTime(delivery.created_at)}
-                      </div>
+                      <p className="text-sm text-gray-500">
+                        {delivery.status_reason || delivery.content}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="py-8 text-center text-muted-foreground">暂无触达记录</div>
-              )}
-            </CardContent>
+                    <div className="text-sm text-gray-500">
+                      {formatDateTime(delivery.created_at)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center text-gray-500">暂无触达记录</div>
+            )}
           </Card>
 
           {/* 租约历史 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>租约历史</CardTitle>
-              <CardDescription>该租客的所有租约记录</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {leasesLoading ? (
-                <Skeleton className="h-64" />
-              ) : tenantLeases.length > 0 ? (
-                <DataTable columns={leaseColumns} data={tenantLeases} />
-              ) : (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <FileText className="mb-4 h-12 w-12 text-muted-foreground" />
-                  <p className="text-muted-foreground">暂无租约记录</p>
-                </div>
-              )}
-            </CardContent>
+          <Card size="small" title="租约历史" extra={<span className="text-sm text-gray-500">该租客的所有租约记录</span>}>
+            {leasesLoading ? (
+              <Skeleton active paragraph={{ rows: 6 }} />
+            ) : tenantLeases.length > 0 ? (
+              <Table
+                columns={leaseColumns}
+                dataSource={tenantLeases}
+                rowKey="id"
+                pagination={false}
+                size="small"
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <FileText className="mb-4 h-12 w-12 text-gray-400" />
+                <p className="text-gray-500">暂无租约记录</p>
+              </div>
+            )}
           </Card>
 
           {/* 快捷操作 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>快捷操作</CardTitle>
-              <CardDescription>快速跳转到相关功能</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-3">
-                <Button variant="outline" asChild>
-                  <Link to={`/leases?tenant=${tenantId}`}>
-                    <FileText className="mr-2 h-4 w-4" />
-                    创建租约
-                  </Link>
+          <Card size="small" title="快捷操作" extra={<span className="text-sm text-gray-500">快速跳转到相关功能</span>}>
+            <div className="flex flex-wrap gap-3">
+              <Link to={`/leases?tenant=${tenantId}`}>
+                <Button variant="outlined">
+                  <FileText className="mr-2 h-4 w-4" />
+                  创建租约
                 </Button>
-                <Button variant="outline" asChild>
-                  <Link to={`/bills?tenant=${tenantId}`}>
-                    <Building2 className="mr-2 h-4 w-4" />
-                    查看账单
-                  </Link>
+              </Link>
+              <Link to={`/bills?tenant=${tenantId}`}>
+                <Button variant="outlined">
+                  <Building2 className="mr-2 h-4 w-4" />
+                  查看账单
                 </Button>
-              </div>
-            </CardContent>
+              </Link>
+            </div>
           </Card>
         </div>
     </PermissionPageGuard>

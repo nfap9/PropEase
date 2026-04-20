@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from 'antd';
 import { Plus } from 'lucide-react';
 import { TenantSelect } from './tenant-select';
 import { CreateTenantDialog } from './create-tenant-dialog';
@@ -47,9 +47,7 @@ export function TenantSelectWithCreate({
           className="flex-1"
         />
         <Button
-          type="button"
-          variant="outline"
-          size="icon"
+          size="small"
           onClick={() => setIsCreateOpen(true)}
           disabled={disabled}
           title="新增租客"

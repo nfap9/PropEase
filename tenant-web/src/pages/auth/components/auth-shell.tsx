@@ -1,7 +1,9 @@
 
 import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from 'antd';
+import { Tag } from 'antd';
+import { Card } from 'antd';
 import { cn } from '@/utils';
 
 type AuthMode = 'login' | 'register';
@@ -59,9 +61,9 @@ export function AuthShell({
         <div className="grid w-full gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(420px,0.9fr)] lg:items-center">
           <section className="relative p-6 sm:p-8 lg:p-10">
             <div className="relative flex h-full flex-col">
-              <Badge className="w-fit rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-[11px] font-semibold tracking-[0.16em] text-primary uppercase">
+              <Tag className="w-fit rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-[11px] font-semibold tracking-[0.16em] text-primary uppercase" color="primary">
                 {shellCopy.badge}
-              </Badge>
+              </Tag>
 
               <div className="mt-8 max-w-xl lg:mt-14">
                 <p className="text-sm font-medium tracking-[0.08em] text-foreground/60 uppercase">{app_name}</p>
@@ -85,40 +87,42 @@ export function AuthShell({
           </section>
 
           <section className="flex items-center lg:justify-end">
-            <Card className="w-full max-w-xl rounded-[32px] border-border/60 bg-card/70 shadow-2xl backdrop-blur-2xl dark:bg-card/50">
-              <CardHeader className="space-y-6 pb-6">
+            <Card className="w-full max-w-xl rounded-[32px] border border-border/60 bg-card/70 shadow-2xl backdrop-blur-2xl dark:bg-card/50" styles={{ body: { padding: 0 } }}>
+              <div className="space-y-6 pb-6">
                 <div className="inline-flex w-fit rounded-full border border-border/70 bg-muted/70 p-1">
-                  <Button
-                    asChild
-                    size="sm"
-                    variant={mode === 'login' ? 'secondary' : 'ghost'}
-                    className={cn(
-                      'rounded-full px-4 shadow-none',
-                      mode === 'login' && 'bg-background text-foreground shadow-sm hover:bg-background'
-                    )}
-                  >
-                    <Link to="/login">登录</Link>
-                  </Button>
-                  <Button
-                    asChild
-                    size="sm"
-                    variant={mode === 'register' ? 'secondary' : 'ghost'}
-                    className={cn(
-                      'rounded-full px-4 shadow-none',
-                      mode === 'register' && 'bg-background text-foreground shadow-sm hover:bg-background'
-                    )}
-                  >
-                    <Link to="/register">注册</Link>
-                  </Button>
+                  <Link to="/login">
+                    <Button
+                      size="small"
+                      type={mode === 'login' ? 'primary' : 'text'}
+                      className={cn(
+                        'rounded-full px-4 shadow-none',
+                        mode === 'login' && 'bg-background text-foreground shadow-sm hover:bg-background'
+                      )}
+                    >
+                      登录
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button
+                      size="small"
+                      type={mode === 'register' ? 'primary' : 'text'}
+                      className={cn(
+                        'rounded-full px-4 shadow-none',
+                        mode === 'register' && 'bg-background text-foreground shadow-sm hover:bg-background'
+                      )}
+                    >
+                      注册
+                    </Button>
+                  </Link>
                 </div>
 
-                <div className="space-y-2">
-                  <CardTitle className="text-2xl font-semibold text-foreground sm:text-[1.85rem]">{form_title}</CardTitle>
-                  <CardDescription className="max-w-lg text-sm leading-7 text-muted-foreground">{form_description}</CardDescription>
+                <div className="space-y-2 px-5 sm:px-6">
+                  <h2 className="text-2xl font-semibold text-foreground sm:text-[1.85rem]">{form_title}</h2>
+                  <p className="max-w-lg text-sm leading-7 text-muted-foreground">{form_description}</p>
                 </div>
-              </CardHeader>
+              </div>
 
-              <CardContent className="space-y-6">{children}</CardContent>
+              <div className="space-y-6 px-5 sm:px-6">{children}</div>
 
               {footer ? (
                 <div className="border-t border-border/70 px-5 pb-5 pt-5 text-sm text-muted-foreground sm:px-6 sm:pb-6">

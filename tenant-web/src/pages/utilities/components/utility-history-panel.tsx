@@ -1,25 +1,8 @@
-
 import { lazy } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@apartment-ultra/shared-ui/components/shadcn';
+import { Button, Skeleton, Select, Table } from 'antd';
 import { apartmentsApi, billsApi, leasesApi, utilitiesApi } from '@/api';
 import { formatDate } from '@/utils/date';
 import { getErrorMessage } from '@/utils/error';
@@ -148,128 +131,118 @@ export function UtilityHistoryPanel({ orgId }: { orgId: string }) {
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
+  const columns = [
+    { title: '月份', dataIndex: 'label', key: 'label' },
+    {
+      title: '记录日期',
+      dataIndex: 'reading',
+      key: 'reading_date',
+      render: (reading: UtilityReading | null) => reading ? formatDate(reading.reading_date) : '—',
+    },
+    {
+      title: (
+        <span className="flex items-center gap-1">
+          <Droplets className="h-4 w-4 text-blue-500" />
+          水表 (m³)
+        </span>
+      ),
+      dataIndex: 'reading',
+      key: 'water_reading',
+      render: (reading: UtilityReading | null) => reading?.water_reading != null ? reading.water_reading : '—',
+    },
+    {
+      title: (
+        <span className="flex items-center gap-1">
+          <Zap className="h-4 w-4 text-yellow-500" />
+          电表 (kWh)
+        </span>
+      ),
+      dataIndex: 'reading',
+      key: 'electricity_reading',
+      render: (reading: UtilityReading | null) => reading?.electricity_reading != null ? reading.electricity_reading : '—',
+    },
+    {
+      title: '水费',
+      dataIndex: 'waterFee',
+      key: 'waterFee',
+      render: (fee: number) => fee > 0 ? fee.toFixed(2) : '—',
+    },
+    {
+      title: '电费',
+      dataIndex: 'electricityFee',
+      key: 'electricityFee',
+      render: (fee: number) => fee > 0 ? fee.toFixed(2) : '—',
+    },
+    {
+      title: '',
+      dataIndex: 'reading',
+      key: 'actions',
+      render: (reading: UtilityReading | null, record: LeaseMonthRow) =>
+        reading && (
+          <Button
+            variant="text"
+            size="small"
+            className="h-8 w-8 p-0"
+            onClick={() => {
+              setSelectedUtility(reading);
+              setIsEditOpen(true);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        ),
+    },
+  ];
+
   return (
     <div className="space-y-4">
       {/* 筛选器 */}
       <div className="flex items-center gap-4">
         <Select
-          value={selectedApartmentId ?? 'none'}
-          onValueChange={(value) => setSelectedApartmentId(value === 'none' ? null : value)}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="选择公寓" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">选择公寓</SelectItem>
-            {apartments?.map((apartment) => (
-              <SelectItem key={apartment.id} value={apartment.id}>
-                {apartment.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          value={selectedApartmentId ?? undefined}
+          onChange={(value) => setSelectedApartmentId(value ?? null)}
+          placeholder="选择公寓"
+          style={{ width: 200 }}
+          options={[
+            { value: '', label: '选择公寓' },
+            ...(apartments?.map((apartment) => ({
+              value: apartment.id,
+              label: apartment.name,
+            })) ?? []),
+          ]}
+        />
 
         {selectedApartmentId && (
           <Select
-            value={selectedLeaseId ?? 'none'}
-            onValueChange={(value) => setSelectedLeaseId(value === 'none' ? null : value)}
-          >
-            <SelectTrigger className="w-[240px]">
-              <SelectValue placeholder="选择租约" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">选择租约</SelectItem>
-              {leasesLoading ? (
-                <SelectItem value="loading" disabled>
-                  加载中...
-                </SelectItem>
-              ) : leasesInApartment.length === 0 ? (
-                <SelectItem value="empty" disabled>
-                  暂无生效租约
-                </SelectItem>
-              ) : (
-                leasesInApartment.map((lease) => (
-                  <SelectItem key={lease.id} value={lease.id}>
-                    {lease.room?.room_number} - {lease.tenant?.name ?? '无租客'}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
+            value={selectedLeaseId ?? undefined}
+            onChange={(value) => setSelectedLeaseId(value ?? null)}
+            placeholder="选择租约"
+            style={{ width: 240 }}
+            options={[
+              { value: '', label: '选择租约' },
+              ...(leasesLoading
+                ? [{ value: 'loading', label: '加载中...', disabled: true }]
+                : leasesInApartment.length === 0
+                  ? [{ value: 'empty', label: '暂无生效租约', disabled: true }]
+                  : leasesInApartment.map((lease) => ({
+                    value: lease.id,
+                    label: `${lease.room?.room_number} - ${lease.tenant?.name ?? '无租客'}`,
+                  }))),
+            ]}
+          />
         )}
       </div>
 
       {/* 历史记录表格 */}
       {selectedLease && (
         <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead>月份</TableHead>
-                <TableHead>记录日期</TableHead>
-                <TableHead>
-                  <span className="flex items-center gap-1">
-                    <Droplets className="h-4 w-4 text-info" />
-                    水表 (m³)
-                  </span>
-                </TableHead>
-                <TableHead>
-                  <span className="flex items-center gap-1">
-                    <Zap className="h-4 w-4 text-warning" />
-                    电表 (kWh)
-                  </span>
-                </TableHead>
-                <TableHead>水费</TableHead>
-                <TableHead>电费</TableHead>
-                <TableHead className="w-[60px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {utilitiesLoading || billsLoading ? (
-                <TableRow>
-                  <TableCell colSpan={7}>
-                    <Skeleton className="h-10 w-full" />
-                  </TableCell>
-                </TableRow>
-              ) : leaseMonthRows.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">
-                    暂无可展示的月份
-                  </TableCell>
-                </TableRow>
-              ) : (
-                leaseMonthRows.map((row) => (
-                  <TableRow key={`${row.year}-${row.month}`}>
-                    <TableCell className="font-medium">{row.label}</TableCell>
-                    <TableCell>{row.reading ? formatDate(row.reading.reading_date) : '—'}</TableCell>
-                    <TableCell>
-                      {row.reading?.water_reading != null ? row.reading.water_reading : '—'}
-                    </TableCell>
-                    <TableCell>
-                      {row.reading?.electricity_reading != null ? row.reading.electricity_reading : '—'}
-                    </TableCell>
-                    <TableCell>{row.waterFee > 0 ? row.waterFee.toFixed(2) : '—'}</TableCell>
-                    <TableCell>{row.electricityFee > 0 ? row.electricityFee.toFixed(2) : '—'}</TableCell>
-                    <TableCell>
-                      {row.reading && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => {
-                            setSelectedUtility(row.reading);
-                            setIsEditOpen(true);
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          <Table
+            columns={columns}
+            dataSource={leaseMonthRows.map((row) => ({ ...row, key: `${row.year}-${row.month}` }))}
+            pagination={false}
+            loading={utilitiesLoading || billsLoading}
+            locale={{ emptyText: '暂无可展示的月份' }}
+          />
         </div>
       )}
 

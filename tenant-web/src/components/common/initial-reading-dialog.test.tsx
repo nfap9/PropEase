@@ -17,20 +17,6 @@ vi.mock('@/api', () => ({
   },
 }));
 
-vi.mock('@apartment-ultra/shared-ui/components/ui', async () => {
-  const actual = await vi.importActual<typeof import('@apartment-ultra/shared-ui/components/ui')>(
-    '@apartment-ultra/shared-ui/components/ui'
-  );
-
-  return {
-    ...actual,
-    appToast: {
-      success: successMock,
-      error: errorMock,
-    },
-  };
-});
-
 function renderDialog(props?: Partial<React.ComponentProps<typeof InitialReadingDialog>>) {
   const queryClient = new QueryClient({
     defaultOptions: {

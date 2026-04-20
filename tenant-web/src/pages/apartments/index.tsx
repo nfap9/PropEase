@@ -5,28 +5,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { useConfirmAction } from '@apartment-ultra/shared-ui';
+import { Modal, Skeleton, Button } from 'antd';
+import type { MenuProps } from 'antd';
+import { useConfirmAction } from '@/hooks/use-confirm-action';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { apartmentsApi } from '@/api';
 import { useAuth } from '@/contexts/auth';
 import { ApartmentWithStats } from '@/types';
@@ -53,6 +35,7 @@ export default function ApartmentsPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedApartment, setSelectedApartment] = useState<ApartmentWithStats | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const deleteConfirm = useConfirmAction<ApartmentWithStats>();
 
   const { data: apartments, isLoading: apartmentsLoading } = useQuery({
@@ -81,7 +64,8 @@ export default function ApartmentsPage() {
     mutationFn: (id: string) => apartmentsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
-      deleteConfirm.close();
+      setIsDeleteOpen(false);
+      setSelectedApartment(null);
       toast.success('公寓删除成功');
     },
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
@@ -105,7 +89,16 @@ export default function ApartmentsPage() {
     setIsEditOpen(true);
   };
 
-  const handleDelete = deleteConfirm.openFor;
+  const handleDelete = (apartment: ApartmentWithStats) => {
+    setSelectedApartment(apartment);
+    setIsDeleteOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedApartment) {
+      deleteMutation.mutate(selectedApartment.id);
+    }
+  };
 
   const filteredApartments = apartments?.filter((apartment) => {
     if (!searchQuery) return true;
@@ -116,11 +109,11 @@ export default function ApartmentsPage() {
   if (authLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
+        <Skeleton.Input active size="large" style={{ width: 200, height: 32 }} />
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Skeleton className="h-48" />
-          <Skeleton className="h-48" />
-          <Skeleton className="h-48" />
+          <Skeleton active className="h-48" />
+          <Skeleton active className="h-48" />
+          <Skeleton active className="h-48" />
         </div>
       </div>
     );
@@ -129,9 +122,9 @@ export default function ApartmentsPage() {
   if (!orgId) {
     return (
       <div className="flex h-full flex-col items-center justify-center space-y-4">
-        <Building2 className="h-16 w-16 text-muted-foreground" />
+        <Building2 className="h-16 w-16 text-gray-400" />
         <h2 className="text-xl font-semibold">请先创建或加入团队</h2>
-        <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
+        <p className="text-gray-500">在顶部导航栏选择或创建一个团队开始使用</p>
       </div>
     );
   }
@@ -146,8 +139,8 @@ export default function ApartmentsPage() {
                 onClick={() => navigate('/workspace/apartments/new')}
                 data-testid="apartments-new-btn"
                 className="shrink-0"
+                icon={<Plus className="mr-2 h-4 w-4" />}
               >
-                <Plus className="mr-2 h-4 w-4" />
                 新增公寓
               </Button>
             </PermissionGuard>
@@ -155,9 +148,9 @@ export default function ApartmentsPage() {
 
           {apartmentsLoading ? (
             <div className="mx-auto grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              <Skeleton className="h-48" />
-              <Skeleton className="h-48" />
-              <Skeleton className="h-48" />
+              <Skeleton active className="h-48" />
+              <Skeleton active className="h-48" />
+              <Skeleton active className="h-48" />
             </div>
           ) : filteredApartments && filteredApartments.length > 0 ? (
             <div
@@ -176,64 +169,43 @@ export default function ApartmentsPage() {
           )}
         </div>
 
-        {/* Edit Dialog */}
-        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto" data-testid="apartments-edit-dialog">
-            <DialogHeader>
-              <DialogTitle>编辑公寓</DialogTitle>
-              <DialogDescription>修改公寓信息</DialogDescription>
-            </DialogHeader>
+        {/* Edit Modal */}
+        <Modal
+          open={isEditOpen}
+          onCancel={() => setIsEditOpen(false)}
+          title="编辑公寓"
+          footer={[
+            <Button key="cancel" onClick={() => setIsEditOpen(false)} data-testid="apartments-cancel-btn">
+              取消
+            </Button>,
+            <Button key="submit" type="primary" onClick={() => editForm.handleSubmit((data) => updateMutation.mutate({ id: selectedApartment!.id, data }))()} loading={updateMutation.isPending} data-testid="apartments-confirm-btn">
+              {updateMutation.isPending ? '保存中...' : '保存'}
+            </Button>,
+          ]}
+        >
+          <div className="max-h-[60vh] overflow-y-auto py-4">
             <ApartmentForm
               form={editForm}
               mode="edit"
               formId="edit-apartment-form"
               onSubmit={(data) => updateMutation.mutate({ id: selectedApartment!.id, data })}
             />
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsEditOpen(false)}
-                data-testid="apartments-cancel-btn"
-              >
-                取消
-              </Button>
-              <Button
-                type="submit"
-                form="edit-apartment-form"
-                disabled={updateMutation.isPending}
-                data-testid="apartments-confirm-btn"
-              >
-                {updateMutation.isPending ? '保存中...' : '保存'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </Modal>
 
-        <AlertDialog
-          open={deleteConfirm.dialogProps.open}
-          onOpenChange={deleteConfirm.dialogProps.onOpenChange}
+        {/* Delete Confirm Modal */}
+        <Modal
+          open={isDeleteOpen}
+          onCancel={() => setIsDeleteOpen(false)}
+          title="确认删除"
+          onOk={handleConfirmDelete}
+          okText={deleteMutation.isPending ? '删除中...' : '删除'}
+          okButtonProps={{ danger: true, loading: deleteMutation.isPending }}
         >
-          <AlertDialogContent data-testid="apartments-delete-confirm-dialog">
-            <AlertDialogHeader>
-              <AlertDialogTitle>确认删除</AlertDialogTitle>
-              <AlertDialogDescription>
-                确定要删除公寓 "{deleteConfirm.selectedItem?.name ?? ''}" 吗？此操作不可撤销，关联的房间数据也将被删除。
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel data-testid="apartments-cancel-btn">取消</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => deleteMutation.mutate(deleteConfirm.selectedItem!.id)}
-                disabled={deleteMutation.isPending}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                data-testid="apartments-confirm-delete-btn"
-              >
-                {deleteMutation.isPending ? '删除中...' : '删除'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          <p>
+            确定要删除公寓 "{selectedApartment?.name ?? ''}" 吗？此操作不可撤销，关联的房间数据也将被删除。
+          </p>
+        </Modal>
     </PermissionPageGuard>
   );
 }

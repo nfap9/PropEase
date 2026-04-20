@@ -4,18 +4,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DatePickerComponent } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
+import { Modal, Button, Input, DatePicker, message } from 'antd';
+import { Label } from '@/components/common/label';
 import { utilitiesApi } from '@/api';
 import { filterEmptyStrings } from '@/utils/form';
 import { getErrorMessage } from '@/utils/error';
@@ -114,89 +104,89 @@ export function InitialReadingDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>录入初始水电读数</DialogTitle>
-          <DialogDescription>
-            {isHistoricalLeaseEntry ? (
-              <>
-                历史租约已创建，建议先记录当前表底数。历史月份数据可稍后前往
-                <Link to="/utilities?tab=history" className="mx-1 underline underline-offset-4">
-                  历史水电记录
-                </Link>
-                继续补录。
-              </>
-            ) : (
-              '签约后需记录初始水电表读数，便于后续出账计算。可填写后保存，或跳过稍后在水电录入页补录。'
+    <Modal
+      open={open}
+      onCancel={() => onOpenChange(false)}
+      title="录入初始水电读数"
+      footer={[
+        <Button key="skip" variant="text" onClick={handleSkip}>
+          跳过
+        </Button>,
+        <Button key="submit" type="primary" loading={saveMutation.isPending} onClick={form.handleSubmit(handleSubmit)}>
+          {saveMutation.isPending ? '保存中...' : '保存'}
+        </Button>,
+      ]}
+    >
+      <div className="mb-4 text-sm text-gray-600">
+        {isHistoricalLeaseEntry ? (
+          <>
+            历史租约已创建，建议先记录当前表底数。历史月份数据可稍后前往
+            <Link to="/utilities?tab=history" className="mx-1 underline underline-offset-4">
+              历史水电记录
+            </Link>
+            继续补录。
+          </>
+        ) : (
+          '签约后需记录初始水电表读数，便于后续出账计算。可填写后保存，或跳过稍后在水电录入页补录。'
+        )}
+      </div>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <div className="space-y-2">
+          <Label>房间</Label>
+          <Input value={roomDisplay} disabled />
+        </div>
+        <div className="space-y-2">
+          <Label>月份</Label>
+          <Input value={`${periodYear}年${periodMonth}月`} disabled />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="initial-reading_date">读数日期</Label>
+          <Controller
+            name="reading_date"
+            control={form.control}
+            render={({ field }) => (
+              <DatePicker
+                id="initial-reading_date"
+                value={field.value || ''}
+                onChange={(_, dateString) => field.onChange(dateString)}
+                className="w-full"
+              />
             )}
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>房间</Label>
-            <Input value={roomDisplay} disabled />
-          </div>
-          <div className="space-y-2">
-            <Label>月份</Label>
-            <Input value={`${periodYear}年${periodMonth}月`} disabled />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="initial-reading_date">读数日期</Label>
-            <Controller
-              name="reading_date"
-              control={form.control}
-              render={({ field }) => (
-                <DatePickerComponent
-                  id="initial-reading_date"
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                />
-              )}
+            <Label htmlFor="initial-water">
+              <span className="flex items-center gap-2">
+                <Droplets className="h-4 w-4 text-blue-500" />
+                水表读数 (m³)
+              </span>
+            </Label>
+            <Input
+              id="initial-water"
+              type="number"
+              step="0.01"
+              placeholder="选填"
+              {...form.register('water_reading', { valueAsNumber: true })}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="initial-water">
-                <span className="flex items-center gap-2">
-                  <Droplets className="h-4 w-4 text-blue-500" />
-                  水表读数 (m³)
-                </span>
-              </Label>
-              <Input
-                id="initial-water"
-                type="number"
-                step="0.01"
-                placeholder="选填"
-                {...form.register('water_reading', { valueAsNumber: true })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="initial-electricity">
-                <span className="flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-yellow-500" />
-                  电表读数 (kWh)
-                </span>
-              </Label>
-              <Input
-                id="initial-electricity"
-                type="number"
-                step="0.01"
-                placeholder="选填"
-                {...form.register('electricity_reading', { valueAsNumber: true })}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="initial-electricity">
+              <span className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-yellow-500" />
+                电表读数 (kWh)
+              </span>
+            </Label>
+            <Input
+              id="initial-electricity"
+              type="number"
+              step="0.01"
+              placeholder="选填"
+              {...form.register('electricity_reading', { valueAsNumber: true })}
+            />
           </div>
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={handleSkip}>
-              跳过
-            </Button>
-            <Button type="submit" disabled={saveMutation.isPending}>
-              {saveMutation.isPending ? '保存中...' : '保存'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </form>
+    </Modal>
   );
 }

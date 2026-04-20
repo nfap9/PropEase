@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Checkbox, Skeleton } from 'antd';
 import type { OrgRole, Permission } from '@/api/permissions';
 import { ChevronDown, ChevronRight, Save } from 'lucide-react';
 import { tenantMessages } from '@/i18n';
@@ -88,7 +86,7 @@ export function OrgRoleDetailPanel({
         {isLoadingRolePermissions ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-32" />
+              <Skeleton key={i} active paragraph={{ rows: 4 }} />
             ))}
           </div>
         ) : entries.length > 0 ? (
@@ -114,7 +112,7 @@ export function OrgRoleDetailPanel({
                         disabled={readOnly}
                         id={`org-res-${resource}`}
                         checked={allChecked}
-                        onCheckedChange={() => onToggleResource(resource, permissions)}
+                        onChange={() => onToggleResource(resource, permissions)}
                         className="shrink-0"
                       />
                       <label
@@ -139,7 +137,7 @@ export function OrgRoleDetailPanel({
                               disabled={readOnly}
                               id={`org-perm-${permission.code}`}
                               checked={selectedPermissions.has(permission.code)}
-                              onCheckedChange={() => onTogglePermission(permission.code)}
+                              onChange={() => onTogglePermission(permission.code)}
                               className="shrink-0"
                             />
                             <label
@@ -163,8 +161,7 @@ export function OrgRoleDetailPanel({
 
       {!readOnly && isOwner && groupedPermissions && Object.keys(groupedPermissions).length > 0 && (
         <div className="border-t p-2">
-          <Button onClick={onSave} disabled={isSaving}>
-            <Save className="mr-2 h-4 w-4" />
+          <Button onClick={onSave} disabled={isSaving} icon={<Save className="h-4 w-4" />}>
             {isSaving ? tenantMessages.settings.team.editSubmitting : '保存更改'}
           </Button>
         </div>

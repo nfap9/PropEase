@@ -3,25 +3,8 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth';
 import { invalidateOrgScopedQueries } from '@/hooks/query-utils';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Select, Modal, Button, message } from 'antd';
 import { Building2, Plus, Settings } from 'lucide-react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { useNavigate } from 'react-router-dom';
 import { Organization } from '@/types';
 
@@ -52,7 +35,7 @@ export function OrgSelector() {
 
   if (organizations.length === 0) {
     return (
-      <Button variant="outline" size="sm" onClick={() => navigate('/organizations/new')} className="gap-2">
+      <Button onClick={() => navigate('/organizations/new')} className="gap-2">
         <Plus className="h-4 w-4" />
         创建团队
       </Button>
@@ -61,43 +44,37 @@ export function OrgSelector() {
 
   return (
     <>
-      <Select value={organization?.id?.toString() || ''} onValueChange={handleSelectOrg}>
-        <SelectTrigger className="h-9 w-[200px]">
-          <Building2 className="mr-2 h-4 w-4" />
-          <SelectValue placeholder="选择团队" />
-        </SelectTrigger>
-        <SelectContent>
-          {organizations.map((org) => (
-            <SelectItem key={org.id} value={org.id.toString()}>
-              {org.name}
-            </SelectItem>
-          ))}
-          <div className="border-t pt-2 mt-2">
-            <button
-              onClick={() => navigate('/organizations')}
-              className="flex w-full items-center gap-2 px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              <Settings className="h-4 w-4" />
-              管理团队
-            </button>
-          </div>
-        </SelectContent>
+      <Select
+        value={organization?.id?.toString() || ''}
+        onChange={(value) => handleSelectOrg(value)}
+        className="w-[200px]"
+      >
+        <Select.Option value="" disabled>
+          <Building2 className="inline mr-2 h-4 w-4" />
+          选择团队
+        </Select.Option>
+        {organizations.map((org) => (
+          <Select.Option key={org.id} value={org.id.toString()}>
+            {org.name}
+          </Select.Option>
+        ))}
+        <Select.Option value="__manage__" onClick={() => navigate('/organizations')}>
+          <Settings className="inline mr-2 h-4 w-4" />
+          管理团队
+        </Select.Option>
       </Select>
 
-      <AlertDialog open={!!pendingOrg} onOpenChange={(open) => !open && handleCancelSwitch()}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>确认切换团队</AlertDialogTitle>
-            <AlertDialogDescription>
-              确定要切换到团队 "{pendingOrg?.name ?? ''}" 吗？切换后页面将刷新以加载新团队的数据。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmSwitch}>确认切换</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Modal
+        open={!!pendingOrg}
+        onCancel={handleCancelSwitch}
+        title="确认切换团队"
+        footer={[
+          <Button key="cancel" onClick={handleCancelSwitch}>取消</Button>,
+          <Button key="confirm" type="primary" onClick={handleConfirmSwitch}>确认切换</Button>,
+        ]}
+      >
+        <p>确定要切换到团队 "{pendingOrg?.name ?? ''}" 吗？切换后页面将刷新以加载新团队的数据。</p>
+      </Modal>
     </>
   );
 }

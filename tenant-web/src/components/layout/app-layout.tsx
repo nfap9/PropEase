@@ -1,17 +1,11 @@
+
 import { Outlet } from 'react-router-dom';
-import { LogOut, ChevronDown } from 'lucide-react';
+import { LogOut } from 'lucide-react';
+import { Dropdown, Button } from 'antd';
+import type { MenuProps } from 'antd';
 import { useAuth } from '@/contexts/auth';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { OrgSelector } from '@/components/common/org-selector';
 import { Building2 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@apartment-ultra/shared-ui/components/ui';
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -19,6 +13,29 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const { user, logout, organization } = useAuth();
+
+  const userMenuItems: MenuProps['items'] = [
+    {
+      key: 'user-info',
+      label: (
+        <div className="flex flex-col gap-1">
+          <span className="font-medium">{user?.full_name || '未知用户'}</span>
+          <span className="text-xs text-muted-foreground">{organization?.name || '未选择团队'}</span>
+        </div>
+      ),
+      disabled: true,
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      icon: <LogOut className="h-4 w-4" />,
+      label: '退出登录',
+      danger: true,
+      onClick: logout,
+    },
+  ];
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
@@ -40,32 +57,25 @@ export function AppLayout({ children }: AppLayoutProps) {
           <OrgSelector />
 
           {/* 用户菜单 */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-1">
-                <span className="text-sm">{user?.full_name || '用户'}</span>
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>
-                <div className="flex flex-col gap-1">
-                  <span className="font-medium">{user?.full_name || '未知用户'}</span>
-                  <span className="text-xs text-muted-foreground">{organization?.name || '未选择团队'}</span>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="text-destructive">
-                <LogOut className="mr-2 h-4 w-4" />
-                退出登录
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
+            <Button type="text" size="small" className="gap-1">
+              <span className="text-sm">{user?.full_name || '用户'}</span>
+              <ChevronDownIcon className="h-3 w-3" />
+            </Button>
+          </Dropdown>
         </div>
       </header>
 
       {/* 页面内容 */}
       <main className="flex-1 overflow-y-hidden">{children || <Outlet />}</main>
     </div>
+  );
+}
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m6 9 6 6 6-6" />
+    </svg>
   );
 }

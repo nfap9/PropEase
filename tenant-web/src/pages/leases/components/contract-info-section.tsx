@@ -1,9 +1,8 @@
-
 import { UseFormReturn } from 'react-hook-form';
 import { CalendarDays, Banknote, Droplets, Zap, FileText, AlertCircle } from 'lucide-react';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { DatePickerComponent } from '@apartment-ultra/shared-ui/components/ui';
+import { Input, DatePicker } from 'antd';
+import dayjs from 'dayjs';
+import { Label } from '@/components/common/label';
 import { FeeItemsEditor, type FeeItem } from '@/components/common/fee-items-editor';
 import type { LeaseSigningFormData } from '@/schemas/leases';
 
@@ -51,18 +50,18 @@ export function ContractInfoSection({
             <Label htmlFor="start_date" className="text-sm font-medium">
               开始日期 <span className="text-destructive">*</span>
             </Label>
-            <DatePickerComponent
+            <DatePicker
               id="start_date"
-              value={form.watch('start_date') || ''}
-              onChange={(value) => {
-                form.setValue('start_date', value, {
+              value={form.getValues('start_date') ? dayjs(form.getValues('start_date')) : null}
+              onChange={(date) => {
+                form.setValue('start_date', date?.format('YYYY-MM-DD') ?? '', {
                   shouldDirty: true,
                   shouldTouch: true,
                   shouldValidate: true,
                 });
               }}
               data-testid="leases-start-date-input"
-              className="rounded-xl shadow-sm"
+              className="w-full rounded-xl shadow-sm"
             />
             {errors.start_date && (
               <p className="text-xs text-destructive flex items-center gap-1">
@@ -75,18 +74,18 @@ export function ContractInfoSection({
             <Label htmlFor="end_date" className="text-sm font-medium">
               结束日期
             </Label>
-            <DatePickerComponent
+            <DatePicker
               id="end_date"
-              value={form.watch('end_date') || ''}
-              onChange={(value) => {
-                form.setValue('end_date', value, {
+              value={form.getValues('end_date') ? dayjs(form.getValues('end_date')) : null}
+              onChange={(date) => {
+                form.setValue('end_date', date?.format('YYYY-MM-DD') ?? '', {
                   shouldDirty: true,
                   shouldTouch: true,
                   shouldValidate: true,
                 });
               }}
               data-testid="leases-end-date-input"
-              className="rounded-xl shadow-sm"
+              className="w-full rounded-xl shadow-sm"
             />
             <p className="text-xs text-muted-foreground">留空表示无固定期限租约</p>
           </div>
@@ -106,19 +105,15 @@ export function ContractInfoSection({
             <Label htmlFor="monthly_rent" className="text-sm font-medium">
               月租 (元) <span className="text-destructive">*</span>
             </Label>
-            <div className="relative">
-              <Input
-                id="monthly_rent"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                className="rounded-xl h-12 text-base font-semibold shadow-sm pr-16"
-                {...form.register('monthly_rent', { valueAsNumber: true })}
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                元/月
-              </span>
-            </div>
+            <Input
+              id="monthly_rent"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              className="rounded-xl h-12 text-base font-semibold shadow-sm"
+              addonAfter={<span className="text-sm text-muted-foreground">元/月</span>}
+              {...form.register('monthly_rent', { valueAsNumber: true })}
+            />
             {errors.monthly_rent && (
               <p className="text-xs text-destructive flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
@@ -130,19 +125,15 @@ export function ContractInfoSection({
             <Label htmlFor="deposit" className="text-sm font-medium">
               押金 (元)
             </Label>
-            <div className="relative">
-              <Input
-                id="deposit"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                className="rounded-xl h-12 text-base font-semibold shadow-sm pr-16"
-                {...form.register('deposit', { valueAsNumber: true })}
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                元
-              </span>
-            </div>
+            <Input
+              id="deposit"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              className="rounded-xl h-12 text-base font-semibold shadow-sm"
+              addonAfter={<span className="text-sm text-muted-foreground">元</span>}
+              {...form.register('deposit', { valueAsNumber: true })}
+            />
           </div>
         </div>
 
@@ -192,38 +183,30 @@ export function ContractInfoSection({
               <Droplets className="h-3.5 w-3.5 text-blue-400" />
               水费单价
             </Label>
-            <div className="relative">
-              <Input
-                id="water_rate"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                className="rounded-xl h-11 shadow-sm pr-12"
-                {...form.register('water_rate', { valueAsNumber: true })}
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                元/吨
-              </span>
-            </div>
+            <Input
+              id="water_rate"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              className="rounded-xl h-11 shadow-sm"
+              addonAfter={<span className="text-xs text-muted-foreground">元/吨</span>}
+              {...form.register('water_rate', { valueAsNumber: true })}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="electricity_rate" className="flex items-center gap-1.5 text-sm font-medium">
               <Zap className="h-3.5 w-3.5 text-yellow-500" />
               电费单价
             </Label>
-            <div className="relative">
-              <Input
-                id="electricity_rate"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                className="rounded-xl h-11 shadow-sm pr-12"
-                {...form.register('electricity_rate', { valueAsNumber: true })}
-              />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                元/度
-              </span>
-            </div>
+            <Input
+              id="electricity_rate"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              className="rounded-xl h-11 shadow-sm"
+              addonAfter={<span className="text-xs text-muted-foreground">元/度</span>}
+              {...form.register('electricity_rate', { valueAsNumber: true })}
+            />
           </div>
         </div>
       </div>

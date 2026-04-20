@@ -2,9 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Building2 } from 'lucide-react';
-import { useConfirmAction, useListFilters } from '@apartment-ultra/shared-ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Skeleton, Table, Modal } from 'antd';
+import type { TableProps } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { LeaseSigningDrawer } from '@/pages/leases/components/lease-signing-drawer';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
@@ -12,7 +11,6 @@ import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import { toDateInputValue } from '@/utils/date';
-import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
 import type { Lease } from '@/types';
 import { createLeaseColumns } from '@/pages/leases/components/columns';
 import { useLeasesData } from '@/hooks/leases';
@@ -42,9 +40,9 @@ export default function LeasesPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedLease, setSelectedLease] = useState<Lease | null>(null);
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
-  const terminateConfirm = useConfirmAction<Lease>();
-  const deleteConfirm = useConfirmAction<Lease>();
-  const { filters, setFilter, resetFilters } = useListFilters<LeaseFiltersState>(getDefaultLeaseFilters);
+  const [isTerminateOpen, setIsTerminateOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [filters, setFilters] = useState<LeaseFiltersState>(getDefaultLeaseFilters());
 
   const editForm = useForm<LeaseEditFormData>({
     resolver: zodResolver(leaseSchema),
@@ -56,8 +54,8 @@ export default function LeasesPage() {
       setSelectedLease(null);
       setRowSelection({});
     },
-    onTerminateSuccess: terminateConfirm.close,
-    onDeleteSuccess: deleteConfirm.close,
+    onTerminateSuccess: () => setIsTerminateOpen(false),
+    onDeleteSuccess: () => setIsDeleteOpen(false),
   });
 
   const filteredLeases = useMemo(() => filterLeases(leases, filters), [leases, filters]);
@@ -118,20 +116,30 @@ export default function LeasesPage() {
           });
           setIsEditOpen(true);
         },
-        onTerminate: terminateConfirm.openFor,
-        onDelete: deleteConfirm.openFor,
+        onTerminate: (lease) => {
+          setSelectedLease(lease);
+          setIsTerminateOpen(true);
+        },
+        onDelete: (lease) => {
+          setSelectedLease(lease);
+          setIsDeleteOpen(true);
+        },
         canEditLease,
         canDeleteLease,
       }),
-    [deleteConfirm.openFor, terminateConfirm.openFor, editForm, canEditLease, canDeleteLease]
+    [editForm, canEditLease, canDeleteLease]
   );
 
   const handleFilterChange = useCallback(
     (key: keyof LeaseFiltersState, value: unknown) => {
-      setFilter(key, value as LeaseFiltersState[typeof key]);
+      setFilters((prev) => ({ ...prev, [key]: value as LeaseFiltersState[typeof key] }));
     },
-    [setFilter]
+    []
   );
+
+  const handleClearFilters = useCallback(() => {
+    setFilters(getDefaultLeaseFilters());
+  }, []);
 
   // 筛选变化时重置行选择
   const filtersRef = useRef(filters);
@@ -163,13 +171,30 @@ export default function LeasesPage() {
     );
   }
 
+  const tableProps: TableProps<Lease> = {
+    columns,
+    dataSource: filteredLeases,
+    rowKey: 'id',
+    pagination: false,
+    rowSelection: {
+      type: 'radio',
+      selectedRowKeys: Object.keys(rowSelection),
+      onChange: (selectedRowKeys) => {
+        const newSelection: Record<string, boolean> = {};
+        selectedRowKeys.forEach((key) => {
+          newSelection[key as string] = true;
+        });
+        handleRowSelectionChange(newSelection);
+      },
+    },
+  };
+
   return (
     <PermissionPageGuard>
       <div className="w-full space-y-4">
         <div className="flex items-center justify-between">
           {canCreateLease && (
-            <Button onClick={() => setIsCreateOpen(true)} data-testid={LEASES.NEW_BUTTON}>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button onClick={() => setIsCreateOpen(true)} data-testid={LEASES.NEW_BUTTON} icon={<Plus className="mr-2 h-4 w-4" />}>
               新增租约
             </Button>
           )}
@@ -177,24 +202,15 @@ export default function LeasesPage() {
         {leasesLoading ? (
           <Skeleton className="h-96" />
         ) : (
-          <DataTable
-            columns={columns}
-            data={filteredLeases}
-            getRowId={(row) => row.id}
-            testid={LEASES.LIST}
-            enableRowSelection={true}
-            selectionMode="single"
-            rowSelection={rowSelection}
-            onRowSelectionChange={handleRowSelectionChange}
-            toolbar={
-              <LeaseFilters
-                apartments={apartments?.map((apartment) => ({ id: apartment.id, name: apartment.name })) ?? []}
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                onClearFilters={resetFilters}
-              />
-            }
-          />
+          <>
+            <LeaseFilters
+              apartments={apartments?.map((apartment) => ({ id: apartment.id, name: apartment.name })) ?? []}
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              onClearFilters={handleClearFilters}
+            />
+            <Table {...tableProps} />
+          </>
         )}
       </div>
 
@@ -228,15 +244,19 @@ export default function LeasesPage() {
       />
 
       <LeaseTerminateDialog
-        {...terminateConfirm.dialogProps}
-        onConfirm={() => terminateConfirm.selectedItem && terminateMutation.mutate(terminateConfirm.selectedItem.id)}
+        open={isTerminateOpen}
+        onOpenChange={setIsTerminateOpen}
+        onConfirm={() => selectedLease && terminateMutation.mutate(selectedLease.id)}
         isPending={terminateMutation.isPending}
+        lease={selectedLease}
       />
 
       <LeaseDeleteDialog
-        {...deleteConfirm.dialogProps}
-        onConfirm={() => deleteConfirm.selectedItem && deleteMutation.mutate(deleteConfirm.selectedItem.id)}
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        onConfirm={() => selectedLease && deleteMutation.mutate(selectedLease.id)}
         isPending={deleteMutation.isPending}
+        lease={selectedLease}
       />
     </PermissionPageGuard>
   );

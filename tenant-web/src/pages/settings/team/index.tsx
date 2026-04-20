@@ -1,5 +1,6 @@
+
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
-import { Tabs, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
+import { Tabs } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 
 const TEAM_LAYOUT_TABS = {
@@ -22,20 +23,27 @@ export default function TeamSettingsLayout() {
     }
   };
 
+  const items = [
+    {
+      key: 'info',
+      label: '团队信息',
+    },
+    {
+      key: 'members',
+      label: '成员管理',
+    },
+  ];
+
   return (
     <PermissionPageGuard>
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="info" data-testid={TEAM_LAYOUT_TABS.INFO_TAB}>
-            团队信息
-          </TabsTrigger>
-          <TabsTrigger value="members" data-testid={TEAM_LAYOUT_TABS.MEMBERS_TAB}>
-            成员管理
-          </TabsTrigger>
-        </TabsList>
+      <Tabs
+        activeKey={activeTab}
+        onChange={handleTabChange}
+        items={items}
+        className="space-y-6"
+      />
 
-        <Outlet />
-      </Tabs>
+      <Outlet />
     </PermissionPageGuard>
   );
 }

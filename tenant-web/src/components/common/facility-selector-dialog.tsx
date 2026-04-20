@@ -1,16 +1,7 @@
 
 import { useState } from 'react';
-import { Checkbox } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Checkbox, Modal, Button } from 'antd';
+import { Label } from '@/components/common/label';
 import { ChevronDown, ChevronRight, Minus, Plus } from 'lucide-react';
 import type { RoomFacilities, FacilityItem, FacilityPreset } from '@/types';
 import { FURNITURE_PRESETS, APPLIANCE_PRESETS } from '@/constants/facilities';
@@ -76,7 +67,7 @@ function FacilityGroup({
                   <Checkbox
                     id={`facility-${preset.code}`}
                     checked={isChecked}
-                    onCheckedChange={(checked) => onToggle(preset.code, checked === true)}
+                    onChange={(e) => onToggle(preset.code, e.target.checked)}
                   />
                   <Label
                     htmlFor={`facility-${preset.code}`}
@@ -89,25 +80,17 @@ function FacilityGroup({
                 {isChecked && (
                   <div className="flex items-center gap-1">
                     <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
                       className="h-6 w-6"
                       onClick={() => onQuantityChange(preset.code, Math.max(1, quantity - 1))}
                       disabled={quantity <= 1}
-                    >
-                      <Minus className="h-3 w-3" />
-                    </Button>
+                      icon={<Minus className="h-3 w-3" />}
+                    />
                     <span className="w-6 text-center text-sm">{quantity}</span>
                     <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
                       className="h-6 w-6"
                       onClick={() => onQuantityChange(preset.code, quantity + 1)}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
+                      icon={<Plus className="h-3 w-3" />}
+                    />
                   </div>
                 )}
               </div>
@@ -179,51 +162,47 @@ export function FacilitySelectorDialog({
   const totalItems = furniture.length + appliances.length;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>家具家电配置</DialogTitle>
-          <DialogDescription>选择房间配备的家具家电</DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
-              已选择 {totalItems} 项设施
-            </span>
-            {totalItems > 0 && (
-              <Button type="button" variant="ghost" size="sm" onClick={handleClear}>
-                清空
-              </Button>
-            )}
-          </div>
-
-          <FacilityGroup
-            title="家具"
-            presets={FURNITURE_PRESETS}
-            items={furniture}
-            onToggle={(code, checked) => handleToggle('furniture', code, checked)}
-            onQuantityChange={(code, qty) => handleQuantityChange('furniture', code, qty)}
-          />
-
-          <FacilityGroup
-            title="家电"
-            presets={APPLIANCE_PRESETS}
-            items={appliances}
-            onToggle={(code, checked) => handleToggle('appliances', code, checked)}
-            onQuantityChange={(code, qty) => handleQuantityChange('appliances', code, qty)}
-          />
+    <Modal
+      open={open}
+      onCancel={() => onOpenChange(false)}
+      title="家具家电配置"
+      footer={[
+        <Button key="cancel" onClick={() => onOpenChange(false)}>
+          取消
+        </Button>,
+        <Button key="confirm" type="primary" onClick={() => onOpenChange(false)}>
+          确定
+        </Button>,
+      ]}
+    >
+      <div className="space-y-4 py-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-500">
+            已选择 {totalItems} 项设施
+          </span>
+          {totalItems > 0 && (
+            <Button size="small" onClick={handleClear}>
+              清空
+            </Button>
+          )}
         </div>
 
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            取消
-          </Button>
-          <Button type="button" onClick={() => onOpenChange(false)}>
-            确定
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <FacilityGroup
+          title="家具"
+          presets={FURNITURE_PRESETS}
+          items={furniture}
+          onToggle={(code, checked) => handleToggle('furniture', code, checked)}
+          onQuantityChange={(code, qty) => handleQuantityChange('furniture', code, qty)}
+        />
+
+        <FacilityGroup
+          title="家电"
+          presets={APPLIANCE_PRESETS}
+          items={appliances}
+          onToggle={(code, checked) => handleToggle('appliances', code, checked)}
+          onQuantityChange={(code, qty) => handleQuantityChange('appliances', code, qty)}
+        />
+      </div>
+    </Modal>
   );
 }

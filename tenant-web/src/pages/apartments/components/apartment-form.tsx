@@ -1,8 +1,8 @@
 
 import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from 'antd';
+import type { HTMLAttributes } from 'react';
 import { LandlordInfoSection } from './landlord-info-section';
 
 export const apartmentSchema = z.object({
@@ -22,6 +22,22 @@ export const apartmentSchema = z.object({
 });
 
 export type ApartmentFormData = z.infer<typeof apartmentSchema>;
+
+interface LabelProps {
+  children: React.ReactNode;
+  htmlFor?: string;
+  required?: boolean;
+  className?: string;
+}
+
+function Label({ required, children, htmlFor, className }: LabelProps) {
+  return (
+    <label htmlFor={htmlFor} className={`text-sm font-medium ${className || ''}`}>
+      {children}
+      {required && <span className="text-destructive ml-1">*</span>}
+    </label>
+  );
+}
 
 interface ApartmentFormProps {
   form: UseFormReturn<ApartmentFormData>;

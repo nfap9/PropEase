@@ -1,8 +1,8 @@
 
 import { formatDate } from '@/utils/date';
 import type { LeaseChangeLog } from '@/api/leases';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { Card, CardContent } from '@apartment-ultra/shared-ui/components/ui';
+import { Tag } from 'antd';
+import { Card } from 'antd';
 import { ArrowRight, Calendar, User } from 'lucide-react';
 
 const CHANGE_TYPE_LABELS: Record<string, string> = {
@@ -16,15 +16,15 @@ const CHANGE_TYPE_LABELS: Record<string, string> = {
   settle: '退租结算',
 };
 
-const CHANGE_TYPE_VARIANTS: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  room_change: 'secondary',
-  renew: 'secondary',
-  update_tenant: 'outline',
-  rent_change: 'default',
-  utility_rate_change: 'default',
-  deposit_change: 'outline',
-  fee_items_update: 'default',
-  settle: 'destructive',
+const CHANGE_TYPE_COLORS: Record<string, string> = {
+  room_change: 'blue',
+  renew: 'cyan',
+  update_tenant: 'purple',
+  rent_change: 'green',
+  utility_rate_change: 'green',
+  deposit_change: 'orange',
+  fee_items_update: 'green',
+  settle: 'red',
 };
 
 interface ChangeDetail {
@@ -97,7 +97,6 @@ function formatChangeContent(log: LeaseChangeLog): ChangeDetail[] {
         const oldItems = (oldVal?.fee_items as Array<{ fee_name: string; fee_amount: number; fee_cycle: string; notes?: string }>) || [];
         const newItems = (newVal?.fee_items as Array<{ fee_name: string; fee_amount: number; fee_cycle: string; notes?: string }>) || [];
 
-        // 比较新旧费用项目
         const cycleLabels: Record<string, string> = {
           monthly: '每月',
           quarterly: '每季',
@@ -105,13 +104,11 @@ function formatChangeContent(log: LeaseChangeLog): ChangeDetail[] {
           one_time: '一次性',
         };
 
-        // 显示新增或变更的项目
         const addedOrChanged = newItems.filter((newItem) => {
           const oldItem = oldItems.find((o) => o.fee_name === newItem.fee_name);
           return !oldItem || oldItem.fee_amount !== newItem.fee_amount || oldItem.fee_cycle !== newItem.fee_cycle;
         });
 
-        // 显示删除的项目
         const removed = oldItems.filter((oldItem) => {
           return !newItems.some((n) => n.fee_name === oldItem.fee_name);
         });
@@ -144,7 +141,6 @@ function formatChangeContent(log: LeaseChangeLog): ChangeDetail[] {
       break;
 
     default:
-      // 通用格式：显示所有变化的字段
       if (oldVal && newVal) {
         const allKeys = new Set([...Object.keys(oldVal), ...Object.keys(newVal)]);
         allKeys.forEach((key) => {
@@ -169,7 +165,7 @@ interface LeaseChangeLogsProps {
 export function LeaseChangeLogs({ logs }: LeaseChangeLogsProps) {
   if (logs.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+      <div className="flex flex-col items-center justify-center h-40 text-gray-500">
         <p>暂无变更记录</p>
       </div>
     );
@@ -181,15 +177,15 @@ export function LeaseChangeLogs({ logs }: LeaseChangeLogsProps) {
         const changeDetails = formatChangeContent(log);
         return (
           <Card key={log.id}>
-            <CardContent className="pt-4">
+            <div className="pt-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant={CHANGE_TYPE_VARIANTS[log.change_type] || 'default'}>
+                    <Tag color={CHANGE_TYPE_COLORS[log.change_type] || 'default'}>
                       {CHANGE_TYPE_LABELS[log.change_type] || log.change_type}
-                    </Badge>
+                    </Tag>
                     {log.effective_from_year && log.effective_from_month && (
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1 text-xs text-gray-500">
                         <Calendar className="h-3 w-3" />
                         {log.effective_from_year} 年 {log.effective_from_month} 月生效
                       </span>
@@ -201,17 +197,17 @@ export function LeaseChangeLogs({ logs }: LeaseChangeLogsProps) {
                     <div className="space-y-1">
                       {changeDetails.map((detail, idx) => (
                         <div key={idx} className="flex items-center gap-2 text-sm">
-                          <span className="text-muted-foreground w-20">{detail.label}：</span>
+                          <span className="text-gray-500 w-20">{detail.label}：</span>
                           {detail.oldValue !== undefined && (
-                            <span className="text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                            <span className="text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
                               {detail.oldValue}
                             </span>
                           )}
                           {detail.oldValue !== undefined && detail.newValue !== undefined && (
-                            <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                            <ArrowRight className="h-3 w-3 text-gray-400 flex-shrink-0" />
                           )}
                           {detail.newValue !== undefined && (
-                            <span className="text-foreground bg-muted px-2 py-0.5 rounded">
+                            <span className="text-gray-900 bg-gray-100 px-2 py-0.5 rounded">
                               {detail.newValue}
                             </span>
                           )}
@@ -221,10 +217,10 @@ export function LeaseChangeLogs({ logs }: LeaseChangeLogsProps) {
                   )}
 
                   {log.reason && (
-                    <p className="text-sm text-muted-foreground">原因：{log.reason}</p>
+                    <p className="text-sm text-gray-500">原因：{log.reason}</p>
                   )}
 
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-4 text-xs text-gray-500">
                     <span className="flex items-center gap-1">
                       <User className="h-3 w-3" />
                       {log.created_by || '系统'}
@@ -233,7 +229,7 @@ export function LeaseChangeLogs({ logs }: LeaseChangeLogsProps) {
                   </div>
                 </div>
               </div>
-            </CardContent>
+            </div>
           </Card>
         );
       })}

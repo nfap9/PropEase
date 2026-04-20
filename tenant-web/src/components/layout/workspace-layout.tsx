@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { cn } from '@/utils';
 import { SIDEBAR_NAV_CONFIG, type NavItem } from './nav-config';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from 'antd';
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -49,8 +50,8 @@ export function WorkspaceLayout({ children }: AppLayoutProps) {
         {/* 折叠按钮 */}
         <div className="border-t border-border p-2">
           <Button
-            variant="ghost"
-            size="sm"
+            type="text"
+            size="small"
             className="w-full justify-start gap-2"
             onClick={() => setCollapsed(!collapsed)}
           >

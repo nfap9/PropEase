@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
@@ -7,22 +6,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Building2, Check, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { Card, Button, Input } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { organizationsApi } from '@/api';
 import { getErrorMessage } from '@/utils/error';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Textarea } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import { DEFAULT_ORGANIZATION_HOME_PATH } from '@/utils/auth-redirect';
+  DEFAULT_ORGANIZATION_HOME_PATH,
+} from '@/utils/auth-redirect';
 import { Organization } from '@/types';
+import { Label } from '@/components/common/label';
+
+const { TextArea } = Input;
 
 const createOrganizationSchema = z.object({
   name: z.string().trim().min(1, '请输入团队名称'),
@@ -93,8 +87,8 @@ export default function OrganizationsPage() {
 
   if (isLoading || isCheckingAuth) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30">
-        <div className="text-sm text-muted-foreground">加载中...</div>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-sm text-gray-500">加载中...</div>
       </div>
     );
   }
@@ -102,54 +96,52 @@ export default function OrganizationsPage() {
   // Empty state: show creation form when user has 0 organizations
   if (organizations.length === 0) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
-        <Card className="w-full max-w-lg">
-          <CardHeader className="space-y-3 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+        <Card className="w-full max-w-lg" styles={{ body: { padding: 24 } }}>
+          <div className="space-y-4 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
               <Building2 className="h-6 w-6" />
             </div>
             <div className="space-y-1">
-              <CardTitle className="text-3xl font-semibold">
+              <h3 className="text-3xl font-semibold">
                 欢迎使用！创建你的第一个团队开始管理公寓
-              </CardTitle>
-              <CardDescription className="text-base">
+              </h3>
+              <p className="text-base text-gray-500">
                 创建第一个团队后，你可以在此管理房源、租客、账单等
-              </CardDescription>
+              </p>
             </div>
-          </CardHeader>
-          <CardContent>
-            <form
-              onSubmit={form.handleSubmit((data) => createOrgMutation.mutate(data))}
-              className="space-y-4"
-            >
-              <div className="space-y-2">
-                <Label htmlFor="organization-name">
-                  团队名称 <span aria-hidden="true">*</span>
-                </Label>
-                <Input
-                  id="organization-name"
-                  placeholder="请输入团队名称"
-                  aria-required
-                  {...form.register('name')}
-                />
-                {form.formState.errors.name && (
-                  <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="notes">备注</Label>
-                <Textarea
-                  id="notes"
-                  {...form.register('notes')}
-                  placeholder="备注信息（选填）"
-                  rows={3}
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={createOrgMutation.isPending}>
-                {createOrgMutation.isPending ? '创建中...' : '创建第一个团队'}
-              </Button>
-            </form>
-          </CardContent>
+          </div>
+          <form
+            onSubmit={form.handleSubmit((data) => createOrgMutation.mutate(data))}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="organization-name">
+                团队名称 <span aria-hidden="true">*</span>
+              </Label>
+              <Input
+                id="organization-name"
+                placeholder="请输入团队名称"
+                aria-required
+                {...form.register('name')}
+              />
+              {form.formState.errors.name && (
+                <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">备注</Label>
+              <TextArea
+                id="notes"
+                {...form.register('notes')}
+                placeholder="备注信息（选填）"
+                rows={3}
+              />
+            </div>
+            <Button type="primary" htmlType="submit" block loading={createOrgMutation.isPending}>
+              {createOrgMutation.isPending ? '创建中...' : '创建第一个团队'}
+            </Button>
+          </form>
         </Card>
       </div>
     );
@@ -157,11 +149,11 @@ export default function OrganizationsPage() {
 
   // Organization selection list when user has 1+ organizations
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-8">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-8">
       <div className="w-full max-w-lg space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight">我的团队</h1>
-          <Button variant="outline" size="sm" onClick={() => navigate('/organizations/new')} className="gap-2">
+          <Button variant="outlined" size="small" onClick={() => navigate('/organizations/new')} className="gap-2">
             <Plus className="h-4 w-4" />
             创建新团队
           </Button>
@@ -172,22 +164,23 @@ export default function OrganizationsPage() {
             return (
               <Card
                 key={org.id}
-                className="cursor-pointer transition-colors hover:border-primary"
+                className="cursor-pointer transition-colors hover:border-blue-500"
+                styles={{ body: { padding: 16 } }}
                 onClick={() => handleSelectOrganization(org)}
               >
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <div className="flex items-center gap-3">
                     <Building2
-                      className={`h-5 w-5 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}
+                      className={`h-5 w-5 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`}
                     />
-                    <CardTitle className="text-lg">{org.name}</CardTitle>
+                    <span className="text-lg font-medium">{org.name}</span>
                   </div>
-                  {isSelected && <Check className="h-5 w-5 text-primary" />}
-                </CardHeader>
+                  {isSelected && <Check className="h-5 w-5 text-blue-600" />}
+                </div>
                 {org.notes && (
-                  <CardContent className="pt-0">
-                    <p className="text-sm text-muted-foreground">{org.notes}</p>
-                  </CardContent>
+                  <div className="pt-0">
+                    <p className="text-sm text-gray-500">{org.notes}</p>
+                  </div>
                 )}
               </Card>
             );

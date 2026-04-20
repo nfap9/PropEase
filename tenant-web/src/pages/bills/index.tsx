@@ -1,10 +1,9 @@
 import { Suspense, lazy, useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAsyncDialogSubmit, usePageQueryState } from '@apartment-ultra/shared-ui';
 import { toast } from 'sonner';
+import { Skeleton } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import type { Bill, BillStatus } from '@/types';
@@ -43,12 +42,7 @@ export default function BillsPage() {
   const canGenerateBill = hasPermission(PERMISSIONS.BILL_CREATE);
   const canEditBill = hasPermission(PERMISSIONS.BILL_EDIT);
 
-  const statusFilterQuery = usePageQueryState<BillStatus | 'all'>({
-    queryKey: 'status',
-    defaultValue: 'all',
-    parse: (value) => getBillStatusFilter(value) ?? 'all',
-    serialize: (value) => (value === 'all' ? null : value),
-  });
+  const [statusFilterQuery, setStatusFilterQuery] = useState<BillStatus | 'all'>('all');
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -64,20 +58,21 @@ export default function BillsPage() {
     resolver: zodResolver(generateBillsSchema),
     defaultValues: getDefaultGenerateValues(),
   });
-  const paymentSubmit = useAsyncDialogSubmit({
-    close: () => setIsPaymentOpen(false),
-    reset: () => paymentForm.reset(getDefaultPaymentValues()),
-    clear: () => setSelectedBill(null),
-  });
-  const generateSubmit = useAsyncDialogSubmit<[number, number]>({
-    close: () => setIsGenerateOpen(false),
-    reset: () => generateForm.reset(getDefaultGenerateValues()),
-    afterSuccess: (created, skipped) => {
-      toast.success(`出账完成：新增 ${created} 笔，跳过 ${skipped} 笔`);
-    },
-  });
 
   const { sharingBillId, handleShareBill } = useBillShare(organization?.name);
+
+  const handlePaymentSuccess = useCallback(() => {
+    setIsPaymentOpen(false);
+    paymentForm.reset(getDefaultPaymentValues());
+    setSelectedBill(null);
+  }, [paymentForm]);
+
+  const handleGenerateSuccess = useCallback((created: number, skipped: number) => {
+    setIsGenerateOpen(false);
+    generateForm.reset(getDefaultGenerateValues());
+    toast.success(`出账完成：新增 ${created} 笔，跳过 ${skipped} 笔`);
+  }, [generateForm]);
+
   const {
     bills,
     billsLoading,
@@ -92,13 +87,13 @@ export default function BillsPage() {
   } = useBillsData({
     selectedBillId,
     isDetailOpen,
-    onPaymentSuccess: paymentSubmit.handleSuccess,
-    onGenerateSuccess: generateSubmit.handleSuccess,
+    onPaymentSuccess: handlePaymentSuccess,
+    onGenerateSuccess: handleGenerateSuccess,
   });
 
   const filteredBills = useMemo(
-    () => filterBillsByStatus(bills, statusFilterQuery.value),
-    [bills, statusFilterQuery.value]
+    () => filterBillsByStatus(bills, statusFilterQuery),
+    [bills, statusFilterQuery]
   );
   const stats = useMemo(() => buildBillStats(bills), [bills]);
 
@@ -116,7 +111,7 @@ export default function BillsPage() {
     [paymentForm]
   );
 
-  const handlePaymentFromDetail = () => {
+  const handlePaymentFromDetail = useCallback(() => {
     if (!billDetail) {
       return;
     }
@@ -124,7 +119,7 @@ export default function BillsPage() {
     handlePayment(billDetail);
     setIsDetailOpen(false);
     setSelectedBillId(null);
-  };
+  }, [billDetail, handlePayment]);
 
   const columns = useMemo(
     () =>
@@ -150,10 +145,10 @@ export default function BillsPage() {
         bills={filteredBills}
         columns={columns}
         stats={stats}
-        statusFilter={statusFilterQuery.value}
-        onStatusFilterChange={statusFilterQuery.setValue}
+        statusFilter={statusFilterQuery}
+        onStatusFilterChange={setStatusFilterQuery}
         onGenerate={() => setIsGenerateOpen(true)}
-        onExport={(type) => exportExcel(type, statusFilterQuery.value)}
+        onExport={(type) => exportExcel(type, statusFilterQuery)}
         canGenerateBill={canGenerateBill}
       />
 

@@ -1,7 +1,7 @@
 
 import { format } from 'date-fns';
 import { Building2, CheckCircle2, Home, Wrench } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
+import { Card } from 'antd';
 import type { Apartment } from '@/types';
 import type { RoomStats } from '@/utils/apartment-detail';
 
@@ -21,11 +21,8 @@ export function ApartmentOverviewTab({
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {/* 统计概览 */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">房间状态</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <Card title="房间状态" className="text-sm">
+        <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <StatItem icon={<Home className="h-4 w-4" />} label="总房间" value={stats.total} />
             <StatItem
@@ -47,34 +44,31 @@ export function ApartmentOverviewTab({
               className="text-orange-600"
             />
           </div>
-          <div className="flex gap-4 text-xs text-muted-foreground">
+          <div className="flex gap-4 text-xs text-gray-500">
             <span>入住率 {occupancyRate.toFixed(0)}%</span>
             <span>空置率 {vacancyRate.toFixed(0)}%</span>
           </div>
-        </CardContent>
+        </div>
       </Card>
 
       {/* 物业信息 */}
       {hasPropertyInfo && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">物业信息</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
+        <Card title="物业信息" className="text-sm">
+          <div className="space-y-2 text-sm">
             <InfoItem label="楼层" value={`${apartment.floors ?? '-'} 层`} />
             <InfoItem label="总面积" value={apartment.total_area ? `${apartment.total_area} ㎡` : '-'} />
             <InfoItem label="用地面积" value={apartment.land_area ? `${apartment.land_area} 亩` : '-'} />
-          </CardContent>
+          </div>
         </Card>
       )}
 
       {/* 上游信息 */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">上游信息</CardTitle>
-          <CardDescription className="text-xs">房东和合同信息</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm">
+      <Card
+        title="上游信息"
+        className="text-sm"
+      >
+        <p className="text-xs text-gray-500 mb-2">房东和合同信息</p>
+        <div className="space-y-2 text-sm">
           <InfoItem label="房东姓名" value={apartment.landlord_name ?? '-'} />
           <InfoItem label="联系方式" value={apartment.landlord_contact ?? '-'} />
           <InfoItem
@@ -89,7 +83,7 @@ export function ApartmentOverviewTab({
             label="房东租金"
             value={apartment.landlord_rent ? `¥${apartment.landlord_rent}/月` : '-'}
           />
-        </CardContent>
+        </div>
       </Card>
     </div>
   );
@@ -108,9 +102,9 @@ function StatItem({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="text-muted-foreground">{icon}</div>
+      <div className="text-gray-400">{icon}</div>
       <div className="min-w-0 flex-1">
-        <div className="text-xs text-muted-foreground">{label}</div>
+        <div className="text-xs text-gray-500">{label}</div>
         <div className={`text-lg font-semibold tabular-nums ${className ?? ''}`}>{value}</div>
       </div>
     </div>
@@ -120,7 +114,7 @@ function StatItem({
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4">
-      <span className="text-muted-foreground">{label}</span>
+      <span className="text-gray-500">{label}</span>
       <span className="font-medium truncate">{value}</span>
     </div>
   );

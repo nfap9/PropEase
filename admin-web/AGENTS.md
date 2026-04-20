@@ -24,7 +24,7 @@ Vite + React Router，面向平台运营人员，端口 3001。
 
 - **框架**: Vite + React Router 6
 - **语言**: TypeScript (strict mode)
-- **UI**: shadcn/ui + Radix UI
+- **UI**: ant Desigh
 - **样式**: Tailwind CSS
 - **表单**: React Hook Form + Zod
 - **数据获取**: TanStack Query + Axios

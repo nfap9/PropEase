@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
@@ -7,21 +6,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Building2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { Card, Button, Input } from 'antd';
+import type { CardProps } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { organizationsApi } from '@/api';
 import { getErrorMessage } from '@/utils/error';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Textarea } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { DEFAULT_ORGANIZATION_HOME_PATH } from '@/utils/auth-redirect';
+import { Label } from '@/components/common/label';
+
+const { TextArea } = Input;
 
 const createOrganizationSchema = z.object({
   name: z.string().trim().min(1, '请输入团队名称'),
@@ -85,66 +78,64 @@ export default function CreateOrganizationPage() {
 
   if (isLoading || isCheckingAuth) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30">
-        <div className="text-sm text-muted-foreground">加载中...</div>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-sm text-gray-500">加载中...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
-      <Card className="w-full max-w-lg">
-        <CardHeader className="space-y-3">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+      <Card className="w-full max-w-lg" styles={{ body: { padding: 24 } }}>
+        <div className="space-y-4">
           <Button
-            variant="ghost"
-            size="sm"
+            type="text"
+            size="small"
             onClick={() => navigate('/organizations')}
-            className="gap-2 w-fit"
+            className="gap-2 mb-4"
+            icon={<ArrowLeft className="h-4 w-4" />}
           >
-            <ArrowLeft className="h-4 w-4" />
             返回
           </Button>
           <div className="space-y-1 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600">
               <Building2 className="h-6 w-6" />
             </div>
-            <CardTitle className="text-2xl font-semibold">创建新团队</CardTitle>
-            <CardDescription>创建新团队来管理你的公寓</CardDescription>
+            <h3 className="text-2xl font-semibold">创建新团队</h3>
+            <p className="text-gray-500">创建新团队来管理你的公寓</p>
           </div>
-        </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={form.handleSubmit((data) => createOrgMutation.mutate(data))}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="organization-name">
-                团队名称 <span aria-hidden="true">*</span>
-              </Label>
-              <Input
-                id="organization-name"
-                placeholder="请输入团队名称"
-                aria-required
-                {...form.register('name')}
-              />
-              {form.formState.errors.name && (
-                <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">备注</Label>
-              <Textarea
-                id="notes"
-                {...form.register('notes')}
-                placeholder="备注信息（选填）"
-                rows={3}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={createOrgMutation.isPending}>
-              {createOrgMutation.isPending ? '创建中...' : '创建团队'}
-            </Button>
-          </form>
-        </CardContent>
+        </div>
+        <form
+          onSubmit={form.handleSubmit((data) => createOrgMutation.mutate(data))}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="organization-name">
+              团队名称 <span aria-hidden="true">*</span>
+            </Label>
+            <Input
+              id="organization-name"
+              placeholder="请输入团队名称"
+              aria-required
+              {...form.register('name')}
+            />
+            {form.formState.errors.name && (
+              <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="notes">备注</Label>
+            <TextArea
+              id="notes"
+              {...form.register('notes')}
+              placeholder="备注信息（选填）"
+              rows={3}
+            />
+          </div>
+          <Button type="primary" htmlType="submit" block loading={createOrgMutation.isPending}>
+            {createOrgMutation.isPending ? '创建中...' : '创建团队'}
+          </Button>
+        </form>
       </Card>
     </div>
   );

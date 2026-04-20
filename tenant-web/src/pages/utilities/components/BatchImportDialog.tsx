@@ -1,21 +1,6 @@
-
 import { useRef, useState } from 'react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Modal, Select, Input } from 'antd';
+import { Label } from '@/components/common/label';
 import { Upload, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 import { Apartment, Room } from '@/types';
@@ -248,57 +233,53 @@ export function BatchImportDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-      <DialogContent data-testid="utilities-batch-import-dialog">
-        <DialogHeader>
-          <DialogTitle>批量导入水电读数</DialogTitle>
-          <DialogDescription>按步骤选择导入月份并上传已填写的 Excel 模板。</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-6">
-          {currentStep === 0 ? (
+    <Modal
+      open={open}
+      onCancel={() => handleDialogOpenChange(false)}
+      title="批量导入水电读数"
+      footer={null}
+      data-testid="utilities-batch-import-dialog"
+    >
+      <div className="space-y-6">
+        <p className="text-gray-500">按步骤选择导入月份并上传已填写的 Excel 模板。</p>
+        {currentStep === 0 ? (
           <div className="space-y-4">
             <h4 className="text-sm font-medium">导入月份</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>年份</Label>
-                <Select value={importYear.toString()} onValueChange={(v) => setImportYear(Number(v))}>
-                  <SelectTrigger className="min-w-[120px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}年
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Select
+                  value={importYear.toString()}
+                  onChange={(v) => setImportYear(Number(v))}
+                  style={{ width: 120 }}
+                  options={[currentYear - 1, currentYear, currentYear + 1].map((year) => ({
+                    value: year.toString(),
+                    label: `${year}年`,
+                  }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label>月份</Label>
-                <Select value={importMonth.toString()} onValueChange={(v) => setImportMonth(Number(v))}>
-                  <SelectTrigger className="min-w-[120px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                      <SelectItem key={month} value={month.toString()}>
-                        {month}月
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Select
+                  value={importMonth.toString()}
+                  onChange={(v) => setImportMonth(Number(v))}
+                  style={{ width: 120 }}
+                  options={Array.from({ length: 12 }, (_, i) => i + 1).map((month) => ({
+                    value: month.toString(),
+                    label: `${month}月`,
+                  }))}
+                />
               </div>
             </div>
           </div>
         ) : null}
 
         {currentStep === 1 ? (
-          <div className="rounded-lg border border-dashed border-muted p-6 text-center">
-            <FileSpreadsheet className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+          <div className="rounded-lg border border-dashed border-gray-200 p-6 text-center">
+            <FileSpreadsheet className="mx-auto mb-4 h-12 w-12 text-gray-400" />
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">支持的格式: .xlsx, .xls</p>
-              <p className="text-xs text-muted-foreground">填写导出的模板后上传</p>
+              <p className="text-sm text-gray-400">支持的格式: .xlsx, .xls</p>
+              <p className="text-xs text-gray-400">填写导出的模板后上传</p>
             </div>
             <input
               ref={fileInputRef}
@@ -309,7 +290,7 @@ export function BatchImportDialog({
               disabled={isPending}
             />
             <Button
-              variant="outline"
+              variant="outlined"
               className="mt-4"
               onClick={() => fileInputRef.current?.click()}
               disabled={isPending}
@@ -321,7 +302,7 @@ export function BatchImportDialog({
         ) : null}
 
         {currentStep === 1 ? (
-          <div className="space-y-1 text-xs text-muted-foreground">
+          <div className="space-y-1 text-xs text-gray-400">
             <p>• 使用「导出模版」获取待录入房间列表，填写「当前水表」和「当前电表」列后上传</p>
             <p>• 导入将写入所选的导入月份，记录日期为今天</p>
           </div>
@@ -332,12 +313,12 @@ export function BatchImportDialog({
               <div
                 key={step.id}
                 className={`flex items-center gap-1 text-sm ${
-                  index <= currentStep ? 'text-primary' : 'text-muted-foreground'
+                  index <= currentStep ? 'text-blue-600' : 'text-gray-400'
                 }`}
               >
                 <div
                   className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
-                    index <= currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                    index <= currentStep ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'
                   }`}
                 >
                   {index + 1}
@@ -349,20 +330,19 @@ export function BatchImportDialog({
           </div>
           <div className="flex gap-2">
             {currentStep > 0 && (
-              <Button variant="outline" onClick={() => setCurrentStep(0)}>
+              <Button variant="outlined" onClick={() => setCurrentStep(0)}>
                 上一步
               </Button>
             )}
             {currentStep < batchImportSteps.length - 1 && (
-              <Button onClick={() => setCurrentStep(1)}>下一步</Button>
+              <Button type="primary" onClick={() => setCurrentStep(1)}>下一步</Button>
             )}
             {currentStep === batchImportSteps.length - 1 && (
               <Button disabled>上传后自动导入</Button>
             )}
           </div>
         </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </Modal>
   );
 }

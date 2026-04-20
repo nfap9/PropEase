@@ -1,6 +1,6 @@
 
 import { Search } from 'lucide-react';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Input } from 'antd';
 
 interface ApartmentSearchBarProps {
   value: string;

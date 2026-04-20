@@ -7,7 +7,7 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions } from '@/hooks/use-permissions';
 import { canAccessRule } from '@/utils/permission-access';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from 'antd';
 import { notificationsApi, type Notification } from '@/api/notifications';
 import {
   getNotificationActionLabel,
@@ -93,8 +93,8 @@ export default function NotificationsPage() {
                 <div className="mb-4 flex items-start justify-end">
                   {unreadCount > 0 && (
                     <Button
-                      variant="outline"
-                      className="gap-2 border-border bg-card hover:bg-muted hover:text-foreground"
+                      type="default"
+                      className="gap-2"
                       onClick={() => markAllReadMutation.mutate()}
                       disabled={markAllReadMutation.isPending}
                       data-testid={NOTIFICATIONS.MARK_ALL_READ_BTN}
@@ -324,9 +324,9 @@ function NotificationItem({
           <div className="flex items-center gap-2">
             {target && (
               <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1 text-muted-foreground hover:text-foreground"
+                type="text"
+                size="small"
+                className="gap-1"
                 onClick={onOpen}
               >
                 {actionLabel}
@@ -335,9 +335,9 @@ function NotificationItem({
             )}
             {!item.is_read && (
               <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1 text-muted-foreground hover:text-foreground"
+                type="text"
+                size="small"
+                className="gap-1"
                 onClick={onMarkRead}
                 disabled={isMarking}
                 data-testid={testids.MARK_READ_BTN}

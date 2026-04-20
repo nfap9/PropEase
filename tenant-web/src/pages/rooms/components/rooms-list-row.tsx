@@ -1,8 +1,8 @@
 
 import { Link } from 'react-router-dom';
 import { FileText, Ban, Wrench, CheckCircle } from 'lucide-react';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Tag } from 'antd';
+import { Button } from 'antd';
 import { ROOM_STATUS_CONFIG } from '@/utils/status';
 import { Room, RoomStatus } from '@/types';
 import { cn } from '@/utils';
@@ -46,9 +46,7 @@ export function RoomListRow({ room, apartmentName, onLease, onTerminate, onStatu
       </div>
 
       {/* Status badge */}
-      <Badge variant={status.variant} className="text-[10px] px-1.5">
-        {status.label}
-      </Badge>
+      <Tag color={status.color} className="text-[10px] px-1.5">{status.label}</Tag>
 
       {/* Layout */}
       <div className="min-w-[80px] text-xs text-muted-foreground">
@@ -78,45 +76,43 @@ export function RoomListRow({ room, apartmentName, onLease, onTerminate, onStatu
       <div className="flex gap-1">
         {isAvailable && (
           <Button
-            variant="outline"
-            size="sm"
+            type="default"
+            size="small"
             onClick={() => onLease(room)}
             className="h-6 px-1.5 text-[10px]"
+            icon={<FileText className="mr-0.5 h-2.5 w-2.5" />}
           >
-            <FileText className="mr-0.5 h-2.5 w-2.5" />
             签约
           </Button>
         )}
         {isOccupied && (
           <Button
-            variant="outline"
-            size="sm"
+            type="default"
+            size="small"
             onClick={() => onTerminate(room)}
             className="h-6 px-1.5 text-[10px]"
+            icon={<Ban className="mr-0.5 h-2.5 w-2.5" />}
           >
-            <Ban className="mr-0.5 h-2.5 w-2.5" />
             退租
           </Button>
         )}
         {isAvailable && (
           <Button
-            variant="ghost"
-            size="sm"
+            type="text"
+            size="small"
             onClick={() => onStatusChange(room, 'maintenance')}
-            className="h-6 w-6 p-0 text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
-          >
-            <Wrench className="h-3 w-3" />
-          </Button>
+            className="h-6 w-6 p-0 text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400"
+            icon={<Wrench className="h-3 w-3" />}
+          />
         )}
         {isMaintenance && (
           <Button
-            variant="ghost"
-            size="sm"
+            type="text"
+            size="small"
             onClick={() => onStatusChange(room, 'available')}
-            className="h-6 w-6 p-0 text-emerald-600 dark:text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
-          >
-            <CheckCircle className="h-3 w-3" />
-          </Button>
+            className="h-6 w-6 p-0 text-emerald-600 dark:text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-400"
+            icon={<CheckCircle className="h-3 w-3" />}
+          />
         )}
       </div>
     </div>

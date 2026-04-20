@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Input, Modal } from 'antd';
 import { cn } from '@/utils';
 import { tenantMessages } from '@/i18n';
 import type { OrgRole } from '@/api/permissions';
@@ -26,7 +25,7 @@ export function OrgRoleList({
         <span className="font-medium text-muted-foreground">
           {tenantMessages.settings.team.labels.teamRoles}
         </span>
-        <Button size="sm" variant="outline" onClick={onAddRole}>
+        <Button size="small" onClick={onAddRole}>
           {tenantMessages.settings.team.actions.addRole || '新增角色'}
         </Button>
       </div>
@@ -57,8 +56,8 @@ export function OrgRoleList({
             </button>
             {!role.is_system && (
               <Button
-                size="sm"
-                variant="ghost"
+                size="small"
+                type="text"
                 className="h-6 w-6 p-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -91,8 +90,7 @@ export function OrgRoleCreateDialog({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!name.trim()) return;
     onSubmit(name.trim(), description.trim() || undefined);
     setName('');
@@ -100,47 +98,49 @@ export function OrgRoleCreateDialog({
     onOpenChange(false);
   };
 
-  if (!open) return null;
+  const handleCancel = () => {
+    setName('');
+    setDescription('');
+    onOpenChange(false);
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
-        <h2 className="mb-4 text-lg font-semibold">新增角色</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium">角色名称</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="请输入角色名称"
-              maxLength={50}
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">描述（可选）</label>
-            <Input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="请输入角色描述"
-              maxLength={255}
-            />
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isPending}
-            >
-              取消
-            </Button>
-            <Button type="submit" disabled={!name.trim() || isPending}>
-              {isPending ? '创建中...' : '创建'}
-            </Button>
-          </div>
-        </form>
+    <Modal
+      open={open}
+      onCancel={handleCancel}
+      title="新增角色"
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button onClick={handleCancel} disabled={isPending}>
+            取消
+          </Button>
+          <Button type="primary" onClick={handleSubmit} disabled={!name.trim() || isPending}>
+            {isPending ? '创建中...' : '创建'}
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <div>
+          <label className="mb-1 block text-sm font-medium">角色名称</label>
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="请输入角色名称"
+            maxLength={50}
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">描述（可选）</label>
+          <Input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="请输入角色描述"
+            maxLength={255}
+          />
+        </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -162,25 +162,24 @@ export function OrgRoleDeleteDialog({
   if (!open || !role) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
-        <h2 className="mb-4 text-lg font-semibold">删除角色</h2>
-        <p className="mb-6 text-muted-foreground">
-          确定要删除角色 "{role.name}" 吗？此操作不可撤销。
-        </p>
+    <Modal
+      open={open}
+      onCancel={() => onOpenChange(false)}
+      title="删除角色"
+      footer={
         <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isPending}
-          >
+          <Button onClick={() => onOpenChange(false)} disabled={isPending}>
             取消
           </Button>
-          <Button variant="destructive" onClick={onConfirm} disabled={isPending}>
+          <Button danger type="primary" onClick={onConfirm} disabled={isPending}>
             {isPending ? '删除中...' : '删除'}
           </Button>
         </div>
-      </div>
-    </div>
+      }
+    >
+      <p className="text-muted-foreground">
+        确定要删除角色 &quot;{role.name}&quot; 吗？此操作不可撤销。
+      </p>
+    </Modal>
   );
 }

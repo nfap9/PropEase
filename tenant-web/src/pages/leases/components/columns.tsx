@@ -1,19 +1,12 @@
 
 import { Link } from 'react-router-dom';
-import type { ColumnDef } from '@tanstack/react-table';
-import { Ban, Pencil, Trash2 } from 'lucide-react';
-import { Badge } from '@apartment-ultra/shared-ui/components/shadcn';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import type { ColumnsType } from 'antd/es/table';
+import { Ban, Pencil, Trash2, MoreHorizontal } from 'lucide-react';
+import { Tag, Dropdown, Button } from 'antd';
+import type { MenuProps } from 'antd';
 import { formatDate } from '@/utils/date';
 import { LEASE_STATUS_CONFIG } from '@/utils/status';
 import type { Lease } from '@/types';
-import { MoreHorizontal } from 'lucide-react';
 
 interface CreateLeaseColumnsOptions {
   onEdit: (lease: Lease) => void;
@@ -31,21 +24,22 @@ export function createLeaseColumns({
   onDelete,
   canEditLease = true,
   canDeleteLease = true,
-}: CreateLeaseColumnsOptions): ColumnDef<Lease>[] {
+}: CreateLeaseColumnsOptions): ColumnsType<Lease> {
   return [
     {
-      accessorKey: 'room',
-      header: '房间',
-      size: 180,
-      minSize: 150,
-      cell: ({ row }) => {
-        const room = row.original.room;
+      title: '房间',
+      dataIndex: 'room',
+      key: 'room',
+      width: 180,
+      minWidth: 150,
+      render: (_, record) => {
+        const room = record.room;
         if (!room) {
           return '-';
         }
         return (
           <Link
-            to={`/leases/${row.original.id}`}
+            to={`/leases/${record.id}`}
             className="flex flex-col hover:underline"
           >
             {room.apartment && (
@@ -59,77 +53,82 @@ export function createLeaseColumns({
       },
     },
     {
-      accessorKey: 'tenant',
-      header: '租客',
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => row.original.tenant?.name || '-',
+      title: '租客',
+      dataIndex: 'tenant',
+      key: 'tenant',
+      width: 120,
+      minWidth: 100,
+      render: (_, record) => record.tenant?.name || '-',
     },
     {
-      accessorKey: 'start_date',
-      header: '开始日期',
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => formatDate(row.original.start_date),
+      title: '开始日期',
+      dataIndex: 'start_date',
+      key: 'start_date',
+      width: 120,
+      minWidth: 100,
+      render: (_, record) => formatDate(record.start_date),
     },
     {
-      accessorKey: 'end_date',
-      header: '结束日期',
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => (row.original.end_date ? formatDate(row.original.end_date) : '长期'),
+      title: '结束日期',
+      dataIndex: 'end_date',
+      key: 'end_date',
+      width: 120,
+      minWidth: 100,
+      render: (_, record) => (record.end_date ? formatDate(record.end_date) : '长期'),
     },
     {
-      accessorKey: 'monthly_rent',
-      header: '月租',
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => `¥${row.original.monthly_rent.toLocaleString()}`,
+      title: '月租',
+      dataIndex: 'monthly_rent',
+      key: 'monthly_rent',
+      width: 120,
+      minWidth: 100,
+      render: (_, record) => `¥${record.monthly_rent.toLocaleString()}`,
     },
     {
-      accessorKey: 'is_active',
-      header: '状态',
-      size: 100,
-      minSize: 80,
-      cell: ({ row }) => {
-        const config = row.original.is_active ? LEASE_STATUS_CONFIG.active : LEASE_STATUS_CONFIG.inactive;
-        return <Badge variant={config.variant}>{config.label}</Badge>;
+      title: '状态',
+      dataIndex: 'is_active',
+      key: 'is_active',
+      width: 100,
+      minWidth: 80,
+      render: (_, record) => {
+        const config = record.is_active ? LEASE_STATUS_CONFIG.active : LEASE_STATUS_CONFIG.inactive;
+        return <Tag color={config.color}>{config.label}</Tag>;
       },
     },
     {
-      id: 'actions',
-      size: 80,
-      minSize: 60,
-      cell: ({ row }) => {
-        const lease = row.original;
+      title: '操作',
+      key: 'actions',
+      width: 80,
+      minWidth: 60,
+      render: (_, record) => {
+        const lease = record;
+        const menuItems: MenuProps['items'] = [
+          ...(canEditLease ? [{
+            key: 'edit',
+            icon: <Pencil className="h-4 w-4" />,
+            label: '编辑',
+            onClick: () => onEdit(lease),
+          }] : []),
+          ...(canEditLease && lease.is_active ? [{
+            key: 'terminate',
+            icon: <Ban className="h-4 w-4" />,
+            label: '终止',
+            danger: true,
+            onClick: () => onTerminate(lease),
+          }] : []),
+          ...(canDeleteLease ? [{
+            key: 'delete',
+            icon: <Trash2 className="h-4 w-4" />,
+            label: '删除',
+            danger: true,
+            onClick: () => onDelete(lease),
+          }] : []),
+        ];
+
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {canEditLease && (
-                <DropdownMenuItem onClick={() => onEdit(lease)}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  编辑
-                </DropdownMenuItem>
-              )}
-              {canEditLease && lease.is_active && (
-                <DropdownMenuItem onClick={() => onTerminate(lease)} className="text-destructive">
-                  <Ban className="mr-2 h-4 w-4" />
-                  终止
-                </DropdownMenuItem>
-              )}
-              {canDeleteLease && (
-                <DropdownMenuItem onClick={() => onDelete(lease)} className="text-destructive">
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  删除
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
+            <Button type="text" size="small" icon={<MoreHorizontal className="h-4 w-4" />} />
+          </Dropdown>
         );
       },
     },

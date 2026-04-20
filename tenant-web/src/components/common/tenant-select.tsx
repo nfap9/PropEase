@@ -1,12 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Select } from 'antd';
 import { tenantsApi } from '@/api';
 import { cn } from '@/utils';
 
@@ -40,17 +34,18 @@ export function TenantSelect({
   });
 
   return (
-    <Select value={value || ''} onValueChange={(v) => onValueChange(v)} disabled={disabled}>
-      <SelectTrigger className={cn('min-w-[140px]', className)}>
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {tenants?.map((tenant) => (
-          <SelectItem key={tenant.id} value={tenant.id}>
-            {tenant.name} - {tenant.phone}
-          </SelectItem>
-        ))}
-      </SelectContent>
+    <Select
+      value={value || ''}
+      onChange={(v) => onValueChange(v)}
+      disabled={disabled}
+      placeholder={placeholder}
+      className={cn('min-w-[140px]', className)}
+    >
+      {tenants?.map((tenant) => (
+        <Select.Option key={tenant.id} value={tenant.id}>
+          {tenant.name} - {tenant.phone}
+        </Select.Option>
+      ))}
     </Select>
   );
 }

@@ -1,14 +1,8 @@
 
 import { Link } from 'react-router-dom';
-import { ColumnDef } from '@tanstack/react-table';
-import { Badge } from '@apartment-ultra/shared-ui/components/shadcn';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import type { ColumnsType } from 'antd/es/table';
+import { Tag, Dropdown, Button } from 'antd';
+import type { MenuProps } from 'antd';
 import { Room, RoomStatus } from '@/types';
 import { ROOM_STATUS_CONFIG } from '@/utils/status';
 import { FileText, Ban, Wrench, CheckCircle, MoreHorizontal } from 'lucide-react';
@@ -23,23 +17,23 @@ export function useColumns({
   onLease,
   onTerminate,
   onStatusChange,
-}: UseColumnsOptions): ColumnDef<Room>[] {
+}: UseColumnsOptions): ColumnsType<Room> {
   return [
     {
-      accessorKey: 'room_number',
-      header: '房间号',
-      enableSorting: true,
-      size: 120,
-      minSize: 100,
+      title: '房间号',
+      dataIndex: 'room_number',
+      key: 'room_number',
+      width: 120,
+      minWidth: 100,
     },
     {
-      accessorKey: 'apartment_name',
-      header: '所属公寓',
-      enableSorting: true,
-      size: 180,
-      minSize: 150,
-      cell: ({ row }) => {
-        const apartment = row.original.apartment;
+      title: '所属公寓',
+      dataIndex: 'apartment_name',
+      key: 'apartment',
+      width: 180,
+      minWidth: 150,
+      render: (_, record) => {
+        const apartment = record.apartment;
         return apartment ? (
           <Link to={`/workspace/apartments/${apartment.id}`} className="text-primary hover:underline">
             {apartment.name}
@@ -50,94 +44,94 @@ export function useColumns({
       },
     },
     {
-      accessorKey: 'layout',
-      header: '户型',
-      enableSorting: true,
-      size: 100,
-      minSize: 80,
-      cell: ({ row }) => row.original.layout || '-',
+      title: '户型',
+      dataIndex: 'layout',
+      key: 'layout',
+      width: 100,
+      minWidth: 80,
+      render: (_, record) => record.layout || '-',
     },
     {
-      accessorKey: 'area',
-      header: '面积',
-      enableSorting: true,
-      size: 100,
-      minSize: 80,
-      cell: ({ row }) => (row.original.area ? `${row.original.area} m²` : '-'),
+      title: '面积',
+      dataIndex: 'area',
+      key: 'area',
+      width: 100,
+      minWidth: 80,
+      render: (_, record) => (record.area ? `${record.area} m²` : '-'),
     },
     {
-      accessorKey: 'monthly_rent',
-      header: '月租',
-      enableSorting: true,
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => {
-        const rent = row.original.pricing?.monthly_rent;
+      title: '月租',
+      dataIndex: 'monthly_rent',
+      key: 'monthly_rent',
+      width: 120,
+      minWidth: 100,
+      render: (_, record) => {
+        const rent = record.pricing?.monthly_rent;
         return rent ? `¥${rent.toLocaleString()}` : '-';
       },
     },
     {
-      accessorKey: 'status',
-      header: '状态',
-      enableSorting: true,
-      size: 100,
-      minSize: 80,
-      cell: ({ row }) => {
-        const status = ROOM_STATUS_CONFIG[row.original.status];
-        return <Badge variant={status.variant}>{status.label}</Badge>;
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      width: 100,
+      minWidth: 80,
+      render: (_, record) => {
+        const status = ROOM_STATUS_CONFIG[record.status];
+        return <Tag color={status.color}>{status.label}</Tag>;
       },
     },
     {
-      accessorKey: 'notes',
-      header: '备注',
-      size: 200,
-      minSize: 120,
-      cell: ({ row }) => <span className="text-muted-foreground">{row.original.notes || '-'}</span>,
+      title: '备注',
+      dataIndex: 'notes',
+      key: 'notes',
+      width: 200,
+      minWidth: 120,
+      render: (_, record) => <span className="text-muted-foreground">{record.notes || '-'}</span>,
     },
     {
-      id: 'actions',
-      size: 80,
-      minSize: 60,
-      cell: ({ row }) => {
-        const room = row.original;
+      title: '操作',
+      key: 'actions',
+      width: 80,
+      minWidth: 60,
+      render: (_, record) => {
+        const room = record;
         const isAvailable = room.status === 'available';
         const isOccupied = room.status === 'occupied';
         const isMaintenance = room.status === 'maintenance';
 
+        const menuItems: MenuProps['items'] = [
+          ...(isAvailable ? [{
+            key: 'lease',
+            icon: <FileText className="h-4 w-4" />,
+            label: '签约',
+            onClick: () => onLease(room),
+          }] : []),
+          ...(isOccupied ? [{
+            key: 'terminate',
+            icon: <Ban className="h-4 w-4" />,
+            label: '退租',
+            danger: true,
+            onClick: () => onTerminate(room),
+          }] : []),
+          ...(isAvailable ? [{
+            key: 'maintenance',
+            icon: <Wrench className="h-4 w-4" />,
+            label: '开始维修',
+            onClick: () => onStatusChange(room, 'maintenance'),
+          }] : []),
+          ...(isMaintenance ? [{
+            key: 'available',
+            icon: <CheckCircle className="h-4 w-4" />,
+            label: '完成维修',
+            onClick: () => onStatusChange(room, 'available'),
+          }] : []),
+        ];
+
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {isAvailable && (
-                <DropdownMenuItem onClick={() => onLease(room)}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  签约
-                </DropdownMenuItem>
-              )}
-              {isOccupied && (
-                <DropdownMenuItem onClick={() => onTerminate(room)} className="text-destructive">
-                  <Ban className="mr-2 h-4 w-4" />
-                  退租
-                </DropdownMenuItem>
-              )}
-              {isAvailable && (
-                <DropdownMenuItem onClick={() => onStatusChange(room, 'maintenance')}>
-                  <Wrench className="mr-2 h-4 w-4" />
-                  开始维修
-                </DropdownMenuItem>
-              )}
-              {isMaintenance && (
-                <DropdownMenuItem onClick={() => onStatusChange(room, 'available')}>
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  完成维修
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
+            <Button type="text" size="small" icon={<MoreHorizontal className="h-4 w-4" />} />
+          </Dropdown>
         );
       },
     },

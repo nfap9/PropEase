@@ -1,8 +1,9 @@
+
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
+import { Skeleton } from 'antd';
 import { roomsApi, apartmentsApi, leasesApi } from '@/api';
 import { getErrorMessage } from '@/utils/error';
 import { useAuth } from '@/contexts/auth';

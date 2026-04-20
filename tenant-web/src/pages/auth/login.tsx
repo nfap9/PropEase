@@ -5,11 +5,10 @@ import { Link } from 'react-router-dom';
 import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { Button, Input } from 'antd';
+import type { ReactNode } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { getPostAuthRedirectPath } from '@/utils/auth-redirect';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { useBrandConfig } from '@/contexts/brand-config';
 import { AuthLoadingScreen } from '@/pages/auth/components/auth-loading-screen';
 import { AuthShell } from '@/pages/auth/components/auth-shell';
@@ -25,8 +24,23 @@ const passwordLoginSchema = z.object({
 
 type PasswordLoginFormValues = z.infer<typeof passwordLoginSchema>;
 
-const AUTH_INPUT_CLASSNAME =
-  'h-11 rounded-xl border-border/80 bg-background/80 px-3.5 shadow-none focus-visible:ring-2 focus-visible:ring-ring/15 focus-visible:ring-offset-0';
+const AUTH_INPUT_CLASSNAME = 'h-11 rounded-xl border border-border/80 bg-background/80 px-3.5 shadow-none';
+
+interface LabelProps {
+  children: ReactNode;
+  htmlFor?: string;
+  required?: boolean;
+  className?: string;
+}
+
+function Label({ required, children, htmlFor, className }: LabelProps) {
+  return (
+    <label htmlFor={htmlFor} className={`text-sm font-medium ${className || ''}`}>
+      {children}
+      {required && <span className="text-destructive ml-1">*</span>}
+    </label>
+  );
+}
 
 export default function LoginPage() {
   const { login, isAuthenticated, isLoading: isAuthLoading, organizations, organization } = useAuth();
@@ -139,7 +153,7 @@ export default function LoginPage() {
                 <p className="text-sm text-destructive">{passwordForm.formState.errors.password.message}</p>
               )}
             </div>
-            <Button type="submit" className="h-11 w-full text-sm" disabled={isLoading} data-testid="auth-login-button">
+            <Button type="primary" htmlType="submit" className="h-11 w-full text-sm" loading={isLoading} data-testid="auth-login-button">
               {isLoading ? tenantMessages.auth.login.submitting : tenantMessages.auth.login.submit}
             </Button>
           </form>

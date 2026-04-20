@@ -1,16 +1,6 @@
 
 import { Search, X, Building2 } from 'lucide-react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DatePickerComponent } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
+import { Button, DatePicker, Input, Select, Tag } from 'antd';
 import type { LeaseFiltersState } from '@/schemas/leases';
 
 interface LeaseFiltersProps {
@@ -37,23 +27,14 @@ export function LeaseFilters({ apartments, filters, onFilterChange, onClearFilte
       {/* 公寓筛选 */}
       <Select
         value={filters.apartmentId || 'all'}
-        onValueChange={(value) => onFilterChange('apartmentId', value === 'all' ? null : value)}
-      >
-        <SelectTrigger className="h-9 w-[160px]" data-testid="leases-apartment-filter">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-            <SelectValue placeholder="全部公寓" />
-          </div>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">全部公寓</SelectItem>
-          {apartments.map((apartment) => (
-            <SelectItem key={apartment.id} value={apartment.id}>
-              {apartment.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        onChange={(value) => onFilterChange('apartmentId', value === 'all' ? null : value)}
+        className="w-[160px]"
+        placeholder="全部公寓"
+        options={[
+          { value: 'all', label: '全部公寓' },
+          ...apartments.map((apartment) => ({ value: apartment.id, label: apartment.name })),
+        ]}
+      />
 
       {/* 搜索框 */}
       <div className="relative">
@@ -68,38 +49,38 @@ export function LeaseFilters({ apartments, filters, onFilterChange, onClearFilte
 
       {/* 开始日期范围 */}
       <div className="flex items-center gap-1">
-        <DatePickerComponent
+        <DatePicker
           className="h-9 w-[140px]"
-          value={filters.startDateFrom || ''}
-          onChange={(value) => onFilterChange('startDateFrom', value || null)}
+          value={filters.startDateFrom ? undefined : undefined}
+          onChange={(_, dateString) => onFilterChange('startDateFrom', dateString || null)}
+          placeholder="开始日期"
         />
         <span className="text-muted-foreground">-</span>
-        <DatePickerComponent
+        <DatePicker
           className="h-9 w-[140px]"
-          value={filters.startDateTo || ''}
-          onChange={(value) => onFilterChange('startDateTo', value || null)}
+          onChange={(_, dateString) => onFilterChange('startDateTo', dateString || null)}
+          placeholder="结束日期"
         />
       </div>
 
       {/* 结束日期范围 */}
       <div className="flex items-center gap-1">
-        <DatePickerComponent
+        <DatePicker
           className="h-9 w-[140px]"
-          value={filters.endDateFrom || ''}
-          onChange={(value) => onFilterChange('endDateFrom', value || null)}
+          onChange={(_, dateString) => onFilterChange('endDateFrom', dateString || null)}
+          placeholder="开始日期"
         />
         <span className="text-muted-foreground">-</span>
-        <DatePickerComponent
+        <DatePicker
           className="h-9 w-[140px]"
-          value={filters.endDateTo || ''}
-          onChange={(value) => onFilterChange('endDateTo', value || null)}
+          onChange={(_, dateString) => onFilterChange('endDateTo', dateString || null)}
+          placeholder="结束日期"
         />
       </div>
 
       {/* 清除筛选 */}
       {hasActiveFilters && (
-        <Button variant="ghost" size="sm" onClick={onClearFilters} className="h-9 gap-1 text-muted-foreground">
-          <X className="h-4 w-4" />
+        <Button type="text" size="small" onClick={onClearFilters} className="h-9 gap-1 text-muted-foreground" icon={<X className="h-4 w-4" />}>
           清除
         </Button>
       )}
@@ -108,16 +89,14 @@ export function LeaseFilters({ apartments, filters, onFilterChange, onClearFilte
       {hasActiveFilters && (
         <div className="flex items-center gap-1">
           {hasKeyword && (
-            <Badge variant="secondary" className="h-6 gap-1 px-2 text-xs">
-              <Search className="h-3 w-3" />
+            <Tag className="h-6 gap-1 px-2 text-xs" icon={<Search className="h-3 w-3" />}>
               {filters.keyword}
-            </Badge>
+            </Tag>
           )}
           {hasApartment && selectedApartment && (
-            <Badge variant="secondary" className="h-6 gap-1 px-2 text-xs">
-              <Building2 className="h-3 w-3" />
+            <Tag className="h-6 gap-1 px-2 text-xs" icon={<Building2 className="h-3 w-3" />}>
               {selectedApartment.name}
-            </Badge>
+            </Tag>
           )}
         </div>
       )}

@@ -1,6 +1,6 @@
 
 import { LayoutGrid, List } from 'lucide-react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from 'antd';
 import { cn } from '@/utils';
 
 export type ViewMode = 'grid' | 'list';
@@ -14,8 +14,8 @@ export function RoomsViewToggle({ viewMode, onViewModeChange }: RoomsViewToggleP
   return (
     <div className="flex items-center gap-0.5 rounded-md border bg-card p-0.5">
       <Button
-        variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-        size="sm"
+        type={viewMode === 'grid' ? 'primary' : 'text'}
+        size="small"
         onClick={() => onViewModeChange('grid')}
         className={cn(
           'h-7 px-1.5',
@@ -25,8 +25,8 @@ export function RoomsViewToggle({ viewMode, onViewModeChange }: RoomsViewToggleP
         <LayoutGrid className="h-3.5 w-3.5" />
       </Button>
       <Button
-        variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-        size="sm"
+        type={viewMode === 'list' ? 'primary' : 'text'}
+        size="small"
         onClick={() => onViewModeChange('list')}
         className={cn(
           'h-7 px-1.5',

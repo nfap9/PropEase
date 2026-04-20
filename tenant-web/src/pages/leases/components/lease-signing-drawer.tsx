@@ -4,15 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Drawer } from 'antd';
 import { leaseSigningSchema, type LeaseSigningFormData } from '@/schemas/leases';
 import { leasesApi, apartmentsApi, roomsApi, tenantsApi, utilityConfigApi } from '@/api';
 import { toDateInputValue } from '@/utils/date';
@@ -334,94 +326,101 @@ export function LeaseSigningDrawer({
 
   return (
     <>
-      <Sheet open={open} onOpenChange={handleDrawerOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-2xl flex flex-col overflow-hidden p-0">
-          <SheetHeader className="border-b px-6 py-5 text-left">
-            <SheetTitle>{getDialogTitle()}</SheetTitle>
-            <SheetDescription>{getDialogDescription()}</SheetDescription>
-          </SheetHeader>
-
-          <div className="flex-1 overflow-y-auto px-6 py-5">
-            {/* 步骤指示器 */}
-            <div className="flex items-center gap-2 mb-6">
-              {leaseSigningSteps.map((step, index) => (
+      <Drawer
+        open={open}
+        onClose={() => handleDrawerOpenChange(false)}
+        title={
+          <div className="text-left">
+            <div className="text-lg font-semibold">{getDialogTitle()}</div>
+            <div className="text-sm text-muted-foreground font-normal">{getDialogDescription()}</div>
+          </div>
+        }
+        footer={
+          <div className="flex items-center gap-3">
+            {currentStep > 0 && (
+              <Button type="default" onClick={handlePreviousStep}>
+                上一步
+              </Button>
+            )}
+            {currentStep < leaseSigningSteps.length - 1 && (
+              <Button type="primary" onClick={handleNextStep}>
+                下一步
+              </Button>
+            )}
+            {currentStep === leaseSigningSteps.length - 1 && (
+              <Button
+                type="primary"
+                onClick={() => {
+                  void form.handleSubmit(handleSubmit)();
+                }}
+                disabled={createMutation.isPending}
+              >
+                {createMutation.isPending ? '签约中...' : '确认签约'}
+              </Button>
+            )}
+          </div>
+        }
+        placement="right"
+        width="100%"
+        style={{ maxWidth: 640 }}
+      >
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          {/* 步骤指示器 */}
+          <div className="flex items-center gap-2 mb-6">
+            {leaseSigningSteps.map((step, index) => (
+              <div
+                key={step.id}
+                className={`flex items-center gap-1.5 text-sm ${
+                  index <= currentStep ? 'text-foreground font-medium' : 'text-muted-foreground'
+                }`}
+              >
                 <div
-                  key={step.id}
-                  className={`flex items-center gap-1.5 text-sm ${
-                    index <= currentStep ? 'text-foreground font-medium' : 'text-muted-foreground'
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
+                    index <= currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                   }`}
                 >
-                  <div
-                    className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
-                      index <= currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                    }`}
-                  >
-                    {index + 1}
-                  </div>
-                  <span>{step.title}</span>
-                  {index < leaseSigningSteps.length - 1 && (
-                    <span className="mx-1 text-muted-foreground">/</span>
-                  )}
+                  {index + 1}
                 </div>
-              ))}
-            </div>
-
-            {currentStep === 2 && (
-              <p className="mb-4 text-sm text-muted-foreground">签约完成后将自动刷新数据</p>
-            )}
-            <form
-              onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-6"
-              id="lease-signing-wizard-form"
-            >
-              {currentStep === 0 ? (
-                <RoomInfoSection
-                  form={form}
-                  room={room}
-                  isRoomSpecified={isRoomSpecified}
-                  apartments={apartments}
-                  rooms={rooms}
-                  selectedApartmentId={selectedApartmentId}
-                  onApartmentChange={setSelectedApartmentId}
-                />
-              ) : null}
-
-              {currentStep === 1 ? <TenantInfoSection form={form} onSearchTenant={() => setTenantSearchOpen(true)} /> : null}
-
-              {currentStep === 2 ? (
-                <ContractInfoSection
-                  form={form}
-                  feeItems={feeItems}
-                  onFeeItemsChange={setFeeItems}
-                />
-              ) : null}
-            </form>
+                <span>{step.title}</span>
+                {index < leaseSigningSteps.length - 1 && (
+                  <span className="mx-1 text-muted-foreground">/</span>
+                )}
+              </div>
+            ))}
           </div>
 
-          <SheetFooter className="border-t px-6 py-4">
-            <div className="flex items-center gap-3">
-              {currentStep > 0 && (
-                <Button variant="outline" onClick={handlePreviousStep}>
-                  上一步
-                </Button>
-              )}
-              {currentStep < leaseSigningSteps.length - 1 && (
-                <Button onClick={handleNextStep}>下一步</Button>
-              )}
-              {currentStep === leaseSigningSteps.length - 1 && (
-                <Button
-                  onClick={() => {
-                    void form.handleSubmit(handleSubmit)();
-                  }}
-                  disabled={createMutation.isPending}
-                >
-                  {createMutation.isPending ? '签约中...' : '确认签约'}
-                </Button>
-              )}
-            </div>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+          {currentStep === 2 && (
+            <p className="mb-4 text-sm text-muted-foreground">签约完成后将自动刷新数据</p>
+          )}
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+            id="lease-signing-wizard-form"
+          >
+            {currentStep === 0 ? (
+              <RoomInfoSection
+                form={form}
+                room={room}
+                isRoomSpecified={isRoomSpecified}
+                apartments={apartments}
+                rooms={rooms}
+                selectedApartmentId={selectedApartmentId}
+                onApartmentChange={setSelectedApartmentId}
+              />
+            ) : null}
+
+            {currentStep === 1 ? <TenantInfoSection form={form} onSearchTenant={() => setTenantSearchOpen(true)} /> : null}
+
+            {currentStep === 2 ? (
+              <ContractInfoSection
+                form={form}
+                feeItems={feeItems}
+                onFeeItemsChange={setFeeItems}
+              />
+            ) : null}
+          </form>
+        </div>
+      </Drawer>
 
       <TenantSearchDrawer
         orgId={orgId}

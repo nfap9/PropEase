@@ -5,25 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { changeRoomSchema, type ChangeRoomFormData } from '@/schemas/lease-operations';
 import { useChangeRoom } from '@/hooks/use-lease-operations';
 import { roomsApi, apartmentsApi } from '@/api';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DatePickerComponent } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Drawer, Input, Select, DatePicker } from 'antd';
+import { Label } from '@/components/common/label';
 
 interface ChangeRoomSheetProps {
   open: boolean;
@@ -61,38 +44,45 @@ export function ChangeRoomSheet({ open, onOpenChange, orgId, leaseId }: ChangeRo
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col overflow-hidden p-0">
-        <SheetHeader className="border-b px-6 py-5 text-left">
-          <SheetTitle>换房</SheetTitle>
-          <SheetDescription>将租约切换到其他房间</SheetDescription>
-        </SheetHeader>
-
-        <div className="flex-1 overflow-y-auto px-6 py-5">
-          <FormProvider {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <Drawer
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title="换房"
+      width={400}
+      footer={
+        <div className="flex gap-3">
+          <Button onClick={() => onOpenChange(false)}>取消</Button>
+          <Button type="primary" loading={changeRoom.isPending} onClick={form.handleSubmit(onSubmit)}>
+            {changeRoom.isPending ? '提交中...' : '确认换房'}
+          </Button>
+        </div>
+      }
+    >
+      <p className="mb-4 text-sm text-gray-600">将租约切换到其他房间</p>
+      <FormProvider {...form}>
+        <form className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="newRoomId">目标房间 *</Label>
             <Controller
               name="newRoomId"
               control={form.control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="选择目标房间" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableRooms.map((room) => (
-                      <SelectItem key={room.id} value={room.id}>
-                        {room.apartment?.name} - {room.room_number}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
+                <Select
+                  onChange={field.onChange}
+                  value={field.value}
+                  placeholder="选择目标房间"
+                  className="w-full"
+                >
+                  {availableRooms.map((room) => (
+                    <Select.Option key={room.id} value={room.id}>
+                      {room.apartment?.name} - {room.room_number}
+                    </Select.Option>
+                  ))}
                 </Select>
               )}
             />
             {form.formState.errors.newRoomId && (
-              <p className="text-sm text-destructive">{form.formState.errors.newRoomId.message}</p>
+              <p className="text-sm text-red-500">{form.formState.errors.newRoomId.message}</p>
             )}
           </div>
           <div className="space-y-2">
@@ -101,14 +91,15 @@ export function ChangeRoomSheet({ open, onOpenChange, orgId, leaseId }: ChangeRo
               name="changeDate"
               control={form.control}
               render={({ field }) => (
-                <DatePickerComponent
+                <DatePicker
                   value={field.value || ''}
-                  onChange={field.onChange}
+                  onChange={(_, dateString) => field.onChange(dateString)}
+                  className="w-full"
                 />
               )}
             />
             {form.formState.errors.changeDate && (
-              <p className="text-sm text-destructive">{form.formState.errors.changeDate.message}</p>
+              <p className="text-sm text-red-500">{form.formState.errors.changeDate.message}</p>
             )}
           </div>
           <div className="space-y-2">
@@ -119,24 +110,11 @@ export function ChangeRoomSheet({ open, onOpenChange, orgId, leaseId }: ChangeRo
               render={({ field }) => <Input {...field} placeholder="可选" />}
             />
             {form.formState.errors.reason && (
-              <p className="text-sm text-destructive">{form.formState.errors.reason.message}</p>
+              <p className="text-sm text-red-500">{form.formState.errors.reason.message}</p>
             )}
           </div>
-          </form>
-          </FormProvider>
-        </div>
-
-        <SheetFooter className="border-t px-6 py-4">
-          <div className="flex gap-3">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              取消
-            </Button>
-            <Button type="submit" disabled={changeRoom.isPending}>
-              {changeRoom.isPending ? '提交中...' : '确认换房'}
-            </Button>
-          </div>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </form>
+      </FormProvider>
+    </Drawer>
   );
 }

@@ -1,14 +1,7 @@
 
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from 'antd';
+import type { HTMLAttributes } from 'react';
+import { Input, Select } from 'antd';
 import { ApartmentWithStats, RoomStatus } from '@/types';
 import { Search, X } from 'lucide-react';
 
@@ -31,6 +24,16 @@ export interface RoomFiltersState {
   rentMax: number | null;
   areaMin: number | null;
   areaMax: number | null;
+}
+
+interface LabelProps extends HTMLAttributes<HTMLLabelElement> {}
+
+function Label({ children, ...props }: LabelProps) {
+  return (
+    <label {...props} className={`text-sm font-medium mb-2 block ${props.className || ''}`}>
+      {children}
+    </label>
+  );
 }
 
 interface RoomFiltersProps {
@@ -58,7 +61,7 @@ export function RoomFilters({
     <div data-testid={testids?.FILTER_TOGGLE}>
       <div className="flex flex-wrap gap-4">
         <div>
-          <Label className="mb-2 block">搜索</Label>
+          <Label>搜索</Label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -72,69 +75,55 @@ export function RoomFilters({
         </div>
 
         <div>
-          <Label className="mb-2 block">公寓</Label>
+          <Label>公寓</Label>
           <Select
             value={filters.apartmentId || 'all'}
-            onValueChange={(value) =>
+            onChange={(value) =>
               onFilterChange('apartmentId', value === 'all' ? null : value)
             }
-          >
-            <SelectTrigger className="w-full" data-testid={testids?.APARTMENT_FILTER}>
-              <SelectValue placeholder="全部公寓" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部公寓</SelectItem>
-              {apartments.map((apt) => (
-                <SelectItem key={apt.id} value={apt.id}>
-                  {apt.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            className="w-full"
+            data-testid={testids?.APARTMENT_FILTER}
+            options={[
+              { value: 'all', label: '全部公寓' },
+              ...apartments.map((apt) => ({ value: apt.id, label: apt.name })),
+            ]}
+          />
         </div>
 
         <div>
-          <Label className="mb-2 block">状态</Label>
+          <Label>状态</Label>
           <Select
             value={filters.status || 'all'}
-            onValueChange={(value) =>
+            onChange={(value) =>
               onFilterChange('status', value === 'all' ? null : (value as RoomStatus))
             }
-          >
-            <SelectTrigger className="w-full" data-testid={testids?.STATUS_FILTER}>
-              <SelectValue placeholder="全部状态" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部状态</SelectItem>
-              <SelectItem value="available">空置</SelectItem>
-              <SelectItem value="occupied">已租</SelectItem>
-              <SelectItem value="maintenance">维修中</SelectItem>
-            </SelectContent>
-          </Select>
+            className="w-full"
+            data-testid={testids?.STATUS_FILTER}
+            options={[
+              { value: 'all', label: '全部状态' },
+              { value: 'available', label: '空置' },
+              { value: 'occupied', label: '已租' },
+              { value: 'maintenance', label: '维修中' },
+            ]}
+          />
         </div>
 
         <div>
-          <Label className="mb-2 block">户型</Label>
+          <Label>户型</Label>
           <Select
             value={filters.layout || 'all'}
-            onValueChange={(value) => onFilterChange('layout', value === 'all' ? null : value)}
-          >
-            <SelectTrigger className="w-full" data-testid={testids?.LAYOUT_FILTER}>
-              <SelectValue placeholder="全部户型" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部户型</SelectItem>
-              {LAYOUT_OPTIONS.map((layout) => (
-                <SelectItem key={layout} value={layout}>
-                  {layout}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onChange={(value) => onFilterChange('layout', value === 'all' ? null : value)}
+            className="w-full"
+            data-testid={testids?.LAYOUT_FILTER}
+            options={[
+              { value: 'all', label: '全部户型' },
+              ...LAYOUT_OPTIONS.map((layout) => ({ value: layout, label: layout })),
+            ]}
+          />
         </div>
 
         <div>
-          <Label className="mb-2 block">月租范围</Label>
+          <Label>月租范围</Label>
           <div className="flex items-center gap-1">
             <Input
               type="number"
@@ -161,7 +150,7 @@ export function RoomFilters({
         </div>
 
         <div>
-          <Label className="mb-2 block">面积范围</Label>
+          <Label>面积范围</Label>
           <div className="flex items-center gap-1">
             <Input
               type="number"
@@ -189,13 +178,13 @@ export function RoomFilters({
 
         {hasActiveFilters && (
           <Button
-            variant="ghost"
-            size="sm"
+            type="text"
+            size="small"
             onClick={onClearFilters}
             className="h-9"
             data-testid={testids?.CLEAR_FILTERS_BTN}
+            icon={<X className="mr-1 h-4 w-4" />}
           >
-            <X className="mr-1 h-4 w-4" />
             清除筛选
           </Button>
         )}

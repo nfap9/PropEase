@@ -6,10 +6,9 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DatePickerComponent } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Input, DatePicker } from 'antd';
+import dayjs from 'dayjs';
+import { Label } from '@/components/common/label';
 import { apartmentsApi } from '@/api';
 import { useAuth } from '@/contexts/auth';
 import { getErrorMessage } from '@/utils/error';
@@ -64,7 +63,7 @@ export default function NewApartmentPage() {
       <div className="flex h-full flex-col">
         {/* 固定头部 */}
         <div className="shrink-0 px-1 pb-4">
-          <h3 className="flex items-center gap-2 text-base font-medium text-foreground">
+          <h3 className="flex items-center gap-2 text-base font-medium text-gray-900">
             <button type="button" onClick={() => navigate(-1)} className="flex items-center justify-center">
               <ArrowLeft className="h-4 w-4" />
             </button>
@@ -81,7 +80,7 @@ export default function NewApartmentPage() {
               </Label>
               <Input id="name" {...form.register('name')} placeholder="请输入公寓名称" />
               {form.formState.errors.name && (
-                <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
+                <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
               )}
             </div>
             <div className="space-y-1.5">
@@ -90,7 +89,7 @@ export default function NewApartmentPage() {
               </Label>
               <Input id="address" {...form.register('address')} placeholder="请输入公寓地址" />
               {form.formState.errors.address && (
-                <p className="text-sm text-destructive">{form.formState.errors.address.message}</p>
+                <p className="text-sm text-red-500">{form.formState.errors.address.message}</p>
               )}
             </div>
           </div>
@@ -132,10 +131,10 @@ export default function NewApartmentPage() {
           {/* 分割线 */}
           <div className="relative py-2">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-dashed border-border/60" />
+              <span className="w-full border-t border-dashed border-gray-200" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">上游信息</span>
+              <span className="bg-white px-2 text-gray-500">上游信息</span>
             </div>
           </div>
 
@@ -148,7 +147,7 @@ export default function NewApartmentPage() {
                 </Label>
                 <Input id="landlord_name" {...form.register('landlord_name')} placeholder="请输入房东姓名" />
                 {form.formState.errors.landlord_name && (
-                  <p className="text-sm text-destructive">{form.formState.errors.landlord_name.message}</p>
+                  <p className="text-sm text-red-500">{form.formState.errors.landlord_name.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
@@ -166,15 +165,16 @@ export default function NewApartmentPage() {
                   name="contract_start"
                   control={form.control}
                   render={({ field }) => (
-                    <DatePickerComponent
+                    <DatePicker
                       id="contract_start"
-                      value={field.value || ''}
-                      onChange={field.onChange}
+                      value={field.value ? dayjs(field.value) : null}
+                      onChange={(date) => field.onChange(date?.format('YYYY-MM-DD'))}
+                      style={{ width: '100%' }}
                     />
                   )}
                 />
                 {form.formState.errors.contract_start && (
-                  <p className="text-sm text-destructive">{form.formState.errors.contract_start.message}</p>
+                  <p className="text-sm text-red-500">{form.formState.errors.contract_start.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
@@ -185,15 +185,16 @@ export default function NewApartmentPage() {
                   name="contract_end"
                   control={form.control}
                   render={({ field }) => (
-                    <DatePickerComponent
+                    <DatePicker
                       id="contract_end"
-                      value={field.value || ''}
-                      onChange={field.onChange}
+                      value={field.value ? dayjs(field.value) : null}
+                      onChange={(date) => field.onChange(date?.format('YYYY-MM-DD'))}
+                      style={{ width: '100%' }}
                     />
                   )}
                 />
                 {form.formState.errors.contract_end && (
-                  <p className="text-sm text-destructive">{form.formState.errors.contract_end.message}</p>
+                  <p className="text-sm text-red-500">{form.formState.errors.contract_end.message}</p>
                 )}
               </div>
             </div>
@@ -211,17 +212,17 @@ export default function NewApartmentPage() {
                 placeholder="请输入房东租金"
               />
               {form.formState.errors.landlord_rent && (
-                <p className="text-sm text-destructive">{form.formState.errors.landlord_rent.message}</p>
+                <p className="text-sm text-red-500">{form.formState.errors.landlord_rent.message}</p>
               )}
             </div>
           </div>
 
           {/* 操作按钮 */}
           <div className="flex items-center justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+            <Button type="default" onClick={() => navigate(-1)}>
               取消
             </Button>
-            <Button type="submit" disabled={createMutation.isPending}>
+            <Button type="primary" htmlType="submit" loading={createMutation.isPending}>
               {createMutation.isPending ? '创建中...' : '创建'}
             </Button>
           </div>

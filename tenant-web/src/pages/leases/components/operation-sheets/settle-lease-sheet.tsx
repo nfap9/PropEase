@@ -3,19 +3,8 @@ import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { settleLeaseSchema, type SettleLeaseFormData } from '@/schemas/lease-operations';
 import { useSettleLease } from '@/hooks/use-lease-operations';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { Alert, AlertDescription } from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Drawer, Input, Alert, Card } from 'antd';
+import { Label } from '@/components/common/label';
 import { AlertTriangle } from 'lucide-react';
 
 interface SettleLeaseSheetProps {
@@ -46,22 +35,29 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col overflow-hidden p-0">
-        <SheetHeader className="border-b px-6 py-5 text-left">
-          <SheetTitle>退租结算</SheetTitle>
-          <SheetDescription>完成租约的最终结算，包括最后一期账单和押金处理</SheetDescription>
-        </SheetHeader>
-
-        <div className="flex-1 overflow-y-auto px-6 py-5">
-          <FormProvider {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="text-amber-800 dark:text-amber-200">
-              退租结算后，租约将自动终止，房间将变为空置状态
-            </AlertDescription>
-          </Alert>
+    <Drawer
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title="退租结算"
+      width={400}
+      footer={
+        <div className="flex gap-3">
+          <Button onClick={() => onOpenChange(false)}>取消</Button>
+          <Button type="primary" danger loading={settleLease.isPending} onClick={form.handleSubmit(onSubmit)}>
+            {settleLease.isPending ? '处理中...' : '确认退租结算'}
+          </Button>
+        </div>
+      }
+    >
+      <p className="mb-4 text-sm text-gray-600">完成租约的最终结算，包括最后一期账单和押金处理</p>
+      <FormProvider {...form}>
+        <form className="space-y-4">
+          <Alert
+            message="退租结算后，租约将自动终止，房间将变为空置状态"
+            type="warning"
+            showIcon
+            icon={<AlertTriangle className="h-4 w-4" />}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -74,7 +70,7 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
                 )}
               />
               {form.formState.errors.finalWaterReading && (
-                <p className="text-sm text-destructive">{form.formState.errors.finalWaterReading.message}</p>
+                <p className="text-sm text-red-500">{form.formState.errors.finalWaterReading.message}</p>
               )}
             </div>
             <div className="space-y-2">
@@ -87,7 +83,7 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
                 )}
               />
               {form.formState.errors.finalElectricityReading && (
-                <p className="text-sm text-destructive">{form.formState.errors.finalElectricityReading.message}</p>
+                <p className="text-sm text-red-500">{form.formState.errors.finalElectricityReading.message}</p>
               )}
             </div>
           </div>
@@ -102,7 +98,7 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
               )}
             />
             {form.formState.errors.penaltyAmount && (
-              <p className="text-sm text-destructive">{form.formState.errors.penaltyAmount.message}</p>
+              <p className="text-sm text-red-500">{form.formState.errors.penaltyAmount.message}</p>
             )}
           </div>
 
@@ -114,46 +110,30 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
               render={({ field }) => <Input {...field} placeholder="可选备注" />}
             />
             {form.formState.errors.remarks && (
-              <p className="text-sm text-destructive">{form.formState.errors.remarks.message}</p>
+              <p className="text-sm text-red-500">{form.formState.errors.remarks.message}</p>
             )}
           </div>
 
           {(watchForm.finalWaterReading !== undefined || watchForm.finalElectricityReading !== undefined) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">结算预览</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
+            <Card title="结算预览" className="text-sm">
+              <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">最终水表读数</span>
+                  <span className="text-gray-500">最终水表读数</span>
                   <span>{watchForm.finalWaterReading ?? '-'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">最终电表读数</span>
+                  <span className="text-gray-500">最终电表读数</span>
                   <span>{watchForm.finalElectricityReading ?? '-'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">违约金</span>
+                  <span className="text-gray-500">违约金</span>
                   <span>¥{(watchForm.penaltyAmount || 0).toLocaleString()}</span>
                 </div>
-              </CardContent>
+              </div>
             </Card>
           )}
-          </form>
-          </FormProvider>
-        </div>
-
-        <SheetFooter className="border-t px-6 py-4">
-          <div className="flex gap-3">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              取消
-            </Button>
-            <Button type="submit" disabled={settleLease.isPending} variant="destructive">
-              {settleLease.isPending ? '处理中...' : '确认退租结算'}
-            </Button>
-          </div>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </form>
+      </FormProvider>
+    </Drawer>
   );
 }

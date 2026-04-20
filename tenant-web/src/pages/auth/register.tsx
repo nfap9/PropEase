@@ -5,12 +5,11 @@ import { Link } from 'react-router-dom';
 import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { Button, Input } from 'antd';
+import type { ReactNode } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { getPostAuthRedirectPath } from '@/utils/auth-redirect';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { useBrandConfig } from '@/contexts/brand-config';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
 import { AuthLoadingScreen } from '@/pages/auth/components/auth-loading-screen';
 import { AuthShell } from '@/pages/auth/components/auth-shell';
 import { tenantMessages } from '@/i18n';
@@ -35,6 +34,22 @@ const registerSchema = z
   });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
+
+interface LabelProps {
+  children: ReactNode;
+  htmlFor?: string;
+  required?: boolean;
+  className?: string;
+}
+
+function Label({ required, children, htmlFor, className }: LabelProps) {
+  return (
+    <label htmlFor={htmlFor} className={`text-sm font-medium ${className || ''}`}>
+      {children}
+      {required && <span className="text-destructive ml-1">*</span>}
+    </label>
+  );
+}
 
 export default function RegisterPage() {
   const { register: registerUser, isAuthenticated, isLoading: isAuthLoading, organizations, organization } =
@@ -184,7 +199,7 @@ export default function RegisterPage() {
                 <p className="text-sm text-destructive">{form.formState.errors.confirm_password.message}</p>
               )}
             </div>
-            <Button type="submit" className="h-11 w-full text-sm" disabled={isLoading} data-testid="auth-register-button">
+            <Button type="primary" htmlType="submit" className="h-11 w-full text-sm" loading={isLoading} disabled={isLoading} data-testid="auth-register-button">
               {isLoading ? tenantMessages.auth.register.submitting : tenantMessages.auth.register.submit}
             </Button>
           </form>

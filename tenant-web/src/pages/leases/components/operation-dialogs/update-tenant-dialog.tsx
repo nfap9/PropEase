@@ -5,23 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { updateTenantSchema, type UpdateTenantFormData } from '@/schemas/lease-operations';
 import { useUpdateTenant } from '@/hooks/use-lease-operations';
 import { tenantsApi } from '@/api';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Modal, Button, Select } from 'antd';
+import { Label } from '@/components/common/label';
 
 interface UpdateTenantDialogProps {
   open: boolean;
@@ -51,49 +36,48 @@ export function UpdateTenantDialog({ open, onOpenChange, orgId, leaseId }: Updat
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>编辑租客</DialogTitle>
-          <DialogDescription>将租约的租客更换为其他已存在的租客</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormProvider {...form}>
-            <div className="space-y-2">
-              <Label htmlFor="newTenantId">新租客 *</Label>
-              <Controller
-                name="newTenantId"
-                control={form.control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="选择新租客" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tenants?.map((tenant) => (
-                        <SelectItem key={tenant.id} value={tenant.id}>
-                          {tenant.name} {tenant.phone && `(${tenant.phone})`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {form.formState.errors.newTenantId && (
-                <p className="text-sm text-destructive">{form.formState.errors.newTenantId.message}</p>
+    <Modal
+      open={open}
+      onCancel={() => onOpenChange(false)}
+      title="编辑租客"
+      footer={[
+        <Button key="cancel" onClick={() => onOpenChange(false)}>
+          取消
+        </Button>,
+        <Button key="submit" type="primary" loading={updateTenant.isPending} onClick={form.handleSubmit(onSubmit)}>
+          {updateTenant.isPending ? '提交中...' : '确认更换'}
+        </Button>,
+      ]}
+    >
+      <p className="mb-4 text-sm text-gray-600">将租约的租客更换为其他已存在的租客</p>
+      <FormProvider {...form}>
+        <form className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="newTenantId">新租客 *</Label>
+            <Controller
+              name="newTenantId"
+              control={form.control}
+              render={({ field }) => (
+                <Select
+                  onChange={field.onChange}
+                  value={field.value}
+                  placeholder="选择新租客"
+                  className="w-full"
+                >
+                  {tenants?.map((tenant) => (
+                    <Select.Option key={tenant.id} value={tenant.id}>
+                      {tenant.name} {tenant.phone && `(${tenant.phone})`}
+                    </Select.Option>
+                  ))}
+                </Select>
               )}
-            </div>
-          </FormProvider>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              取消
-            </Button>
-            <Button type="submit" disabled={updateTenant.isPending}>
-              {updateTenant.isPending ? '提交中...' : '确认更换'}
-            </Button>
-          </DialogFooter>
+            />
+            {form.formState.errors.newTenantId && (
+              <p className="text-sm text-red-500">{form.formState.errors.newTenantId.message}</p>
+            )}
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </FormProvider>
+    </Modal>
   );
 }

@@ -1,22 +1,7 @@
 
 import { useState } from 'react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Input, Modal, Select } from 'antd';
+import { Label } from '@/components/common/label';
 import { Plus, Trash2 } from 'lucide-react';
 
 /** 预置费用类型 */
@@ -114,10 +99,10 @@ export function FeeItemsEditor({ items, onChange, disabled }: FeeItemsEditorProp
         <div className="flex items-center justify-between">
           <div>
             <Label className="text-base">费用项目</Label>
-            <p className="text-sm text-muted-foreground">添加租金外的其他费用，按所选周期与房租一起出账</p>
+            <p className="text-sm text-gray-500">添加租金外的其他费用，按所选周期与房租一起出账</p>
           </div>
           {!disabled && (
-            <Button type="button" variant="outline" size="sm" onClick={() => openDialog()}>
+            <Button onClick={() => openDialog()}>
               <Plus className="h-4 w-4 mr-1" />
               添加费用
             </Button>
@@ -128,21 +113,21 @@ export function FeeItemsEditor({ items, onChange, disabled }: FeeItemsEditorProp
         {items.length > 0 && (
           <div className="space-y-2">
             {items.map((fee) => (
-              <div key={fee.id} className="flex items-center gap-3 bg-muted/50 rounded-lg p-3">
+              <div key={fee.id} className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{fee.name}</span>
-                    <span className="text-sm text-muted-foreground">¥{fee.amount}/{CYCLE_LABELS[fee.cycle]}</span>
+                    <span className="text-sm text-gray-500">¥{fee.amount}/{CYCLE_LABELS[fee.cycle]}</span>
                   </div>
-                  {fee.notes && <p className="text-xs text-muted-foreground mt-1">{fee.notes}</p>}
+                  {fee.notes && <p className="text-xs text-gray-500 mt-1">{fee.notes}</p>}
                 </div>
                 {!disabled && (
                   <>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => openDialog(fee)}>
+                    <Button onClick={() => openDialog(fee)}>
                       编辑
                     </Button>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => handleRemove(fee.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                    <Button onClick={() => handleRemove(fee.id)}>
+                      <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </>
                 )}
@@ -152,95 +137,86 @@ export function FeeItemsEditor({ items, onChange, disabled }: FeeItemsEditorProp
         )}
 
         {items.length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-4">暂无费用项目</p>
+          <p className="text-sm text-gray-500 text-center py-4">暂无费用项目</p>
         )}
       </div>
 
       {/* 费用编辑对话框 */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{editingItem ? '编辑费用' : '添加费用'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>费用类型</Label>
-              <Select value={formData.name} onValueChange={(value) => setFormData((prev) => ({ ...prev, name: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="选择费用类型" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PREDEFINED_FEE_TYPES.map((type) => (
-                    <SelectItem key={type.code} value={type.code}>
-                      {type.name}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="custom">自定义</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {formData.name === 'custom' && (
-              <div className="space-y-2">
-                <Label>自定义费用名称</Label>
-                <Input
-                  placeholder="请输入费用名称"
-                  value={formData.customName}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, customName: e.target.value }))}
-                />
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label>金额（元）</Label>
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="请输入金额"
-                value={formData.amount}
-                onChange={(e) => setFormData((prev) => ({ ...prev, amount: e.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>计费周期</Label>
-              <Select value={formData.cycle} onValueChange={(value) => setFormData((prev) => ({ ...prev, cycle: value as BillingCycle }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">每月</SelectItem>
-                  <SelectItem value="quarterly">每季</SelectItem>
-                  <SelectItem value="yearly">每年</SelectItem>
-                  <SelectItem value="one_time">一次性</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>备注</Label>
-              <Input
-                placeholder="可选"
-                value={formData.notes}
-                onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
-              />
-            </div>
+      <Modal
+        open={showDialog}
+        onCancel={() => setShowDialog(false)}
+        title={editingItem ? '编辑费用' : '添加费用'}
+        footer={[
+          <Button key="cancel" onClick={() => setShowDialog(false)}>取消</Button>,
+          <Button
+            key="submit"
+            type="primary"
+            onClick={handleSave}
+            disabled={
+              !formData.name ||
+              (formData.name === 'custom' && !formData.customName.trim()) ||
+              !formData.amount
+            }
+          >
+            {editingItem ? '保存' : '添加'}
+          </Button>,
+        ]}
+      >
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label>费用类型</Label>
+            <Select value={formData.name} onChange={(value) => setFormData((prev) => ({ ...prev, name: value }))} placeholder="选择费用类型">
+              {PREDEFINED_FEE_TYPES.map((type) => (
+                <Select.Option key={type.code} value={type.code}>
+                  {type.name}
+                </Select.Option>
+              ))}
+              <Select.Option value="custom">自定义</Select.Option>
+            </Select>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>取消</Button>
-            <Button
-              onClick={handleSave}
-              disabled={
-                !formData.name ||
-                (formData.name === 'custom' && !formData.customName.trim()) ||
-                !formData.amount
-              }
-            >
-              {editingItem ? '保存' : '添加'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+          {formData.name === 'custom' && (
+            <div className="space-y-2">
+              <Label>自定义费用名称</Label>
+              <Input
+                placeholder="请输入费用名称"
+                value={formData.customName}
+                onChange={(e) => setFormData((prev) => ({ ...prev, customName: e.target.value }))}
+              />
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label>金额（元）</Label>
+            <Input
+              type="number"
+              step="0.01"
+              placeholder="请输入金额"
+              value={formData.amount}
+              onChange={(e) => setFormData((prev) => ({ ...prev, amount: e.target.value }))}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>计费周期</Label>
+            <Select value={formData.cycle} onChange={(value) => setFormData((prev) => ({ ...prev, cycle: value as BillingCycle }))}>
+              <Select.Option value="monthly">每月</Select.Option>
+              <Select.Option value="quarterly">每季</Select.Option>
+              <Select.Option value="yearly">每年</Select.Option>
+              <Select.Option value="one_time">一次性</Select.Option>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>备注</Label>
+            <Input
+              placeholder="可选"
+              value={formData.notes}
+              onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
+            />
+          </div>
+        </div>
+      </Modal>
     </>
   );
 }

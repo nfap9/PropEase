@@ -3,18 +3,8 @@ import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { renewSchema, type RenewFormData } from '@/schemas/lease-operations';
 import { useRenew } from '@/hooks/use-lease-operations';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { DatePickerComponent } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Drawer, Input, DatePicker } from 'antd';
+import { Label } from '@/components/common/label';
 
 interface RenewSheetProps {
   open: boolean;
@@ -39,30 +29,38 @@ export function RenewSheet({ open, onOpenChange, orgId, leaseId, currentEndDate 
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col overflow-hidden p-0">
-        <SheetHeader className="border-b px-6 py-5 text-left">
-          <SheetTitle>续约</SheetTitle>
-          <SheetDescription>{`当前结束日期：${currentEndDate ? new Date(currentEndDate).toLocaleDateString() : '长期'}`}</SheetDescription>
-        </SheetHeader>
-
-        <div className="flex-1 overflow-y-auto px-6 py-5">
-          <FormProvider {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <Drawer
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title="续约"
+      width={400}
+      footer={
+        <div className="flex gap-3">
+          <Button onClick={() => onOpenChange(false)}>取消</Button>
+          <Button type="primary" loading={renew.isPending} onClick={form.handleSubmit(onSubmit)}>
+            {renew.isPending ? '提交中...' : '确认续约'}
+          </Button>
+        </div>
+      }
+    >
+      <p className="mb-4 text-sm text-gray-600">当前结束日期：{currentEndDate ? new Date(currentEndDate).toLocaleDateString() : '长期'}</p>
+      <FormProvider {...form}>
+        <form className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="newEndDate">新结束日期 *</Label>
             <Controller
               name="newEndDate"
               control={form.control}
               render={({ field }) => (
-                <DatePickerComponent
+                <DatePicker
                   value={field.value || ''}
-                  onChange={field.onChange}
+                  onChange={(_, dateString) => field.onChange(dateString)}
+                  className="w-full"
                 />
               )}
             />
             {form.formState.errors.newEndDate && (
-              <p className="text-sm text-destructive">{form.formState.errors.newEndDate.message}</p>
+              <p className="text-sm text-red-500">{form.formState.errors.newEndDate.message}</p>
             )}
           </div>
           <div className="space-y-2">
@@ -73,24 +71,11 @@ export function RenewSheet({ open, onOpenChange, orgId, leaseId, currentEndDate 
               render={({ field }) => <Input {...field} placeholder="可选" />}
             />
             {form.formState.errors.reason && (
-              <p className="text-sm text-destructive">{form.formState.errors.reason.message}</p>
+              <p className="text-sm text-red-500">{form.formState.errors.reason.message}</p>
             )}
           </div>
         </form>
-        </FormProvider>
-        </div>
-
-        <SheetFooter className="border-t px-6 py-4">
-          <div className="flex gap-3">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              取消
-            </Button>
-            <Button type="submit" disabled={renew.isPending}>
-              {renew.isPending ? '提交中...' : '确认续约'}
-            </Button>
-          </div>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+      </FormProvider>
+    </Drawer>
   );
 }

@@ -1,5 +1,5 @@
 
-import { Tabs, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
+import { Tabs } from 'antd';
 
 interface LeaseDetailTabsProps {
   activeTab: 'info' | 'history';
@@ -8,11 +8,13 @@ interface LeaseDetailTabsProps {
 
 export function LeaseDetailTabs({ activeTab, onTabChange }: LeaseDetailTabsProps) {
   return (
-    <Tabs value={activeTab} onValueChange={(v) => onTabChange(v as typeof activeTab)}>
-      <TabsList>
-        <TabsTrigger value="info">详情</TabsTrigger>
-        <TabsTrigger value="history">变更历史</TabsTrigger>
-      </TabsList>
-    </Tabs>
+    <Tabs
+      activeKey={activeTab}
+      onChange={(v) => onTabChange(v as typeof activeTab)}
+      items={[
+        { key: 'info', label: '详情' },
+        { key: 'history', label: '变更历史' },
+      ]}
+    />
   );
 }

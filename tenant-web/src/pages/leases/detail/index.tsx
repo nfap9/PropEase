@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { Button } from 'antd';
 import { leasesApi } from '@/api';
 import { useAuth } from '@/contexts/auth';
 import { LeaseDetailTabs } from '@/pages/leases/components/lease-detail-tabs';
@@ -41,7 +41,7 @@ export default function LeaseDetailPageRoute() {
       <div className="flex flex-col items-center justify-center h-48 gap-4">
         <p className="text-muted-foreground">租约不存在</p>
         <Link to="/leases">
-          <Button variant="outline">返回列表</Button>
+          <Button type="default">返回列表</Button>
         </Link>
       </div>
     );
@@ -53,7 +53,7 @@ export default function LeaseDetailPageRoute() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/leases">
-              <Button variant="ghost" size="icon">
+              <Button type="text" size="small">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>

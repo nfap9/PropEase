@@ -5,7 +5,6 @@
  */
 import type { ReactNode } from 'react';
 import { usePermissions } from '@/hooks/use-permissions';
-import { PermissionGuard } from '@apartment-ultra/shared-ui/components/composed';
 
 interface PermissionPageGuardProps {
   children: ReactNode;
@@ -28,17 +27,19 @@ export function PermissionPageGuard({ children, permission, mode = 'all' }: Perm
     return <>{children}</>;
   }
 
-  return (
-    <PermissionGuard
-      permission={permission}
-      mode={mode}
-      access={{
-        isLoading: permissionsHook.isLoading,
-        hasAnyPermission: permissionsHook.hasAnyPermission,
-        hasAllPermissions: permissionsHook.hasAllPermissions,
-      }}
-    >
-      {children}
-    </PermissionGuard>
-  );
+  const permissions = Array.isArray(permission) ? permission : [permission];
+  const hasPermission = mode === 'all'
+    ? permissionsHook.hasAllPermissions(permissions)
+    : permissionsHook.hasAnyPermission(permissions);
+
+  if (!hasPermission && !permissionsHook.isLoading) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center space-y-4">
+        <h2 className="text-xl font-semibold">无权限访问</h2>
+        <p className="text-muted-foreground">您没有权限访问此页面</p>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
 }

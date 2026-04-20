@@ -1,12 +1,8 @@
-
 import { Suspense, useCallback, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { ORDER_STATUS_CONFIG } from '@/utils/status';
+import { Button, Card, Tag, Skeleton } from 'antd';
+import { ORDER_STATUS_CONFIG, type BadgeVariant } from '@/utils/status';
 import { ArrowLeft, Loader2, Zap } from 'lucide-react';
 import { subscriptionsApi } from '@/api';
 import { useAuth } from '@/contexts/auth';
@@ -14,6 +10,16 @@ import { toast } from 'sonner';
 import { tenantI18n, tenantMessages } from '@/i18n';
 
 const POLL_INTERVAL_MS = 2500;
+
+const BADGE_VARIANT_TO_TAG_COLOR: Record<BadgeVariant, string> = {
+  default: 'blue',
+  secondary: 'default',
+  destructive: 'red',
+  outline: 'gold',
+  success: 'green',
+  warning: 'orange',
+  info: 'processing',
+};
 
 function SubscriptionPayContent() {
   const navigate = useNavigate();
@@ -69,8 +75,7 @@ function SubscriptionPayContent() {
     return (
       <div className="space-y-6">
         <p className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.pay.missingOrder}</p>
-        <Button variant="outline" onClick={handleBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <Button variant="outlined" onClick={handleBack} icon={<ArrowLeft className="h-4 w-4" />}>
           {tenantMessages.settings.subscriptionPage.pay.backToSubscription}
         </Button>
       </div>
@@ -80,15 +85,9 @@ function SubscriptionPayContent() {
   if (isLoading && !order) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-10 w-48" />
+        <Skeleton.Input active size="small" className="w-48" />
         <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <Skeleton className="h-48 w-48 rounded" />
-            <Skeleton className="h-4 w-64" />
-          </CardContent>
+          <Skeleton active avatar={false} paragraph={{ rows: 3 }} />
         </Card>
       </div>
     );
@@ -97,9 +96,8 @@ function SubscriptionPayContent() {
   if (isError || !order) {
     return (
       <div className="space-y-6">
-        <p className="text-destructive">{tenantMessages.settings.subscriptionPage.pay.loadFailed}</p>
-        <Button variant="outline" onClick={handleBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <p className="text-red-500">{tenantMessages.settings.subscriptionPage.pay.loadFailed}</p>
+        <Button variant="outlined" onClick={handleBack} icon={<ArrowLeft className="h-4 w-4" />}>
           {tenantMessages.settings.subscriptionPage.pay.backToSubscription}
         </Button>
       </div>
@@ -109,7 +107,7 @@ function SubscriptionPayContent() {
   if (order.status === 'paid') {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
         <p>{tenantMessages.settings.subscriptionPage.pay.paidRedirecting}</p>
       </div>
     );
@@ -121,10 +119,9 @@ function SubscriptionPayContent() {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-2">
-          <Badge variant={config.variant}>{config.label}</Badge>
+          <Tag color={BADGE_VARIANT_TO_TAG_COLOR[config.variant]}>{config.label}</Tag>
         </div>
-        <Button variant="outline" onClick={handleBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <Button variant="outlined" onClick={handleBack} icon={<ArrowLeft className="h-4 w-4" />}>
           {tenantMessages.settings.subscriptionPage.pay.backToSubscription}
         </Button>
       </div>
@@ -137,11 +134,10 @@ function SubscriptionPayContent() {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-2">
-          <Badge variant={config.variant}>{config.label}</Badge>
+          <Tag color={BADGE_VARIANT_TO_TAG_COLOR[config.variant]}>{config.label}</Tag>
           <span className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.pay.expiredHint}</span>
         </div>
-        <Button variant="outline" onClick={handleBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <Button variant="outlined" onClick={handleBack} icon={<ArrowLeft className="h-4 w-4" />}>
           {tenantMessages.settings.subscriptionPage.pay.backToSubscription}
         </Button>
       </div>
@@ -154,26 +150,21 @@ function SubscriptionPayContent() {
 
   return (
     <div className="space-y-6">
-        <Card className="mx-auto max-w-md">
-          <CardHeader>
-            <CardTitle>
-              {tenantI18n.t('settings.subscriptionPage.pay.orderNumber', { orderNo: order.order_no })}
-            </CardTitle>
-            <CardDescription>
-              {order.plan?.name ? (
-                tenantI18n.t('settings.subscriptionPage.pay.orderAmountWithPlan', {
-                  planName: order.plan.name,
-                  amount: Number(order.amount).toFixed(2),
-                })
-              ) : (
-                tenantI18n.t('settings.subscriptionPage.pay.orderAmountOnly', {
-                  amount: Number(order.amount).toFixed(2),
-                })
-              )}
-              ，{tenantMessages.settings.subscriptionPage.pay.autoRefresh}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-6">
+        <Card className="mx-auto max-w-md" title={tenantI18n.t('settings.subscriptionPage.pay.orderNumber', { orderNo: order.order_no })}>
+          <div className="mb-4 text-muted-foreground">
+            {order.plan?.name ? (
+              tenantI18n.t('settings.subscriptionPage.pay.orderAmountWithPlan', {
+                planName: order.plan.name,
+                amount: Number(order.amount).toFixed(2),
+              })
+            ) : (
+              tenantI18n.t('settings.subscriptionPage.pay.orderAmountOnly', {
+                amount: Number(order.amount).toFixed(2),
+              })
+            )}
+            ，{tenantMessages.settings.subscriptionPage.pay.autoRefresh}
+          </div>
+          <div className="flex flex-col items-center gap-6">
             {qrUrl ? (
               <>
                 {/* 动态二维码 URL 使用 img，next/image 需配置 remotePatterns */}
@@ -197,14 +188,10 @@ function SubscriptionPayContent() {
                 <Button
                   onClick={() => directCompleteMutation.mutate()}
                   disabled={directCompleteMutation.isPending}
-                  variant="default"
-                  className="gap-2 bg-primary hover:bg-primary/90"
+                  type="primary"
+                  className="gap-2"
+                  icon={directCompleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
                 >
-                  {directCompleteMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Zap className="h-4 w-4" />
-                  )}
                   直接完成订阅（开发测试）
                 </Button>
               </div>
@@ -219,7 +206,7 @@ function SubscriptionPayContent() {
                 {tenantMessages.settings.subscriptionPage.pay.waiting}
               </div>
             )}
-          </CardContent>
+          </div>
         </Card>
       </div>
   );
@@ -230,15 +217,9 @@ export default function SubscriptionPayPage() {
     <Suspense
       fallback={
         <div className="space-y-6">
-          <Skeleton className="h-10 w-48" />
+          <Skeleton.Input active size="small" className="w-48" />
           <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent className="flex flex-col items-center gap-4">
-              <Skeleton className="h-48 w-48 rounded" />
-              <Skeleton className="h-4 w-64" />
-            </CardContent>
+            <Skeleton active avatar={false} paragraph={{ rows: 3 }} />
           </Card>
         </div>
       }

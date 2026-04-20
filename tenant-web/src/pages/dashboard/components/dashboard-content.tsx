@@ -1,15 +1,8 @@
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Badge,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { useIsMobile } from '@apartment-ultra/shared-ui/hooks';
+import { Card, Tag } from 'antd';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Link } from 'react-router-dom';
 import {
   AlertCircle,
@@ -85,34 +78,32 @@ function RoomStatusCard({ orgId }: { orgId: string }) {
 
   if (apartmentsLoading || roomsLoading) {
     return (
-      <Card className="flex h-full min-h-0 flex-col">
-        <CardHeader className="shrink-0 pb-2">
-          <CardTitle className="text-sm sm:text-base">{tenantMessages.dashboard.roomStatus.title}</CardTitle>
-          <CardDescription className="text-[10px] sm:text-xs">加载中...</CardDescription>
-        </CardHeader>
-        <CardContent className="min-h-0 flex-1 overflow-hidden pt-0">
-          <div className="flex items-center justify-center py-4">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        </CardContent>
+      <Card className="flex h-full min-h-0 flex-col" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}>
+        <div className="shrink-0 pb-2">
+          <h3 className="text-sm sm:text-base">{tenantMessages.dashboard.roomStatus.title}</h3>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">加载中...</p>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
       </Card>
     );
   }
 
   return (
-    <Card className="flex h-full min-h-0 flex-col">
-      <CardHeader className="shrink-0 pb-2">
+    <Card className="flex h-full min-h-0 flex-col" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}>
+      <div className="shrink-0 pb-2">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <CardTitle className="text-sm sm:text-base truncate">{tenantMessages.dashboard.roomStatus.title}</CardTitle>
-            <CardDescription className="text-[10px] sm:text-xs">
+            <h3 className="text-sm sm:text-base truncate">{tenantMessages.dashboard.roomStatus.title}</h3>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
               {tenantMessages.dashboard.roomStatus.available}: {availableRooms.length} / {tenantMessages.dashboard.roomStatus.total}: {allRooms.length}
-            </CardDescription>
+            </p>
           </div>
           <Home className="h-4 w-4 shrink-0 text-muted-foreground" />
         </div>
-      </CardHeader>
-      <CardContent className="min-h-0 flex-1 overflow-hidden pt-0">
+      </div>
+      <div className="flex-1 overflow-hidden pt-0">
         {availableRooms.length === 0 ? (
           <p className="py-2 text-center text-xs sm:text-sm text-muted-foreground">
             {tenantMessages.dashboard.roomStatus.emptyList}
@@ -120,13 +111,11 @@ function RoomStatusCard({ orgId }: { orgId: string }) {
         ) : (
           <div className="flex flex-wrap gap-1">
             {availableRooms.map((room) => (
-              <Badge key={room.id} variant="secondary" className="px-1.5 py-0.5 text-[10px] sm:text-xs font-normal">
-                {room.apartment?.name ? `${room.apartment.name} - ` : ''}{room.room_number}
-              </Badge>
+              <Tag key={room.id} className="px-1.5 py-0.5 text-[10px] sm:text-xs font-normal">{room.apartment?.name ? `${room.apartment.name} - ` : ''}{room.room_number}</Tag>
             ))}
           </div>
         )}
-      </CardContent>
+      </div>
     </Card>
   );
 }
@@ -168,34 +157,32 @@ function BillStatusCard({ orgId }: { orgId: string }) {
 
   if (isLoading) {
     return (
-      <Card className="flex h-full min-h-0 flex-col">
-        <CardHeader className="shrink-0 pb-2">
-          <CardTitle className="text-sm sm:text-base">{tenantMessages.dashboard.billStatus.title}</CardTitle>
-          <CardDescription className="text-[10px] sm:text-xs">加载中...</CardDescription>
-        </CardHeader>
-        <CardContent className="min-h-0 flex-1 overflow-hidden pt-0">
-          <div className="flex items-center justify-center py-4">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        </CardContent>
+      <Card className="flex h-full min-h-0 flex-col" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}>
+        <div className="shrink-0 pb-2">
+          <h3 className="text-sm sm:text-base">{tenantMessages.dashboard.billStatus.title}</h3>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">加载中...</p>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
       </Card>
     );
   }
 
   return (
-    <Card className="flex h-full min-h-0 flex-col">
-      <CardHeader className="shrink-0 pb-2">
+    <Card className="flex h-full min-h-0 flex-col" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}>
+      <div className="shrink-0 pb-2">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <CardTitle className="text-sm sm:text-base">{tenantMessages.dashboard.billStatus.title}</CardTitle>
-            <CardDescription className="text-[10px] sm:text-xs">
+            <h3 className="text-sm sm:text-base">{tenantMessages.dashboard.billStatus.title}</h3>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
               {currentYear}年{currentMonth}月
-            </CardDescription>
+            </p>
           </div>
           <Receipt className="h-4 w-4 shrink-0 text-muted-foreground" />
         </div>
-      </CardHeader>
-      <CardContent className="min-h-0 flex-1 overflow-hidden space-y-2 pt-0 sm:space-y-3">
+      </div>
+      <div className="flex-1 overflow-hidden space-y-2 pt-0 sm:space-y-3">
         {/* Bill counts */}
         <div className="flex gap-2 sm:gap-4">
           <div className="flex-1 text-center">
@@ -231,7 +218,7 @@ function BillStatusCard({ orgId }: { orgId: string }) {
             <span className="font-medium text-rose-600">{formatCurrency(stats.upstreamCost)}</span>
           </div>
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 }
@@ -263,26 +250,26 @@ function RemindersCard({ missingReadings, pendingBills, overdueBills }: { missin
 
   if (reminders.length === 0) {
     return (
-      <Card className="flex h-full min-h-0 flex-col">
-        <CardHeader className="shrink-0 pb-2">
-          <CardTitle className="text-sm sm:text-base">{tenantMessages.dashboard.reminders.title}</CardTitle>
-        </CardHeader>
-        <CardContent className="min-h-0 flex-1 overflow-hidden">
+      <Card className="flex h-full min-h-0 flex-col" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}>
+        <div className="shrink-0 pb-2">
+          <h3 className="text-sm sm:text-base">{tenantMessages.dashboard.reminders.title}</h3>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
           <p className="py-2 text-center text-xs sm:text-sm text-muted-foreground">暂无待处理事务</p>
-        </CardContent>
+        </div>
       </Card>
     );
   }
 
   return (
-    <Card className="flex h-full min-h-0 flex-col">
-      <CardHeader className="shrink-0 pb-2">
+    <Card className="flex h-full min-h-0 flex-col" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}>
+      <div className="shrink-0 pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm sm:text-base">{tenantMessages.dashboard.reminders.title}</CardTitle>
-          <Badge variant="outline">{reminders.length}</Badge>
+          <h3 className="text-sm sm:text-base">{tenantMessages.dashboard.reminders.title}</h3>
+          <Tag>{reminders.length}</Tag>
         </div>
-      </CardHeader>
-      <CardContent className="min-h-0 flex-1 overflow-hidden space-y-1 pt-0">
+      </div>
+      <div className="flex-1 overflow-hidden space-y-1 pt-0">
         {reminders.map((reminder) => {
           const Icon = reminder.icon;
           return (
@@ -297,13 +284,11 @@ function RemindersCard({ missingReadings, pendingBills, overdueBills }: { missin
                 </div>
                 <span className="text-xs sm:text-sm font-medium truncate">{reminder.label}</span>
               </div>
-              <Badge variant={reminder.type} className="px-1 text-[10px] sm:px-1.5 sm:text-xs">
-                {reminder.count}
-              </Badge>
+              <Tag color={reminder.type === 'destructive' ? 'error' : 'warning'} className="px-1 text-[10px] sm:px-1.5 sm:text-xs">{reminder.count}</Tag>
             </Link>
           );
         })}
-      </CardContent>
+      </div>
     </Card>
   );
 }
@@ -333,32 +318,30 @@ function RevenueChartCard({ orgId }: { orgId: string }) {
 
   if (isLoading) {
     return (
-      <Card className="flex h-full min-h-0 flex-col">
-        <CardHeader className="shrink-0 pb-2">
-          <CardTitle className="text-sm sm:text-base">{currentYear}年营收</CardTitle>
-          <CardDescription className="text-[10px] sm:text-xs">加载中...</CardDescription>
-        </CardHeader>
-        <CardContent className="min-h-0 flex-1 overflow-hidden pt-0">
-          <div className="flex items-center justify-center py-4">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        </CardContent>
+      <Card className="flex h-full min-h-0 flex-col" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}>
+        <div className="shrink-0 pb-2">
+          <h3 className="text-sm sm:text-base">{currentYear}年营收</h3>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">加载中...</p>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
       </Card>
     );
   }
 
   return (
-    <Card className="flex h-full min-h-0 flex-col">
-      <CardHeader className="shrink-0 pb-2">
+    <Card className="flex h-full min-h-0 flex-col" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}>
+      <div className="shrink-0 pb-2">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <CardTitle className="text-sm sm:text-base">{currentYear}年营收</CardTitle>
-            <CardDescription className="text-[10px] sm:text-xs">近一年每月营收统计</CardDescription>
+            <h3 className="text-sm sm:text-base">{currentYear}年营收</h3>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">近一年每月营收统计</p>
           </div>
           <BookDown className="h-4 w-4 shrink-0 text-muted-foreground" />
         </div>
-      </CardHeader>
-      <CardContent className="flex h-full min-h-0 flex-col overflow-hidden pt-0">
+      </div>
+      <div className="flex h-full min-h-0 flex-col overflow-hidden pt-0">
         <div className="flex flex-1 items-end gap-px sm:gap-1 min-h-[60px]">
           {chartData.map((data, index) => {
             const heightPercent = (data.amount / maxAmount) * 100;
@@ -395,7 +378,7 @@ function RevenueChartCard({ orgId }: { orgId: string }) {
             <span className="text-muted-foreground">实收</span>
           </div>
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 }

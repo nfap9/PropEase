@@ -3,28 +3,11 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Modal, Button, Input, Select } from 'antd';
+import { Settings2 } from 'lucide-react';
 import { Room, RoomFacilities } from '@/types';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
 import { getFacilityLabel } from '@/constants/facilities';
-import { Settings2 } from 'lucide-react';
 
 const roomSchema = z.object({
   room_number: z.string().min(1, '请输入房间号'),
@@ -108,115 +91,89 @@ export function EditRoomDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-lg" data-testid={testids?.EDIT_DIALOG}>
-          <DialogHeader>
-            <DialogTitle>编辑房间</DialogTitle>
-            <DialogDescription>修改房间信息</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <Modal
+        open={open}
+        onCancel={() => onOpenChange(false)}
+        title="编辑房间"
+        footer={[
+          <Button key="cancel" onClick={() => onOpenChange(false)}>
+            取消
+          </Button>,
+          <Button key="submit" type="primary" onClick={() => form.handleSubmit(handleSubmit)()} loading={isPending}>
+            {isPending ? '保存中...' : '保存'}
+          </Button>,
+        ]}
+      >
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <span className="text-sm font-medium">所属公寓</span>
+            <Input value={room?.apartment?.name || ''} disabled />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>所属公寓</Label>
-              <Input value={room?.apartment?.name || ''} disabled />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-room_number" required>
-                  房间号
-                </Label>
-                <Input
-                  id="edit-room_number"
-                  data-testid={testids?.NUMBER_INPUT}
-                  {...form.register('room_number')}
-                />
-                {form.formState.errors.room_number && (
-                  <p className="text-sm text-destructive">{form.formState.errors.room_number.message}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-layout">户型</Label>
-                <Select
-                  value={form.watch('layout') || ''}
-                  onValueChange={(value) => form.setValue('layout', value)}
-                >
-                  <SelectTrigger className="min-w-[120px]" data-testid={testids?.LAYOUT_SELECT}>
-                    <SelectValue placeholder="选择户型" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LAYOUT_OPTIONS.map((layout) => (
-                      <SelectItem key={layout} value={layout}>
-                        {layout}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-area">面积 (m²)</Label>
+              <span className="text-sm font-medium">房间号 *</span>
               <Input
-                id="edit-area"
-                type="number"
-                step="0.01"
-                data-testid={testids?.AREA_INPUT}
-                {...form.register('area', { valueAsNumber: true })}
+                data-testid={testids?.NUMBER_INPUT}
+                {...form.register('room_number')}
               />
-              {form.formState.errors.area && (
-                <p className="text-sm text-destructive">{form.formState.errors.area.message}</p>
+              {form.formState.errors.room_number && (
+                <p className="text-sm text-destructive">{form.formState.errors.room_number.message}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-monthly_rent" required>
-                月租 (元)
-              </Label>
-              <Input
-                id="edit-monthly_rent"
-                type="number"
-                step="0.01"
-                data-testid={testids?.MONTHLY_RENT_INPUT}
-                {...form.register('monthly_rent', { valueAsNumber: true })}
+              <span className="text-sm font-medium">户型</span>
+              <Select
+                value={form.watch('layout') || ''}
+                onChange={(value) => form.setValue('layout', value)}
+                className="w-full"
+                placeholder="选择户型"
+                options={LAYOUT_OPTIONS.map((layout) => ({ value: layout, label: layout }))}
               />
-              {form.formState.errors.monthly_rent && (
-                <p className="text-sm text-destructive">{form.formState.errors.monthly_rent.message}</p>
-              )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-notes">备注</Label>
-              <Input id="edit-notes" {...form.register('notes')} data-testid={testids?.NOTES_INPUT} />
-            </div>
+          </div>
+          <div className="space-y-2">
+            <span className="text-sm font-medium">面积 (m²)</span>
+            <Input
+              type="number"
+              step="0.01"
+              data-testid={testids?.AREA_INPUT}
+              {...form.register('area', { valueAsNumber: true })}
+            />
+            {form.formState.errors.area && (
+              <p className="text-sm text-destructive">{form.formState.errors.area.message}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <span className="text-sm font-medium">月租 (元) *</span>
+            <Input
+              type="number"
+              step="0.01"
+              data-testid={testids?.MONTHLY_RENT_INPUT}
+              {...form.register('monthly_rent', { valueAsNumber: true })}
+            />
+            {form.formState.errors.monthly_rent && (
+              <p className="text-sm text-destructive">{form.formState.errors.monthly_rent.message}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <span className="text-sm font-medium">备注</span>
+            <Input data-testid={testids?.NOTES_INPUT} {...form.register('notes')} />
+          </div>
 
-            {/* 家具家电配置按钮 */}
-            <div className="space-y-2">
-              <Label>家具家电</Label>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full justify-between"
-                onClick={() => setFacilityDialogOpen(true)}
-              >
-                <span className="text-muted-foreground">
-                  {getFacilitiesSummary(facilities)}
-                </span>
-                <Settings2 className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                data-testid={testids?.CANCEL_BUTTON}
-              >
-                取消
-              </Button>
-              <Button type="submit" disabled={isPending} data-testid={testids?.CONFIRM_BUTTON}>
-                {isPending ? '保存中...' : '保存'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+          {/* 家具家电配置按钮 */}
+          <div className="space-y-2">
+            <span className="text-sm font-medium">家具家电</span>
+            <Button
+              type="default"
+              className="w-full justify-between"
+              onClick={() => setFacilityDialogOpen(true)}
+              icon={<Settings2 className="h-4 w-4" />}
+            >
+              <span className="text-muted-foreground">{getFacilitiesSummary(facilities)}</span>
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* 家具家电配置二级弹窗 */}
       <FacilitySelectorDialog

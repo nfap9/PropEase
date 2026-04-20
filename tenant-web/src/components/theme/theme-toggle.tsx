@@ -1,44 +1,80 @@
+
 /**
  * 主题切换按钮组件
  *
  * 点击可在深色/浅色模式间切换
+ * 使用 antd 的 Dropdown 替代 DropdownMenu
  */
-import { useTheme } from '@apartment-ultra/shared-ui';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import { useState } from 'react';
+import { Dropdown, Button } from 'antd';
+import type { MenuProps } from 'antd';
 import { Moon, Sun, Monitor } from 'lucide-react';
 
+type Theme = 'light' | 'dark' | 'system';
+
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const [theme, setTheme] = useState<Theme>(() => {
+    const stored = localStorage.getItem('theme') as Theme | null;
+    return stored || 'system';
+  });
+
+  const handleThemeChange = (newTheme: Theme) => {
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    // 应用主题到 document
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else if (newTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      // system
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  };
 
   const ThemeIcon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor;
 
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <ThemeIcon className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme('light')}>
-          <Sun className="mr-2 h-4 w-4" />
+  const items: MenuProps['items'] = [
+    {
+      key: 'light',
+      label: (
+        <span className="flex items-center gap-2">
+          <Sun className="h-4 w-4" />
           浅色
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('dark')}>
-          <Moon className="mr-2 h-4 w-4" />
+        </span>
+      ),
+      onClick: () => handleThemeChange('light'),
+    },
+    {
+      key: 'dark',
+      label: (
+        <span className="flex items-center gap-2">
+          <Moon className="h-4 w-4" />
           深色
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('system')}>
-          <Monitor className="mr-2 h-4 w-4" />
+        </span>
+      ),
+      onClick: () => handleThemeChange('dark'),
+    },
+    {
+      key: 'system',
+      label: (
+        <span className="flex items-center gap-2">
+          <Monitor className="h-4 w-4" />
           跟随系统
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </span>
+      ),
+      onClick: () => handleThemeChange('system'),
+    },
+  ];
+
+  return (
+    <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight">
+      <Button type="text" icon={<ThemeIcon className="h-4 w-4" />} />
+    </Dropdown>
   );
 }

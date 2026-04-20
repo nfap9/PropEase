@@ -6,36 +6,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
-import { useConfirmAction } from '@apartment-ultra/shared-ui';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { DataTable } from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Table, Button, Input, Modal, Dropdown, Skeleton, Tag } from 'antd';
+import type { MenuProps } from 'antd';
+import { useConfirmAction } from '@/hooks/use-confirm-action';
 import { ColumnDef } from '@tanstack/react-table';
 import { tenantsApi } from '@/api';
 import { filterEmptyStrings } from '@/utils/form';
@@ -43,9 +17,8 @@ import { getErrorMessage } from '@/utils/error';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import { Tenant } from '@/types';
-import { Plus, Pencil, Trash2, Phone, User, Building2 } from 'lucide-react';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { MoreHorizontal } from 'lucide-react';
+import { Plus, Pencil, Trash2, Phone, User, Building2, MoreHorizontal } from 'lucide-react';
+import { Label } from '@/components/common/label';
 
 // 注意: 实际使用时从 testids 导入 TENANTS 常量
 const TENANTS = {
@@ -166,76 +139,74 @@ export default function TenantsPage() {
 
   const handleDelete = deleteConfirm.openFor;
 
-  const columns: ColumnDef<Tenant>[] = [
+  const columns = [
     {
-      accessorKey: 'name',
-      header: '姓名',
-      size: 140,
-      minSize: 120,
-      cell: ({ row }) => (
+      title: '姓名',
+      dataIndex: 'name',
+      key: 'name',
+      width: 140,
+      render: (name: string, record: Tenant) => (
         <Link
-          to={`/tenants/${row.original.id}`}
-          className="flex items-center gap-2 font-medium text-primary hover:underline"
+          to={`/tenants/${record.id}`}
+          className="flex items-center gap-2 font-medium text-blue-600 hover:underline"
         >
-          <User className="h-4 w-4 text-muted-foreground" />
-          {row.original.name}
+          <User className="h-4 w-4 text-gray-400" />
+          {name}
         </Link>
       ),
     },
     {
-      accessorKey: 'phone',
-      header: '电话',
-      size: 140,
-      minSize: 120,
-      cell: ({ row }) => (
+      title: '电话',
+      dataIndex: 'phone',
+      key: 'phone',
+      width: 140,
+      render: (phone: string) => (
         <div className="flex items-center gap-2">
-          <Phone className="h-4 w-4 text-muted-foreground" />
-          {row.original.phone}
+          <Phone className="h-4 w-4 text-gray-400" />
+          {phone}
         </div>
       ),
     },
     {
-      accessorKey: 'id_card',
-      header: '身份证号',
-      size: 180,
-      minSize: 150,
-      cell: ({ row }) => row.original.id_card || '-',
+      title: '身份证号',
+      dataIndex: 'id_card',
+      key: 'id_card',
+      width: 180,
+      render: (id_card: string) => id_card || '-',
     },
     {
-      accessorKey: 'emergency_contact',
-      header: '紧急联系人',
-      size: 140,
-      minSize: 100,
-      cell: ({ row }) => row.original.emergency_contact || '-',
+      title: '紧急联系人',
+      dataIndex: 'emergency_contact',
+      key: 'emergency_contact',
+      width: 140,
+      render: (emergency_contact: string) => emergency_contact || '-',
     },
     {
-      id: 'actions',
-      size: 80,
-      minSize: 60,
-      cell: ({ row }) => {
-        const tenant = row.original;
+      title: '操作',
+      key: 'actions',
+      width: 80,
+      render: (_: any, record: Tenant) => {
+        const menuItems: MenuProps['items'] = [];
+        if (canEditTenant) {
+          menuItems.push({
+            key: 'edit',
+            label: '编辑',
+            onClick: () => handleEdit(record),
+          });
+        }
+        if (canDeleteTenant) {
+          menuItems.push({
+            key: 'delete',
+            label: '删除',
+            danger: true,
+            onClick: () => handleDelete(record),
+          });
+        }
+
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {canEditTenant && (
-                <DropdownMenuItem onClick={() => handleEdit(tenant)} data-testid={TENANTS.EDIT_BUTTON}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  编辑
-                </DropdownMenuItem>
-              )}
-              {canDeleteTenant && (
-                <DropdownMenuItem onClick={() => handleDelete(tenant)} className="text-destructive" data-testid={TENANTS.DELETE_BUTTON}>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  删除
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+            <Button type="text" size="small" icon={<MoreHorizontal className="h-4 w-4" />} />
+          </Dropdown>
         );
       },
     },
@@ -244,8 +215,8 @@ export default function TenantsPage() {
   if (authLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-96" />
+        <Skeleton.Input active size="large" style={{ width: 200, height: 32 }} />
+        <Skeleton active paragraph={{ rows: 10 }} />
       </div>
     );
   }
@@ -254,9 +225,9 @@ export default function TenantsPage() {
   if (!orgId) {
     return (
       <div className="flex h-full flex-col items-center justify-center space-y-4">
-        <Building2 className="h-16 w-16 text-muted-foreground" />
+        <Building2 className="h-16 w-16 text-gray-400" />
         <h2 className="text-xl font-semibold">请先创建或加入团队</h2>
-        <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
+        <p className="text-gray-500">在顶部导航栏选择或创建一个团队开始使用</p>
       </div>
     );
   }
@@ -266,196 +237,192 @@ export default function TenantsPage() {
       <div className="space-y-6">
           <div className="flex items-center justify-end">
             {canCreateTenant && (
-              <Button onClick={() => setIsCreateOpen(true)} data-testid={TENANTS.NEW_BUTTON}>
-                <Plus className="mr-2 h-4 w-4" />
+              <Button onClick={() => setIsCreateOpen(true)} data-testid={TENANTS.NEW_BUTTON} icon={<Plus className="mr-2 h-4 w-4" />}>
                 新增租客
               </Button>
             )}
           </div>
 
           {tenantsLoading ? (
-            <Skeleton className="h-96" />
+            <Skeleton active paragraph={{ rows: 10 }} />
           ) : (
-            <DataTable columns={columns} data={tenants || []} testid={TENANTS.LIST} useCard={false} />
+            <Table
+              columns={columns}
+              dataSource={tenants || []}
+              rowKey="id"
+              pagination={{ pageSize: 20, showSizeChanger: true, showTotal: (total: number) => `共 ${total} 条` }}
+              size="small"
+              data-testid={TENANTS.LIST}
+            />
           )}
         </div>
 
-        {/* Create Dialog */}
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogContent className="max-w-lg" data-testid={TENANTS.CREATE_DIALOG}>
-            <DialogHeader>
-              <DialogTitle>新增租客</DialogTitle>
-              <DialogDescription>填写租客信息</DialogDescription>
-            </DialogHeader>
-            <form onSubmit={createForm.handleSubmit((data) => createMutation.mutate(data))} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" required>
-                    姓名
-                  </Label>
-                  <Input id="name" placeholder="请输入租客姓名" {...createForm.register('name')} data-testid={TENANTS.NAME_INPUT} />
-                  {createForm.formState.errors.name && (
-                    <p className="text-sm text-destructive">{createForm.formState.errors.name.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone" required>
-                    联系电话
-                  </Label>
-                  <Input id="phone" placeholder="请输入联系电话" {...createForm.register('phone')} data-testid={TENANTS.PHONE_INPUT} />
-                  {createForm.formState.errors.phone && (
-                    <p className="text-sm text-destructive">{createForm.formState.errors.phone.message}</p>
-                  )}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="id_card">身份证号</Label>
-                  <Input id="id_card" placeholder="请输入身份证号" {...createForm.register('id_card')} data-testid={TENANTS.ID_CARD_INPUT} />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="emergency_contact">紧急联系人</Label>
-                  <Input
-                    id="emergency_contact"
-                    placeholder="请输入紧急联系人"
-                    {...createForm.register('emergency_contact')}
-                    data-testid={TENANTS.EMERGENCY_CONTACT_INPUT}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="emergency_phone">紧急联系电话</Label>
-                  <Input
-                    id="emergency_phone"
-                    placeholder="请输入紧急联系电话"
-                    {...createForm.register('emergency_phone')}
-                    data-testid={TENANTS.EMERGENCY_PHONE_INPUT}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="notes">备注</Label>
-                <Input id="notes" placeholder="请输入备注" {...createForm.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
-              </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreateOpen(false)}
-                  data-testid={TENANTS.CANCEL_BUTTON}
-                >
-                  取消
-                </Button>
-                <Button type="submit" disabled={createMutation.isPending} data-testid={TENANTS.CONFIRM_BUTTON}>
-                  {createMutation.isPending ? '创建中...' : '创建'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Dialog */}
-        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent className="max-w-lg" data-testid={TENANTS.EDIT_DIALOG}>
-            <DialogHeader>
-              <DialogTitle>编辑租客</DialogTitle>
-              <DialogDescription>修改租客信息</DialogDescription>
-            </DialogHeader>
-            <form
-              onSubmit={editForm.handleSubmit((data) => updateMutation.mutate({ id: selectedTenant!.id, data }))}
-              className="space-y-4"
-            >
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-name" required>
-                    姓名
-                  </Label>
-                  <Input id="edit-name" placeholder="请输入租客姓名" {...editForm.register('name')} data-testid={TENANTS.NAME_INPUT} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-phone" required>
-                    联系电话
-                  </Label>
-                  <Input
-                    id="edit-phone"
-                    placeholder="请输入联系电话"
-                    {...editForm.register('phone')}
-                    data-testid={TENANTS.PHONE_INPUT}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-id_card">身份证号</Label>
-                  <Input id="edit-id_card" placeholder="请输入身份证号" {...editForm.register('id_card')} data-testid={TENANTS.ID_CARD_INPUT} />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-emergency_contact">紧急联系人</Label>
-                  <Input
-                    id="edit-emergency_contact"
-                    placeholder="请输入紧急联系人"
-                    {...editForm.register('emergency_contact')}
-                    data-testid={TENANTS.EMERGENCY_CONTACT_INPUT}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-emergency_phone">紧急联系电话</Label>
-                  <Input
-                    id="edit-emergency_phone"
-                    placeholder="请输入紧急联系电话"
-                    {...editForm.register('emergency_phone')}
-                    data-testid={TENANTS.EMERGENCY_PHONE_INPUT}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-notes">备注</Label>
-                <Input id="edit-notes" placeholder="请输入备注" {...editForm.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
-              </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsEditOpen(false)}
-                  data-testid={TENANTS.CANCEL_BUTTON}
-                >
-                  取消
-                </Button>
-                <Button type="submit" disabled={updateMutation.isPending} data-testid={TENANTS.CONFIRM_BUTTON}>
-                  {updateMutation.isPending ? '保存中...' : '保存'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        <AlertDialog
-          open={deleteConfirm.dialogProps.open}
-          onOpenChange={deleteConfirm.dialogProps.onOpenChange}
+        {/* Create Modal */}
+        <Modal
+          title="新增租客"
+          open={isCreateOpen}
+          onCancel={() => setIsCreateOpen(false)}
+          footer={null}
+          data-testid={TENANTS.CREATE_DIALOG}
         >
-          <AlertDialogContent data-testid={TENANTS.DELETE_DIALOG}>
-            <AlertDialogHeader>
-              <AlertDialogTitle>确认删除</AlertDialogTitle>
-              <AlertDialogDescription>
-                确定要删除租客 "{deleteConfirm.selectedItem?.name ?? ''}" 吗？此操作不可撤销。
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel data-testid={TENANTS.CANCEL_BUTTON}>取消</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => deleteMutation.mutate(deleteConfirm.selectedItem!.id)}
-                disabled={deleteMutation.isPending}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                data-testid={TENANTS.CONFIRM_DELETE_BTN}
-              >
-                {deleteMutation.isPending ? '删除中...' : '删除'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          <form onSubmit={createForm.handleSubmit((data) => createMutation.mutate(data))} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name" required>
+                  姓名
+                </Label>
+                <Input id="name" placeholder="请输入租客姓名" {...createForm.register('name')} data-testid={TENANTS.NAME_INPUT} />
+                {createForm.formState.errors.name && (
+                  <p className="text-sm text-red-500">{createForm.formState.errors.name.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone" required>
+                  联系电话
+                </Label>
+                <Input id="phone" placeholder="请输入联系电话" {...createForm.register('phone')} data-testid={TENANTS.PHONE_INPUT} />
+                {createForm.formState.errors.phone && (
+                  <p className="text-sm text-red-500">{createForm.formState.errors.phone.message}</p>
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="id_card">身份证号</Label>
+                <Input id="id_card" placeholder="请输入身份证号" {...createForm.register('id_card')} data-testid={TENANTS.ID_CARD_INPUT} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="emergency_contact">紧急联系人</Label>
+                <Input
+                  id="emergency_contact"
+                  placeholder="请输入紧急联系人"
+                  {...createForm.register('emergency_contact')}
+                  data-testid={TENANTS.EMERGENCY_CONTACT_INPUT}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="emergency_phone">紧急联系电话</Label>
+                <Input
+                  id="emergency_phone"
+                  placeholder="请输入紧急联系电话"
+                  {...createForm.register('emergency_phone')}
+                  data-testid={TENANTS.EMERGENCY_PHONE_INPUT}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">备注</Label>
+              <Input id="notes" placeholder="请输入备注" {...createForm.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button onClick={() => setIsCreateOpen(false)} data-testid={TENANTS.CANCEL_BUTTON}>
+                取消
+              </Button>
+              <Button type="primary" htmlType="submit" loading={createMutation.isPending} data-testid={TENANTS.CONFIRM_BUTTON}>
+                {createMutation.isPending ? '创建中...' : '创建'}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Edit Modal */}
+        <Modal
+          title="编辑租客"
+          open={isEditOpen}
+          onCancel={() => setIsEditOpen(false)}
+          footer={null}
+          data-testid={TENANTS.EDIT_DIALOG}
+        >
+          <form
+            onSubmit={editForm.handleSubmit((data) => updateMutation.mutate({ id: selectedTenant!.id, data }))}
+            className="space-y-4"
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name" required>
+                  姓名
+                </Label>
+                <Input id="edit-name" placeholder="请输入租客姓名" {...editForm.register('name')} data-testid={TENANTS.NAME_INPUT} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-phone" required>
+                  联系电话
+                </Label>
+                <Input
+                  id="edit-phone"
+                  placeholder="请输入联系电话"
+                  {...editForm.register('phone')}
+                  data-testid={TENANTS.PHONE_INPUT}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-id_card">身份证号</Label>
+                <Input id="edit-id_card" placeholder="请输入身份证号" {...editForm.register('id_card')} data-testid={TENANTS.ID_CARD_INPUT} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-emergency_contact">紧急联系人</Label>
+                <Input
+                  id="edit-emergency_contact"
+                  placeholder="请输入紧急联系人"
+                  {...editForm.register('emergency_contact')}
+                  data-testid={TENANTS.EMERGENCY_CONTACT_INPUT}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-emergency_phone">紧急联系电话</Label>
+                <Input
+                  id="edit-emergency_phone"
+                  placeholder="请输入紧急联系电话"
+                  {...editForm.register('emergency_phone')}
+                  data-testid={TENANTS.EMERGENCY_PHONE_INPUT}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-notes">备注</Label>
+              <Input id="edit-notes" placeholder="请输入备注" {...editForm.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button onClick={() => setIsEditOpen(false)} data-testid={TENANTS.CANCEL_BUTTON}>
+                取消
+              </Button>
+              <Button type="primary" htmlType="submit" loading={updateMutation.isPending} data-testid={TENANTS.CONFIRM_BUTTON}>
+                {updateMutation.isPending ? '保存中...' : '保存'}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Delete Confirmation Modal */}
+        <Modal
+          title="确认删除"
+          open={deleteConfirm.dialogProps.open}
+          onCancel={deleteConfirm.close}
+          footer={[
+            <Button key="cancel" onClick={deleteConfirm.close}>
+              取消
+            </Button>,
+            <Button
+              key="delete"
+              type="primary"
+              danger
+              loading={deleteMutation.isPending}
+              onClick={() => deleteMutation.mutate(deleteConfirm.selectedItem!.id)}
+              data-testid={TENANTS.CONFIRM_DELETE_BTN}
+            >
+              {deleteMutation.isPending ? '删除中...' : '删除'}
+            </Button>,
+          ]}
+          data-testid={TENANTS.DELETE_DIALOG}
+        >
+          <p>确定要删除租客 "{deleteConfirm.selectedItem?.name ?? ''}" 吗？此操作不可撤销。</p>
+        </Modal>
     </PermissionPageGuard>
   );
 }

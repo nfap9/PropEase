@@ -6,9 +6,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Skeleton, Tabs } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import type { Room, RoomFacilities } from '@/types';
@@ -205,9 +203,9 @@ export default function ApartmentDetailPage() {
   if (authLoading || apartmentLoading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32" />
-        <Skeleton className="h-96" />
+        <Skeleton active paragraph={{ rows: 1 }} />
+        <Skeleton active paragraph={{ rows: 3 }} />
+        <Skeleton active paragraph={{ rows: 10 }} />
       </div>
     );
   }
@@ -215,7 +213,7 @@ export default function ApartmentDetailPage() {
   if (!apartment) {
     return (
       <div className="flex h-full flex-col items-center justify-center space-y-4">
-        <Building2 className="h-16 w-16 text-muted-foreground" />
+        <Building2 className="h-16 w-16 text-gray-400" />
         <h2 className="text-xl font-semibold">公寓不存在</h2>
         <Button onClick={() => navigate('/workspace/apartments')}>返回公寓列表</Button>
       </div>
@@ -234,17 +232,11 @@ export default function ApartmentDetailPage() {
             canEditUtility={canEditUtility}
           />
 
-          <Tabs defaultValue="info" className="flex flex-col">
-            <TabsList className="inline-flex w-auto self-start">
-              <TabsTrigger value="info">基础信息</TabsTrigger>
-              <TabsTrigger value="rooms">房间列表</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="info" className="mt-4">
+          <Tabs defaultActiveKey="info">
+            <Tabs.TabPane tab="基础信息" key="info">
               <ApartmentOverviewTab apartment={apartment} stats={stats} />
-            </TabsContent>
-
-            <TabsContent value="rooms" className="mt-4">
+            </Tabs.TabPane>
+            <Tabs.TabPane tab="房间列表" key="rooms">
               <ApartmentRoomListTab
                 rooms={rooms}
                 roomsLoading={roomsLoading}
@@ -267,7 +259,7 @@ export default function ApartmentDetailPage() {
                 canEditRoom={canEditRoom}
                 canDeleteRoom={canDeleteRoom}
               />
-            </TabsContent>
+            </Tabs.TabPane>
           </Tabs>
         </div>
 

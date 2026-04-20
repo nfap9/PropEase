@@ -1,20 +1,13 @@
 
-import type { ColumnDef } from '@tanstack/react-table';
-import { Badge } from '@apartment-ultra/shared-ui/components/ui';
-import { Download, DollarSign, Eye, Share2 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@apartment-ultra/shared-ui/components/ui';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
+import type { ColumnsType } from 'antd/es/table';
+import { Tag, Dropdown, Button } from 'antd';
+import type { MenuProps } from 'antd';
+import { Download, DollarSign, Eye, Share2, MoreHorizontal } from 'lucide-react';
 import { formatDate } from '@/utils/date';
 import { BILL_STATUS_CONFIG } from '@/utils/status';
 import type { Bill } from '@/types';
 import { formatBillLocation, formatBillPeriod } from '@/utils/bills';
 import { tenantMessages } from '@/i18n';
-import { MoreHorizontal } from 'lucide-react';
 
 interface CreateBillsColumnsOptions {
   sharingBillId: string | null;
@@ -30,103 +23,112 @@ export function createBillsColumns({
   onPayment,
   onExportPdf,
   onShare,
-}: CreateBillsColumnsOptions): ColumnDef<Bill>[] {
+}: CreateBillsColumnsOptions): ColumnsType<Bill> {
   return [
     {
-      accessorKey: 'bill_month',
-      header: tenantMessages.bills.columns.month,
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => formatBillPeriod(row.original),
+      title: tenantMessages.bills.columns.month,
+      dataIndex: 'bill_month',
+      key: 'bill_month',
+      width: 120,
+      minWidth: 100,
+      render: (_, record) => formatBillPeriod(record),
     },
     {
-      accessorKey: 'lease',
-      header: tenantMessages.bills.columns.roomTenant,
-      size: 200,
-      minSize: 160,
-      cell: ({ row }) => (
+      title: tenantMessages.bills.columns.roomTenant,
+      dataIndex: 'lease',
+      key: 'lease',
+      width: 200,
+      minWidth: 160,
+      render: (_, record) => (
         <div>
-          <div>{formatBillLocation(row.original)}</div>
-          <div className="text-xs text-muted-foreground">{row.original.lease?.tenant?.name || '-'}</div>
+          <div>{formatBillLocation(record)}</div>
+          <div className="text-xs text-muted-foreground">{record.lease?.tenant?.name || '-'}</div>
         </div>
       ),
     },
     {
-      accessorKey: 'total_amount',
-      header: tenantMessages.bills.columns.totalAmount,
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => `¥${row.original.total_amount.toLocaleString()}`,
+      title: tenantMessages.bills.columns.totalAmount,
+      dataIndex: 'total_amount',
+      key: 'total_amount',
+      width: 120,
+      minWidth: 100,
+      render: (_, record) => `¥${record.total_amount.toLocaleString()}`,
     },
     {
-      accessorKey: 'paid_amount',
-      header: tenantMessages.bills.columns.paidAmount,
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => (
-        <span className={row.original.paid_amount < row.original.total_amount ? 'text-orange-600' : 'text-green-600'}>
-          ¥{row.original.paid_amount.toLocaleString()}
+      title: tenantMessages.bills.columns.paidAmount,
+      dataIndex: 'paid_amount',
+      key: 'paid_amount',
+      width: 120,
+      minWidth: 100,
+      render: (_, record) => (
+        <span className={record.paid_amount < record.total_amount ? 'text-orange-600' : 'text-green-600'}>
+          ¥{record.paid_amount.toLocaleString()}
         </span>
       ),
     },
     {
-      accessorKey: 'due_date',
-      header: tenantMessages.bills.columns.dueDate,
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => formatDate(row.original.due_date),
+      title: tenantMessages.bills.columns.dueDate,
+      dataIndex: 'due_date',
+      key: 'due_date',
+      width: 120,
+      minWidth: 100,
+      render: (_, record) => formatDate(record.due_date),
     },
     {
-      accessorKey: 'status',
-      header: tenantMessages.bills.columns.status,
-      size: 120,
-      minSize: 100,
-      cell: ({ row }) => {
-        const config = BILL_STATUS_CONFIG[row.original.status];
-        const Icon = config.icon;
+      title: tenantMessages.bills.columns.status,
+      dataIndex: 'status',
+      key: 'status',
+      width: 120,
+      minWidth: 100,
+      render: (_, record) => {
+        const config = BILL_STATUS_CONFIG[record.status];
+        if (!config) return null;
 
         return (
-          <Badge variant={config.variant} className="gap-1">
-            <Icon className="h-3 w-3" />
+          <Tag color={config.color} className="gap-1">
             {config.label}
-          </Badge>
+          </Tag>
         );
       },
     },
     {
-      id: 'actions',
-      size: 80,
-      minSize: 60,
-      cell: ({ row }) => {
-        const bill = row.original;
+      title: '操作',
+      key: 'actions',
+      width: 80,
+      minWidth: 60,
+      render: (_, record) => {
+        const bill = record;
+        const menuItems: MenuProps['items'] = [
+          {
+            key: 'view',
+            icon: <Eye className="h-4 w-4" />,
+            label: tenantMessages.bills.columns.viewDetail,
+            onClick: () => onViewDetail(bill),
+          },
+          ...(bill.status !== 'paid' ? [{
+            key: 'payment',
+            icon: <DollarSign className="h-4 w-4" />,
+            label: tenantMessages.bills.columns.recordPayment,
+            onClick: () => onPayment(bill),
+          }] : []),
+          {
+            key: 'export',
+            icon: <Download className="h-4 w-4" />,
+            label: tenantMessages.bills.columns.exportPdf,
+            onClick: () => onExportPdf(bill.id),
+          },
+          {
+            key: 'share',
+            icon: <Share2 className="h-4 w-4" />,
+            label: sharingBillId === bill.id ? tenantMessages.bills.columns.sharing : tenantMessages.bills.columns.share,
+            onClick: () => onShare(bill),
+          },
+        ];
+
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onViewDetail(bill)}>
-                <Eye className="mr-2 h-4 w-4" />
-                {tenantMessages.bills.columns.viewDetail}
-              </DropdownMenuItem>
-              {bill.status !== 'paid' && (
-                <DropdownMenuItem onClick={() => onPayment(bill)}>
-                  <DollarSign className="mr-2 h-4 w-4" />
-                  {tenantMessages.bills.columns.recordPayment}
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => onExportPdf(bill.id)}>
-                <Download className="mr-2 h-4 w-4" />
-                {tenantMessages.bills.columns.exportPdf}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onShare(bill)}>
-                <Share2 className="mr-2 h-4 w-4" />
-                {sharingBillId === bill.id ? tenantMessages.bills.columns.sharing : tenantMessages.bills.columns.share}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
+            <Button type="text" size="small" icon={<MoreHorizontal className="h-4 w-4" />} />
+          </Dropdown>
         );
       },
     },

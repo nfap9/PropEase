@@ -2,24 +2,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { leasesApi } from '@/api';
-import { Button } from '@apartment-ultra/shared-ui/components/ui';
-import { Card, CardContent, CardHeader, CardTitle } from '@apartment-ultra/shared-ui/components/ui';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import { Label } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Button, Card, Input, Select, Modal } from 'antd';
+import { Label } from '@/components/common/label';
 import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -97,7 +81,7 @@ export function LeaseFeeItemsTab({ leaseId, orgId }: LeaseFeeItemsTabProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
       </div>
     );
   }
@@ -135,7 +119,6 @@ export function LeaseFeeItemsTab({ leaseId, orgId }: LeaseFeeItemsTabProps) {
     }
     setShowFeeDialog(true);
   };
-
 
   // 保存费用
   const saveFee = () => {
@@ -179,7 +162,7 @@ export function LeaseFeeItemsTab({ leaseId, orgId }: LeaseFeeItemsTabProps) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-medium">费用项目</h2>
-        <Button variant="outline" size="sm" onClick={() => handleOpenDialog(true)}>
+        <Button onClick={() => handleOpenDialog(true)}>
           <Pencil className="h-4 w-4 mr-2" />
           编辑
         </Button>
@@ -187,174 +170,155 @@ export function LeaseFeeItemsTab({ leaseId, orgId }: LeaseFeeItemsTabProps) {
 
       {currentItems.length === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center h-40 text-muted-foreground">
-            <p>暂无费用项目</p>
-          </CardContent>
+          <Card.Meta description="暂无费用项目" />
         </Card>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">费用明细</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-muted-foreground border-b">
-                  <th className="pb-2 font-medium">费用类型</th>
-                  <th className="pb-2 font-medium text-right">金额</th>
-                  <th className="pb-2 font-medium text-right">周期</th>
-                  <th className="pb-2 font-medium text-right">小计</th>
+        <Card title="费用明细">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-gray-500 border-b">
+                <th className="pb-2 font-medium">费用类型</th>
+                <th className="pb-2 font-medium text-right">金额</th>
+                <th className="pb-2 font-medium text-right">周期</th>
+                <th className="pb-2 font-medium text-right">小计</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentItems.map((item) => (
+                <tr key={item.id} className="border-b last:border-0">
+                  <td className="py-2">{item.name}</td>
+                  <td className="py-2 text-right">
+                    ¥{item.amount.toLocaleString()}
+                  </td>
+                  <td className="py-2 text-right text-gray-500">
+                    {CYCLE_LABELS[item.cycle]}
+                  </td>
+                  <td className="py-2 text-right font-medium">
+                    ¥{item.amount.toLocaleString()}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {currentItems.map((item) => (
-                  <tr key={item.id} className="border-b last:border-0">
-                    <td className="py-2">{item.name}</td>
-                    <td className="py-2 text-right">
-                      ¥{item.amount.toLocaleString()}
-                    </td>
-                    <td className="py-2 text-right text-muted-foreground">
-                      {CYCLE_LABELS[item.cycle]}
-                    </td>
-                    <td className="py-2 text-right font-medium">
-                      ¥{item.amount.toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
+              ))}
+            </tbody>
+          </table>
         </Card>
       )}
 
       {/* 编辑费用对话框 */}
-      <Dialog open={openDialog} onOpenChange={handleOpenDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>编辑费用项目</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">费用列表</span>
-              <Button type="button" variant="outline" size="sm" onClick={() => openFeeDialog()}>
-                <Plus className="h-4 w-4 mr-1" />
-                添加
-              </Button>
-            </div>
-
-            {directFees.length > 0 && (
-              <div className="space-y-2">
-                {directFees.map((fee) => (
-                  <div key={fee.id} className="flex items-center gap-3 bg-muted/50 rounded-lg p-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{fee.name}</span>
-                        <span className="text-sm text-muted-foreground">¥{fee.amount}/{CYCLE_LABELS[fee.cycle]}</span>
-                      </div>
-                      {fee.notes && <p className="text-xs text-muted-foreground mt-1">{fee.notes}</p>}
-                    </div>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => openFeeDialog(fee)}>
-                      编辑
-                    </Button>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => removeFee(fee.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {directFees.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">暂无费用项目，点击添加</p>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => handleOpenDialog(false)}>取消</Button>
-            <Button onClick={handleSave} disabled={setFeeItemsMutation.isPending}>
-              {setFeeItemsMutation.isPending ? '保存中...' : '保存'}
+      <Modal
+        open={openDialog}
+        onCancel={() => handleOpenDialog(false)}
+        title="编辑费用项目"
+        footer={[
+          <Button key="cancel" onClick={() => handleOpenDialog(false)}>取消</Button>,
+          <Button key="submit" type="primary" loading={setFeeItemsMutation.isPending} onClick={handleSave}>
+            {setFeeItemsMutation.isPending ? '保存中...' : '保存'}
+          </Button>,
+        ]}
+      >
+        <div className="space-y-4 py-4">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">费用列表</span>
+            <Button size="small" onClick={() => openFeeDialog()}>
+              <Plus className="h-4 w-4 mr-1" />
+              添加
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+
+          {directFees.length > 0 && (
+            <div className="space-y-2">
+              {directFees.map((fee) => (
+                <div key={fee.id} className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{fee.name}</span>
+                      <span className="text-sm text-gray-500">¥{fee.amount}/{CYCLE_LABELS[fee.cycle]}</span>
+                    </div>
+                    {fee.notes && <p className="text-xs text-gray-500 mt-1">{fee.notes}</p>}
+                  </div>
+                  <Button type="text" size="small" onClick={() => openFeeDialog(fee)}>
+                    编辑
+                  </Button>
+                  <Button type="text" size="small" danger onClick={() => removeFee(fee.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {directFees.length === 0 && (
+            <p className="text-sm text-gray-500 text-center py-4">暂无费用项目，点击添加</p>
+          )}
+        </div>
+      </Modal>
 
       {/* 费用项编辑对话框 */}
-      <Dialog open={showFeeDialog} onOpenChange={setShowFeeDialog}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{editingFee ? '编辑费用' : '添加费用'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>费用类型</Label>
-              <Select value={feeFormData.name} onValueChange={(value) => setFeeFormData((prev) => ({ ...prev, name: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="选择费用类型" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PREDEFINED_FEE_TYPES.map((type) => (
-                    <SelectItem key={type.code} value={type.code}>
-                      {type.name}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="custom">自定义</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {feeFormData.name === 'custom' && (
-              <div className="space-y-2">
-                <Label>自定义费用名称</Label>
-                <Input
-                  placeholder="输入费用名称"
-                  value={feeFormData.customName}
-                  onChange={(e) => setFeeFormData((prev) => ({ ...prev, customName: e.target.value }))}
-                />
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label>金额（元）</Label>
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={feeFormData.amount}
-                onChange={(e) => setFeeFormData((prev) => ({ ...prev, amount: e.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>计费周期</Label>
-              <Select value={feeFormData.cycle} onValueChange={(value) => setFeeFormData((prev) => ({ ...prev, cycle: value as BillingCycle }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">每月</SelectItem>
-                  <SelectItem value="quarterly">每季</SelectItem>
-                  <SelectItem value="yearly">每年</SelectItem>
-                  <SelectItem value="one_time">一次性</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>备注</Label>
-              <Input
-                placeholder="可选"
-                value={feeFormData.notes}
-                onChange={(e) => setFeeFormData((prev) => ({ ...prev, notes: e.target.value }))}
-              />
-            </div>
+      <Modal
+        open={showFeeDialog}
+        onCancel={() => setShowFeeDialog(false)}
+        title={editingFee ? '编辑费用' : '添加费用'}
+        footer={[
+          <Button key="cancel" onClick={() => setShowFeeDialog(false)}>取消</Button>,
+          <Button key="submit" type="primary" onClick={saveFee} disabled={!feeFormData.name || (feeFormData.name === 'custom' && !feeFormData.customName.trim()) || !feeFormData.amount}>
+            {editingFee ? '保存' : '添加'}
+          </Button>,
+        ]}
+      >
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label>费用类型</Label>
+            <Select value={feeFormData.name} onChange={(value) => setFeeFormData((prev) => ({ ...prev, name: value }))} placeholder="选择费用类型">
+              {PREDEFINED_FEE_TYPES.map((type) => (
+                <Select.Option key={type.code} value={type.code}>
+                  {type.name}
+                </Select.Option>
+              ))}
+              <Select.Option value="custom">自定义</Select.Option>
+            </Select>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowFeeDialog(false)}>取消</Button>
-            <Button onClick={saveFee} disabled={!feeFormData.name || (feeFormData.name === 'custom' && !feeFormData.customName.trim()) || !feeFormData.amount}>
-              {editingFee ? '保存' : '添加'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+          {feeFormData.name === 'custom' && (
+            <div className="space-y-2">
+              <Label>自定义费用名称</Label>
+              <Input
+                placeholder="输入费用名称"
+                value={feeFormData.customName}
+                onChange={(e) => setFeeFormData((prev) => ({ ...prev, customName: e.target.value }))}
+              />
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label>金额（元）</Label>
+            <Input
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              value={feeFormData.amount}
+              onChange={(e) => setFeeFormData((prev) => ({ ...prev, amount: e.target.value }))}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>计费周期</Label>
+            <Select value={feeFormData.cycle} onChange={(value) => setFeeFormData((prev) => ({ ...prev, cycle: value as BillingCycle }))}>
+              <Select.Option value="monthly">每月</Select.Option>
+              <Select.Option value="quarterly">每季</Select.Option>
+              <Select.Option value="yearly">每年</Select.Option>
+              <Select.Option value="one_time">一次性</Select.Option>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>备注</Label>
+            <Input
+              placeholder="可选"
+              value={feeFormData.notes}
+              onChange={(e) => setFeeFormData((prev) => ({ ...prev, notes: e.target.value }))}
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

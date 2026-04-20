@@ -1,13 +1,6 @@
 
 import { Search, X } from 'lucide-react';
-import { Input } from '@apartment-ultra/shared-ui/components/ui';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@apartment-ultra/shared-ui/components/ui';
+import { Input, Select } from 'antd';
 import { ApartmentWithStats, RoomStatus } from '@/types';
 import { RoomFiltersState } from './room-filters';
 
@@ -65,58 +58,41 @@ export function RoomsSearchBar({
       {/* Apartment filter */}
       <Select
         value={filters.apartmentId || 'all'}
-        onValueChange={(value) =>
+        onChange={(value) =>
           onFilterChange('apartmentId', value === 'all' ? null : value)
         }
-      >
-        <SelectTrigger className="h-8 w-[130px] rounded-lg border-input bg-background text-xs shadow-sm transition-all">
-          <SelectValue placeholder="全部公寓" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">全部公寓</SelectItem>
-          {apartments.map((apt) => (
-            <SelectItem key={apt.id} value={apt.id}>
-              {apt.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        className="h-8 w-[130px]"
+        options={[
+          { value: 'all', label: '全部公寓' },
+          ...apartments.map((apt) => ({ value: apt.id, label: apt.name })),
+        ]}
+      />
 
       {/* Status filter */}
       <Select
         value={filters.status || 'all'}
-        onValueChange={(value) =>
+        onChange={(value) =>
           onFilterChange('status', value === 'all' ? null : (value as RoomStatus))
         }
-      >
-        <SelectTrigger className="h-8 w-[100px] rounded-lg border-input bg-background text-xs shadow-sm transition-all">
-          <SelectValue placeholder="状态" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">全部状态</SelectItem>
-          <SelectItem value="available">空置</SelectItem>
-          <SelectItem value="occupied">已租</SelectItem>
-          <SelectItem value="maintenance">维修中</SelectItem>
-        </SelectContent>
-      </Select>
+        className="h-8 w-[100px]"
+        options={[
+          { value: 'all', label: '全部状态' },
+          { value: 'available', label: '空置' },
+          { value: 'occupied', label: '已租' },
+          { value: 'maintenance', label: '维修中' },
+        ]}
+      />
 
       {/* Layout filter */}
       <Select
         value={filters.layout || 'all'}
-        onValueChange={(value) => onFilterChange('layout', value === 'all' ? null : value)}
-      >
-        <SelectTrigger className="h-8 w-[110px] rounded-lg border-input bg-background text-xs shadow-sm transition-all">
-          <SelectValue placeholder="户型" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">全部户型</SelectItem>
-          {LAYOUT_OPTIONS.map((layout) => (
-            <SelectItem key={layout} value={layout}>
-              {layout}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        onChange={(value) => onFilterChange('layout', value === 'all' ? null : value)}
+        className="h-8 w-[110px]"
+        options={[
+          { value: 'all', label: '全部户型' },
+          ...LAYOUT_OPTIONS.map((layout) => ({ value: layout, label: layout })),
+        ]}
+      />
 
       {/* Clear filters */}
       {hasActiveFilters && (
