@@ -291,8 +291,8 @@ export default function UtilitiesPage() {
                 data={pendingUtilityBills}
                 testid={UTILITIES.LIST}
                 useCard={true}
-                title="本月水电账单"
-                description="展示本月各房间水电录入状态，支持快速录入和更新"
+                cardTitle="本月水电账单"
+                cardDescription="展示本月各房间水电录入状态，支持快速录入和更新"
               />
 
               {roomsMissingInitial.length > 0 && (

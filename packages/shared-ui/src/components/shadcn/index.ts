@@ -9,6 +9,8 @@ export * from './calendar';
 export * from './card';
 export * from './checkbox';
 export * from './data-table';
+export * from './data-table-pagination';
+export * from './data-table-global-search';
 export * from './date-picker';
 export * from './dialog';
 export * from './dropdown-menu';

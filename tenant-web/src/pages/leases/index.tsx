@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Building2 } from 'lucide-react';
-import { useConfirmAction, useListFilters, useSelection } from '@apartment-ultra/shared-ui';
+import { useConfirmAction, useListFilters } from '@apartment-ultra/shared-ui';
 import { Button } from '@apartment-ultra/shared-ui/components/ui';
 import { Skeleton } from '@apartment-ultra/shared-ui/components/ui';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
@@ -33,7 +33,8 @@ export default function LeasesPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [pendingInitialReading, setPendingInitialReading] = useState<LeaseCreatedParams | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const editLease = useSelection<Lease>();
+  const [selectedLease, setSelectedLease] = useState<Lease | null>(null);
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const terminateConfirm = useConfirmAction<Lease>();
   const deleteConfirm = useConfirmAction<Lease>();
   const { filters, setFilter, resetFilters } = useListFilters<LeaseFiltersState>(getDefaultLeaseFilters);
@@ -46,7 +47,8 @@ export default function LeasesPage() {
     orgId,
     onUpdateSuccess: () => {
       setIsEditOpen(false);
-      editLease.clear();
+      setSelectedLease(null);
+      setRowSelection({});
     },
     onTerminateSuccess: terminateConfirm.close,
     onDeleteSuccess: deleteConfirm.close,
@@ -54,33 +56,66 @@ export default function LeasesPage() {
 
   const filteredLeases = useMemo(() => filterLeases(leases, filters), [leases, filters]);
 
-  const handleEdit = useCallback(
-    (lease: Lease) => {
-      editLease.select(lease);
-      editForm.reset({
-        room_id: lease.room_id,
-        tenant_id: lease.tenant_id,
-        start_date: toDateInputValue(lease.start_date),
-        end_date: toDateInputValue(lease.end_date),
-        monthly_rent: lease.monthly_rent,
-        deposit: lease.deposit ?? 0,
-        water_rate: lease.water_rate ?? 0,
-        electricity_rate: lease.electricity_rate ?? 0,
-        notes: lease.notes ?? '',
-      });
-      setIsEditOpen(true);
+  const handleRowSelectionChange = useCallback(
+    (selection: Record<string, boolean>) => {
+      setRowSelection(selection);
+      const selectedIds = Object.keys(selection).filter((id) => selection[id]);
+      if (selectedIds.length > 0) {
+        const selectedId = selectedIds[selectedIds.length - 1];
+        const lease = filteredLeases.find((l) => l.id === selectedId);
+        if (lease) {
+          setSelectedLease(lease);
+          editForm.reset({
+            room_id: lease.room_id,
+            tenant_id: lease.tenant_id,
+            start_date: toDateInputValue(lease.start_date),
+            end_date: toDateInputValue(lease.end_date),
+            monthly_rent: lease.monthly_rent,
+            deposit: lease.deposit ?? 0,
+            water_rate: lease.water_rate ?? 0,
+            electricity_rate: lease.electricity_rate ?? 0,
+            notes: lease.notes ?? '',
+          });
+          setIsEditOpen(true);
+        }
+      }
     },
-    [editForm, editLease]
+    [filteredLeases, editForm]
+  );
+
+  const handleEditDialogOpenChange = useCallback(
+    (open: boolean) => {
+      setIsEditOpen(open);
+      if (!open) {
+        setSelectedLease(null);
+        setRowSelection({});
+      }
+    },
+    []
   );
 
   const columns = useMemo(
     () =>
       createLeaseColumns({
-        onEdit: handleEdit,
+        onEdit: (lease) => {
+          setSelectedLease(lease);
+          editForm.reset({
+            room_id: lease.room_id,
+            tenant_id: lease.tenant_id,
+            start_date: toDateInputValue(lease.start_date),
+            end_date: toDateInputValue(lease.end_date),
+            monthly_rent: lease.monthly_rent,
+            deposit: lease.deposit ?? 0,
+            water_rate: lease.water_rate ?? 0,
+            electricity_rate: lease.electricity_rate ?? 0,
+            notes: lease.notes ?? '',
+          });
+          setIsEditOpen(true);
+        },
         onTerminate: terminateConfirm.openFor,
         onDelete: deleteConfirm.openFor,
       }),
-    [deleteConfirm.openFor, handleEdit, terminateConfirm.openFor]
+    [deleteConfirm.openFor, terminateConfirm.openFor, editForm]
   );
 
   const handleFilterChange = useCallback(
@@ -90,16 +125,16 @@ export default function LeasesPage() {
     [setFilter]
   );
 
-  const handleEditDialogOpenChange = useCallback(
-    (open: boolean) => {
-      setIsEditOpen(open);
-
-      if (!open) {
-        editLease.clear();
-      }
-    },
-    [editLease]
-  );
+  // 筛选变化时重置行选择
+  const filtersRef = useRef(filters);
+  useEffect(() => {
+    if (filtersRef.current !== filters) {
+      filtersRef.current = filters;
+      setRowSelection({});
+      setSelectedLease(null);
+      setIsEditOpen(false);
+    }
+  }, [filters]);
 
   if (authLoading) {
     return (
@@ -129,66 +164,70 @@ export default function LeasesPage() {
             新增租约
           </Button>
         </div>
-          {leasesLoading ? (
-            <Skeleton className="h-96" />
-          ) : (
-            <DataTable
-              columns={columns}
-              data={filteredLeases}
-              testid={LEASES.LIST}
-              useCard={false}
-              toolbar={
-                <LeaseFilters
-                  apartments={apartments?.map((apartment) => ({ id: apartment.id, name: apartment.name })) ?? []}
-                  filters={filters}
-                  onFilterChange={handleFilterChange}
-                  onClearFilters={resetFilters}
-                />
-              }
-            />
-          )}
-        </div>
-
-        <LeaseSigningDrawer
-          orgId={orgId}
-          open={isCreateOpen}
-          onOpenChange={setIsCreateOpen}
-          onLeaseCreated={setPendingInitialReading}
-        />
-
-        {pendingInitialReading && (
-          <InitialReadingDialog
-            orgId={orgId}
-            roomId={pendingInitialReading.room_id}
-            roomDisplay={pendingInitialReading.room_display}
-            startDate={pendingInitialReading.start_date}
-            isHistoricalLeaseEntry={pendingInitialReading.is_historical_entry}
-            open={Boolean(pendingInitialReading)}
-            onOpenChange={(open) => !open && setPendingInitialReading(null)}
-            onSuccess={() => setPendingInitialReading(null)}
+        {leasesLoading ? (
+          <Skeleton className="h-96" />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={filteredLeases}
+            getRowId={(row) => row.id}
+            testid={LEASES.LIST}
+            enableRowSelection={true}
+            selectionMode="single"
+            rowSelection={rowSelection}
+            onRowSelectionChange={handleRowSelectionChange}
+            toolbar={
+              <LeaseFilters
+                apartments={apartments?.map((apartment) => ({ id: apartment.id, name: apartment.name })) ?? []}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onClearFilters={resetFilters}
+              />
+            }
           />
         )}
+      </div>
 
-        <LeaseEditDialog
-          open={isEditOpen}
-          onOpenChange={handleEditDialogOpenChange}
-          selectedLease={editLease.selected}
-          form={editForm}
-          onSubmit={(data) => updateMutation.mutate({ id: editLease.selected!.id, data })}
-          isPending={updateMutation.isPending}
-        />
+      <LeaseSigningDrawer
+        orgId={orgId}
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onLeaseCreated={setPendingInitialReading}
+      />
 
-        <LeaseTerminateDialog
-          {...terminateConfirm.dialogProps}
-          onConfirm={() => terminateConfirm.selectedItem && terminateMutation.mutate(terminateConfirm.selectedItem.id)}
-          isPending={terminateMutation.isPending}
+      {pendingInitialReading && (
+        <InitialReadingDialog
+          orgId={orgId}
+          roomId={pendingInitialReading.room_id}
+          roomDisplay={pendingInitialReading.room_display}
+          startDate={pendingInitialReading.start_date}
+          isHistoricalLeaseEntry={pendingInitialReading.is_historical_entry}
+          open={Boolean(pendingInitialReading)}
+          onOpenChange={(open) => !open && setPendingInitialReading(null)}
+          onSuccess={() => setPendingInitialReading(null)}
         />
+      )}
 
-        <LeaseDeleteDialog
-          {...deleteConfirm.dialogProps}
-          onConfirm={() => deleteConfirm.selectedItem && deleteMutation.mutate(deleteConfirm.selectedItem.id)}
-          isPending={deleteMutation.isPending}
-        />
+      <LeaseEditDialog
+        open={isEditOpen}
+        onOpenChange={handleEditDialogOpenChange}
+        selectedLease={selectedLease}
+        form={editForm}
+        onSubmit={(data) => updateMutation.mutate({ id: selectedLease!.id, data })}
+        isPending={updateMutation.isPending}
+      />
+
+      <LeaseTerminateDialog
+        {...terminateConfirm.dialogProps}
+        onConfirm={() => terminateConfirm.selectedItem && terminateMutation.mutate(terminateConfirm.selectedItem.id)}
+        isPending={terminateMutation.isPending}
+      />
+
+      <LeaseDeleteDialog
+        {...deleteConfirm.dialogProps}
+        onConfirm={() => deleteConfirm.selectedItem && deleteMutation.mutate(deleteConfirm.selectedItem.id)}
+        isPending={deleteMutation.isPending}
+      />
     </PermissionPageGuard>
   );
 }

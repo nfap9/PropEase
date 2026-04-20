@@ -81,9 +81,12 @@ export default function AdminRegisteredUsersPage() {
     [deleteConfirm.openFor, disableConfirm.openFor, setActiveMutation]
   );
 
-  const handleSearchSubmit = (event: FormEvent) => {
-    event.preventDefault();
-    patchFilters({ searchSubmitted: filters.search });
+  const handleSearchChange = (value: string) => {
+    setFilter('search', value);
+  };
+
+  const handleSearchSubmit = (value: string) => {
+    patchFilters({ searchSubmitted: value });
   };
 
   const openGiftDialog = () => {
@@ -110,13 +113,14 @@ export default function AdminRegisteredUsersPage() {
         columns={columns}
         data={users ?? []}
         testid="admin-registered-users-list"
-        useCard={false}
+        enableGlobalSearch={true}
+        globalFilter={filters.search}
+        onGlobalFilterChange={handleSearchChange}
+        onGlobalSearchSubmit={handleSearchSubmit}
+        searchPlaceholder="搜索用户名、手机号..."
         toolbar={
           <RegisteredUsersToolbar
             activeFilter={filters.activeFilter}
-            search={filters.search}
-            onSearchChange={(value) => setFilter('search', value)}
-            onSearchSubmit={handleSearchSubmit}
             onActiveFilterChange={(value) => setFilter('activeFilter', value)}
           />
         }
