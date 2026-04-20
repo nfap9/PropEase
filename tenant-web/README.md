@@ -1,6 +1,6 @@
 # Tenant Web
 
-租客端 Web 应用，基于 Next.js 14 构建，承载租客/二房东日常使用的业务界面。
+租客端 Web 应用，基于 Vite + React 构建，承载租客/二房东日常使用的业务界面。
 
 ## 本地开发
 
@@ -38,4 +38,3 @@ pnpm test:run
 
 - [租客端开发指南](./AGENTS.md)
 - [仓库总览](../README.md)
-- [E2E 测试指南](../e2e/AGENTS.md)

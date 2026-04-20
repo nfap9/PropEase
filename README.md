@@ -6,7 +6,7 @@
 
 | 层级 | 技术 |
 |------|------|
-| Web | Next.js 14, shadcn/ui, Tailwind CSS, TypeScript |
+| Web | React 18, Vite, antd, Tailwind CSS, TypeScript |
 | API | Node.js + Express + TypeScript |
 | 数据库 | PostgreSQL, Prisma |
 | 认证 | JWT |

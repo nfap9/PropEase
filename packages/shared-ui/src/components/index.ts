@@ -1,3 +1,0 @@
-export * from './primitives';
-export * from './shadcn';
-export * from './composed';

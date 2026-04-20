@@ -57,7 +57,3 @@ export function getAdminPermissionGroups(): Map<string, AdminPermissionOption[]>
   return map;
 }
 
-/** 所有运营权限码（用于将历史「*」展开为具体码） */
-export function getAllAdminPermissionCodes(): string[] {
-  return ADMIN_PERMISSION_OPTIONS.map((o) => o.code);
-}

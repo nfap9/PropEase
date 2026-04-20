@@ -15,7 +15,6 @@ Apartment Ultra 是一个公寓管理产品，核心能力包括：
 - `admin-web/`：运营后台前端，Vite + React Router，默认端口 `3001`
 - `packages/api-contract/`：接口契约相关共享包
 - `packages/web-api-client/`：前端 API 客户端（Axios + TanStack Query 封装）
-- `packages/shared-ui/`：共享 UI 组件
 - `docs/`：长期说明、规范、测试用例、设计稿
 - `docker/`：本地中间件和部署相关配置
 

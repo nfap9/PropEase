@@ -41,7 +41,6 @@ jobs:
             admin_web:
               - 'admin-web/**'
               - 'packages/api-contract/**'
-              - 'packages/shared-ui/**'
               - 'pnpm-lock.yaml'
             mobile:
               - 'mobile/**'
