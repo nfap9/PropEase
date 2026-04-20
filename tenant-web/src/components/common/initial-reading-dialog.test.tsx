@@ -92,7 +92,7 @@ describe('InitialReadingDialog', () => {
     renderDialog({ isHistoricalLeaseEntry: true });
 
     expect(screen.getByLabelText('读数日期')).toHaveValue('2026-03-29');
-    expect(screen.getByRole('link', { name: '历史水电记录' })).toHaveAttribute('href', '/utilities?tab=history');
+    expect(screen.getByRole('link', { name: '历史水电记录' })).toHaveAttribute('href', '/workspace/utilities?tab=history');
     expect(screen.getByText((content) => content.includes('历史租约已创建，建议先记录当前表底数。'))).toBeInTheDocument();
   });
 });

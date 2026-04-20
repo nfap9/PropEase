@@ -1,16 +1,13 @@
-import { lazy } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Button, Skeleton, Select, Table } from 'antd';
+import { HistoryFilters } from './HistoryFilters';
+import { HistoryTable } from './HistoryTable';
+import { EditUtilityDialog } from './EditUtilityDialog';
 import { apartmentsApi, billsApi, leasesApi, utilitiesApi } from '@/api';
-import { formatDate } from '@/utils/date';
-import { getErrorMessage } from '@/utils/error';
 import { filterEmptyStrings } from '@/utils/form';
-import { UtilityReading } from '@/types';
-import { Droplets, Pencil, Zap } from 'lucide-react';
-
-const EditUtilityDialog = lazy(() => import('./EditUtilityDialog').then((mod) => ({ default: mod.EditUtilityDialog })));
+import { getErrorMessage } from '@/utils/error';
+import type { UtilityReading } from '@/types';
 
 function getMonthsInLeasePeriod(startDate: string, endDate: string | null): { year: number; month: number }[] {
   const start = new Date(startDate);
@@ -35,14 +32,20 @@ interface LeaseMonthRow {
   electricityFee: number;
 }
 
-export function UtilityHistoryPanel({ orgId }: { orgId: string }) {
+interface UtilityHistoryPanelProps {
+  orgId: string;
+}
+
+export function UtilityHistoryPanel({ orgId }: UtilityHistoryPanelProps) {
   const queryClient = useQueryClient();
+
   const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
   const [selectedLeaseId, setSelectedLeaseId] = useState<string | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedUtility, setSelectedUtility] = useState<UtilityReading | null>(null);
 
-  const { data: apartments } = useQuery({
+  // 数据获取
+  const { data: apartments = [] } = useQuery({
     queryKey: ['apartments', orgId],
     queryFn: () => apartmentsApi.list(),
     enabled: !!orgId,
@@ -54,6 +57,7 @@ export function UtilityHistoryPanel({ orgId }: { orgId: string }) {
     enabled: !!orgId,
   });
 
+  // 根据选中公寓过滤租约
   const leasesInApartment = useMemo(() => {
     if (!selectedApartmentId) return [];
     return activeLeases
@@ -61,13 +65,16 @@ export function UtilityHistoryPanel({ orgId }: { orgId: string }) {
       .sort((a, b) => new Date(b.start_date).getTime() - new Date(a.start_date).getTime());
   }, [activeLeases, selectedApartmentId]);
 
+  // 自动选择第一个租约
   useEffect(() => {
     if (!selectedApartmentId) {
       setSelectedLeaseId(null);
       return;
     }
-    setSelectedLeaseId(leasesInApartment[0]?.id ?? null);
-  }, [leasesInApartment, selectedApartmentId]);
+    if (leasesInApartment.length > 0 && !selectedLeaseId) {
+      setSelectedLeaseId(leasesInApartment[0]?.id ?? null);
+    }
+  }, [selectedApartmentId, leasesInApartment, selectedLeaseId]);
 
   const selectedLease = useMemo(
     () => activeLeases.find((lease) => lease.id === selectedLeaseId) ?? null,
@@ -86,6 +93,7 @@ export function UtilityHistoryPanel({ orgId }: { orgId: string }) {
     enabled: !!selectedLeaseId,
   });
 
+  // 构建月份行数据
   const leaseMonthRows = useMemo((): LeaseMonthRow[] => {
     if (!selectedLease) return [];
 
@@ -118,6 +126,7 @@ export function UtilityHistoryPanel({ orgId }: { orgId: string }) {
     });
   }, [leaseBills, leaseUtilities, selectedLease]);
 
+  // 更新 mutation
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Parameters<typeof utilitiesApi.update>[1] }) =>
       utilitiesApi.update(id, filterEmptyStrings(data) as Parameters<typeof utilitiesApi.update>[1]),
@@ -131,122 +140,32 @@ export function UtilityHistoryPanel({ orgId }: { orgId: string }) {
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
-  const columns = [
-    { title: '月份', dataIndex: 'label', key: 'label' },
-    {
-      title: '记录日期',
-      dataIndex: 'reading',
-      key: 'reading_date',
-      render: (reading: UtilityReading | null) => reading ? formatDate(reading.reading_date) : '—',
-    },
-    {
-      title: (
-        <span className="flex items-center gap-1">
-          <Droplets className="h-4 w-4 text-blue-500" />
-          水表 (m³)
-        </span>
-      ),
-      dataIndex: 'reading',
-      key: 'water_reading',
-      render: (reading: UtilityReading | null) => reading?.water_reading != null ? reading.water_reading : '—',
-    },
-    {
-      title: (
-        <span className="flex items-center gap-1">
-          <Zap className="h-4 w-4 text-yellow-500" />
-          电表 (kWh)
-        </span>
-      ),
-      dataIndex: 'reading',
-      key: 'electricity_reading',
-      render: (reading: UtilityReading | null) => reading?.electricity_reading != null ? reading.electricity_reading : '—',
-    },
-    {
-      title: '水费',
-      dataIndex: 'waterFee',
-      key: 'waterFee',
-      render: (fee: number) => fee > 0 ? fee.toFixed(2) : '—',
-    },
-    {
-      title: '电费',
-      dataIndex: 'electricityFee',
-      key: 'electricityFee',
-      render: (fee: number) => fee > 0 ? fee.toFixed(2) : '—',
-    },
-    {
-      title: '',
-      dataIndex: 'reading',
-      key: 'actions',
-      render: (reading: UtilityReading | null, record: LeaseMonthRow) =>
-        reading && (
-          <Button
-            variant="text"
-            size="small"
-            className="h-8 w-8 p-0"
-            onClick={() => {
-              setSelectedUtility(reading);
-              setIsEditOpen(true);
-            }}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-        ),
-    },
-  ];
+  const handleEdit = (reading: UtilityReading) => {
+    setSelectedUtility(reading);
+    setIsEditOpen(true);
+  };
 
   return (
     <div className="space-y-4">
-      {/* 筛选器 */}
-      <div className="flex items-center gap-4">
-        <Select
-          value={selectedApartmentId ?? undefined}
-          onChange={(value) => setSelectedApartmentId(value ?? null)}
-          placeholder="选择公寓"
-          style={{ width: 200 }}
-          options={[
-            { value: '', label: '选择公寓' },
-            ...(apartments?.map((apartment) => ({
-              value: apartment.id,
-              label: apartment.name,
-            })) ?? []),
-          ]}
-        />
+      <HistoryFilters
+        apartments={apartments}
+        leases={activeLeases}
+        selectedApartmentId={selectedApartmentId}
+        selectedLeaseId={selectedLeaseId}
+        onApartmentChange={setSelectedApartmentId}
+        onLeaseChange={setSelectedLeaseId}
+        loading={leasesLoading}
+      />
 
-        {selectedApartmentId && (
-          <Select
-            value={selectedLeaseId ?? undefined}
-            onChange={(value) => setSelectedLeaseId(value ?? null)}
-            placeholder="选择租约"
-            style={{ width: 240 }}
-            options={[
-              { value: '', label: '选择租约' },
-              ...(leasesLoading
-                ? [{ value: 'loading', label: '加载中...', disabled: true }]
-                : leasesInApartment.length === 0
-                  ? [{ value: 'empty', label: '暂无生效租约', disabled: true }]
-                  : leasesInApartment.map((lease) => ({
-                    value: lease.id,
-                    label: `${lease.room?.room_number} - ${lease.tenant?.name ?? '无租客'}`,
-                  }))),
-            ]}
-          />
-        )}
-      </div>
-
-      {/* 历史记录表格 */}
       {selectedLease && (
-        <div className="rounded-lg border">
-          <Table
-            columns={columns}
-            dataSource={leaseMonthRows.map((row) => ({ ...row, key: `${row.year}-${row.month}` }))}
-            pagination={false}
-            loading={utilitiesLoading || billsLoading}
-            locale={{ emptyText: '暂无可展示的月份' }}
-          />
-        </div>
+        <HistoryTable
+          data={leaseMonthRows}
+          loading={utilitiesLoading || billsLoading}
+          onEdit={handleEdit}
+        />
       )}
 
-      {isEditOpen && selectedUtility ? (
+      {isEditOpen && selectedUtility && (
         <EditUtilityDialog
           open={isEditOpen}
           onOpenChange={setIsEditOpen}
@@ -256,7 +175,7 @@ export function UtilityHistoryPanel({ orgId }: { orgId: string }) {
           isPending={updateMutation.isPending}
           utility={selectedUtility}
         />
-      ) : null}
+      )}
     </div>
   );
 }
