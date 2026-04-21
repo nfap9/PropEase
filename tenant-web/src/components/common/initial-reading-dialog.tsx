@@ -4,8 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Modal, Button, Input, DatePicker, message } from 'antd';
-import { Label } from '@/components/common/label';
+import { Modal, Button, Input, DatePicker, Form } from 'antd';
 import { utilitiesApi } from '@/api/utilities';
 import { filterEmptyStrings } from '@/utils/form';
 import { getErrorMessage } from '@/utils/error';
@@ -130,63 +129,54 @@ export function InitialReadingDialog({
           '签约后需记录初始水电表读数，便于后续出账计算。可填写后保存，或跳过稍后在水电录入页补录。'
         )}
       </div>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <div className="space-y-2">
-          <Label>房间</Label>
+      <Form
+        layout="vertical"
+        onFinish={form.handleSubmit(handleSubmit)}
+        className="space-y-4"
+      >
+        <Form.Item label="房间">
           <Input value={roomDisplay} disabled />
-        </div>
-        <div className="space-y-2">
-          <Label>月份</Label>
+        </Form.Item>
+        <Form.Item label="月份">
           <Input value={`${periodYear}年${periodMonth}月`} disabled />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="initial-reading_date">读数日期</Label>
+        </Form.Item>
+        <Form.Item
+          label="读数日期"
+          name="reading_date"
+          validateStatus={form.formState.errors.reading_date ? 'error' : ''}
+          help={form.formState.errors.reading_date?.message}
+        >
           <Controller
             name="reading_date"
             control={form.control}
             render={({ field }) => (
               <DatePicker
-                id="initial-reading_date"
                 value={field.value || ''}
                 onChange={(_, dateString) => field.onChange(dateString)}
                 className="w-full"
               />
             )}
           />
-        </div>
+        </Form.Item>
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="initial-water">
-              <span className="flex items-center gap-2">
-                <Droplets className="h-4 w-4 text-blue-500" />
-                水表读数 (m³)
-              </span>
-            </Label>
+          <Form.Item label={<span className="flex items-center gap-2"><Droplets className="h-4 w-4 text-blue-500" />水表读数 (m³)</span>}>
             <Input
-              id="initial-water"
               type="number"
               step="0.01"
               placeholder="选填"
               {...form.register('water_reading', { valueAsNumber: true })}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="initial-electricity">
-              <span className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-yellow-500" />
-                电表读数 (kWh)
-              </span>
-            </Label>
+          </Form.Item>
+          <Form.Item label={<span className="flex items-center gap-2"><Zap className="h-4 w-4 text-yellow-500" />电表读数 (kWh)</span>}>
             <Input
-              id="initial-electricity"
               type="number"
               step="0.01"
               placeholder="选填"
               {...form.register('electricity_reading', { valueAsNumber: true })}
             />
-          </div>
+          </Form.Item>
         </div>
-      </form>
+      </Form>
     </Modal>
   );
 }

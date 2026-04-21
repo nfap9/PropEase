@@ -5,8 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Modal, Button, Input, message } from 'antd';
-import { Label } from '@/components/common/label';
+import { Modal, Button, Input, Form } from 'antd';
 import { tenantsApi } from '@/api/tenants';
 import { filterEmptyStrings } from '@/utils/form';
 import { getErrorMessage } from '@/utils/error';
@@ -86,46 +85,46 @@ export function CreateTenantDialog({ orgId, open, onOpenChange, onSuccess }: Cre
         </Button>,
       ]}
     >
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <Form
+        layout="vertical"
+        onFinish={form.handleSubmit(handleSubmit)}
+        className="space-y-4"
+      >
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="tenant-name" required>
-              姓名
-            </Label>
-            <Input id="tenant-name" placeholder="请输入租客姓名" {...form.register('name')} />
-            {form.formState.errors.name && (
-              <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="tenant-phone" required>
-              联系电话
-            </Label>
-            <Input id="tenant-phone" placeholder="请输入联系电话" {...form.register('phone')} />
-            {form.formState.errors.phone && (
-              <p className="text-sm text-red-500">{form.formState.errors.phone.message}</p>
-            )}
-          </div>
+          <Form.Item
+            label="姓名"
+            name="name"
+            required
+            validateStatus={form.formState.errors.name ? 'error' : ''}
+            help={form.formState.errors.name?.message}
+          >
+            <Input placeholder="请输入租客姓名" {...form.register('name')} />
+          </Form.Item>
+          <Form.Item
+            label="联系电话"
+            name="phone"
+            required
+            validateStatus={form.formState.errors.phone ? 'error' : ''}
+            help={form.formState.errors.phone?.message}
+          >
+            <Input placeholder="请输入联系电话" {...form.register('phone')} />
+          </Form.Item>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="tenant-id_card">身份证号</Label>
-          <Input id="tenant-id_card" placeholder="请输入身份证号" {...form.register('id_card')} />
-        </div>
+        <Form.Item label="身份证号" name="id_card">
+          <Input placeholder="请输入身份证号" {...form.register('id_card')} />
+        </Form.Item>
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="tenant-emergency_contact">紧急联系人</Label>
-            <Input id="tenant-emergency_contact" placeholder="请输入紧急联系人" {...form.register('emergency_contact')} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="tenant-emergency_phone">紧急联系电话</Label>
-            <Input id="tenant-emergency_phone" placeholder="请输入紧急联系电话" {...form.register('emergency_phone')} />
-          </div>
+          <Form.Item label="紧急联系人" name="emergency_contact">
+            <Input placeholder="请输入紧急联系人" {...form.register('emergency_contact')} />
+          </Form.Item>
+          <Form.Item label="紧急联系电话" name="emergency_phone">
+            <Input placeholder="请输入紧急联系电话" {...form.register('emergency_phone')} />
+          </Form.Item>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="tenant-notes">备注</Label>
-          <Input id="tenant-notes" placeholder="请输入备注" {...form.register('notes')} />
-        </div>
-      </form>
+        <Form.Item label="备注" name="notes">
+          <Input placeholder="请输入备注" {...form.register('notes')} />
+        </Form.Item>
+      </Form>
     </Modal>
   );
 }
