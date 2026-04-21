@@ -5,8 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Button, Modal, Input, Card, Skeleton, Tag, Select, Dropdown, type MenuProps } from 'antd';
-import { Label } from '@/components/common/label';
+import { Button, Modal, Input, Card, Skeleton, Tag, Select, Dropdown, Form, type MenuProps } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
@@ -237,34 +236,36 @@ export default function TeamMembersPage() {
         <div className="mb-4 text-muted-foreground">
           {tenantMessages.settings.team.inviteDialogDescription}
         </div>
-        <form onSubmit={inviteForm.handleSubmit((data) => inviteMutation.mutate(data))} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="phone">
-              手机号 <span aria-hidden="true">*</span>
-            </Label>
+        <Form
+          layout="vertical"
+          onFinish={inviteForm.handleSubmit((data) => inviteMutation.mutate(data))}
+          className="space-y-4"
+        >
+          <Form.Item
+            label="手机号"
+            name="phone"
+            required
+            validateStatus={inviteForm.formState.errors.phone ? 'error' : ''}
+            help={inviteForm.formState.errors.phone?.message}
+          >
             <Input
-              id="phone"
               type="tel"
               placeholder={tenantMessages.settings.team.phonePlaceholder}
-              aria-required
               {...inviteForm.register('phone')}
             />
-            {inviteForm.formState.errors.phone && (
-              <p className="text-sm text-red-500">{inviteForm.formState.errors.phone.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="role_id">
-              {tenantMessages.settings.team.labels.inviteIdentity} <span aria-hidden="true">*</span>
-            </Label>
+          </Form.Item>
+          <Form.Item
+            label={tenantMessages.settings.team.labels.inviteIdentity}
+            name="role_id"
+            required
+          >
             <Select
-              id="role_id"
               className="w-full"
               value={inviteForm.watch('role_id')}
               onChange={(value: string) => inviteForm.setValue('role_id', value)}
               options={assignableRoles.map((role) => ({ label: role.name, value: role.id }))}
             />
-          </div>
+          </Form.Item>
           <div className="flex justify-end gap-2">
             <Button onClick={() => setIsInviteOpen(false)}>
               取消
@@ -275,7 +276,7 @@ export default function TeamMembersPage() {
                 : tenantMessages.settings.team.inviteSubmit}
             </Button>
           </div>
-        </form>
+        </Form>
       </Modal>
 
       <Modal
