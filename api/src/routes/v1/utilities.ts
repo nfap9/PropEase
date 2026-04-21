@@ -38,31 +38,47 @@ const BatchReadingSchema = z.object({
   ),
 });
 
+// Query schemas for list and export
+const UtilityQuerySchema = z.object({
+  room_id: z.string().optional(),
+  apartment_id: z.string().optional(),
+  period_year: z.number().optional(),
+  period_month: z.number().optional(),
+});
+
+const UtilityExportSchema = z.object({
+  period_year: z.number().optional(),
+  period_month: z.number().optional(),
+  days_range: z.number().optional(),
+});
+
 /**
  * @openapi
- * /utilities:
- *   get:
+ * /utilities/query:
+ *   post:
  *     summary: 获取水电读数列表
  *     tags: [水电管理]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: room_id
- *         schema:
- *           type: string
- *       - in: query
- *         name: apartment_id
- *         schema:
- *           type: string
- *       - in: query
- *         name: period_year
- *         schema:
- *           type: integer
- *       - in: query
- *         name: period_month
- *         schema:
- *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               room_id:
+ *                 type: string
+ *                 description: 房间ID
+ *               apartment_id:
+ *                 type: string
+ *                 description: 公寓ID
+ *               period_year:
+ *                 type: integer
+ *                 description: 账单年份
+ *               period_month:
+ *                 type: integer
+ *                 description: 账单月份
  *     responses:
  *       200:
  *         description: 水电读数列表
@@ -73,14 +89,16 @@ const BatchReadingSchema = z.object({
  *               items:
  *                 $ref: '#/components/schemas/UtilityReading'
  */
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/query', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
+    const parsed = UtilityQuerySchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const filter: ReadingFilter = {
-      roomId: typeof req.query.room_id === 'string' ? req.query.room_id : undefined,
-      apartmentId: typeof req.query.apartment_id === 'string' ? req.query.apartment_id : undefined,
-      periodYear: req.query.period_year != null ? Number(req.query.period_year) : undefined,
-      periodMonth: req.query.period_month != null ? Number(req.query.period_month) : undefined,
+      roomId: parsed.data.room_id,
+      apartmentId: parsed.data.apartment_id,
+      periodYear: parsed.data.period_year,
+      periodMonth: parsed.data.period_month,
     };
     const list = await defaultUtilityService.list(orgId, filter);
     res.json(list);
@@ -127,25 +145,27 @@ router.get('/rooms-missing-initial', async (req: Request, res: Response, next: N
 /**
  * @openapi
  * /utilities/export:
- *   get:
+ *   post:
  *     summary: 获取水电导出列表
  *     tags: [水电管理]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: period_year
- *         schema:
- *           type: integer
- *       - in: query
- *         name: period_month
- *         schema:
- *           type: integer
- *       - in: query
- *         name: days_range
- *         schema:
- *           type: integer
- *         description: 最近N天内未录入读数的筛选
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               period_year:
+ *                 type: integer
+ *                 description: 账单年份
+ *               period_month:
+ *                 type: integer
+ *                 description: 账单月份
+ *               days_range:
+ *                 type: integer
+ *                 description: 最近N天内未录入读数的筛选
  *     responses:
  *       200:
  *         description: 导出数据列表
@@ -156,18 +176,17 @@ router.get('/rooms-missing-initial', async (req: Request, res: Response, next: N
  *               items:
  *                 type: object
  */
-router.get('/export', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/export', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const periodYear = req.query.period_year != null ? Number(req.query.period_year) : undefined;
-    const periodMonth = req.query.period_month != null ? Number(req.query.period_month) : undefined;
-    const daysRange = req.query.days_range != null ? Number(req.query.days_range) : undefined;
+    const parsed = UtilityExportSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
 
     const exportList = await defaultUtilityService.getExportList(
       orgId,
-      periodYear,
-      periodMonth,
-      daysRange
+      parsed.data.period_year,
+      parsed.data.period_month,
+      parsed.data.days_range
     );
     res.json(exportList);
   } catch (e) {
