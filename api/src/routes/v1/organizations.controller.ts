@@ -1,5 +1,4 @@
 import { type Request, type Response, type NextFunction } from 'express';
-import { z } from 'zod';
 import { requireOrgMembership, requirePermission } from '../../utils/orgContext.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
@@ -20,22 +19,14 @@ import { defaultRoomRepo } from '../../repositories/room.repo.js';
 import { defaultTenantRepo } from '../../repositories/tenant.repo.js';
 import { defaultLeaseRepo } from '../../repositories/lease.repo.js';
 import { defaultBillRepo } from '../../repositories/bill.repo.js';
+import {
+  OrganizationCreateSchema,
+  OrganizationUpdateSchema,
+  ConfirmDeleteSchema,
+} from '../../lib/schemas.js';
 
-// ==================== Schemas ====================
-
-export const CreateOrgSchema = z.object({
-  name: z.string().min(1),
-  slug: z.string().optional(),
-  notes: z.string().max(1000).optional(),
-});
-
-export const UpdateOrgSchema = z.object({
-  name: z.string().min(1).optional(),
-  settings: z.record(z.unknown()).optional(),
-  notes: z.string().max(1000).optional(),
-});
-
-export const ConfirmDeleteSchema = z.object({ confirmed_name: z.string().min(1) });
+// Re-export for backward compatibility
+export { OrganizationCreateSchema, OrganizationUpdateSchema, ConfirmDeleteSchema };
 
 // ==================== Helpers ====================
 

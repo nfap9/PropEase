@@ -1,5 +1,4 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { z } from 'zod';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership, requirePermission } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
@@ -7,67 +6,41 @@ import { Messages } from '../../messages.js';
 import { defaultLeaseService } from '../../services/lease.service.js';
 import { defaultLeaseChangeLogService } from '../../services/leaseChangeLog.service.js';
 import { settleLease } from '../../services/leaseSettlement.service.js';
+import {
+  LeaseChangeRoomSchema,
+  LeaseRenewSchema,
+  LeaseUpdateTenantSchema,
+  LeaseChangeRentSchema,
+  LeaseChangeUtilityRatesSchema,
+  LeaseChangeDepositSchema,
+  LeaseUpdateFeeItemsSchema,
+  LeaseSetFeeItemsSchema,
+} from '../lib/schemas.js';
+
+// Re-export for backward compatibility
+const ChangeRoomSchema = LeaseChangeRoomSchema;
+const RenewSchema = LeaseRenewSchema;
+const UpdateTenantSchema = LeaseUpdateTenantSchema;
+const ChangeRentSchema = LeaseChangeRentSchema;
+const ChangeUtilityRatesSchema = LeaseChangeUtilityRatesSchema;
+const ChangeDepositSchema = LeaseChangeDepositSchema;
+const UpdateFeeItemsSchema = LeaseUpdateFeeItemsSchema;
+const SetLeaseFeeItemsSchema = LeaseSetFeeItemsSchema;
+
+export {
+  ChangeRoomSchema,
+  RenewSchema,
+  UpdateTenantSchema,
+  ChangeRentSchema,
+  ChangeUtilityRatesSchema,
+  ChangeDepositSchema,
+  UpdateFeeItemsSchema,
+  SetLeaseFeeItemsSchema,
+};
 
 const router: Router = Router();
 
 router.use(requireConsoleAuth);
-
-const ChangeRoomSchema = z.object({
-  new_roomId: z.string(),
-  changeDate: z.string(),
-  reason: z.string().optional(),
-});
-
-const RenewSchema = z.object({
-  newEndDate: z.string(),
-  reason: z.string().optional(),
-});
-
-const UpdateTenantSchema = z.object({
-  newTenantId: z.string(),
-});
-
-const ChangeRentSchema = z.object({
-  newRent: z.number(),
-  effectiveFromYear: z.number(),
-  effectiveFromMonth: z.number(),
-  reason: z.string().optional(),
-});
-
-const ChangeUtilityRatesSchema = z.object({
-  waterRate: z.number(),
-  electricityRate: z.number(),
-  effectiveFromYear: z.number(),
-  effectiveFromMonth: z.number(),
-});
-
-const ChangeDepositSchema = z.object({
-  newDeposit: z.number(),
-  reason: z.string().optional(),
-});
-
-const UpdateFeeItemsSchema = z.object({
-  feeItems: z.array(
-    z.object({
-      fee_type_id: z.string(),
-      specification_id: z.string().optional(),
-      quantity: z.number(),
-    })
-  ),
-  effectiveFromYear: z.number(),
-  effectiveFromMonth: z.number(),
-});
-
-// 直接设置租约费用项目（替换模式）- 支持直接输入费用
-const SetLeaseFeeItemsSchema = z.object({
-  feeItems: z.array(
-    z.object({
-      fee_type_id: z.string().optional(), // 可选，关联费用类型
-      fee_name: z.string(), // 费用名称
-      fee_amount: z.number(), // 费用金额
-      fee_cycle: z.enum(['monthly', 'quarterly', 'yearly', 'one_time']).default('monthly'), // 计费周期
-      quantity: z.number().optional().default(1), // 数量
-      notes: z.string().optional(), // 备注
     })
   ),
 });

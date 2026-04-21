@@ -1,22 +1,13 @@
 import { type Request, type Response, type NextFunction } from 'express';
-import { z } from 'zod';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
 import { defaultBillingService } from '../../services/billing.service.js';
 import { defaultBillingOrderRepo } from '../../repositories/billing-order.repo.js';
 import { prisma } from '../../lib/prisma.js';
+import { CreateOrderSchema, PreviewOrderSchema } from '../../lib/schemas.js';
 
-// ==================== Schemas ====================
-
-export const CreateOrderSchema = z.object({
-  service_id: z.string(),
-  billing_months: z.number().int().min(1).max(36).optional().default(1),
-});
-
-const PreviewOrderSchema = z.object({
-  service_id: z.string(),
-  billing_months: z.number().int().min(1).max(36).optional().default(1),
-});
+// Re-export for backward compatibility
+export { CreateOrderSchema, PreviewOrderSchema };
 
 // ==================== Handlers ====================
 

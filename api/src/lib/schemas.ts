@@ -1,6 +1,6 @@
 /**
  * 共享的 Zod Schemas
- * 
+ *
  * 注意：这些 schemas 用于运行时验证
  * OpenAPI 文档定义在 swagger.ts 中，手动保持同步
  */
@@ -34,7 +34,36 @@ export const TokenResponseSchema = z.object({
   token_type: z.string().default('Bearer'),
 });
 
+// ==================== Organization ====================
+
+export const OrganizationCreateSchema = z.object({
+  name: z.string().min(1, '请输入团队名称'),
+  slug: z.string().optional(),
+  notes: z.string().max(1000).optional(),
+});
+
+export const OrganizationUpdateSchema = z.object({
+  name: z.string().min(1).optional(),
+  settings: z.record(z.unknown()).optional(),
+  notes: z.string().max(1000).optional(),
+});
+
+export const ConfirmDeleteSchema = z.object({
+  confirmed_name: z.string().min(1),
+});
+
 // ==================== Apartment ====================
+
+export const FacilityItemSchema = z.object({
+  code: z.string(),
+  quantity: z.number().int().min(1),
+});
+
+export const RoomFacilitiesSchema = z.object({
+  version: z.literal(1),
+  furniture: z.array(FacilityItemSchema),
+  appliances: z.array(FacilityItemSchema),
+});
 
 export const ApartmentCreateSchema = z.object({
   name: z.string().min(1, '请输入公寓名称'),
@@ -43,11 +72,12 @@ export const ApartmentCreateSchema = z.object({
   floors: z.number().int().min(1).optional(),
   land_area: z.number().min(0).optional(),
   total_area: z.number().min(0).optional(),
-  landlord_name: z.string().optional(),
-  landlord_contact: z.string().optional(),
+  landlord_name: z.string().max(100).optional(),
+  landlord_contact: z.string().max(50).optional(),
   contract_start: z.string().optional(),
   contract_end: z.string().optional(),
   landlord_rent: z.number().optional(),
+  operating_cost: z.number().min(0).optional(),
 });
 
 export const ApartmentUpdateSchema = ApartmentCreateSchema.partial();
@@ -55,16 +85,32 @@ export const ApartmentUpdateSchema = ApartmentCreateSchema.partial();
 // ==================== Room ====================
 
 export const RoomCreateSchema = z.object({
+  apartment_id: z.string().min(1, '请选择公寓'),
   room_number: z.string().min(1, '请输入房间号'),
-  floor: z.number().int().optional(),
-  area: z.number().optional(),
   layout: z.string().optional(),
-  monthly_rent: z.number().min(0),
+  area: z.number().optional(),
   notes: z.string().optional(),
-  facilities: z.array(z.string()).optional(),
+  facilities: RoomFacilitiesSchema.nullable().optional(),
+  monthly_rent: z.number().min(0).optional(),
 });
 
-export const RoomUpdateSchema = RoomCreateSchema.partial();
+export const RoomUpdateSchema = z.object({
+  room_number: z.string().optional(),
+  layout: z.string().optional(),
+  maintenance: z.boolean().optional(),
+  area: z.number().optional(),
+  notes: z.string().optional(),
+  facilities: RoomFacilitiesSchema.nullable().optional(),
+  monthly_rent: z.number().min(0).optional(),
+});
+
+export const RoomBatchSchema = z.object({
+  room_numbers: z.array(z.string()),
+  layout: z.string().optional(),
+  area: z.number().optional(),
+  notes: z.string().optional(),
+  monthly_rent: z.number().min(0).optional(),
+});
 
 // ==================== Tenant ====================
 
@@ -99,6 +145,62 @@ export const LeaseCreateSchema = z.object({
     quantity: z.number().optional(),
     notes: z.string().optional(),
   })).optional(),
+});
+
+// Lease operation schemas
+export const LeaseChangeRoomSchema = z.object({
+  new_roomId: z.string(),
+  changeDate: z.string(),
+  reason: z.string().optional(),
+});
+
+export const LeaseRenewSchema = z.object({
+  newEndDate: z.string(),
+  reason: z.string().optional(),
+});
+
+export const LeaseUpdateTenantSchema = z.object({
+  newTenantId: z.string(),
+});
+
+export const LeaseChangeRentSchema = z.object({
+  newRent: z.number(),
+  effectiveFromYear: z.number(),
+  effectiveFromMonth: z.number(),
+  reason: z.string().optional(),
+});
+
+export const LeaseChangeUtilityRatesSchema = z.object({
+  waterRate: z.number(),
+  electricityRate: z.number(),
+  effectiveFromYear: z.number(),
+  effectiveFromMonth: z.number(),
+});
+
+export const LeaseChangeDepositSchema = z.object({
+  newDeposit: z.number(),
+  reason: z.string().optional(),
+});
+
+export const LeaseUpdateFeeItemsSchema = z.object({
+  feeItems: z.array(z.object({
+    fee_type_id: z.string().optional(),
+    specification_id: z.string().optional(),
+    quantity: z.number(),
+  })),
+  effectiveFromYear: z.number(),
+  effectiveFromMonth: z.number(),
+});
+
+export const LeaseSetFeeItemsSchema = z.object({
+  feeItems: z.array(z.object({
+    fee_type_id: z.string().optional(),
+    fee_name: z.string(),
+    fee_amount: z.number(),
+    fee_cycle: z.enum(['monthly', 'quarterly', 'yearly', 'one_time']).default('monthly'),
+    quantity: z.number().optional().default(1),
+    notes: z.string().optional(),
+  })),
 });
 
 // ==================== Bill ====================
@@ -188,6 +290,17 @@ export const UtilityExportSchema = z.object({
   days_range: z.number().int().optional(),
 });
 
+// ==================== Utility Config ====================
+
+export const UtilityConfigSchema = z.object({
+  water_price_per_unit: z.number().min(0).optional(),
+  electricity_price_per_unit: z.number().min(0).optional(),
+  internet_fee: z.number().min(0).optional(),
+  management_fee: z.number().min(0).optional(),
+  service_fee: z.number().min(0).optional(),
+  cleaning_fee: z.number().min(0).optional(),
+});
+
 // ==================== Notification ====================
 
 export const NotificationQuerySchema = z.object({
@@ -196,15 +309,14 @@ export const NotificationQuerySchema = z.object({
   limit: z.number().int().min(1).max(100).optional(),
 });
 
-// ==================== Organization ====================
+// ==================== Subscription ====================
 
-export const OrganizationCreateSchema = z.object({
-  name: z.string().min(1, '请输入团队名称'),
-  slug: z.string().optional(),
+export const CreateOrderSchema = z.object({
+  service_id: z.string(),
+  billing_months: z.number().int().min(1).max(36).optional().default(1),
 });
 
-export const OrganizationUpdateSchema = z.object({
-  name: z.string().optional(),
-  notes: z.string().optional(),
-  settings: z.record(z.unknown()).optional(),
+export const PreviewOrderSchema = z.object({
+  service_id: z.string(),
+  billing_months: z.number().int().min(1).max(36).optional().default(1),
 });

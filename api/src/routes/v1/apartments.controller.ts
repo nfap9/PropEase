@@ -1,5 +1,4 @@
 import { type Request, type Response, type NextFunction } from 'express';
-import { z } from 'zod';
 import { requireOrgMembership, requirePermission } from '../../utils/orgContext.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
@@ -9,86 +8,28 @@ import { defaultApartmentService } from '../../services/apartment.service.js';
 import { defaultApartmentRepo } from '../../repositories/apartment.repo.js';
 import { defaultRoomService } from '../../services/room.service.js';
 import { defaultUtilityConfigService } from '../../services/utilityConfig.service.js';
+import {
+  ApartmentCreateSchema,
+  ApartmentUpdateSchema,
+  FacilityItemSchema,
+  RoomFacilitiesSchema,
+  RoomCreateSchema,
+  RoomUpdateSchema,
+  RoomBatchSchema,
+  UtilityConfigSchema,
+} from '../../lib/schemas.js';
 
-// ==================== Schemas ====================
-
-export const ApartmentCreateSchema = z.object({
-  name: z.string().min(1),
-  address: z.string().optional(),
-  description: z.string().optional(),
-  floors: z.number().int().min(1).optional(),
-  land_area: z.number().min(0).optional(),
-  total_area: z.number().min(0).optional(),
-  landlord_name: z.string().max(100).optional(),
-  landlord_contact: z.string().max(50).optional(),
-  contract_start: z.string().optional(),
-  contract_end: z.string().optional(),
-  landlord_rent: z.number().min(0).optional(),
-  operating_cost: z.number().min(0).optional(),
-});
-
-export const ApartmentUpdateSchema = z.object({
-  name: z.string().min(1).optional(),
-  address: z.string().optional(),
-  description: z.string().optional(),
-  floors: z.number().int().min(1).optional(),
-  land_area: z.number().min(0).optional(),
-  total_area: z.number().min(0).optional(),
-  landlord_name: z.string().max(100).optional(),
-  landlord_contact: z.string().max(50).optional(),
-  contract_start: z.string().optional(),
-  contract_end: z.string().optional(),
-  landlord_rent: z.number().min(0).optional(),
-  operating_cost: z.number().min(0).optional(),
-});
-
-export const FacilityItemSchema = z.object({
-  code: z.string(),
-  quantity: z.number().int().min(1),
-});
-
-export const RoomFacilitiesSchema = z.object({
-  version: z.literal(1),
-  furniture: z.array(FacilityItemSchema),
-  appliances: z.array(FacilityItemSchema),
-});
-
-export const RoomCreateSchema = z.object({
-  apartment_id: z.string(),
-  room_number: z.string().min(1),
-  layout: z.string().optional(),
-  area: z.number().optional(),
-  notes: z.string().optional(),
-  facilities: RoomFacilitiesSchema.nullable().optional(),
-  monthly_rent: z.number().min(0).optional(),
-});
-
-export const RoomBatchSchema = z.object({
-  room_numbers: z.array(z.string()),
-  layout: z.string().optional(),
-  area: z.number().optional(),
-  notes: z.string().optional(),
-  monthly_rent: z.number().min(0).optional(),
-});
-
-export const RoomUpdateSchema = z.object({
-  room_number: z.string().optional(),
-  layout: z.string().optional(),
-  maintenance: z.boolean().optional(),
-  area: z.number().optional(),
-  notes: z.string().optional(),
-  facilities: RoomFacilitiesSchema.nullable().optional(),
-  monthly_rent: z.number().min(0).optional(),
-});
-
-export const UtilityConfigSchema = z.object({
-  water_price_per_unit: z.number().min(0).optional(),
-  electricity_price_per_unit: z.number().min(0).optional(),
-  internet_fee: z.number().min(0).optional(),
-  management_fee: z.number().min(0).optional(),
-  service_fee: z.number().min(0).optional(),
-  notes: z.string().max(500).optional(),
-});
+// Re-export for backward compatibility
+export {
+  ApartmentCreateSchema,
+  ApartmentUpdateSchema,
+  FacilityItemSchema,
+  RoomFacilitiesSchema,
+  RoomCreateSchema,
+  RoomUpdateSchema,
+  RoomBatchSchema,
+  UtilityConfigSchema,
+};
 
 
 // ==================== Handlers ====================
