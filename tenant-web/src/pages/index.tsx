@@ -14,7 +14,7 @@ export default function HomePage() {
       if (isAuthenticated) {
         navigate(getPostAuthRedirectPath(organizations, organization), { replace: true });
       } else {
-        navigate('/tenant/login', { replace: true });
+        navigate('/login', { replace: true });
       }
     }
   }, [isAuthenticated, isLoading, organization, organizations, navigate]);

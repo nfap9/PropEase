@@ -35,7 +35,7 @@ export const api = createBrowserApiClient({
   // 刷新 Token 的接口路径
   refreshPath: '/auth/refresh',
   // 401 时跳转的登录页路径
-  loginPath: '/tenant/login',
+  loginPath: '/login',
   // 启用 Token 自动刷新
   enableRefresh: true,
   // 不静默处理 401 错误（跳登录页）
