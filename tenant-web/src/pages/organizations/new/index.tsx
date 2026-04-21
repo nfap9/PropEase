@@ -51,7 +51,7 @@ export default function CreateOrganizationPage() {
     }
 
     if (!isAuthenticated) {
-      navigate('/login', { replace: true });
+      navigate('/tenant/login', { replace: true });
       return;
     }
 
