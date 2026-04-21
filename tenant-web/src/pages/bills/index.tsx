@@ -1,28 +1,20 @@
-import { Suspense, lazy, useCallback, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
+import { Suspense, lazy, useMemo } from 'react';
 import { Skeleton } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { useAuth } from '@/contexts/auth';
-import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
-import type { Bill, BillStatus } from '@/types';
 import { createBillsColumns } from '@/pages/bills/components/columns';
-import { useBillsData, useBillShare } from '@/hooks/bills';
-import {
-  generateBillsSchema,
-  getDefaultGenerateValues,
-  getDefaultPaymentValues,
-  paymentSchema,
-  type GenerateBillsFormData,
-  type PaymentFormData,
-} from '@/schemas/bills';
-import { buildBillStats, filterBillsByStatus, getBillStatusFilter } from '@/utils/bills';
 import { BillsListView } from '@/pages/bills/components/bills-list-view';
+import { useBillsPage } from './hooks/useBillsPage';
 
-const BillDetailDialog = lazy(() => import('@/pages/bills/components/bill-detail-dialog').then((mod) => ({ default: mod.BillDetailDialog })));
-const BillGenerateDialog = lazy(() => import('@/pages/bills/components/bill-generate-dialog').then((mod) => ({ default: mod.BillGenerateDialog })));
-const BillPaymentDialog = lazy(() => import('@/pages/bills/components/bill-payment-dialog').then((mod) => ({ default: mod.BillPaymentDialog })));
+const BillDetailDialog = lazy(() =>
+  import('@/pages/bills/components/bill-detail-dialog').then((m) => ({ default: m.BillDetailDialog }))
+);
+const BillGenerateDialog = lazy(() =>
+  import('@/pages/bills/components/bill-generate-dialog').then((m) => ({ default: m.BillGenerateDialog }))
+);
+const BillPaymentDialog = lazy(() =>
+  import('@/pages/bills/components/bill-payment-dialog').then((m) => ({ default: m.BillPaymentDialog }))
+);
 
 function BillsFallback() {
   return (
@@ -35,102 +27,19 @@ function BillsFallback() {
 
 export default function BillsPage() {
   const { organization, isLoading: authLoading } = useAuth();
-  const { hasPermission } = usePermissions();
-  const orgId = organization?.id;
+  const page = useBillsPage();
 
-  // 权限检查
-  const canGenerateBill = hasPermission(PERMISSIONS.BILL_CREATE);
-  const canEditBill = hasPermission(PERMISSIONS.BILL_EDIT);
-
-  const [statusFilterQuery, setStatusFilterQuery] = useState<BillStatus | 'all'>('all');
-  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-  const [isGenerateOpen, setIsGenerateOpen] = useState(false);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [selectedBillId, setSelectedBillId] = useState<string | null>(null);
-  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
-
-  const paymentForm = useForm<PaymentFormData>({
-    resolver: zodResolver(paymentSchema),
-    defaultValues: getDefaultPaymentValues(),
-  });
-
-  const generateForm = useForm<GenerateBillsFormData>({
-    resolver: zodResolver(generateBillsSchema),
-    defaultValues: getDefaultGenerateValues(),
-  });
-
-  const { sharingBillId, handleShareBill } = useBillShare(organization?.name);
-
-  const handlePaymentSuccess = useCallback(() => {
-    setIsPaymentOpen(false);
-    paymentForm.reset(getDefaultPaymentValues());
-    setSelectedBill(null);
-  }, [paymentForm]);
-
-  const handleGenerateSuccess = useCallback((created: number, skipped: number) => {
-    setIsGenerateOpen(false);
-    generateForm.reset(getDefaultGenerateValues());
-    toast.success(`出账完成：新增 ${created} 笔，跳过 ${skipped} 笔`);
-  }, [generateForm]);
-
-  const {
-    bills,
-    billsLoading,
-    billDetail,
-    billDetailLoading,
-    billFeeItems,
-    feeItemsLoading,
-    paymentMutation,
-    generateMutation,
-    exportPdf,
-    exportExcel,
-  } = useBillsData({
-    selectedBillId,
-    isDetailOpen,
-    onPaymentSuccess: handlePaymentSuccess,
-    onGenerateSuccess: handleGenerateSuccess,
-  });
-
-  const filteredBills = useMemo(
-    () => filterBillsByStatus(bills, statusFilterQuery),
-    [bills, statusFilterQuery]
-  );
-  const stats = useMemo(() => buildBillStats(bills), [bills]);
-
-  const handleViewDetail = useCallback((bill: Bill) => {
-    setSelectedBillId(bill.id);
-    setIsDetailOpen(true);
-  }, []);
-
-  const handlePayment = useCallback(
-    (bill: Bill) => {
-      setSelectedBill(bill);
-      paymentForm.reset(getDefaultPaymentValues(bill.total_amount - bill.paid_amount));
-      setIsPaymentOpen(true);
-    },
-    [paymentForm]
-  );
-
-  const handlePaymentFromDetail = useCallback(() => {
-    if (!billDetail) {
-      return;
-    }
-
-    handlePayment(billDetail);
-    setIsDetailOpen(false);
-    setSelectedBillId(null);
-  }, [billDetail, handlePayment]);
-
+  // 列配置
   const columns = useMemo(
     () =>
       createBillsColumns({
-        sharingBillId,
-        onViewDetail: handleViewDetail,
-        onPayment: handlePayment,
-        onExportPdf: exportPdf,
-        onShare: (bill) => handleShareBill(bill),
+        sharingBillId: page.sharingBillId,
+        onViewDetail: page.handleViewDetail,
+        onPayment: page.handlePayment,
+        onExportPdf: page.exportPdf,
+        onShare: (bill) => page.handleShareBill(bill),
       }),
-    [exportPdf, handlePayment, handleShareBill, handleViewDetail, sharingBillId]
+    [page]
   );
 
   if (authLoading) {
@@ -140,63 +49,48 @@ export default function BillsPage() {
   return (
     <PermissionPageGuard>
       <BillsListView
-        orgId={orgId}
-        billsLoading={billsLoading}
-        bills={filteredBills}
+        orgId={organization?.id}
+        billsLoading={page.billsLoading}
+        bills={page.filteredBills}
         columns={columns}
-        stats={stats}
-        statusFilter={statusFilterQuery}
-        onStatusFilterChange={setStatusFilterQuery}
-        onGenerate={() => setIsGenerateOpen(true)}
-        onExport={(type) => exportExcel(type, statusFilterQuery)}
-        canGenerateBill={canGenerateBill}
+        stats={page.stats}
+        statusFilter={page.statusFilter}
+        onStatusFilterChange={page.setStatusFilter}
+        onGenerate={page.handleGenerate}
+        onExport={page.handleExport}
+        canGenerateBill={page.canGenerateBill}
       />
 
       <Suspense fallback={null}>
         <BillDetailDialog
-          open={isDetailOpen}
-          onOpenChange={(open) => {
-            setIsDetailOpen(open);
-            if (!open) {
-              setSelectedBillId(null);
-            }
-          }}
-          selectedBillId={selectedBillId}
-          billDetail={billDetail}
-          billFeeItems={billFeeItems}
-          isLoading={billDetailLoading}
-          feeItemsLoading={feeItemsLoading}
-          sharingBillId={sharingBillId}
-          onPayment={handlePaymentFromDetail}
-          onShare={() => billDetail && handleShareBill(billDetail, billFeeItems ?? [])}
-          onExportPdf={exportPdf}
-          canEditBill={canEditBill}
+          open={page.isDetailOpen}
+          onOpenChange={(open) => !open && page.closeDetailDialog()}
+          selectedBillId={page.selectedBillId}
+          billDetail={page.billDetail}
+          billFeeItems={page.billFeeItems}
+          isLoading={page.billDetailLoading}
+          feeItemsLoading={page.feeItemsLoading}
+          sharingBillId={page.sharingBillId}
+          onPayment={page.handlePaymentFromDetail}
+          onShare={() => page.billDetail && page.handleShareBill(page.billDetail, page.billFeeItems ?? [])}
+          onExportPdf={page.exportPdf}
+          canEditBill={page.canEditBill}
         />
 
         <BillGenerateDialog
-          open={isGenerateOpen}
-          onOpenChange={setIsGenerateOpen}
-          form={generateForm}
-          onSubmit={(data) => generateMutation.mutate(data)}
-          isPending={generateMutation.isPending}
+          open={page.isGenerateOpen}
+          onOpenChange={page.closeGenerateDialog}
+          form={page.generateForm}
+          onSubmit={(data) => page.generateMutation.mutate(data)}
+          isPending={page.generateMutation.isPending}
         />
 
         <BillPaymentDialog
-          open={isPaymentOpen}
-          onOpenChange={setIsPaymentOpen}
-          selectedBill={selectedBill}
-          form={paymentForm}
-          onSubmit={(data) => {
-            if (!selectedBill) {
-              return;
-            }
-
-            paymentMutation.mutate({
-              billId: selectedBill.id,
-              data,
-            });
-          }}
-          isPending={paymentMutation.isPending}
+          open={page.isPaymentOpen}
+          onOpenChange={page.closePaymentDialog}
+          selectedBill={page.selectedBill}
+          onSubmit={(data) => page.selectedBill && page.paymentMutation.mutate({ billId: page.selectedBill.id, data })}
+          isPending={page.paymentMutation.isPending}
         />
       </Suspense>
     </PermissionPageGuard>

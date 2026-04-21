@@ -1,4 +1,3 @@
-
 import type { ColumnsType } from 'antd/es/table';
 import { Tag, Dropdown, Button } from 'antd';
 import type { MenuProps } from 'antd';
@@ -9,7 +8,8 @@ import type { Bill } from '@/types';
 import { formatBillLocation, formatBillPeriod } from '@/utils/bills';
 import { tenantMessages } from '@/i18n';
 
-interface CreateBillsColumnsOptions {
+// ============== 类型 ==============
+interface BillsColumnsProps {
   sharingBillId: string | null;
   onViewDetail: (bill: Bill) => void;
   onPayment: (bill: Bill) => void;
@@ -17,13 +17,61 @@ interface CreateBillsColumnsOptions {
   onShare: (bill: Bill) => void;
 }
 
-export function createBillsColumns({
-  sharingBillId,
-  onViewDetail,
-  onPayment,
-  onExportPdf,
-  onShare,
-}: CreateBillsColumnsOptions): ColumnsType<Bill> {
+// ============== 辅助函数 ==============
+function AmountCell({ amount, total }: { amount: number; total: number }) {
+  const color = amount < total ? 'text-orange-600' : 'text-green-600';
+  return <span className={color}>¥{amount.toLocaleString()}</span>;
+}
+
+function StatusCell({ status }: { status: Bill['status'] }) {
+  const config = BILL_STATUS_CONFIG[status];
+  if (!config) return null;
+  return <Tag color={config.color}>{config.label}</Tag>;
+}
+
+function ActionMenu({ bill, sharingBillId, onViewDetail, onPayment, onExportPdf, onShare }: {
+  bill: Bill;
+} & Omit<BillsColumnsProps, 'sharingBillId'> & { sharingBillId: string | null }) {
+  const menuItems: MenuProps['items'] = [
+    {
+      key: 'view',
+      icon: <Eye className="h-4 w-4" />,
+      label: tenantMessages.bills.columns.viewDetail,
+      onClick: () => onViewDetail(bill),
+    },
+    ...(bill.status !== 'paid' ? [{
+      key: 'payment',
+      icon: <DollarSign className="h-4 w-4" />,
+      label: tenantMessages.bills.columns.recordPayment,
+      onClick: () => onPayment(bill),
+    }] : []),
+    {
+      key: 'export',
+      icon: <Download className="h-4 w-4" />,
+      label: tenantMessages.bills.columns.exportPdf,
+      onClick: () => onExportPdf(bill.id),
+    },
+    {
+      key: 'share',
+      icon: <Share2 className="h-4 w-4" />,
+      label: sharingBillId === bill.id
+        ? tenantMessages.bills.columns.sharing
+        : tenantMessages.bills.columns.share,
+      onClick: () => onShare(bill),
+    },
+  ];
+
+  return (
+    <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
+      <Button type="text" size="small" icon={<MoreHorizontal className="h-4 w-4" />} />
+    </Dropdown>
+  );
+}
+
+// ============== 列定义 ==============
+export function createBillsColumns(props: BillsColumnsProps): ColumnsType<Bill> {
+  const { sharingBillId, onViewDetail, onPayment, onExportPdf, onShare } = props;
+
   return [
     {
       title: tenantMessages.bills.columns.month,
@@ -42,7 +90,9 @@ export function createBillsColumns({
       render: (_, record) => (
         <div>
           <div>{formatBillLocation(record)}</div>
-          <div className="text-xs text-muted-foreground">{record.lease?.tenant?.name || '-'}</div>
+          <div className="text-xs text-muted-foreground">
+            {record.lease?.tenant?.name || '-'}
+          </div>
         </div>
       ),
     },
@@ -61,9 +111,7 @@ export function createBillsColumns({
       width: 120,
       minWidth: 100,
       render: (_, record) => (
-        <span className={record.paid_amount < record.total_amount ? 'text-orange-600' : 'text-green-600'}>
-          ¥{record.paid_amount.toLocaleString()}
-        </span>
+        <AmountCell amount={record.paid_amount} total={record.total_amount} />
       ),
     },
     {
@@ -80,57 +128,23 @@ export function createBillsColumns({
       key: 'status',
       width: 120,
       minWidth: 100,
-      render: (_, record) => {
-        const config = BILL_STATUS_CONFIG[record.status];
-        if (!config) return null;
-
-        return (
-          <Tag color={config.color} className="gap-1">
-            {config.label}
-          </Tag>
-        );
-      },
+      render: (_, record) => <StatusCell status={record.status} />,
     },
     {
       title: '操作',
       key: 'actions',
       width: 80,
       minWidth: 60,
-      render: (_, record) => {
-        const bill = record;
-        const menuItems: MenuProps['items'] = [
-          {
-            key: 'view',
-            icon: <Eye className="h-4 w-4" />,
-            label: tenantMessages.bills.columns.viewDetail,
-            onClick: () => onViewDetail(bill),
-          },
-          ...(bill.status !== 'paid' ? [{
-            key: 'payment',
-            icon: <DollarSign className="h-4 w-4" />,
-            label: tenantMessages.bills.columns.recordPayment,
-            onClick: () => onPayment(bill),
-          }] : []),
-          {
-            key: 'export',
-            icon: <Download className="h-4 w-4" />,
-            label: tenantMessages.bills.columns.exportPdf,
-            onClick: () => onExportPdf(bill.id),
-          },
-          {
-            key: 'share',
-            icon: <Share2 className="h-4 w-4" />,
-            label: sharingBillId === bill.id ? tenantMessages.bills.columns.sharing : tenantMessages.bills.columns.share,
-            onClick: () => onShare(bill),
-          },
-        ];
-
-        return (
-          <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
-            <Button type="text" size="small" icon={<MoreHorizontal className="h-4 w-4" />} />
-          </Dropdown>
-        );
-      },
+      render: (_, record) => (
+        <ActionMenu
+          bill={record}
+          sharingBillId={sharingBillId}
+          onViewDetail={onViewDetail}
+          onPayment={onPayment}
+          onExportPdf={onExportPdf}
+          onShare={onShare}
+        />
+      ),
     },
   ];
 }

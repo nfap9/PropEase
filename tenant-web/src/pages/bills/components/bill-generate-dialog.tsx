@@ -3,19 +3,27 @@ import { Button, Input, DatePicker, Select, Modal } from 'antd';
 import type { GenerateBillsFormData } from '@/schemas/bills';
 import { tenantMessages } from '@/i18n';
 
+interface BillGenerateDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  form: UseFormReturn<GenerateBillsFormData>;
+  onSubmit: (data: GenerateBillsFormData) => void;
+  isPending: boolean;
+}
+
+// ============== 月份选项 ==============
+const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => ({
+  value: String(i + 1),
+  label: `${i + 1} 月`,
+}));
+
 export function BillGenerateDialog({
   open,
   onOpenChange,
   form,
   onSubmit,
   isPending,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  form: UseFormReturn<GenerateBillsFormData>;
-  onSubmit: (data: GenerateBillsFormData) => void;
-  isPending: boolean;
-}) {
+}: BillGenerateDialogProps) {
   return (
     <Modal
       open={open}
@@ -23,50 +31,64 @@ export function BillGenerateDialog({
       title={tenantMessages.bills.dialogs.generateTitle}
       footer={null}
     >
-      <p className="text-sm text-muted-foreground mb-4">{tenantMessages.bills.dialogs.generateDescription}</p>
+      <p className="mb-4 text-sm text-muted-foreground">
+        {tenantMessages.bills.dialogs.generateDescription}
+      </p>
+
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <span className="text-sm font-medium">{tenantMessages.bills.dialogs.billYear}</span>
+          <FormField label={tenantMessages.bills.dialogs.billYear} error={form.formState.errors.bill_year}>
             <Input
               type="number"
               min={2020}
               max={2100}
               {...form.register('bill_year', { valueAsNumber: true })}
             />
-            {form.formState.errors.bill_year && (
-              <p className="text-sm text-destructive">{form.formState.errors.bill_year.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <span className="text-sm font-medium">{tenantMessages.bills.dialogs.billMonthLabel}</span>
+          </FormField>
+
+          <FormField label={tenantMessages.bills.dialogs.billMonthLabel}>
             <Select
               value={String(form.watch('bill_month'))}
               onChange={(value) => form.setValue('bill_month', Number(value))}
               className="w-full"
-              options={Array.from({ length: 12 }, (_, index) => ({ value: String(index + 1), label: `${index + 1} 月` }))}
+              options={MONTH_OPTIONS}
             />
-          </div>
+          </FormField>
         </div>
-        <div className="space-y-2">
-          <span className="text-sm font-medium">{tenantMessages.bills.dialogs.dueDateLabel}</span>
+
+        <FormField label={tenantMessages.bills.dialogs.dueDateLabel} error={form.formState.errors.due_date}>
           <DatePicker
             className="w-full"
             onChange={(_, dateString) => form.setValue('due_date', dateString as string)}
           />
-          {form.formState.errors.due_date && (
-            <p className="text-sm text-destructive">{form.formState.errors.due_date.message}</p>
-          )}
-        </div>
+        </FormField>
+
         <div className="flex gap-2 pt-4">
-          <Button type="default" onClick={() => onOpenChange(false)}>
-            {tenantMessages.common.cancel}
-          </Button>
+          <Button onClick={() => onOpenChange(false)}>{tenantMessages.common.cancel}</Button>
           <Button type="primary" htmlType="submit" loading={isPending}>
             {isPending ? tenantMessages.bills.dialogs.generating : tenantMessages.bills.dialogs.generate}
           </Button>
         </div>
       </form>
     </Modal>
+  );
+}
+
+// ============== 表单字段组件 ==============
+function FormField({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: { message?: string };
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <span className="text-sm font-medium">{label}</span>
+      {children}
+      {error && <p className="text-sm text-destructive">{error.message}</p>}
+    </div>
   );
 }

@@ -3,15 +3,25 @@ import { Tag, Button, Modal, Skeleton } from 'antd';
 import type { Bill, BillFeeItem, Payment } from '@/types';
 import { BILLS } from '@/schemas/bills';
 import { BILL_STATUS_CONFIG } from '@/utils/status';
-import {
-  formatBillPeriod,
-  formatPaymentRecord,
-  getBillDetailDescription,
-  getBillPaymentSummary,
-} from '@/utils/bills';
-import { tenantI18n, tenantMessages } from '@/i18n';
+import { formatBillPeriod, formatPaymentRecord, getBillDetailDescription } from '@/utils/bills';
+import { tenantMessages } from '@/i18n';
 import { formatDate } from '@/utils/date';
 import { PAYMENT_METHOD_LABELS } from '@/schemas/bills';
+
+interface BillDetailDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedBillId: string | null;
+  billDetail: Bill | null | undefined;
+  billFeeItems: BillFeeItem[] | undefined;
+  isLoading: boolean;
+  feeItemsLoading: boolean;
+  sharingBillId: string | null;
+  onPayment: () => void;
+  onShare: () => void;
+  onExportPdf: (billId: string) => void;
+  canEditBill?: boolean;
+}
 
 export function BillDetailDialog({
   open,
@@ -26,21 +36,9 @@ export function BillDetailDialog({
   onShare,
   onExportPdf,
   canEditBill = true,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  selectedBillId: string | null;
-  billDetail: Bill | null | undefined;
-  billFeeItems: BillFeeItem[] | undefined;
-  isLoading: boolean;
-  feeItemsLoading: boolean;
-  sharingBillId: string | null;
-  onPayment: () => void;
-  onShare: () => void;
-  onExportPdf: (billId: string) => void;
-  /** 是否有编辑账单权限 */
-  canEditBill?: boolean;
-}) {
+}: BillDetailDialogProps) {
+  const payments = (billDetail as Bill & { payments?: Payment[] })?.payments ?? [];
+
   return (
     <Modal
       open={open}
@@ -53,7 +51,10 @@ export function BillDetailDialog({
         <Skeleton active paragraph={{ rows: 6 }} />
       ) : billDetail ? (
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">{getBillDetailDescription(billDetail ?? null, selectedBillId)}</p>
+          <p className="text-sm text-muted-foreground">
+            {getBillDetailDescription(billDetail, selectedBillId)}
+          </p>
+
           <div className="grid gap-3 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">{tenantMessages.bills.dialogs.billMonth}</span>
@@ -69,6 +70,7 @@ export function BillDetailDialog({
               <span className="text-muted-foreground">{tenantMessages.bills.dialogs.tenant}</span>
               <span>{billDetail.lease?.tenant?.name ?? '-'}</span>
             </div>
+
             <div className="grid gap-2 border-t pt-3">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{tenantMessages.bills.dialogs.rent}</span>
@@ -95,9 +97,7 @@ export function BillDetailDialog({
             </div>
 
             {feeItemsLoading ? (
-              <div className="space-y-2">
-                <Skeleton active paragraph={{ rows: 1 }} />
-              </div>
+              <Skeleton active paragraph={{ rows: 1 }} />
             ) : billFeeItems && billFeeItems.length > 0 ? (
               <div className="mt-4">
                 <h4 className="mb-2 text-sm font-medium">{tenantMessages.bills.dialogs.feeDetails}</h4>
@@ -145,12 +145,12 @@ export function BillDetailDialog({
             )}
           </div>
 
-          {(billDetail as Bill & { payments?: Payment[] }).payments?.length ? (
+          {payments.length > 0 && (
             <div>
               <h4 className="mb-2 text-sm font-medium">{tenantMessages.bills.dialogs.paymentRecords}</h4>
               <div className="rounded-md border">
                 <div className="divide-y">
-                  {(billDetail as Bill & { payments?: Payment[] }).payments!.map((payment) => (
+                  {payments.map((payment) => (
                     <div key={payment.id} className="flex justify-between px-3 py-2 text-sm">
                       <span>
                         {formatPaymentRecord(
@@ -165,7 +165,7 @@ export function BillDetailDialog({
                 </div>
               </div>
             </div>
-          ) : null}
+          )}
 
           <div className="flex gap-2 pt-4">
             {billDetail.status !== 'paid' && canEditBill && (
@@ -180,7 +180,9 @@ export function BillDetailDialog({
               data-testid={BILLS.SHARE_BUTTON}
               icon={<Share2 className="mr-2 h-4 w-4" />}
             >
-              {sharingBillId === billDetail.id ? tenantMessages.bills.dialogs.shareGenerating : tenantMessages.bills.dialogs.share}
+              {sharingBillId === billDetail.id
+                ? tenantMessages.bills.dialogs.shareGenerating
+                : tenantMessages.bills.dialogs.share}
             </Button>
             <Button variant="outlined" onClick={() => onExportPdf(billDetail.id)} icon={<Download className="mr-2 h-4 w-4" />}>
               {tenantMessages.bills.columns.exportPdf}
