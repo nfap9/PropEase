@@ -13,12 +13,11 @@ export const notificationsApi = {
     category?: NotificationCategory | 'all';
     limit?: number;
   }): Promise<Notification[]> => {
-    const params = {
+    const response = await api.post<Notification[]>('/notifications/query', {
       status: filters?.status,
       category: filters?.category,
       limit: filters?.limit,
-    };
-    const response = await api.get<Notification[]>('/notifications', { params });
+    });
     return response.data;
   },
 
