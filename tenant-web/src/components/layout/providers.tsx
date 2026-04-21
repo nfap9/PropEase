@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setOrganization(null);
       setOrganizations([]);
       queryClientRef.current.clear();
-      router.navigate('/tenant/login');
+      router.navigate('/login');
     }
   }, []);
 
