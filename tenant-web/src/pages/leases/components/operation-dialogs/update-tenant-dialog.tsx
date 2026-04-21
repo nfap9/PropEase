@@ -1,12 +1,10 @@
-
-import { useForm, FormProvider, Controller } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { updateTenantSchema, type UpdateTenantFormData } from '@/schemas/lease-operations';
 import { useUpdateTenant } from '@/hooks/use-lease-operations';
 import { tenantsApi } from '@/api/tenants';
-import { Modal, Button, Select } from 'antd';
-import { Label } from '@/components/common/label';
+import { Modal, Button, Select, Form } from 'antd';
 
 interface UpdateTenantDialogProps {
   open: boolean;
@@ -50,34 +48,38 @@ export function UpdateTenantDialog({ open, onOpenChange, orgId, leaseId }: Updat
       ]}
     >
       <p className="mb-4 text-sm text-gray-600">将租约的租客更换为其他已存在的租客</p>
-      <FormProvider {...form}>
-        <form className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="newTenantId">新租客 *</Label>
-            <Controller
-              name="newTenantId"
-              control={form.control}
-              render={({ field }) => (
-                <Select
-                  onChange={field.onChange}
-                  value={field.value}
-                  placeholder="选择新租客"
-                  className="w-full"
-                >
-                  {tenants?.map((tenant) => (
-                    <Select.Option key={tenant.id} value={tenant.id}>
-                      {tenant.name} {tenant.phone && `(${tenant.phone})`}
-                    </Select.Option>
-                  ))}
-                </Select>
-              )}
-            />
-            {form.formState.errors.newTenantId && (
-              <p className="text-sm text-red-500">{form.formState.errors.newTenantId.message}</p>
+      <Form
+        layout="vertical"
+        onFinish={form.handleSubmit(onSubmit)}
+        className="space-y-4"
+      >
+        <Form.Item
+          label="新租客"
+          name="newTenantId"
+          required
+          validateStatus={form.formState.errors.newTenantId ? 'error' : ''}
+          help={form.formState.errors.newTenantId?.message}
+        >
+          <Controller
+            name="newTenantId"
+            control={form.control}
+            render={({ field }) => (
+              <Select
+                onChange={field.onChange}
+                value={field.value}
+                placeholder="选择新租客"
+                className="w-full"
+              >
+                {tenants?.map((tenant) => (
+                  <Select.Option key={tenant.id} value={tenant.id}>
+                    {tenant.name} {tenant.phone && `(${tenant.phone})`}
+                  </Select.Option>
+                ))}
+              </Select>
             )}
-          </div>
-        </form>
-      </FormProvider>
+          />
+        </Form.Item>
+      </Form>
     </Modal>
   );
 }

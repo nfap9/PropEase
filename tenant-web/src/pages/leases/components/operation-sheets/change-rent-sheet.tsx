@@ -1,10 +1,8 @@
-
-import { useForm, FormProvider, Controller } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { changeRentSchema, type ChangeRentFormData } from '@/schemas/lease-operations';
 import { useChangeRent } from '@/hooks/use-lease-operations';
-import { Button, Drawer, Input, Select } from 'antd';
-import { Label } from '@/components/common/label';
+import { Button, Drawer, Input, Select, Form } from 'antd';
 
 interface ChangeRentSheetProps {
   open: boolean;
@@ -56,72 +54,81 @@ export function ChangeRentSheet({ open, onOpenChange, orgId, leaseId, currentRen
       }
     >
       <p className="mb-4 text-sm text-gray-600">当前月租：¥{currentRent.toLocaleString()}</p>
-      <FormProvider {...form}>
-        <form className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="newRent">新月租 (元) *</Label>
+      <Form
+        layout="vertical"
+        onFinish={form.handleSubmit(onSubmit)}
+        className="space-y-4"
+      >
+        <Form.Item
+          label="新月租 (元)"
+          name="newRent"
+          required
+          validateStatus={form.formState.errors.newRent ? 'error' : ''}
+          help={form.formState.errors.newRent?.message}
+        >
+          <Controller
+            name="newRent"
+            control={form.control}
+            render={({ field }) => <Input type="number" step="0.01" {...field} />}
+          />
+        </Form.Item>
+        <div className="grid grid-cols-2 gap-4">
+          <Form.Item
+            label="生效年份"
+            name="effectiveFromYear"
+            required
+            validateStatus={form.formState.errors.effectiveFromYear ? 'error' : ''}
+            help={form.formState.errors.effectiveFromYear?.message}
+          >
             <Controller
-              name="newRent"
+              name="effectiveFromYear"
               control={form.control}
-              render={({ field }) => <Input type="number" step="0.01" {...field} />}
+              render={({ field }) => (
+                <Select onChange={field.onChange} value={String(field.value)} className="w-full">
+                  {years.map((y) => (
+                    <Select.Option key={y} value={String(y)}>
+                      {y}
+                    </Select.Option>
+                  ))}
+                </Select>
+              )}
             />
-            {form.formState.errors.newRent && (
-              <p className="text-sm text-red-500">{form.formState.errors.newRent.message}</p>
-            )}
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="effectiveFromYear">生效年份 *</Label>
-              <Controller
-                name="effectiveFromYear"
-                control={form.control}
-                render={({ field }) => (
-                  <Select onChange={field.onChange} value={String(field.value)} className="w-full">
-                    {years.map((y) => (
-                      <Select.Option key={y} value={String(y)}>
-                        {y}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                )}
-              />
-              {form.formState.errors.effectiveFromYear && (
-                <p className="text-sm text-red-500">{form.formState.errors.effectiveFromYear.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="effectiveFromMonth">生效月份 *</Label>
-              <Controller
-                name="effectiveFromMonth"
-                control={form.control}
-                render={({ field }) => (
-                  <Select onChange={field.onChange} value={String(field.value)} className="w-full">
-                    {months.map((m) => (
-                      <Select.Option key={m} value={String(m)}>
-                        {m} 月
-                      </Select.Option>
-                    ))}
-                  </Select>
-                )}
-              />
-              {form.formState.errors.effectiveFromMonth && (
-                <p className="text-sm text-red-500">{form.formState.errors.effectiveFromMonth.message}</p>
-              )}
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="reason">原因备注</Label>
+          </Form.Item>
+          <Form.Item
+            label="生效月份"
+            name="effectiveFromMonth"
+            required
+            validateStatus={form.formState.errors.effectiveFromMonth ? 'error' : ''}
+            help={form.formState.errors.effectiveFromMonth?.message}
+          >
             <Controller
-              name="reason"
+              name="effectiveFromMonth"
               control={form.control}
-              render={({ field }) => <Input {...field} placeholder="可选" />}
+              render={({ field }) => (
+                <Select onChange={field.onChange} value={String(field.value)} className="w-full">
+                  {months.map((m) => (
+                    <Select.Option key={m} value={String(m)}>
+                      {m} 月
+                    </Select.Option>
+                  ))}
+                </Select>
+              )}
             />
-            {form.formState.errors.reason && (
-              <p className="text-sm text-red-500">{form.formState.errors.reason.message}</p>
-            )}
-          </div>
-        </form>
-      </FormProvider>
+          </Form.Item>
+        </div>
+        <Form.Item
+          label="原因备注"
+          name="reason"
+          validateStatus={form.formState.errors.reason ? 'error' : ''}
+          help={form.formState.errors.reason?.message}
+        >
+          <Controller
+            name="reason"
+            control={form.control}
+            render={({ field }) => <Input {...field} placeholder="可选" />}
+          />
+        </Form.Item>
+      </Form>
     </Drawer>
   );
 }

@@ -1,10 +1,8 @@
-
-import { useForm, FormProvider, Controller } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { changeDepositSchema, type ChangeDepositFormData } from '@/schemas/lease-operations';
 import { useChangeDeposit } from '@/hooks/use-lease-operations';
-import { Modal, Button, Input } from 'antd';
-import { Label } from '@/components/common/label';
+import { Modal, Button, Input, Form } from 'antd';
 
 interface ChangeDepositDialogProps {
   open: boolean;
@@ -43,32 +41,37 @@ export function ChangeDepositDialog({ open, onOpenChange, orgId, leaseId, curren
       ]}
     >
       <p className="mb-4 text-sm text-gray-600">当前押金：¥{currentDeposit.toLocaleString()}</p>
-      <FormProvider {...form}>
-        <form className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="newDeposit">新押金 (元) *</Label>
-            <Controller
-              name="newDeposit"
-              control={form.control}
-              render={({ field }) => <Input type="number" step="0.01" {...field} />}
-            />
-            {form.formState.errors.newDeposit && (
-              <p className="text-sm text-red-500">{form.formState.errors.newDeposit.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="reason">原因备注</Label>
-            <Controller
-              name="reason"
-              control={form.control}
-              render={({ field }) => <Input {...field} placeholder="可选" />}
-            />
-            {form.formState.errors.reason && (
-              <p className="text-sm text-red-500">{form.formState.errors.reason.message}</p>
-            )}
-          </div>
-        </form>
-      </FormProvider>
+      <Form
+        layout="vertical"
+        onFinish={form.handleSubmit(onSubmit)}
+        className="space-y-4"
+      >
+        <Form.Item
+          label="新押金 (元)"
+          name="newDeposit"
+          required
+          validateStatus={form.formState.errors.newDeposit ? 'error' : ''}
+          help={form.formState.errors.newDeposit?.message}
+        >
+          <Controller
+            name="newDeposit"
+            control={form.control}
+            render={({ field }) => <Input type="number" step="0.01" {...field} />}
+          />
+        </Form.Item>
+        <Form.Item
+          label="原因备注"
+          name="reason"
+          validateStatus={form.formState.errors.reason ? 'error' : ''}
+          help={form.formState.errors.reason?.message}
+        >
+          <Controller
+            name="reason"
+            control={form.control}
+            render={({ field }) => <Input {...field} placeholder="可选" />}
+          />
+        </Form.Item>
+      </Form>
     </Modal>
   );
 }

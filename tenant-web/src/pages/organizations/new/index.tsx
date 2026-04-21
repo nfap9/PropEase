@@ -6,13 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Building2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { Card, Button, Input } from 'antd';
+import { Card, Button, Input, Form } from 'antd';
 import type { CardProps } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { organizationsApi } from '@/api/organizations';
 import { getErrorMessage } from '@/utils/error';
 import { DEFAULT_ORGANIZATION_HOME_PATH } from '@/utils/auth-redirect';
-import { Label } from '@/components/common/label';
 
 const { TextArea } = Input;
 
@@ -105,43 +104,41 @@ export default function CreateOrganizationPage() {
             <p className="text-gray-500">创建新团队来管理你的公寓</p>
           </div>
         </div>
-        <form
-          onSubmit={form.handleSubmit((data) => createOrgMutation.mutate(data))}
+        <Form
+          layout="vertical"
+          onFinish={form.handleSubmit((data) => createOrgMutation.mutate(data))}
           className="space-y-4"
         >
-          <div className="space-y-2">
-            <Label htmlFor="organization-name">
-              团队名称 <span aria-hidden="true">*</span>
-            </Label>
+          <Form.Item
+            label="团队名称"
+            name="name"
+            required
+            validateStatus={form.formState.errors.name ? 'error' : ''}
+            help={form.formState.errors.name?.message}
+          >
             <Controller
               name="name"
               control={form.control}
               render={({ field }) => (
                 <Input
-                  id="organization-name"
                   placeholder="请输入团队名称"
                   aria-required
                   {...field}
                 />
               )}
             />
-            {form.formState.errors.name && (
-              <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="notes">备注</Label>
+          </Form.Item>
+          <Form.Item label="备注" name="notes">
             <TextArea
-              id="notes"
               {...form.register('notes')}
               placeholder="备注信息（选填）"
               rows={3}
             />
-          </div>
+          </Form.Item>
           <Button type="primary" htmlType="submit" block loading={createOrgMutation.isPending}>
             {createOrgMutation.isPending ? '创建中...' : '创建团队'}
           </Button>
-        </form>
+        </Form>
       </Card>
     </div>
   );

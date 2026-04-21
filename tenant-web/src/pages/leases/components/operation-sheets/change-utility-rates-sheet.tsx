@@ -1,10 +1,8 @@
-
-import { useForm, FormProvider, Controller } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { changeUtilityRatesSchema, type ChangeUtilityRatesFormData } from '@/schemas/lease-operations';
 import { useChangeUtilityRates } from '@/hooks/use-lease-operations';
-import { Button, Drawer, Input, Select } from 'antd';
-import { Label } from '@/components/common/label';
+import { Button, Drawer, Input, Select, Form } from 'antd';
 
 interface ChangeUtilityRatesSheetProps {
   open: boolean;
@@ -64,74 +62,84 @@ export function ChangeUtilityRatesSheet({
       }
     >
       <p className="mb-4 text-sm text-gray-600">当前：水 ¥{currentWaterRate}/吨 · 电 ¥{currentElectricityRate}/度</p>
-      <FormProvider {...form}>
-        <form className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="waterRate">新水价 (元/吨) *</Label>
-              <Controller
-                name="waterRate"
-                control={form.control}
-                render={({ field }) => <Input type="number" step="0.01" {...field} />}
-              />
-              {form.formState.errors.waterRate && (
-                <p className="text-sm text-red-500">{form.formState.errors.waterRate.message}</p>
+      <Form
+        layout="vertical"
+        onFinish={form.handleSubmit(onSubmit)}
+        className="space-y-4"
+      >
+        <div className="grid grid-cols-2 gap-4">
+          <Form.Item
+            label="新水价 (元/吨)"
+            name="waterRate"
+            required
+            validateStatus={form.formState.errors.waterRate ? 'error' : ''}
+            help={form.formState.errors.waterRate?.message}
+          >
+            <Controller
+              name="waterRate"
+              control={form.control}
+              render={({ field }) => <Input type="number" step="0.01" {...field} />}
+            />
+          </Form.Item>
+          <Form.Item
+            label="新电价 (元/度)"
+            name="electricityRate"
+            required
+            validateStatus={form.formState.errors.electricityRate ? 'error' : ''}
+            help={form.formState.errors.electricityRate?.message}
+          >
+            <Controller
+              name="electricityRate"
+              control={form.control}
+              render={({ field }) => <Input type="number" step="0.01" {...field} />}
+            />
+          </Form.Item>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <Form.Item
+            label="生效年份"
+            name="effectiveFromYear"
+            required
+            validateStatus={form.formState.errors.effectiveFromYear ? 'error' : ''}
+            help={form.formState.errors.effectiveFromYear?.message}
+          >
+            <Controller
+              name="effectiveFromYear"
+              control={form.control}
+              render={({ field }) => (
+                <Select onChange={field.onChange} value={String(field.value)} className="w-full">
+                  {years.map((y) => (
+                    <Select.Option key={y} value={String(y)}>
+                      {y}
+                    </Select.Option>
+                  ))}
+                </Select>
               )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="electricityRate">新电价 (元/度) *</Label>
-              <Controller
-                name="electricityRate"
-                control={form.control}
-                render={({ field }) => <Input type="number" step="0.01" {...field} />}
-              />
-              {form.formState.errors.electricityRate && (
-                <p className="text-sm text-red-500">{form.formState.errors.electricityRate.message}</p>
+            />
+          </Form.Item>
+          <Form.Item
+            label="生效月份"
+            name="effectiveFromMonth"
+            required
+            validateStatus={form.formState.errors.effectiveFromMonth ? 'error' : ''}
+            help={form.formState.errors.effectiveFromMonth?.message}
+          >
+            <Controller
+              name="effectiveFromMonth"
+              control={form.control}
+              render={({ field }) => (
+                <Select onChange={field.onChange} value={String(field.value)} className="w-full">
+                  {months.map((m) => (
+                    <Select.Option key={m} value={String(m)}>
+                      {m} 月
+                    </Select.Option>
+                  ))}
+                </Select>
               )}
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="effectiveFromYear">生效年份 *</Label>
-              <Controller
-                name="effectiveFromYear"
-                control={form.control}
-                render={({ field }) => (
-                  <Select onChange={field.onChange} value={String(field.value)} className="w-full">
-                    {years.map((y) => (
-                      <Select.Option key={y} value={String(y)}>
-                        {y}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                )}
-              />
-              {form.formState.errors.effectiveFromYear && (
-                <p className="text-sm text-red-500">{form.formState.errors.effectiveFromYear.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="effectiveFromMonth">生效月份 *</Label>
-              <Controller
-                name="effectiveFromMonth"
-                control={form.control}
-                render={({ field }) => (
-                  <Select onChange={field.onChange} value={String(field.value)} className="w-full">
-                    {months.map((m) => (
-                      <Select.Option key={m} value={String(m)}>
-                        {m} 月
-                      </Select.Option>
-                    ))}
-                  </Select>
-                )}
-              />
-              {form.formState.errors.effectiveFromMonth && (
-                <p className="text-sm text-red-500">{form.formState.errors.effectiveFromMonth.message}</p>
-              )}
-            </div>
-          </div>
-        </form>
-      </FormProvider>
+            />
+          </Form.Item>
+        </div>
+      </Form>
     </Drawer>
   );
 }
