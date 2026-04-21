@@ -1,5 +1,5 @@
 
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, Controller } from 'react-hook-form';
 import { DatePicker, Input } from 'antd';
 import type { ReactNode } from 'react';
 import { ApartmentFormData } from './apartment-form';
@@ -42,7 +42,13 @@ export function LandlordInfoSection({ form }: LandlordInfoSectionProps) {
           <LabelCustom htmlFor="landlord_name" required>
             房东姓名
           </LabelCustom>
-          <Input id="landlord_name" {...form.register('landlord_name')} placeholder="请输入房东姓名" />
+          <Controller
+            name="landlord_name"
+            control={form.control}
+            render={({ field }) => (
+              <Input id="landlord_name" placeholder="请输入房东姓名" {...field} />
+            )}
+          />
           {form.formState.errors.landlord_name && (
             <p className="text-sm text-destructive">{form.formState.errors.landlord_name.message}</p>
           )}

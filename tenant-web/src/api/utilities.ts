@@ -23,13 +23,11 @@ export const utilitiesApi = {
     }
   ): Promise<UtilityReading[]> => {
     const { room_id, period_year, period_month, apartment_id } = filters ?? {};
-    const response = await api.get<UtilityReading[]>('/utilities', {
-      params: {
-        room_id: room_id || undefined,
-        period_year: period_year ?? undefined,
-        period_month: period_month ?? undefined,
-        apartment_id: apartment_id || undefined,
-      },
+    const response = await api.post<UtilityReading[]>('/utilities/query', {
+      room_id: room_id || undefined,
+      period_year: period_year ?? undefined,
+      period_month: period_month ?? undefined,
+      apartment_id: apartment_id || undefined,
     });
     return response.data;
   },
@@ -86,12 +84,10 @@ export const utilitiesApi = {
     periodMonth: number,
     daysRange?: number
   ): Promise<UtilityExportRoom[]> => {
-    const response = await api.get<UtilityExportRoom[]>('/utilities/export', {
-      params: {
-        period_year: periodYear,
-        period_month: periodMonth,
-        days_range: daysRange,
-      },
+    const response = await api.post<UtilityExportRoom[]>('/utilities/export', {
+      period_year: periodYear,
+      period_month: periodMonth,
+      days_range: daysRange,
     });
     return response.data;
   },

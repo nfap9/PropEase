@@ -12,10 +12,10 @@ router.get('/:orgId', ctrl.get);
 router.put('/:orgId', ctrl.update);
 router.get('/:orgId/deletion-preview', ctrl.deletionPreview);
 router.delete('/:orgId', ctrl.del);
-router.get('/:orgId/members', ctrl.getMembers);
-router.post('/:orgId/members', ctrl.addMember);
-router.put('/:orgId/members/:userId', ctrl.updateMember);
-router.delete('/:orgId/members/:userId', ctrl.removeMember);
+router.get('/members', ctrl.getMembers);
+router.post('/members', ctrl.addMember);
+router.put('/members/:userId', ctrl.updateMember);
+router.delete('/members/:userId', ctrl.removeMember);
 router.get('/:orgId/usage', ctrl.getUsage);
 
 export const organizationsRouter = router;

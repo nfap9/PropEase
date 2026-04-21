@@ -280,9 +280,9 @@ async function calculateDailyPrice(serviceId: string, billingMonths: number): Pr
 
 export async function getOrder(req: Request, res: Response, next: NextFunction) {
   try {
-    await requireOrgMembership(req, 'org_id');
+    const orgId = await requireOrgMembership(req);
     const order = await defaultBillingService.getOrder(req.params.order_id);
-    if (!order || order.organization_id !== req.params.org_id) {
+    if (!order || order.organization_id !== orgId) {
       return next(createAppError(404, '订单不存在'));
     }
     res.json(order);
@@ -297,10 +297,10 @@ export async function getOrder(req: Request, res: Response, next: NextFunction) 
  */
 export async function simulatePay(req: Request, res: Response, next: NextFunction) {
   try {
-    await requireOrgMembership(req, 'org_id');
+    const orgId = await requireOrgMembership(req);
 
     const order = await defaultBillingService.getOrder(req.params.order_id);
-    if (!order || order.organization_id !== req.params.org_id) {
+    if (!order || order.organization_id !== orgId) {
       return next(createAppError(404, '订单不存在'));
     }
 

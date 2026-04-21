@@ -5,10 +5,10 @@ import * as ctrl from './bills.controller.js';
 const router: RouterType = Router();
 router.use(requireConsoleAuth);
 
-router.get('/', ctrl.list);
+router.post('/query', ctrl.query);
 router.post('/generate', ctrl.generate);
 router.post('/', ctrl.create);
-router.get('/export/excel', ctrl.exportExcel);
+router.post('/export', ctrl.exportExcel);
 router.get('/:id', ctrl.get);
 router.put('/:id', ctrl.update);
 router.delete('/:id', ctrl.del);

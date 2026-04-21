@@ -6,9 +6,7 @@ export const billsApi = {
   list: async (
     filters?: { lease_id?: string; year?: number; month?: number; status?: BillStatus }
   ): Promise<Bill[]> => {
-    const response = await api.get<Bill[]>('/bills', {
-      params: { ...filters },
-    });
+    const response = await api.post<Bill[]>('/bills/query', filters || {});
     return response.data;
   },
 
@@ -62,8 +60,7 @@ export const billsApi = {
       exportType?: 'all' | 'unfinished';
     }
   ): Promise<Blob> => {
-    const response = await api.get('/bills/export/excel', {
-      params: { ...filters },
+    const response = await api.post('/bills/export', filters || {}, {
       responseType: 'blob',
     });
     return response.data;

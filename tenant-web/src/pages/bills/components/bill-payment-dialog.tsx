@@ -1,4 +1,5 @@
 import type { UseFormReturn } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import { Button, Input, DatePicker, Select, Modal } from 'antd';
 import type { Bill, PaymentMethod } from '@/types';
 import { PAYMENT_METHOD_LABELS, BILLS, type PaymentFormData } from '@/schemas/bills';
@@ -41,12 +42,19 @@ export function BillPaymentDialog({
           <span className="text-sm font-medium">
             {tenantMessages.bills.dialogs.amount} <span aria-hidden="true">*</span>
           </span>
-          <Input
-            aria-required
-            type="number"
-            step="0.01"
-            {...form.register('amount', { valueAsNumber: true })}
-            data-testid={BILLS.AMOUNT_INPUT}
+          <Controller
+            name="amount"
+            control={form.control}
+            render={({ field }) => (
+              <Input
+                aria-required
+                type="number"
+                step="0.01"
+                data-testid={BILLS.AMOUNT_INPUT}
+                value={field.value ?? ''}
+                onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+              />
+            )}
           />
           {form.formState.errors.amount && (
             <p className="text-sm text-destructive">{form.formState.errors.amount.message}</p>

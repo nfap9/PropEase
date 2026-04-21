@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input, Modal } from 'antd';
@@ -87,7 +87,13 @@ export function TenantFormModal({
             <Label htmlFor="name" required>
               姓名
             </Label>
-            <Input id="name" placeholder="请输入租客姓名" {...form.register('name')} data-testid={TENANTS.NAME_INPUT} />
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field }) => (
+                <Input id="name" placeholder="请输入租客姓名" {...field} data-testid={TENANTS.NAME_INPUT} />
+              )}
+            />
             {form.formState.errors.name && (
               <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
             )}
@@ -96,7 +102,13 @@ export function TenantFormModal({
             <Label htmlFor="phone" required>
               联系电话
             </Label>
-            <Input id="phone" placeholder="请输入联系电话" {...form.register('phone')} data-testid={TENANTS.PHONE_INPUT} />
+            <Controller
+              name="phone"
+              control={form.control}
+              render={({ field }) => (
+                <Input id="phone" placeholder="请输入联系电话" {...field} data-testid={TENANTS.PHONE_INPUT} />
+              )}
+            />
             {form.formState.errors.phone && (
               <p className="text-sm text-red-500">{form.formState.errors.phone.message}</p>
             )}

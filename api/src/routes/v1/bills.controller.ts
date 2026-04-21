@@ -50,16 +50,36 @@ export const PaymentCreateSchema = z.object({
   notes: z.string().optional(),
 });
 
+// ==================== Query Schemas ====================
+
+export const BillQuerySchema = z.object({
+  lease_id: z.string().optional(),
+  year: z.number().optional(),
+  month: z.number().optional(),
+  status: z.string().optional(),
+  page: z.number().optional(),
+  pageSize: z.number().optional(),
+});
+
+export const BillExportSchema = z.object({
+  status: z.string().optional(),
+  year: z.number().optional(),
+  month: z.number().optional(),
+  exportType: z.enum(['unfinished', 'all']).optional(),
+});
+
 // ==================== Handlers ====================
 
-export async function list(req: Request, res: Response, next: NextFunction) {
+export async function query(req: Request, res: Response, next: NextFunction) {
   try {
     const orgId = await requireOrgMembership(req);
+    const parsed = BillQuerySchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const filter: BillFilter = {
-      leaseId: typeof req.query.lease_id === 'string' ? req.query.lease_id : undefined,
-      year: req.query.year != null ? Number(req.query.year) : undefined,
-      month: req.query.month != null ? Number(req.query.month) : undefined,
-      status: typeof req.query.status === 'string' ? req.query.status : undefined,
+      leaseId: parsed.data.lease_id,
+      year: parsed.data.year,
+      month: parsed.data.month,
+      status: parsed.data.status,
     };
     const list = await defaultBillService.list(orgId, filter);
     res.json(list);
@@ -100,11 +120,10 @@ export async function create(req: Request, res: Response, next: NextFunction) {
 export async function exportExcel(req: Request, res: Response, next: NextFunction) {
   try {
     const orgId = await requireOrgMembership(req);
-    const status = typeof req.query.status === 'string' ? req.query.status : undefined;
-    const year = req.query.year != null ? Number(req.query.year) : undefined;
-    const month = req.query.month != null ? Number(req.query.month) : undefined;
-    const exportType = typeof req.query.exportType === 'string' ? req.query.exportType : undefined;
+    const parsed = BillExportSchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
 
+    const { status, year, month, exportType } = parsed.data;
     const filter: BillFilter = { year, month };
     if (exportType === 'unfinished') {
       filter.excludeStatus = 'paid';
