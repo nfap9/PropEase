@@ -47,6 +47,12 @@ export async function requireAdmin(
     next(createAppError(401, 'User not found'));
     return;
   }
+
+  // 检查账户是否被锁定
+  if (admin.locked_until && admin.locked_until > new Date()) {
+    next(createAppError(423, '账户已被锁定，请稍后再试'));
+    return;
+  }
   req.adminUser = {
     id: admin.id,
     username: admin.username,

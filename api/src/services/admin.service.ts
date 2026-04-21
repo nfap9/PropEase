@@ -201,10 +201,50 @@ export function createAdminService(
       if (!admin.is_active) {
         throw createAppError(401, '账号已停用');
       }
+
+      // 检查账户是否被锁定
+      if (admin.locked_until && admin.locked_until > new Date()) {
+        throw createAppError(423, '账户已被锁定，请稍后再试');
+      }
+
       const ok = await verifyPassword(password, admin.password_hash);
       if (!ok) {
-        throw createAppError(401, '用户名或密码错误');
+        // 登录失败，增加失败计数
+        const failedAttempts = (admin.failed_login_attempts || 0) + 1;
+        const LOCK_THRESHOLD = 5;
+        const LOCK_MINUTES = 30;
+
+        if (failedAttempts >= LOCK_THRESHOLD) {
+          // 达到锁定阈值，锁定账户
+          const lockedUntil = new Date();
+          lockedUntil.setMinutes(lockedUntil.getMinutes() + LOCK_MINUTES);
+          await getRepo().updateAdmin(admin.id, {
+            failed_login_attempts: failedAttempts,
+            locked_until: lockedUntil,
+          });
+          throw createAppError(423, `密码错误次数过多，账户已锁定${LOCK_MINUTES}分钟`);
+        }
+
+        // 未达阈值，仅增加失败计数
+        await getRepo().updateAdmin(admin.id, {
+          failed_login_attempts: failedAttempts,
+        });
+        throw createAppError(401, `用户名或密码错误（剩余${LOCK_THRESHOLD - failedAttempts}次）`);
       }
+
+      // 登录成功，重置失败计数，解锁账户
+      if (admin.failed_login_attempts > 0 || admin.locked_until) {
+        await getRepo().updateAdmin(admin.id, {
+          failed_login_attempts: 0,
+          locked_until: null,
+        });
+      }
+
+      // 更新最后登录时间
+      await getRepo().updateAdmin(admin.id, {
+        last_login_at: new Date(),
+      });
+
       const access_token = createAdminAccessToken(admin.id);
       return { access_token, token_type: 'bearer' };
     },
