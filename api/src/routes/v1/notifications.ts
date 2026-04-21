@@ -1,4 +1,5 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
+import { z } from 'zod';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
@@ -8,27 +9,24 @@ const router: Router = Router();
 
 router.use(requireConsoleAuth);
 
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
+const NotificationQuerySchema = z.object({
+  status: z.enum(['unread', 'all']).optional(),
+  category: z.enum(['lease', 'billing', 'tenant', 'system', 'all']).optional(),
+  limit: z.number().optional(),
+});
+
+router.post('/query', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const status = req.query.status === 'unread' ? 'unread' : 'all';
-    const rawCategory = typeof req.query.category === 'string' ? req.query.category : 'all';
-    const category =
-      rawCategory === 'lease' ||
-      rawCategory === 'billing' ||
-      rawCategory === 'tenant' ||
-      rawCategory === 'system'
-        ? rawCategory
-        : 'all';
-    const limit =
-      typeof req.query.limit === 'string' && Number.isFinite(Number(req.query.limit))
-        ? Number(req.query.limit)
-        : undefined;
+    const parsed = NotificationQuerySchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const status = parsed.data.status === 'unread' ? 'unread' : 'all';
+    const category = parsed.data.category ?? 'all';
     const list = await defaultNotificationService.list(user.id, {
       status,
       category,
-      limit,
+      limit: parsed.data.limit,
     });
     res.json(list);
   } catch (e) {
