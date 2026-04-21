@@ -62,8 +62,7 @@ export const billsApi = {
       exportType?: 'all' | 'unfinished';
     }
   ): Promise<Blob> => {
-    const response = await api.get('/bills/export/excel', {
-      params: { ...filters },
+    const response = await api.post('/bills/export', filters || {}, {
       responseType: 'blob',
     });
     return response.data;

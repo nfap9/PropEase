@@ -8,9 +8,7 @@ export const reportsApi = {
   },
 
   getIncome: async (year: number): Promise<IncomeReport[]> => {
-    const response = await api.get<IncomeReport[]>('/reports/income', {
-      params: { year },
-    });
+    const response = await api.post<IncomeReport[]>('/reports/income', { year });
     return response.data;
   },
 
