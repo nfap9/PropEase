@@ -1,5 +1,5 @@
 import type { UseFormReturn } from 'react-hook-form';
-import { Button, Input, DatePicker, Select, Modal } from 'antd';
+import { Button, Input, DatePicker, Select, Modal, Form } from 'antd';
 import type { GenerateBillsFormData } from '@/schemas/bills';
 import { tenantMessages } from '@/i18n';
 
@@ -35,33 +35,45 @@ export function BillGenerateDialog({
         {tenantMessages.bills.dialogs.generateDescription}
       </p>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <Form
+        layout="vertical"
+        onFinish={form.handleSubmit(onSubmit)}
+        className="space-y-4"
+      >
         <div className="grid grid-cols-2 gap-4">
-          <FormField label={tenantMessages.bills.dialogs.billYear} error={form.formState.errors.bill_year}>
+          <Form.Item
+            label={tenantMessages.bills.dialogs.billYear}
+            validateStatus={form.formState.errors.bill_year ? 'error' : ''}
+            help={form.formState.errors.bill_year?.message}
+          >
             <Input
               type="number"
               min={2020}
               max={2100}
               {...form.register('bill_year', { valueAsNumber: true })}
             />
-          </FormField>
+          </Form.Item>
 
-          <FormField label={tenantMessages.bills.dialogs.billMonthLabel}>
+          <Form.Item label={tenantMessages.bills.dialogs.billMonthLabel}>
             <Select
               value={String(form.watch('bill_month'))}
               onChange={(value) => form.setValue('bill_month', Number(value))}
               className="w-full"
               options={MONTH_OPTIONS}
             />
-          </FormField>
+          </Form.Item>
         </div>
 
-        <FormField label={tenantMessages.bills.dialogs.dueDateLabel} error={form.formState.errors.due_date}>
+        <Form.Item
+          label={tenantMessages.bills.dialogs.dueDateLabel}
+          validateStatus={form.formState.errors.due_date ? 'error' : ''}
+          help={form.formState.errors.due_date?.message}
+        >
           <DatePicker
             className="w-full"
             onChange={(_, dateString) => form.setValue('due_date', dateString as string)}
           />
-        </FormField>
+        </Form.Item>
 
         <div className="flex gap-2 pt-4">
           <Button onClick={() => onOpenChange(false)}>{tenantMessages.common.cancel}</Button>
@@ -69,26 +81,7 @@ export function BillGenerateDialog({
             {isPending ? tenantMessages.bills.dialogs.generating : tenantMessages.bills.dialogs.generate}
           </Button>
         </div>
-      </form>
+      </Form>
     </Modal>
-  );
-}
-
-// ============== 表单字段组件 ==============
-function FormField({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: { message?: string };
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-2">
-      <span className="text-sm font-medium">{label}</span>
-      {children}
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
-    </div>
   );
 }
