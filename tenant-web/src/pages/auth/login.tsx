@@ -2,10 +2,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { useForm, FormProvider, Controller } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Button, Input } from 'antd';
+import { Button, Input, Form } from 'antd';
 import type { ReactNode } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { getPostAuthRedirectPath } from '@/utils/auth-redirect';
@@ -25,22 +25,6 @@ const passwordLoginSchema = z.object({
 type PasswordLoginFormValues = z.infer<typeof passwordLoginSchema>;
 
 const AUTH_INPUT_CLASSNAME = 'h-11 rounded-xl border border-border/80 bg-background/80 px-3.5 shadow-none';
-
-interface LabelProps {
-  children: ReactNode;
-  htmlFor?: string;
-  required?: boolean;
-  className?: string;
-}
-
-function Label({ required, children, htmlFor, className }: LabelProps) {
-  return (
-    <label htmlFor={htmlFor} className={`text-sm font-medium ${className || ''}`}>
-      {children}
-      {required && <span className="text-destructive ml-1">*</span>}
-    </label>
-  );
-}
 
 export default function LoginPage() {
   const { login, isAuthenticated, isLoading: isAuthLoading, organizations, organization } = useAuth();
@@ -102,62 +86,64 @@ export default function LoginPage() {
           </div>
         }
       >
-        <FormProvider {...passwordForm}>
-          <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-5">
-            {error && (
-              <div className="rounded-2xl border border-destructive/15 bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="phone" required>
-                {tenantMessages.auth.login.phone}
-              </Label>
-              <Controller
-                name="phone"
-                control={passwordForm.control}
-                render={({ field }) => (
-                  <Input
-                    type="tel"
-                    placeholder={tenantMessages.auth.login.phonePlaceholder}
-                    autoComplete="tel"
-                    className={AUTH_INPUT_CLASSNAME}
-                    {...field}
-                    data-testid="auth-phone-input"
-                  />
-                )}
-              />
-              {passwordForm.formState.errors.phone && (
-                <p className="text-sm text-destructive">{passwordForm.formState.errors.phone.message}</p>
-              )}
+          <Form
+          layout="vertical"
+          onFinish={passwordForm.handleSubmit(onPasswordSubmit)}
+          className="space-y-5"
+        >
+          {error && (
+            <div className="rounded-2xl border border-destructive/15 bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" required>
-                {tenantMessages.auth.login.password}
-              </Label>
-              <Controller
-                name="password"
-                control={passwordForm.control}
-                render={({ field }) => (
-                  <Input
-                    type="password"
-                    placeholder={tenantMessages.auth.login.passwordPlaceholder}
-                    autoComplete="current-password"
-                    className={AUTH_INPUT_CLASSNAME}
-                    {...field}
-                    data-testid="auth-password-input"
-                  />
-                )}
-              />
-              {passwordForm.formState.errors.password && (
-                <p className="text-sm text-destructive">{passwordForm.formState.errors.password.message}</p>
+          )}
+          <Form.Item
+            label={tenantMessages.auth.login.phone}
+            name="phone"
+            required
+            validateStatus={passwordForm.formState.errors.phone ? 'error' : ''}
+            help={passwordForm.formState.errors.phone?.message}
+          >
+            <Controller
+              name="phone"
+              control={passwordForm.control}
+              render={({ field }) => (
+                <Input
+                  type="tel"
+                  placeholder={tenantMessages.auth.login.phonePlaceholder}
+                  autoComplete="tel"
+                  className={AUTH_INPUT_CLASSNAME}
+                  {...field}
+                  data-testid="auth-phone-input"
+                />
               )}
-            </div>
-            <Button type="primary" htmlType="submit" className="h-11 w-full text-sm" loading={isLoading} data-testid="auth-login-button">
-              {isLoading ? tenantMessages.auth.login.submitting : tenantMessages.auth.login.submit}
-            </Button>
-          </form>
-        </FormProvider>
+            />
+          </Form.Item>
+          <Form.Item
+            label={tenantMessages.auth.login.password}
+            name="password"
+            required
+            validateStatus={passwordForm.formState.errors.password ? 'error' : ''}
+            help={passwordForm.formState.errors.password?.message}
+          >
+            <Controller
+              name="password"
+              control={passwordForm.control}
+              render={({ field }) => (
+                <Input
+                  type="password"
+                  placeholder={tenantMessages.auth.login.passwordPlaceholder}
+                  autoComplete="current-password"
+                  className={AUTH_INPUT_CLASSNAME}
+                  {...field}
+                  data-testid="auth-password-input"
+                />
+              )}
+            />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" className="h-11 w-full text-sm" loading={isLoading} data-testid="auth-login-button">
+            {isLoading ? tenantMessages.auth.login.submitting : tenantMessages.auth.login.submit}
+          </Button>
+        </Form>
       </AuthShell>
     </div>
   );

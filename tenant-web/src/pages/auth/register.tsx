@@ -2,11 +2,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { useForm, FormProvider, Controller } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Button, Input } from 'antd';
-import type { ReactNode } from 'react';
+import { Button, Input, Form } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { getPostAuthRedirectPath } from '@/utils/auth-redirect';
 import { useBrandConfig } from '@/contexts/brand-config';
@@ -114,96 +113,98 @@ export default function RegisterPage() {
           </div>
         }
       >
-        <FormProvider {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            {error && (
-              <div className="rounded-2xl border border-destructive/15 bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="full_name" required>
-                {tenantMessages.auth.register.name}
-              </Label>
-              <Controller
-                name="full_name"
-                control={form.control}
-                render={({ field }) => (
-                  <Input placeholder={tenantMessages.auth.register.namePlaceholder} autoComplete="name" {...field} data-testid="auth-name-input" />
-                )}
-              />
-              {form.formState.errors.full_name && (
-                <p className="text-sm text-destructive">{form.formState.errors.full_name.message}</p>
-              )}
+        <Form
+          layout="vertical"
+          onFinish={form.handleSubmit(onSubmit)}
+          className="space-y-5"
+        >
+          {error && (
+            <div className="rounded-2xl border border-destructive/15 bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone" required>
-                {tenantMessages.auth.register.phone}
-              </Label>
-              <Controller
-                name="phone"
-                control={form.control}
-                render={({ field }) => (
-                  <Input
-                    type="tel"
-                    placeholder={tenantMessages.auth.register.phonePlaceholder}
-                    autoComplete="tel"
-                    {...field}
-                    data-testid="auth-phone-input"
-                  />
-                )}
-              />
-              {form.formState.errors.phone && (
-                <p className="text-sm text-destructive">{form.formState.errors.phone.message}</p>
+          )}
+          <Form.Item
+            label={tenantMessages.auth.register.name}
+            name="full_name"
+            required
+            validateStatus={form.formState.errors.full_name ? 'error' : ''}
+            help={form.formState.errors.full_name?.message}
+          >
+            <Controller
+              name="full_name"
+              control={form.control}
+              render={({ field }) => (
+                <Input placeholder={tenantMessages.auth.register.namePlaceholder} autoComplete="name" {...field} data-testid="auth-name-input" />
               )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" required>
-                {tenantMessages.auth.register.password}
-              </Label>
-              <Controller
-                name="password"
-                control={form.control}
-                render={({ field }) => (
-                  <Input
-                    type="password"
-                    placeholder={tenantMessages.auth.register.passwordPlaceholder}
-                    autoComplete="new-password"
-                    {...field}
-                    data-testid="auth-password-input"
-                  />
-                )}
-              />
-              {form.formState.errors.password && (
-                <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
+            />
+          </Form.Item>
+          <Form.Item
+            label={tenantMessages.auth.register.phone}
+            name="phone"
+            required
+            validateStatus={form.formState.errors.phone ? 'error' : ''}
+            help={form.formState.errors.phone?.message}
+          >
+            <Controller
+              name="phone"
+              control={form.control}
+              render={({ field }) => (
+                <Input
+                  type="tel"
+                  placeholder={tenantMessages.auth.register.phonePlaceholder}
+                  autoComplete="tel"
+                  {...field}
+                  data-testid="auth-phone-input"
+                />
               )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm_password" required>
-                {tenantMessages.auth.register.confirmPassword}
-              </Label>
-              <Controller
-                name="confirm_password"
-                control={form.control}
-                render={({ field }) => (
-                  <Input
-                    type="password"
-                    placeholder={tenantMessages.auth.register.confirmPasswordPlaceholder}
-                    autoComplete="new-password"
-                    {...field}
-                    data-testid="auth-confirm-password-input"
-                  />
-                )}
-              />
-              {form.formState.errors.confirm_password && (
-                <p className="text-sm text-destructive">{form.formState.errors.confirm_password.message}</p>
+            />
+          </Form.Item>
+          <Form.Item
+            label={tenantMessages.auth.register.password}
+            name="password"
+            required
+            validateStatus={form.formState.errors.password ? 'error' : ''}
+            help={form.formState.errors.password?.message}
+          >
+            <Controller
+              name="password"
+              control={form.control}
+              render={({ field }) => (
+                <Input
+                  type="password"
+                  placeholder={tenantMessages.auth.register.passwordPlaceholder}
+                  autoComplete="new-password"
+                  {...field}
+                  data-testid="auth-password-input"
+                />
               )}
-            </div>
-            <Button type="primary" htmlType="submit" className="h-11 w-full text-sm" loading={isLoading} disabled={isLoading} data-testid="auth-register-button">
-              {isLoading ? tenantMessages.auth.register.submitting : tenantMessages.auth.register.submit}
-            </Button>
-          </form>
-        </FormProvider>
+            />
+          </Form.Item>
+          <Form.Item
+            label={tenantMessages.auth.register.confirmPassword}
+            name="confirm_password"
+            required
+            validateStatus={form.formState.errors.confirm_password ? 'error' : ''}
+            help={form.formState.errors.confirm_password?.message}
+          >
+            <Controller
+              name="confirm_password"
+              control={form.control}
+              render={({ field }) => (
+                <Input
+                  type="password"
+                  placeholder={tenantMessages.auth.register.confirmPasswordPlaceholder}
+                  autoComplete="new-password"
+                  {...field}
+                  data-testid="auth-confirm-password-input"
+                />
+              )}
+            />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" className="h-11 w-full text-sm" loading={isLoading} disabled={isLoading} data-testid="auth-register-button">
+            {isLoading ? tenantMessages.auth.register.submitting : tenantMessages.auth.register.submit}
+          </Button>
+        </Form>
       </AuthShell>
     </div>
   );
