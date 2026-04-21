@@ -14,30 +14,6 @@ import {
 import type { GeneratedFloorRooms } from '@/utils/apartment-detail';
 import { getFacilitiesSummary } from '@/utils/apartment-detail';
 
-function FormField({
-  label,
-  htmlFor,
-  error,
-  required,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  error?: string;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={htmlFor} required={required}>
-        {label}
-      </Label>
-      {children}
-      {error ? <p className="text-sm text-red-500">{error}</p> : null}
-    </div>
-  );
-}
-
 export function CreateRoomDialog({
   apartmentName,
   open,

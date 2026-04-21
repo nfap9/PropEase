@@ -6,7 +6,6 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button, Input, Form } from 'antd';
-import type { ReactNode } from 'react';
 import { useAuth } from '@/contexts/auth';
 import { getPostAuthRedirectPath } from '@/utils/auth-redirect';
 import { useBrandConfig } from '@/contexts/brand-config';

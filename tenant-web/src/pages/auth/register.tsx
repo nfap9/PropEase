@@ -34,22 +34,6 @@ const registerSchema = z
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-interface LabelProps {
-  children: ReactNode;
-  htmlFor?: string;
-  required?: boolean;
-  className?: string;
-}
-
-function Label({ required, children, htmlFor, className }: LabelProps) {
-  return (
-    <label htmlFor={htmlFor} className={`text-sm font-medium ${className || ''}`}>
-      {children}
-      {required && <span className="text-destructive ml-1">*</span>}
-    </label>
-  );
-}
-
 export default function RegisterPage() {
   const { register: registerUser, isAuthenticated, isLoading: isAuthLoading, organizations, organization } =
     useAuth();
