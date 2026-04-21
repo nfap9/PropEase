@@ -19,7 +19,7 @@ router.post('/organizations/:org_id/subscription/cancel', ctrl.cancelSubscriptio
 // orders
 router.post('/organizations/:org_id/orders', ctrl.createOrder);
 router.post('/organizations/:org_id/orders/preview', ctrl.previewOrder);
-router.get('/organizations/:org_id/orders/:order_id', ctrl.getOrder);
-router.post('/organizations/:org_id/orders/:order_id/simulate-pay', ctrl.simulatePay);
+router.get('/orders/:order_id', ctrl.getOrder);
+router.post('/orders/:order_id/simulate-pay', ctrl.simulatePay);
 
 export const subscriptionsRouter = router;
