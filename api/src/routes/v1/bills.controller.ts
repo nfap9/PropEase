@@ -1,5 +1,4 @@
 import { type Request, type Response, type NextFunction } from 'express';
-import { z } from 'zod';
 import { requireOrgMembership, requirePermission } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
 import { generateBillsExcel, generateBillPdf } from '../../utils/billExports.js';
@@ -9,64 +8,13 @@ import { defaultBillService } from '../../services/bill.service.js';
 import { defaultTenantService } from '../../services/tenant.service.js';
 import { defaultOrgRepo } from '../../repositories/organization.repo.js';
 import type { BillFilter } from '../../repositories/bill.repo.js';
+import { GenerateBillsSchema, BillQuerySchema, BillExportSchema, BillCreateSchema, BillUpdateSchema, BillPaymentSchema } from '../../lib/schemas.js';
 
-// ==================== Schemas ====================
+// Alias for backward compatibility with existing code
+export const PaymentCreateSchema = BillPaymentSchema;
 
-export const GenerateBillsSchema = z.object({
-  bill_year: z.number(),
-  bill_month: z.number(),
-  due_date: z.string(),
-  lease_ids: z.array(z.string()).optional(),
-});
-
-export const BillCreateSchema = z.object({
-  lease_id: z.string(),
-  bill_year: z.number(),
-  bill_month: z.number(),
-  due_date: z.string(),
-  rent_amount: z.number().optional(),
-  water_amount: z.number().optional(),
-  electricity_amount: z.number().optional(),
-  other_amount: z.number().optional(),
-  total_amount: z.number(),
-  notes: z.string().optional(),
-});
-
-export const BillUpdateSchema = z.object({
-  rent_amount: z.number().optional(),
-  water_amount: z.number().optional(),
-  electricity_amount: z.number().optional(),
-  other_amount: z.number().optional(),
-  total_amount: z.number().optional(),
-  status: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-export const PaymentCreateSchema = z.object({
-  amount: z.number(),
-  payment_date: z.string(),
-  payment_method: z.string().optional(),
-  reference: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-// ==================== Query Schemas ====================
-
-export const BillQuerySchema = z.object({
-  lease_id: z.string().optional(),
-  year: z.number().optional(),
-  month: z.number().optional(),
-  status: z.string().optional(),
-  page: z.number().optional(),
-  pageSize: z.number().optional(),
-});
-
-export const BillExportSchema = z.object({
-  status: z.string().optional(),
-  year: z.number().optional(),
-  month: z.number().optional(),
-  exportType: z.enum(['unfinished', 'all']).optional(),
-});
+// Re-export for backward compatibility
+export { GenerateBillsSchema, BillQuerySchema, BillExportSchema, BillCreateSchema, BillUpdateSchema, BillPaymentSchema };
 
 // ==================== Handlers ====================
 
