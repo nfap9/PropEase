@@ -1,9 +1,17 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
+import { z } from 'zod';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
+import { createAppError } from '../../utils/appError.js';
 import { defaultReportService } from '../../services/report.service.js';
 
 const router: Router = Router();
+
+const IncomeQuerySchema = z.object({
+  year: z.number().optional(),
+  start_month: z.number().optional(),
+  end_month: z.number().optional(),
+});
 
 router.use(requireConsoleAuth);
 
@@ -53,27 +61,27 @@ router.get('/overview', async (req: Request, res: Response, next: NextFunction) 
 /**
  * @openapi
  * /reports/income:
- *   get:
+ *   post:
  *     summary: 获取收入统计
  *     tags: [报表]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: year
- *         schema:
- *           type: integer
- *         description: 年份，默认为当前年
- *       - in: query
- *         name: start_month
- *         schema:
- *           type: integer
- *         description: 起始月份
- *       - in: query
- *         name: end_month
- *         schema:
- *           type: integer
- *         description: 结束月份
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               year:
+ *                 type: integer
+ *                 description: 年份，默认为当前年
+ *               start_month:
+ *                 type: integer
+ *                 description: 起始月份
+ *               end_month:
+ *                 type: integer
+ *                 description: 结束月份
  *     responses:
  *       200:
  *         description: 收入统计数据
@@ -96,13 +104,13 @@ router.get('/overview', async (req: Request, res: Response, next: NextFunction) 
  *                 total:
  *                   type: number
  */
-router.get('/income', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/income', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orgId = await requireOrgMembership(req);
-    const year = req.query.year != null ? Number(req.query.year) : new Date().getFullYear();
-    const startMonth = req.query.start_month != null ? Number(req.query.start_month) : undefined;
-    const endMonth = req.query.end_month != null ? Number(req.query.end_month) : undefined;
-    const result = await defaultReportService.getIncome(orgId, year, startMonth, endMonth);
+    const parsed = IncomeQuerySchema.safeParse(req.body);
+    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
+    const year = parsed.data.year ?? new Date().getFullYear();
+    const result = await defaultReportService.getIncome(orgId, year, parsed.data.start_month, parsed.data.end_month);
     res.json(result);
   } catch (e) {
     next(e);
