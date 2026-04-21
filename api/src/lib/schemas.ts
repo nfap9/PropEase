@@ -290,6 +290,22 @@ export const UtilityExportSchema = z.object({
   days_range: z.number().int().optional(),
 });
 
+export const BatchReadingSchema = z.object({
+  period_year: z.number(),
+  period_month: z.number(),
+  reading_date: z.string(),
+  readings: z.array(z.object({
+    room_id: z.string(),
+    water_reading: z.number().optional(),
+    electricity_reading: z.number().optional(),
+    notes: z.string().optional(),
+  })),
+});
+
+// Alias for backward compatibility
+export const ReadingCreateSchema = UtilityCreateSchema;
+export const ReadingUpdateSchema = UtilityUpdateSchema;
+
 // ==================== Utility Config ====================
 
 export const UtilityConfigSchema = z.object({
@@ -319,4 +335,12 @@ export const CreateOrderSchema = z.object({
 export const PreviewOrderSchema = z.object({
   service_id: z.string(),
   billing_months: z.number().int().min(1).max(36).optional().default(1),
+});
+
+// ==================== Report ====================
+
+export const IncomeQuerySchema = z.object({
+  year: z.number().optional(),
+  start_month: z.number().optional(),
+  end_month: z.number().optional(),
 });

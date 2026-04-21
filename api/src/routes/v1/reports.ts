@@ -1,17 +1,14 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { z } from 'zod';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
 import { defaultReportService } from '../../services/report.service.js';
+import { IncomeQuerySchema } from '../../lib/schemas.js';
+
+// Re-export for backward compatibility
+export { IncomeQuerySchema };
 
 const router: Router = Router();
-
-const IncomeQuerySchema = z.object({
-  year: z.number().optional(),
-  start_month: z.number().optional(),
-  end_month: z.number().optional(),
-});
 
 router.use(requireConsoleAuth);
 

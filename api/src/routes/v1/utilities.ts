@@ -1,56 +1,27 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { z } from 'zod';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
 import { defaultUtilityService } from '../../services/utility.service.js';
 import type { ReadingFilter } from '../../repositories/utility.repo.js';
+import {
+  UtilityCreateSchema,
+  UtilityUpdateSchema,
+  BatchReadingSchema,
+  UtilityQuerySchema,
+  UtilityExportSchema,
+  ReadingCreateSchema,
+  ReadingUpdateSchema,
+} from '../../lib/schemas.js';
+
+// Re-export for backward compatibility
+const ReadingSchema = UtilityCreateSchema;
+
+export { ReadingCreateSchema, ReadingUpdateSchema, BatchReadingSchema, UtilityQuerySchema, UtilityExportSchema };
 
 const router: Router = Router();
 
 router.use(requireConsoleAuth);
-
-const ReadingCreateSchema = z.object({
-  room_id: z.string(),
-  period_year: z.number(),
-  period_month: z.number(),
-  reading_date: z.string(),
-  water_reading: z.number().optional(),
-  electricity_reading: z.number().optional(),
-  water_previous: z.number().optional(),
-  electricity_previous: z.number().optional(),
-  notes: z.string().optional(),
-  reading_context: z.enum(['normal', 'initial', 'meter_reset']).optional(),
-  anomaly_reason: z.string().optional(),
-});
-const ReadingUpdateSchema = ReadingCreateSchema.partial();
-const BatchReadingSchema = z.object({
-  period_year: z.number(),
-  period_month: z.number(),
-  reading_date: z.string(),
-  readings: z.array(
-    z.object({
-      room_id: z.string(),
-      water_reading: z.number().optional(),
-      electricity_reading: z.number().optional(),
-      notes: z.string().optional(),
-    })
-  ),
-});
-
-// Query schemas for list and export
-const UtilityQuerySchema = z.object({
-  room_id: z.string().optional(),
-  apartment_id: z.string().optional(),
-  period_year: z.number().optional(),
-  period_month: z.number().optional(),
-});
-
-const UtilityExportSchema = z.object({
-  period_year: z.number().optional(),
-  period_month: z.number().optional(),
-  days_range: z.number().optional(),
-});
 
 /**
  * @openapi

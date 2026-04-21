@@ -1,19 +1,16 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { z } from 'zod';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
 import { defaultNotificationService } from '../../services/notification.service.js';
+import { NotificationQuerySchema } from '../../lib/schemas.js';
+
+// Re-export for backward compatibility
+export { NotificationQuerySchema };
 
 const router: Router = Router();
 
 router.use(requireConsoleAuth);
-
-const NotificationQuerySchema = z.object({
-  status: z.enum(['unread', 'all']).optional(),
-  category: z.enum(['lease', 'billing', 'tenant', 'system', 'all']).optional(),
-  limit: z.number().optional(),
-});
 
 router.post('/query', async (req: Request, res: Response, next: NextFunction) => {
   try {
