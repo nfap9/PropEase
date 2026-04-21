@@ -78,7 +78,13 @@ export default function NewApartmentPage() {
               <Label htmlFor="name" required>
                 公寓名称
               </Label>
-              <Input id="name" {...form.register('name')} placeholder="请输入公寓名称" />
+              <Controller
+                name="name"
+                control={form.control}
+                render={({ field }) => (
+                  <Input id="name" placeholder="请输入公寓名称" {...field} />
+                )}
+              />
               {form.formState.errors.name && (
                 <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
               )}
@@ -87,7 +93,13 @@ export default function NewApartmentPage() {
               <Label htmlFor="address" required>
                 地址
               </Label>
-              <Input id="address" {...form.register('address')} placeholder="请输入公寓地址" />
+              <Controller
+                name="address"
+                control={form.control}
+                render={({ field }) => (
+                  <Input id="address" placeholder="请输入公寓地址" {...field} />
+                )}
+              />
               {form.formState.errors.address && (
                 <p className="text-sm text-red-500">{form.formState.errors.address.message}</p>
               )}
@@ -145,7 +157,13 @@ export default function NewApartmentPage() {
                 <Label htmlFor="landlord_name" required>
                   房东姓名
                 </Label>
-                <Input id="landlord_name" {...form.register('landlord_name')} placeholder="请输入房东姓名" />
+                <Controller
+                name="landlord_name"
+                control={form.control}
+                render={({ field }) => (
+                  <Input id="landlord_name" placeholder="请输入房东姓名" {...field} />
+                )}
+              />
                 {form.formState.errors.landlord_name && (
                   <p className="text-sm text-red-500">{form.formState.errors.landlord_name.message}</p>
                 )}

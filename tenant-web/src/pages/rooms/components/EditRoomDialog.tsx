@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Modal, Button, Input, Select } from 'antd';
@@ -112,9 +112,12 @@ export function EditRoomDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <span className="text-sm font-medium">房间号 *</span>
-              <Input
-                data-testid={testids?.NUMBER_INPUT}
-                {...form.register('room_number')}
+              <Controller
+                name="room_number"
+                control={form.control}
+                render={({ field }) => (
+                  <Input data-testid={testids?.NUMBER_INPUT} {...field} />
+                )}
               />
               {form.formState.errors.room_number && (
                 <p className="text-sm text-destructive">{form.formState.errors.room_number.message}</p>
@@ -145,11 +148,18 @@ export function EditRoomDialog({
           </div>
           <div className="space-y-2">
             <span className="text-sm font-medium">月租 (元) *</span>
-            <Input
-              type="number"
-              step="0.01"
-              data-testid={testids?.MONTHLY_RENT_INPUT}
-              {...form.register('monthly_rent', { valueAsNumber: true })}
+            <Controller
+              name="monthly_rent"
+              control={form.control}
+              render={({ field }) => (
+                <Input
+                  type="number"
+                  step="0.01"
+                  data-testid={testids?.MONTHLY_RENT_INPUT}
+                  value={field.value ?? ''}
+                  onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                />
+              )}
             />
             {form.formState.errors.monthly_rent && (
               <p className="text-sm text-destructive">{form.formState.errors.monthly_rent.message}</p>

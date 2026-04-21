@@ -1,5 +1,4 @@
-
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { Input } from 'antd';
 import type { HTMLAttributes } from 'react';
@@ -70,10 +69,16 @@ export function ApartmentForm({
         <Label htmlFor={`${idPrefix}name`} required>
           公寓名称
         </Label>
-        <Input
-          id={`${idPrefix}name`}
-          {...form.register('name')}
-          placeholder="请输入公寓名称"
+        <Controller
+          name="name"
+          control={form.control}
+          render={({ field }) => (
+            <Input
+              id={`${idPrefix}name`}
+              placeholder="请输入公寓名称"
+              {...field}
+            />
+          )}
         />
         {form.formState.errors.name && (
           <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
@@ -83,10 +88,16 @@ export function ApartmentForm({
         <Label htmlFor={`${idPrefix}address`} required>
           地址
         </Label>
-        <Input
-          id={`${idPrefix}address`}
-          {...form.register('address')}
-          placeholder="请输入公寓地址"
+        <Controller
+          name="address"
+          control={form.control}
+          render={({ field }) => (
+            <Input
+              id={`${idPrefix}address`}
+              placeholder="请输入公寓地址"
+              {...field}
+            />
+          )}
         />
         {form.formState.errors.address && (
           <p className="text-sm text-destructive">{form.formState.errors.address.message}</p>
