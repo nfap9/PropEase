@@ -5,8 +5,6 @@ import { createAppError } from '../../utils/appError.js';
 import { defaultUtilityService } from '../../services/utility.service.js';
 import type { ReadingFilter } from '../../repositories/utility.repo.js';
 import {
-  UtilityCreateSchema,
-  UtilityUpdateSchema,
   BatchReadingSchema,
   UtilityQuerySchema,
   UtilityExportSchema,
@@ -15,8 +13,6 @@ import {
 } from '../../lib/schemas.js';
 
 // Re-export for backward compatibility
-const ReadingSchema = UtilityCreateSchema;
-
 export { ReadingCreateSchema, ReadingUpdateSchema, BatchReadingSchema, UtilityQuerySchema, UtilityExportSchema };
 
 const router: Router = Router();

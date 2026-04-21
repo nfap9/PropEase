@@ -80,7 +80,7 @@ export async function create(req: Request, res: Response, next: NextFunction) {
     const maxOrgs = await getMaxOrganizationsForUser(user.id);
     if (orgCount >= maxOrgs)
       return next(createAppError(403, `当前最多可拥有 ${maxOrgs} 个组织，如需更多请升级服务`));
-    const parsed = CreateOrgSchema.safeParse(req.body);
+    const parsed = OrganizationCreateSchema.safeParse(req.body);
     if (!parsed.success)
       return next(
         createAppError(422, '参数校验失败', {
@@ -124,7 +124,7 @@ export async function update(req: Request, res: Response, next: NextFunction) {
     await requirePermission(req, orgId, 'settings:edit');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const parsed = UpdateOrgSchema.safeParse(req.body);
+    const parsed = OrganizationUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const org = await defaultOrgService.update(req.params.orgId, user.id, {
       name: parsed.data.name,

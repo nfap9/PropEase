@@ -184,7 +184,7 @@ export const LeaseChangeDepositSchema = z.object({
 
 export const LeaseUpdateFeeItemsSchema = z.object({
   feeItems: z.array(z.object({
-    fee_type_id: z.string().optional(),
+    fee_type_id: z.string(),
     specification_id: z.string().optional(),
     quantity: z.number(),
   })),

@@ -1,4 +1,5 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
+import { z } from 'zod';
 import { requireConsoleAuth } from '../../middlewares/requireAuth.js';
 import { requireOrgMembership, requirePermission } from '../../utils/orgContext.js';
 import { createAppError } from '../../utils/appError.js';
@@ -15,7 +16,7 @@ import {
   LeaseChangeDepositSchema,
   LeaseUpdateFeeItemsSchema,
   LeaseSetFeeItemsSchema,
-} from '../lib/schemas.js';
+} from '../../lib/schemas.js';
 
 // Re-export for backward compatibility
 const ChangeRoomSchema = LeaseChangeRoomSchema;
@@ -41,9 +42,6 @@ export {
 const router: Router = Router();
 
 router.use(requireConsoleAuth);
-    })
-  ),
-});
 
 const SettleSchema = z.object({
   finalWaterReading: z.number().optional(),
