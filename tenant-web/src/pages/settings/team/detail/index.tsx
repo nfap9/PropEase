@@ -5,8 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Button, Modal, Input, Card, Skeleton, Tag } from 'antd';
-import { Label } from '@/components/common/label';
+import { Button, Modal, Input, Card, Skeleton, Tag, Form } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
@@ -171,15 +170,22 @@ export default function TeamSettingsPage() {
           <div className="mb-4 text-muted-foreground">
             {tenantMessages.settings.team.editDialogDescription}
           </div>
-          <form onSubmit={editOrgForm.handleSubmit(
-            (data) => organization && updateOrgMutation.mutate({ id: organization.id, data })
-          )} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">
-                团队名称 <span aria-hidden="true">*</span>
-              </Label>
-              <Input id="edit-name" aria-required {...editOrgForm.register('name')} />
-            </div>
+          <Form
+            layout="vertical"
+            onFinish={editOrgForm.handleSubmit(
+              (data) => organization && updateOrgMutation.mutate({ id: organization.id, data })
+            )}
+            className="space-y-4"
+          >
+            <Form.Item
+              label="团队名称"
+              name="name"
+              required
+              validateStatus={editOrgForm.formState.errors.name ? 'error' : ''}
+              help={editOrgForm.formState.errors.name?.message}
+            >
+              <Input aria-required {...editOrgForm.register('name')} />
+            </Form.Item>
             <div className="flex justify-end gap-2">
               <Button onClick={() => setIsEditOrgOpen(false)}>
                 取消
@@ -190,7 +196,7 @@ export default function TeamSettingsPage() {
                   : tenantMessages.settings.team.editSubmit}
               </Button>
             </div>
-          </form>
+          </Form>
         </Modal>
       </div>
   );

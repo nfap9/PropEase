@@ -1,8 +1,7 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button, Input, Modal } from 'antd';
-import { Label } from '@/components/common/label';
+import { Button, Input, Modal, Form } from 'antd';
 import type { Tenant } from '@/types';
 
 const tenantSchema = z.object({
@@ -81,69 +80,65 @@ export function TenantFormModal({
       footer={null}
       data-testid={testId}
     >
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <Form
+        layout="vertical"
+        onFinish={form.handleSubmit(onSubmit)}
+        className="space-y-4"
+      >
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="name" required>
-              姓名
-            </Label>
+          <Form.Item
+            label="姓名"
+            name="name"
+            required
+            validateStatus={form.formState.errors.name ? 'error' : ''}
+            help={form.formState.errors.name?.message}
+          >
             <Controller
               name="name"
               control={form.control}
               render={({ field }) => (
-                <Input id="name" placeholder="请输入租客姓名" {...field} data-testid={TENANTS.NAME_INPUT} />
+                <Input placeholder="请输入租客姓名" {...field} data-testid={TENANTS.NAME_INPUT} />
               )}
             />
-            {form.formState.errors.name && (
-              <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone" required>
-              联系电话
-            </Label>
+          </Form.Item>
+          <Form.Item
+            label="联系电话"
+            name="phone"
+            required
+            validateStatus={form.formState.errors.phone ? 'error' : ''}
+            help={form.formState.errors.phone?.message}
+          >
             <Controller
               name="phone"
               control={form.control}
               render={({ field }) => (
-                <Input id="phone" placeholder="请输入联系电话" {...field} data-testid={TENANTS.PHONE_INPUT} />
+                <Input placeholder="请输入联系电话" {...field} data-testid={TENANTS.PHONE_INPUT} />
               )}
             />
-            {form.formState.errors.phone && (
-              <p className="text-sm text-red-500">{form.formState.errors.phone.message}</p>
-            )}
-          </div>
+          </Form.Item>
         </div>
+        <Form.Item label="身份证号" name="id_card">
+          <Input placeholder="请输入身份证号" {...form.register('id_card')} data-testid={TENANTS.ID_CARD_INPUT} />
+        </Form.Item>
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="id_card">身份证号</Label>
-            <Input id="id_card" placeholder="请输入身份证号" {...form.register('id_card')} data-testid={TENANTS.ID_CARD_INPUT} />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="emergency_contact">紧急联系人</Label>
+          <Form.Item label="紧急联系人" name="emergency_contact">
             <Input
-              id="emergency_contact"
               placeholder="请输入紧急联系人"
               {...form.register('emergency_contact')}
               data-testid={TENANTS.EMERGENCY_CONTACT_INPUT}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="emergency_phone">紧急联系电话</Label>
+          </Form.Item>
+          <Form.Item label="紧急联系电话" name="emergency_phone">
             <Input
-              id="emergency_phone"
               placeholder="请输入紧急联系电话"
               {...form.register('emergency_phone')}
               data-testid={TENANTS.EMERGENCY_PHONE_INPUT}
             />
-          </div>
+          </Form.Item>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="notes">备注</Label>
-          <Input id="notes" placeholder="请输入备注" {...form.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
-        </div>
+        <Form.Item label="备注" name="notes">
+          <Input placeholder="请输入备注" {...form.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
+        </Form.Item>
         <div className="flex justify-end gap-2">
           <Button onClick={() => onOpenChange(false)} data-testid={TENANTS.CANCEL_BUTTON}>
             取消
@@ -152,7 +147,7 @@ export function TenantFormModal({
             {submitText}
           </Button>
         </div>
-      </form>
+      </Form>
     </Modal>
   );
 }
