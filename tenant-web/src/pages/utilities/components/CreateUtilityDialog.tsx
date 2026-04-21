@@ -4,8 +4,7 @@ import { z } from 'zod';
 import { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle } from 'lucide-react';
-import { Modal, Alert, Button, Input, DatePicker, Select, Radio } from 'antd';
-import { Label } from '@/components/common/label';
+import { Modal, Alert, Button, Input, DatePicker, Select, Radio, Form } from 'antd';
 import { Apartment, Room, UtilityReading } from '@/types';
 import { Droplets, Zap } from 'lucide-react';
 import { utilitiesApi } from '@/api/utilities';
@@ -194,10 +193,13 @@ export function CreateUtilityDialog({
         data-testid="utilities-entry-dialog"
       >
         <p className="text-gray-500 mb-4">录入房间的水电表读数</p>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <Form
+          layout="vertical"
+          onFinish={form.handleSubmit(handleSubmit)}
+          className="space-y-4"
+        >
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="apartment_selector">公寓</Label>
+            <Form.Item label="公寓">
               <Select
                 value={selectedApartmentId || undefined}
                 onChange={handleApartmentChange}
@@ -208,9 +210,8 @@ export function CreateUtilityDialog({
                   label: apartment.name,
                 }))}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="room_selector">房间</Label>
+            </Form.Item>
+            <Form.Item label="房间">
               <Select
                 value={form.watch('room_id') || undefined}
                 onChange={(value) => form.setValue('room_id', value)}
@@ -222,11 +223,10 @@ export function CreateUtilityDialog({
                   label: room.room_number,
                 }))}
               />
-            </div>
+            </Form.Item>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="year_selector">年份</Label>
+            <Form.Item label="年份" name="period_year">
               <Select
                 value={form.watch('period_year').toString()}
                 onChange={(value) => form.setValue('period_year', Number(value))}
@@ -236,9 +236,8 @@ export function CreateUtilityDialog({
                   label: `${year}年`,
                 }))}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="month_selector">月份</Label>
+            </Form.Item>
+            <Form.Item label="月份" name="period_month">
               <Select
                 value={form.watch('period_month').toString()}
                 onChange={(value) => form.setValue('period_month', Number(value))}
@@ -248,19 +247,22 @@ export function CreateUtilityDialog({
                   label: `${month}月`,
                 }))}
               />
-            </div>
+            </Form.Item>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="reading_date">读数日期 *</Label>
+          <Form.Item
+            label="读数日期"
+            name="reading_date"
+            required
+            validateStatus={form.formState.errors.reading_date ? 'error' : ''}
+            help={form.formState.errors.reading_date?.message}
+          >
             <DatePicker
-              id="reading_date"
               value={form.watch('reading_date') ? dayjs(form.watch('reading_date')) : null}
               onChange={(date) => form.setValue('reading_date', date?.format('YYYY-MM-DD') || '')}
               className="w-full"
             />
-          </div>
-          <div className="space-y-2">
-            <Label>录入场景</Label>
+          </Form.Item>
+          <Form.Item label="录入场景" name="reading_context">
             <Radio.Group
               value={readingContext}
               onChange={(e) => form.setValue('reading_context', e.target.value as UtilityFormData['reading_context'])}
@@ -271,7 +273,7 @@ export function CreateUtilityDialog({
                 <Radio value="meter_reset">更换新表</Radio>
               </div>
             </Radio.Group>
-          </div>
+          </Form.Item>
           {readingContext !== 'normal' && (
             <Alert
               type="info"
@@ -285,69 +287,51 @@ export function CreateUtilityDialog({
             />
           )}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="water_reading">
-                <span className="flex items-center gap-2">
-                  <Droplets className="h-4 w-4 text-blue-500" />
-                  水表读数 (m³)
-                </span>
-              </Label>
+            <Form.Item label={<span className="flex items-center gap-2"><Droplets className="h-4 w-4 text-blue-500" />水表读数 (m³)</span>}>
               <Input
-                id="water_reading"
                 type="number"
                 step="0.01"
                 {...form.register('water_reading', { valueAsNumber: true })}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="electricity_reading">
-                <span className="flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-yellow-500" />
-                  电表读数 (kWh)
-                </span>
-              </Label>
+            </Form.Item>
+            <Form.Item label={<span className="flex items-center gap-2"><Zap className="h-4 w-4 text-yellow-500" />电表读数 (kWh)</span>}>
               <Input
-                id="electricity_reading"
                 type="number"
                 step="0.01"
                 {...form.register('electricity_reading', { valueAsNumber: true })}
               />
-            </div>
+            </Form.Item>
           </div>
           {readingContext !== 'normal' && (
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="water_previous">水表上一读数</Label>
+              <Form.Item label="水表上一读数">
                 <Input
-                  id="water_previous"
                   type="number"
                   step="0.01"
                   placeholder={readingContext === 'initial' ? '可留空，自动取当前值' : '换表后请输入新表起始值'}
                   {...form.register('water_previous', { valueAsNumber: true })}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="electricity_previous">电表上一读数</Label>
+              </Form.Item>
+              <Form.Item label="电表上一读数">
                 <Input
-                  id="electricity_previous"
                   type="number"
                   step="0.01"
                   placeholder={readingContext === 'initial' ? '可留空，自动取当前值' : '换表后请输入新表起始值'}
                   {...form.register('electricity_previous', { valueAsNumber: true })}
                 />
-              </div>
+              </Form.Item>
             </div>
           )}
-          <div className="space-y-2">
-            <Label htmlFor="anomaly_reason">
-              {readingContext === 'normal'
+          <Form.Item
+            label={
+              readingContext === 'normal'
                 ? '异常说明（可选）'
                 : readingContext === 'initial'
                   ? '说明（可选）'
-                  : '更换原因 *'}
-            </Label>
+                  : '更换原因 *'
+            }
+          >
             <Input
-              id="anomaly_reason"
               placeholder={
                 readingContext === 'normal'
                   ? '如遇到暴涨用量、人工核对等特殊情况，可在此说明'
@@ -357,12 +341,11 @@ export function CreateUtilityDialog({
               }
               {...form.register('anomaly_reason')}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="notes">备注</Label>
-            <Input id="notes" placeholder="请输入备注" {...form.register('notes')} />
-          </div>
-        </form>
+          </Form.Item>
+          <Form.Item label="备注">
+            <Input placeholder="请输入备注" {...form.register('notes')} />
+          </Form.Item>
+        </Form>
       </Modal>
       {existingReading && (
         <Modal

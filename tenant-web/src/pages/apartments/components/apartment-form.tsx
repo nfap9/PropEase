@@ -1,6 +1,6 @@
 import { UseFormReturn, Controller } from 'react-hook-form';
 import { z } from 'zod';
-import { Input } from 'antd';
+import { Input, Form } from 'antd';
 import type { HTMLAttributes } from 'react';
 import { LandlordInfoSection } from './landlord-info-section';
 
@@ -21,22 +21,6 @@ export const apartmentSchema = z.object({
 });
 
 export type ApartmentFormData = z.infer<typeof apartmentSchema>;
-
-interface LabelProps {
-  children: React.ReactNode;
-  htmlFor?: string;
-  required?: boolean;
-  className?: string;
-}
-
-function Label({ required, children, htmlFor, className }: LabelProps) {
-  return (
-    <label htmlFor={htmlFor} className={`text-sm font-medium ${className || ''}`}>
-      {children}
-      {required && <span className="text-destructive ml-1">*</span>}
-    </label>
-  );
-}
 
 interface ApartmentFormProps {
   form: UseFormReturn<ApartmentFormData>;
@@ -64,82 +48,78 @@ export function ApartmentForm({
   });
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit ?? (() => {}))} className="space-y-4" id={formId}>
-      <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}name`} required>
-          公寓名称
-        </Label>
+    <Form
+      layout="vertical"
+      onFinish={form.handleSubmit(onSubmit ?? (() => {}))}
+      className="space-y-4"
+      id={formId}
+    >
+      <Form.Item
+        label="公寓名称"
+        name="name"
+        required
+        validateStatus={form.formState.errors.name ? 'error' : ''}
+        help={form.formState.errors.name?.message}
+      >
         <Controller
           name="name"
           control={form.control}
           render={({ field }) => (
             <Input
-              id={`${idPrefix}name`}
               placeholder="请输入公寓名称"
               {...field}
             />
           )}
         />
-        {form.formState.errors.name && (
-          <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
-        )}
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}address`} required>
-          地址
-        </Label>
+      </Form.Item>
+      <Form.Item
+        label="地址"
+        name="address"
+        required
+        validateStatus={form.formState.errors.address ? 'error' : ''}
+        help={form.formState.errors.address?.message}
+      >
         <Controller
           name="address"
           control={form.control}
           render={({ field }) => (
             <Input
-              id={`${idPrefix}address`}
               placeholder="请输入公寓地址"
               {...field}
             />
           )}
         />
-        {form.formState.errors.address && (
-          <p className="text-sm text-destructive">{form.formState.errors.address.message}</p>
-        )}
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}description`}>描述</Label>
-        <Input id={`${idPrefix}description`} {...form.register('description')} />
-      </div>
+      </Form.Item>
+      <Form.Item label="描述" name="description">
+        <Input {...form.register('description')} />
+      </Form.Item>
       <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}floors`}>楼层数</Label>
+        <Form.Item label="楼层数">
           <Input
-            id={`${idPrefix}floors`}
             type="number"
             min={1}
             {...numberRegister('floors', form)}
             placeholder="请输入楼层数"
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}land_area`}>用地面积（亩）</Label>
+        </Form.Item>
+        <Form.Item label="用地面积（亩）">
           <Input
-            id={`${idPrefix}land_area`}
             type="number"
             min={0}
             step={0.01}
             {...numberRegister('land_area', form)}
             placeholder="请输入用地面积"
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}total_area`}>总面积（㎡）</Label>
+        </Form.Item>
+        <Form.Item label="总面积（㎡）">
           <Input
-            id={`${idPrefix}total_area`}
             type="number"
             min={0}
             step={0.01}
             {...numberRegister('total_area', form)}
             placeholder="请输入总面积"
           />
-        </div>
+        </Form.Item>
       </div>
 
       {/* 分割线 */}
@@ -153,6 +133,6 @@ export function ApartmentForm({
       </div>
 
       <LandlordInfoSection form={form} />
-    </form>
+    </Form>
   );
 }

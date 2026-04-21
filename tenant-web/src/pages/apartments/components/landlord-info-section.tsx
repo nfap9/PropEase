@@ -1,24 +1,6 @@
-
 import { UseFormReturn, Controller } from 'react-hook-form';
-import { DatePicker, Input } from 'antd';
-import type { ReactNode } from 'react';
+import { DatePicker, Input, Form } from 'antd';
 import { ApartmentFormData } from './apartment-form';
-
-interface LabelProps {
-  children: ReactNode;
-  htmlFor?: string;
-  required?: boolean;
-  className?: string;
-}
-
-function LabelCustom({ required, children, htmlFor, className }: LabelProps) {
-  return (
-    <label htmlFor={htmlFor} className={`text-sm font-medium ${className || ''}`}>
-      {children}
-      {required && <span className="text-destructive ml-1">*</span>}
-    </label>
-  );
-}
 
 interface LandlordInfoSectionProps {
   form: UseFormReturn<ApartmentFormData>;
@@ -38,72 +20,66 @@ export function LandlordInfoSection({ form }: LandlordInfoSectionProps) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <LabelCustom htmlFor="landlord_name" required>
-            房东姓名
-          </LabelCustom>
+        <Form.Item
+          label="房东姓名"
+          name="landlord_name"
+          required
+          validateStatus={form.formState.errors.landlord_name ? 'error' : ''}
+          help={form.formState.errors.landlord_name?.message}
+        >
           <Controller
             name="landlord_name"
             control={form.control}
             render={({ field }) => (
-              <Input id="landlord_name" placeholder="请输入房东姓名" {...field} />
+              <Input placeholder="请输入房东姓名" {...field} />
             )}
           />
-          {form.formState.errors.landlord_name && (
-            <p className="text-sm text-destructive">{form.formState.errors.landlord_name.message}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <LabelCustom htmlFor="landlord_contact">联系方式</LabelCustom>
+        </Form.Item>
+        <Form.Item label="联系方式" name="landlord_contact">
           <Input
-            id="landlord_contact"
             {...form.register('landlord_contact')}
             placeholder="请输入联系方式"
           />
-        </div>
-        <div className="space-y-2">
-          <LabelCustom htmlFor="contract_start" required>
-            合同开始
-          </LabelCustom>
+        </Form.Item>
+        <Form.Item
+          label="合同开始"
+          name="contract_start"
+          required
+          validateStatus={form.formState.errors.contract_start ? 'error' : ''}
+          help={form.formState.errors.contract_start?.message}
+        >
           <DatePicker
-            id="contract_start"
             className="w-full"
-            value={form.watch('contract_start') ? undefined : undefined}
             onChange={(_, dateString) => form.setValue('contract_start', dateString as string)}
           />
-          {form.formState.errors.contract_start && (
-            <p className="text-sm text-destructive">{form.formState.errors.contract_start.message}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <LabelCustom htmlFor="contract_end" required>
-            合同结束
-          </LabelCustom>
+        </Form.Item>
+        <Form.Item
+          label="合同结束"
+          name="contract_end"
+          required
+          validateStatus={form.formState.errors.contract_end ? 'error' : ''}
+          help={form.formState.errors.contract_end?.message}
+        >
           <DatePicker
-            id="contract_end"
             className="w-full"
             onChange={(_, dateString) => form.setValue('contract_end', dateString as string)}
           />
-          {form.formState.errors.contract_end && (
-            <p className="text-sm text-destructive">{form.formState.errors.contract_end.message}</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <LabelCustom htmlFor="landlord_rent" required>
-            房东租金（元/月）
-          </LabelCustom>
+        </Form.Item>
+        <Form.Item
+          label="房东租金（元/月）"
+          name="landlord_rent"
+          required
+          validateStatus={form.formState.errors.landlord_rent ? 'error' : ''}
+          help={form.formState.errors.landlord_rent?.message}
+        >
           <Input
-            id="landlord_rent"
             type="number"
             min={0}
             step={0.01}
             {...numberRegister('landlord_rent', form)}
             placeholder="请输入房东租金"
           />
-          {form.formState.errors.landlord_rent && (
-            <p className="text-sm text-destructive">{form.formState.errors.landlord_rent.message}</p>
-          )}
-        </div>
+        </Form.Item>
       </div>
     </div>
   );
