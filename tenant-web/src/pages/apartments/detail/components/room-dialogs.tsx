@@ -3,8 +3,7 @@ import { Check, Loader2, Settings2 } from 'lucide-react';
 import type { UseFormReturn } from 'react-hook-form';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
 import { EditRoomDialog } from '@/pages/rooms/components/EditRoomDialog';
-import { Modal, Drawer, Button, Input, Select, Switch } from 'antd';
-import { Label } from '@/components/common/label';
+import { Modal, Drawer, Button, Input, Select, Switch, Form } from 'antd';
 import type { Room, RoomFacilities } from '@/types';
 import {
   type BatchEditFormData,
@@ -77,13 +76,18 @@ export function CreateRoomDialog({
           </Button>,
         ]}
       >
-        <form className="space-y-4">
+        <Form layout="vertical" className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="房间号" htmlFor="room_number" required error={form.formState.errors.room_number?.message}>
-              <Input id="room_number" placeholder="请输入房间号" {...form.register('room_number')} />
-            </FormField>
-            <div className="space-y-2">
-              <Label htmlFor="layout">户型</Label>
+            <Form.Item
+              label="房间号"
+              name="room_number"
+              required
+              validateStatus={form.formState.errors.room_number ? 'error' : ''}
+              help={form.formState.errors.room_number?.message}
+            >
+              <Input placeholder="请输入房间号" {...form.register('room_number')} />
+            </Form.Item>
+            <Form.Item label="户型" name="layout">
               <Select
                 value={form.watch('layout') || ''}
                 onChange={(value) => form.setValue('layout', value)}
@@ -95,21 +99,18 @@ export function CreateRoomDialog({
                   </Select.Option>
                 ))}
               </Select>
-            </div>
+            </Form.Item>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <FormField label="面积 (m²)" htmlFor="area">
-              <Input id="area" type="number" step="0.01" placeholder="请输入面积" {...form.register('area', { valueAsNumber: true })} />
-            </FormField>
-          </div>
+          <Form.Item label="面积 (m²)" name="area">
+            <Input type="number" step="0.01" placeholder="请输入面积" {...form.register('area', { valueAsNumber: true })} />
+          </Form.Item>
 
-          <FormField label="备注" htmlFor="notes">
-            <Input id="notes" placeholder="请输入备注" {...form.register('notes')} />
-          </FormField>
+          <Form.Item label="备注" name="notes">
+            <Input placeholder="请输入备注" {...form.register('notes')} />
+          </Form.Item>
 
-          <div className="space-y-2">
-            <Label>家具家电</Label>
+          <Form.Item label="家具家电">
             <Button
               className="w-full justify-between"
               onClick={() => onFacilityDialogOpenChange(true)}
@@ -117,8 +118,8 @@ export function CreateRoomDialog({
               <span className="text-gray-500">{getFacilitiesSummary(facilities)}</span>
               <Settings2 className="h-4 w-4" />
             </Button>
-          </div>
-        </form>
+          </Form.Item>
+        </Form>
       </Modal>
 
       <FacilitySelectorDialog
@@ -188,30 +189,30 @@ export function BatchCreateRoomDialog({
       }
     >
       <div className="space-y-4">
-        <form className="space-y-4">
+        <Form layout="vertical" className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="floors" required>
-                楼层
-              </Label>
-              <Input id="floors" placeholder="如 1,2,3 或 1-5" {...form.register('floors')} />
-              <p className="text-sm text-gray-500">支持多楼层（如 1,2,3 或 1-5）</p>
-              {form.formState.errors.floors?.message && (
-                <p className="text-sm text-red-500">{form.formState.errors.floors.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="room_numbers" required>
-                房间号
-              </Label>
-              <Input id="room_numbers" placeholder="如 1,2,3 或 1-5" {...form.register('room_numbers')} />
-              <p className="text-sm text-gray-500">支持多房间号（如 1,2,3 或 1-5）</p>
-              {form.formState.errors.room_numbers?.message && (
-                <p className="text-sm text-red-500">{form.formState.errors.room_numbers.message}</p>
-              )}
-            </div>
+            <Form.Item
+              label="楼层"
+              name="floors"
+              required
+              validateStatus={form.formState.errors.floors ? 'error' : ''}
+              help={form.formState.errors.floors?.message}
+              extra="支持多楼层（如 1,2,3 或 1-5）"
+            >
+              <Input placeholder="如 1,2,3 或 1-5" {...form.register('floors')} />
+            </Form.Item>
+            <Form.Item
+              label="房间号"
+              name="room_numbers"
+              required
+              validateStatus={form.formState.errors.room_numbers ? 'error' : ''}
+              help={form.formState.errors.room_numbers?.message}
+              extra="支持多房间号（如 1,2,3 或 1-5）"
+            >
+              <Input placeholder="如 1,2,3 或 1-5" {...form.register('room_numbers')} />
+            </Form.Item>
           </div>
-        </form>
+        </Form>
 
         <div className="flex gap-2">
           <Button size="small" onClick={() => onToggleAll(true)}>
@@ -379,9 +380,8 @@ export function BatchEditDialog({
       ]}
     >
       <p className="mb-4 text-sm text-gray-600">为选中的 {selectedCount} 个房间设置属性（留空则不修改）</p>
-      <form className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="batch-edit-layout">户型</Label>
+      <Form layout="vertical" className="space-y-4">
+        <Form.Item label="户型" name="layout">
           <Select
             value={form.watch('layout') || '__none__'}
             onChange={(value) => form.setValue('layout', value === '__none__' ? undefined : value)}
@@ -394,11 +394,10 @@ export function BatchEditDialog({
               </Select.Option>
             ))}
           </Select>
-        </div>
+        </Form.Item>
 
-        <FormField label="面积 (m²)" htmlFor="batch-edit-area">
+        <Form.Item label="面积 (m²)" name="area">
           <Input
-            id="batch-edit-area"
             type="number"
             step="0.01"
             placeholder="不修改"
@@ -414,11 +413,10 @@ export function BatchEditDialog({
               form.setValue('area', isNaN(parsed) ? undefined : parsed);
             }}
           />
-        </FormField>
+        </Form.Item>
 
-        <FormField label="月租 (元)" htmlFor="batch-edit-monthly_rent">
+        <Form.Item label="月租 (元)" name="monthly_rent">
           <Input
-            id="batch-edit-monthly_rent"
             type="number"
             step="0.01"
             placeholder="不修改"
@@ -434,22 +432,20 @@ export function BatchEditDialog({
               form.setValue('monthly_rent', isNaN(parsed) ? undefined : parsed);
             }}
           />
-        </FormField>
+        </Form.Item>
 
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="batch-edit-maintenance">设为维修中</Label>
+        <Form.Item label="设为维修中">
+          <div className="flex items-center justify-between">
             <p className="text-sm text-gray-500">
               开启后房间将标记为维修中状态
             </p>
+            <Switch
+              checked={form.watch('maintenance') ?? false}
+              onChange={(checked) => form.setValue('maintenance', checked)}
+            />
           </div>
-          <Switch
-            id="batch-edit-maintenance"
-            checked={form.watch('maintenance') ?? false}
-            onChange={(checked) => form.setValue('maintenance', checked)}
-          />
-        </div>
-      </form>
+        </Form.Item>
+      </Form>
     </Modal>
   );
 }

@@ -6,9 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button, Input, DatePicker } from 'antd';
+import { Button, Input, DatePicker, Form } from 'antd';
 import dayjs from 'dayjs';
-import { Label } from '@/components/common/label';
 import { apartmentsApi } from '@/api/apartments';
 import { useAuth } from '@/contexts/auth';
 import { getErrorMessage } from '@/utils/error';
@@ -72,72 +71,70 @@ export default function NewApartmentPage() {
         </div>
 
         {/* 可滚动表单 */}
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1 flex-col gap-6 overflow-y-auto px-1">
+        <Form
+          layout="vertical"
+          onFinish={form.handleSubmit(onSubmit)}
+          className="flex flex-1 flex-col gap-6 overflow-y-auto px-1"
+        >
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="name" required>
-                公寓名称
-              </Label>
+            <Form.Item
+              label="公寓名称"
+              name="name"
+              required
+              validateStatus={form.formState.errors.name ? 'error' : ''}
+              help={form.formState.errors.name?.message}
+            >
               <Controller
                 name="name"
                 control={form.control}
                 render={({ field }) => (
-                  <Input id="name" placeholder="请输入公寓名称" {...field} />
+                  <Input placeholder="请输入公寓名称" {...field} />
                 )}
               />
-              {form.formState.errors.name && (
-                <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="address" required>
-                地址
-              </Label>
+            </Form.Item>
+            <Form.Item
+              label="地址"
+              name="address"
+              required
+              validateStatus={form.formState.errors.address ? 'error' : ''}
+              help={form.formState.errors.address?.message}
+            >
               <Controller
                 name="address"
                 control={form.control}
                 render={({ field }) => (
-                  <Input id="address" placeholder="请输入公寓地址" {...field} />
+                  <Input placeholder="请输入公寓地址" {...field} />
                 )}
               />
-              {form.formState.errors.address && (
-                <p className="text-sm text-red-500">{form.formState.errors.address.message}</p>
-              )}
-            </div>
+            </Form.Item>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="description">描述</Label>
-            <Input id="description" {...form.register('description')} placeholder="请输入描述" />
-          </div>
+          <Form.Item label="描述" name="description">
+            <Input {...form.register('description')} placeholder="请输入描述" />
+          </Form.Item>
 
           <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="floors">楼层数</Label>
-              <Input id="floors" type="number" min={1} {...numberRegister('floors')} placeholder="请输入楼层数" />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="land_area">用地面积（亩）</Label>
+            <Form.Item label="楼层数">
+              <Input type="number" min={1} {...numberRegister('floors')} placeholder="请输入楼层数" />
+            </Form.Item>
+            <Form.Item label="用地面积（亩）">
               <Input
-                id="land_area"
                 type="number"
                 min={0}
                 step={0.01}
                 {...numberRegister('land_area')}
                 placeholder="请输入用地面积"
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="total_area">总面积（㎡）</Label>
+            </Form.Item>
+            <Form.Item label="总面积（㎡）">
               <Input
-                id="total_area"
                 type="number"
                 min={0}
                 step={0.01}
                 {...numberRegister('total_area')}
                 placeholder="请输入总面积"
               />
-            </div>
+            </Form.Item>
           </div>
 
           {/* 分割线 */}
@@ -153,86 +150,82 @@ export default function NewApartmentPage() {
           {/* 上游信息 */}
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="landlord_name" required>
-                  房东姓名
-                </Label>
+              <Form.Item
+                label="房东姓名"
+                name="landlord_name"
+                required
+                validateStatus={form.formState.errors.landlord_name ? 'error' : ''}
+                help={form.formState.errors.landlord_name?.message}
+              >
                 <Controller
                 name="landlord_name"
                 control={form.control}
                 render={({ field }) => (
-                  <Input id="landlord_name" placeholder="请输入房东姓名" {...field} />
+                  <Input placeholder="请输入房东姓名" {...field} />
                 )}
               />
-                {form.formState.errors.landlord_name && (
-                  <p className="text-sm text-red-500">{form.formState.errors.landlord_name.message}</p>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="landlord_contact">联系方式</Label>
-                <Input id="landlord_contact" {...form.register('landlord_contact')} placeholder="请输入联系方式" />
-              </div>
+              </Form.Item>
+              <Form.Item label="联系方式" name="landlord_contact">
+                <Input {...form.register('landlord_contact')} placeholder="请输入联系方式" />
+              </Form.Item>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="contract_start" required>
-                  合同开始
-                </Label>
+              <Form.Item
+                label="合同开始"
+                name="contract_start"
+                required
+                validateStatus={form.formState.errors.contract_start ? 'error' : ''}
+                help={form.formState.errors.contract_start?.message}
+              >
                 <Controller
                   name="contract_start"
                   control={form.control}
                   render={({ field }) => (
                     <DatePicker
-                      id="contract_start"
                       value={field.value ? dayjs(field.value) : null}
                       onChange={(date) => field.onChange(date?.format('YYYY-MM-DD'))}
                       style={{ width: '100%' }}
                     />
                   )}
                 />
-                {form.formState.errors.contract_start && (
-                  <p className="text-sm text-red-500">{form.formState.errors.contract_start.message}</p>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="contract_end" required>
-                  合同结束
-                </Label>
+              </Form.Item>
+              <Form.Item
+                label="合同结束"
+                name="contract_end"
+                required
+                validateStatus={form.formState.errors.contract_end ? 'error' : ''}
+                help={form.formState.errors.contract_end?.message}
+              >
                 <Controller
                   name="contract_end"
                   control={form.control}
                   render={({ field }) => (
                     <DatePicker
-                      id="contract_end"
                       value={field.value ? dayjs(field.value) : null}
                       onChange={(date) => field.onChange(date?.format('YYYY-MM-DD'))}
                       style={{ width: '100%' }}
                     />
                   )}
                 />
-                {form.formState.errors.contract_end && (
-                  <p className="text-sm text-red-500">{form.formState.errors.contract_end.message}</p>
-                )}
-              </div>
+              </Form.Item>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="landlord_rent" required>
-                房东租金（元/月）
-              </Label>
+            <Form.Item
+              label="房东租金（元/月）"
+              name="landlord_rent"
+              required
+              validateStatus={form.formState.errors.landlord_rent ? 'error' : ''}
+              help={form.formState.errors.landlord_rent?.message}
+            >
               <Input
-                id="landlord_rent"
                 type="number"
                 min={0}
                 step={0.01}
                 {...numberRegister('landlord_rent')}
                 placeholder="请输入房东租金"
               />
-              {form.formState.errors.landlord_rent && (
-                <p className="text-sm text-red-500">{form.formState.errors.landlord_rent.message}</p>
-              )}
-            </div>
+            </Form.Item>
           </div>
 
           {/* 操作按钮 */}
@@ -244,7 +237,7 @@ export default function NewApartmentPage() {
               {createMutation.isPending ? '创建中...' : '创建'}
             </Button>
           </div>
-        </form>
+        </Form>
       </div>
   );
 }

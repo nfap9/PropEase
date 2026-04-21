@@ -5,8 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Button, Modal, Input, Select, DatePicker } from 'antd';
-import { Label } from '@/components/common/label';
+import { Button, Modal, Input, Select, DatePicker, Form } from 'antd';
 import { TenantSelectWithCreate } from '@/components/common/tenant-select-with-create';
 import { FeeItemsEditor, type FeeItem } from '@/components/common/fee-items-editor';
 import { leasesApi } from '@/api/leases';
@@ -243,20 +242,22 @@ export function LeaseFormDialog({
       ]}
     >
       <div className="mb-4 text-sm text-gray-600">{getDialogDescription()}</div>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <Form
+        layout="vertical"
+        onFinish={form.handleSubmit(handleSubmit)}
+        className="space-y-4"
+      >
         {/* 房间选择区域 */}
         {isRoomSpecified ? (
-          <div className="space-y-2">
-            <Label>房间</Label>
+          <Form.Item label="房间">
             <Input
               value={room ? `${room.apartment?.name || ''} - ${room.room_number}` : ''}
               disabled
             />
-          </div>
+          </Form.Item>
         ) : (
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>选择公寓</Label>
+            <Form.Item label="选择公寓">
               <Select
                 value={selectedApartmentId || ''}
                 onChange={(value) => setSelectedApartmentId(value)}
@@ -269,11 +270,14 @@ export function LeaseFormDialog({
                   </Select.Option>
                 ))}
               </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="room_id" required>
-                选择房间
-              </Label>
+            </Form.Item>
+            <Form.Item
+              label="选择房间"
+              name="room_id"
+              required
+              validateStatus={form.formState.errors.room_id ? 'error' : ''}
+              help={form.formState.errors.room_id?.message}
+            >
               <Select
                 value={form.watch('room_id') || ''}
                 onChange={(value) => form.setValue('room_id', value)}
@@ -288,20 +292,18 @@ export function LeaseFormDialog({
                     </Select.Option>
                   ))}
               </Select>
-              {form.formState.errors.room_id && (
-                <p className="text-sm text-red-500">
-                  {form.formState.errors.room_id.message}
-                </p>
-              )}
-            </div>
+            </Form.Item>
           </div>
         )}
 
         {/* 租客选择 */}
-        <div className="space-y-2">
-          <Label htmlFor="tenant_id" required>
-            选择租客
-          </Label>
+        <Form.Item
+          label="选择租客"
+          name="tenant_id"
+          required
+          validateStatus={form.formState.errors.tenant_id ? 'error' : ''}
+          help={form.formState.errors.tenant_id?.message}
+        >
           <div data-testid="leases-tenant-select">
             <TenantSelectWithCreate
               orgId={orgId}
@@ -310,16 +312,18 @@ export function LeaseFormDialog({
               error={form.formState.errors.tenant_id?.message}
             />
           </div>
-        </div>
+        </Form.Item>
 
         {/* 日期 */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="start_date" required>
-              开始日期
-            </Label>
+          <Form.Item
+            label="开始日期"
+            name="start_date"
+            required
+            validateStatus={form.formState.errors.start_date ? 'error' : ''}
+            help={form.formState.errors.start_date?.message}
+          >
             <DatePicker
-              id="start_date"
               value={form.watch('start_date') || ''}
               onChange={(_, dateString) => {
                 form.setValue('start_date', dateString || '', {
@@ -331,14 +335,9 @@ export function LeaseFormDialog({
               className="w-full"
               data-testid="leases-start-date-input"
             />
-            {form.formState.errors.start_date && (
-              <p className="text-sm text-red-500">{form.formState.errors.start_date.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="end_date">结束日期</Label>
+          </Form.Item>
+          <Form.Item label="结束日期" name="end_date">
             <DatePicker
-              id="end_date"
               value={form.watch('end_date') || ''}
               onChange={(_, dateString) => {
                 form.setValue('end_date', dateString || undefined, {
@@ -350,87 +349,83 @@ export function LeaseFormDialog({
               className="w-full"
               data-testid="leases-end-date-input"
             />
-          </div>
+          </Form.Item>
         </div>
 
         {/* 月租和押金 */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="monthly_rent" required>
-              月租 (元)
-            </Label>
+          <Form.Item
+            label="月租 (元)"
+            name="monthly_rent"
+            required
+            validateStatus={form.formState.errors.monthly_rent ? 'error' : ''}
+            help={form.formState.errors.monthly_rent?.message}
+          >
             <Input
-              id="monthly_rent"
               type="number"
               step="0.01"
               placeholder="请输入月租金额"
               {...form.register('monthly_rent', { valueAsNumber: true })}
               data-testid="leases-monthly-rent-input"
             />
-            {form.formState.errors.monthly_rent && (
-              <p className="text-sm text-red-500">{form.formState.errors.monthly_rent.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="deposit">押金 (元)</Label>
+          </Form.Item>
+          <Form.Item label="押金 (元)" name="deposit">
             <Input
-              id="deposit"
               type="number"
               step="0.01"
               placeholder="请输入押金金额"
               {...form.register('deposit', { valueAsNumber: true })}
               data-testid="leases-deposit-input"
             />
-          </div>
+          </Form.Item>
         </div>
 
         {/* 水电单价 */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="water_rate">
+          <Form.Item label={
+            <span>
               水费单价（元/吨）
               {utilityConfig?.water_price_per_unit !== undefined && utilityConfig?.water_price_per_unit !== null && (
                 <span className="text-gray-500 text-xs ml-1">
                   (公寓配置: ¥{utilityConfig.water_price_per_unit}/吨)
                 </span>
               )}
-            </Label>
+            </span>
+          }>
             <Input
-              id="water_rate"
               type="number"
               step="0.01"
               placeholder="请输入水费单价"
               {...form.register('water_rate', { valueAsNumber: true })}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="electricity_rate">
+          </Form.Item>
+          <Form.Item label={
+            <span>
               电费单价（元/度）
               {utilityConfig?.electricity_price_per_unit !== undefined && utilityConfig?.electricity_price_per_unit !== null && (
                 <span className="text-gray-500 text-xs ml-1">
                   (公寓配置: ¥{utilityConfig.electricity_price_per_unit}/度)
                 </span>
               )}
-            </Label>
+            </span>
+          }>
             <Input
-              id="electricity_rate"
               type="number"
               step="0.01"
               placeholder="请输入电费单价"
               {...form.register('electricity_rate', { valueAsNumber: true })}
             />
-          </div>
+          </Form.Item>
         </div>
 
         {/* 费用项目编辑器 */}
         <FeeItemsEditor items={feeItems} onChange={setFeeItems} />
 
         {/* 备注 */}
-        <div className="space-y-2">
-          <Label htmlFor="notes">备注</Label>
-          <Input id="notes" placeholder="请输入备注" {...form.register('notes')} />
-        </div>
-      </form>
+        <Form.Item label="备注" name="notes">
+          <Input placeholder="请输入备注" {...form.register('notes')} />
+        </Form.Item>
+      </Form>
     </Modal>
   );
 }

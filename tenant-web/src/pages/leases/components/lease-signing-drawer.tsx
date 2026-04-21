@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Button, Drawer } from 'antd';
+import { Button, Drawer, Form } from 'antd';
 import { leaseSigningSchema, type LeaseSigningFormData } from '@/schemas/leases';
 import { leasesApi } from '@/api/leases';
 import { apartmentsApi, roomsApi, utilityConfigApi } from '@/api/apartments';
@@ -394,8 +394,9 @@ export function LeaseSigningDrawer({
           {currentStep === 2 && (
             <p className="mb-4 text-sm text-muted-foreground">签约完成后将自动刷新数据</p>
           )}
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
+          <Form
+            layout="vertical"
+            onFinish={form.handleSubmit(handleSubmit)}
             className="space-y-6"
             id="lease-signing-wizard-form"
           >
@@ -420,7 +421,7 @@ export function LeaseSigningDrawer({
                 onFeeItemsChange={setFeeItems}
               />
             ) : null}
-          </form>
+          </Form>
         </div>
       </Drawer>
 

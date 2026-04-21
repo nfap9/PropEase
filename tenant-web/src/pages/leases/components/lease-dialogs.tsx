@@ -2,7 +2,7 @@
 import type { UseFormReturn } from 'react-hook-form';
 import { FormProvider, Controller } from 'react-hook-form';
 import { Info } from 'lucide-react';
-import { Alert, Button, Input, DatePicker, Modal } from 'antd';
+import { Alert, Button, Input, DatePicker, Modal, Form } from 'antd';
 import type { Lease } from '@/types';
 import { LEASES, type LeaseEditFormData } from '@/schemas/leases';
 
@@ -44,12 +44,16 @@ export function LeaseEditDialog({
         showIcon
       />
       <FormProvider {...form}>
-        <form id="edit-lease-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <Form
+          layout="vertical"
+          id="edit-lease-form"
+          onFinish={form.handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
           <input type="hidden" {...form.register('room_id')} />
           <input type="hidden" {...form.register('tenant_id')} />
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <span className="text-sm font-medium">房间</span>
+            <Form.Item label="房间">
               <Input
                 value={
                   selectedLease?.room
@@ -58,15 +62,19 @@ export function LeaseEditDialog({
                 }
                 disabled
               />
-            </div>
-            <div className="space-y-2">
-              <span className="text-sm font-medium">租客</span>
+            </Form.Item>
+            <Form.Item label="租客">
               <Input value={selectedLease?.tenant?.name || ''} disabled />
-            </div>
+            </Form.Item>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <span className="text-sm font-medium">开始日期 *</span>
+            <Form.Item
+              label="开始日期"
+              name="start_date"
+              required
+              validateStatus={form.formState.errors.start_date ? 'error' : ''}
+              help={form.formState.errors.start_date?.message}
+            >
               <Controller
                 name="start_date"
                 control={form.control}
@@ -79,12 +87,13 @@ export function LeaseEditDialog({
                   />
                 )}
               />
-              {form.formState.errors.start_date && (
-                <p className="text-sm text-destructive">{form.formState.errors.start_date.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <span className="text-sm font-medium">结束日期</span>
+            </Form.Item>
+            <Form.Item
+              label="结束日期"
+              name="end_date"
+              validateStatus={form.formState.errors.end_date ? 'error' : ''}
+              help={form.formState.errors.end_date?.message}
+            >
               <Controller
                 name="end_date"
                 control={form.control}
@@ -97,14 +106,16 @@ export function LeaseEditDialog({
                   />
                 )}
               />
-              {form.formState.errors.end_date && (
-                <p className="text-sm text-destructive">{form.formState.errors.end_date.message}</p>
-              )}
-            </div>
+            </Form.Item>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <span className="text-sm font-medium">月租 (元) *</span>
+          <div className="grid grid-cols-2 gap-4">
+            <Form.Item
+              label="月租 (元)"
+              name="monthly_rent"
+              required
+              validateStatus={form.formState.errors.monthly_rent ? 'error' : ''}
+              help={form.formState.errors.monthly_rent?.message}
+            >
               <Controller
                 name="monthly_rent"
                 control={form.control}
@@ -119,12 +130,13 @@ export function LeaseEditDialog({
                   />
                 )}
               />
-              {form.formState.errors.monthly_rent && (
-                <p className="text-sm text-destructive">{form.formState.errors.monthly_rent.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <span className="text-sm font-medium">押金 (元)</span>
+            </Form.Item>
+            <Form.Item
+              label="押金 (元)"
+              name="deposit"
+              validateStatus={form.formState.errors.deposit ? 'error' : ''}
+              help={form.formState.errors.deposit?.message}
+            >
               <Controller
                 name="deposit"
                 control={form.control}
@@ -139,13 +151,14 @@ export function LeaseEditDialog({
                   />
                 )}
               />
-              {form.formState.errors.deposit && (
-                <p className="text-sm text-destructive">{form.formState.errors.deposit.message}</p>
-              )}
-            </div>
+            </Form.Item>
           </div>
-          <div className="space-y-2">
-            <span className="text-sm font-medium">备注</span>
+          <Form.Item
+            label="备注"
+            name="notes"
+            validateStatus={form.formState.errors.notes ? 'error' : ''}
+            help={form.formState.errors.notes?.message}
+          >
             <Controller
               name="notes"
               control={form.control}
@@ -153,11 +166,8 @@ export function LeaseEditDialog({
                 <Input {...field} value={field.value ?? ''} data-testid={LEASES.NOTES_INPUT} />
               )}
             />
-            {form.formState.errors.notes && (
-              <p className="text-sm text-destructive">{form.formState.errors.notes.message}</p>
-            )}
-          </div>
-        </form>
+          </Form.Item>
+        </Form>
       </FormProvider>
     </Modal>
   );

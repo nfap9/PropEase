@@ -5,8 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Modal, Button, Input, message } from 'antd';
-import { Label } from '@/components/common/label';
+import { Modal, Button, Input, message, Form } from 'antd';
 import { Loader2, Zap } from 'lucide-react';
 import { utilityConfigApi } from '@/api/apartments';
 import { getErrorMessage } from '@/utils/error';
@@ -105,39 +104,39 @@ export function UtilityConfigDialog({
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       ) : (
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="water_price">水费单价（元/吨）</Label>
+        <Form
+          layout="vertical"
+          onFinish={form.handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
+          <Form.Item
+            label="水费单价（元/吨）"
+            name="water_price_per_unit"
+            validateStatus={form.formState.errors.water_price_per_unit ? 'error' : ''}
+            help={form.formState.errors.water_price_per_unit?.message}
+          >
             <Input
-              id="water_price"
               type="number"
               step="0.01"
               placeholder="请输入水费单价"
               {...form.register('water_price_per_unit', { valueAsNumber: true })}
             />
-            {form.formState.errors.water_price_per_unit && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.water_price_per_unit.message}
-              </p>
-            )}
-          </div>
+          </Form.Item>
 
-          <div className="space-y-2">
-            <Label htmlFor="electricity_price">电费单价（元/度）</Label>
+          <Form.Item
+            label="电费单价（元/度）"
+            name="electricity_price_per_unit"
+            validateStatus={form.formState.errors.electricity_price_per_unit ? 'error' : ''}
+            help={form.formState.errors.electricity_price_per_unit?.message}
+          >
             <Input
-              id="electricity_price"
               type="number"
               step="0.01"
               placeholder="请输入电费单价"
               {...form.register('electricity_price_per_unit', { valueAsNumber: true })}
             />
-            {form.formState.errors.electricity_price_per_unit && (
-              <p className="text-sm text-red-500">
-                {form.formState.errors.electricity_price_per_unit.message}
-              </p>
-            )}
-          </div>
-        </form>
+          </Form.Item>
+        </Form>
       )}
     </Modal>
   );
