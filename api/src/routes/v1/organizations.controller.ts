@@ -195,8 +195,8 @@ export async function del(req: Request, res: Response, next: NextFunction) {
 
 export async function getMembers(req: Request, res: Response, next: NextFunction) {
   try {
-    await requireOrgMembership(req, 'orgId');
-    const members = await defaultOrgService.getMembers(req.params.orgId);
+    const orgId = await requireOrgMembership(req);
+    const members = await defaultOrgService.getMembers(orgId);
     res.json(
       members.map((m) => ({
         id: m.id,
@@ -218,7 +218,7 @@ export async function getMembers(req: Request, res: Response, next: NextFunction
 
 export async function addMember(req: Request, res: Response, next: NextFunction) {
   try {
-    const orgId = await requireOrgMembership(req, 'orgId');
+    const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'member:create');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
@@ -226,8 +226,7 @@ export async function addMember(req: Request, res: Response, next: NextFunction)
     const members_used = await getMembersUsedForLimitCheck(orgId, user.id);
     if (members_used >= limits.max_members)
       return next(createAppError(403, `当前服务最多允许 ${limits.max_members} 名成员`));
-    const phone = (req.query.phone as string) ?? (req.body?.phone as string);
-    const role_id = ((req.query.role_id as string) ?? req.body?.role_id) as string;
+    const { phone, role_id } = req.body as { phone?: string; role_id?: string };
     if (!phone) return next(createAppError(400, '缺少 phone'));
     if (!role_id) return next(createAppError(400, '缺少 role_id'));
     const m = await defaultOrgService.addMember(orgId, { phone, role_id });
@@ -249,11 +248,11 @@ export async function addMember(req: Request, res: Response, next: NextFunction)
 
 export async function updateMember(req: Request, res: Response, next: NextFunction) {
   try {
-    const orgId = await requireOrgMembership(req, 'orgId');
+    const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'member:edit');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const role_id = (req.query.role_id as string) ?? req.body?.role_id;
+    const { role_id } = req.body as { role_id?: string };
     if (!role_id) return next(createAppError(400, '缺少 role_id'));
     const m = await defaultOrgService.updateMemberRole(orgId, req.params.userId, role_id, user.id);
     res.json({
@@ -274,11 +273,11 @@ export async function updateMember(req: Request, res: Response, next: NextFuncti
 
 export async function removeMember(req: Request, res: Response, next: NextFunction) {
   try {
-    const orgId = await requireOrgMembership(req, 'orgId');
+    const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'member:delete');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    await defaultOrgService.removeMember(req.params.orgId, req.params.userId, user.id);
+    await defaultOrgService.removeMember(orgId, req.params.userId, user.id);
     res.locals.successMessage = Messages.MEMBER_REMOVED;
     res.json({});
   } catch (e) {
