@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Building2, ArrowLeft } from 'lucide-react';
@@ -113,11 +113,17 @@ export default function CreateOrganizationPage() {
             <Label htmlFor="organization-name">
               团队名称 <span aria-hidden="true">*</span>
             </Label>
-            <Input
-              id="organization-name"
-              placeholder="请输入团队名称"
-              aria-required
-              {...form.register('name')}
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field }) => (
+                <Input
+                  id="organization-name"
+                  placeholder="请输入团队名称"
+                  aria-required
+                  {...field}
+                />
+              )}
             />
             {form.formState.errors.name && (
               <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
