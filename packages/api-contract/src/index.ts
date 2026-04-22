@@ -10,8 +10,8 @@ export {
   RoomFacilitiesSchema,
 } from './schemas/apartments.js';
 
-export type { RoomFormData } from './schemas/rooms.js';
-export { RoomCreateSchema, RoomUpdateSchema, RoomBatchSchema } from './schemas/rooms.js';
+export type { RoomFormData, RoomEditFormData } from './schemas/rooms.js';
+export { RoomCreateSchema, RoomUpdateSchema, RoomBatchSchema, RoomEditSchema } from './schemas/rooms.js';
 
 export { OrganizationCreateSchema, OrganizationUpdateSchema, ConfirmDeleteSchema } from './schemas/organizations.js';
 export { PaginationSchema } from './schemas/common.js';

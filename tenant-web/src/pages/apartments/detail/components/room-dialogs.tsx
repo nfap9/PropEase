@@ -11,6 +11,7 @@ import {
   type RoomFormData,
   LAYOUT_OPTIONS,
 } from '@/schemas/apartment-detail';
+import type { RoomEditFormData } from '@apartment-ultra/api-contract';
 import type { GeneratedFloorRooms } from '@/utils/apartment-detail';
 import { getFacilitiesSummary } from '@/utils/apartment-detail';
 
@@ -436,7 +437,7 @@ export function RoomEditDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   room: Room | null;
-  onSubmit: (data: RoomFormData & { facilities?: RoomFacilities | null }) => void;
+  onSubmit: (data: RoomEditFormData & { facilities?: RoomFacilities | null }) => void;
   isPending: boolean;
 }) {
   return (

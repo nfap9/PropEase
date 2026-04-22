@@ -1,23 +1,12 @@
-
 import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Modal, Button, Input, Select } from 'antd';
 import { Settings2 } from 'lucide-react';
+import { RoomEditSchema, type RoomEditFormData } from '@apartment-ultra/api-contract';
 import { Room, RoomFacilities } from '@/types';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
 import { getFacilityLabel } from '@/constants/facilities';
-
-const roomSchema = z.object({
-  room_number: z.string().min(1, '请输入房间号'),
-  layout: z.string().optional(),
-  area: z.number().min(0, '面积不能为负').optional(),
-  monthly_rent: z.number().min(0, '租金不能为负'),
-  notes: z.string().optional(),
-});
-
-type RoomFormData = z.infer<typeof roomSchema>;
 
 const LAYOUT_OPTIONS = [
   '单间',
@@ -34,7 +23,7 @@ interface EditRoomDialogProps {
   testids?: Record<string, string>;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: RoomFormData & { facilities?: RoomFacilities | null }) => void;
+  onSubmit: (data: RoomEditFormData & { facilities?: RoomFacilities | null }) => void;
   isPending: boolean;
   room: Room | null;
 }
@@ -66,8 +55,8 @@ export function EditRoomDialog({
   isPending,
   room,
 }: EditRoomDialogProps) {
-  const form = useForm<RoomFormData>({
-    resolver: zodResolver(roomSchema),
+  const form = useForm<RoomEditFormData>({
+    resolver: zodResolver(RoomEditSchema),
   });
   const [facilities, setFacilities] = useState<RoomFacilities | null>(null);
   const [facilityDialogOpen, setFacilityDialogOpen] = useState(false);
@@ -77,6 +66,7 @@ export function EditRoomDialog({
       form.reset({
         room_number: room.room_number,
         layout: room.layout || '',
+        maintenance: room.maintenance,
         area: room.area || 0,
         monthly_rent: room.pricing?.monthly_rent ?? 0,
         notes: room.notes || '',
@@ -85,7 +75,7 @@ export function EditRoomDialog({
     }
   }, [room, form]);
 
-  const handleSubmit = (data: RoomFormData) => {
+  const handleSubmit = (data: RoomEditFormData) => {
     onSubmit({ ...data, facilities });
   };
 
