@@ -1,26 +1,14 @@
 import { UseFormReturn, Controller } from 'react-hook-form';
-import { z } from 'zod';
 import { Input, Form } from 'antd';
-import type { HTMLAttributes } from 'react';
+import {
+  ApartmentCreateSchema as apartmentSchema,
+  type ApartmentFormData,
+} from '@apartment-ultra/api-contract';
 import { LandlordInfoSection } from './landlord-info-section';
 
-export const apartmentSchema = z.object({
-  name: z.string().min(1, '请输入公寓名称'),
-  address: z.string().min(1, '请输入公寓地址'),
-  description: z.string().optional(),
-  // 基本信息
-  floors: z.number().int().min(1).optional(),
-  land_area: z.number().min(0).optional(),
-  total_area: z.number().min(0).optional(),
-  // 上游信息
-  landlord_name: z.string().min(1, '请输入房东姓名'),
-  landlord_contact: z.string().optional(),
-  contract_start: z.string().min(1, '请选择合同开始时间'),
-  contract_end: z.string().min(1, '请选择合同结束时间'),
-  landlord_rent: z.number().min(0, '请输入房东租金'),
-});
-
-export type ApartmentFormData = z.infer<typeof apartmentSchema>;
+// Re-export for consumers of this module
+export { apartmentSchema };
+export type { ApartmentFormData };
 
 interface ApartmentFormProps {
   form: UseFormReturn<ApartmentFormData>;
@@ -35,13 +23,11 @@ export function ApartmentForm({
   formId = 'apartment-form',
   onSubmit,
 }: ApartmentFormProps) {
-  const idPrefix = mode === 'edit' ? 'edit-' : '';
-
   const numberRegister = (
     name: keyof ApartmentFormData,
-    form: UseFormReturn<ApartmentFormData>
+    formInstance: UseFormReturn<ApartmentFormData>
   ) => ({
-    ...form.register(name, {
+    ...formInstance.register(name, {
       valueAsNumber: true,
       setValueAs: (v: unknown) => (v === '' || (typeof v === 'number' && isNaN(v)) ? undefined : v),
     }),
@@ -56,7 +42,6 @@ export function ApartmentForm({
     >
       <Form.Item
         label="公寓名称"
-        name="name"
         required
         validateStatus={form.formState.errors.name ? 'error' : ''}
         help={form.formState.errors.name?.message}
@@ -74,7 +59,6 @@ export function ApartmentForm({
       </Form.Item>
       <Form.Item
         label="地址"
-        name="address"
         required
         validateStatus={form.formState.errors.address ? 'error' : ''}
         help={form.formState.errors.address?.message}
@@ -90,11 +74,19 @@ export function ApartmentForm({
           )}
         />
       </Form.Item>
-      <Form.Item label="描述" name="description">
+      <Form.Item
+        label="描述"
+        validateStatus={form.formState.errors.description ? 'error' : ''}
+        help={form.formState.errors.description?.message}
+      >
         <Input {...form.register('description')} />
       </Form.Item>
       <div className="grid grid-cols-3 gap-4">
-        <Form.Item label="楼层数">
+        <Form.Item
+          label="楼层数"
+          validateStatus={form.formState.errors.floors ? 'error' : ''}
+          help={form.formState.errors.floors?.message}
+        >
           <Input
             type="number"
             min={1}
@@ -102,7 +94,11 @@ export function ApartmentForm({
             placeholder="请输入楼层数"
           />
         </Form.Item>
-        <Form.Item label="用地面积（亩）">
+        <Form.Item
+          label="用地面积（亩）"
+          validateStatus={form.formState.errors.land_area ? 'error' : ''}
+          help={form.formState.errors.land_area?.message}
+        >
           <Input
             type="number"
             min={0}
@@ -111,7 +107,11 @@ export function ApartmentForm({
             placeholder="请输入用地面积"
           />
         </Form.Item>
-        <Form.Item label="总面积（㎡）">
+        <Form.Item
+          label="总面积（㎡）"
+          validateStatus={form.formState.errors.total_area ? 'error' : ''}
+          help={form.formState.errors.total_area?.message}
+        >
           <Input
             type="number"
             min={0}

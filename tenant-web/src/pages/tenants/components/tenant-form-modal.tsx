@@ -1,19 +1,9 @@
+import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button, Input, Modal, Form } from 'antd';
+import { TenantCreateSchema, type TenantFormData } from '@apartment-ultra/api-contract';
 import type { Tenant } from '@/types';
-
-const tenantSchema = z.object({
-  name: z.string().min(1, '请输入租客姓名'),
-  phone: z.string().min(1, '请输入联系电话'),
-  id_card: z.string().optional(),
-  emergency_contact: z.string().optional(),
-  emergency_phone: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-type TenantFormData = z.infer<typeof tenantSchema>;
 
 const TENANTS = {
   NAME_INPUT: 'tenants-name-input',
@@ -46,28 +36,30 @@ export function TenantFormModal({
   testId,
 }: TenantFormModalProps) {
   const form = useForm<TenantFormData>({
-    resolver: zodResolver(tenantSchema),
+    resolver: zodResolver(TenantCreateSchema),
     defaultValues: {
-      name: initialData?.name ?? '',
-      phone: initialData?.phone ?? '',
-      id_card: initialData?.id_card ?? '',
-      emergency_contact: initialData?.emergency_contact ?? '',
-      emergency_phone: initialData?.emergency_phone ?? '',
-      notes: initialData?.notes ?? '',
+      name: '',
+      phone: '',
+      id_card: '',
+      emergency_contact: '',
+      emergency_phone: '',
+      notes: '',
     },
   });
 
-  // Reset form when modal opens with new data
-  if (open) {
-    form.reset({
-      name: initialData?.name ?? '',
-      phone: initialData?.phone ?? '',
-      id_card: initialData?.id_card ?? '',
-      emergency_contact: initialData?.emergency_contact ?? '',
-      emergency_phone: initialData?.emergency_phone ?? '',
-      notes: initialData?.notes ?? '',
-    });
-  }
+  // Reset form when modal opens or initialData changes
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: initialData?.name ?? '',
+        phone: initialData?.phone ?? '',
+        id_card: initialData?.id_card ?? '',
+        emergency_contact: initialData?.emergency_contact ?? '',
+        emergency_phone: initialData?.emergency_phone ?? '',
+        notes: initialData?.notes ?? '',
+      });
+    }
+  }, [open, initialData, form]);
 
   const title = mode === 'create' ? '新增租客' : '编辑租客';
   const submitText = mode === 'create' ? (isPending ? '创建中...' : '创建') : (isPending ? '保存中...' : '保存');
@@ -88,7 +80,6 @@ export function TenantFormModal({
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
             label="姓名"
-            name="name"
             required
             validateStatus={form.formState.errors.name ? 'error' : ''}
             help={form.formState.errors.name?.message}
@@ -103,7 +94,6 @@ export function TenantFormModal({
           </Form.Item>
           <Form.Item
             label="联系电话"
-            name="phone"
             required
             validateStatus={form.formState.errors.phone ? 'error' : ''}
             help={form.formState.errors.phone?.message}
@@ -117,18 +107,34 @@ export function TenantFormModal({
             />
           </Form.Item>
         </div>
-        <Form.Item label="身份证号" name="id_card">
-          <Input placeholder="请输入身份证号" {...form.register('id_card')} data-testid={TENANTS.ID_CARD_INPUT} />
+        <Form.Item
+          label="身份证号"
+          validateStatus={form.formState.errors.id_card ? 'error' : ''}
+          help={form.formState.errors.id_card?.message}
+        >
+          <Input
+            placeholder="请输入身份证号"
+            {...form.register('id_card')}
+            data-testid={TENANTS.ID_CARD_INPUT}
+          />
         </Form.Item>
         <div className="grid grid-cols-2 gap-4">
-          <Form.Item label="紧急联系人" name="emergency_contact">
+          <Form.Item
+            label="紧急联系人"
+            validateStatus={form.formState.errors.emergency_contact ? 'error' : ''}
+            help={form.formState.errors.emergency_contact?.message}
+          >
             <Input
               placeholder="请输入紧急联系人"
               {...form.register('emergency_contact')}
               data-testid={TENANTS.EMERGENCY_CONTACT_INPUT}
             />
           </Form.Item>
-          <Form.Item label="紧急联系电话" name="emergency_phone">
+          <Form.Item
+            label="紧急联系电话"
+            validateStatus={form.formState.errors.emergency_phone ? 'error' : ''}
+            help={form.formState.errors.emergency_phone?.message}
+          >
             <Input
               placeholder="请输入紧急联系电话"
               {...form.register('emergency_phone')}
@@ -136,7 +142,11 @@ export function TenantFormModal({
             />
           </Form.Item>
         </div>
-        <Form.Item label="备注" name="notes">
+        <Form.Item
+          label="备注"
+          validateStatus={form.formState.errors.notes ? 'error' : ''}
+          help={form.formState.errors.notes?.message}
+        >
           <Input placeholder="请输入备注" {...form.register('notes')} data-testid={TENANTS.NOTES_INPUT} />
         </Form.Item>
         <div className="flex justify-end gap-2">

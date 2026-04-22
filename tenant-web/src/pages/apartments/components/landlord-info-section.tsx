@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { UseFormReturn, Controller } from 'react-hook-form';
 import { DatePicker, Input, Form } from 'antd';
 import { ApartmentFormData } from './apartment-form';
@@ -9,9 +10,9 @@ interface LandlordInfoSectionProps {
 export function LandlordInfoSection({ form }: LandlordInfoSectionProps) {
   const numberRegister = (
     name: keyof ApartmentFormData,
-    form: UseFormReturn<ApartmentFormData>
+    formInstance: UseFormReturn<ApartmentFormData>
   ) => ({
-    ...form.register(name, {
+    ...formInstance.register(name, {
       valueAsNumber: true,
       setValueAs: (v: unknown) => (v === '' || (typeof v === 'number' && isNaN(v)) ? undefined : v),
     }),
@@ -22,7 +23,6 @@ export function LandlordInfoSection({ form }: LandlordInfoSectionProps) {
       <div className="grid grid-cols-2 gap-4">
         <Form.Item
           label="房东姓名"
-          name="landlord_name"
           required
           validateStatus={form.formState.errors.landlord_name ? 'error' : ''}
           help={form.formState.errors.landlord_name?.message}
@@ -35,7 +35,11 @@ export function LandlordInfoSection({ form }: LandlordInfoSectionProps) {
             )}
           />
         </Form.Item>
-        <Form.Item label="联系方式" name="landlord_contact">
+        <Form.Item
+          label="联系方式"
+          validateStatus={form.formState.errors.landlord_contact ? 'error' : ''}
+          help={form.formState.errors.landlord_contact?.message}
+        >
           <Input
             {...form.register('landlord_contact')}
             placeholder="请输入联系方式"
@@ -43,31 +47,42 @@ export function LandlordInfoSection({ form }: LandlordInfoSectionProps) {
         </Form.Item>
         <Form.Item
           label="合同开始"
-          name="contract_start"
           required
           validateStatus={form.formState.errors.contract_start ? 'error' : ''}
           help={form.formState.errors.contract_start?.message}
         >
-          <DatePicker
-            className="w-full"
-            onChange={(_, dateString) => form.setValue('contract_start', dateString as string)}
+          <Controller
+            name="contract_start"
+            control={form.control}
+            render={({ field }) => (
+              <DatePicker
+                className="w-full"
+                value={field.value ? dayjs(field.value) : null}
+                onChange={(date) => field.onChange(date?.format('YYYY-MM-DD') ?? '')}
+              />
+            )}
           />
         </Form.Item>
         <Form.Item
           label="合同结束"
-          name="contract_end"
           required
           validateStatus={form.formState.errors.contract_end ? 'error' : ''}
           help={form.formState.errors.contract_end?.message}
         >
-          <DatePicker
-            className="w-full"
-            onChange={(_, dateString) => form.setValue('contract_end', dateString as string)}
+          <Controller
+            name="contract_end"
+            control={form.control}
+            render={({ field }) => (
+              <DatePicker
+                className="w-full"
+                value={field.value ? dayjs(field.value) : null}
+                onChange={(date) => field.onChange(date?.format('YYYY-MM-DD') ?? '')}
+              />
+            )}
           />
         </Form.Item>
         <Form.Item
           label="房东租金（元/月）"
-          name="landlord_rent"
           required
           validateStatus={form.formState.errors.landlord_rent ? 'error' : ''}
           help={form.formState.errors.landlord_rent?.message}
