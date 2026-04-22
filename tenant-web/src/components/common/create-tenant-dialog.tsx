@@ -1,26 +1,14 @@
-
 import { useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { toast } from 'sonner';
 import { Modal, Button, Input, Form } from 'antd';
 import { tenantsApi } from '@/api/tenants';
 import { filterEmptyStrings } from '@/utils/form';
 import { getErrorMessage } from '@/utils/error';
-import { Tenant } from '@/types';
-
-const tenantSchema = z.object({
-  name: z.string().min(1, '请输入租客姓名'),
-  phone: z.string().min(1, '请输入联系电话'),
-  id_card: z.string().optional(),
-  emergency_contact: z.string().optional(),
-  emergency_phone: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-export type TenantFormData = z.infer<typeof tenantSchema>;
+import { TenantCreateSchema, type TenantFormData } from '@apartment-ultra/api-contract';
+import type { Tenant } from '@/types';
 
 export interface CreateTenantDialogProps {
   orgId: string;
@@ -38,7 +26,7 @@ export function CreateTenantDialog({ orgId, open, onOpenChange, onSuccess }: Cre
   const queryClient = useQueryClient();
 
   const form = useForm<TenantFormData>({
-    resolver: zodResolver(tenantSchema),
+    resolver: zodResolver(TenantCreateSchema),
     defaultValues: {
       name: '',
       phone: '',
@@ -93,7 +81,6 @@ export function CreateTenantDialog({ orgId, open, onOpenChange, onSuccess }: Cre
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
             label="姓名"
-            name="name"
             required
             validateStatus={form.formState.errors.name ? 'error' : ''}
             help={form.formState.errors.name?.message}
@@ -102,7 +89,6 @@ export function CreateTenantDialog({ orgId, open, onOpenChange, onSuccess }: Cre
           </Form.Item>
           <Form.Item
             label="联系电话"
-            name="phone"
             required
             validateStatus={form.formState.errors.phone ? 'error' : ''}
             help={form.formState.errors.phone?.message}
@@ -110,18 +96,34 @@ export function CreateTenantDialog({ orgId, open, onOpenChange, onSuccess }: Cre
             <Input placeholder="请输入联系电话" {...form.register('phone')} />
           </Form.Item>
         </div>
-        <Form.Item label="身份证号" name="id_card">
+        <Form.Item
+          label="身份证号"
+          validateStatus={form.formState.errors.id_card ? 'error' : ''}
+          help={form.formState.errors.id_card?.message}
+        >
           <Input placeholder="请输入身份证号" {...form.register('id_card')} />
         </Form.Item>
         <div className="grid grid-cols-2 gap-4">
-          <Form.Item label="紧急联系人" name="emergency_contact">
+          <Form.Item
+            label="紧急联系人"
+            validateStatus={form.formState.errors.emergency_contact ? 'error' : ''}
+            help={form.formState.errors.emergency_contact?.message}
+          >
             <Input placeholder="请输入紧急联系人" {...form.register('emergency_contact')} />
           </Form.Item>
-          <Form.Item label="紧急联系电话" name="emergency_phone">
+          <Form.Item
+            label="紧急联系电话"
+            validateStatus={form.formState.errors.emergency_phone ? 'error' : ''}
+            help={form.formState.errors.emergency_phone?.message}
+          >
             <Input placeholder="请输入紧急联系电话" {...form.register('emergency_phone')} />
           </Form.Item>
         </div>
-        <Form.Item label="备注" name="notes">
+        <Form.Item
+          label="备注"
+          validateStatus={form.formState.errors.notes ? 'error' : ''}
+          help={form.formState.errors.notes?.message}
+        >
           <Input placeholder="请输入备注" {...form.register('notes')} />
         </Form.Item>
       </Form>

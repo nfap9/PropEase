@@ -1,3 +1,21 @@
+/** 共享 Zod schemas（前后端统一校验） */
+export type { TenantFormData } from './schemas/tenants.js';
+export { TenantCreateSchema, TenantUpdateSchema } from './schemas/tenants.js';
+
+export type { ApartmentFormData } from './schemas/apartments.js';
+export {
+  ApartmentCreateSchema,
+  ApartmentUpdateSchema,
+  FacilityItemSchema,
+  RoomFacilitiesSchema,
+} from './schemas/apartments.js';
+
+export type { RoomFormData } from './schemas/rooms.js';
+export { RoomCreateSchema, RoomUpdateSchema, RoomBatchSchema } from './schemas/rooms.js';
+
+export { OrganizationCreateSchema, OrganizationUpdateSchema, ConfirmDeleteSchema } from './schemas/organizations.js';
+export { PaginationSchema } from './schemas/common.js';
+
 /** 通用契约 */
 export type {
   SuccessBody,
