@@ -31,7 +31,7 @@ export default function NewApartmentPage() {
       landlord_contact: '',
       contract_start: '',
       contract_end: '',
-      landlord_rent: undefined,
+      landlord_rent: 0,
     },
   });
 
