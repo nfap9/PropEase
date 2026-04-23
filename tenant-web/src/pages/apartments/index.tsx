@@ -1,9 +1,6 @@
-
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { Modal, Skeleton, Button } from 'antd';
 import type { MenuProps } from 'antd';
@@ -20,7 +17,7 @@ import {
   ApartmentEmptyState,
   ApartmentSearchBar,
   ApartmentForm,
-  apartmentSchema,
+  type ApartmentFormRef,
   type ApartmentFormData,
 } from '@/pages/apartments/components';
 import { PermissionGuard } from '@/components/common/permission-guard';
@@ -37,15 +34,12 @@ export default function ApartmentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const deleteConfirm = useConfirmAction<ApartmentWithStats>();
+  const apartmentFormRef = useRef<ApartmentFormRef>(null);
 
   const { data: apartments, isLoading: apartmentsLoading } = useQuery({
     queryKey: ['apartments', orgId],
     queryFn: () => apartmentsApi.list(),
     enabled: !!orgId,
-  });
-
-  const editForm = useForm<ApartmentFormData>({
-    resolver: zodResolver(apartmentSchema),
   });
 
   const updateMutation = useMutation({
@@ -73,7 +67,7 @@ export default function ApartmentsPage() {
 
   const handleEdit = (apartment: ApartmentWithStats) => {
     setSelectedApartment(apartment);
-    editForm.reset({
+    apartmentFormRef.current?.setFieldsValue({
       name: apartment.name,
       address: apartment.address ?? '',
       description: apartment.description ?? '',
@@ -97,6 +91,12 @@ export default function ApartmentsPage() {
   const handleConfirmDelete = () => {
     if (selectedApartment) {
       deleteMutation.mutate(selectedApartment.id);
+    }
+  };
+
+  const handleFormFinish = (data: ApartmentFormData) => {
+    if (selectedApartment) {
+      updateMutation.mutate({ id: selectedApartment.id, data });
     }
   };
 
@@ -132,80 +132,81 @@ export default function ApartmentsPage() {
   return (
     <PermissionPageGuard>
       <div className="space-y-page">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <ApartmentSearchBar value={searchQuery} onChange={setSearchQuery} />
-            <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
-              <Button
-                onClick={() => navigate('/workspace/apartments/new')}
-                data-testid="apartments-new-btn"
-                className="shrink-0"
-                icon={<Plus className="mr-2 h-4 w-4" />}
-              >
-                新增公寓
-              </Button>
-            </PermissionGuard>
-          </div>
-
-          {apartmentsLoading ? (
-            <div className="mx-auto grid max-w-7xl gap-card-gap sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              <Skeleton active className="h-48" />
-              <Skeleton active className="h-48" />
-              <Skeleton active className="h-48" />
-            </div>
-          ) : filteredApartments && filteredApartments.length > 0 ? (
-            <div
-              className="mx-auto grid max-w-7xl gap-card-gap sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-              data-testid="apartments-list"
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <ApartmentSearchBar value={searchQuery} onChange={setSearchQuery} />
+          <PermissionGuard permission={PERMISSIONS.APARTMENT_CREATE}>
+            <Button
+              onClick={() => navigate('/workspace/apartments/new')}
+              data-testid="apartments-new-btn"
+              className="shrink-0"
+              icon={<Plus className="mr-2 h-4 w-4" />}
             >
-              {filteredApartments.map((apartment) => (
-                <ApartmentCard key={apartment.id} apartment={apartment} onEdit={handleEdit} onDelete={handleDelete} />
-              ))}
-            </div>
-          ) : (
-            <ApartmentEmptyState
-              hasApartments={!!apartments && apartments.length > 0}
-              onCreateClick={() => navigate('/workspace/apartments/new')}
-            />
-          )}
+              新增公寓
+            </Button>
+          </PermissionGuard>
         </div>
 
-        {/* Edit Modal */}
-        <Modal
-          open={isEditOpen}
-          onCancel={() => setIsEditOpen(false)}
-          title="编辑公寓"
-          footer={[
-            <Button key="cancel" onClick={() => setIsEditOpen(false)} data-testid="apartments-cancel-btn">
-              取消
-            </Button>,
-            <Button key="submit" type="primary" onClick={() => editForm.handleSubmit((data) => updateMutation.mutate({ id: selectedApartment!.id, data }))()} loading={updateMutation.isPending} data-testid="apartments-confirm-btn">
-              {updateMutation.isPending ? '保存中...' : '保存'}
-            </Button>,
-          ]}
-        >
-          <div className="max-h-[60vh] overflow-y-auto py-4">
-            <ApartmentForm
-              form={editForm}
-              mode="edit"
-              formId="edit-apartment-form"
-              onSubmit={(data) => updateMutation.mutate({ id: selectedApartment!.id, data })}
-            />
+        {apartmentsLoading ? (
+          <div className="mx-auto grid max-w-7xl gap-card-gap sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <Skeleton active className="h-48" />
+            <Skeleton active className="h-48" />
+            <Skeleton active className="h-48" />
           </div>
-        </Modal>
+        ) : filteredApartments && filteredApartments.length > 0 ? (
+          <div
+            className="mx-auto grid max-w-7xl gap-card-gap sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            data-testid="apartments-list"
+          >
+            {filteredApartments.map((apartment) => (
+              <ApartmentCard key={apartment.id} apartment={apartment} onEdit={handleEdit} onDelete={handleDelete} />
+            ))}
+          </div>
+        ) : (
+          <ApartmentEmptyState
+            hasApartments={!!apartments && apartments.length > 0}
+            onCreateClick={() => navigate('/workspace/apartments/new')}
+          />
+        )}
+      </div>
 
-        {/* Delete Confirm Modal */}
-        <Modal
-          open={isDeleteOpen}
-          onCancel={() => setIsDeleteOpen(false)}
-          title="确认删除"
-          onOk={handleConfirmDelete}
-          okText={deleteMutation.isPending ? '删除中...' : '删除'}
-          okButtonProps={{ danger: true, loading: deleteMutation.isPending }}
-        >
-          <p>
-            确定要删除公寓 "{selectedApartment?.name ?? ''}" 吗？此操作不可撤销，关联的房间数据也将被删除。
-          </p>
-        </Modal>
+      {/* Edit Modal */}
+      <Modal
+        open={isEditOpen}
+        onCancel={() => setIsEditOpen(false)}
+        title="编辑公寓"
+        footer={[
+          <Button key="cancel" onClick={() => setIsEditOpen(false)} data-testid="apartments-cancel-btn">
+            取消
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            onClick={() => apartmentFormRef.current?.submit()}
+            loading={updateMutation.isPending}
+            data-testid="apartments-confirm-btn"
+          >
+            {updateMutation.isPending ? '保存中...' : '保存'}
+          </Button>,
+        ]}
+      >
+        <div className="max-h-[60vh] overflow-y-auto py-4">
+          <ApartmentForm ref={apartmentFormRef} onFinish={handleFormFinish} />
+        </div>
+      </Modal>
+
+      {/* Delete Confirm Modal */}
+      <Modal
+        open={isDeleteOpen}
+        onCancel={() => setIsDeleteOpen(false)}
+        title="确认删除"
+        onOk={handleConfirmDelete}
+        okText={deleteMutation.isPending ? '删除中...' : '删除'}
+        okButtonProps={{ danger: true, loading: deleteMutation.isPending }}
+      >
+        <p>
+          确定要删除公寓 &quot;{selectedApartment?.name ?? ''}&quot; 吗？此操作不可撤销，关联的房间数据也将被删除。
+        </p>
+      </Modal>
     </PermissionPageGuard>
   );
 }

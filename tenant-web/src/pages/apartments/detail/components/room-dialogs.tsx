@@ -1,25 +1,20 @@
+import { useState, useEffect, useMemo } from 'react';
 import { Check, Loader2, Settings2 } from 'lucide-react';
-import type { UseFormReturn } from 'react-hook-form';
-import { Controller } from 'react-hook-form';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
 import { EditRoomDialog } from '@/pages/rooms/components/EditRoomDialog';
 import { Modal, Drawer, Button, Input, Select, Switch, Form, InputNumber, Space } from 'antd';
 import type { Room, RoomFacilities } from '@/types';
-import {
-  type BatchEditFormData,
-  type RoomBatchConfigData,
-  type RoomFormData,
-  LAYOUT_OPTIONS,
-} from '@/schemas/apartment-detail';
+import { LAYOUT_OPTIONS } from '@/schemas/apartment-detail';
 import type { RoomEditFormData } from '@apartment-ultra/api-contract';
 import type { GeneratedFloorRooms } from '@/utils/apartment-detail';
-import { getFacilitiesSummary } from '@/utils/apartment-detail';
+import { getFacilitiesSummary, parseFloors, parseRoomNumbers, buildGeneratedRoomGroups } from '@/utils/apartment-detail';
+
+// ============ CreateRoomDialog ============
 
 export function CreateRoomDialog({
   apartmentName,
   open,
   onOpenChange,
-  form,
   facilities,
   onFacilitiesChange,
   facilityDialogOpen,
@@ -30,14 +25,21 @@ export function CreateRoomDialog({
   apartmentName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  form: UseFormReturn<RoomFormData>;
   facilities: RoomFacilities | null;
   onFacilitiesChange: (value: RoomFacilities | null) => void;
   facilityDialogOpen: boolean;
   onFacilityDialogOpenChange: (open: boolean) => void;
-  onSubmit: (data: RoomFormData) => void;
+  onSubmit: (data: { room_number: string; layout?: string; area?: number; notes?: string }) => void;
   isPending: boolean;
 }) {
+  const [form] = Form.useForm();
+
+  const handleSubmit = () => {
+    form.validateFields().then((values) => {
+      onSubmit(values);
+    });
+  };
+
   return (
     <>
       <Modal
@@ -47,72 +49,39 @@ export function CreateRoomDialog({
         footer={
           <Space>
             <Button onClick={() => onOpenChange(false)}>取消</Button>
-            <Button type="primary" loading={isPending} onClick={form.handleSubmit(onSubmit)}>
+            <Button type="primary" loading={isPending} onClick={handleSubmit}>
               {isPending ? '创建中...' : '创建'}
             </Button>
           </Space>
         }
       >
-        <Form layout="vertical" className="space-y-4">
+        <Form form={form} layout="vertical" className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Controller
+            <Form.Item
               name="room_number"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Form.Item
-                  label="房间号"
-                  required
-                  validateStatus={fieldState.error ? 'error' : ''}
-                  help={fieldState.error?.message}
-                >
-                  <Input placeholder="请输入房间号" {...field} />
-                </Form.Item>
-              )}
-            />
-            <Controller
-              name="layout"
-              control={form.control}
-              render={({ field }) => (
-                <Form.Item label="户型">
-                  <Select {...field} value={field.value || undefined} onChange={field.onChange} placeholder="选择户型">
-                    {LAYOUT_OPTIONS.map((layout) => (
-                      <Select.Option key={layout} value={layout}>
-                        {layout}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              )}
-            />
+              label="房间号"
+              rules={[{ required: true, message: '请输入房间号' }]}
+            >
+              <Input placeholder="请输入房间号" />
+            </Form.Item>
+            <Form.Item name="layout" label="户型">
+              <Select placeholder="选择户型">
+                {LAYOUT_OPTIONS.map((layout) => (
+                  <Select.Option key={layout} value={layout}>
+                    {layout}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
           </div>
 
-          <Controller
-            name="area"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Form.Item label="面积 (m²)" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
-                <InputNumber
-                  {...field}
-                  value={field.value ?? ''}
-                  onChange={(val) => field.onChange(val ?? '')}
-                  min={0}
-                  step={0.01}
-                  placeholder="请输入面积"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            )}
-          />
+          <Form.Item name="area" label="面积 (m²)">
+            <InputNumber min={0} step={0.01} placeholder="请输入面积" style={{ width: '100%' }} />
+          </Form.Item>
 
-          <Controller
-            name="notes"
-            control={form.control}
-            render={({ field }) => (
-              <Form.Item label="备注">
-                <Input.TextArea {...field} value={field.value ?? ''} placeholder="请输入备注" rows={2} />
-              </Form.Item>
-            )}
-          />
+          <Form.Item name="notes" label="备注">
+            <Input.TextArea placeholder="请输入备注" rows={2} />
+          </Form.Item>
 
           <Form.Item label="家具家电">
             <Button className="w-full justify-between" onClick={() => onFacilityDialogOpenChange(true)}>
@@ -133,11 +102,11 @@ export function CreateRoomDialog({
   );
 }
 
+// ============ BatchCreateRoomDialog ============
+
 export function BatchCreateRoomDialog({
   open,
   onOpenChange,
-  form,
-  generatedRooms,
   selectedRooms,
   onToggleAll,
   onToggleFloor,
@@ -147,8 +116,6 @@ export function BatchCreateRoomDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  form: UseFormReturn<RoomBatchConfigData>;
-  generatedRooms: GeneratedFloorRooms[];
   selectedRooms: Set<string>;
   onToggleAll: (select: boolean) => void;
   onToggleFloor: (roomNumbers: string[], select: boolean) => void;
@@ -156,6 +123,22 @@ export function BatchCreateRoomDialog({
   onSubmitRooms: () => void;
   isPending: boolean;
 }) {
+  const [floors, setFloors] = useState('1');
+  const [roomNumbers, setRoomNumbers] = useState('1-10');
+
+  // Reset when dialog opens
+  useEffect(() => {
+    if (open) {
+      setFloors('1');
+      setRoomNumbers('1-10');
+    }
+  }, [open]);
+
+  const generatedRooms: GeneratedFloorRooms[] = useMemo(
+    () => buildGeneratedRoomGroups(floors, roomNumbers),
+    [floors, roomNumbers]
+  );
+
   const totalGeneratedRooms = generatedRooms.reduce((sum, floorGroup) => sum + floorGroup.rooms.length, 0);
 
   return (
@@ -186,40 +169,28 @@ export function BatchCreateRoomDialog({
       }
     >
       <div className="space-y-4">
-        <Form layout="vertical" className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Controller
-              name="floors"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Form.Item
-                  label="楼层"
-                  required
-                  validateStatus={fieldState.error ? 'error' : ''}
-                  help={fieldState.error?.message}
-                  extra="支持多楼层（如 1,2,3 或 1-5）"
-                >
-                  <Input placeholder="如 1,2,3 或 1-5" {...field} />
-                </Form.Item>
-              )}
+        {/* Floor and room number inputs */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">楼层</label>
+            <Input
+              value={floors}
+              onChange={(e) => setFloors(e.target.value)}
+              placeholder="如 1,2,3 或 1-5"
+              addonAfter={<button type="button" className="text-xs text-gray-400 hover:text-gray-600" onClick={() => setFloors('')}>清除</button>}
             />
-            <Controller
-              name="room_numbers"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Form.Item
-                  label="房间号"
-                  required
-                  validateStatus={fieldState.error ? 'error' : ''}
-                  help={fieldState.error?.message}
-                  extra="支持多房间号（如 1,2,3 或 1-5）"
-                >
-                  <Input placeholder="如 1,2,3 或 1-5" {...field} />
-                </Form.Item>
-              )}
-            />
+            <p className="text-xs text-gray-500 mt-1">支持多楼层（如 1,2,3 或 1-5）</p>
           </div>
-        </Form>
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">房间号</label>
+            <Input
+              value={roomNumbers}
+              onChange={(e) => setRoomNumbers(e.target.value)}
+              placeholder="如 1,2,3 或 1-10"
+            />
+            <p className="text-xs text-gray-500 mt-1">支持多房间号（如 1,2,3 或 1-10）</p>
+          </div>
+        </div>
 
         <div className="flex gap-2">
           <Button size="small" onClick={() => onToggleAll(true)}>
@@ -293,6 +264,8 @@ export function BatchCreateRoomDialog({
   );
 }
 
+// ============ DeleteRoomDialog ============
+
 export function DeleteRoomDialog({
   open,
   onOpenChange,
@@ -334,21 +307,29 @@ export function DeleteRoomDialog({
   );
 }
 
+// ============ BatchEditDialog ============
+
 export function BatchEditDialog({
   open,
   onOpenChange,
-  form,
   selectedCount,
   onSubmit,
   isPending,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  form: UseFormReturn<BatchEditFormData>;
   selectedCount: number;
-  onSubmit: (data: BatchEditFormData) => void;
+  onSubmit: (data: { layout?: string; area?: number; monthly_rent?: number; maintenance?: boolean }) => void;
   isPending: boolean;
 }) {
+  const [form] = Form.useForm();
+
+  const handleSubmit = () => {
+    form.validateFields().then((values) => {
+      onSubmit(values);
+    });
+  };
+
   return (
     <Modal
       open={open}
@@ -357,7 +338,7 @@ export function BatchEditDialog({
       footer={
         <Space>
           <Button onClick={() => onOpenChange(false)}>取消</Button>
-          <Button type="primary" loading={isPending} onClick={form.handleSubmit(onSubmit)}>
+          <Button type="primary" loading={isPending} onClick={handleSubmit}>
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
@@ -371,81 +352,37 @@ export function BatchEditDialog({
       }
     >
       <p className="mb-4 text-sm text-gray-600">为选中的 {selectedCount} 个房间设置属性（留空则不修改）</p>
-      <Form layout="vertical" className="space-y-4">
-        <Controller
-          name="layout"
-          control={form.control}
-          render={({ field }) => (
-            <Form.Item label="户型">
-              <Select
-                {...field}
-                value={field.value || '__none__'}
-                onChange={(val) => field.onChange(val === '__none__' ? undefined : val)}
-                placeholder="不修改"
-              >
-                <Select.Option value="__none__">不修改</Select.Option>
-                {LAYOUT_OPTIONS.map((layout) => (
-                  <Select.Option key={layout} value={layout}>
-                    {layout}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          )}
-        />
+      <Form form={form} layout="vertical" className="space-y-4">
+        <Form.Item name="layout" label="户型">
+          <Select placeholder="不修改" allowClear>
+            {LAYOUT_OPTIONS.map((layout) => (
+              <Select.Option key={layout} value={layout}>
+                {layout}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
 
-        <Controller
-          name="area"
-          control={form.control}
-          render={({ field }) => (
-            <Form.Item label="面积 (m²)">
-              <InputNumber
-                {...field}
-                value={field.value ?? ''}
-                onChange={(val) => field.onChange(val === null ? undefined : val ?? '')}
-                placeholder="不修改"
-                min={0}
-                step={0.01}
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          )}
-        />
+        <Form.Item name="area" label="面积 (m²)">
+          <InputNumber min={0} step={0.01} placeholder="不修改" style={{ width: '100%' }} />
+        </Form.Item>
 
-        <Controller
-          name="monthly_rent"
-          control={form.control}
-          render={({ field }) => (
-            <Form.Item label="月租 (元)">
-              <InputNumber
-                {...field}
-                value={field.value ?? ''}
-                onChange={(val) => field.onChange(val === null ? undefined : val ?? '')}
-                placeholder="不修改"
-                min={0}
-                step={0.01}
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          )}
-        />
+        <Form.Item name="monthly_rent" label="月租 (元)">
+          <InputNumber min={0} step={0.01} placeholder="不修改" style={{ width: '100%' }} />
+        </Form.Item>
 
-        <Controller
-          name="maintenance"
-          control={form.control}
-          render={({ field }) => (
-            <Form.Item label="设为维修中">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-500">开启后房间将标记为维修中状态</p>
-                <Switch checked={field.value ?? false} onChange={field.onChange} />
-              </div>
-            </Form.Item>
-          )}
-        />
+        <Form.Item name="maintenance" label="设为维修中" valuePropName="checked">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-500">开启后房间将标记为维修中状态</p>
+            <Switch />
+          </div>
+        </Form.Item>
       </Form>
     </Modal>
   );
 }
+
+// ============ RoomEditDialog ============
 
 export function RoomEditDialog({
   open,

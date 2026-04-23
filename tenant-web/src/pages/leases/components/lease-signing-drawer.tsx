@@ -1,10 +1,7 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Button, Drawer, Form } from 'antd';
+import { Button, Drawer, Space } from 'antd';
 import { leaseSigningSchema, type LeaseSigningFormData } from '@/schemas/leases';
 import { leasesApi } from '@/api/leases';
 import { apartmentsApi, roomsApi, utilityConfigApi } from '@/api/apartments';
@@ -13,35 +10,17 @@ import { toDateInputValue } from '@/utils/date';
 import { filterEmptyStrings } from '@/utils/form';
 import { getErrorMessage } from '@/utils/error';
 import { TenantSearchDrawer } from './tenant-search-drawer';
-import { RoomInfoSection } from './room-info-section';
-import { TenantInfoSection } from './tenant-info-section';
-import { ContractInfoSection } from './contract-info-section';
+import { RoomInfoSection, type RoomInfoSectionRef } from './room-info-section';
+import { TenantInfoSection, type TenantInfoSectionRef } from './tenant-info-section';
+import { ContractInfoSection, type ContractInfoSectionRef } from './contract-info-section';
 import type { FeeItem } from '@/components/common/fee-items-editor';
 import type { Room, Tenant, UtilityConfig } from '@apartment-ultra/api-contract';
 
 const leaseSigningSteps = [
-  {
-    id: 'room',
-    title: '房间',
-    description: '选择公寓与房间',
-  },
-  {
-    id: 'tenant',
-    title: '租客',
-    description: '填写租客信息',
-  },
-  {
-    id: 'contract',
-    title: '签约确认',
-    description: '设置合同条款',
-  },
+  { id: 'room', title: '房间', description: '选择公寓与房间' },
+  { id: 'tenant', title: '租客', description: '填写租客信息' },
+  { id: 'contract', title: '签约确认', description: '设置合同条款' },
 ] as const;
-
-const leaseSigningStepFields: Record<number, Array<keyof LeaseSigningFormData>> = {
-  0: ['room_id'],
-  1: ['tenant_name', 'tenant_phone'],
-  2: [],
-};
 
 interface LeaseSigningDrawerProps {
   orgId: string;
@@ -49,7 +28,6 @@ interface LeaseSigningDrawerProps {
   onOpenChange: (open: boolean) => void;
   room?: Room | null;
   onSuccess?: () => void;
-  /** 签约成功回调，用于后续录入初始水电等 */
   onLeaseCreated?: (params: {
     room_id: string;
     room_display: string;
@@ -73,27 +51,14 @@ export function LeaseSigningDrawer({
   const [tenantSearchOpen, setTenantSearchOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
-  const isRoomSpecified = !!room;
+  const roomSectionRef = useRef<RoomInfoSectionRef>(null);
+  const tenantSectionRef = useRef<TenantInfoSectionRef>(null);
+  const contractSectionRef = useRef<ContractInfoSectionRef>(null);
 
-  const form = useForm<LeaseSigningFormData>({
-    resolver: zodResolver(leaseSigningSchema),
-    defaultValues: {
-      room_id: '',
-      tenant_name: '',
-      tenant_phone: '',
-      tenant_id_card: '',
-      tenant_emergency_contact: '',
-      tenant_emergency_phone: '',
-      tenant_notes: '',
-      start_date: new Date().toISOString().split('T')[0],
-      end_date: '',
-      monthly_rent: 0,
-      deposit: 0,
-      water_rate: 0,
-      electricity_rate: 0,
-      notes: '',
-    },
-  });
+  // Stores values from each section for final submission
+  const [sectionValues, setSectionValues] = useState<Partial<LeaseSigningFormData>>({});
+
+  const isRoomSpecified = !!room;
 
   // 获取公寓列表
   const { data: apartments } = useQuery({
@@ -109,8 +74,8 @@ export function LeaseSigningDrawer({
     enabled: !!orgId && !isRoomSpecified && selectedApartmentId !== null,
   });
 
-  // 监听公寓/房间变化获取水电配置
-  const currentRoomId = form.watch('room_id');
+  // Listen for apartment/room changes to get utility config
+  const currentRoomId = room?.id;
   const effectiveApartmentId = isRoomSpecified
     ? room?.apartment_id
     : rooms?.find((r) => r.id === currentRoomId)?.apartment_id;
@@ -120,69 +85,38 @@ export function LeaseSigningDrawer({
       utilityConfigApi
         .get(effectiveApartmentId)
         .then(setUtilityConfig)
-        .catch(() => {
-          setUtilityConfig(null);
-        });
+        .catch(() => setUtilityConfig(null));
     } else {
       setUtilityConfig(null);
     }
   }, [effectiveApartmentId, orgId, open]);
 
-  // 更新水电费率表单默认值
+  // Pre-fill utility rates when config loads
   useEffect(() => {
     if (utilityConfig && open) {
-      const waterPrice = utilityConfig.water_price_per_unit ?? 0;
-      const elecPrice = utilityConfig.electricity_price_per_unit ?? 0;
-      if (form.getValues('water_rate') === 0) {
-        form.setValue('water_rate', waterPrice);
-      }
-      if (form.getValues('electricity_rate') === 0) {
-        form.setValue('electricity_rate', elecPrice);
-      }
+      setSectionValues((prev) => ({
+        ...prev,
+        water_rate: prev.water_rate === undefined ? (utilityConfig.water_price_per_unit ?? 0) : prev.water_rate,
+        electricity_rate: prev.electricity_rate === undefined ? (utilityConfig.electricity_price_per_unit ?? 0) : prev.electricity_rate,
+      }));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [utilityConfig, open]);
 
-  // 初始化/重置表单
+  // Reset state when drawer opens
   useEffect(() => {
-    if (room && open) {
-      form.reset({
-        room_id: room.id,
-        tenant_name: '',
-        tenant_phone: '',
-        tenant_id_card: '',
-        tenant_emergency_contact: '',
-        tenant_emergency_phone: '',
-        tenant_notes: '',
+    if (open) {
+      setSectionValues({
         start_date: new Date().toISOString().split('T')[0],
-        end_date: '',
-        monthly_rent: room.pricing?.monthly_rent ?? 0,
+        monthly_rent: room?.pricing?.monthly_rent ?? 0,
         deposit: 0,
         water_rate: utilityConfig?.water_price_per_unit ?? 0,
         electricity_rate: utilityConfig?.electricity_price_per_unit ?? 0,
-        notes: '',
       });
-    } else if (!isRoomSpecified && open) {
-      form.reset({
-        room_id: '',
-        tenant_name: '',
-        tenant_phone: '',
-        tenant_id_card: '',
-        tenant_emergency_contact: '',
-        tenant_emergency_phone: '',
-        tenant_notes: '',
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: '',
-        monthly_rent: 0,
-        deposit: 0,
-        water_rate: 0,
-        electricity_rate: 0,
-        notes: '',
-      });
+      setFeeItems([]);
+      setCurrentStep(0);
       setSelectedApartmentId(null);
     }
-    setFeeItems([]);
-  }, [room, open, isRoomSpecified]);
+  }, [open, room, utilityConfig]);
 
   useEffect(() => {
     if (!open) {
@@ -191,14 +125,17 @@ export function LeaseSigningDrawer({
     }
   }, [open]);
 
-  // 租客选择回填
+  // 租客选择回填 - update tenant section values
   const handleTenantSelect = (tenant: Tenant) => {
-    form.setValue('tenant_name', tenant.name || '');
-    form.setValue('tenant_phone', tenant.phone || '');
-    form.setValue('tenant_id_card', tenant.id_card || '');
-    form.setValue('tenant_emergency_contact', tenant.emergency_contact || '');
-    form.setValue('tenant_emergency_phone', tenant.emergency_phone || '');
-    form.setValue('tenant_notes', tenant.notes || '');
+    setSectionValues((prev) => ({
+      ...prev,
+      tenant_name: tenant.name || '',
+      tenant_phone: tenant.phone || '',
+      tenant_id_card: tenant.id_card || '',
+      tenant_emergency_contact: tenant.emergency_contact || '',
+      tenant_emergency_phone: tenant.emergency_phone || '',
+      tenant_notes: tenant.notes || '',
+    }));
   };
 
   // 签约提交：先处理租客，再创建租约
@@ -252,7 +189,6 @@ export function LeaseSigningDrawer({
         electricity_rate: data.electricity_rate,
         notes: data.notes,
       };
-      // 添加费用项目
       if (feeItems && feeItems.length > 0) {
         (leaseData as Record<string, unknown>).fee_items = feeItems.map((item) => ({
           fee_name: item.name,
@@ -270,7 +206,6 @@ export function LeaseSigningDrawer({
       queryClient.invalidateQueries({ queryKey: ['rooms', orgId] });
       queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
       onOpenChange(false);
-      form.reset();
       toast.success('签约成功');
       const roomId = createdLease.room_id;
       const startDate = createdLease.start_date;
@@ -290,28 +225,41 @@ export function LeaseSigningDrawer({
     onError: (error) => toast.error(getErrorMessage(error, '签约失败，请重试')),
   });
 
-  const handleSubmit = (data: LeaseSigningFormData) => {
-    createMutation.mutate(data);
-  };
-
   const handleNextStep = async () => {
-    const fields = leaseSigningStepFields[currentStep];
-
-    if (!fields.length) {
+    try {
+      if (currentStep === 0) {
+        await roomSectionRef.current?.validate();
+        const values = roomSectionRef.current?.getValues() || {};
+        setSectionValues((prev) => ({ ...prev, ...values }));
+      } else if (currentStep === 1) {
+        await tenantSectionRef.current?.validate();
+        const values = tenantSectionRef.current?.getValues() || {};
+        setSectionValues((prev) => ({ ...prev, ...values }));
+      }
       setCurrentStep((step) => Math.min(step + 1, leaseSigningSteps.length - 1));
-      return;
+    } catch {
+      // Validation failed
     }
-
-    const isValid = await form.trigger(fields, { shouldFocus: true });
-    if (!isValid) {
-      return;
-    }
-
-    setCurrentStep((step) => Math.min(step + 1, leaseSigningSteps.length - 1));
   };
 
   const handlePreviousStep = () => {
     setCurrentStep((step) => Math.max(step - 1, 0));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await contractSectionRef.current?.validate();
+      const contractValues = contractSectionRef.current?.getValues() || {};
+      const allValues = { ...sectionValues, ...contractValues } as LeaseSigningFormData;
+
+      // Basic validation
+      const validated = leaseSigningSchema.parse(allValues);
+      createMutation.mutate(validated);
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
   };
 
   const handleDrawerOpenChange = (nextOpen: boolean) => {
@@ -350,13 +298,7 @@ export function LeaseSigningDrawer({
               </Button>
             )}
             {currentStep === leaseSigningSteps.length - 1 && (
-              <Button
-                type="primary"
-                onClick={() => {
-                  void form.handleSubmit(handleSubmit)();
-                }}
-                disabled={createMutation.isPending}
-              >
+              <Button type="primary" onClick={handleSubmit} disabled={createMutation.isPending}>
                 {createMutation.isPending ? '签约中...' : '确认签约'}
               </Button>
             )}
@@ -367,7 +309,7 @@ export function LeaseSigningDrawer({
         style={{ maxWidth: 640 }}
       >
         <div className="flex-1 overflow-y-auto px-6 py-5">
-          {/* 步骤指示器 */}
+          {/* Step indicator */}
           <div className="flex items-center gap-2 mb-6">
             {leaseSigningSteps.map((step, index) => (
               <div
@@ -394,15 +336,11 @@ export function LeaseSigningDrawer({
           {currentStep === 2 && (
             <p className="mb-4 text-sm text-muted-foreground">签约完成后将自动刷新数据</p>
           )}
-          <Form
-            layout="vertical"
-            onFinish={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
-            id="lease-signing-wizard-form"
-          >
-            {currentStep === 0 ? (
+
+          <div className="space-y-6">
+            {currentStep === 0 && (
               <RoomInfoSection
-                form={form}
+                ref={roomSectionRef}
                 room={room}
                 isRoomSpecified={isRoomSpecified}
                 apartments={apartments}
@@ -410,18 +348,24 @@ export function LeaseSigningDrawer({
                 selectedApartmentId={selectedApartmentId}
                 onApartmentChange={setSelectedApartmentId}
               />
-            ) : null}
+            )}
 
-            {currentStep === 1 ? <TenantInfoSection form={form} onSearchTenant={() => setTenantSearchOpen(true)} /> : null}
+            {currentStep === 1 && (
+              <TenantInfoSection
+                ref={tenantSectionRef}
+                onSearchTenant={() => setTenantSearchOpen(true)}
+              />
+            )}
 
-            {currentStep === 2 ? (
+            {currentStep === 2 && (
               <ContractInfoSection
-                form={form}
+                ref={contractSectionRef}
                 feeItems={feeItems}
                 onFeeItemsChange={setFeeItems}
+                initialValues={sectionValues}
               />
-            ) : null}
-          </Form>
+            )}
+          </div>
         </div>
       </Drawer>
 

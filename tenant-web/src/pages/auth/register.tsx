@@ -1,10 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button, Input, Form } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { getPostAuthRedirectPath } from '@/utils/auth-redirect';
@@ -13,27 +9,6 @@ import { AuthLoadingScreen } from '@/pages/auth/components/auth-loading-screen';
 import { AuthShell } from '@/pages/auth/components/auth-shell';
 import { tenantMessages } from '@/i18n';
 
-// 手机号验证正则
-const phoneRegex = /^1[3-9]\d{9}$/;
-
-const registerSchema = z
-  .object({
-    phone: z.string().regex(phoneRegex, tenantMessages.auth.register.phoneValidation),
-    password: z
-      .string()
-      .min(8, tenantMessages.auth.register.passwordMin)
-      .regex(/[a-zA-Z]/, tenantMessages.auth.register.passwordLetter)
-      .regex(/\d/, tenantMessages.auth.register.passwordNumber),
-    full_name: z.string().min(2, tenantMessages.auth.register.nameValidation),
-    confirm_password: z.string(),
-  })
-  .refine((data) => data.password === data.confirm_password, {
-    message: tenantMessages.auth.register.confirmPasswordMismatch,
-    path: ['confirm_password'],
-  });
-
-type RegisterFormValues = z.infer<typeof registerSchema>;
-
 export default function RegisterPage() {
   const { register: registerUser, isAuthenticated, isLoading: isAuthLoading, organizations, organization } =
     useAuth();
@@ -41,6 +16,7 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [form] = Form.useForm();
 
   // 已登录用户自动跳转到登录后目标页
   useEffect(() => {
@@ -49,21 +25,11 @@ export default function RegisterPage() {
     }
   }, [isAuthLoading, isAuthenticated, organization, organizations, navigate]);
 
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      phone: '',
-      password: '',
-      full_name: '',
-      confirm_password: '',
-    },
-  });
-
-  const onSubmit = async (data: RegisterFormValues) => {
+  const onFinish = async (values: { phone: string; password: string; full_name: string; confirm_password: string }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const targetPath = await registerUser(data.phone, data.password, data.full_name);
+      const targetPath = await registerUser(values.phone, values.password, values.full_name);
       navigate(targetPath, { replace: true });
     } catch {
       setError(tenantMessages.auth.register.failed);
@@ -98,9 +64,11 @@ export default function RegisterPage() {
         }
       >
         <Form
+          form={form}
           layout="vertical"
-          onFinish={form.handleSubmit(onSubmit)}
+          onFinish={onFinish}
           className="space-y-5"
+          initialValues={{ phone: '', password: '', full_name: '', confirm_password: '' }}
         >
           {error && (
             <div className="rounded-2xl border border-destructive/15 bg-destructive/10 p-3 text-sm text-destructive">
@@ -111,78 +79,68 @@ export default function RegisterPage() {
             label={tenantMessages.auth.register.name}
             name="full_name"
             required
-            validateStatus={form.formState.errors.full_name ? 'error' : ''}
-            help={form.formState.errors.full_name?.message}
+            rules={[
+              { required: true, message: '请输入姓名' },
+              { min: 2, message: tenantMessages.auth.register.nameValidation },
+            ]}
           >
-            <Controller
-              name="full_name"
-              control={form.control}
-              render={({ field }) => (
-                <Input placeholder={tenantMessages.auth.register.namePlaceholder} autoComplete="name" {...field} data-testid="auth-name-input" />
-              )}
-            />
+            <Input placeholder={tenantMessages.auth.register.namePlaceholder} autoComplete="name" data-testid="auth-name-input" />
           </Form.Item>
           <Form.Item
             label={tenantMessages.auth.register.phone}
             name="phone"
             required
-            validateStatus={form.formState.errors.phone ? 'error' : ''}
-            help={form.formState.errors.phone?.message}
+            rules={[
+              { required: true, message: '请输入手机号' },
+              { pattern: /^1[3-9]\d{9}$/, message: tenantMessages.auth.register.phoneValidation },
+            ]}
           >
-            <Controller
-              name="phone"
-              control={form.control}
-              render={({ field }) => (
-                <Input
-                  type="tel"
-                  placeholder={tenantMessages.auth.register.phonePlaceholder}
-                  autoComplete="tel"
-                  {...field}
-                  data-testid="auth-phone-input"
-                />
-              )}
+            <Input
+              type="tel"
+              placeholder={tenantMessages.auth.register.phonePlaceholder}
+              autoComplete="tel"
+              data-testid="auth-phone-input"
             />
           </Form.Item>
           <Form.Item
             label={tenantMessages.auth.register.password}
             name="password"
             required
-            validateStatus={form.formState.errors.password ? 'error' : ''}
-            help={form.formState.errors.password?.message}
+            rules={[
+              { required: true, message: '请输入密码' },
+              { min: 8, message: tenantMessages.auth.register.passwordMin },
+              { pattern: /[a-zA-Z]/, message: tenantMessages.auth.register.passwordLetter },
+              { pattern: /\d/, message: tenantMessages.auth.register.passwordNumber },
+            ]}
           >
-            <Controller
-              name="password"
-              control={form.control}
-              render={({ field }) => (
-                <Input
-                  type="password"
-                  placeholder={tenantMessages.auth.register.passwordPlaceholder}
-                  autoComplete="new-password"
-                  {...field}
-                  data-testid="auth-password-input"
-                />
-              )}
+            <Input
+              type="password"
+              placeholder={tenantMessages.auth.register.passwordPlaceholder}
+              autoComplete="new-password"
+              data-testid="auth-password-input"
             />
           </Form.Item>
           <Form.Item
             label={tenantMessages.auth.register.confirmPassword}
             name="confirm_password"
             required
-            validateStatus={form.formState.errors.confirm_password ? 'error' : ''}
-            help={form.formState.errors.confirm_password?.message}
+            rules={[
+              { required: true, message: '请确认密码' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error(tenantMessages.auth.register.confirmPasswordMismatch));
+                },
+              }),
+            ]}
           >
-            <Controller
-              name="confirm_password"
-              control={form.control}
-              render={({ field }) => (
-                <Input
-                  type="password"
-                  placeholder={tenantMessages.auth.register.confirmPasswordPlaceholder}
-                  autoComplete="new-password"
-                  {...field}
-                  data-testid="auth-confirm-password-input"
-                />
-              )}
+            <Input
+              type="password"
+              placeholder={tenantMessages.auth.register.confirmPasswordPlaceholder}
+              autoComplete="new-password"
+              data-testid="auth-confirm-password-input"
             />
           </Form.Item>
           <Button type="primary" htmlType="submit" className="h-11 w-full text-sm" loading={isLoading} disabled={isLoading} data-testid="auth-register-button">

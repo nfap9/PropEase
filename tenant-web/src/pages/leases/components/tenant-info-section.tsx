@@ -1,17 +1,39 @@
-
-import { UseFormReturn } from 'react-hook-form';
+import { forwardRef, useImperativeHandle } from 'react';
+import { Form } from 'antd';
 import { User, Phone, IdCard, AlertCircle, Search, UserCheck2 } from 'lucide-react';
 import { Button, Input } from 'antd';
 import { Label } from '@/components/common/label';
-import type { LeaseSigningFormData } from '@/schemas/leases';
+
+export interface TenantInfoSectionRef {
+  validate: () => Promise<void>;
+  getValues: () => {
+    tenant_name: string;
+    tenant_phone: string;
+    tenant_id_card?: string;
+    tenant_emergency_contact?: string;
+    tenant_emergency_phone?: string;
+    tenant_notes?: string;
+  };
+}
 
 interface TenantInfoSectionProps {
-  form: UseFormReturn<LeaseSigningFormData>;
   onSearchTenant: () => void;
 }
 
-export function TenantInfoSection({ form, onSearchTenant }: TenantInfoSectionProps) {
-  const errors = form.formState.errors;
+export const TenantInfoSection = forwardRef<TenantInfoSectionRef, TenantInfoSectionProps>(function TenantInfoSection(
+  { onSearchTenant },
+  ref
+) {
+  const [form] = Form.useForm();
+
+  useImperativeHandle(ref, () => ({
+    validate: async () => {
+      await form.validateFields(['tenant_name', 'tenant_phone']);
+    },
+    getValues: () => form.getFieldsValue(),
+  }));
+
+  const errors = form.getFieldsError();
 
   return (
     <div className="space-y-6">
@@ -58,36 +80,26 @@ export function TenantInfoSection({ form, onSearchTenant }: TenantInfoSectionPro
               <User className="h-3.5 w-3.5 text-gray-400" />
               租客姓名 <span className="text-red-500">*</span>
             </Label>
-            <Input
-              id="tenant_name"
-              placeholder="请输入租客姓名"
-              className="rounded-xl h-11"
-              {...form.register('tenant_name')}
-            />
-            {errors.tenant_name && (
-              <p className="text-xs text-red-500 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.tenant_name.message}
-              </p>
-            )}
+            <Form.Item
+              name="tenant_name"
+              rules={[{ required: true, message: '请输入租客姓名' }]}
+              style={{ marginBottom: 0 }}
+            >
+              <Input id="tenant_name" placeholder="请输入租客姓名" className="rounded-xl h-11" />
+            </Form.Item>
           </div>
           <div className="space-y-2">
             <Label htmlFor="tenant_phone" className="flex items-center gap-1.5 text-sm font-medium">
               <Phone className="h-3.5 w-3.5 text-gray-400" />
               联系电话 <span className="text-red-500">*</span>
             </Label>
-            <Input
-              id="tenant_phone"
-              placeholder="请输入联系电话"
-              className="rounded-xl h-11"
-              {...form.register('tenant_phone')}
-            />
-            {errors.tenant_phone && (
-              <p className="text-xs text-red-500 flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.tenant_phone.message}
-              </p>
-            )}
+            <Form.Item
+              name="tenant_phone"
+              rules={[{ required: true, message: '请输入联系电话' }]}
+              style={{ marginBottom: 0 }}
+            >
+              <Input id="tenant_phone" placeholder="请输入联系电话" className="rounded-xl h-11" />
+            </Form.Item>
           </div>
         </div>
       </div>
@@ -104,23 +116,17 @@ export function TenantInfoSection({ form, onSearchTenant }: TenantInfoSectionPro
               <IdCard className="h-3.5 w-3.5 text-gray-400" />
               身份证号
             </Label>
-            <Input
-              id="tenant_id_card"
-              placeholder="请输入身份证号"
-              className="rounded-xl h-11"
-              {...form.register('tenant_id_card')}
-            />
+            <Form.Item name="tenant_id_card" style={{ marginBottom: 0 }}>
+              <Input id="tenant_id_card" placeholder="请输入身份证号" className="rounded-xl h-11" />
+            </Form.Item>
           </div>
           <div className="space-y-2">
             <Label htmlFor="tenant_notes" className="text-sm font-medium">
               备注
             </Label>
-            <Input
-              id="tenant_notes"
-              placeholder="租客相关备注"
-              className="rounded-xl h-11"
-              {...form.register('tenant_notes')}
-            />
+            <Form.Item name="tenant_notes" style={{ marginBottom: 0 }}>
+              <Input id="tenant_notes" placeholder="租客相关备注" className="rounded-xl h-11" />
+            </Form.Item>
           </div>
         </div>
       </div>
@@ -136,26 +142,20 @@ export function TenantInfoSection({ form, onSearchTenant }: TenantInfoSectionPro
             <Label htmlFor="tenant_emergency_contact" className="text-sm font-medium">
               紧急联系人
             </Label>
-            <Input
-              id="tenant_emergency_contact"
-              placeholder="请输入紧急联系人姓名"
-              className="rounded-xl h-11"
-              {...form.register('tenant_emergency_contact')}
-            />
+            <Form.Item name="tenant_emergency_contact" style={{ marginBottom: 0 }}>
+              <Input id="tenant_emergency_contact" placeholder="请输入紧急联系人姓名" className="rounded-xl h-11" />
+            </Form.Item>
           </div>
           <div className="space-y-2">
             <Label htmlFor="tenant_emergency_phone" className="text-sm font-medium">
               紧急联系电话
             </Label>
-            <Input
-              id="tenant_emergency_phone"
-              placeholder="请输入紧急联系电话"
-              className="rounded-xl h-11"
-              {...form.register('tenant_emergency_phone')}
-            />
+            <Form.Item name="tenant_emergency_phone" style={{ marginBottom: 0 }}>
+              <Input id="tenant_emergency_phone" placeholder="请输入紧急联系电话" className="rounded-xl h-11" />
+            </Form.Item>
           </div>
         </div>
       </div>
     </div>
   );
-}
+});

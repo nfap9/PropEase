@@ -1,28 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Building2, Check, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, Button, Input, Form } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { organizationsApi } from '@/api/organizations';
 import { getErrorMessage } from '@/utils/error';
-import {
-  DEFAULT_ORGANIZATION_HOME_PATH,
-} from '@/utils/auth-redirect';
+import { DEFAULT_ORGANIZATION_HOME_PATH } from '@/utils/auth-redirect';
 import { Organization } from '@/types';
 
 const { TextArea } = Input;
-
-const createOrganizationSchema = z.object({
-  name: z.string().trim().min(1, '请输入团队名称'),
-  notes: z.string().optional(),
-});
-
-type CreateOrganizationFormData = z.infer<typeof createOrganizationSchema>;
 
 function buildOrganizationSlug(name: string) {
   return (
@@ -38,14 +26,7 @@ export default function OrganizationsPage() {
   const { isLoading, isAuthenticated, organizations, organization, setOrganization, refreshOrganizations } =
     useAuth();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-
-  const form = useForm<CreateOrganizationFormData>({
-    resolver: zodResolver(createOrganizationSchema),
-    defaultValues: {
-      name: '',
-      notes: '',
-    },
-  });
+  const [form] = Form.useForm();
 
   useEffect(() => {
     if (isLoading) {
@@ -61,7 +42,7 @@ export default function OrganizationsPage() {
   }, [isAuthenticated, isLoading, navigate]);
 
   const createOrgMutation = useMutation({
-    mutationFn: async (data: CreateOrganizationFormData) =>
+    mutationFn: async (data: { name: string; notes?: string }) =>
       organizationsApi.create({
         name: data.name.trim(),
         slug: buildOrganizationSlug(data.name.trim()),
@@ -111,35 +92,22 @@ export default function OrganizationsPage() {
             </div>
           </div>
           <Form
+            form={form}
             layout="vertical"
-            onFinish={form.handleSubmit((data) => createOrgMutation.mutate(data))}
+            onFinish={(values) => createOrgMutation.mutate(values)}
             className="space-y-4"
+            initialValues={{ name: '', notes: '' }}
           >
             <Form.Item
-              label="团队名称"
               name="name"
+              label="团队名称"
               required
-              validateStatus={form.formState.errors.name ? 'error' : ''}
-              help={form.formState.errors.name?.message}
+              rules={[{ required: true, message: '请输入团队名称' }]}
             >
-              <Controller
-                name="name"
-                control={form.control}
-                render={({ field }) => (
-                  <Input
-                    placeholder="请输入团队名称"
-                    aria-required
-                    {...field}
-                  />
-                )}
-              />
+              <Input placeholder="请输入团队名称" aria-required />
             </Form.Item>
-            <Form.Item label="备注" name="notes">
-              <TextArea
-                {...form.register('notes')}
-                placeholder="备注信息（选填）"
-                rows={3}
-              />
+            <Form.Item name="notes" label="备注">
+              <TextArea placeholder="备注信息（选填）" rows={3} />
             </Form.Item>
             <Button type="primary" htmlType="submit" block loading={createOrgMutation.isPending}>
               {createOrgMutation.isPending ? '创建中...' : '创建第一个团队'}

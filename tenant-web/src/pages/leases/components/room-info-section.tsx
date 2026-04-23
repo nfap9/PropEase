@@ -1,12 +1,14 @@
-
-import { UseFormReturn } from 'react-hook-form';
+import { forwardRef, useImperativeHandle } from 'react';
+import { Form, Select } from 'antd';
 import { Building2, DoorOpen, CheckCircle2 } from 'lucide-react';
-import { Select } from 'antd';
-import type { LeaseSigningFormData } from '@/schemas/leases';
 import type { Room, Apartment } from '@apartment-ultra/api-contract';
 
+export interface RoomInfoSectionRef {
+  validate: () => Promise<void>;
+  getValues: () => { room_id: string };
+}
+
 interface RoomInfoSectionProps {
-  form: UseFormReturn<LeaseSigningFormData>;
   room?: Room | null;
   isRoomSpecified: boolean;
   apartments?: Apartment[];
@@ -15,16 +17,22 @@ interface RoomInfoSectionProps {
   onApartmentChange: (id: string) => void;
 }
 
-export function RoomInfoSection({
-  form,
-  room,
-  isRoomSpecified,
-  apartments,
-  rooms,
-  selectedApartmentId,
-  onApartmentChange,
-}: RoomInfoSectionProps) {
-  const selectedRoomId = form.watch('room_id');
+export const RoomInfoSection = forwardRef<RoomInfoSectionRef, RoomInfoSectionProps>(function RoomInfoSection(
+  { room, isRoomSpecified, apartments, rooms, selectedApartmentId, onApartmentChange },
+  ref
+) {
+  const [form] = Form.useForm();
+
+  useImperativeHandle(ref, () => ({
+    validate: async () => {
+      if (!isRoomSpecified) {
+        await form.validateFields(['room_id']);
+      }
+    },
+    getValues: () => form.getFieldsValue(),
+  }));
+
+  const selectedRoomId = Form.useWatch('room_id', form);
   const selectedRoom = rooms?.find((r) => r.id === selectedRoomId);
 
   return (
@@ -98,36 +106,30 @@ export function RoomInfoSection({
               <DoorOpen className="h-4 w-4 text-amber-600" />
               选择房间
             </label>
-            <Select
-              value={form.watch('room_id') || ''}
-              onChange={(v) => {
-                form.setValue('room_id', v);
-                const room = rooms?.find((r) => r.id === v);
-                if (room?.pricing?.monthly_rent) {
-                  form.setValue('monthly_rent', room.pricing.monthly_rent);
-                }
-              }}
-              className="w-full"
-              placeholder="请选择空置房间"
-            >
-              {rooms
-                ?.filter((r: Room) => r.status === 'available')
-                .map((r: Room) => (
-                  <Select.Option key={r.id} value={r.id}>
-                    <span className="font-medium">{r.room_number}</span>
-                    <span className="ml-2 text-gray-400">
-                      {r.pricing?.monthly_rent ? `¥${r.pricing.monthly_rent}/月` : '暂无定价'}
-                    </span>
-                    {r.area && <span className="ml-2 text-gray-400 text-xs">{r.area}㎡</span>}
-                  </Select.Option>
-                ))}
-            </Select>
-            {form.formState.errors.room_id && (
-              <p className="mt-2 text-sm text-red-500 flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                {form.formState.errors.room_id.message}
-              </p>
-            )}
+            <Form.Item name="room_id" rules={[{ required: true, message: '请选择房间' }]} style={{ marginBottom: 0 }}>
+              <Select
+                className="w-full"
+                placeholder="请选择空置房间"
+                onChange={(v) => {
+                  const selected = rooms?.find((r) => r.id === v);
+                  if (selected?.pricing?.monthly_rent) {
+                    form.setFieldValue('monthly_rent', selected.pricing.monthly_rent);
+                  }
+                }}
+              >
+                {rooms
+                  ?.filter((r: Room) => r.status === 'available')
+                  .map((r: Room) => (
+                    <Select.Option key={r.id} value={r.id}>
+                      <span className="font-medium">{r.room_number}</span>
+                      <span className="ml-2 text-gray-400">
+                        {r.pricing?.monthly_rent ? `¥${r.pricing.monthly_rent}/月` : '暂无定价'}
+                      </span>
+                      {r.area && <span className="ml-2 text-gray-400 text-xs">{r.area}㎡</span>}
+                    </Select.Option>
+                  ))}
+              </Select>
+            </Form.Item>
           </div>
 
           {/* Selected room preview */}
@@ -154,4 +156,4 @@ export function RoomInfoSection({
       )}
     </div>
   );
-}
+});

@@ -1,9 +1,5 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { toast } from 'sonner';
 import { Button, Modal, Input, Select, DatePicker, Form } from 'antd';
 import { TenantSelectWithCreate } from '@/components/common/tenant-select-with-create';
@@ -16,20 +12,6 @@ import { getErrorMessage } from '@/utils/error';
 import { Room, Apartment } from '@/types';
 import type { UtilityConfig } from '@apartment-ultra/api-contract';
 
-const leaseSchema = z.object({
-  room_id: z.string().min(1, '请选择房间'),
-  tenant_id: z.string().min(1, '请选择租客'),
-  start_date: z.string().min(1, '请选择开始日期'),
-  end_date: z.string().optional(),
-  monthly_rent: z.coerce.number().min(0, '月租不能为负'),
-  deposit: z.coerce.number().min(0, '押金不能为负').optional(),
-  water_rate: z.coerce.number().min(0).optional(),
-  electricity_rate: z.coerce.number().min(0).optional(),
-  notes: z.string().optional(),
-});
-
-export type LeaseFormData = z.infer<typeof leaseSchema>;
-
 export interface LeaseCreatedParams {
   room_id: string;
   room_display: string;
@@ -41,11 +23,8 @@ export interface LeaseFormDialogProps {
   orgId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** 指定房间时使用（房间列表页），房间信息只读 */
   room?: Room | null;
-  /** 成功回调 */
   onSuccess?: () => void;
-  /** 签约成功回调，用于后续录入初始水电等 */
   onLeaseCreated?: (params: LeaseCreatedParams) => void;
 }
 
@@ -58,68 +37,54 @@ export function LeaseFormDialog({
   onLeaseCreated,
 }: LeaseFormDialogProps) {
   const queryClient = useQueryClient();
+  const [form] = Form.useForm();
   const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
   const [utilityConfig, setUtilityConfig] = useState<UtilityConfig | null>(null);
   const [feeItems, setFeeItems] = useState<FeeItem[]>([]);
 
   const isRoomSpecified = !!room;
 
-  const form = useForm<LeaseFormData>({
-    resolver: zodResolver(leaseSchema),
-    defaultValues: {
-      room_id: '',
-      tenant_id: '',
-      start_date: new Date().toISOString().split('T')[0],
-      end_date: '',
-      monthly_rent: 0,
-      deposit: 0,
-      water_rate: 0,
-      electricity_rate: 0,
-      notes: '',
-    },
-  });
-
-  // 获取公寓列表（需要选择房间时）
+  // Watch form values
+  // 获取公寓列表
   const { data: apartments } = useQuery({
     queryKey: ['apartments', orgId],
     queryFn: () => apartmentsApi.list(),
     enabled: !!orgId && !isRoomSpecified,
   });
 
-  // 获取房间列表（需要选择房间时）
+  // 获取房间列表
   const { data: rooms } = useQuery({
     queryKey: ['rooms', orgId, selectedApartmentId],
     queryFn: () => roomsApi.list(selectedApartmentId!),
     enabled: !!orgId && !isRoomSpecified && selectedApartmentId !== null,
   });
 
-  // 当选择房间后，获取水电配置
-  const currentRoomId = form.watch('room_id');
+  const roomId = Form.useWatch('room_id', form);
+  const tenantId = Form.useWatch('tenant_id', form);
+  const startDate = Form.useWatch('start_date', form);
+  const endDate = Form.useWatch('end_date', form);
+
   const effectiveApartmentId = isRoomSpecified
     ? room?.apartment_id
-    : rooms?.find((r) => r.id === currentRoomId)?.apartment_id;
+    : rooms?.find((r) => r.id === roomId)?.apartment_id;
 
+  // 获取水电配置
   useEffect(() => {
     if (effectiveApartmentId && open) {
-      utilityConfigApi.get(effectiveApartmentId).then(setUtilityConfig).catch(() => {
-        // 如果没有配置，忽略错误
-        setUtilityConfig(null);
-      });
+      utilityConfigApi.get(effectiveApartmentId).then(setUtilityConfig).catch(() => setUtilityConfig(null));
     } else {
       setUtilityConfig(null);
     }
   }, [effectiveApartmentId, orgId, open]);
 
-  // 当水电配置加载后，更新表单默认值
+  // 当水电配置变化时，更新表单
   const updateFormWithUtilityConfig = useCallback(() => {
     if (utilityConfig) {
-      const waterPrice = utilityConfig.water_price_per_unit;
-      const elecPrice = utilityConfig.electricity_price_per_unit;
-      if (waterPrice !== undefined && waterPrice !== null) {
-        form.setValue('water_rate', waterPrice);
+      if (utilityConfig.water_price_per_unit != null) {
+        form.setFieldValue('water_rate', utilityConfig.water_price_per_unit);
       }
-      if (elecPrice !== undefined && elecPrice !== null) {
-        form.setValue('electricity_rate', elecPrice);
+      if (utilityConfig.electricity_price_per_unit != null) {
+        form.setFieldValue('electricity_rate', utilityConfig.electricity_price_per_unit);
       }
     }
   }, [utilityConfig, form]);
@@ -128,16 +93,16 @@ export function LeaseFormDialog({
     updateFormWithUtilityConfig();
   }, [updateFormWithUtilityConfig]);
 
-  // 当指定房间时，初始化表单
+  // 初始化/重置表单
   useEffect(() => {
     if (room && open) {
       const waterPrice = utilityConfig?.water_price_per_unit ?? 0;
       const elecPrice = utilityConfig?.electricity_price_per_unit ?? 0;
-      form.reset({
+      form.setFieldsValue({
         room_id: room.id,
         tenant_id: '',
         start_date: new Date().toISOString().split('T')[0],
-        end_date: '',
+        end_date: undefined,
         monthly_rent: room.pricing?.monthly_rent ?? 0,
         deposit: 0,
         water_rate: waterPrice,
@@ -145,12 +110,11 @@ export function LeaseFormDialog({
         notes: '',
       });
     } else if (!isRoomSpecified && open) {
-      // 需要选择房间的场景，重置表单
-      form.reset({
-        room_id: '',
+      form.setFieldsValue({
+        room_id: undefined,
         tenant_id: '',
         start_date: new Date().toISOString().split('T')[0],
-        end_date: '',
+        end_date: undefined,
         monthly_rent: 0,
         deposit: 0,
         water_rate: 0,
@@ -159,18 +123,16 @@ export function LeaseFormDialog({
       });
       setSelectedApartmentId(null);
     }
-    // 重置费用项目
     setFeeItems([]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room, open, isRoomSpecified]);
 
   const createMutation = useMutation({
-    mutationFn: (data: LeaseFormData & { fee_items?: FeeItem[] }) => {
+    mutationFn: (data: Record<string, unknown> & { fee_items?: FeeItem[] }) => {
       const { fee_items, ...rest } = data;
       const payload = filterEmptyStrings(rest);
-      // 添加费用项目
-      if (fee_items && fee_items.length > 0) {
-        (payload as Record<string, unknown>).fee_items = fee_items.map((item) => ({
+      const items = fee_items ?? [];
+      if (items.length > 0) {
+        (payload as Record<string, unknown>).fee_items = items.map((item) => ({
           fee_name: item.name,
           fee_amount: item.amount,
           fee_cycle: item.cycle,
@@ -186,11 +148,11 @@ export function LeaseFormDialog({
       queryClient.invalidateQueries({ queryKey: ['all-rooms', orgId] });
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       onOpenChange(false);
-      form.reset();
+      form.resetFields();
       toast.success('签约成功');
       const roomId = createdLease.room_id;
-      const startDate = createdLease.start_date;
-      const isHistoricalEntry = variables.start_date < toDateInputValue(new Date());
+      const startDateVal = createdLease.start_date;
+      const isHistoricalEntry = (variables.start_date as string) < toDateInputValue(new Date());
       const matchedRoom = room ?? rooms?.find((r) => r.id === variables.room_id);
       const aptName =
         matchedRoom?.apartment?.name ??
@@ -200,7 +162,7 @@ export function LeaseFormDialog({
       onLeaseCreated?.({
         room_id: roomId,
         room_display: roomDisplay,
-        start_date: startDate,
+        start_date: startDateVal,
         is_historical_entry: isHistoricalEntry,
       });
       onSuccess?.();
@@ -208,79 +170,64 @@ export function LeaseFormDialog({
     onError: (error) => toast.error(getErrorMessage(error, '签约失败，请重试')),
   });
 
-  const handleSubmit = (data: LeaseFormData) => {
-    createMutation.mutate({ ...data, fee_items: feeItems });
-  };
-
-  const getDialogTitle = () => {
-    if (isRoomSpecified) {
-      return '签约';
-    }
-    return '新增租约';
-  };
-
-  const getDialogDescription = () => {
-    if (isRoomSpecified && room) {
-      return `为房间 ${room.room_number} 创建租约`;
-    }
-    return '创建新的租约';
+  const handleSubmit = () => {
+    form.validateFields().then((values) => {
+      createMutation.mutate({ ...values, fee_items: feeItems });
+    });
   };
 
   return (
     <Modal
       open={open}
       onCancel={() => onOpenChange(false)}
-      title={getDialogTitle()}
+      title={isRoomSpecified ? '签约' : '新增租约'}
       width={720}
       footer={[
-        <Button key="cancel" onClick={() => onOpenChange(false)} data-testid="leases-cancel-btn">
-          取消
-        </Button>,
-        <Button key="submit" type="primary" loading={createMutation.isPending} onClick={form.handleSubmit(handleSubmit)} data-testid="leases-confirm-btn">
+        <Button key="cancel" onClick={() => onOpenChange(false)} data-testid="leases-cancel-btn">取消</Button>,
+        <Button key="submit" type="primary" loading={createMutation.isPending} onClick={handleSubmit} data-testid="leases-confirm-btn">
           {createMutation.isPending ? '创建中...' : '确认签约'}
         </Button>,
       ]}
     >
-      <div className="mb-4 text-sm text-gray-600">{getDialogDescription()}</div>
+      <div className="mb-4 text-sm text-gray-600">
+        {isRoomSpecified && room
+          ? `为房间 ${room.room_number} 创建租约`
+          : '创建新的租约'}
+      </div>
       <Form
+        form={form}
         layout="vertical"
-        onFinish={form.handleSubmit(handleSubmit)}
         className="space-y-4"
       >
-        {/* 房间选择区域 */}
         {isRoomSpecified ? (
           <Form.Item label="房间">
-            <Input
-              value={room ? `${room.apartment?.name || ''} - ${room.room_number}` : ''}
-              disabled
-            />
+            <Input value={room ? `${room.apartment?.name || ''} - ${room.room_number}` : ''} disabled />
           </Form.Item>
         ) : (
           <div className="grid grid-cols-2 gap-4">
             <Form.Item label="选择公寓">
               <Select
-                value={selectedApartmentId || ''}
-                onChange={(value) => setSelectedApartmentId(value)}
+                value={selectedApartmentId || undefined}
+                onChange={(value) => {
+                  setSelectedApartmentId(value);
+                  form.setFieldValue('room_id', undefined);
+                }}
                 placeholder="选择公寓"
                 data-testid="leases-apartment-select"
               >
                 {apartments?.map((apt: Apartment) => (
-                  <Select.Option key={apt.id} value={apt.id}>
-                    {apt.name}
-                  </Select.Option>
+                  <Select.Option key={apt.id} value={apt.id}>{apt.name}</Select.Option>
                 ))}
               </Select>
             </Form.Item>
             <Form.Item
-              label="选择房间"
               name="room_id"
-              required
-              validateStatus={form.formState.errors.room_id ? 'error' : ''}
-              help={form.formState.errors.room_id?.message}
+              label="选择房间"
+              rules={[{ required: true, message: '请选择房间' }]}
             >
               <Select
-                value={form.watch('room_id') || ''}
-                onChange={(value) => form.setValue('room_id', value)}
+                value={roomId}
+                onChange={(value) => form.setFieldValue('room_id', value)}
                 placeholder="选择房间"
                 data-testid="leases-room-select"
               >
@@ -296,134 +243,96 @@ export function LeaseFormDialog({
           </div>
         )}
 
-        {/* 租客选择 */}
         <Form.Item
-          label="选择租客"
           name="tenant_id"
-          required
-          validateStatus={form.formState.errors.tenant_id ? 'error' : ''}
-          help={form.formState.errors.tenant_id?.message}
+          label="选择租客"
+          rules={[{ required: true, message: '请选择租客' }]}
         >
           <div data-testid="leases-tenant-select">
             <TenantSelectWithCreate
               orgId={orgId}
-              value={form.watch('tenant_id')}
-              onValueChange={(value) => form.setValue('tenant_id', value)}
-              error={form.formState.errors.tenant_id?.message}
+              value={tenantId}
+              onValueChange={(value) => form.setFieldValue('tenant_id', value)}
+              error={form.getFieldError('tenant_id')?.[0]}
             />
           </div>
         </Form.Item>
 
-        {/* 日期 */}
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
-            label="开始日期"
             name="start_date"
-            required
-            validateStatus={form.formState.errors.start_date ? 'error' : ''}
-            help={form.formState.errors.start_date?.message}
+            label="开始日期"
+            rules={[{ required: true, message: '请选择开始日期' }]}
           >
             <DatePicker
-              value={form.watch('start_date') || ''}
-              onChange={(_, dateString) => {
-                form.setValue('start_date', dateString || '', {
-                  shouldDirty: true,
-                  shouldTouch: true,
-                  shouldValidate: true,
-                });
-              }}
+              value={startDate}
+              onChange={(_, dateString) => form.setFieldValue('start_date', dateString)}
               className="w-full"
               data-testid="leases-start-date-input"
             />
           </Form.Item>
-          <Form.Item label="结束日期" name="end_date">
+          <Form.Item name="end_date" label="结束日期">
             <DatePicker
-              value={form.watch('end_date') || ''}
-              onChange={(_, dateString) => {
-                form.setValue('end_date', dateString || undefined, {
-                  shouldDirty: true,
-                  shouldTouch: true,
-                  shouldValidate: true,
-                });
-              }}
+              value={endDate}
+              onChange={(_, dateString) => form.setFieldValue('end_date', dateString || undefined)}
               className="w-full"
               data-testid="leases-end-date-input"
             />
           </Form.Item>
         </div>
 
-        {/* 月租和押金 */}
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
-            label="月租 (元)"
             name="monthly_rent"
-            required
-            validateStatus={form.formState.errors.monthly_rent ? 'error' : ''}
-            help={form.formState.errors.monthly_rent?.message}
+            label="月租 (元)"
+            rules={[{ required: true, message: '请输入月租' }, { type: 'number', min: 0, message: '月租不能为负' }]}
           >
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="请输入月租金额"
-              {...form.register('monthly_rent', { valueAsNumber: true })}
-              data-testid="leases-monthly-rent-input"
-            />
+            <Input type="number" step="0.01" placeholder="请输入月租金额" data-testid="leases-monthly-rent-input" />
           </Form.Item>
-          <Form.Item label="押金 (元)" name="deposit">
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="请输入押金金额"
-              {...form.register('deposit', { valueAsNumber: true })}
-              data-testid="leases-deposit-input"
-            />
+          <Form.Item
+            name="deposit"
+            label="押金 (元)"
+            rules={[{ type: 'number', min: 0, message: '押金不能为负' }]}
+          >
+            <Input type="number" step="0.01" placeholder="请输入押金金额" data-testid="leases-deposit-input" />
           </Form.Item>
         </div>
 
-        {/* 水电单价 */}
         <div className="grid grid-cols-2 gap-4">
-          <Form.Item label={
-            <span>
-              水费单价（元/吨）
-              {utilityConfig?.water_price_per_unit !== undefined && utilityConfig?.water_price_per_unit !== null && (
-                <span className="text-gray-500 text-xs ml-1">
-                  (公寓配置: ¥{utilityConfig.water_price_per_unit}/吨)
-                </span>
-              )}
-            </span>
-          }>
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="请输入水费单价"
-              {...form.register('water_rate', { valueAsNumber: true })}
-            />
+          <Form.Item
+            name="water_rate"
+            label={
+              <span>
+                水费单价（元/吨）
+                {utilityConfig?.water_price_per_unit != null && (
+                  <span className="text-gray-500 text-xs ml-1">(公寓配置: ¥{utilityConfig.water_price_per_unit}/吨)</span>
+                )}
+              </span>
+            }
+            rules={[{ type: 'number', min: 0, message: '价格不能为负' }]}
+          >
+            <Input type="number" step="0.01" placeholder="请输入水费单价" />
           </Form.Item>
-          <Form.Item label={
-            <span>
-              电费单价（元/度）
-              {utilityConfig?.electricity_price_per_unit !== undefined && utilityConfig?.electricity_price_per_unit !== null && (
-                <span className="text-gray-500 text-xs ml-1">
-                  (公寓配置: ¥{utilityConfig.electricity_price_per_unit}/度)
-                </span>
-              )}
-            </span>
-          }>
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="请输入电费单价"
-              {...form.register('electricity_rate', { valueAsNumber: true })}
-            />
+          <Form.Item
+            name="electricity_rate"
+            label={
+              <span>
+                电费单价（元/度）
+                {utilityConfig?.electricity_price_per_unit != null && (
+                  <span className="text-gray-500 text-xs ml-1">(公寓配置: ¥{utilityConfig.electricity_price_per_unit}/度)</span>
+                )}
+              </span>
+            }
+            rules={[{ type: 'number', min: 0, message: '价格不能为负' }]}
+          >
+            <Input type="number" step="0.01" placeholder="请输入电费单价" />
           </Form.Item>
         </div>
 
-        {/* 费用项目编辑器 */}
         <FeeItemsEditor items={feeItems} onChange={setFeeItems} />
 
-        {/* 备注 */}
-        <Form.Item label="备注" name="notes">
-          <Input placeholder="请输入备注" {...form.register('notes')} />
+        <Form.Item name="notes" label="备注">
+          <Input placeholder="请输入备注" />
         </Form.Item>
       </Form>
     </Modal>

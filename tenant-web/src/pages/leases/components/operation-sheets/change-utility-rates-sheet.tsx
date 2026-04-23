@@ -1,8 +1,6 @@
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { changeUtilityRatesSchema, type ChangeUtilityRatesFormData } from '@/schemas/lease-operations';
 import { useChangeUtilityRates } from '@/hooks/use-lease-operations';
-import { Button, Drawer, Input, Select, Form, InputNumber } from 'antd';
+import { Button, Drawer, Form, InputNumber, Select } from 'antd';
+import type { ChangeUtilityRatesFormData } from '@/schemas/lease-operations';
 
 interface ChangeUtilityRatesSheetProps {
   open: boolean;
@@ -21,25 +19,19 @@ export function ChangeUtilityRatesSheet({
   currentWaterRate,
   currentElectricityRate,
 }: ChangeUtilityRatesSheetProps) {
+  const [form] = Form.useForm();
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
 
-  const form = useForm<ChangeUtilityRatesFormData>({
-    resolver: zodResolver(changeUtilityRatesSchema),
-    defaultValues: {
-      waterRate: currentWaterRate,
-      electricityRate: currentElectricityRate,
-      effectiveFromYear: currentYear,
-      effectiveFromMonth: currentMonth,
-    },
-  });
-
   const changeUtilityRates = useChangeUtilityRates(leaseId);
 
-  const onSubmit = (data: ChangeUtilityRatesFormData) => {
-    changeUtilityRates.mutate(data, {
-      onSuccess: () => onOpenChange(false),
+  const onSubmit = (values: Record<string, unknown>) => {
+    changeUtilityRates.mutate(values as unknown as ChangeUtilityRatesFormData, {
+      onSuccess: () => {
+        onOpenChange(false);
+        form.resetFields();
+      },
     });
   };
 
@@ -55,7 +47,7 @@ export function ChangeUtilityRatesSheet({
       footer={
         <div className="flex gap-3">
           <Button onClick={() => onOpenChange(false)}>取消</Button>
-          <Button type="primary" loading={changeUtilityRates.isPending} onClick={form.handleSubmit(onSubmit)}>
+          <Button type="primary" loading={changeUtilityRates.isPending} onClick={() => form.submit()}>
             {changeUtilityRates.isPending ? '提交中...' : '确认变更'}
           </Button>
         </div>
@@ -63,98 +55,59 @@ export function ChangeUtilityRatesSheet({
     >
       <p className="mb-4 text-sm text-gray-600">当前：水 ¥{currentWaterRate}/吨 · 电 ¥{currentElectricityRate}/度</p>
       <Form
+        form={form}
         layout="vertical"
-        onFinish={form.handleSubmit(onSubmit)}
         className="space-y-4"
+        initialValues={{
+          waterRate: currentWaterRate,
+          electricityRate: currentElectricityRate,
+          effectiveFromYear: currentYear,
+          effectiveFromMonth: currentMonth,
+        }}
+        onFinish={onSubmit}
       >
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
-            label="新水价 (元/吨)"
             name="waterRate"
-            required
-            validateStatus={form.formState.errors.waterRate ? 'error' : ''}
-            help={form.formState.errors.waterRate?.message}
+            label="新水价 (元/吨)"
+            rules={[{ required: true, message: '请输入水价' }, { type: 'number', min: 0, message: '价格不能为负' }]}
           >
-            <Controller
-              name="waterRate"
-              control={form.control}
-              render={({ field }) => (
-              <InputNumber
-                {...field}
-                value={field.value ?? ''}
-                onChange={(val) => field.onChange(val ?? '')}
-                min={0}
-                step={0.01}
-                style={{ width: '100%' }}
-              />
-            )}
-            />
+            <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item
-            label="新电价 (元/度)"
             name="electricityRate"
-            required
-            validateStatus={form.formState.errors.electricityRate ? 'error' : ''}
-            help={form.formState.errors.electricityRate?.message}
+            label="新电价 (元/度)"
+            rules={[{ required: true, message: '请输入电价' }, { type: 'number', min: 0, message: '价格不能为负' }]}
           >
-            <Controller
-              name="electricityRate"
-              control={form.control}
-              render={({ field }) => (
-              <InputNumber
-                {...field}
-                value={field.value ?? ''}
-                onChange={(val) => field.onChange(val ?? '')}
-                min={0}
-                step={0.01}
-                style={{ width: '100%' }}
-              />
-            )}
-            />
+            <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
           </Form.Item>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
-            label="生效年份"
             name="effectiveFromYear"
-            required
-            validateStatus={form.formState.errors.effectiveFromYear ? 'error' : ''}
-            help={form.formState.errors.effectiveFromYear?.message}
+            label="生效年份"
+            rules={[{ required: true, message: '请选择年份' }]}
           >
-            <Controller
-              name="effectiveFromYear"
-              control={form.control}
-              render={({ field }) => (
-                <Select onChange={field.onChange} value={String(field.value)} className="w-full">
-                  {years.map((y) => (
-                    <Select.Option key={y} value={String(y)}>
-                      {y}
-                    </Select.Option>
-                  ))}
-                </Select>
-              )}
-            />
+            <Select className="w-full">
+              {years.map((y) => (
+                <Select.Option key={y} value={y}>
+                  {y}
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item
-            label="生效月份"
             name="effectiveFromMonth"
-            required
-            validateStatus={form.formState.errors.effectiveFromMonth ? 'error' : ''}
-            help={form.formState.errors.effectiveFromMonth?.message}
+            label="生效月份"
+            rules={[{ required: true, message: '请选择月份' }]}
           >
-            <Controller
-              name="effectiveFromMonth"
-              control={form.control}
-              render={({ field }) => (
-                <Select onChange={field.onChange} value={String(field.value)} className="w-full">
-                  {months.map((m) => (
-                    <Select.Option key={m} value={String(m)}>
-                      {m} 月
-                    </Select.Option>
-                  ))}
-                </Select>
-              )}
-            />
+            <Select className="w-full">
+              {months.map((m) => (
+                <Select.Option key={m} value={m}>
+                  {m} 月
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
         </div>
       </Form>

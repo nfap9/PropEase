@@ -1,8 +1,6 @@
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { renewSchema, type RenewFormData } from '@/schemas/lease-operations';
 import { useRenew } from '@/hooks/use-lease-operations';
 import { Button, Drawer, Input, DatePicker, Form } from 'antd';
+import type { RenewFormData } from '@/schemas/lease-operations';
 
 interface RenewSheetProps {
   open: boolean;
@@ -13,16 +11,15 @@ interface RenewSheetProps {
 }
 
 export function RenewSheet({ open, onOpenChange, orgId, leaseId, currentEndDate }: RenewSheetProps) {
-  const form = useForm<RenewFormData>({
-    resolver: zodResolver(renewSchema),
-    defaultValues: { newEndDate: '', reason: '' },
-  });
-
+  const [form] = Form.useForm();
   const renew = useRenew(leaseId);
 
-  const onSubmit = (data: RenewFormData) => {
-    renew.mutate(data, {
-      onSuccess: () => onOpenChange(false),
+  const onSubmit = (values: Record<string, unknown>) => {
+    renew.mutate(values as unknown as RenewFormData, {
+      onSuccess: () => {
+        onOpenChange(false);
+        form.resetFields();
+      },
     });
   };
 
@@ -35,7 +32,7 @@ export function RenewSheet({ open, onOpenChange, orgId, leaseId, currentEndDate 
       footer={
         <div className="flex gap-3">
           <Button onClick={() => onOpenChange(false)}>取消</Button>
-          <Button type="primary" loading={renew.isPending} onClick={form.handleSubmit(onSubmit)}>
+          <Button type="primary" loading={renew.isPending} onClick={() => form.submit()}>
             {renew.isPending ? '提交中...' : '确认续约'}
           </Button>
         </div>
@@ -43,40 +40,21 @@ export function RenewSheet({ open, onOpenChange, orgId, leaseId, currentEndDate 
     >
       <p className="mb-4 text-sm text-gray-600">当前结束日期：{currentEndDate ? new Date(currentEndDate).toLocaleDateString() : '长期'}</p>
       <Form
+        form={form}
         layout="vertical"
-        onFinish={form.handleSubmit(onSubmit)}
         className="space-y-4"
+        initialValues={{ newEndDate: null, reason: '' }}
+        onFinish={onSubmit}
       >
         <Form.Item
-          label="新结束日期"
           name="newEndDate"
-          required
-          validateStatus={form.formState.errors.newEndDate ? 'error' : ''}
-          help={form.formState.errors.newEndDate?.message}
+          label="新结束日期"
+          rules={[{ required: true, message: '请选择新结束日期' }]}
         >
-          <Controller
-            name="newEndDate"
-            control={form.control}
-            render={({ field }) => (
-              <DatePicker
-                value={field.value || ''}
-                onChange={(_, dateString) => field.onChange(dateString)}
-                className="w-full"
-              />
-            )}
-          />
+          <DatePicker className="w-full" />
         </Form.Item>
-        <Form.Item
-          label="原因备注"
-          name="reason"
-          validateStatus={form.formState.errors.reason ? 'error' : ''}
-          help={form.formState.errors.reason?.message}
-        >
-          <Controller
-            name="reason"
-            control={form.control}
-            render={({ field }) => <Input {...field} placeholder="可选" />}
-          />
+        <Form.Item name="reason" label="原因备注">
+          <Input placeholder="可选" />
         </Form.Item>
       </Form>
     </Drawer>

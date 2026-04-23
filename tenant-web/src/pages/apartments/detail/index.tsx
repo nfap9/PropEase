@@ -1,43 +1,18 @@
-
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useState, useCallback, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Button, Skeleton, Tabs } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import type { Room, RoomFacilities } from '@/types';
-import {
-  apartmentFormDefaultValues,
-  apartmentSchema,
-  batchEditSchema,
-  roomBatchConfigSchema,
-  roomSchema,
-  type BatchEditFormData,
-  type RoomFormData,
-} from '@/schemas/apartment-detail';
-import {
-  useApartmentDetailData,
-  useApartmentFormSync,
-  useApartmentRoomMetrics,
-  useGeneratedRoomSelection,
-  useRoomBatchSelection,
-} from '@/hooks/apartment-detail';
+import { useApartmentDetailData, useApartmentRoomMetrics, useRoomBatchSelection } from '@/hooks/apartment-detail';
 import { ApartmentDetailHeader } from '@/pages/apartments/detail/components/apartment-detail-header';
 import { ApartmentOverviewTab } from '@/pages/apartments/detail/components/apartment-overview-tab';
 import { ApartmentRoomListTab } from '@/pages/apartments/detail/components/apartment-room-list-tab';
 import { UtilityConfigDialog } from '@/pages/apartments/detail/components/UtilityConfigDialog';
 import { ApartmentEditDialog } from '@/pages/apartments/detail/components/apartment-edit-dialog';
-import {
-  BatchCreateRoomDialog,
-  BatchEditDialog,
-  CreateRoomDialog,
-  DeleteRoomDialog,
-  RoomEditDialog,
-} from '@/pages/apartments/detail/components/room-dialogs';
+import { BatchCreateRoomDialog, BatchEditDialog, CreateRoomDialog, DeleteRoomDialog, RoomEditDialog } from '@/pages/apartments/detail/components/room-dialogs';
 
 export default function ApartmentDetailPage() {
   const params = useParams();
@@ -47,7 +22,6 @@ export default function ApartmentDetailPage() {
   const { hasPermission } = usePermissions();
   const orgId = organization?.id;
 
-  // 权限检查
   const canEditApartment = hasPermission(PERMISSIONS.APARTMENT_EDIT);
   const canEditUtility = hasPermission(PERMISSIONS.UTILITY_EDIT);
   const canCreateRoom = hasPermission(PERMISSIONS.ROOM_CREATE);
@@ -66,36 +40,8 @@ export default function ApartmentDetailPage() {
   const [isBatchEditOpen, setIsBatchEditOpen] = useState(false);
   const [isUtilityConfigOpen, setIsUtilityConfigOpen] = useState(false);
 
-  const apartmentForm = useForm({
-    resolver: zodResolver(apartmentSchema),
-    defaultValues: apartmentFormDefaultValues,
-  });
-  const createRoomForm = useForm<RoomFormData>({
-    resolver: zodResolver(roomSchema),
-    defaultValues: {
-      room_number: '',
-      layout: '',
-      area: 0,
-      notes: '',
-    },
-  });
-  const batchCreateRoomForm = useForm({
-    resolver: zodResolver(roomBatchConfigSchema),
-    defaultValues: {
-      floors: '1',
-      room_numbers: '1-10',
-      notes: '',
-    },
-  });
-  const batchEditForm = useForm<BatchEditFormData>({
-    resolver: zodResolver(batchEditSchema),
-    defaultValues: {
-      layout: '',
-      area: undefined,
-      maintenance: undefined,
-      monthly_rent: undefined,
-    },
-  });
+  // Batch create: selected rooms
+  const [batchSelectedRooms, setBatchSelectedRooms] = useState<Set<string>>(new Set());
 
   const {
     apartment,
@@ -114,13 +60,11 @@ export default function ApartmentDetailPage() {
     onApartmentUpdated: () => setIsEditApartmentOpen(false),
     onRoomCreated: () => {
       setIsCreateRoomOpen(false);
-      createRoomForm.reset();
       setNewRoomFacilities(null);
     },
     onBatchRoomsCreated: () => {
       setIsBatchCreateRoomOpen(false);
-      batchCreateRoomForm.reset();
-      resetGeneratedSelection();
+      setBatchSelectedRooms(new Set());
     },
     onRoomUpdated: () => {
       setIsEditRoomOpen(false);
@@ -133,24 +77,11 @@ export default function ApartmentDetailPage() {
     onBatchUpdated: () => {
       setIsBatchEditOpen(false);
       clearRoomSelection();
-      batchEditForm.reset();
     },
     onBatchDeleted: () => {
       clearRoomSelection();
     },
   });
-
-  useApartmentFormSync(apartment, apartmentForm);
-
-  const {
-    generatedRooms,
-    selectedRooms,
-    initializeSelectedRooms,
-    toggleRoom,
-    toggleFloor,
-    toggleAll,
-    resetSelectedRooms: resetGeneratedSelection,
-  } = useGeneratedRoomSelection(batchCreateRoomForm);
 
   const {
     selectedRoomIds,
@@ -162,10 +93,35 @@ export default function ApartmentDetailPage() {
 
   const { stats, roomGroups } = useApartmentRoomMetrics(rooms);
 
-  const handleEditApartment = () => {
-    if (apartment) {
-      setIsEditApartmentOpen(true);
+  const handleToggleRoom = useCallback((roomNumber: string) => {
+    setBatchSelectedRooms((prev) => {
+      const next = new Set(prev);
+      if (next.has(roomNumber)) next.delete(roomNumber);
+      else next.add(roomNumber);
+      return next;
+    });
+  }, []);
+
+  const handleToggleFloor = useCallback((roomNumbers: string[], select: boolean) => {
+    setBatchSelectedRooms((prev) => {
+      const next = new Set(prev);
+      roomNumbers.forEach((rn) => {
+        if (select) next.add(rn);
+        else next.delete(rn);
+      });
+      return next;
+    });
+  }, []);
+
+  const handleToggleAll = useCallback((select: boolean) => {
+    if (!select) {
+      setBatchSelectedRooms(new Set());
     }
+    // When select all, we need all generated rooms - this will be handled by the dialog internally
+  }, []);
+
+  const handleEditApartment = () => {
+    if (apartment) setIsEditApartmentOpen(true);
   };
 
   const handleEditRoom = (room: Room) => {
@@ -179,10 +135,7 @@ export default function ApartmentDetailPage() {
   };
 
   const handleDeleteSelectedRooms = () => {
-    if (selectedRoomIds.size === 0) {
-      return;
-    }
-
+    if (selectedRoomIds.size === 0) return;
     if (confirm(`确定要删除选中的 ${selectedRoomIds.size} 个房间吗？`)) {
       batchDeleteMutation.mutate(Array.from(selectedRoomIds));
     }
@@ -190,9 +143,7 @@ export default function ApartmentDetailPage() {
 
   const handleToggleBatchSelectMode = () => {
     setIsBatchSelectMode((prev) => !prev);
-    if (isBatchSelectMode) {
-      clearRoomSelection();
-    }
+    if (isBatchSelectMode) clearRoomSelection();
   };
 
   const handleClearSelection = () => {
@@ -223,134 +174,122 @@ export default function ApartmentDetailPage() {
   return (
     <PermissionPageGuard>
       <div className="flex flex-col gap-4 overflow-y-auto pr-1">
-          <ApartmentDetailHeader
-            apartment={apartment}
-            onBack={() => navigate('/workspace/apartments')}
-            onEdit={handleEditApartment}
-            onOpenUtilityConfig={() => setIsUtilityConfigOpen(true)}
-            canEdit={canEditApartment}
-            canEditUtility={canEditUtility}
-          />
-
-          <Tabs defaultActiveKey="info">
-            <Tabs.TabPane tab="基础信息" key="info">
-              <ApartmentOverviewTab apartment={apartment} stats={stats} />
-            </Tabs.TabPane>
-            <Tabs.TabPane tab="房间列表" key="rooms">
-              <ApartmentRoomListTab
-                rooms={rooms}
-                roomsLoading={roomsLoading}
-                roomGroups={roomGroups}
-                selectedRoomIds={selectedRoomIds}
-                isBatchSelectMode={isBatchSelectMode}
-                isBatchDeletePending={batchDeleteMutation.isPending}
-                onOpenCreateRoom={() => setIsCreateRoomOpen(true)}
-                onOpenBatchCreate={() => setIsBatchCreateRoomOpen(true)}
-                onOpenBatchEdit={() => setIsBatchEditOpen(true)}
-                onDeleteSelected={handleDeleteSelectedRooms}
-                onSelectAllRooms={toggleAllRoomSelection}
-                onToggleFloorSelection={toggleFloorSelection}
-                onToggleRoomSelection={toggleRoomSelection}
-                onEditRoom={handleEditRoom}
-                onDeleteRoom={handleDeleteRoom}
-                onToggleBatchSelectMode={handleToggleBatchSelectMode}
-                onClearSelection={handleClearSelection}
-                canCreateRoom={canCreateRoom}
-                canEditRoom={canEditRoom}
-                canDeleteRoom={canDeleteRoom}
-              />
-            </Tabs.TabPane>
-          </Tabs>
-        </div>
-
-        <ApartmentEditDialog
-          open={isEditApartmentOpen}
-          onOpenChange={setIsEditApartmentOpen}
-          form={apartmentForm}
-          onSubmit={(data) => updateApartmentMutation.mutate(data)}
-          isPending={updateApartmentMutation.isPending}
+        <ApartmentDetailHeader
+          apartment={apartment}
+          onBack={() => navigate('/workspace/apartments')}
+          onEdit={handleEditApartment}
+          onOpenUtilityConfig={() => setIsUtilityConfigOpen(true)}
+          canEdit={canEditApartment}
+          canEditUtility={canEditUtility}
         />
 
-        <CreateRoomDialog
-          apartmentName={apartment.name}
-          open={isCreateRoomOpen}
-          onOpenChange={(open) => {
-            setIsCreateRoomOpen(open);
-            if (!open) {
-              setNewRoomFacilities(null);
-            }
-          }}
-          form={createRoomForm}
-          facilities={newRoomFacilities}
-          onFacilitiesChange={setNewRoomFacilities}
-          facilityDialogOpen={facilityDialogOpen}
-          onFacilityDialogOpenChange={setFacilityDialogOpen}
-          onSubmit={(data) =>
-            createRoomMutation.mutate({
-              ...data,
-              status: 'available',
-              facilities: newRoomFacilities,
-            })
-          }
-          isPending={createRoomMutation.isPending}
-        />
+        <Tabs defaultActiveKey="info">
+          <Tabs.TabPane tab="基础信息" key="info">
+            <ApartmentOverviewTab apartment={apartment} stats={stats} />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="房间列表" key="rooms">
+            <ApartmentRoomListTab
+              rooms={rooms}
+              roomsLoading={roomsLoading}
+              roomGroups={roomGroups}
+              selectedRoomIds={selectedRoomIds}
+              isBatchSelectMode={isBatchSelectMode}
+              isBatchDeletePending={batchDeleteMutation.isPending}
+              onOpenCreateRoom={() => setIsCreateRoomOpen(true)}
+              onOpenBatchCreate={() => setIsBatchCreateRoomOpen(true)}
+              onOpenBatchEdit={() => setIsBatchEditOpen(true)}
+              onDeleteSelected={handleDeleteSelectedRooms}
+              onSelectAllRooms={toggleAllRoomSelection}
+              onToggleFloorSelection={toggleFloorSelection}
+              onToggleRoomSelection={toggleRoomSelection}
+              onEditRoom={handleEditRoom}
+              onDeleteRoom={handleDeleteRoom}
+              onToggleBatchSelectMode={handleToggleBatchSelectMode}
+              onClearSelection={handleClearSelection}
+              canCreateRoom={canCreateRoom}
+              canEditRoom={canEditRoom}
+              canDeleteRoom={canDeleteRoom}
+            />
+          </Tabs.TabPane>
+        </Tabs>
+      </div>
 
-        <BatchCreateRoomDialog
-          open={isBatchCreateRoomOpen}
-          onOpenChange={setIsBatchCreateRoomOpen}
-          form={batchCreateRoomForm}
-          generatedRooms={generatedRooms}
-          selectedRooms={selectedRooms}
-          onToggleAll={toggleAll}
-          onToggleFloor={toggleFloor}
-          onToggleRoom={toggleRoom}
-          onSubmitRooms={() =>
-            batchCreateRoomMutation.mutate(Array.from(selectedRooms))
-          }
-          isPending={batchCreateRoomMutation.isPending}
-        />
+      <ApartmentEditDialog
+        open={isEditApartmentOpen}
+        onOpenChange={setIsEditApartmentOpen}
+        apartment={apartment}
+        onSubmit={(data) => updateApartmentMutation.mutate(data)}
+        isPending={updateApartmentMutation.isPending}
+      />
 
-        <RoomEditDialog
-          open={isEditRoomOpen}
-          onOpenChange={setIsEditRoomOpen}
-          room={selectedRoom}
-          onSubmit={(data) => {
-            if (selectedRoom) {
-              updateRoomMutation.mutate({ roomId: selectedRoom.id, data });
-            }
-          }}
-          isPending={updateRoomMutation.isPending}
-        />
+      <CreateRoomDialog
+        apartmentName={apartment.name}
+        open={isCreateRoomOpen}
+        onOpenChange={(open) => {
+          setIsCreateRoomOpen(open);
+          if (!open) setNewRoomFacilities(null);
+        }}
+        facilities={newRoomFacilities}
+        onFacilitiesChange={setNewRoomFacilities}
+        facilityDialogOpen={facilityDialogOpen}
+        onFacilityDialogOpenChange={setFacilityDialogOpen}
+        onSubmit={(data) =>
+          createRoomMutation.mutate({
+            ...data,
+            status: 'available',
+            facilities: newRoomFacilities,
+          })
+        }
+        isPending={createRoomMutation.isPending}
+      />
 
-        <DeleteRoomDialog
-          open={isDeleteRoomOpen}
-          onOpenChange={setIsDeleteRoomOpen}
-          room={selectedRoom}
-          onConfirm={() => selectedRoom && deleteRoomMutation.mutate(selectedRoom.id)}
-          isPending={deleteRoomMutation.isPending}
-        />
+      <BatchCreateRoomDialog
+        key={isBatchCreateRoomOpen ? 'open' : 'closed'}
+        open={isBatchCreateRoomOpen}
+        onOpenChange={setIsBatchCreateRoomOpen}
+        selectedRooms={batchSelectedRooms}
+        onToggleAll={handleToggleAll}
+        onToggleFloor={handleToggleFloor}
+        onToggleRoom={handleToggleRoom}
+        onSubmitRooms={() => batchCreateRoomMutation.mutate(Array.from(batchSelectedRooms))}
+        isPending={batchCreateRoomMutation.isPending}
+      />
 
-        <BatchEditDialog
-          open={isBatchEditOpen}
-          onOpenChange={setIsBatchEditOpen}
-          form={batchEditForm}
-          selectedCount={selectedRoomIds.size}
-          onSubmit={(data) =>
-            batchUpdateMutation.mutate({
-              roomIds: Array.from(selectedRoomIds),
-              data,
-            })
-          }
-          isPending={batchUpdateMutation.isPending}
-        />
+      <RoomEditDialog
+        open={isEditRoomOpen}
+        onOpenChange={setIsEditRoomOpen}
+        room={selectedRoom}
+        onSubmit={(data) => {
+          if (selectedRoom) updateRoomMutation.mutate({ roomId: selectedRoom.id, data });
+        }}
+        isPending={updateRoomMutation.isPending}
+      />
 
-        <UtilityConfigDialog
-          open={isUtilityConfigOpen}
-          onOpenChange={setIsUtilityConfigOpen}
-          orgId={orgId || ''}
-          apartmentId={apartmentId}
-          apartmentName={apartment.name}
-        />
+      <DeleteRoomDialog
+        open={isDeleteRoomOpen}
+        onOpenChange={setIsDeleteRoomOpen}
+        room={selectedRoom}
+        onConfirm={() => selectedRoom && deleteRoomMutation.mutate(selectedRoom.id)}
+        isPending={deleteRoomMutation.isPending}
+      />
+
+      <BatchEditDialog
+        open={isBatchEditOpen}
+        onOpenChange={setIsBatchEditOpen}
+        selectedCount={selectedRoomIds.size}
+        onSubmit={(data) =>
+          batchUpdateMutation.mutate({ roomIds: Array.from(selectedRoomIds), data })
+        }
+        isPending={batchUpdateMutation.isPending}
+      />
+
+      <UtilityConfigDialog
+        open={isUtilityConfigOpen}
+        onOpenChange={setIsUtilityConfigOpen}
+        orgId={orgId || ''}
+        apartmentId={apartmentId}
+        apartmentName={apartment.name}
+      />
     </PermissionPageGuard>
   );
 }

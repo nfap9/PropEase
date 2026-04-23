@@ -80,7 +80,6 @@ export default function BillsPage() {
         <BillGenerateDialog
           open={page.isGenerateOpen}
           onOpenChange={page.closeGenerateDialog}
-          form={page.generateForm}
           onSubmit={(data) => page.generateMutation.mutate(data)}
           isPending={page.generateMutation.isPending}
         />

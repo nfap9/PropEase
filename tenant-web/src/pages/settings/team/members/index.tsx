@@ -1,8 +1,6 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Button, Modal, Input, Card, Skeleton, Tag, Select, Dropdown, Form, type MenuProps } from 'antd';
@@ -75,14 +73,11 @@ export default function TeamMembersPage() {
 
   const assignableRoles = roles ? getAssignableRoles(roles) : [];
 
-  const inviteForm = useForm<InviteFormData>({
-    resolver: zodResolver(inviteSchema),
-    defaultValues: { phone: '', role_id: assignableRoles[0]?.id || '' },
-  });
+    const [inviteForm] = Form.useForm<InviteFormData>();
 
   const handleInviteSuccess = () => {
     setIsInviteOpen(false);
-    inviteForm.reset();
+    inviteForm.resetFields();
   };
 
   const handleRemoveSuccess = () => {
@@ -237,32 +232,26 @@ export default function TeamMembersPage() {
           {tenantMessages.settings.team.inviteDialogDescription}
         </div>
         <Form
+          form={inviteForm}
           layout="vertical"
-          onFinish={inviteForm.handleSubmit((data) => inviteMutation.mutate(data))}
           className="space-y-4"
+          initialValues={{ phone: '', role_id: assignableRoles[0]?.id || '' }}
+          onFinish={(values) => inviteMutation.mutate(values as InviteFormData)}
         >
           <Form.Item
-            label="手机号"
             name="phone"
-            required
-            validateStatus={inviteForm.formState.errors.phone ? 'error' : ''}
-            help={inviteForm.formState.errors.phone?.message}
+            label="手机号"
+            rules={[{ required: true, message: '请输入手机号' }, { pattern: /^1[3-9]\d{9}$/, message: tenantMessages.settings.team.phoneValidation }]}
           >
-            <Input
-              type="tel"
-              placeholder={tenantMessages.settings.team.phonePlaceholder}
-              {...inviteForm.register('phone')}
-            />
+            <Input type="tel" placeholder={tenantMessages.settings.team.phonePlaceholder} />
           </Form.Item>
           <Form.Item
-            label={tenantMessages.settings.team.labels.inviteIdentity}
             name="role_id"
-            required
+            label={tenantMessages.settings.team.labels.inviteIdentity}
+            rules={[{ required: true, message: '请选择角色' }]}
           >
             <Select
               className="w-full"
-              value={inviteForm.watch('role_id')}
-              onChange={(value: string) => inviteForm.setValue('role_id', value)}
               options={assignableRoles.map((role) => ({ label: role.name, value: role.id }))}
             />
           </Form.Item>

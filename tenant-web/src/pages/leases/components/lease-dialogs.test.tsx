@@ -1,7 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { useForm } from 'react-hook-form';
 import type { Lease } from '@/types';
-import type { LeaseEditFormData } from '@/schemas/leases';
 import { LeaseEditDialog } from './lease-dialogs';
 
 const selectedLease: Lease = {
@@ -64,36 +62,17 @@ const selectedLease: Lease = {
   },
 };
 
-function TestLeaseEditDialog() {
-  const form = useForm<LeaseEditFormData>({
-    defaultValues: {
-      room_id: selectedLease.room_id,
-      tenant_id: selectedLease.tenant_id,
-      start_date: '2026-03-28',
-      end_date: '',
-      monthly_rent: selectedLease.monthly_rent,
-      deposit: selectedLease.deposit,
-      water_rate: selectedLease.water_rate,
-      electricity_rate: selectedLease.electricity_rate,
-      notes: selectedLease.notes ?? '',
-    },
-  });
-
-  return (
-    <LeaseEditDialog
-      open
-      onOpenChange={() => {}}
-      selectedLease={selectedLease}
-      form={form}
-      onSubmit={() => {}}
-      isPending={false}
-    />
-  );
-}
-
 describe('LeaseEditDialog', () => {
   it('renders read-only room and tenant fields without crashing', () => {
-    render(<TestLeaseEditDialog />);
+    render(
+      <LeaseEditDialog
+        open
+        onOpenChange={() => {}}
+        selectedLease={selectedLease}
+        onSubmit={() => {}}
+        isPending={false}
+      />
+    );
 
     expect(screen.getByText('编辑租约')).toBeInTheDocument();
     expect(screen.getByDisplayValue('阳光公寓 - 101')).toBeDisabled();

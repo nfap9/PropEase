@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Modal, Button, Input, Select, InputNumber } from 'antd';
+import { Modal, Button, Input, Select, InputNumber, Form } from 'antd';
 import { Settings2 } from 'lucide-react';
-import { RoomEditSchema, type RoomEditFormData } from '@apartment-ultra/api-contract';
 import { Room, RoomFacilities } from '@/types';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
 import { getFacilityLabel } from '@/constants/facilities';
+import type { RoomEditFormData } from '@apartment-ultra/api-contract';
 
 const LAYOUT_OPTIONS = [
   '单间',
@@ -28,20 +26,16 @@ interface EditRoomDialogProps {
   room: Room | null;
 }
 
-/** 生成设施摘要 */
 function getFacilitiesSummary(facilities: RoomFacilities | null): string {
   if (!facilities || (facilities.furniture.length === 0 && facilities.appliances.length === 0)) {
     return '未配置';
   }
-
   const allItems = [...facilities.furniture, ...facilities.appliances];
   const count = allItems.reduce((sum, item) => sum + item.quantity, 0);
-
   const names = allItems.slice(0, 4).map((item) => {
     const label = getFacilityLabel(item.code);
     return item.quantity > 1 ? `${label}×${item.quantity}` : label;
   });
-
   const remaining = allItems.length - 4;
   const summary = names.join('、');
   return remaining > 0 ? `${summary} 等${count}件` : `${summary} 共${count}件`;
@@ -55,15 +49,14 @@ export function EditRoomDialog({
   isPending,
   room,
 }: EditRoomDialogProps) {
-  const form = useForm<RoomEditFormData>({
-    resolver: zodResolver(RoomEditSchema),
-  });
+  const [form] = Form.useForm();
   const [facilities, setFacilities] = useState<RoomFacilities | null>(null);
   const [facilityDialogOpen, setFacilityDialogOpen] = useState(false);
+  const layout = Form.useWatch('layout', form);
 
   useEffect(() => {
     if (room) {
-      form.reset({
+      form.setFieldsValue({
         room_number: room.room_number,
         layout: room.layout || '',
         maintenance: room.maintenance,
@@ -75,8 +68,10 @@ export function EditRoomDialog({
     }
   }, [room, form]);
 
-  const handleSubmit = (data: RoomEditFormData) => {
-    onSubmit({ ...data, facilities });
+  const handleSubmit = () => {
+    form.validateFields().then((values) => {
+      onSubmit({ ...values, facilities });
+    });
   };
 
   return (
@@ -86,10 +81,8 @@ export function EditRoomDialog({
         onCancel={() => onOpenChange(false)}
         title="编辑房间"
         footer={[
-          <Button key="cancel" onClick={() => onOpenChange(false)}>
-            取消
-          </Button>,
-          <Button key="submit" type="primary" onClick={() => form.handleSubmit(handleSubmit)()} loading={isPending}>
+          <Button key="cancel" onClick={() => onOpenChange(false)}>取消</Button>,
+          <Button key="submit" type="primary" onClick={handleSubmit} loading={isPending}>
             {isPending ? '保存中...' : '保存'}
           </Button>,
         ]}
@@ -102,80 +95,52 @@ export function EditRoomDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <span className="text-sm font-medium">房间号 *</span>
-              <Controller
-                name="room_number"
-                control={form.control}
-                render={({ field }) => (
-                  <Input data-testid={testids?.NUMBER_INPUT} {...field} />
-                )}
-              />
-              {form.formState.errors.room_number && (
-                <p className="text-sm text-destructive">{form.formState.errors.room_number.message}</p>
-              )}
+              <Form.Item name="room_number" rules={[{ required: true, message: '请输入房间号' }]} style={{ marginBottom: 0 }}>
+                <Input data-testid={testids?.NUMBER_INPUT} />
+              </Form.Item>
             </div>
             <div className="space-y-2">
               <span className="text-sm font-medium">户型</span>
-              <Select
-                value={form.watch('layout') || ''}
-                onChange={(value) => form.setValue('layout', value)}
-                className="w-full"
-                placeholder="选择户型"
-                options={LAYOUT_OPTIONS.map((layout) => ({ value: layout, label: layout }))}
-              />
+              <Form.Item name="layout" style={{ marginBottom: 0 }}>
+                <Select
+                  value={layout}
+                  onChange={(value) => form.setFieldValue('layout', value)}
+                  className="w-full"
+                  placeholder="选择户型"
+                  options={LAYOUT_OPTIONS.map((l) => ({ value: l, label: l }))}
+                />
+              </Form.Item>
             </div>
           </div>
           <div className="space-y-2">
             <span className="text-sm font-medium">面积 (m²)</span>
-            <Controller
-              name="area"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <>
-                  <InputNumber
-                    {...field}
-                    value={field.value ?? ''}
-                    onChange={(val) => field.onChange(val ?? '')}
-                    min={0}
-                    step={0.01}
-                    data-testid={testids?.AREA_INPUT}
-                    style={{ width: '100%' }}
-                  />
-                  {fieldState.error && (
-                    <p className="text-sm text-destructive">{fieldState.error.message}</p>
-                  )}
-                </>
-              )}
-            />
+            <Form.Item name="area" rules={[{ type: 'number', min: 0, message: '面积不能为负' }]} style={{ marginBottom: 0 }}>
+              <InputNumber
+                min={0}
+                step={0.01}
+                data-testid={testids?.AREA_INPUT}
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
           </div>
           <div className="space-y-2">
             <span className="text-sm font-medium">月租 (元) *</span>
-            <Controller
-              name="monthly_rent"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <>
-                  <InputNumber
-                    {...field}
-                    value={field.value ?? ''}
-                    onChange={(val) => field.onChange(val ?? '')}
-                    min={0}
-                    step={0.01}
-                    data-testid={testids?.MONTHLY_RENT_INPUT}
-                    style={{ width: '100%' }}
-                  />
-                  {fieldState.error && (
-                    <p className="text-sm text-destructive">{fieldState.error.message}</p>
-                  )}
-                </>
-              )}
-            />
+            <Form.Item name="monthly_rent" rules={[{ required: true, message: '请输入月租' }, { type: 'number', min: 0, message: '月租不能为负' }]} style={{ marginBottom: 0 }}>
+              <InputNumber
+                min={0}
+                step={0.01}
+                data-testid={testids?.MONTHLY_RENT_INPUT}
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
           </div>
           <div className="space-y-2">
             <span className="text-sm font-medium">备注</span>
-            <Input data-testid={testids?.NOTES_INPUT} {...form.register('notes')} />
+            <Form.Item name="notes" style={{ marginBottom: 0 }}>
+              <Input data-testid={testids?.NOTES_INPUT} />
+            </Form.Item>
           </div>
 
-          {/* 家具家电配置按钮 */}
           <div className="space-y-2">
             <span className="text-sm font-medium">家具家电</span>
             <Button
@@ -190,7 +155,6 @@ export function EditRoomDialog({
         </div>
       </Modal>
 
-      {/* 家具家电配置二级弹窗 */}
       <FacilitySelectorDialog
         value={facilities}
         onChange={setFacilities}

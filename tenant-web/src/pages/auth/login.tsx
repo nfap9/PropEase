@@ -1,10 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button, Input, Form } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { getPostAuthRedirectPath } from '@/utils/auth-redirect';
@@ -12,16 +8,6 @@ import { useBrandConfig } from '@/contexts/brand-config';
 import { AuthLoadingScreen } from '@/pages/auth/components/auth-loading-screen';
 import { AuthShell } from '@/pages/auth/components/auth-shell';
 import { tenantMessages } from '@/i18n';
-
-// 手机号验证正则
-const phoneRegex = /^1[3-9]\d{9}$/;
-
-const passwordLoginSchema = z.object({
-  phone: z.string().regex(phoneRegex, tenantMessages.auth.login.phoneValidation),
-  password: z.string().min(8, tenantMessages.auth.login.passwordValidation),
-});
-
-type PasswordLoginFormValues = z.infer<typeof passwordLoginSchema>;
 
 const AUTH_INPUT_CLASSNAME = 'h-11 rounded-xl border border-border/80 bg-background/80 px-3.5 shadow-none';
 
@@ -31,6 +17,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [form] = Form.useForm();
 
   // 已登录用户自动跳转到仪表盘
   useEffect(() => {
@@ -39,20 +26,11 @@ export default function LoginPage() {
     }
   }, [isAuthLoading, isAuthenticated, organization, organizations, navigate]);
 
-  const passwordForm = useForm<PasswordLoginFormValues>({
-    resolver: zodResolver(passwordLoginSchema),
-    defaultValues: {
-      phone: '',
-      password: '',
-    },
-  });
-
-  // 密码登录
-  const onPasswordSubmit = async (data: PasswordLoginFormValues) => {
+  const onFinish = async (values: { phone: string; password: string }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const targetPath = await login(data.phone, data.password);
+      const targetPath = await login(values.phone, values.password);
       navigate(targetPath, { replace: true });
     } catch {
       setError(tenantMessages.auth.login.invalidCredentials);
@@ -85,10 +63,12 @@ export default function LoginPage() {
           </div>
         }
       >
-          <Form
+        <Form
+          form={form}
           layout="vertical"
-          onFinish={passwordForm.handleSubmit(onPasswordSubmit)}
+          onFinish={onFinish}
           className="space-y-5"
+          initialValues={{ phone: '', password: '' }}
         >
           {error && (
             <div className="rounded-2xl border border-destructive/15 bg-destructive/10 p-3 text-sm text-destructive">
@@ -99,44 +79,34 @@ export default function LoginPage() {
             label={tenantMessages.auth.login.phone}
             name="phone"
             required
-            validateStatus={passwordForm.formState.errors.phone ? 'error' : ''}
-            help={passwordForm.formState.errors.phone?.message}
+            rules={[
+              { required: true, message: '请输入手机号' },
+              { pattern: /^1[3-9]\d{9}$/, message: tenantMessages.auth.login.phoneValidation },
+            ]}
           >
-            <Controller
-              name="phone"
-              control={passwordForm.control}
-              render={({ field }) => (
-                <Input
-                  type="tel"
-                  placeholder={tenantMessages.auth.login.phonePlaceholder}
-                  autoComplete="tel"
-                  className={AUTH_INPUT_CLASSNAME}
-                  {...field}
-                  data-testid="auth-phone-input"
-                />
-              )}
+            <Input
+              type="tel"
+              placeholder={tenantMessages.auth.login.phonePlaceholder}
+              autoComplete="tel"
+              className={AUTH_INPUT_CLASSNAME}
+              data-testid="auth-phone-input"
             />
           </Form.Item>
           <Form.Item
             label={tenantMessages.auth.login.password}
             name="password"
             required
-            validateStatus={passwordForm.formState.errors.password ? 'error' : ''}
-            help={passwordForm.formState.errors.password?.message}
+            rules={[
+              { required: true, message: '请输入密码' },
+              { min: 8, message: tenantMessages.auth.login.passwordValidation },
+            ]}
           >
-            <Controller
-              name="password"
-              control={passwordForm.control}
-              render={({ field }) => (
-                <Input
-                  type="password"
-                  placeholder={tenantMessages.auth.login.passwordPlaceholder}
-                  autoComplete="current-password"
-                  className={AUTH_INPUT_CLASSNAME}
-                  {...field}
-                  data-testid="auth-password-input"
-                />
-              )}
+            <Input
+              type="password"
+              placeholder={tenantMessages.auth.login.passwordPlaceholder}
+              autoComplete="current-password"
+              className={AUTH_INPUT_CLASSNAME}
+              data-testid="auth-password-input"
             />
           </Form.Item>
           <Button type="primary" htmlType="submit" className="h-11 w-full text-sm" loading={isLoading} data-testid="auth-login-button">

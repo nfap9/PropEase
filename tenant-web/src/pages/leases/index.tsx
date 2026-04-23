@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, Building2 } from 'lucide-react';
 import { Button, Skeleton, Table, Modal } from 'antd';
 import type { TableProps } from 'antd';
@@ -10,14 +8,12 @@ import { InitialReadingDialog } from '@/components/common/initial-reading-dialog
 import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
-import { toDateInputValue } from '@/utils/date';
 import type { Lease } from '@/types';
 import { createLeaseColumns } from '@/pages/leases/components/columns';
 import { useLeasesData } from '@/hooks/leases';
 import {
   getDefaultLeaseFilters,
   LEASES,
-  leaseSchema,
   type LeaseEditFormData,
   type LeaseFiltersState,
 } from '@/schemas/leases';
@@ -30,7 +26,6 @@ export default function LeasesPage() {
   const { hasPermission } = usePermissions();
   const orgId = organization?.id;
 
-  // 权限检查
   const canCreateLease = hasPermission(PERMISSIONS.LEASE_CREATE);
   const canEditLease = hasPermission(PERMISSIONS.LEASE_EDIT);
   const canDeleteLease = hasPermission(PERMISSIONS.LEASE_DELETE);
@@ -43,10 +38,6 @@ export default function LeasesPage() {
   const [isTerminateOpen, setIsTerminateOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [filters, setFilters] = useState<LeaseFiltersState>(getDefaultLeaseFilters());
-
-  const editForm = useForm<LeaseEditFormData>({
-    resolver: zodResolver(leaseSchema),
-  });
 
   const { apartments, leases, leasesLoading, updateMutation, terminateMutation, deleteMutation } = useLeasesData({
     onUpdateSuccess: () => {
@@ -69,51 +60,26 @@ export default function LeasesPage() {
         const lease = filteredLeases.find((l) => l.id === selectedId);
         if (lease) {
           setSelectedLease(lease);
-          editForm.reset({
-            room_id: lease.room_id,
-            tenant_id: lease.tenant_id,
-            start_date: toDateInputValue(lease.start_date),
-            end_date: toDateInputValue(lease.end_date),
-            monthly_rent: lease.monthly_rent,
-            deposit: lease.deposit ?? 0,
-            water_rate: lease.water_rate ?? 0,
-            electricity_rate: lease.electricity_rate ?? 0,
-            notes: lease.notes ?? '',
-          });
           setIsEditOpen(true);
         }
       }
     },
-    [filteredLeases, editForm]
+    [filteredLeases]
   );
 
-  const handleEditDialogOpenChange = useCallback(
-    (open: boolean) => {
-      setIsEditOpen(open);
-      if (!open) {
-        setSelectedLease(null);
-        setRowSelection({});
-      }
-    },
-    []
-  );
+  const handleEditDialogOpenChange = useCallback((open: boolean) => {
+    setIsEditOpen(open);
+    if (!open) {
+      setSelectedLease(null);
+      setRowSelection({});
+    }
+  }, []);
 
   const columns = useMemo(
     () =>
       createLeaseColumns({
         onEdit: (lease) => {
           setSelectedLease(lease);
-          editForm.reset({
-            room_id: lease.room_id,
-            tenant_id: lease.tenant_id,
-            start_date: toDateInputValue(lease.start_date),
-            end_date: toDateInputValue(lease.end_date),
-            monthly_rent: lease.monthly_rent,
-            deposit: lease.deposit ?? 0,
-            water_rate: lease.water_rate ?? 0,
-            electricity_rate: lease.electricity_rate ?? 0,
-            notes: lease.notes ?? '',
-          });
           setIsEditOpen(true);
         },
         onTerminate: (lease) => {
@@ -127,7 +93,7 @@ export default function LeasesPage() {
         canEditLease,
         canDeleteLease,
       }),
-    [editForm, canEditLease, canDeleteLease]
+    [canEditLease, canDeleteLease]
   );
 
   const handleFilterChange = useCallback(
@@ -141,7 +107,6 @@ export default function LeasesPage() {
     setFilters(getDefaultLeaseFilters());
   }, []);
 
-  // 筛选变化时重置行选择
   const filtersRef = useRef(filters);
   useEffect(() => {
     if (filtersRef.current !== filters) {
@@ -234,21 +199,22 @@ export default function LeasesPage() {
         />
       )}
 
-      <LeaseEditDialog
-        open={isEditOpen}
-        onOpenChange={handleEditDialogOpenChange}
-        selectedLease={selectedLease}
-        form={editForm}
-        onSubmit={(data) => updateMutation.mutate({ id: selectedLease!.id, data })}
-        isPending={updateMutation.isPending}
-      />
+      {selectedLease && (
+        <LeaseEditDialog
+          key={selectedLease.id}
+          open={isEditOpen}
+          onOpenChange={handleEditDialogOpenChange}
+          selectedLease={selectedLease}
+          onSubmit={(data) => updateMutation.mutate({ id: selectedLease.id, data })}
+          isPending={updateMutation.isPending}
+        />
+      )}
 
       <LeaseTerminateDialog
         open={isTerminateOpen}
         onOpenChange={setIsTerminateOpen}
         onConfirm={() => selectedLease && terminateMutation.mutate(selectedLease.id)}
         isPending={terminateMutation.isPending}
-        lease={selectedLease}
       />
 
       <LeaseDeleteDialog
@@ -256,7 +222,6 @@ export default function LeasesPage() {
         onOpenChange={setIsDeleteOpen}
         onConfirm={() => selectedLease && deleteMutation.mutate(selectedLease.id)}
         isPending={deleteMutation.isPending}
-        lease={selectedLease}
       />
     </PermissionPageGuard>
   );

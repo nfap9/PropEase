@@ -1,30 +1,29 @@
-import type { UseFormReturn } from 'react-hook-form';
-import { Controller } from 'react-hook-form';
-import { Button, Input, DatePicker, Select, Modal, Form, InputNumber, Space } from 'antd';
-import type { GenerateBillsFormData } from '@/schemas/bills';
-import { tenantMessages } from '@/i18n';
+import { Button, DatePicker, Form, InputNumber, Modal, Select, Space } from 'antd';
 import dayjs from 'dayjs';
-
-interface BillGenerateDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  form: UseFormReturn<GenerateBillsFormData>;
-  onSubmit: (data: GenerateBillsFormData) => void;
-  isPending: boolean;
-}
+import { tenantMessages } from '@/i18n';
+import type { GenerateBillsFormData } from '@/schemas/bills';
 
 const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => ({
   value: String(i + 1),
   label: `${i + 1} 月`,
 }));
 
-export function BillGenerateDialog({
-  open,
-  onOpenChange,
-  form,
-  onSubmit,
-  isPending,
-}: BillGenerateDialogProps) {
+interface BillGenerateDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: (data: GenerateBillsFormData) => void;
+  isPending: boolean;
+}
+
+export function BillGenerateDialog({ open, onOpenChange, onSubmit, isPending }: BillGenerateDialogProps) {
+  const [form] = Form.useForm();
+
+  const handleSubmit = () => {
+    form.validateFields().then((values) => {
+      onSubmit(values);
+    });
+  };
+
   return (
     <Modal
       open={open}
@@ -33,7 +32,7 @@ export function BillGenerateDialog({
       footer={
         <Space>
           <Button onClick={() => onOpenChange(false)}>{tenantMessages.common.cancel}</Button>
-          <Button type="primary" htmlType="submit" loading={isPending}>
+          <Button type="primary" htmlType="submit" loading={isPending} onClick={handleSubmit}>
             {isPending ? tenantMessages.bills.dialogs.generating : tenantMessages.bills.dialogs.generate}
           </Button>
         </Space>
@@ -43,64 +42,45 @@ export function BillGenerateDialog({
         {tenantMessages.bills.dialogs.generateDescription}
       </p>
 
-      <Form layout="vertical" className="space-y-4">
+      <Form
+        form={form}
+        layout="vertical"
+        className="space-y-4"
+        initialValues={getDefaultGenerateValues()}
+      >
         <div className="grid grid-cols-2 gap-4">
-          <Controller
+          <Form.Item
             name="bill_year"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Form.Item
-                label={tenantMessages.bills.dialogs.billYear}
-                validateStatus={fieldState.error ? 'error' : ''}
-                help={fieldState.error?.message}
-              >
-                <InputNumber
-                  {...field}
-                  value={field.value ?? ''}
-                  onChange={(val) => field.onChange(val ?? '')}
-                  min={2020}
-                  max={2100}
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            )}
-          />
-
-          <Controller
+            label={tenantMessages.bills.dialogs.billYear}
+            rules={[{ required: true, message: '请输入年份' }]}
+          >
+            <InputNumber min={2020} max={2100} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item
             name="bill_month"
-            control={form.control}
-            render={({ field }) => (
-              <Form.Item label={tenantMessages.bills.dialogs.billMonthLabel}>
-                <Select
-                  {...field}
-                  value={String(field.value)}
-                  onChange={(val) => field.onChange(Number(val))}
-                  className="w-full"
-                  options={MONTH_OPTIONS}
-                />
-              </Form.Item>
-            )}
-          />
+            label={tenantMessages.bills.dialogs.billMonthLabel}
+            rules={[{ required: true, message: '请选择月份' }]}
+          >
+            <Select options={MONTH_OPTIONS} className="w-full" />
+          </Form.Item>
         </div>
-
-        <Controller
+        <Form.Item
           name="due_date"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Form.Item
-              label={tenantMessages.bills.dialogs.dueDateLabel}
-              validateStatus={fieldState.error ? 'error' : ''}
-              help={fieldState.error?.message}
-            >
-              <DatePicker
-                className="w-full"
-                value={field.value ? dayjs(field.value) : null}
-                onChange={(date) => field.onChange(date?.format('YYYY-MM-DD') ?? '')}
-              />
-            </Form.Item>
-          )}
-        />
+          label={tenantMessages.bills.dialogs.dueDateLabel}
+          rules={[{ required: true, message: '请选择截止日期' }]}
+        >
+          <DatePicker className="w-full" />
+        </Form.Item>
       </Form>
     </Modal>
   );
+}
+
+function getDefaultGenerateValues() {
+  const now = new Date();
+  return {
+    bill_year: now.getFullYear(),
+    bill_month: now.getMonth() + 1,
+    due_date: null as dayjs.Dayjs | null,
+  };
 }

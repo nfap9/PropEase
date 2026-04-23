@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import type { UseFormReturn } from 'react-hook-form';
 import { apartmentsApi, roomsApi } from '@/api/apartments';
 import { getErrorMessage } from '@/utils/error';
 import { filterEmptyStrings } from '@/utils/form';
@@ -9,12 +8,9 @@ import type { Apartment, Room, RoomFacilities, RoomStatus, RoomUpdate } from '@/
 import type {
   ApartmentFormData,
   BatchEditFormData,
-  RoomBatchConfigData,
   RoomFormData,
 } from '@/schemas/apartment-detail';
 import {
-  buildApartmentFormValues,
-  buildGeneratedRoomGroups,
   getRoomStats,
   groupRoomsByFloor,
 } from '@/utils/apartment-detail';
@@ -187,85 +183,6 @@ export function useApartmentDetailData({
     deleteRoomMutation,
     batchUpdateMutation,
     batchDeleteMutation,
-  };
-}
-
-export function useApartmentFormSync(
-  apartment: Apartment | undefined,
-  apartmentForm: UseFormReturn<ApartmentFormData>
-) {
-  useEffect(() => {
-    if (apartment) {
-      apartmentForm.reset(buildApartmentFormValues(apartment));
-    }
-  }, [apartment, apartmentForm]);
-}
-
-export function useGeneratedRoomSelection(batchCreateRoomForm: UseFormReturn<RoomBatchConfigData>) {
-  const floors = batchCreateRoomForm.watch('floors');
-  const roomNumbers = batchCreateRoomForm.watch('room_numbers');
-  const generatedRooms = useMemo(
-    () => buildGeneratedRoomGroups(floors || '1', roomNumbers || '1-10'),
-    [floors, roomNumbers]
-  );
-
-  const [selectedRooms, setSelectedRooms] = useState<Set<string>>(new Set());
-
-  // Auto-initialize selection when generated rooms change
-  useEffect(() => {
-    if (generatedRooms.length > 0) {
-      setSelectedRooms(new Set(generatedRooms.flatMap((floorGroup) => floorGroup.rooms)));
-    }
-  }, [generatedRooms]);
-
-  const initializeSelectedRooms = () => {
-    setSelectedRooms(new Set(generatedRooms.flatMap((floorGroup) => floorGroup.rooms)));
-  };
-
-  const toggleRoom = (roomNumber: string) => {
-    setSelectedRooms((prev) => {
-      const next = new Set(prev);
-      if (next.has(roomNumber)) {
-        next.delete(roomNumber);
-      } else {
-        next.add(roomNumber);
-      }
-      return next;
-    });
-  };
-
-  const toggleFloor = (roomNumbers: string[], select: boolean) => {
-    setSelectedRooms((prev) => {
-      const next = new Set(prev);
-      for (const roomNumber of roomNumbers) {
-        if (select) {
-          next.add(roomNumber);
-        } else {
-          next.delete(roomNumber);
-        }
-      }
-      return next;
-    });
-  };
-
-  const toggleAll = (select: boolean) => {
-    setSelectedRooms(
-      select ? new Set(generatedRooms.flatMap((floorGroup) => floorGroup.rooms)) : new Set()
-    );
-  };
-
-  const resetSelectedRooms = () => {
-    setSelectedRooms(new Set());
-  };
-
-  return {
-    generatedRooms,
-    selectedRooms,
-    initializeSelectedRooms,
-    toggleRoom,
-    toggleFloor,
-    toggleAll,
-    resetSelectedRooms,
   };
 }
 

@@ -1,9 +1,5 @@
-
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Controller, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Modal, Button, Input, DatePicker, Form } from 'antd';
 import { utilitiesApi } from '@/api/utilities';
 import { filterEmptyStrings } from '@/utils/form';
@@ -11,27 +7,11 @@ import { getErrorMessage } from '@/utils/error';
 import { toast } from 'sonner';
 import { Droplets, Zap } from 'lucide-react';
 
-const schema = z.object({
-  water_reading: z
-    .union([z.number().min(0), z.nan()])
-    .optional()
-    .transform((v) => (typeof v === 'number' && !Number.isNaN(v) ? v : undefined)),
-  electricity_reading: z
-    .union([z.number().min(0), z.nan()])
-    .optional()
-    .transform((v) => (typeof v === 'number' && !Number.isNaN(v) ? v : undefined)),
-  reading_date: z.string().min(1),
-});
-
-type FormData = z.infer<typeof schema>;
-
 export interface InitialReadingDialogProps {
   orgId: string;
   roomId: string;
   roomDisplay: string;
-  /** 签约开始日期，用于确定录入月份 */
   startDate: string;
-  /** 是否为历史租约录入后的首次水电录入 */
   isHistoricalLeaseEntry?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -48,41 +28,33 @@ export function InitialReadingDialog({
   onOpenChange,
   onSuccess,
 }: InitialReadingDialogProps) {
+  const [form] = Form.useForm();
   const start = new Date(startDate);
   const periodYear = start.getFullYear();
   const periodMonth = start.getMonth() + 1;
-  /** 读数日期默认签约日期 */
   const defaultReadingDate = isHistoricalLeaseEntry
     ? new Date().toISOString().split('T')[0]
     : startDate.includes('T')
       ? startDate.split('T')[0]
       : startDate;
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      water_reading: undefined,
-      electricity_reading: undefined,
-      reading_date: defaultReadingDate,
-    },
-  });
-
   const queryClient = useQueryClient();
   const saveMutation = useMutation({
-    mutationFn: (data: FormData) =>
+    mutationFn: (data: Record<string, unknown>) =>
       utilitiesApi.create(
         filterEmptyStrings({
           room_id: roomId,
           period_year: periodYear,
           period_month: periodMonth,
-          reading_date: data.reading_date,
-          water_reading: data.water_reading ?? undefined,
-          electricity_reading: data.electricity_reading ?? undefined,
+          reading_date: data.reading_date as string,
+          water_reading: data.water_reading as number | undefined,
+          electricity_reading: data.electricity_reading as number | undefined,
         })
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
       onOpenChange(false);
+      form.resetFields();
       toast.success('初始水电读数已录入');
       onSuccess?.();
     },
@@ -94,12 +66,15 @@ export function InitialReadingDialog({
     onSuccess?.();
   };
 
-  const handleSubmit = (data: FormData) => {
-    if (data.water_reading == null && data.electricity_reading == null) {
+  const handleSubmit = () => {
+    const values = form.getFieldsValue();
+    if (values.water_reading == null && values.electricity_reading == null) {
       handleSkip();
       return;
     }
-    saveMutation.mutate(data);
+    form.validateFields().then(() => {
+      saveMutation.mutate(values);
+    });
   };
 
   return (
@@ -108,10 +83,8 @@ export function InitialReadingDialog({
       onCancel={() => onOpenChange(false)}
       title="录入初始水电读数"
       footer={[
-        <Button key="skip" variant="text" onClick={handleSkip}>
-          跳过
-        </Button>,
-        <Button key="submit" type="primary" loading={saveMutation.isPending} onClick={form.handleSubmit(handleSubmit)}>
+        <Button key="skip" variant="text" onClick={handleSkip}>跳过</Button>,
+        <Button key="submit" type="primary" loading={saveMutation.isPending} onClick={handleSubmit}>
           {saveMutation.isPending ? '保存中...' : '保存'}
         </Button>,
       ]}
@@ -120,9 +93,7 @@ export function InitialReadingDialog({
         {isHistoricalLeaseEntry ? (
           <>
             历史租约已创建，建议先记录当前表底数。历史月份数据可稍后前往
-            <Link to="/workspace/utilities?tab=history" className="mx-1 underline underline-offset-4">
-              历史水电记录
-            </Link>
+            <Link to="/workspace/utilities?tab=history" className="mx-1 underline underline-offset-4">历史水电记录</Link>
             继续补录。
           </>
         ) : (
@@ -130,9 +101,14 @@ export function InitialReadingDialog({
         )}
       </div>
       <Form
+        form={form}
         layout="vertical"
-        onFinish={form.handleSubmit(handleSubmit)}
         className="space-y-4"
+        initialValues={{
+          reading_date: defaultReadingDate,
+          water_reading: undefined,
+          electricity_reading: undefined,
+        }}
       >
         <Form.Item label="房间">
           <Input value={roomDisplay} disabled />
@@ -141,39 +117,18 @@ export function InitialReadingDialog({
           <Input value={`${periodYear}年${periodMonth}月`} disabled />
         </Form.Item>
         <Form.Item
-          label="读数日期"
           name="reading_date"
-          validateStatus={form.formState.errors.reading_date ? 'error' : ''}
-          help={form.formState.errors.reading_date?.message}
+          label="读数日期"
+          rules={[{ required: true, message: '请选择读数日期' }]}
         >
-          <Controller
-            name="reading_date"
-            control={form.control}
-            render={({ field }) => (
-              <DatePicker
-                value={field.value || ''}
-                onChange={(_, dateString) => field.onChange(dateString)}
-                className="w-full"
-              />
-            )}
-          />
+          <DatePicker className="w-full" />
         </Form.Item>
         <div className="grid grid-cols-2 gap-4">
-          <Form.Item label={<span className="flex items-center gap-2"><Droplets className="h-4 w-4 text-blue-500" />水表读数 (m³)</span>}>
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="选填"
-              {...form.register('water_reading', { valueAsNumber: true })}
-            />
+          <Form.Item name="water_reading" label={<span className="flex items-center gap-2"><Droplets className="h-4 w-4 text-blue-500" />水表读数 (m³)</span>}>
+            <Input type="number" step="0.01" placeholder="选填" />
           </Form.Item>
-          <Form.Item label={<span className="flex items-center gap-2"><Zap className="h-4 w-4 text-yellow-500" />电表读数 (kWh)</span>}>
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="选填"
-              {...form.register('electricity_reading', { valueAsNumber: true })}
-            />
+          <Form.Item name="electricity_reading" label={<span className="flex items-center gap-2"><Zap className="h-4 w-4 text-yellow-500" />电表读数 (kWh)</span>}>
+            <Input type="number" step="0.01" placeholder="选填" />
           </Form.Item>
         </div>
       </Form>

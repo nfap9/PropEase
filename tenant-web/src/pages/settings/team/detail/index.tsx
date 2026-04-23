@@ -1,8 +1,6 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Button, Modal, Input, Card, Skeleton, Tag, Form } from 'antd';
@@ -54,9 +52,7 @@ export default function TeamSettingsPage() {
     enabled: !!organization,
   });
 
-  const editOrgForm = useForm<OrganizationFormData>({
-    resolver: zodResolver(organizationSchema),
-  });
+  const [editOrgForm] = Form.useForm<OrganizationFormData>();
 
   const handleEditOrgSuccess = () => {
     setIsEditOrgOpen(false);
@@ -76,7 +72,7 @@ export default function TeamSettingsPage() {
 
   const handleEditOrg = () => {
     if (organization) {
-      editOrgForm.reset({ name: organization.name });
+      editOrgForm.setFieldsValue({ name: organization.name });
       setIsEditOrgOpen(true);
     }
   };
@@ -171,20 +167,17 @@ export default function TeamSettingsPage() {
             {tenantMessages.settings.team.editDialogDescription}
           </div>
           <Form
+            form={editOrgForm}
             layout="vertical"
-            onFinish={editOrgForm.handleSubmit(
-              (data) => organization && updateOrgMutation.mutate({ id: organization.id, data })
-            )}
             className="space-y-4"
+            onFinish={(values) => organization && updateOrgMutation.mutate({ id: organization.id, data: values as OrganizationFormData })}
           >
             <Form.Item
-              label="团队名称"
               name="name"
-              required
-              validateStatus={editOrgForm.formState.errors.name ? 'error' : ''}
-              help={editOrgForm.formState.errors.name?.message}
+              label="团队名称"
+              rules={[{ required: true, message: '请输入团队名称' }]}
             >
-              <Input aria-required {...editOrgForm.register('name')} />
+              <Input aria-required />
             </Form.Item>
             <div className="flex justify-end gap-2">
               <Button onClick={() => setIsEditOrgOpen(false)}>
