@@ -330,7 +330,7 @@ export function BatchImportDialog({
           </div>
           <div className="flex gap-2">
             {currentStep > 0 && (
-              <Button variant="outlined" onClick={() => setCurrentStep(0)}>
+              <Button onClick={() => setCurrentStep(0)}>
                 上一步
               </Button>
             )}

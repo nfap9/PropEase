@@ -1,26 +1,24 @@
-import { useForm } from 'react-hook-form';
+import { useEffect, useMemo, useState } from 'react';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle } from 'lucide-react';
-import { Modal, Alert, Button, Input, DatePicker, Select, Radio, Form } from 'antd';
-import { Apartment, Room, UtilityReading } from '@/types';
+import { Modal, Alert, Button, Input, DatePicker, Select, Radio, Form, InputNumber, Space } from 'antd';
+import type { Apartment, Room, UtilityReading } from '@/types';
 import { Droplets, Zap } from 'lucide-react';
 import { utilitiesApi } from '@/api/utilities';
 import dayjs from 'dayjs';
-
-const optionalNumberField = z.union([z.number().min(0), z.nan().transform(() => undefined)]).optional();
 
 const utilitySchema = z.object({
   room_id: z.string().min(1, '请选择房间'),
   period_year: z.number().min(2020).max(2100),
   period_month: z.number().min(1).max(12),
   reading_date: z.string().min(1, '请选择读数日期'),
-  water_reading: optionalNumberField,
-  electricity_reading: optionalNumberField,
-  water_previous: optionalNumberField,
-  electricity_previous: optionalNumberField,
+  water_reading: z.number().min(0).optional(),
+  electricity_reading: z.number().min(0).optional(),
+  water_previous: z.number().min(0).optional(),
+  electricity_previous: z.number().min(0).optional(),
   notes: z.string().optional(),
   reading_context: z.enum(['normal', 'initial', 'meter_reset']),
   anomaly_reason: z.string().max(200, '异常说明请控制在 200 字内').optional(),
@@ -75,14 +73,20 @@ export function CreateUtilityDialog({
       period_year: currentYear,
       period_month: currentMonth,
       reading_date: todayDate,
-      water_reading: 0,
-      electricity_reading: 0,
+      water_reading: undefined,
+      electricity_reading: undefined,
       reading_context: 'normal',
       notes: '',
     },
   });
 
-  const readingContext = form.watch('reading_context');
+  // 监听 reading_context 变化（不触发重新渲染整个表单）
+  const readingContext = useWatch({ control: form.control, name: 'reading_context' });
+
+  // 监听 room_id, period_year, period_month 用于查询
+  const watchedRoomId = useWatch({ control: form.control, name: 'room_id' });
+  const watchedYear = useWatch({ control: form.control, name: 'period_year' });
+  const watchedMonth = useWatch({ control: form.control, name: 'period_month' });
 
   useEffect(() => {
     if (!open) return;
@@ -94,8 +98,8 @@ export function CreateUtilityDialog({
         period_year: preset.periodYear,
         period_month: preset.periodMonth,
         reading_date: preset.readingDate,
-        water_reading: 0,
-        electricity_reading: 0,
+        water_reading: undefined,
+        electricity_reading: undefined,
         water_previous: preset.waterPrevious ?? undefined,
         electricity_previous: preset.electricityPrevious ?? undefined,
         reading_context: 'normal',
@@ -110,8 +114,8 @@ export function CreateUtilityDialog({
       period_year: currentYear,
       period_month: currentMonth,
       reading_date: todayDate,
-      water_reading: 0,
-      electricity_reading: 0,
+      water_reading: undefined,
+      electricity_reading: undefined,
       water_previous: undefined,
       electricity_previous: undefined,
       reading_context: 'normal',
@@ -119,44 +123,33 @@ export function CreateUtilityDialog({
     });
   }, [currentMonth, currentYear, form, open, preset, todayDate]);
 
-  // Filter rooms based on selected apartment
   const roomsForSelectedApartment = useMemo(() => {
     const group = apartmentRooms?.find((g) => g.apartment.id === selectedApartmentId);
     return group?.rooms || [];
   }, [apartmentRooms, selectedApartmentId]);
 
-  // Reset room_id when apartment changes
   const handleApartmentChange = (aptId: string) => {
     setSelectedApartmentId(aptId);
     form.setValue('room_id', '');
   };
 
   const { data: existingReadings = [] } = useQuery({
-    queryKey: [
-      'utilities',
-      'check',
-      orgId,
-      form.watch('room_id'),
-      form.watch('period_year'),
-      form.watch('period_month'),
-    ],
+    queryKey: ['utilities', 'check', orgId, watchedRoomId, watchedYear, watchedMonth],
     queryFn: () =>
       utilitiesApi.list({
-        room_id: form.watch('room_id') || undefined,
-        period_year: form.watch('period_year'),
-        period_month: form.watch('period_month'),
+        room_id: watchedRoomId || undefined,
+        period_year: watchedYear,
+        period_month: watchedMonth,
       }),
-    enabled: !!orgId && !!form.watch('room_id') && form.watch('period_year') > 0 && form.watch('period_month') > 0,
+    enabled: !!orgId && !!watchedRoomId && watchedYear > 0 && watchedMonth > 0,
   });
 
   const handleSubmit = (data: UtilityFormData) => {
-    // Check if there's an existing reading for the same room + year + month
     const existing = existingReadings.find((r) => r.room_id === data.room_id);
     if (existing) {
       setExistingReading(existing);
-      return; // Don't submit yet, show confirmation
+      return;
     }
-    // No existing reading, proceed
     onSubmit({
       ...data,
       anomaly_reason: data.anomaly_reason?.trim() || undefined,
@@ -165,9 +158,10 @@ export function CreateUtilityDialog({
   };
 
   const handleConfirmOverride = () => {
+    const values = form.getValues();
     onSubmit({
-      ...form.getValues(),
-      anomaly_reason: form.getValues('anomaly_reason')?.trim() || undefined,
+      ...values,
+      anomaly_reason: values.anomaly_reason?.trim() || undefined,
     });
     form.reset();
     setExistingReading(null);
@@ -180,24 +174,19 @@ export function CreateUtilityDialog({
         onCancel={() => onOpenChange(false)}
         title="录入水电读数"
         footer={
-          <div className="flex justify-end gap-2">
-            <Button variant="outlined" onClick={() => onOpenChange(false)}>
-              取消
-            </Button>
-            <Button type="primary" onClick={form.handleSubmit(handleSubmit)} loading={isPending}>
+          <Space>
+            <Button onClick={() => onOpenChange(false)}>取消</Button>
+            <Button type="primary" loading={isPending} onClick={form.handleSubmit(handleSubmit)}>
               {isPending ? '保存中...' : '保存'}
             </Button>
-          </div>
+          </Space>
         }
         className="max-w-lg"
         data-testid="utilities-entry-dialog"
       >
         <p className="text-gray-500 mb-4">录入房间的水电表读数</p>
-        <Form
-          layout="vertical"
-          onFinish={form.handleSubmit(handleSubmit)}
-          className="space-y-4"
-        >
+        <Form layout="vertical" className="space-y-4">
+          {/* 公寓选择 */}
           <div className="grid grid-cols-2 gap-4">
             <Form.Item label="公寓">
               <Select
@@ -211,69 +200,105 @@ export function CreateUtilityDialog({
                 }))}
               />
             </Form.Item>
-            <Form.Item label="房间">
-              <Select
-                value={form.watch('room_id') || undefined}
-                onChange={(value) => form.setValue('room_id', value)}
-                placeholder={selectedApartmentId ? '选择房间' : '先选公寓'}
-                disabled={!selectedApartmentId}
-                style={{ width: 180 }}
-                options={roomsForSelectedApartment.map((room) => ({
-                  value: room.id,
-                  label: room.room_number,
-                }))}
-              />
-            </Form.Item>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Form.Item label="年份" name="period_year">
-              <Select
-                value={form.watch('period_year').toString()}
-                onChange={(value) => form.setValue('period_year', Number(value))}
-                style={{ width: 140 }}
-                options={Array.from({ length: 3 }, (_, i) => currentYear - 1 + i).map((year) => ({
-                  value: year.toString(),
-                  label: `${year}年`,
-                }))}
-              />
-            </Form.Item>
-            <Form.Item label="月份" name="period_month">
-              <Select
-                value={form.watch('period_month').toString()}
-                onChange={(value) => form.setValue('period_month', Number(value))}
-                style={{ width: 120 }}
-                options={Array.from({ length: 12 }, (_, monthIdx) => monthIdx + 1).map((month) => ({
-                  value: month.toString(),
-                  label: `${month}月`,
-                }))}
-              />
-            </Form.Item>
-          </div>
-          <Form.Item
-            label="读数日期"
-            name="reading_date"
-            required
-            validateStatus={form.formState.errors.reading_date ? 'error' : ''}
-            help={form.formState.errors.reading_date?.message}
-          >
-            <DatePicker
-              value={form.watch('reading_date') ? dayjs(form.watch('reading_date')) : null}
-              onChange={(date) => form.setValue('reading_date', date?.format('YYYY-MM-DD') || '')}
-              className="w-full"
+            {/* 房间选择 */}
+            <Controller
+              name="room_id"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Form.Item label="房间" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
+                  <Select
+                    {...field}
+                    value={field.value || undefined}
+                    onChange={field.onChange}
+                    placeholder={selectedApartmentId ? '选择房间' : '先选公寓'}
+                    disabled={!selectedApartmentId}
+                    style={{ width: 180 }}
+                    options={roomsForSelectedApartment.map((room) => ({
+                      value: room.id,
+                      label: room.room_number,
+                    }))}
+                  />
+                </Form.Item>
+              )}
             />
-          </Form.Item>
-          <Form.Item label="录入场景" name="reading_context">
-            <Radio.Group
-              value={readingContext}
-              onChange={(e) => form.setValue('reading_context', e.target.value as UtilityFormData['reading_context'])}
-            >
-              <div className="flex items-center space-x-4">
-                <Radio value="normal">正常抄表</Radio>
-                <Radio value="initial">首次录入</Radio>
-                <Radio value="meter_reset">更换新表</Radio>
-              </div>
-            </Radio.Group>
-          </Form.Item>
+          </div>
+
+          {/* 年份 */}
+          <div className="grid grid-cols-2 gap-4">
+            <Controller
+              name="period_year"
+              control={form.control}
+              render={({ field }) => (
+                <Form.Item label="年份">
+                  <Select
+                    value={field.value?.toString()}
+                    onChange={(val) => field.onChange(Number(val))}
+                    style={{ width: 140 }}
+                    options={Array.from({ length: 3 }, (_, i) => currentYear - 1 + i).map((year) => ({
+                      value: year.toString(),
+                      label: `${year}年`,
+                    }))}
+                  />
+                </Form.Item>
+              )}
+            />
+            {/* 月份 */}
+            <Controller
+              name="period_month"
+              control={form.control}
+              render={({ field }) => (
+                <Form.Item label="月份">
+                  <Select
+                    value={field.value?.toString()}
+                    onChange={(val) => field.onChange(Number(val))}
+                    style={{ width: 120 }}
+                    options={Array.from({ length: 12 }, (_, monthIdx) => monthIdx + 1).map((month) => ({
+                      value: month.toString(),
+                      label: `${month}月`,
+                    }))}
+                  />
+                </Form.Item>
+              )}
+            />
+          </div>
+
+          {/* 读数日期 */}
+          <Controller
+            name="reading_date"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Form.Item
+                label="读数日期"
+                required
+                validateStatus={fieldState.error ? 'error' : ''}
+                help={fieldState.error?.message}
+              >
+                <DatePicker
+                  value={field.value ? dayjs(field.value) : null}
+                  onChange={(date) => field.onChange(date?.format('YYYY-MM-DD') ?? '')}
+                  className="w-full"
+                />
+              </Form.Item>
+            )}
+          />
+
+          {/* 录入场景 */}
+          <Controller
+            name="reading_context"
+            control={form.control}
+            render={({ field }) => (
+              <Form.Item label="录入场景">
+                <Radio.Group value={field.value} onChange={(e) => field.onChange(e.target.value as UtilityFormData['reading_context'])}>
+                  <Space direction="horizontal">
+                    <Radio value="normal">正常抄表</Radio>
+                    <Radio value="initial">首次录入</Radio>
+                    <Radio value="meter_reset">更换新表</Radio>
+                  </Space>
+                </Radio.Group>
+              </Form.Item>
+            )}
+          />
+
           {readingContext !== 'normal' && (
             <Alert
               type="info"
@@ -286,67 +311,126 @@ export function CreateUtilityDialog({
               icon={<AlertCircle className="h-4 w-4" />}
             />
           )}
+
+          {/* 水电读数 */}
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item label={<span className="flex items-center gap-2"><Droplets className="h-4 w-4 text-blue-500" />水表读数 (m³)</span>}>
-              <Input
-                type="number"
-                step="0.01"
-                {...form.register('water_reading', { valueAsNumber: true })}
-              />
-            </Form.Item>
-            <Form.Item label={<span className="flex items-center gap-2"><Zap className="h-4 w-4 text-yellow-500" />电表读数 (kWh)</span>}>
-              <Input
-                type="number"
-                step="0.01"
-                {...form.register('electricity_reading', { valueAsNumber: true })}
-              />
-            </Form.Item>
+            <Controller
+              name="water_reading"
+              control={form.control}
+              render={({ field }) => (
+                <Form.Item label={<span className="flex items-center gap-2"><Droplets className="h-4 w-4 text-blue-500" />水表读数 (m³)</span>}>
+                  <InputNumber
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(val) => field.onChange(val ?? '')}
+                    min={0}
+                    step={0.01}
+                    style={{ width: '100%' }}
+                  />
+                </Form.Item>
+              )}
+            />
+            <Controller
+              name="electricity_reading"
+              control={form.control}
+              render={({ field }) => (
+                <Form.Item label={<span className="flex items-center gap-2"><Zap className="h-4 w-4 text-yellow-500" />电表读数 (kWh)</span>}>
+                  <InputNumber
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(val) => field.onChange(val ?? '')}
+                    min={0}
+                    step={0.01}
+                    style={{ width: '100%' }}
+                  />
+                </Form.Item>
+              )}
+            />
           </div>
+
+          {/* 上一期读数（首次/换表时显示） */}
           {readingContext !== 'normal' && (
             <div className="grid grid-cols-2 gap-4">
-              <Form.Item label="水表上一读数">
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder={readingContext === 'initial' ? '可留空，自动取当前值' : '换表后请输入新表起始值'}
-                  {...form.register('water_previous', { valueAsNumber: true })}
-                />
-              </Form.Item>
-              <Form.Item label="电表上一读数">
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder={readingContext === 'initial' ? '可留空，自动取当前值' : '换表后请输入新表起始值'}
-                  {...form.register('electricity_previous', { valueAsNumber: true })}
-                />
-              </Form.Item>
+              <Controller
+                name="water_previous"
+                control={form.control}
+                render={({ field }) => (
+                  <Form.Item label="水表上一读数">
+                    <InputNumber
+                      {...field}
+                      value={field.value ?? ''}
+                      onChange={(val) => field.onChange(val ?? '')}
+                      min={0}
+                      step={0.01}
+                      placeholder={readingContext === 'initial' ? '可留空，自动取当前值' : '换表后请输入新表起始值'}
+                      style={{ width: '100%' }}
+                    />
+                  </Form.Item>
+                )}
+              />
+              <Controller
+                name="electricity_previous"
+                control={form.control}
+                render={({ field }) => (
+                  <Form.Item label="电表上一读数">
+                    <InputNumber
+                      {...field}
+                      value={field.value ?? ''}
+                      onChange={(val) => field.onChange(val ?? '')}
+                      min={0}
+                      step={0.01}
+                      placeholder={readingContext === 'initial' ? '可留空，自动取当前值' : '换表后请输入新表起始值'}
+                      style={{ width: '100%' }}
+                    />
+                  </Form.Item>
+                )}
+              />
             </div>
           )}
-          <Form.Item
-            label={
-              readingContext === 'normal'
-                ? '异常说明（可选）'
-                : readingContext === 'initial'
-                  ? '说明（可选）'
-                  : '更换原因 *'
-            }
-          >
-            <Input
-              placeholder={
-                readingContext === 'normal'
-                  ? '如遇到暴涨用量、人工核对等特殊情况，可在此说明'
-                  : readingContext === 'initial'
-                    ? '例如：新租客入住房间，首次建立读数基线'
-                    : '例如：旧电表损坏，2026-03-17 更换新表'
-              }
-              {...form.register('anomaly_reason')}
-            />
-          </Form.Item>
-          <Form.Item label="备注">
-            <Input placeholder="请输入备注" {...form.register('notes')} />
-          </Form.Item>
+
+          {/* 异常说明 */}
+          <Controller
+            name="anomaly_reason"
+            control={form.control}
+            render={({ field }) => (
+              <Form.Item
+                label={
+                  readingContext === 'normal'
+                    ? '异常说明（可选）'
+                    : readingContext === 'initial'
+                      ? '说明（可选）'
+                      : '更换原因 *'
+                }
+              >
+                <Input.TextArea
+                  {...field}
+                  value={field.value ?? ''}
+                  placeholder={
+                    readingContext === 'normal'
+                      ? '如遇到暴涨用量、人工核对等特殊情况，可在此说明'
+                      : readingContext === 'initial'
+                        ? '例如：新租客入住房间，首次建立读数基线'
+                        : '例如：旧电表损坏，2026-03-17 更换新表'
+                  }
+                  rows={2}
+                />
+              </Form.Item>
+            )}
+          />
+
+          {/* 备注 */}
+          <Controller
+            name="notes"
+            control={form.control}
+            render={({ field }) => (
+              <Form.Item label="备注">
+                <Input.TextArea {...field} value={field.value ?? ''} placeholder="请输入备注" rows={2} />
+              </Form.Item>
+            )}
+          />
         </Form>
       </Modal>
+
       {existingReading && (
         <Modal
           open={!!existingReading}
@@ -357,7 +441,7 @@ export function CreateUtilityDialog({
           cancelText="取消"
         >
           <p>
-            {existingReading.room?.apartment?.name} - {existingReading.room?.room_number}{' '}
+            {existingReading.room?.apartment?.name} - {existingReading.room?.room_number}
             {existingReading.period_year}年{existingReading.period_month}月已有读数记录。确定要覆盖吗？
           </p>
         </Modal>

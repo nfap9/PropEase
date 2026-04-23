@@ -2,7 +2,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { changeRentSchema, type ChangeRentFormData } from '@/schemas/lease-operations';
 import { useChangeRent } from '@/hooks/use-lease-operations';
-import { Button, Drawer, Input, Select, Form } from 'antd';
+import { Button, Drawer, Input, Select, Form, InputNumber } from 'antd';
 
 interface ChangeRentSheetProps {
   open: boolean;
@@ -69,7 +69,16 @@ export function ChangeRentSheet({ open, onOpenChange, orgId, leaseId, currentRen
           <Controller
             name="newRent"
             control={form.control}
-            render={({ field }) => <Input type="number" step="0.01" {...field} />}
+            render={({ field }) => (
+              <InputNumber
+                {...field}
+                value={field.value ?? ''}
+                onChange={(val) => field.onChange(val ?? '')}
+                min={0}
+                step={0.01}
+                style={{ width: '100%' }}
+              />
+            )}
           />
         </Form.Item>
         <div className="grid grid-cols-2 gap-4">

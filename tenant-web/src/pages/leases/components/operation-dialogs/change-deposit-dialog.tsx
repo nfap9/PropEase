@@ -2,7 +2,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { changeDepositSchema, type ChangeDepositFormData } from '@/schemas/lease-operations';
 import { useChangeDeposit } from '@/hooks/use-lease-operations';
-import { Modal, Button, Input, Form } from 'antd';
+import { Modal, Button, Input, Form, InputNumber } from 'antd';
 
 interface ChangeDepositDialogProps {
   open: boolean;
@@ -56,7 +56,16 @@ export function ChangeDepositDialog({ open, onOpenChange, orgId, leaseId, curren
           <Controller
             name="newDeposit"
             control={form.control}
-            render={({ field }) => <Input type="number" step="0.01" {...field} />}
+            render={({ field }) => (
+              <InputNumber
+                {...field}
+                value={field.value ?? ''}
+                onChange={(val) => field.onChange(val ?? '')}
+                min={0}
+                step={0.01}
+                style={{ width: '100%' }}
+              />
+            )}
           />
         </Form.Item>
         <Form.Item

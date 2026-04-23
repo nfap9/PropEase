@@ -1,10 +1,10 @@
-
 import type { UseFormReturn } from 'react-hook-form';
 import { FormProvider, Controller } from 'react-hook-form';
 import { Info } from 'lucide-react';
-import { Alert, Button, Input, DatePicker, Modal, Form } from 'antd';
+import { Alert, Button, Input, DatePicker, Modal, Form, InputNumber, Space } from 'antd';
 import type { Lease } from '@/types';
 import { LEASES, type LeaseEditFormData } from '@/schemas/leases';
+import dayjs from 'dayjs';
 
 export function LeaseEditDialog({
   open,
@@ -26,14 +26,14 @@ export function LeaseEditDialog({
       open={open}
       onCancel={() => onOpenChange(false)}
       title="编辑租约"
-      footer={[
-        <Button key="cancel" onClick={() => onOpenChange(false)}>
-          取消
-        </Button>,
-        <Button key="submit" type="primary" onClick={() => form.handleSubmit(onSubmit)()} loading={isPending}>
-          {isPending ? '保存中...' : '保存'}
-        </Button>,
-      ]}
+      footer={
+        <Space>
+          <Button onClick={() => onOpenChange(false)}>取消</Button>
+          <Button type="primary" loading={isPending} onClick={form.handleSubmit(onSubmit)}>
+            {isPending ? '保存中...' : '保存'}
+          </Button>
+        </Space>
+      }
     >
       <Alert
         className="border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-200 mb-4"
@@ -44,12 +44,7 @@ export function LeaseEditDialog({
         showIcon
       />
       <FormProvider {...form}>
-        <Form
-          layout="vertical"
-          id="edit-lease-form"
-          onFinish={form.handleSubmit(onSubmit)}
-          className="space-y-4"
-        >
+        <Form layout="vertical" className="space-y-4">
           <input type="hidden" {...form.register('room_id')} />
           <input type="hidden" {...form.register('tenant_id')} />
           <div className="grid grid-cols-2 gap-4">
@@ -67,106 +62,84 @@ export function LeaseEditDialog({
               <Input value={selectedLease?.tenant?.name || ''} disabled />
             </Form.Item>
           </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item
-              label="开始日期"
+            <Controller
               name="start_date"
-              required
-              validateStatus={form.formState.errors.start_date ? 'error' : ''}
-              help={form.formState.errors.start_date?.message}
-            >
-              <Controller
-                name="start_date"
-                control={form.control}
-                render={({ field }) => (
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Form.Item label="开始日期" required validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
                   <DatePicker
                     className="w-full"
-                    value={field.value ? undefined : undefined}
-                    onChange={(_, dateString) => field.onChange(dateString)}
+                    value={field.value ? dayjs(field.value) : null}
+                    onChange={(date) => field.onChange(date?.format('YYYY-MM-DD') ?? '')}
                     data-testid={LEASES.START_DATE_INPUT}
                   />
-                )}
-              />
-            </Form.Item>
-            <Form.Item
-              label="结束日期"
-              name="end_date"
-              validateStatus={form.formState.errors.end_date ? 'error' : ''}
-              help={form.formState.errors.end_date?.message}
-            >
-              <Controller
-                name="end_date"
-                control={form.control}
-                render={({ field }) => (
-                  <DatePicker
-                    className="w-full"
-                    value={field.value ? undefined : undefined}
-                    onChange={(_, dateString) => field.onChange(dateString)}
-                    data-testid={LEASES.END_DATE_INPUT}
-                  />
-                )}
-              />
-            </Form.Item>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Form.Item
-              label="月租 (元)"
-              name="monthly_rent"
-              required
-              validateStatus={form.formState.errors.monthly_rent ? 'error' : ''}
-              help={form.formState.errors.monthly_rent?.message}
-            >
-              <Controller
-                name="monthly_rent"
-                control={form.control}
-                render={({ field }) => (
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...field}
-                    onChange={(event) => field.onChange(event.target.value === '' ? 0 : Number(event.target.value))}
-                    value={field.value ?? ''}
-                    data-testid={LEASES.MONTHLY_RENT_INPUT}
-                  />
-                )}
-              />
-            </Form.Item>
-            <Form.Item
-              label="押金 (元)"
-              name="deposit"
-              validateStatus={form.formState.errors.deposit ? 'error' : ''}
-              help={form.formState.errors.deposit?.message}
-            >
-              <Controller
-                name="deposit"
-                control={form.control}
-                render={({ field }) => (
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...field}
-                    onChange={(event) => field.onChange(event.target.value === '' ? 0 : Number(event.target.value))}
-                    value={field.value ?? ''}
-                    data-testid={LEASES.DEPOSIT_INPUT}
-                  />
-                )}
-              />
-            </Form.Item>
-          </div>
-          <Form.Item
-            label="备注"
-            name="notes"
-            validateStatus={form.formState.errors.notes ? 'error' : ''}
-            help={form.formState.errors.notes?.message}
-          >
-            <Controller
-              name="notes"
-              control={form.control}
-              render={({ field }) => (
-                <Input {...field} value={field.value ?? ''} data-testid={LEASES.NOTES_INPUT} />
+                </Form.Item>
               )}
             />
-          </Form.Item>
+            <Controller
+              name="end_date"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Form.Item label="结束日期" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
+                  <DatePicker
+                    className="w-full"
+                    value={field.value ? dayjs(field.value) : null}
+                    onChange={(date) => field.onChange(date?.format('YYYY-MM-DD') ?? '')}
+                    data-testid={LEASES.END_DATE_INPUT}
+                  />
+                </Form.Item>
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Controller
+              name="monthly_rent"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Form.Item label="月租 (元)" required validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
+                  <InputNumber
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(val) => field.onChange(val ?? '')}
+                    min={0}
+                    step={0.01}
+                    data-testid={LEASES.MONTHLY_RENT_INPUT}
+                    style={{ width: '100%' }}
+                  />
+                </Form.Item>
+              )}
+            />
+            <Controller
+              name="deposit"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Form.Item label="押金 (元)" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
+                  <InputNumber
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(val) => field.onChange(val ?? '')}
+                    min={0}
+                    step={0.01}
+                    data-testid={LEASES.DEPOSIT_INPUT}
+                    style={{ width: '100%' }}
+                  />
+                </Form.Item>
+              )}
+            />
+          </div>
+
+          <Controller
+            name="notes"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Form.Item label="备注" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
+                <Input.TextArea {...field} value={field.value ?? ''} data-testid={LEASES.NOTES_INPUT} rows={3} />
+              </Form.Item>
+            )}
+          />
         </Form>
       </FormProvider>
     </Modal>

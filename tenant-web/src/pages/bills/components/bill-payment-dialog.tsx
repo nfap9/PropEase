@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Form, Input, DatePicker, Select, Button, Modal } from 'antd';
+import { Form, Input, DatePicker, Select, Button, Modal, InputNumber } from 'antd';
 import dayjs from 'dayjs';
 import type { Bill } from '@/types';
 import { PAYMENT_METHOD_LABELS, BILLS, type PaymentFormData } from '@/schemas/bills';
@@ -71,7 +71,7 @@ export function BillPaymentDialog({ open, onOpenChange, selectedBill, onSubmit, 
           label={tenantMessages.bills.dialogs.amount}
           rules={[{ required: true, message: '请输入金额' }]}
         >
-          <Input type="number" step="0.01" data-testid={BILLS.AMOUNT_INPUT} placeholder="请输入金额" />
+          <InputNumber step={0.01} data-testid={BILLS.AMOUNT_INPUT} placeholder="请输入金额" style={{ width: '100%' }} />
         </Form.Item>
 
         <div className="grid grid-cols-2 gap-4">

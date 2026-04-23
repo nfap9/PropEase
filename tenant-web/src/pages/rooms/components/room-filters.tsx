@@ -1,5 +1,5 @@
 
-import { Button } from 'antd';
+import { Button, InputNumber } from 'antd';
 import type { HTMLAttributes } from 'react';
 import { Input, Select } from 'antd';
 import { ApartmentWithStats, RoomStatus } from '@/types';
@@ -125,25 +125,19 @@ export function RoomFilters({
         <div>
           <Label>月租范围</Label>
           <div className="flex items-center gap-1">
-            <Input
-              type="number"
+            <InputNumber
               placeholder="最低"
               className="h-9 min-w-0 flex-1"
-              value={filters.rentMin ?? ''}
-              onChange={(e) =>
-                onFilterChange('rentMin', e.target.value ? Number(e.target.value) : null)
-              }
+              value={filters.rentMin ?? undefined}
+              onChange={(val) => onFilterChange('rentMin', val)}
               data-testid={testids?.RENT_MIN_INPUT}
             />
             <span className="text-muted-foreground">-</span>
-            <Input
-              type="number"
+            <InputNumber
               placeholder="最高"
               className="h-9 min-w-0 flex-1"
-              value={filters.rentMax ?? ''}
-              onChange={(e) =>
-                onFilterChange('rentMax', e.target.value ? Number(e.target.value) : null)
-              }
+              value={filters.rentMax ?? undefined}
+              onChange={(val) => onFilterChange('rentMax', val)}
               data-testid={testids?.RENT_MAX_INPUT}
             />
           </div>
@@ -152,25 +146,19 @@ export function RoomFilters({
         <div>
           <Label>面积范围</Label>
           <div className="flex items-center gap-1">
-            <Input
-              type="number"
+            <InputNumber
               placeholder="最小"
               className="h-9 min-w-0 flex-1"
-              value={filters.areaMin ?? ''}
-              onChange={(e) =>
-                onFilterChange('areaMin', e.target.value ? Number(e.target.value) : null)
-              }
+              value={filters.areaMin ?? undefined}
+              onChange={(val) => onFilterChange('areaMin', val)}
               data-testid={testids?.AREA_MIN_INPUT}
             />
             <span className="text-muted-foreground">-</span>
-            <Input
-              type="number"
+            <InputNumber
               placeholder="最大"
               className="h-9 min-w-0 flex-1"
-              value={filters.areaMax ?? ''}
-              onChange={(e) =>
-                onFilterChange('areaMax', e.target.value ? Number(e.target.value) : null)
-              }
+              value={filters.areaMax ?? undefined}
+              onChange={(val) => onFilterChange('areaMax', val)}
               data-testid={testids?.AREA_MAX_INPUT}
             />
           </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Modal, Button, Input, Select } from 'antd';
+import { Modal, Button, Input, Select, InputNumber } from 'antd';
 import { Settings2 } from 'lucide-react';
 import { RoomEditSchema, type RoomEditFormData } from '@apartment-ultra/api-contract';
 import { Room, RoomFacilities } from '@/types';
@@ -126,34 +126,49 @@ export function EditRoomDialog({
           </div>
           <div className="space-y-2">
             <span className="text-sm font-medium">面积 (m²)</span>
-            <Input
-              type="number"
-              step="0.01"
-              data-testid={testids?.AREA_INPUT}
-              {...form.register('area', { valueAsNumber: true })}
+            <Controller
+              name="area"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <>
+                  <InputNumber
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(val) => field.onChange(val ?? '')}
+                    min={0}
+                    step={0.01}
+                    data-testid={testids?.AREA_INPUT}
+                    style={{ width: '100%' }}
+                  />
+                  {fieldState.error && (
+                    <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                  )}
+                </>
+              )}
             />
-            {form.formState.errors.area && (
-              <p className="text-sm text-destructive">{form.formState.errors.area.message}</p>
-            )}
           </div>
           <div className="space-y-2">
             <span className="text-sm font-medium">月租 (元) *</span>
             <Controller
               name="monthly_rent"
               control={form.control}
-              render={({ field }) => (
-                <Input
-                  type="number"
-                  step="0.01"
-                  data-testid={testids?.MONTHLY_RENT_INPUT}
-                  value={field.value ?? ''}
-                  onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
-                />
+              render={({ field, fieldState }) => (
+                <>
+                  <InputNumber
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(val) => field.onChange(val ?? '')}
+                    min={0}
+                    step={0.01}
+                    data-testid={testids?.MONTHLY_RENT_INPUT}
+                    style={{ width: '100%' }}
+                  />
+                  {fieldState.error && (
+                    <p className="text-sm text-destructive">{fieldState.error.message}</p>
+                  )}
+                </>
               )}
             />
-            {form.formState.errors.monthly_rent && (
-              <p className="text-sm text-destructive">{form.formState.errors.monthly_rent.message}</p>
-            )}
           </div>
           <div className="space-y-2">
             <span className="text-sm font-medium">备注</span>

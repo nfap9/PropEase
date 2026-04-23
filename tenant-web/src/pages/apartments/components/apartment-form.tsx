@@ -1,5 +1,6 @@
-import { UseFormReturn, Controller } from 'react-hook-form';
-import { Input, Form } from 'antd';
+import type { UseFormReturn } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
+import { Input, Form, InputNumber } from 'antd';
 import {
   ApartmentCreateSchema as apartmentSchema,
   type ApartmentFormData,
@@ -23,16 +24,6 @@ export function ApartmentForm({
   formId = 'apartment-form',
   onSubmit,
 }: ApartmentFormProps) {
-  const numberRegister = (
-    name: keyof ApartmentFormData,
-    formInstance: UseFormReturn<ApartmentFormData>
-  ) => ({
-    ...formInstance.register(name, {
-      valueAsNumber: true,
-      setValueAs: (v: unknown) => (v === '' || (typeof v === 'number' && isNaN(v)) ? undefined : v),
-    }),
-  });
-
   return (
     <Form
       layout="vertical"
@@ -40,86 +31,84 @@ export function ApartmentForm({
       className="space-y-4"
       id={formId}
     >
-      <Form.Item
-        label="公寓名称"
-        required
-        validateStatus={form.formState.errors.name ? 'error' : ''}
-        help={form.formState.errors.name?.message}
-      >
-        <Controller
-          name="name"
-          control={form.control}
-          render={({ field }) => (
-            <Input
-              placeholder="请输入公寓名称"
-              {...field}
-            />
-          )}
-        />
-      </Form.Item>
-      <Form.Item
-        label="地址"
-        required
-        validateStatus={form.formState.errors.address ? 'error' : ''}
-        help={form.formState.errors.address?.message}
-      >
-        <Controller
-          name="address"
-          control={form.control}
-          render={({ field }) => (
-            <Input
-              placeholder="请输入公寓地址"
-              {...field}
-            />
-          )}
-        />
-      </Form.Item>
-      <Form.Item
-        label="描述"
-        validateStatus={form.formState.errors.description ? 'error' : ''}
-        help={form.formState.errors.description?.message}
-      >
-        <Input {...form.register('description')} />
-      </Form.Item>
+      <Controller
+        name="name"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Form.Item label="公寓名称" required validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
+            <Input placeholder="请输入公寓名称" {...field} />
+          </Form.Item>
+        )}
+      />
+      <Controller
+        name="address"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Form.Item label="地址" required validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
+            <Input placeholder="请输入公寓地址" {...field} />
+          </Form.Item>
+        )}
+      />
+      <Controller
+        name="description"
+        control={form.control}
+        render={({ field }) => (
+          <Form.Item label="描述">
+            <Input.TextArea {...field} value={field.value ?? ''} placeholder="请输入描述" rows={2} />
+          </Form.Item>
+        )}
+      />
       <div className="grid grid-cols-3 gap-4">
-        <Form.Item
-          label="楼层数"
-          validateStatus={form.formState.errors.floors ? 'error' : ''}
-          help={form.formState.errors.floors?.message}
-        >
-          <Input
-            type="number"
-            min={1}
-            {...numberRegister('floors', form)}
-            placeholder="请输入楼层数"
-          />
-        </Form.Item>
-        <Form.Item
-          label="用地面积（亩）"
-          validateStatus={form.formState.errors.land_area ? 'error' : ''}
-          help={form.formState.errors.land_area?.message}
-        >
-          <Input
-            type="number"
-            min={0}
-            step={0.01}
-            {...numberRegister('land_area', form)}
-            placeholder="请输入用地面积"
-          />
-        </Form.Item>
-        <Form.Item
-          label="总面积（㎡）"
-          validateStatus={form.formState.errors.total_area ? 'error' : ''}
-          help={form.formState.errors.total_area?.message}
-        >
-          <Input
-            type="number"
-            min={0}
-            step={0.01}
-            {...numberRegister('total_area', form)}
-            placeholder="请输入总面积"
-          />
-        </Form.Item>
+        <Controller
+          name="floors"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Form.Item label="楼层数" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
+              <InputNumber
+                {...field}
+                value={field.value ?? ''}
+                onChange={(val) => field.onChange(val ?? '')}
+                min={1}
+                placeholder="请输入楼层数"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          )}
+        />
+        <Controller
+          name="land_area"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Form.Item label="用地面积（亩）" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
+              <InputNumber
+                {...field}
+                value={field.value ?? ''}
+                onChange={(val) => field.onChange(val ?? '')}
+                min={0}
+                step={0.01}
+                placeholder="请输入用地面积"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          )}
+        />
+        <Controller
+          name="total_area"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Form.Item label="总面积（㎡）" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
+              <InputNumber
+                {...field}
+                value={field.value ?? ''}
+                onChange={(val) => field.onChange(val ?? '')}
+                min={0}
+                step={0.01}
+                placeholder="请输入总面积"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          )}
+        />
       </div>
 
       {/* 分割线 */}

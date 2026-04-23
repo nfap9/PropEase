@@ -38,7 +38,7 @@ export function MissingInitialWarning({ rooms, onEntry }: MissingInitialWarningP
                 <td className="px-3 py-2">{room.tenant_name}</td>
                 <td className="px-3 py-2">{room.lease_start_date}</td>
                 <td className="px-3 py-2 text-right">
-                  <Button size="small" variant="outlined" onClick={() => onEntry(room)}>
+                  <Button size="small" onClick={() => onEntry(room)}>
                     录入
                   </Button>
                 </td>

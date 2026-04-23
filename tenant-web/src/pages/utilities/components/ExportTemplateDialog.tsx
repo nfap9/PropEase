@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Modal, Button, Input, Select } from 'antd';
+import { Modal, Button, Input, Select, InputNumber } from 'antd';
 import { Label } from '@/components/common/label';
 import { Download, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -167,16 +167,12 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
         <div className="space-y-2">
           <Label>导出范围（天）</Label>
           <div className="flex items-center gap-2">
-            <Input
-              type="number"
+            <InputNumber
               min={0}
               max={60}
-              value={daysRange === 0 ? '' : daysRange}
+              value={daysRange === 0 ? undefined : daysRange}
               placeholder="0=全部"
-              onChange={(e) => {
-                const v = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
-                setDaysRange(Number.isNaN(v) ? 0 : Math.min(60, Math.max(0, v)));
-              }}
+              onChange={(val) => setDaysRange(val ?? 0)}
               className="w-24"
             />
             <span className="text-sm text-gray-500">

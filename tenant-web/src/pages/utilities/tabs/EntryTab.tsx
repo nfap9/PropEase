@@ -48,10 +48,10 @@ export function EntryTab({
       />
 
       <div className="flex gap-2">
-        <Button variant="outlined" onClick={onExportTemplate} icon={<Download className="h-4 w-4" />}>
+        <Button onClick={onExportTemplate} icon={<Download className="h-4 w-4" />}>
           导出模版
         </Button>
-        <Button variant="outlined" onClick={onBatchImport} icon={<Upload className="h-4 w-4" />}>
+        <Button onClick={onBatchImport} icon={<Upload className="h-4 w-4" />}>
           批量导入
         </Button>
         <Button type="primary" onClick={onAdd} icon={<Plus className="h-4 w-4" />}>

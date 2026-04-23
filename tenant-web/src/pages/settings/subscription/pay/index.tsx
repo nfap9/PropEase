@@ -75,7 +75,7 @@ function SubscriptionPayContent() {
     return (
       <div className="space-y-6">
         <p className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.pay.missingOrder}</p>
-        <Button variant="outlined" onClick={handleBack} icon={<ArrowLeft className="h-4 w-4" />}>
+        <Button onClick={handleBack} icon={<ArrowLeft className="h-4 w-4" />}>
           {tenantMessages.settings.subscriptionPage.pay.backToSubscription}
         </Button>
       </div>
@@ -97,7 +97,7 @@ function SubscriptionPayContent() {
     return (
       <div className="space-y-6">
         <p className="text-red-500">{tenantMessages.settings.subscriptionPage.pay.loadFailed}</p>
-        <Button variant="outlined" onClick={handleBack} icon={<ArrowLeft className="h-4 w-4" />}>
+        <Button onClick={handleBack} icon={<ArrowLeft className="h-4 w-4" />}>
           {tenantMessages.settings.subscriptionPage.pay.backToSubscription}
         </Button>
       </div>
@@ -121,7 +121,7 @@ function SubscriptionPayContent() {
         <div className="flex items-center gap-2">
           <Tag color={BADGE_VARIANT_TO_TAG_COLOR[config.variant]}>{config.label}</Tag>
         </div>
-        <Button variant="outlined" onClick={handleBack} icon={<ArrowLeft className="h-4 w-4" />}>
+        <Button onClick={handleBack} icon={<ArrowLeft className="h-4 w-4" />}>
           {tenantMessages.settings.subscriptionPage.pay.backToSubscription}
         </Button>
       </div>
@@ -137,7 +137,7 @@ function SubscriptionPayContent() {
           <Tag color={BADGE_VARIANT_TO_TAG_COLOR[config.variant]}>{config.label}</Tag>
           <span className="text-muted-foreground">{tenantMessages.settings.subscriptionPage.pay.expiredHint}</span>
         </div>
-        <Button variant="outlined" onClick={handleBack} icon={<ArrowLeft className="h-4 w-4" />}>
+        <Button onClick={handleBack} icon={<ArrowLeft className="h-4 w-4" />}>
           {tenantMessages.settings.subscriptionPage.pay.backToSubscription}
         </Button>
       </div>

@@ -162,7 +162,7 @@ export default function TenantDetailPage() {
       width: 100,
       render: (_, record) => (
         <Link to={`/leases?highlight=${record.id}`}>
-          <Button variant="outlined" size="small">查看详情</Button>
+          <Button size="small">查看详情</Button>
         </Link>
       ),
     },
@@ -319,7 +319,7 @@ export default function TenantDetailPage() {
                   </div>
                 )}
                 <Link to={`/leases?highlight=${activeLease.id}`}>
-                  <Button variant="outlined" block>查看租约详情</Button>
+                  <Button block>查看租约详情</Button>
                 </Link>
               </div>
             ) : (
@@ -391,13 +391,13 @@ export default function TenantDetailPage() {
           <Card size="small" title="快捷操作" extra={<span className="text-sm text-gray-500">快速跳转到相关功能</span>}>
             <div className="flex flex-wrap gap-3">
               <Link to={`/leases?tenant=${tenantId}`}>
-                <Button variant="outlined">
+                <Button>
                   <FileText className="mr-2 h-4 w-4" />
                   创建租约
                 </Button>
               </Link>
               <Link to={`/bills?tenant=${tenantId}`}>
-                <Button variant="outlined">
+                <Button>
                   <Building2 className="mr-2 h-4 w-4" />
                   查看账单
                 </Button>

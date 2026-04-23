@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Lease } from '@/types';
-import { Dropdown, Button, Input, Select, Modal } from 'antd';
+import { Dropdown, Button, Input, Select, Modal, InputNumber } from 'antd';
 import type { MenuProps } from 'antd';
 import { toast } from 'sonner';
 import { MoreHorizontal, Home, RefreshCw, User, TrendingUp, Droplets, DollarSign, Layers, LogOut, Plus, Trash2 } from 'lucide-react';
@@ -323,12 +323,13 @@ export function OperationsDropdown({ orgId, leaseId, lease }: OperationsDropdown
 
           <div className="space-y-2">
             <Label>金额（元）</Label>
-            <Input
-              type="number"
-              step="0.01"
+            <InputNumber
+              value={feeFormData.amount ? parseFloat(feeFormData.amount) : undefined}
+              onChange={(val) => setFeeFormData((prev) => ({ ...prev, amount: val !== null && val !== undefined ? String(val) : '' }))}
+              min={0}
+              step={0.01}
               placeholder="0.00"
-              value={feeFormData.amount}
-              onChange={(e) => setFeeFormData((prev) => ({ ...prev, amount: e.target.value }))}
+              style={{ width: '100%' }}
             />
           </div>
 

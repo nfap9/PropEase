@@ -2,7 +2,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { changeUtilityRatesSchema, type ChangeUtilityRatesFormData } from '@/schemas/lease-operations';
 import { useChangeUtilityRates } from '@/hooks/use-lease-operations';
-import { Button, Drawer, Input, Select, Form } from 'antd';
+import { Button, Drawer, Input, Select, Form, InputNumber } from 'antd';
 
 interface ChangeUtilityRatesSheetProps {
   open: boolean;
@@ -78,7 +78,16 @@ export function ChangeUtilityRatesSheet({
             <Controller
               name="waterRate"
               control={form.control}
-              render={({ field }) => <Input type="number" step="0.01" {...field} />}
+              render={({ field }) => (
+              <InputNumber
+                {...field}
+                value={field.value ?? ''}
+                onChange={(val) => field.onChange(val ?? '')}
+                min={0}
+                step={0.01}
+                style={{ width: '100%' }}
+              />
+            )}
             />
           </Form.Item>
           <Form.Item
@@ -91,7 +100,16 @@ export function ChangeUtilityRatesSheet({
             <Controller
               name="electricityRate"
               control={form.control}
-              render={({ field }) => <Input type="number" step="0.01" {...field} />}
+              render={({ field }) => (
+              <InputNumber
+                {...field}
+                value={field.value ?? ''}
+                onChange={(val) => field.onChange(val ?? '')}
+                min={0}
+                step={0.01}
+                style={{ width: '100%' }}
+              />
+            )}
             />
           </Form.Item>
         </div>

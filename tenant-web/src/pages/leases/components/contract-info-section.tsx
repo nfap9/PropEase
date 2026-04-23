@@ -1,6 +1,6 @@
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, Controller } from 'react-hook-form';
 import { CalendarDays, Banknote, Droplets, Zap, FileText, AlertCircle } from 'lucide-react';
-import { Input, DatePicker } from 'antd';
+import { Input, DatePicker, InputNumber } from 'antd';
 import dayjs from 'dayjs';
 import { Label } from '@/components/common/label';
 import { FeeItemsEditor, type FeeItem } from '@/components/common/fee-items-editor';
@@ -21,7 +21,6 @@ export function ContractInfoSection({
   const monthlyRent = form.watch('monthly_rent') || 0;
   const deposit = form.watch('deposit') || 0;
 
-  // Compute total monthly from fee items
   const totalMonthly = feeItems
     .filter((f) => f.cycle === 'monthly')
     .reduce((sum, f) => sum + f.amount, 0);
@@ -50,18 +49,18 @@ export function ContractInfoSection({
             <Label htmlFor="start_date" className="text-sm font-medium">
               开始日期 <span className="text-destructive">*</span>
             </Label>
-            <DatePicker
-              id="start_date"
-              value={form.getValues('start_date') ? dayjs(form.getValues('start_date')) : null}
-              onChange={(date) => {
-                form.setValue('start_date', date?.format('YYYY-MM-DD') ?? '', {
-                  shouldDirty: true,
-                  shouldTouch: true,
-                  shouldValidate: true,
-                });
-              }}
-              data-testid="leases-start-date-input"
-              className="w-full rounded-xl shadow-sm"
+            <Controller
+              name="start_date"
+              control={form.control}
+              render={({ field }) => (
+                <DatePicker
+                  id="start_date"
+                  value={field.value ? dayjs(field.value) : null}
+                  onChange={(date) => field.onChange(date?.format('YYYY-MM-DD') ?? '')}
+                  data-testid="leases-start-date-input"
+                  className="w-full rounded-xl shadow-sm"
+                />
+              )}
             />
             {errors.start_date && (
               <p className="text-xs text-destructive flex items-center gap-1">
@@ -74,18 +73,18 @@ export function ContractInfoSection({
             <Label htmlFor="end_date" className="text-sm font-medium">
               结束日期
             </Label>
-            <DatePicker
-              id="end_date"
-              value={form.getValues('end_date') ? dayjs(form.getValues('end_date')) : null}
-              onChange={(date) => {
-                form.setValue('end_date', date?.format('YYYY-MM-DD') ?? '', {
-                  shouldDirty: true,
-                  shouldTouch: true,
-                  shouldValidate: true,
-                });
-              }}
-              data-testid="leases-end-date-input"
-              className="w-full rounded-xl shadow-sm"
+            <Controller
+              name="end_date"
+              control={form.control}
+              render={({ field }) => (
+                <DatePicker
+                  id="end_date"
+                  value={field.value ? dayjs(field.value) : null}
+                  onChange={(date) => field.onChange(date?.format('YYYY-MM-DD') ?? '')}
+                  data-testid="leases-end-date-input"
+                  className="w-full rounded-xl shadow-sm"
+                />
+              )}
             />
             <p className="text-xs text-muted-foreground">留空表示无固定期限租约</p>
           </div>
@@ -99,45 +98,60 @@ export function ContractInfoSection({
           租金与押金
         </div>
 
-        {/* Monthly rent prominent display */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="monthly_rent" className="text-sm font-medium">
               月租 (元) <span className="text-destructive">*</span>
             </Label>
-            <Input
-              id="monthly_rent"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              className="rounded-xl h-12 text-base font-semibold shadow-sm"
-              addonAfter={<span className="text-sm text-muted-foreground">元/月</span>}
-              {...form.register('monthly_rent', { valueAsNumber: true })}
+            <Controller
+              name="monthly_rent"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <>
+                  <InputNumber
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(val) => field.onChange(val ?? '')}
+                    min={0}
+                    step={0.01}
+                    placeholder="0.00"
+                    className="rounded-xl h-12 text-base font-semibold shadow-sm w-full"
+                    suffix={<span className="text-sm text-muted-foreground">元/月</span>}
+                  />
+                  {fieldState.error && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {fieldState.error.message}
+                    </p>
+                  )}
+                </>
+              )}
             />
-            {errors.monthly_rent && (
-              <p className="text-xs text-destructive flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {errors.monthly_rent.message}
-              </p>
-            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="deposit" className="text-sm font-medium">
               押金 (元)
             </Label>
-            <Input
-              id="deposit"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              className="rounded-xl h-12 text-base font-semibold shadow-sm"
-              addonAfter={<span className="text-sm text-muted-foreground">元</span>}
-              {...form.register('deposit', { valueAsNumber: true })}
+            <Controller
+              name="deposit"
+              control={form.control}
+              render={({ field }) => (
+                <InputNumber
+                  {...field}
+                  value={field.value ?? ''}
+                  onChange={(val) => field.onChange(val ?? '')}
+                  min={0}
+                  step={0.01}
+                  placeholder="0.00"
+                  className="rounded-xl h-12 text-base font-semibold shadow-sm w-full"
+                  suffix={<span className="text-sm text-muted-foreground">元</span>}
+                />
+              )}
             />
           </div>
         </div>
 
-        {/* Fee Items - 合并到同一卡片 */}
+        {/* Fee Items */}
         <FeeItemsEditor items={feeItems} onChange={onFeeItemsChange} />
 
         {/* Financial summary bar */}
@@ -183,14 +197,21 @@ export function ContractInfoSection({
               <Droplets className="h-3.5 w-3.5 text-blue-400" />
               水费单价
             </Label>
-            <Input
-              id="water_rate"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              className="rounded-xl h-11 shadow-sm"
-              addonAfter={<span className="text-xs text-muted-foreground">元/吨</span>}
-              {...form.register('water_rate', { valueAsNumber: true })}
+            <Controller
+              name="water_rate"
+              control={form.control}
+              render={({ field }) => (
+                <InputNumber
+                  {...field}
+                  value={field.value ?? ''}
+                  onChange={(val) => field.onChange(val ?? '')}
+                  min={0}
+                  step={0.01}
+                  placeholder="0.00"
+                  className="rounded-xl h-11 shadow-sm w-full"
+                  suffix={<span className="text-xs text-muted-foreground">元/吨</span>}
+                />
+              )}
             />
           </div>
           <div className="space-y-2">
@@ -198,14 +219,21 @@ export function ContractInfoSection({
               <Zap className="h-3.5 w-3.5 text-yellow-500" />
               电费单价
             </Label>
-            <Input
-              id="electricity_rate"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              className="rounded-xl h-11 shadow-sm"
-              addonAfter={<span className="text-xs text-muted-foreground">元/度</span>}
-              {...form.register('electricity_rate', { valueAsNumber: true })}
+            <Controller
+              name="electricity_rate"
+              control={form.control}
+              render={({ field }) => (
+                <InputNumber
+                  {...field}
+                  value={field.value ?? ''}
+                  onChange={(val) => field.onChange(val ?? '')}
+                  min={0}
+                  step={0.01}
+                  placeholder="0.00"
+                  className="rounded-xl h-11 shadow-sm w-full"
+                  suffix={<span className="text-xs text-muted-foreground">元/度</span>}
+                />
+              )}
             />
           </div>
         </div>

@@ -184,7 +184,7 @@ export function BillDetailDialog({
                 ? tenantMessages.bills.dialogs.shareGenerating
                 : tenantMessages.bills.dialogs.share}
             </Button>
-            <Button variant="outlined" onClick={() => onExportPdf(billDetail.id)} icon={<Download className="mr-2 h-4 w-4" />}>
+            <Button onClick={() => onExportPdf(billDetail.id)} icon={<Download className="mr-2 h-4 w-4" />}>
               {tenantMessages.bills.columns.exportPdf}
             </Button>
           </div>

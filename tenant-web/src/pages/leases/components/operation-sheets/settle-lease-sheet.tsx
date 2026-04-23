@@ -2,7 +2,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { settleLeaseSchema, type SettleLeaseFormData } from '@/schemas/lease-operations';
 import { useSettleLease } from '@/hooks/use-lease-operations';
-import { Button, Drawer, Input, Alert, Card, Form } from 'antd';
+import { Button, Drawer, Input, Alert, Card, Form, InputNumber } from 'antd';
 import { AlertTriangle } from 'lucide-react';
 
 interface SettleLeaseSheetProps {
@@ -71,7 +71,15 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
               name="finalWaterReading"
               control={form.control}
               render={({ field }) => (
-                <Input type="number" step="0.01" {...field} placeholder="请输入" />
+                <InputNumber
+                  {...field}
+                  value={field.value ?? ''}
+                  onChange={(val) => field.onChange(val ?? '')}
+                  min={0}
+                  step={0.01}
+                  placeholder="请输入"
+                  style={{ width: '100%' }}
+                />
               )}
             />
           </Form.Item>
@@ -85,7 +93,15 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
               name="finalElectricityReading"
               control={form.control}
               render={({ field }) => (
-                <Input type="number" step="0.01" {...field} placeholder="请输入" />
+                <InputNumber
+                  {...field}
+                  value={field.value ?? ''}
+                  onChange={(val) => field.onChange(val ?? '')}
+                  min={0}
+                  step={0.01}
+                  placeholder="请输入"
+                  style={{ width: '100%' }}
+                />
               )}
             />
           </Form.Item>
@@ -101,7 +117,15 @@ export function SettleLeaseSheet({ open, onOpenChange, orgId, leaseId }: SettleL
             name="penaltyAmount"
             control={form.control}
             render={({ field }) => (
-              <Input type="number" step="0.01" {...field} placeholder="如有违约金请输入" />
+              <InputNumber
+                {...field}
+                value={field.value ?? ''}
+                onChange={(val) => field.onChange(val ?? '')}
+                min={0}
+                step={0.01}
+                placeholder="如有违约金请输入"
+                style={{ width: '100%' }}
+              />
             )}
           />
         </Form.Item>

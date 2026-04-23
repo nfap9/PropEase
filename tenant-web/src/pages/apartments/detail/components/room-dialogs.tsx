@@ -1,9 +1,9 @@
-
 import { Check, Loader2, Settings2 } from 'lucide-react';
 import type { UseFormReturn } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
 import { EditRoomDialog } from '@/pages/rooms/components/EditRoomDialog';
-import { Modal, Drawer, Button, Input, Select, Switch, Form } from 'antd';
+import { Modal, Drawer, Button, Input, Select, Switch, Form, InputNumber, Space } from 'antd';
 import type { Room, RoomFacilities } from '@/types';
 import {
   type BatchEditFormData,
@@ -44,54 +44,78 @@ export function CreateRoomDialog({
         open={open}
         onCancel={() => onOpenChange(false)}
         title={`在 ${apartmentName} 添加新房间`}
-        footer={[
-          <Button key="cancel" onClick={() => onOpenChange(false)}>
-            取消
-          </Button>,
-          <Button key="submit" type="primary" loading={isPending} onClick={form.handleSubmit(onSubmit)}>
-            {isPending ? '创建中...' : '创建'}
-          </Button>,
-        ]}
+        footer={
+          <Space>
+            <Button onClick={() => onOpenChange(false)}>取消</Button>
+            <Button type="primary" loading={isPending} onClick={form.handleSubmit(onSubmit)}>
+              {isPending ? '创建中...' : '创建'}
+            </Button>
+          </Space>
+        }
       >
         <Form layout="vertical" className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item
-              label="房间号"
+            <Controller
               name="room_number"
-              required
-              validateStatus={form.formState.errors.room_number ? 'error' : ''}
-              help={form.formState.errors.room_number?.message}
-            >
-              <Input placeholder="请输入房间号" {...form.register('room_number')} />
-            </Form.Item>
-            <Form.Item label="户型" name="layout">
-              <Select
-                value={form.watch('layout') || ''}
-                onChange={(value) => form.setValue('layout', value)}
-                placeholder="选择户型"
-              >
-                {LAYOUT_OPTIONS.map((layout) => (
-                  <Select.Option key={layout} value={layout}>
-                    {layout}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Form.Item
+                  label="房间号"
+                  required
+                  validateStatus={fieldState.error ? 'error' : ''}
+                  help={fieldState.error?.message}
+                >
+                  <Input placeholder="请输入房间号" {...field} />
+                </Form.Item>
+              )}
+            />
+            <Controller
+              name="layout"
+              control={form.control}
+              render={({ field }) => (
+                <Form.Item label="户型">
+                  <Select {...field} value={field.value || undefined} onChange={field.onChange} placeholder="选择户型">
+                    {LAYOUT_OPTIONS.map((layout) => (
+                      <Select.Option key={layout} value={layout}>
+                        {layout}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              )}
+            />
           </div>
 
-          <Form.Item label="面积 (m²)" name="area">
-            <Input type="number" step="0.01" placeholder="请输入面积" {...form.register('area', { valueAsNumber: true })} />
-          </Form.Item>
+          <Controller
+            name="area"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Form.Item label="面积 (m²)" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
+                <InputNumber
+                  {...field}
+                  value={field.value ?? ''}
+                  onChange={(val) => field.onChange(val ?? '')}
+                  min={0}
+                  step={0.01}
+                  placeholder="请输入面积"
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            )}
+          />
 
-          <Form.Item label="备注" name="notes">
-            <Input placeholder="请输入备注" {...form.register('notes')} />
-          </Form.Item>
+          <Controller
+            name="notes"
+            control={form.control}
+            render={({ field }) => (
+              <Form.Item label="备注">
+                <Input.TextArea {...field} value={field.value ?? ''} placeholder="请输入备注" rows={2} />
+              </Form.Item>
+            )}
+          />
 
           <Form.Item label="家具家电">
-            <Button
-              className="w-full justify-between"
-              onClick={() => onFacilityDialogOpenChange(true)}
-            >
+            <Button className="w-full justify-between" onClick={() => onFacilityDialogOpenChange(true)}>
               <span className="text-gray-500">{getFacilitiesSummary(facilities)}</span>
               <Settings2 className="h-4 w-4" />
             </Button>
@@ -145,13 +169,9 @@ export function BatchCreateRoomDialog({
           <p className="text-sm text-gray-500">
             已选择 <span className="font-medium">{selectedRooms.size}</span> 个房间
           </p>
-          <div className="flex gap-3">
+          <Space>
             <Button onClick={() => onOpenChange(false)}>取消</Button>
-            <Button
-              type="primary"
-              onClick={onSubmitRooms}
-              disabled={selectedRooms.size === 0 || isPending}
-            >
+            <Button type="primary" onClick={onSubmitRooms} disabled={selectedRooms.size === 0 || isPending}>
               {isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
@@ -161,33 +181,43 @@ export function BatchCreateRoomDialog({
                 <>确认添加 ({selectedRooms.size})</>
               )}
             </Button>
-          </div>
+          </Space>
         </div>
       }
     >
       <div className="space-y-4">
         <Form layout="vertical" className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item
-              label="楼层"
+            <Controller
               name="floors"
-              required
-              validateStatus={form.formState.errors.floors ? 'error' : ''}
-              help={form.formState.errors.floors?.message}
-              extra="支持多楼层（如 1,2,3 或 1-5）"
-            >
-              <Input placeholder="如 1,2,3 或 1-5" {...form.register('floors')} />
-            </Form.Item>
-            <Form.Item
-              label="房间号"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Form.Item
+                  label="楼层"
+                  required
+                  validateStatus={fieldState.error ? 'error' : ''}
+                  help={fieldState.error?.message}
+                  extra="支持多楼层（如 1,2,3 或 1-5）"
+                >
+                  <Input placeholder="如 1,2,3 或 1-5" {...field} />
+                </Form.Item>
+              )}
+            />
+            <Controller
               name="room_numbers"
-              required
-              validateStatus={form.formState.errors.room_numbers ? 'error' : ''}
-              help={form.formState.errors.room_numbers?.message}
-              extra="支持多房间号（如 1,2,3 或 1-5）"
-            >
-              <Input placeholder="如 1,2,3 或 1-5" {...form.register('room_numbers')} />
-            </Form.Item>
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Form.Item
+                  label="房间号"
+                  required
+                  validateStatus={fieldState.error ? 'error' : ''}
+                  help={fieldState.error?.message}
+                  extra="支持多房间号（如 1,2,3 或 1-5）"
+                >
+                  <Input placeholder="如 1,2,3 或 1-5" {...field} />
+                </Form.Item>
+              )}
+            />
           </div>
         </Form>
 
@@ -233,12 +263,7 @@ export function BatchCreateRoomDialog({
                       ({selectedCount}/{rooms.length})
                     </span>
                   </div>
-                  <Button
-                    type="text"
-                    size="small"
-                    className="h-7 text-xs"
-                    onClick={() => onToggleFloor(rooms, !allSelected)}
-                  >
+                  <Button type="text" size="small" className="h-7 text-xs" onClick={() => onToggleFloor(rooms, !allSelected)}>
                     {allSelected ? '取消整层' : '选择整层'}
                   </Button>
                 </div>
@@ -251,9 +276,7 @@ export function BatchCreateRoomDialog({
                         type="button"
                         onClick={() => onToggleRoom(roomNumber)}
                         className={`rounded-md px-3 py-1.5 font-mono text-sm transition-colors ${
-                          isSelected
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          isSelected ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                       >
                         {roomNumber}
@@ -288,29 +311,25 @@ export function DeleteRoomDialog({
       open={open}
       onCancel={() => onOpenChange(false)}
       title="确认删除"
-      footer={[
-        <Button key="cancel" onClick={() => onOpenChange(false)}>
-          取消
-        </Button>,
-        <Button
-          key="delete"
-          type="primary"
-          danger
-          loading={isPending}
-          onClick={onConfirm}
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
-              删除中...
-            </>
-          ) : (
-            '删除'
-          )}
-        </Button>,
-      ]}
+      footer={
+        <Space>
+          <Button onClick={() => onOpenChange(false)}>取消</Button>
+          <Button type="primary" danger loading={isPending} onClick={onConfirm}>
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
+                删除中...
+              </>
+            ) : (
+              '删除'
+            )}
+          </Button>
+        </Space>
+      }
     >
-      <p>确定要删除房间 &quot;{room?.room_number ?? ''}&quot; 吗？此操作不可撤销。</p>
+      <p>
+        确定要删除房间 &quot;{room?.room_number ?? ''}&quot; 吗？此操作不可撤销。
+      </p>
     </Modal>
   );
 }
@@ -335,93 +354,94 @@ export function BatchEditDialog({
       open={open}
       onCancel={() => onOpenChange(false)}
       title="批量编辑"
-      footer={[
-        <Button key="cancel" onClick={() => onOpenChange(false)}>
-          取消
-        </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          loading={isPending}
-          onClick={form.handleSubmit(onSubmit)}
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
-              保存中...
-            </>
-          ) : (
-            '保存'
-          )}
-        </Button>,
-      ]}
+      footer={
+        <Space>
+          <Button onClick={() => onOpenChange(false)}>取消</Button>
+          <Button type="primary" loading={isPending} onClick={form.handleSubmit(onSubmit)}>
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
+                保存中...
+              </>
+            ) : (
+              '保存'
+            )}
+          </Button>
+        </Space>
+      }
     >
       <p className="mb-4 text-sm text-gray-600">为选中的 {selectedCount} 个房间设置属性（留空则不修改）</p>
       <Form layout="vertical" className="space-y-4">
-        <Form.Item label="户型" name="layout">
-          <Select
-            value={form.watch('layout') || '__none__'}
-            onChange={(value) => form.setValue('layout', value === '__none__' ? undefined : value)}
-            placeholder="不修改"
-          >
-            <Select.Option value="__none__">不修改</Select.Option>
-            {LAYOUT_OPTIONS.map((layout) => (
-              <Select.Option key={layout} value={layout}>
-                {layout}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+        <Controller
+          name="layout"
+          control={form.control}
+          render={({ field }) => (
+            <Form.Item label="户型">
+              <Select
+                {...field}
+                value={field.value || '__none__'}
+                onChange={(val) => field.onChange(val === '__none__' ? undefined : val)}
+                placeholder="不修改"
+              >
+                <Select.Option value="__none__">不修改</Select.Option>
+                {LAYOUT_OPTIONS.map((layout) => (
+                  <Select.Option key={layout} value={layout}>
+                    {layout}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          )}
+        />
 
-        <Form.Item label="面积 (m²)" name="area">
-          <Input
-            type="number"
-            step="0.01"
-            placeholder="不修改"
-            value={form.watch('area') ?? ''}
-            onChange={(event) => {
-              const nextValue = event.target.value;
-              if (nextValue === '') {
-                form.setValue('area', undefined);
-                return;
-              }
+        <Controller
+          name="area"
+          control={form.control}
+          render={({ field }) => (
+            <Form.Item label="面积 (m²)">
+              <InputNumber
+                {...field}
+                value={field.value ?? ''}
+                onChange={(val) => field.onChange(val === null ? undefined : val ?? '')}
+                placeholder="不修改"
+                min={0}
+                step={0.01}
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          )}
+        />
 
-              const parsed = parseFloat(nextValue);
-              form.setValue('area', isNaN(parsed) ? undefined : parsed);
-            }}
-          />
-        </Form.Item>
+        <Controller
+          name="monthly_rent"
+          control={form.control}
+          render={({ field }) => (
+            <Form.Item label="月租 (元)">
+              <InputNumber
+                {...field}
+                value={field.value ?? ''}
+                onChange={(val) => field.onChange(val === null ? undefined : val ?? '')}
+                placeholder="不修改"
+                min={0}
+                step={0.01}
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          )}
+        />
 
-        <Form.Item label="月租 (元)" name="monthly_rent">
-          <Input
-            type="number"
-            step="0.01"
-            placeholder="不修改"
-            value={form.watch('monthly_rent') ?? ''}
-            onChange={(event) => {
-              const nextValue = event.target.value;
-              if (nextValue === '') {
-                form.setValue('monthly_rent', undefined);
-                return;
-              }
-
-              const parsed = parseFloat(nextValue);
-              form.setValue('monthly_rent', isNaN(parsed) ? undefined : parsed);
-            }}
-          />
-        </Form.Item>
-
-        <Form.Item label="设为维修中">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">
-              开启后房间将标记为维修中状态
-            </p>
-            <Switch
-              checked={form.watch('maintenance') ?? false}
-              onChange={(checked) => form.setValue('maintenance', checked)}
-            />
-          </div>
-        </Form.Item>
+        <Controller
+          name="maintenance"
+          control={form.control}
+          render={({ field }) => (
+            <Form.Item label="设为维修中">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-500">开启后房间将标记为维修中状态</p>
+                <Switch checked={field.value ?? false} onChange={field.onChange} />
+              </div>
+            </Form.Item>
+          )}
+        />
       </Form>
     </Modal>
   );

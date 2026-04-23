@@ -1,11 +1,10 @@
-
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { Modal, Button, Input, message, Form } from 'antd';
+import { Modal, Button, Input, message, Form, InputNumber, Space } from 'antd';
 import { Loader2, Zap } from 'lucide-react';
 import { utilityConfigApi } from '@/api/apartments';
 import { getErrorMessage } from '@/utils/error';
@@ -34,7 +33,6 @@ export function UtilityConfigDialog({
 }: UtilityConfigDialogProps) {
   const queryClient = useQueryClient();
 
-  // 获取现有配置
   const { data: config, isLoading } = useQuery({
     queryKey: ['utility-config', orgId, apartmentId],
     queryFn: () => utilityConfigApi.get(apartmentId),
@@ -42,7 +40,6 @@ export function UtilityConfigDialog({
     retry: false,
   });
 
-  // 表单
   const form = useForm<UtilityConfigFormData>({
     resolver: zodResolver(utilityConfigSchema),
     defaultValues: {
@@ -51,7 +48,6 @@ export function UtilityConfigDialog({
     },
   });
 
-  // 当配置加载完成后，设置表单值
   useEffect(() => {
     if (config) {
       form.reset({
@@ -66,7 +62,6 @@ export function UtilityConfigDialog({
     }
   }, [config, form]);
 
-  // 保存配置
   const saveMutation = useMutation({
     mutationFn: (data: UtilityConfigFormData) =>
       utilityConfigApi.createOrUpdate(apartmentId, {
@@ -92,10 +87,12 @@ export function UtilityConfigDialog({
       open={open}
       onCancel={() => onOpenChange(false)}
       title={<span className="flex items-center gap-2"><Zap className="h-5 w-5" />水电配置</span>}
-      footer={[
-        <Button key="cancel" onClick={() => onOpenChange(false)}>取消</Button>,
-        <Button key="submit" type="primary" loading={saveMutation.isPending} onClick={form.handleSubmit(onSubmit)}>保存</Button>,
-      ]}
+      footer={
+        <Space>
+          <Button onClick={() => onOpenChange(false)}>取消</Button>
+          <Button type="primary" loading={saveMutation.isPending} onClick={form.handleSubmit(onSubmit)}>保存</Button>
+        </Space>
+      }
     >
       <p className="mb-4 text-sm text-gray-600">配置 {apartmentName} 的水电单价</p>
 
@@ -104,38 +101,50 @@ export function UtilityConfigDialog({
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       ) : (
-        <Form
-          layout="vertical"
-          onFinish={form.handleSubmit(onSubmit)}
-          className="space-y-4"
-        >
-          <Form.Item
-            label="水费单价（元/吨）"
+        <Form layout="vertical" className="space-y-4">
+          <Controller
             name="water_price_per_unit"
-            validateStatus={form.formState.errors.water_price_per_unit ? 'error' : ''}
-            help={form.formState.errors.water_price_per_unit?.message}
-          >
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="请输入水费单价"
-              {...form.register('water_price_per_unit', { valueAsNumber: true })}
-            />
-          </Form.Item>
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Form.Item
+                label="水费单价（元/吨）"
+                validateStatus={fieldState.error ? 'error' : ''}
+                help={fieldState.error?.message}
+              >
+                <InputNumber
+                  {...field}
+                  value={field.value ?? ''}
+                  onChange={(val) => field.onChange(val ?? 0)}
+                  min={0}
+                  step={0.01}
+                  placeholder="请输入水费单价"
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            )}
+          />
 
-          <Form.Item
-            label="电费单价（元/度）"
+          <Controller
             name="electricity_price_per_unit"
-            validateStatus={form.formState.errors.electricity_price_per_unit ? 'error' : ''}
-            help={form.formState.errors.electricity_price_per_unit?.message}
-          >
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="请输入电费单价"
-              {...form.register('electricity_price_per_unit', { valueAsNumber: true })}
-            />
-          </Form.Item>
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Form.Item
+                label="电费单价（元/度）"
+                validateStatus={fieldState.error ? 'error' : ''}
+                help={fieldState.error?.message}
+              >
+                <InputNumber
+                  {...field}
+                  value={field.value ?? ''}
+                  onChange={(val) => field.onChange(val ?? 0)}
+                  min={0}
+                  step={0.01}
+                  placeholder="请输入电费单价"
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            )}
+          />
         </Form>
       )}
     </Modal>
