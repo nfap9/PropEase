@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { getRouteMeta, findNavItem, findNavItemByHref } from '@/components/layout/nav-config-v2';
+import { getRouteMeta, findNavItem, findNavItemByHref } from '@/constants/nav-config';
 
 export interface BreadcrumbItem {
   href: string;

@@ -1,6 +1,6 @@
 import type { RoomStatus } from '@/types';
-import type { ApartmentFormData } from '@/pages/apartments/components';
-import type { apartmentSchema } from '@/pages/apartments/components';
+import type { ApartmentFormData } from '@apartment-ultra/api-contract';
+import type { ApartmentCreate as apartmentSchema } from '@apartment-ultra/api-contract';
 
 export type { ApartmentFormData, apartmentSchema };
 

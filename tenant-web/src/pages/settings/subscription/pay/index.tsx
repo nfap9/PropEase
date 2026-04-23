@@ -167,8 +167,7 @@ function SubscriptionPayContent() {
           <div className="flex flex-col items-center gap-6">
             {qrUrl ? (
               <>
-                {/* 动态二维码 URL 使用 img，next/image 需配置 remotePatterns */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {/* 动态二维码 URL 使用 img */}
                 <img
                   src={qrUrl}
                   alt={tenantMessages.settings.subscriptionPage.pay.qrAlt}

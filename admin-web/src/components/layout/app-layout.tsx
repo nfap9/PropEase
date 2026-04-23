@@ -8,7 +8,7 @@ import {
   NAV_SECTIONS,
   findNavItem,
   type NavItem,
-} from './nav-config-v2';
+} from '@/constants/nav-config';
 import {
   ChevronLeft,
   ChevronRight,

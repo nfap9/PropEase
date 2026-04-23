@@ -4,7 +4,7 @@
  * 提供用户登录状态、组织信息、登录/登出方法
  * 由于 logout 需要导航，使用 router.navigate 代替 useNavigate hook
  */
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { User, Organization } from '@/types';
 import { authApi } from '@/api/auth';
@@ -13,6 +13,7 @@ import { Toaster } from 'sonner';
 import { BrandConfigProvider } from '@/contexts/brand-config';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { router } from '@/routes';
+import { AuthContext, type AuthContextType } from '@/contexts/auth';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,21 +25,7 @@ const queryClient = new QueryClient({
   },
 });
 
-/** 认证 Context 类型定义 */
-interface AuthContextType {
-  user: User | null;
-  organization: Organization | null;
-  organizations: Organization[];
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  login: (phone: string, password: string) => Promise<string>;
-  register: (phone: string, password: string, fullName: string) => Promise<string>;
-  logout: () => Promise<void>;
-  setOrganization: (org: Organization | null) => void;
-  refreshOrganizations: (preferredOrgId?: string | null) => Promise<void>;
-}
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function resolveCurrentOrganization(
   orgs: Organization[],
@@ -197,17 +184,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-/**
- * 使用认证 Context 的 Hook
- */
-export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 }
 
 /**

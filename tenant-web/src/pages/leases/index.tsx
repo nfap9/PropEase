@@ -17,7 +17,7 @@ import {
   type LeaseEditFormData,
   type LeaseFiltersState,
 } from '@/schemas/leases';
-import { filterLeases } from '@/utils/leases';
+import { filterLeases } from '@/hooks/leases';
 import { LeaseDeleteDialog, LeaseEditDialog, LeaseTerminateDialog } from '@/pages/leases/components/lease-dialogs';
 import { LeaseFilters } from '@/pages/leases/components/lease-filters';
 

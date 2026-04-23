@@ -4,7 +4,7 @@
  *
  * 组合所有 Context Providers
  */
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -13,22 +13,9 @@ import { authApi } from '@/api/auth';
 import { organizationsApi } from '@/api/organizations';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/components/theme/theme-provider';
+import { AuthContext, type AuthContextType } from '@/contexts/auth';
 
-/** 认证 Context 类型定义 */
-interface AuthContextType {
-  user: User | null;
-  organization: Organization | null;
-  organizations: Organization[];
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  login: (phone: string, password: string) => Promise<void>;
-  register: (phone: string, password: string, fullName: string) => Promise<void>;
-  logout: () => void;
-  setOrganization: (org: Organization | null) => void;
-  refreshOrganizations: () => Promise<void>;
-}
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // 创建 QueryClient 实例
 const queryClient = new QueryClient({
@@ -167,14 +154,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 }
 
 /**

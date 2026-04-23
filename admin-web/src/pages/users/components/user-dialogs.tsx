@@ -3,7 +3,7 @@ import { Button, Checkbox, Modal, Form, Input } from 'antd';
 import type { AdminUser } from '@/api/admin-client';
 import { adminI18n, adminMessages } from '@/i18n';
 import type { CreateUserForm, EditUserForm, ResetPasswordForm } from '@/schemas/users';
-import { getDefaultCreateUserFormValues, getEditUserFormValues } from '@/utils/users';
+import { getDefaultCreateUserFormValues, getEditUserFormValues } from '@/hooks/users';
 
 export function CreateUserDialog({
   open,

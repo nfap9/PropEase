@@ -6,7 +6,7 @@ import { Skeleton } from 'antd';
 import type { AdminUser } from '@/api/admin-client';
 import { createAdminUsersColumns } from '@/pages/users/components/columns';
 import { useAdminUsersData } from '@/hooks/users';
-import { toCreateUserPayload, toResetPasswordPayload, toUpdateUserPayload } from '@/utils/users';
+import { toCreateUserPayload, toResetPasswordPayload, toUpdateUserPayload } from '@/hooks/users';
 import { CreateUserDialog, DeleteUserDialog, EditUserDialog, ResetPasswordDialog } from '@/pages/users/components/user-dialogs';
 import { useManagedItem } from '@/hooks';
 

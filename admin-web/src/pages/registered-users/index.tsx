@@ -5,7 +5,7 @@ import { Skeleton } from 'antd';
 import type { FilterActive } from '@/schemas/registered-users';
 import { createRegisteredUsersColumns } from '@/pages/registered-users/components/columns';
 import { useRegisteredUsersData } from '@/hooks/registered-users';
-import { getDefaultGiftFormValues, getSelectedGiftPlan } from '@/utils/registered-users';
+import { getDefaultGiftFormValues, getSelectedGiftPlan } from '@/hooks/registered-users';
 import {
   DeleteRegisteredUserDialog,
   DisableRegisteredUserDialog,

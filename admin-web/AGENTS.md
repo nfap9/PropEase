@@ -77,6 +77,21 @@ export default function SubscriptionsPageContent() { ... }
 
 ---
 
+## 前端分层架构
+
+项目采用 **视图层 → 业务层 → 基础层** 的三层架构，通过 ESLint `import/no-restricted-paths` 强制约束引用方向。
+
+| 层级 | 目录 | 职责 | 可引用 |
+|------|------|------|--------|
+| **视图层** | `pages/`, `components/`, `router/` | UI 渲染、页面路由、组件展示、路由配置 | 业务层、基础层 |
+| **业务层** | `hooks/`, `schemas/` | 业务逻辑、数据获取、状态管理、表单校验 | 基础层 |
+| **基础层** | `api/`, `utils/`, `types/`, `constants/`, `contexts/`, `i18n/`, `styles/` | 工具函数、类型定义、常量、API 客户端、国际化 | 仅同层或更底层 |
+
+**禁止的反向引用（由 lint 拦截）：**
+- 业务层 → 视图层（如 `hooks/` 引用 `components/`）
+- 基础层 → 视图层（如 `utils/` 引用 `pages/`）
+- 基础层 → 业务层（如 `utils/` 引用 `schemas/`）
+
 ## pages/ 与 features/ 职责划分
 
 | 目录 | 职责 | 复杂度阈值 |
