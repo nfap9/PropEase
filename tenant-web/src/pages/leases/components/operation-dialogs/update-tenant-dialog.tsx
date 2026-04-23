@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useUpdateTenant } from '@/hooks/use-lease-operations';
 import { tenantsApi } from '@/api/tenants';
 import { Modal, Button, Select, Form } from 'antd';
-import type { UpdateTenantFormData } from '@/schemas/lease-operations';
+import type { UpdateTenantFormData } from '@/types';
 
 interface UpdateTenantDialogProps {
   open: boolean;

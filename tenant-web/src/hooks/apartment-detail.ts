@@ -9,7 +9,7 @@ import type {
   ApartmentFormData,
   BatchEditFormData,
   RoomFormData,
-} from '@/schemas/apartment-detail';
+} from '@/types';
 import {
   getRoomStats,
   groupRoomsByFloor,

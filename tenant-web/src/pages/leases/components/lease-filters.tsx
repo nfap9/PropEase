@@ -1,7 +1,7 @@
 
 import { Search, X, Building2 } from 'lucide-react';
 import { Button, DatePicker, Input, Select, Tag } from 'antd';
-import type { LeaseFiltersState } from '@/schemas/leases';
+import type { LeaseFiltersState } from '@/types';
 
 interface LeaseFiltersProps {
   apartments: { id: string; name: string }[];

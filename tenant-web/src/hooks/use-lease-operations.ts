@@ -11,7 +11,7 @@ import type {
   ChangeDepositFormData,
   UpdateFeeItemsFormData,
   SettleLeaseFormData,
-} from '@/schemas/lease-operations';
+} from '@/types';
 
 export function useLeaseDetail(leaseId: string) {
   return useQuery({

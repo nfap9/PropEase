@@ -3,7 +3,7 @@ import { useChangeRoom } from '@/hooks/use-lease-operations';
 import { roomsApi, apartmentsApi } from '@/api/apartments';
 import { Button, Drawer, Input, Select, DatePicker, Form } from 'antd';
 import dayjs from 'dayjs';
-import type { ChangeRoomFormData } from '@/schemas/lease-operations';
+import type { ChangeRoomFormData } from '@/types';
 
 interface ChangeRoomSheetProps {
   open: boolean;

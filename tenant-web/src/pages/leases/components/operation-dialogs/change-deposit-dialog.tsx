@@ -1,6 +1,6 @@
 import { useChangeDeposit } from '@/hooks/use-lease-operations';
 import { Modal, Button, Input, Form, InputNumber } from 'antd';
-import type { ChangeDepositFormData } from '@/schemas/lease-operations';
+import type { ChangeDepositFormData } from '@/types';
 
 interface ChangeDepositDialogProps {
   open: boolean;

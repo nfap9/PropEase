@@ -3,7 +3,7 @@ import { Form, Input, DatePicker, Select, Button, Modal, InputNumber } from 'ant
 import dayjs from 'dayjs';
 import type { Bill } from '@/types';
 import { PAYMENT_METHOD_LABELS, BILLS } from '@/constants/bills';
-import type { PaymentFormData } from '@/schemas/bills';
+import type { PaymentFormData } from '@/types';
 import { getBillPaymentSummary } from '@/utils/bills';
 import { tenantI18n, tenantMessages } from '@/i18n';
 

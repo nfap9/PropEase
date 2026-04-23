@@ -1,6 +1,6 @@
 import { useRenew } from '@/hooks/use-lease-operations';
 import { Button, Drawer, Input, DatePicker, Form } from 'antd';
-import type { RenewFormData } from '@/schemas/lease-operations';
+import type { RenewFormData } from '@/types';
 
 interface RenewSheetProps {
   open: boolean;

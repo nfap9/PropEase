@@ -1,7 +1,7 @@
 import { useSettleLease } from '@/hooks/use-lease-operations';
 import { Button, Drawer, Input, Alert, Card, Form, InputNumber } from 'antd';
 import { AlertTriangle } from 'lucide-react';
-import type { SettleLeaseFormData } from '@/schemas/lease-operations';
+import type { SettleLeaseFormData } from '@/types';
 
 interface SettleLeaseSheetProps {
   open: boolean;

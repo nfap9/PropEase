@@ -4,7 +4,7 @@ import { apartmentsApi } from '@/api/apartments';
 import { leasesApi } from '@/api/leases';
 import { getErrorMessage } from '@/utils/error';
 import { filterEmptyStrings } from '@/utils/form';
-import type { LeaseEditFormData, LeaseFiltersState } from '@/schemas/leases';
+import type { LeaseEditFormData, LeaseFiltersState } from '@/types';
 import type { Lease } from '@/types';
 
 interface UseLeasesDataOptions {

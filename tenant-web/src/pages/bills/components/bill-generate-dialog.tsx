@@ -1,7 +1,7 @@
 import { Button, DatePicker, Form, InputNumber, Modal, Select, Space } from 'antd';
 import dayjs from 'dayjs';
 import { tenantMessages } from '@/i18n';
-import type { GenerateBillsFormData } from '@/schemas/bills';
+import type { GenerateBillsFormData } from '@/types';
 
 const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => ({
   value: String(i + 1),

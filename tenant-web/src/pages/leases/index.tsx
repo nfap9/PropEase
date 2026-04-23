@@ -11,11 +11,8 @@ import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import type { Lease } from '@/types';
 import { createLeaseColumns } from '@/pages/leases/components/columns';
 import { useLeasesData } from '@/hooks/leases';
-import {
-  getDefaultLeaseFilters,
-  type LeaseEditFormData,
-  type LeaseFiltersState,
-} from '@/schemas/leases';
+import { getDefaultLeaseFilters } from '@/utils/leases';
+import type { LeaseEditFormData, LeaseFiltersState } from '@/types';
 import { LEASES } from '@/constants/leases';
 import { filterLeases } from '@/hooks/leases';
 import { LeaseDeleteDialog, LeaseEditDialog, LeaseTerminateDialog } from '@/pages/leases/components/lease-dialogs';

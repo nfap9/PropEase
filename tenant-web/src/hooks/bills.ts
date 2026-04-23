@@ -7,7 +7,7 @@ import { shareBillSummary } from '@/utils/bills-share';
 import { getErrorMessage } from '@/utils/error';
 import { filterEmptyStrings } from '@/utils/form';
 import type { Bill, BillFeeItem, BillStatus } from '@/types';
-import type { GenerateBillsFormData, PaymentFormData } from '@/schemas/bills';
+import type { GenerateBillsFormData, PaymentFormData } from '@/types';
 import { buildBillPdfFilename, buildBillsExcelFilename, downloadBlob } from '@/utils/bills';
 import { tenantMessages } from '@/constants/messages';
 

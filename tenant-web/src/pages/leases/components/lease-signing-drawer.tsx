@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button, Drawer, Space } from 'antd';
-import type { LeaseSigningFormData } from '@/schemas/leases';
+import type { LeaseSigningFormData } from '@/types';
 import { leasesApi } from '@/api/leases';
 import { apartmentsApi, roomsApi, utilityConfigApi } from '@/api/apartments';
 import { tenantsApi } from '@/api/tenants';
