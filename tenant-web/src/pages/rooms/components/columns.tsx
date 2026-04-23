@@ -4,7 +4,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { Tag, Dropdown, Button } from 'antd';
 import type { MenuProps } from 'antd';
 import { Room, RoomStatus } from '@/types';
-import { ROOM_STATUS_CONFIG } from '@/utils/status';
+import { ROOM_STATUS_CONFIG } from '@/constants/status';
 import { FileText, Ban, Wrench, CheckCircle, MoreHorizontal } from 'lucide-react';
 
 export interface UseColumnsOptions {

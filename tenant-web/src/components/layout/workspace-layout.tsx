@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { cn } from '@/utils';
-import { SIDEBAR_NAV_CONFIG, type NavItem } from '@/constants/nav-config';
+import { SIDEBAR_NAV_CONFIG } from '@/constants/nav-config';
+import type { NavItem } from '@/types';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Button } from 'antd';

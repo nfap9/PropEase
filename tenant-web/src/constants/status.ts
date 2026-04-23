@@ -1,6 +1,3 @@
-/**
- * 共享状态配置 - 统一各类状态的标签、变体、图标
- */
 import type { LucideIcon } from 'lucide-react';
 import { CheckCircle, Clock, AlertCircle, DollarSign } from 'lucide-react';
 

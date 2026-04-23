@@ -6,7 +6,7 @@ import { Card, Button, Tag, Skeleton, Table, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Label } from '@/components/common/label';
-import { LEASE_STATUS_CONFIG } from '@/utils/status';
+import { LEASE_STATUS_CONFIG } from '@/constants/status';
 import { tenantReachabilityApi } from '@/api/tenant-reachability';
 import { tenantsApi } from '@/api/tenants';
 import { leasesApi } from '@/api/leases';

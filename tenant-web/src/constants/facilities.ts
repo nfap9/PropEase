@@ -31,12 +31,4 @@ export const APPLIANCE_PRESETS: FacilityPreset[] = [
 /** 获取所有预设（合并） */
 export const ALL_FACILITY_PRESETS = [...FURNITURE_PRESETS, ...APPLIANCE_PRESETS];
 
-/** 根据 code 查找预设 */
-export function getFacilityPreset(code: string): FacilityPreset | undefined {
-  return ALL_FACILITY_PRESETS.find((p) => p.code === code);
-}
 
-/** 根据 code 获取显示名称 */
-export function getFacilityLabel(code: string): string {
-  return getFacilityPreset(code)?.label ?? code;
-}

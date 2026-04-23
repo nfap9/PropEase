@@ -3,9 +3,21 @@
  */
 export * from '@apartment-ultra/api-contract';
 
+import type { LucideIcon } from 'lucide-react';
+import type { Apartment, Room, RoomFacilities, DashboardOverview, IncomeReport } from '@apartment-ultra/api-contract';
+
 /** 仅前端使用的 API 错误表示（openapi 风格 detail），与 client 中的 ApiError 类区分 */
 export interface ApiErrorDetail {
   detail: string;
+}
+
+/** 导航项 */
+export interface NavItem {
+  id: string;
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  items?: NavItem[];
 }
 
 // ============ Domain types (from former schemas/) ============
@@ -140,6 +152,39 @@ export interface BatchEditFormData {
   area?: number;
   maintenance?: boolean;
   monthly_rent?: number;
+}
+
+// ============ Domain types from utils/ ============
+
+// --- Apartment Detail ---
+export interface GeneratedFloorRooms {
+  floor: number;
+  rooms: string[];
+}
+
+export interface RoomStats {
+  total: number;
+  available: number;
+  occupied: number;
+  maintenance: number;
+}
+
+export interface FloorRoomGroup {
+  floor: number;
+  rooms: Room[];
+}
+
+// --- Reports ---
+export interface IncomeSummary {
+  totalAmount: number;
+  collectedAmount: number;
+  pendingAmount: number;
+  averageCollectionRate: number;
+}
+
+export interface IncomeCategoryDatum {
+  name: '租金' | '水费' | '电费' | '其他';
+  value: number;
 }
 
 // ============ Re-exports (backwards compatibility) ============

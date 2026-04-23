@@ -3,7 +3,7 @@ import { Modal, Button, Input, Select, InputNumber, Form } from 'antd';
 import { Settings2 } from 'lucide-react';
 import { Room, RoomFacilities } from '@/types';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
-import { getFacilityLabel } from '@/constants/facilities';
+import { getFacilityLabel } from '@/utils/facilities';
 import type { RoomEditFormData } from '@apartment-ultra/api-contract';
 
 const LAYOUT_OPTIONS = [

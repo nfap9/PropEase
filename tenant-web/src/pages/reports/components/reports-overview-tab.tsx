@@ -2,7 +2,7 @@
 import { Tag } from 'antd';
 import { Card } from 'antd';
 import type { CardProps } from 'antd';
-import { BILL_STATUS_CONFIG, ROOM_STATUS_CONFIG } from '@/utils/status';
+import { BILL_STATUS_CONFIG, ROOM_STATUS_CONFIG } from '@/constants/status';
 import type { DashboardOverview } from '@/types';
 
 const STATUS_VARIANT_MAP: Record<string, string> = {

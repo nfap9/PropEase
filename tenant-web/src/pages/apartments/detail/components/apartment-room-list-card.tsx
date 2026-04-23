@@ -2,10 +2,10 @@
 import { useEffect, useState } from 'react';
 import { Check, Home, Layers, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Badge, Button, Card, Skeleton, Switch } from 'antd';
-import { ROOM_STATUS_CONFIG } from '@/utils/status';
+import { ROOM_STATUS_CONFIG } from '@/constants/status';
 import type { Room } from '@/types';
 import type { RoomStatus } from '@/types';
-import type { FloorRoomGroup } from '@/utils/apartment-detail';
+import type { FloorRoomGroup } from '@/types';
 
 interface ApartmentRoomListCardProps {
   roomsLoading: boolean;

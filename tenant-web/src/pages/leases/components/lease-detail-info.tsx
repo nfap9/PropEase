@@ -2,7 +2,7 @@
 import { Badge } from 'antd';
 import { Card } from 'antd';
 import { formatDate } from '@/utils/date';
-import { LEASE_STATUS_CONFIG } from '@/utils/status';
+import { LEASE_STATUS_CONFIG } from '@/constants/status';
 import type { Lease } from '@apartment-ultra/api-contract';
 
 /** 包含 fee_items 的 Lease 扩展类型（直接输入模式） */

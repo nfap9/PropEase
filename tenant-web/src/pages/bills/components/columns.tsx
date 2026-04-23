@@ -3,7 +3,7 @@ import { Tag, Dropdown, Button } from 'antd';
 import type { MenuProps } from 'antd';
 import { Download, DollarSign, Eye, Share2, MoreHorizontal } from 'lucide-react';
 import { formatDate } from '@/utils/date';
-import { BILL_STATUS_CONFIG } from '@/utils/status';
+import { BILL_STATUS_CONFIG } from '@/constants/status';
 import type { Bill } from '@/types';
 import { formatBillLocation, formatBillPeriod } from '@/utils/bills';
 import { tenantMessages } from '@/i18n';

@@ -5,7 +5,7 @@ import { Ban, Pencil, Trash2, MoreHorizontal } from 'lucide-react';
 import { Tag, Dropdown, Button } from 'antd';
 import type { MenuProps } from 'antd';
 import { formatDate } from '@/utils/date';
-import { LEASE_STATUS_CONFIG } from '@/utils/status';
+import { LEASE_STATUS_CONFIG } from '@/constants/status';
 import type { Lease } from '@/types';
 
 interface CreateLeaseColumnsOptions {

@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { Building2, CheckCircle2, Home, Wrench } from 'lucide-react';
 import { Card } from 'antd';
 import type { Apartment } from '@/types';
-import type { RoomStats } from '@/utils/apartment-detail';
+import type { RoomStats } from '@/types';
 
 interface ApartmentOverviewTabProps {
   apartment: Apartment;

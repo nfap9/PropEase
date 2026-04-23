@@ -1,7 +1,7 @@
 import type { Organization } from '@/types';
+import { ORGANIZATION_ONBOARDING_PATH, DEFAULT_ORGANIZATION_HOME_PATH } from '@/constants/auth-redirect';
 
-export const ORGANIZATION_ONBOARDING_PATH = '/organizations';
-export const DEFAULT_ORGANIZATION_HOME_PATH = '/workspace/dashboard';
+export { ORGANIZATION_ONBOARDING_PATH, DEFAULT_ORGANIZATION_HOME_PATH };
 
 export function getPostAuthRedirectPath(
   organizations: Organization[],

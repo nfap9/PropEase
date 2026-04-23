@@ -4,48 +4,19 @@ import type {
   TenantNotificationDelivery,
   TenantReachabilityEventType,
 } from '@/types';
-import { tenantMessages } from '@/i18n';
+import {
+  EVENT_LABEL_MAP,
+  DELIVERY_STATUS_LABEL_MAP,
+} from '@/constants/tenant-reachability';
 
 export type TenantSmsReachabilityStatus = 'ready' | 'missing_phone' | 'opted_out';
 
-const eventLabelMap: Record<TenantReachabilityEventType, string> = {
-  bill_generated: tenantMessages.settings.notificationsPage.events.billGenerated,
-  rent_due_reminder: tenantMessages.settings.notificationsPage.events.rentDueReminder,
-  bill_overdue: tenantMessages.settings.notificationsPage.events.billOverdue,
-};
-
-const deliveryStatusLabelMap: Record<NotificationDeliveryStatus, string> = {
-  sent: tenantMessages.settings.notificationsPage.stats.sent,
-  failed: tenantMessages.settings.notificationsPage.stats.failed,
-  skipped: tenantMessages.settings.notificationsPage.stats.skipped,
-};
-
-export const tenantReachabilityEventOptions: Array<{
-  value: TenantReachabilityEventType | 'all';
-  label: string;
-}> = [
-  { value: 'all', label: tenantMessages.settings.notificationsPage.allEvents },
-  { value: 'bill_generated', label: eventLabelMap.bill_generated },
-  { value: 'rent_due_reminder', label: eventLabelMap.rent_due_reminder },
-  { value: 'bill_overdue', label: eventLabelMap.bill_overdue },
-];
-
-export const tenantReachabilityStatusOptions: Array<{
-  value: NotificationDeliveryStatus | 'all';
-  label: string;
-}> = [
-  { value: 'all', label: tenantMessages.settings.notificationsPage.allStatuses },
-  { value: 'sent', label: deliveryStatusLabelMap.sent },
-  { value: 'failed', label: deliveryStatusLabelMap.failed },
-  { value: 'skipped', label: deliveryStatusLabelMap.skipped },
-];
-
 export function getTenantReachabilityEventLabel(value: TenantReachabilityEventType): string {
-  return eventLabelMap[value];
+  return EVENT_LABEL_MAP[value];
 }
 
 export function getDeliveryStatusLabel(status: NotificationDeliveryStatus): string {
-  return deliveryStatusLabelMap[status];
+  return DELIVERY_STATUS_LABEL_MAP[status];
 }
 
 export function getDeliveryStatusVariant(

@@ -13,14 +13,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 
-/** 导航项 */
-export interface NavItem {
-  id: string;
-  href: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  detailLabel?: string;
-}
+import type { NavItem } from '@/types';
 
 /** 导航分区 */
 export interface NavSection {
@@ -74,18 +67,6 @@ export const SIDEBAR_NAV_CONFIG: NavSection[] = [
     ],
   },
 ];
-
-/** 根据路径查找导航项 */
-export function findNavItemByPath(path: string): NavItem | undefined {
-  for (const section of SIDEBAR_NAV_CONFIG) {
-    for (const item of section.items) {
-      if (item.href === path || path.startsWith(item.href + '/')) {
-        return item;
-      }
-    }
-  }
-  return undefined;
-}
 
 /** 路由元数据 */
 export interface RouteMeta {

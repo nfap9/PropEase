@@ -1,35 +1,15 @@
 import type { Notification, NotificationCategory } from '@apartment-ultra/api-contract';
-import { tenantMessages } from '@/i18n';
+import {
+  NOTIFICATION_TYPE_LABEL_MAP,
+  NOTIFICATION_CATEGORY_LABEL_MAP,
+} from '@/constants/notifications';
 
-const notificationTypeLabelMap: Record<string, string> = {
-  lease_expiring: tenantMessages.notificationsPage.types.leaseExpiring,
-  rent_due_reminder: tenantMessages.notificationsPage.types.rentDueReminder,
-  bill_overdue: tenantMessages.notificationsPage.types.billOverdue,
-  tenant_move_in: tenantMessages.notificationsPage.types.tenantMoveIn,
-  tenant_move_out: tenantMessages.notificationsPage.types.tenantMoveOut,
-};
-
-const notificationCategoryLabelMap: Record<NotificationCategory, string> = {
-  lease: tenantMessages.notificationsPage.categories.lease,
-  billing: tenantMessages.notificationsPage.categories.billing,
-  tenant: tenantMessages.notificationsPage.categories.tenant,
-  system: tenantMessages.notificationsPage.categories.system,
-};
-
-export const notificationCategoryOptions: Array<{
-  value: NotificationCategory | 'all';
-  label: string;
-}> = [
-  { value: 'all', label: tenantMessages.notificationsPage.allCategories },
-  { value: 'billing', label: tenantMessages.notificationsPage.categories.billing },
-  { value: 'lease', label: tenantMessages.notificationsPage.categories.lease },
-  { value: 'tenant', label: tenantMessages.notificationsPage.categories.tenant },
-  { value: 'system', label: tenantMessages.notificationsPage.categories.system },
-];
+const SYSTEM_NOTIFICATION_LABEL = '系统通知';
+const VIEW_DETAIL_LABEL = '查看详情';
 
 export function getNotificationTypeLabel(type?: string | null): string {
-  if (!type) return tenantMessages.notificationsPage.systemNotification;
-  return notificationTypeLabelMap[type] ?? tenantMessages.notificationsPage.systemNotification;
+  if (!type) return SYSTEM_NOTIFICATION_LABEL;
+  return NOTIFICATION_TYPE_LABEL_MAP[type] ?? SYSTEM_NOTIFICATION_LABEL;
 }
 
 export function getNotificationCategory(item: Notification): NotificationCategory {
@@ -48,7 +28,7 @@ export function getNotificationCategory(item: Notification): NotificationCategor
 }
 
 export function getNotificationCategoryLabel(category: NotificationCategory): string {
-  return notificationCategoryLabelMap[category];
+  return NOTIFICATION_CATEGORY_LABEL_MAP[category];
 }
 
 export function getNotificationTarget(item: Notification): string | null {
@@ -58,5 +38,5 @@ export function getNotificationTarget(item: Notification): string | null {
 
 export function getNotificationActionLabel(item: Notification): string {
   const actionLabel = item.extra_data?.action_label;
-  return typeof actionLabel === 'string' && actionLabel ? actionLabel : tenantMessages.notificationsPage.viewDetail;
+  return typeof actionLabel === 'string' && actionLabel ? actionLabel : VIEW_DETAIL_LABEL;
 }

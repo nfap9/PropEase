@@ -1,16 +1,4 @@
-import type { DashboardOverview, IncomeReport } from '@/types';
-
-export interface IncomeSummary {
-  totalAmount: number;
-  collectedAmount: number;
-  pendingAmount: number;
-  averageCollectionRate: number;
-}
-
-export interface IncomeCategoryDatum {
-  name: '租金' | '水费' | '电费' | '其他';
-  value: number;
-}
+import type { DashboardOverview, IncomeReport, IncomeSummary, IncomeCategoryDatum } from '@/types';
 
 export function buildIncomeSummary(incomeReport: IncomeReport[] | undefined): IncomeSummary {
   if (!incomeReport || incomeReport.length === 0) {

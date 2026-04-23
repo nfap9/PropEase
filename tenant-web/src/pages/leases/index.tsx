@@ -11,12 +11,20 @@ import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import type { Lease } from '@/types';
 import { createLeaseColumns } from '@/pages/leases/components/columns';
 import { useLeasesData } from '@/hooks/leases';
-import { getDefaultLeaseFilters } from '@/utils/leases';
 import type { LeaseEditFormData, LeaseFiltersState } from '@/types';
 import { LEASES } from '@/constants/leases';
 import { filterLeases } from '@/hooks/leases';
 import { LeaseDeleteDialog, LeaseEditDialog, LeaseTerminateDialog } from '@/pages/leases/components/lease-dialogs';
 import { LeaseFilters } from '@/pages/leases/components/lease-filters';
+
+const DEFAULT_LEASE_FILTERS: LeaseFiltersState = {
+  apartmentId: null,
+  keyword: null,
+  startDateFrom: null,
+  startDateTo: null,
+  endDateFrom: null,
+  endDateTo: null,
+};
 
 export default function LeasesPage() {
   const { organization, isLoading: authLoading } = useAuth();
@@ -34,7 +42,7 @@ export default function LeasesPage() {
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
   const [isTerminateOpen, setIsTerminateOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [filters, setFilters] = useState<LeaseFiltersState>(getDefaultLeaseFilters());
+  const [filters, setFilters] = useState<LeaseFiltersState>(DEFAULT_LEASE_FILTERS);
 
   const { apartments, leases, leasesLoading, updateMutation, terminateMutation, deleteMutation } = useLeasesData({
     onUpdateSuccess: () => {
@@ -101,7 +109,7 @@ export default function LeasesPage() {
   );
 
   const handleClearFilters = useCallback(() => {
-    setFilters(getDefaultLeaseFilters());
+    setFilters(DEFAULT_LEASE_FILTERS);
   }, []);
 
   const filtersRef = useRef(filters);

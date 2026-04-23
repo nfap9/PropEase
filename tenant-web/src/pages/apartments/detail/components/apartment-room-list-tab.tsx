@@ -1,6 +1,6 @@
 
 import type { Room } from '@/types';
-import type { FloorRoomGroup } from '@/utils/apartment-detail';
+import type { FloorRoomGroup } from '@/types';
 import { ApartmentRoomListCard } from './apartment-room-list-card';
 
 interface ApartmentRoomListTabProps {

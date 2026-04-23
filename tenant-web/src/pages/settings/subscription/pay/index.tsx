@@ -2,7 +2,7 @@ import { Suspense, useCallback, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, Tag, Skeleton } from 'antd';
-import { ORDER_STATUS_CONFIG, type BadgeVariant } from '@/utils/status';
+import { ORDER_STATUS_CONFIG, type BadgeVariant } from '@/constants/status';
 import { ArrowLeft, Loader2, Zap } from 'lucide-react';
 import { subscriptionsApi } from '@/api/subscriptions';
 import { useAuth } from '@/contexts/auth';

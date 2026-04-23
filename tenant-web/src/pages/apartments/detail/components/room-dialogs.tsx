@@ -6,7 +6,7 @@ import { Modal, Drawer, Button, Input, Select, Switch, Form, InputNumber, Space 
 import type { Room, RoomFacilities } from '@/types';
 import { LAYOUT_OPTIONS } from '@/constants/apartment-detail';
 import type { RoomEditFormData } from '@apartment-ultra/api-contract';
-import type { GeneratedFloorRooms } from '@/utils/apartment-detail';
+import type { GeneratedFloorRooms } from '@/types';
 import { getFacilitiesSummary, parseFloors, parseRoomNumbers, buildGeneratedRoomGroups } from '@/utils/apartment-detail';
 
 // ============ CreateRoomDialog ============

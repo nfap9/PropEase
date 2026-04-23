@@ -15,8 +15,8 @@ import {
   getNotificationCategoryLabel,
   getNotificationTarget,
   getNotificationTypeLabel,
-  notificationCategoryOptions,
 } from '@/utils/notifications';
+import { NOTIFICATION_CATEGORY_OPTIONS } from '@/constants/notifications';
 import { CheckCheck, Loader2, BellOff, ArrowRight, Clock } from 'lucide-react';
 import { cn } from '@/utils';
 import { formatDateTime, formatRelativeTime } from '@/utils/date';
@@ -131,7 +131,7 @@ export default function NotificationsPage() {
                   </div>
                   <div className="h-4 w-px bg-border" />
                   <div className="flex flex-wrap gap-1.5">
-                    {notificationCategoryOptions.map((option) => (
+                    {NOTIFICATION_CATEGORY_OPTIONS.map((option) => (
                       <button
                         key={option.value}
                         onClick={() => setCategoryFilter(option.value)}

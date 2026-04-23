@@ -1,22 +1,12 @@
-import type { Apartment, Room, RoomFacilities } from '@/types';
-import { getFacilityLabel } from '@/constants/facilities';
-
-export interface GeneratedFloorRooms {
-  floor: number;
-  rooms: string[];
-}
-
-export interface RoomStats {
-  total: number;
-  available: number;
-  occupied: number;
-  maintenance: number;
-}
-
-export interface FloorRoomGroup {
-  floor: number;
-  rooms: Room[];
-}
+import type {
+  Apartment,
+  Room,
+  RoomFacilities,
+  GeneratedFloorRooms,
+  RoomStats,
+  FloorRoomGroup,
+} from '@/types';
+import { getFacilityLabel } from '@/utils/facilities';
 
 export const extractFloor = (roomNumber: string): number => {
   if (roomNumber.length <= 2) return 1;

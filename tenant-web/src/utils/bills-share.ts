@@ -1,5 +1,6 @@
 import type { Bill } from '@/types';
 import type { BillFeeItem } from '@/types';
+import type { BillShareData } from '@/types/bills-share';
 
 const CARD_WIDTH = 1080;
 const CARD_PADDING_X = 72;
@@ -7,19 +8,6 @@ const CARD_PADDING_Y = 72;
 const ROW_HEIGHT = 44;
 const SECTION_GAP = 28;
 
-export interface BillShareData {
-  organizationName: string;
-  monthLabel: string;
-  roomLabel: string;
-  tenantName: string;
-  statusLabel: string;
-  dueDate: string;
-  totalAmount: string;
-  paidAmount: string;
-  unpaidAmount: string;
-  notes: string | null;
-  breakdown: Array<{ label: string; value: string }>;
-}
 
 function escapeXml(value: string): string {
   return value

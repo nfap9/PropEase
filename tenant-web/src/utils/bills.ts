@@ -1,15 +1,9 @@
 import { formatDate } from '@/utils/date';
 import type { Bill, BillStatus } from '@/types';
+import type { BillStats } from '@/types/bills';
 
-export interface BillStats {
-  total: number;
-  pending: number;
-  partial: number;
-  paid: number;
-  overdue: number;
-  totalAmount: number;
-  paidAmount: number;
-}
+// Re-export for backwards compatibility (consumers import from @/utils/bills)
+export type { BillStats };
 
 const VALID_BILL_STATUSES = new Set<BillStatus>(['pending', 'overdue', 'partial', 'paid']);
 
@@ -123,34 +117,3 @@ export function formatPaymentRecord(amount: number, paymentMethodLabel: string, 
   return `¥${amount.toLocaleString()} · ${paymentMethodLabel} · ${formatDate(paymentDate)}`;
 }
 
-// ============ Default form values (from former schemas/) ============
-
-import type { PaymentMethod } from '@/types';
-
-export function getDefaultGenerateValues(): { bill_year: number; bill_month: number; due_date: string } {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  const dueDate = new Date(year, now.getMonth(), 15);
-  return {
-    bill_year: year,
-    bill_month: month,
-    due_date: dueDate.toISOString().split('T')[0],
-  };
-}
-
-export function getDefaultPaymentValues(amount = 0): {
-  amount: number;
-  payment_date: string;
-  payment_method: PaymentMethod;
-  reference: string;
-  notes: string;
-} {
-  return {
-    amount,
-    payment_date: new Date().toISOString().split('T')[0],
-    payment_method: 'wechat',
-    reference: '',
-    notes: '',
-  };
-}

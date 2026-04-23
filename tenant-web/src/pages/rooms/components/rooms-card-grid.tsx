@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { FileText, Ban, Wrench, CheckCircle } from 'lucide-react';
 import { Tag } from 'antd';
 import { Button } from 'antd';
-import { ROOM_STATUS_CONFIG } from '@/utils/status';
+import { ROOM_STATUS_CONFIG } from '@/constants/status';
 import { Room, RoomStatus } from '@/types';
 import { cn } from '@/utils';
 

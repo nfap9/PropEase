@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Tag, Skeleton } from 'antd';
-import { SUBSCRIPTION_STATUS_CONFIG, type BadgeVariant } from '@/utils/status';
+import { SUBSCRIPTION_STATUS_CONFIG, type BadgeVariant } from '@/constants/status';
 import {
   Package,
   Building2,
