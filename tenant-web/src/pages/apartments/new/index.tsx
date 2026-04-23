@@ -103,7 +103,7 @@ export default function NewApartmentPage() {
                 <InputNumber
                   {...field}
                   value={field.value ?? ''}
-                  onChange={(val) => field.onChange(val ?? '')}
+                  onChange={(val) => field.onChange(val != null ? Number(val) || 0 : 0)}
                   min={1}
                   placeholder="请输入楼层数"
                   style={{ width: '100%' }}
@@ -119,7 +119,7 @@ export default function NewApartmentPage() {
                 <InputNumber
                   {...field}
                   value={field.value ?? ''}
-                  onChange={(val) => field.onChange(val ?? '')}
+                  onChange={(val) => field.onChange(val != null ? Number(val) || 0 : 0)}
                   min={0}
                   step={0.01}
                   placeholder="请输入用地面积"
@@ -136,7 +136,7 @@ export default function NewApartmentPage() {
                 <InputNumber
                   {...field}
                   value={field.value ?? ''}
-                  onChange={(val) => field.onChange(val ?? '')}
+                  onChange={(val) => field.onChange(val != null ? Number(val) || 0 : 0)}
                   min={0}
                   step={0.01}
                   placeholder="请输入总面积"
@@ -222,7 +222,7 @@ export default function NewApartmentPage() {
                 <InputNumber
                   {...field}
                   value={field.value ?? ''}
-                  onChange={(val) => field.onChange(val ?? '')}
+                  onChange={(val) => field.onChange(val != null ? Number(val) || 0 : 0)}
                   min={0}
                   step={0.01}
                   placeholder="请输入房东租金"
