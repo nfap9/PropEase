@@ -2,7 +2,8 @@ import { useEffect, useMemo } from 'react';
 import { Form, Input, DatePicker, Select, Button, Modal, InputNumber } from 'antd';
 import dayjs from 'dayjs';
 import type { Bill } from '@/types';
-import { PAYMENT_METHOD_LABELS, BILLS, type PaymentFormData } from '@/schemas/bills';
+import { PAYMENT_METHOD_LABELS, BILLS } from '@/constants/bills';
+import type { PaymentFormData } from '@/schemas/bills';
 import { getBillPaymentSummary } from '@/utils/bills';
 import { tenantI18n, tenantMessages } from '@/i18n';
 

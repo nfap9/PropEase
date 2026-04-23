@@ -1,7 +1,8 @@
 import { Info } from 'lucide-react';
 import { Alert, Button, Input, DatePicker, Modal, Form, InputNumber, Space } from 'antd';
 import type { Lease } from '@/types';
-import { LEASES, type LeaseEditFormData } from '@/schemas/leases';
+import { LEASES } from '@/constants/leases';
+import type { LeaseEditFormData } from '@/schemas/leases';
 
 export function LeaseEditDialog({
   open,

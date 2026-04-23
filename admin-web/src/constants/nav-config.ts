@@ -10,7 +10,7 @@ import {
   DollarSign,
   Settings,
 } from 'lucide-react';
-import { adminMessages } from '@/i18n';
+import { adminMessages } from '@/constants/messages';
 
 /** 导航项 */
 export interface NavItem {

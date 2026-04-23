@@ -8,7 +8,7 @@ import {
 } from '@/api/admin-client';
 import { getErrorMessage } from '@/utils/error';
 import type { FilterActive, GiftSubscriptionForm } from '@/schemas/registered-users';
-import { adminMessages } from '@/i18n';
+import { adminMessages } from '@/constants/messages';
 
 interface UseRegisteredUsersDataOptions {
   activeFilter: FilterActive;

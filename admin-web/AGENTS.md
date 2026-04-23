@@ -26,7 +26,7 @@ Vite + React Router，面向平台运营人员，端口 3001。
 - **语言**: TypeScript (strict mode)
 - **UI**: ant Desigh
 - **样式**: Tailwind CSS
-- **表单**: React Hook Form + Zod
+- **表单**: antd Form（内置校验，无需第三方表单库）
 - **数据获取**: TanStack Query + Axios
 - **测试**: Vitest + Testing Library
 
@@ -69,7 +69,6 @@ export default function SubscriptionsPageContent() { ... }
 - **禁止使用 `any`**
 - Props 必须定义类型
 - API 响应必须定义类型
-- 使用 Zod 进行运行时验证
 
 ### 格式化
 
@@ -79,18 +78,38 @@ export default function SubscriptionsPageContent() { ... }
 
 ## 前端分层架构
 
-项目采用 **视图层 → 业务层 → 基础层** 的三层架构，通过 ESLint `import/no-restricted-paths` 强制约束引用方向。
+项目采用 **视图层 → 业务层 → 基础设施层 → 工具层** 的四层架构，通过 ESLint `import/no-restricted-paths` 强制约束引用方向。
+
+```
+视图层 (pages/ components/ router/)
+    ↓ 引用
+业务层 (hooks/ schemas/)
+    ↓ 引用
+基础设施层 (api/ contexts/ i18n/)
+    ↓ 引用
+工具层 (utils/ types/ constants/)
+```
 
 | 层级 | 目录 | 职责 | 可引用 |
 |------|------|------|--------|
-| **视图层** | `pages/`, `components/`, `router/` | UI 渲染、页面路由、组件展示、路由配置 | 业务层、基础层 |
-| **业务层** | `hooks/`, `schemas/` | 业务逻辑、数据获取、状态管理、表单校验 | 基础层 |
-| **基础层** | `api/`, `utils/`, `types/`, `constants/`, `contexts/`, `i18n/`, `styles/` | 工具函数、类型定义、常量、API 客户端、国际化 | 仅同层或更底层 |
+| **视图层** | `pages/`, `components/`, `router/` | UI 渲染、页面路由、组件展示 | 业务层、基础设施层、工具层 |
+| **业务层** | `hooks/`, `schemas/` | 业务逻辑、数据获取、表单类型定义 | 基础设施层、工具层 |
+| **基础设施层** | `api/`, `contexts/`, `i18n/` | HTTP 客户端、全局状态、国际化上下文 | 工具层 |
+| **工具层** | `utils/`, `types/`, `constants/` | 纯函数、类型声明、静态常量 | 工具层（仅同层） |
 
-**禁止的反向引用（由 lint 拦截）：**
-- 业务层 → 视图层（如 `hooks/` 引用 `components/`）
-- 基础层 → 视图层（如 `utils/` 引用 `pages/`）
-- 基础层 → 业务层（如 `utils/` 引用 `schemas/`）
+**禁止的反向引用（由 ESLint 拦截）：**
+
+- 工具层 → 上层任意层（`utils/` 禁止引用 `api/`、`contexts/`、`i18n/`、`hooks/`、`schemas/`、`components/`、`pages/`）
+- 基础设施层 → 业务层、视图层
+- 业务层 → 视图层
+
+**`schemas/` 与 `constants/` 的区别：**
+- `schemas/`：业务层，存放类型定义（interface/type）和纯函数（如 `validatePassword()`）
+- `constants/`：工具层，存放静态配置和枚举（如 `BILLS`、`NAV_CONFIG`）
+
+**i18n 消息的获取方式：**
+- 视图层：`useTranslation()` hook 或直接 import `adminMessages`
+- 业务层（hooks）：从 `@/constants/messages` 导入，**禁止直接 import `@/i18n`**
 
 ## pages/ 与 features/ 职责划分
 

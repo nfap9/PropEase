@@ -4,7 +4,7 @@ import { FacilitySelectorDialog } from '@/components/common/facility-selector-di
 import { EditRoomDialog } from '@/pages/rooms/components/EditRoomDialog';
 import { Modal, Drawer, Button, Input, Select, Switch, Form, InputNumber, Space } from 'antd';
 import type { Room, RoomFacilities } from '@/types';
-import { LAYOUT_OPTIONS } from '@/schemas/apartment-detail';
+import { LAYOUT_OPTIONS } from '@/constants/apartment-detail';
 import type { RoomEditFormData } from '@apartment-ultra/api-contract';
 import type { GeneratedFloorRooms } from '@/utils/apartment-detail';
 import { getFacilitiesSummary, parseFloors, parseRoomNumbers, buildGeneratedRoomGroups } from '@/utils/apartment-detail';

@@ -14,7 +14,7 @@ import {
 } from 'recharts';
 import { Card, Skeleton } from 'antd';
 import type { IncomeReport } from '@/types';
-import { REPORT_COLORS } from '@/schemas/reports';
+import { REPORT_COLORS } from '@/constants/reports';
 import { buildIncomeCategoryData, buildIncomeSummary } from '@/utils/reports';
 
 export function ReportsIncomeTab({

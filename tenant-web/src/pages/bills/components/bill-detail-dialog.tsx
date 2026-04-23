@@ -1,12 +1,12 @@
 import { Download, DollarSign, Share2 } from 'lucide-react';
 import { Tag, Button, Modal, Skeleton } from 'antd';
 import type { Bill, BillFeeItem, Payment } from '@/types';
-import { BILLS } from '@/schemas/bills';
+import { BILLS } from '@/constants/bills';
 import { BILL_STATUS_CONFIG } from '@/utils/status';
 import { formatBillPeriod, formatPaymentRecord, getBillDetailDescription } from '@/utils/bills';
 import { tenantMessages } from '@/i18n';
 import { formatDate } from '@/utils/date';
-import { PAYMENT_METHOD_LABELS } from '@/schemas/bills';
+import { PAYMENT_METHOD_LABELS } from '@/constants/bills';
 
 interface BillDetailDialogProps {
   open: boolean;

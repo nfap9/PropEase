@@ -7,7 +7,7 @@ import { Select } from 'antd';
 import { Skeleton } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { useReportsData } from '@/hooks/reports';
-import { getReportYearOptions, REPORTS } from '@/schemas/reports';
+import { getReportYearOptions, REPORTS } from '@/constants/reports';
 import { ReportsOverviewTab } from '@/pages/reports/components/reports-overview-tab';
 
 const ReportsIncomeTab = lazy(() => import('@/pages/reports/components/reports-income-tab').then((mod) => ({ default: mod.ReportsIncomeTab })));

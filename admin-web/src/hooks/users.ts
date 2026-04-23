@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { adminApiEndpoints, type AdminUser } from '@/api/admin-client';
 import { getErrorMessage } from '@/utils/error';
 import type { AdminPasswordReset, AdminUserCreate, AdminUserUpdate } from '@/api/admin-client';
-import { adminMessages } from '@/i18n';
+import { adminMessages } from '@/constants/messages';
 import type { CreateUserForm, EditUserForm } from '@/schemas/users';
 
 interface UseAdminUsersDataOptions {

@@ -13,10 +13,10 @@ import { createLeaseColumns } from '@/pages/leases/components/columns';
 import { useLeasesData } from '@/hooks/leases';
 import {
   getDefaultLeaseFilters,
-  LEASES,
   type LeaseEditFormData,
   type LeaseFiltersState,
 } from '@/schemas/leases';
+import { LEASES } from '@/constants/leases';
 import { filterLeases } from '@/hooks/leases';
 import { LeaseDeleteDialog, LeaseEditDialog, LeaseTerminateDialog } from '@/pages/leases/components/lease-dialogs';
 import { LeaseFilters } from '@/pages/leases/components/lease-filters';

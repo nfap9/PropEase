@@ -9,7 +9,7 @@ import { filterEmptyStrings } from '@/utils/form';
 import type { Bill, BillFeeItem, BillStatus } from '@/types';
 import type { GenerateBillsFormData, PaymentFormData } from '@/schemas/bills';
 import { buildBillPdfFilename, buildBillsExcelFilename, downloadBlob } from '@/utils/bills';
-import { tenantMessages } from '@/i18n';
+import { tenantMessages } from '@/constants/messages';
 
 interface UseBillsDataOptions {
   selectedBillId: string | null;

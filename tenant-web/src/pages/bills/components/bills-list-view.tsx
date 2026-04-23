@@ -4,7 +4,7 @@ import type { MenuProps } from 'antd';
 import { Dropdown } from 'antd';
 import { FilePlus, Download, ChevronDown, FileSpreadsheet, AlertCircle, Building2 } from 'lucide-react';
 import type { Bill, BillStatus } from '@/types';
-import { BILLS } from '@/schemas/bills';
+import { BILLS } from '@/constants/bills';
 import type { BillStats } from '@/utils/bills';
 import { tenantMessages } from '@/i18n';
 

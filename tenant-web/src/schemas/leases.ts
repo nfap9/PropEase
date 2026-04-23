@@ -1,26 +1,3 @@
-export const LEASES = {
-  HEADING: 'leases-heading',
-  NEW_BUTTON: 'leases-new-btn',
-  LIST: 'leases-list',
-  STATUS_FILTER: 'leases-status-filter',
-  CREATE_DIALOG: 'leases-create-dialog',
-  APARTMENT_SELECT: 'leases-apartment-select',
-  ROOM_SELECT: 'leases-room-select',
-  TENANT_SELECT: 'leases-tenant-select',
-  START_DATE_INPUT: 'leases-start-date-input',
-  MONTHLY_RENT_INPUT: 'leases-monthly-rent-input',
-  DEPOSIT_INPUT: 'leases-deposit-input',
-  CONFIRM_BUTTON: 'leases-confirm-btn',
-  EDIT_DIALOG: 'leases-edit-dialog',
-  END_DATE_INPUT: 'leases-end-date-input',
-  NOTES_INPUT: 'leases-notes-input',
-  CANCEL_BUTTON: 'leases-cancel-btn',
-  TERMINATE_DIALOG: 'leases-terminate-dialog',
-  CONFIRM_TERMINATE_BTN: 'leases-confirm-terminate-btn',
-  DELETE_DIALOG: 'leases-delete-dialog',
-  CONFIRM_DELETE_BTN: 'leases-confirm-delete-btn',
-} as const;
-
 export interface LeaseEditFormData {
   room_id: string;
   tenant_id: string;
