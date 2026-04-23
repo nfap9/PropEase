@@ -1,5 +1,3 @@
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
@@ -9,8 +7,6 @@ import dayjs from 'dayjs';
 import { apartmentsApi } from '@/api/apartments';
 import { useAuth } from '@/contexts/auth';
 import { getErrorMessage } from '@/utils/error';
-import { filterEmptyStrings } from '@/utils/form';
-import { apartmentSchema, type ApartmentFormData } from '@/pages/apartments/components';
 
 export default function NewApartmentPage() {
   const navigate = useNavigate();
@@ -18,25 +14,10 @@ export default function NewApartmentPage() {
   const { organization } = useAuth();
   const orgId = organization?.id;
 
-  const form = useForm<ApartmentFormData>({
-    resolver: zodResolver(apartmentSchema),
-    defaultValues: {
-      name: '',
-      address: '',
-      description: '',
-      floors: undefined,
-      land_area: undefined,
-      total_area: undefined,
-      landlord_name: '',
-      landlord_contact: '',
-      contract_start: '',
-      contract_end: '',
-      landlord_rent: 0,
-    },
-  });
+  const [form] = Form.useForm();
 
   const createMutation = useMutation({
-    mutationFn: (data: ApartmentFormData) => apartmentsApi.create(filterEmptyStrings(data)),
+    mutationFn: (data: Record<string, unknown>) => apartmentsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
       toast.success('公寓创建成功');
@@ -45,7 +26,19 @@ export default function NewApartmentPage() {
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
 
-  const onSubmit = (data: ApartmentFormData) => {
+  const onFinish = (values: Record<string, unknown>) => {
+    // 过滤空字符串和undefined，转换数字字段
+    const filtered = Object.fromEntries(
+      Object.entries(values).filter(([, v]) => v !== '' && v !== undefined)
+    );
+    // 确保数字字段是number类型
+    const data = {
+      ...filtered,
+      floors: filtered.floors ? Number(filtered.floors) : undefined,
+      land_area: filtered.land_area ? Number(filtered.land_area) : undefined,
+      total_area: filtered.total_area ? Number(filtered.total_area) : undefined,
+      landlord_rent: filtered.landlord_rent ? Number(filtered.landlord_rent) : 0,
+    };
     createMutation.mutate(data);
   };
 
@@ -62,89 +55,57 @@ export default function NewApartmentPage() {
       </div>
 
       {/* 可滚动表单 */}
-      <Form layout="vertical" className="flex flex-1 flex-col gap-6 overflow-y-auto px-1">
+      <Form
+        form={form}
+        layout="vertical"
+        className="flex flex-1 flex-col gap-6 overflow-y-auto px-1"
+        onFinish={onFinish}
+      >
         <div className="grid grid-cols-2 gap-4">
-          <Controller
+          <Form.Item
             name="name"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Form.Item label="公寓名称" required validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
-                <Input placeholder="请输入公寓名称" {...field} />
-              </Form.Item>
-            )}
-          />
-          <Controller
+            label="公寓名称"
+            required
+            rules={[{ required: true, message: '请输入公寓名称' }]}
+          >
+            <Input placeholder="请输入公寓名称" />
+          </Form.Item>
+          <Form.Item
             name="address"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Form.Item label="地址" required validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
-                <Input placeholder="请输入公寓地址" {...field} />
-              </Form.Item>
-            )}
-          />
+            label="地址"
+            required
+            rules={[{ required: true, message: '请输入公寓地址' }]}
+          >
+            <Input placeholder="请输入公寓地址" />
+          </Form.Item>
         </div>
 
-        <Controller
-          name="description"
-          control={form.control}
-          render={({ field }) => (
-            <Form.Item label="描述">
-              <Input.TextArea {...field} value={field.value ?? ''} placeholder="请输入描述" rows={2} />
-            </Form.Item>
-          )}
-        />
+        <Form.Item name="description" label="描述">
+          <Input.TextArea placeholder="请输入描述" rows={2} />
+        </Form.Item>
 
         <div className="grid grid-cols-3 gap-4">
-          <Controller
+          <Form.Item
             name="floors"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Form.Item label="楼层数" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
-                <InputNumber
-                  {...field}
-                  value={field.value ?? ''}
-                  onChange={(val) => field.onChange(val != null ? Number(val) || 0 : 0)}
-                  min={1}
-                  placeholder="请输入楼层数"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            )}
-          />
-          <Controller
+            label="楼层数"
+            rules={[{ type: 'number', min: 1, message: '楼层数至少为1' }]}
+          >
+            <InputNumber min={1} placeholder="请输入楼层数" style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item
             name="land_area"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Form.Item label="用地面积（亩）" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
-                <InputNumber
-                  {...field}
-                  value={field.value ?? ''}
-                  onChange={(val) => field.onChange(val != null ? Number(val) || 0 : 0)}
-                  min={0}
-                  step={0.01}
-                  placeholder="请输入用地面积"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            )}
-          />
-          <Controller
+            label="用地面积（亩）"
+            rules={[{ type: 'number', min: 0, message: '面积不能为负' }]}
+          >
+            <InputNumber min={0} step={0.01} placeholder="请输入用地面积" style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item
             name="total_area"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Form.Item label="总面积（㎡）" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
-                <InputNumber
-                  {...field}
-                  value={field.value ?? ''}
-                  onChange={(val) => field.onChange(val != null ? Number(val) || 0 : 0)}
-                  min={0}
-                  step={0.01}
-                  placeholder="请输入总面积"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            )}
-          />
+            label="总面积（㎡）"
+            rules={[{ type: 'number', min: 0, message: '面积不能为负' }]}
+          >
+            <InputNumber min={0} step={0.01} placeholder="请输入总面积" style={{ width: '100%' }} />
+          </Form.Item>
         </div>
 
         {/* 分割线 */}
@@ -160,77 +121,46 @@ export default function NewApartmentPage() {
         {/* 上游信息 */}
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Controller
+            <Form.Item
               name="landlord_name"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Form.Item label="房东姓名" required validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
-                  <Input placeholder="请输入房东姓名" {...field} />
-                </Form.Item>
-              )}
-            />
-            <Controller
-              name="landlord_contact"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Form.Item label="联系方式" validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
-                  <Input placeholder="请输入联系方式" {...field} />
-                </Form.Item>
-              )}
-            />
+              label="房东姓名"
+              required
+              rules={[{ required: true, message: '请输入房东姓名' }]}
+            >
+              <Input placeholder="请输入房东姓名" />
+            </Form.Item>
+            <Form.Item name="landlord_contact" label="联系方式">
+              <Input placeholder="请输入联系方式" />
+            </Form.Item>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Controller
+            <Form.Item
               name="contract_start"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Form.Item label="合同开始" required validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
-                  <DatePicker
-                    value={field.value ? dayjs(field.value) : null}
-                    onChange={(date) => field.onChange(date?.format('YYYY-MM-DD') ?? '')}
-                    style={{ width: '100%' }}
-                  />
-                </Form.Item>
-              )}
-            />
-            <Controller
+              label="合同开始"
+              required
+              rules={[{ required: true, message: '请选择合同开始时间' }]}
+            >
+              <DatePicker style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item
               name="contract_end"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Form.Item label="合同结束" required validateStatus={fieldState.error ? 'error' : ''} help={fieldState.error?.message}>
-                  <DatePicker
-                    value={field.value ? dayjs(field.value) : null}
-                    onChange={(date) => field.onChange(date?.format('YYYY-MM-DD') ?? '')}
-                    style={{ width: '100%' }}
-                  />
-                </Form.Item>
-              )}
-            />
+              label="合同结束"
+              required
+              rules={[{ required: true, message: '请选择合同结束时间' }]}
+            >
+              <DatePicker style={{ width: '100%' }} />
+            </Form.Item>
           </div>
 
-          <Controller
+          <Form.Item
             name="landlord_rent"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Form.Item
-                label="房东租金（元/月）"
-                required
-                validateStatus={fieldState.error ? 'error' : ''}
-                help={fieldState.error?.message}
-              >
-                <InputNumber
-                  {...field}
-                  value={field.value ?? ''}
-                  onChange={(val) => field.onChange(val != null ? Number(val) || 0 : 0)}
-                  min={0}
-                  step={0.01}
-                  placeholder="请输入房东租金"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            )}
-          />
+            label="房东租金（元/月）"
+            required
+            rules={[{ type: 'number', min: 0, message: '请输入有效的租金' }]}
+          >
+            <InputNumber min={0} step={0.01} placeholder="请输入房东租金" style={{ width: '100%' }} />
+          </Form.Item>
         </div>
 
         {/* 操作按钮 */}
