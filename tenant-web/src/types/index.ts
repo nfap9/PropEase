@@ -7,3 +7,12 @@ export * from '@apartment-ultra/api-contract';
 export interface ApiErrorDetail {
   detail: string;
 }
+
+// 从本目录重导出 admin-permissions 类型（避免 types/index.ts → constants → types 的循环）
+export type { AdminPermissionOption } from './admin-permissions';
+
+// 从 constants/ 重导出（保留 @/types 路径兼容性）
+export { ADMIN_PERMISSION_OPTIONS } from '@/constants/admin-permissions';
+
+// 从 utils/ 重导出（保留 @/types 路径兼容性）
+export { adminPermissionCodesToLabels, formatAdminPermissionsForDisplay, getAdminPermissionGroups } from '@/utils/admin-permissions';
