@@ -51,7 +51,6 @@ overrides:
   react-dom: ^18
   typescript: ^5
   axios: ^1.13.5
-  '@hookform/resolvers': ^5.2.2
   '@tanstack/react-query': ^5.90.21
   '@tanstack/react-table': ^8.21.3
   class-variance-authority: ^0.7.1
@@ -102,9 +101,6 @@ importers:
       '@apartment-ultra/web-api-client':
         specifier: workspace:*
         version: link:../packages/web-api-client
-      '@hookform/resolvers':
-        specifier: ^5.2.2
-        version: 5.2.2(react-hook-form@7.72.1(react@18.3.1))
       '@tanstack/react-query':
         specifier: ^5.90.21
         version: 5.99.0(react@18.3.1)
@@ -373,9 +369,6 @@ importers:
       '@apartment-ultra/web-api-client':
         specifier: workspace:*
         version: link:../packages/web-api-client
-      '@hookform/resolvers':
-        specifier: ^5.2.2
-        version: 5.2.2(react-hook-form@7.72.1(react@18.3.1))
       '@tanstack/react-query':
         specifier: ^5.90.21
         version: 5.99.0(react@18.3.1)
@@ -1063,11 +1056,6 @@ packages:
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
-
-  '@hookform/resolvers@5.2.2':
-    resolution: {integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==}
-    peerDependencies:
-      react-hook-form: ^7.71.2
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -5265,11 +5253,6 @@ snapshots:
   '@hono/node-server@1.19.11(hono@4.12.14)':
     dependencies:
       hono: 4.12.14
-
-  '@hookform/resolvers@5.2.2(react-hook-form@7.72.1(react@18.3.1))':
-    dependencies:
-      '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.72.1(react@18.3.1)
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
