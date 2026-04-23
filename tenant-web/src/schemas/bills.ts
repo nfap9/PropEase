@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import type { PaymentMethod } from '@/types';
 import { tenantMessages } from '@/i18n';
 
@@ -20,23 +19,19 @@ export const BILLS = {
   SHARE_BUTTON: 'bills-share-btn',
 } as const;
 
-export const paymentSchema = z.object({
-  amount: z.number().min(0.01, tenantMessages.bills.validation.amountMin),
-  payment_date: z.string().min(1, tenantMessages.bills.validation.paymentDateRequired),
-  payment_method: z.enum(['cash', 'wechat', 'alipay', 'bank_transfer', 'other']),
-  reference: z.string().optional(),
-  notes: z.string().optional(),
-});
+export interface PaymentFormData {
+  amount: number;
+  payment_date: string;
+  payment_method: PaymentMethod;
+  reference?: string;
+  notes?: string;
+}
 
-export type PaymentFormData = z.infer<typeof paymentSchema>;
-
-export const generateBillsSchema = z.object({
-  bill_year: z.number().min(2020, tenantMessages.bills.validation.invalidYear).max(2100, tenantMessages.bills.validation.invalidYear),
-  bill_month: z.number().min(1, tenantMessages.bills.validation.monthRequired).max(12, tenantMessages.bills.validation.monthRequired),
-  due_date: z.string().min(1, tenantMessages.bills.validation.dueDateRequired),
-});
-
-export type GenerateBillsFormData = z.infer<typeof generateBillsSchema>;
+export interface GenerateBillsFormData {
+  bill_year: number;
+  bill_month: number;
+  due_date: string;
+}
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   cash: tenantMessages.bills.paymentMethods.cash,

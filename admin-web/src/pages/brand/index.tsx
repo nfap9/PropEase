@@ -1,28 +1,24 @@
-
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm, FormProvider, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { Form, Input, Button, Card, Skeleton } from 'antd';
 import { toast } from 'sonner';
-import { Button, Input, Card } from 'antd';
-import { Skeleton } from 'antd';
 import { adminApiEndpoints } from '@/api/admin-client';
 import { getErrorMessage } from '@/utils/error';
 import { adminMessages } from '@/i18n';
 
-const schema = z.object({
-  app_name: z.string().min(1, '请输入系统名称'),
-  app_description: z.string(),
-  logo_url: z.string(),
-  favicon_url: z.string(),
-  login_subtitle: z.string(),
-  register_subtitle: z.string(),
-});
-
-type FormData = z.infer<typeof schema>;
+type PlatformConfigForm = {
+  app_name: string | undefined;
+  app_description: string | undefined;
+  logo_url: string | undefined;
+  favicon_url: string | undefined;
+  login_subtitle: string | undefined;
+  register_subtitle: string | undefined;
+};
 
 export default function AdminBrandPage() {
   const queryClient = useQueryClient();
+  const [form] = Form.useForm();
+
   const {
     data: config,
     isLoading,
@@ -36,38 +32,28 @@ export default function AdminBrandPage() {
     retry: false,
   });
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(schema),
-    values:
-      config && !isError
-        ? {
-            app_name: config.app_name ?? '公寓管理系统',
-            app_description: config.app_description ?? '公寓、租客与账单的一体化管理系统',
-            logo_url: config.logo_url ?? '',
-            favicon_url: config.favicon_url ?? '',
-            login_subtitle: config.login_subtitle ?? '用户登录，管理公寓、租客与账单',
-            register_subtitle: config.register_subtitle ?? '创建新账户',
-          }
-        : undefined,
-    defaultValues: {
-      app_name: '公寓管理系统',
-      app_description: '公寓、租客与账单的一体化管理系统',
-      logo_url: '',
-      favicon_url: '',
-      login_subtitle: '用户登录，管理公寓、租客与账单',
-      register_subtitle: '创建新账户',
-    },
-  });
+  useEffect(() => {
+    if (config && !isError) {
+      form.setFieldsValue({
+        app_name: config.app_name ?? '公寓管理系统',
+        app_description: config.app_description ?? '公寓、租客与账单的一体化管理系统',
+        logo_url: config.logo_url ?? '',
+        favicon_url: config.favicon_url ?? '',
+        login_subtitle: config.login_subtitle ?? '用户登录，管理公寓、租客与账单',
+        register_subtitle: config.register_subtitle ?? '创建新账户',
+      } as any);
+    }
+  }, [config, isError, form]);
 
   const updateMutation = useMutation({
-    mutationFn: (data: FormData) =>
+    mutationFn: (data: PlatformConfigForm) =>
       adminApiEndpoints.updatePlatformConfig({
-        app_name: data.app_name,
-        app_description: data.app_description,
-        logo_url: data.logo_url,
-        favicon_url: data.favicon_url,
-        login_subtitle: data.login_subtitle,
-        register_subtitle: data.register_subtitle,
+        app_name: data.app_name ?? '',
+        app_description: data.app_description ?? '',
+        logo_url: data.logo_url ?? '',
+        favicon_url: data.favicon_url ?? '',
+        login_subtitle: data.login_subtitle ?? '',
+        register_subtitle: data.register_subtitle ?? '',
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'platform-config'] });
@@ -93,94 +79,86 @@ export default function AdminBrandPage() {
           <h3 className="text-lg font-semibold">{adminMessages.brand.title}</h3>
           <p className="mt-1 text-sm text-muted-foreground">{adminMessages.brand.description}</p>
         </div>
-        <FormProvider {...form}>
-          <form
-            onSubmit={form.handleSubmit((d) => updateMutation.mutate(d))}
-            className="space-y-4"
+
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={(values) => updateMutation.mutate(values)}
+          className="space-y-4"
+          requiredMark={false}
+        >
+          <Form.Item
+            name="app_name"
+            label={<span className="text-sm font-medium">{adminMessages.brand.fields.appName}</span>}
+            rules={[{ required: true, message: '请输入系统名称' }]}
           >
-            <Controller
-              control={form.control}
-              name="app_name"
-              render={({ field, fieldState }) => (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">{adminMessages.brand.fields.appName}</label>
-                  <Input placeholder={adminMessages.brand.placeholders.appName} data-testid="admin-brand-name-input" {...field} />
-                  {fieldState.error && (
-                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
+            <Input
+              placeholder={adminMessages.brand.placeholders.appName}
+              data-testid="admin-brand-name-input"
             />
-            <Controller
-              control={form.control}
-              name="app_description"
-              render={({ field, fieldState }) => (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">{adminMessages.brand.fields.appDescription}</label>
-                  <Input placeholder={adminMessages.brand.placeholders.appDescription} data-testid="admin-brand-description-input" {...field} />
-                  {fieldState.error && (
-                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
+          </Form.Item>
+
+          <Form.Item
+            name="app_description"
+            label={<span className="text-sm font-medium">{adminMessages.brand.fields.appDescription}</span>}
+          >
+            <Input
+              placeholder={adminMessages.brand.placeholders.appDescription}
+              data-testid="admin-brand-description-input"
             />
-            <Controller
-              control={form.control}
-              name="login_subtitle"
-              render={({ field, fieldState }) => (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">{adminMessages.brand.fields.loginSubtitle}</label>
-                  <Input placeholder={adminMessages.brand.placeholders.loginSubtitle} data-testid="admin-brand-login-subtitle-input" {...field} />
-                  {fieldState.error && (
-                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
+          </Form.Item>
+
+          <Form.Item
+            name="login_subtitle"
+            label={<span className="text-sm font-medium">{adminMessages.brand.fields.loginSubtitle}</span>}
+          >
+            <Input
+              placeholder={adminMessages.brand.placeholders.loginSubtitle}
+              data-testid="admin-brand-login-subtitle-input"
             />
-            <Controller
-              control={form.control}
-              name="register_subtitle"
-              render={({ field, fieldState }) => (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">{adminMessages.brand.fields.registerSubtitle}</label>
-                  <Input placeholder={adminMessages.brand.placeholders.registerSubtitle} data-testid="admin-brand-register-subtitle-input" {...field} />
-                  {fieldState.error && (
-                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
+          </Form.Item>
+
+          <Form.Item
+            name="register_subtitle"
+            label={<span className="text-sm font-medium">{adminMessages.brand.fields.registerSubtitle}</span>}
+          >
+            <Input
+              placeholder={adminMessages.brand.placeholders.registerSubtitle}
+              data-testid="admin-brand-register-subtitle-input"
             />
-            <Controller
-              control={form.control}
-              name="logo_url"
-              render={({ field, fieldState }) => (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">{adminMessages.brand.fields.logoUrl}</label>
-                  <Input placeholder={adminMessages.brand.placeholders.url} type="url" data-testid="admin-brand-logo-input" {...field} />
-                  {fieldState.error && (
-                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
+          </Form.Item>
+
+          <Form.Item
+            name="logo_url"
+            label={<span className="text-sm font-medium">{adminMessages.brand.fields.logoUrl}</span>}
+          >
+            <Input
+              placeholder={adminMessages.brand.placeholders.url}
+              type="url"
+              data-testid="admin-brand-logo-input"
             />
-            <Controller
-              control={form.control}
-              name="favicon_url"
-              render={({ field, fieldState }) => (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Favicon URL（可选）</label>
-                  <Input placeholder="https://..." type="url" data-testid="admin-brand-favicon-input" {...field} />
-                  {fieldState.error && (
-                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
+          </Form.Item>
+
+          <Form.Item
+            name="favicon_url"
+            label={<span className="text-sm font-medium">Favicon URL（可选）</span>}
+          >
+            <Input
+              placeholder="https://..."
+              type="url"
+              data-testid="admin-brand-favicon-input"
             />
-            <Button htmlType="submit" data-testid="admin-brand-save-btn" disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? '保存中...' : '保存'}
-            </Button>
-          </form>
-        </FormProvider>
+          </Form.Item>
+
+          <Button
+            type="primary"
+            htmlType="submit"
+            data-testid="admin-brand-save-btn"
+            disabled={updateMutation.isPending}
+          >
+            {updateMutation.isPending ? '保存中...' : '保存'}
+          </Button>
+        </Form>
       </Card>
     </div>
   );

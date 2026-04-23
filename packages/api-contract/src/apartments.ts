@@ -56,6 +56,8 @@ export interface ApartmentUpdate {
   operating_cost?: number;
 }
 
+export type ApartmentFormData = ApartmentCreate;
+
 /** 房间统计 */
 export interface RoomStats {
   total: number;
@@ -179,3 +181,10 @@ export interface UtilityConfigUpdate {
   service_fee?: number;
   notes?: string;
 }
+
+// 兼容别名
+export type RoomFormData = RoomCreate;
+export type RoomEditFormData = RoomUpdate;
+export type RoomEdit = RoomUpdate;
+export type RoomBatch = RoomBatchCreate;
+

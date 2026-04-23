@@ -1,40 +1,28 @@
-import { z } from 'zod';
-import { adminMessages } from '@/i18n';
+export type CreateUserForm = {
+  username: string;
+  password: string;
+  name: string;
+  email?: string;
+};
 
-export const adminPasswordSchema = z
-  .string()
-  .min(8, '密码至少 8 位')
-  .refine((value) => /[a-z]/.test(value), '密码须包含小写字母')
-  .refine((value) => /[A-Z]/.test(value), '密码须包含大写字母')
-  .refine((value) => /\d/.test(value), '密码须包含数字')
-  .refine(
-    (value) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?\s]/.test(value),
-    '密码须包含特殊字符'
-  );
+export type EditUserForm = {
+  name: string;
+  email?: string;
+  is_active: boolean;
+};
 
-export const createUserSchema = z.object({
-  username: z.string().min(1, '请输入用户名'),
-  password: adminPasswordSchema,
-  name: z.string().min(1, '请输入姓名'),
-  email: z.string().optional(),
-});
+export type ResetPasswordForm = {
+  new_password: string;
+  confirm: string;
+};
 
-export const editUserSchema = z.object({
-  name: z.string().min(1, '请输入姓名'),
-  email: z.string().optional(),
-  is_active: z.boolean(),
-});
-
-export const resetPasswordSchema = z
-  .object({
-    new_password: adminPasswordSchema,
-    confirm: z.string(),
-  })
-  .refine((data) => data.new_password === data.confirm, {
-    message: '两次密码不一致',
-    path: ['confirm'],
-  });
-
-export type CreateUserForm = z.infer<typeof createUserSchema>;
-export type EditUserForm = z.infer<typeof editUserSchema>;
-export type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
+export function validatePassword(password: string): { valid: boolean; message?: string } {
+  if (password.length < 8) return { valid: false, message: '密码至少 8 位' };
+  if (!/[a-z]/.test(password)) return { valid: false, message: '密码须包含小写字母' };
+  if (!/[A-Z]/.test(password)) return { valid: false, message: '密码须包含大写字母' };
+  if (!/\d/.test(password)) return { valid: false, message: '密码须包含数字' };
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?\s]/.test(password)) {
+    return { valid: false, message: '密码须包含特殊字符' };
+  }
+  return { valid: true };
+}

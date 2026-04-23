@@ -322,7 +322,7 @@ export function getErrorMessage(error: unknown, fallback = '操作失败，请�
   return fallback;
 }
 
-export function filterEmptyStrings<T extends Record<string, unknown>>(data: T): Partial<T> {
+export function filterEmptyStrings<T extends object>(data: T): Partial<T> {
   return Object.fromEntries(Object.entries(data).filter(([, value]) => value !== '')) as Partial<T>;
 }
 

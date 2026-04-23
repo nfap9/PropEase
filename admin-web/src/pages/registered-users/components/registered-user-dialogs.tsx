@@ -1,8 +1,6 @@
-
-import type { UseFormReturn } from 'react-hook-form';
-import { FormProvider, Controller } from 'react-hook-form';
+import { useEffect } from 'react';
 import { Gift } from 'lucide-react';
-import { Button, Modal, Input, Select, Skeleton, Tag, Drawer } from 'antd';
+import { Button, Modal, Input, Select, Skeleton, Tag, Drawer, Form } from 'antd';
 import type { AdminPlan, AdminRegisteredUserDetail } from '@/api/admin-client';
 import { formatDateTime } from '@/utils/date';
 import { ORG_STATUS_CONFIG } from '@/utils/status';
@@ -29,14 +27,8 @@ export function DisableRegisteredUserDialog({
       title={adminMessages.registeredUsers.dialogs.disableTitle}
       footer={
         <div className="flex justify-end gap-2">
-          <Button onClick={() => onOpenChange(false)}>
-            {adminMessages.common.cancel}
-          </Button>
-          <Button
-            danger
-            onClick={onConfirm}
-            disabled={isPending}
-          >
+          <Button onClick={() => onOpenChange(false)}>{adminMessages.common.cancel}</Button>
+          <Button danger onClick={onConfirm} disabled={isPending}>
             {isPending ? adminMessages.common.processing : adminMessages.registeredUsers.dialogs.disableConfirm}
           </Button>
         </div>
@@ -65,14 +57,8 @@ export function DeleteRegisteredUserDialog({
       title={adminMessages.registeredUsers.dialogs.deleteTitle}
       footer={
         <div className="flex justify-end gap-2">
-          <Button onClick={() => onOpenChange(false)}>
-            {adminMessages.common.cancel}
-          </Button>
-          <Button
-            danger
-            onClick={onConfirm}
-            disabled={isPending}
-          >
+          <Button onClick={() => onOpenChange(false)}>{adminMessages.common.cancel}</Button>
+          <Button danger onClick={onConfirm} disabled={isPending}>
             {isPending ? adminMessages.common.processing : adminMessages.registeredUsers.dialogs.deleteConfirm}
           </Button>
         </div>
@@ -140,9 +126,7 @@ export function RegisteredUserDetailSheet({
                 <div>
                   <span className="text-gray-500">{adminMessages.registeredUsers.dialogs.organizations}</span>
                   {detail.organizations.length === 0 ? (
-                    <p className="text-sm text-gray-500">
-                      {adminMessages.registeredUsers.dialogs.emptyOrganizations}
-                    </p>
+                    <p className="text-sm text-gray-500">{adminMessages.registeredUsers.dialogs.emptyOrganizations}</p>
                   ) : (
                     <ul className="mt-1 space-y-1">
                       {detail.organizations.map((organization) => (
@@ -199,7 +183,7 @@ export function GiftSubscriptionDialog({
   plansLoading,
   selectedGiftPlan,
   selectedPricing,
-  form,
+  initialValues,
   onSubmit,
   isPending,
 }: {
@@ -210,10 +194,18 @@ export function GiftSubscriptionDialog({
   plansLoading: boolean;
   selectedGiftPlan: AdminPlan | null;
   selectedPricing: SelectedPricing | null;
-  form: UseFormReturn<GiftSubscriptionForm>;
+  initialValues: GiftSubscriptionForm;
   onSubmit: (data: GiftSubscriptionForm) => void;
   isPending: boolean;
 }) {
+  const [form] = Form.useForm();
+
+  useEffect(() => {
+    if (open) form.setFieldsValue(initialValues);
+  }, [form, open, initialValues]);
+
+  const giftMonths = Form.useWatch('gift_months', form) ?? 0;
+
   return (
     <Modal
       open={open}
@@ -221,10 +213,11 @@ export function GiftSubscriptionDialog({
       title={adminMessages.registeredUsers.dialogs.giftTitle}
       footer={
         <div className="flex justify-end gap-2">
-          <Button onClick={() => onOpenChange(false)}>
-            {adminMessages.common.cancel}
-          </Button>
-          <Button disabled={isPending || detail?.organizations.length === 0}>
+          <Button onClick={() => onOpenChange(false)}>{adminMessages.common.cancel}</Button>
+          <Button
+            disabled={isPending || detail?.organizations.length === 0}
+            onClick={() => form.submit()}
+          >
             {isPending
               ? adminMessages.registeredUsers.dialogs.gifting
               : adminMessages.registeredUsers.dialogs.confirmGift}
@@ -233,118 +226,89 @@ export function GiftSubscriptionDialog({
       }
     >
       {detail ? (
-        <FormProvider {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <Controller
-              control={form.control}
-              name="organization_id"
-              render={({ field, fieldState }) => (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">{adminMessages.registeredUsers.dialogs.targetOrganization}</label>
-                  <Select value={field.value} onChange={(value) => field.onChange(value)}>
-                    <Select.Option value="">
-                      {adminMessages.registeredUsers.dialogs.targetOrganizationPlaceholder}
-                    </Select.Option>
-                    {detail.organizations.map((organization) => (
-                      <Select.Option key={organization.id} value={organization.id}>
-                        {organization.name} ({organization.role})
-                      </Select.Option>
-                    ))}
-                  </Select>
-                  {fieldState.error && (
-                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
-            />
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onSubmit}
+          className="space-y-4"
+          requiredMark={false}
+        >
+          <Form.Item
+            name="organization_id"
+            label={<span className="text-sm font-medium">{adminMessages.registeredUsers.dialogs.targetOrganization}</span>}
+            rules={[{ required: true, message: '请选择组织' }]}
+          >
+            <Select>
+              <Select.Option value="">
+                {adminMessages.registeredUsers.dialogs.targetOrganizationPlaceholder}
+              </Select.Option>
+              {detail.organizations.map((organization) => (
+                <Select.Option key={organization.id} value={organization.id}>
+                  {organization.name} ({organization.role})
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
 
-            <Controller
-              control={form.control}
-              name="service_id"
-              render={({ field, fieldState }) => (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">{adminMessages.registeredUsers.dialogs.targetService}</label>
-                  <Select
-                    value={field.value}
-                    onChange={(value) => {
-                      field.onChange(value);
-                      const nextPlan = plans.find((plan) => plan.id === value) ?? null;
-                      const nextPricingId = nextPlan?.pricing?.[0]?.id ?? '';
-                      form.setValue('pricing_id', nextPricingId, { shouldValidate: true });
-                    }}
-                  >
-                    <Select.Option value="">
-                      {plansLoading
-                        ? adminMessages.registeredUsers.dialogs.loadingPlans
-                        : adminMessages.registeredUsers.dialogs.targetServicePlaceholder}
-                    </Select.Option>
-                    {plans.map((plan) => (
-                      <Select.Option key={plan.id} value={plan.id}>
-                        {plan.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                  {fieldState.error && (
-                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
-            />
+          <Form.Item
+            name="service_id"
+            label={<span className="text-sm font-medium">{adminMessages.registeredUsers.dialogs.targetService}</span>}
+            rules={[{ required: true, message: '请选择服务' }]}
+          >
+            <Select
+              onChange={(value) => {
+                const nextPlan = plans.find((plan) => plan.id === value) ?? null;
+                const nextPricingId = nextPlan?.pricing?.[0]?.id ?? '';
+                form.setFieldsValue({ pricing_id: nextPricingId });
+              }}
+            >
+              <Select.Option value="">
+                {plansLoading
+                  ? adminMessages.registeredUsers.dialogs.loadingPlans
+                  : adminMessages.registeredUsers.dialogs.targetServicePlaceholder}
+              </Select.Option>
+              {plans.map((plan) => (
+                <Select.Option key={plan.id} value={plan.id}>
+                  {plan.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
 
-            <Controller
-              control={form.control}
-              name="pricing_id"
-              render={({ field, fieldState }) => (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">{adminMessages.registeredUsers.dialogs.targetPricing}</label>
-                  <Select value={field.value} onChange={field.onChange}>
-                    <Select.Option value="">
-                      {adminMessages.registeredUsers.dialogs.targetPricingPlaceholder}
-                    </Select.Option>
-                    {(selectedGiftPlan?.pricing ?? []).map((pricing) => (
-                      <Select.Option key={pricing.id} value={pricing.id}>
-                        {pricing.months} 个月 · ¥{pricing.price.toLocaleString()}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                  {fieldState.error && (
-                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
-            />
+          <Form.Item
+            name="pricing_id"
+            label={<span className="text-sm font-medium">{adminMessages.registeredUsers.dialogs.targetPricing}</span>}
+            rules={[{ required: true, message: '请选择套餐' }]}
+          >
+            <Select>
+              <Select.Option value="">
+                {adminMessages.registeredUsers.dialogs.targetPricingPlaceholder}
+              </Select.Option>
+              {(selectedGiftPlan?.pricing ?? []).map((pricing) => (
+                <Select.Option key={pricing.id} value={pricing.id}>
+                  {pricing.months} 个月 · ¥{pricing.price.toLocaleString()}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
 
-            <Controller
-              control={form.control}
-              name="gift_months"
-              render={({ field, fieldState }) => (
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">{adminMessages.registeredUsers.dialogs.extraMonths}</label>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={24}
-                    value={field.value}
-                    onChange={(event) => field.onChange(event.target.value)}
-                  />
-                  {fieldState.error && (
-                    <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
-            />
+          <Form.Item
+            name="gift_months"
+            label={<span className="text-sm font-medium">{adminMessages.registeredUsers.dialogs.extraMonths}</span>}
+          >
+            <Input type="number" min={0} max={24} />
+          </Form.Item>
 
-            {selectedPricing && (
-              <div className="rounded-lg border bg-gray-50 px-3 py-3 text-sm text-gray-600">
-                {adminI18n.t('registeredUsers.dialogs.summary', {
-                  price: selectedPricing.price.toLocaleString(),
-                  months: selectedPricing.months,
-                  giftMonths: form.watch('gift_months'),
-                })}
-              </div>
-            )}
-          </form>
-        </FormProvider>
+          {selectedPricing && (
+            <div className="rounded-lg border bg-gray-50 px-3 py-3 text-sm text-gray-600">
+              {adminI18n.t('registeredUsers.dialogs.summary', {
+                price: selectedPricing.price.toLocaleString(),
+                months: selectedPricing.months,
+                giftMonths,
+              })}
+            </div>
+          )}
+        </Form>
       ) : (
         <p className="text-sm text-gray-500">{adminMessages.registeredUsers.dialogs.noUserSelected}</p>
       )}

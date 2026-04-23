@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button, Drawer, Space } from 'antd';
-import { leaseSigningSchema, type LeaseSigningFormData } from '@/schemas/leases';
+import type { LeaseSigningFormData } from '@/schemas/leases';
 import { leasesApi } from '@/api/leases';
 import { apartmentsApi, roomsApi, utilityConfigApi } from '@/api/apartments';
 import { tenantsApi } from '@/api/tenants';
@@ -251,10 +251,7 @@ export function LeaseSigningDrawer({
       await contractSectionRef.current?.validate();
       const contractValues = contractSectionRef.current?.getValues() || {};
       const allValues = { ...sectionValues, ...contractValues } as LeaseSigningFormData;
-
-      // Basic validation
-      const validated = leaseSigningSchema.parse(allValues);
-      createMutation.mutate(validated);
+      createMutation.mutate(allValues);
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);

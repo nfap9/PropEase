@@ -42,6 +42,12 @@ export const BusinessCode = {
   INTERNAL_ERROR: 50000,
 } as const;
 
+/** 分页请求参数 */
+export interface Pagination {
+  page: number;
+  pageSize: number;
+}
+
 /** 分页响应 */
 export interface PaginatedResponse<T> {
   items: T[];

@@ -1,20 +1,5 @@
-/** 共享 Zod schemas（前后端统一校验） */
-export type { TenantFormData } from './schemas/tenants.js';
-export { TenantCreateSchema, TenantUpdateSchema } from './schemas/tenants.js';
-
-export type { ApartmentFormData } from './schemas/apartments.js';
-export {
-  ApartmentCreateSchema,
-  ApartmentUpdateSchema,
-  FacilityItemSchema,
-  RoomFacilitiesSchema,
-} from './schemas/apartments.js';
-
-export type { RoomFormData, RoomEditFormData } from './schemas/rooms.js';
-export { RoomCreateSchema, RoomUpdateSchema, RoomBatchSchema, RoomEditSchema } from './schemas/rooms.js';
-
-export { OrganizationCreateSchema, OrganizationUpdateSchema, ConfirmDeleteSchema } from './schemas/organizations.js';
-export { PaginationSchema } from './schemas/common.js';
+/** 共享类型 — 前后端统一 */
+export type { Pagination } from './common.js';
 
 /** 通用契约 */
 export type {
@@ -104,6 +89,7 @@ export type {
   Apartment,
   ApartmentCreate,
   ApartmentUpdate,
+  ApartmentFormData,
   RoomStats,
   ApartmentWithStats,
   RoomStatus,
@@ -113,14 +99,17 @@ export type {
   Room,
   RoomCreate,
   RoomUpdate,
+  RoomEdit,
   RoomBatchCreate,
+  RoomFormData,
+  RoomEditFormData,
   UtilityConfig,
   UtilityConfigCreate,
   UtilityConfigUpdate,
 } from './apartments.js';
 
 /** 租客 */
-export type { Tenant, TenantCreate, TenantUpdate, TenantListParams } from './tenants.js';
+export type { Tenant, TenantCreate, TenantUpdate, TenantFormData, TenantListParams } from './tenants.js';
 
 /** 租约 */
 export type { Lease, LeaseCreate, LeaseUpdate, LeaseListParams, LeaseFeeItem } from './leases.js';

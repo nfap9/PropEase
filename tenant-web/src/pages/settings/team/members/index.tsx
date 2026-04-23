@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
 import { toast } from 'sonner';
 import { Button, Modal, Input, Card, Skeleton, Tag, Select, Dropdown, Form, type MenuProps } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
@@ -28,12 +27,10 @@ const TEAM_SETTINGS = {
 
 const phoneRegex = /^1[3-9]\d{9}$/;
 
-const inviteSchema = z.object({
-  phone: z.string().regex(phoneRegex, tenantMessages.settings.team.phoneValidation),
-  role_id: z.string(),
-});
-
-type InviteFormData = z.infer<typeof inviteSchema>;
+interface InviteFormData {
+  phone: string;
+  role_id: string;
+}
 
 const ROLE_LABELS: Record<string, string> = {
   '组织所有者': tenantMessages.settings.team.roles.owner,

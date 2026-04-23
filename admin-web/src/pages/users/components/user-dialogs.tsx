@@ -1,19 +1,9 @@
-
 import { useEffect } from 'react';
-import { useForm, FormProvider, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Checkbox, Modal, Input } from 'antd';
+import { Button, Checkbox, Modal, Form, Input } from 'antd';
 import type { AdminUser } from '@/api/admin-client';
 import { adminI18n, adminMessages } from '@/i18n';
-import {
-  createUserSchema,
-  editUserSchema,
-  resetPasswordSchema,
-  type CreateUserForm,
-  type EditUserForm,
-  type ResetPasswordForm,
-} from '@/schemas/users';
-import { getDefaultCreateUserFormValues, getDefaultResetPasswordValues, getEditUserFormValues } from '@/utils/users';
+import type { CreateUserForm, EditUserForm, ResetPasswordForm } from '@/schemas/users';
+import { getDefaultCreateUserFormValues, getEditUserFormValues } from '@/utils/users';
 
 export function CreateUserDialog({
   open,
@@ -26,83 +16,60 @@ export function CreateUserDialog({
   onSubmit: (data: CreateUserForm) => void;
   isPending: boolean;
 }) {
-  const form = useForm<CreateUserForm>({
-    resolver: zodResolver(createUserSchema),
-    defaultValues: getDefaultCreateUserFormValues(),
-  });
+  const [form] = Form.useForm();
 
   useEffect(() => {
-    if (open) {
-      form.reset(getDefaultCreateUserFormValues());
-    }
+    if (open) form.setFieldsValue(getDefaultCreateUserFormValues());
   }, [form, open]);
 
   return (
-    <Modal open={open} onCancel={() => onOpenChange(false)} title={adminMessages.users.dialogs.createTitle} footer={null}>
-      <FormProvider {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <Controller
-            control={form.control}
-            name="username"
-            render={({ field, fieldState }) => (
-              <div className="space-y-1">
-                <label className="text-sm font-medium">{adminMessages.users.fields.username}</label>
-                <Input placeholder={adminMessages.users.fields.usernamePlaceholder} {...field} />
-                {fieldState.error && (
-                  <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                )}
-              </div>
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="password"
-            render={({ field, fieldState }) => (
-              <div className="space-y-1">
-                <label className="text-sm font-medium">{adminMessages.users.fields.password}</label>
-                <Input type="password" placeholder={adminMessages.users.fields.passwordPlaceholder} {...field} />
-                {fieldState.error && (
-                  <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                )}
-              </div>
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="name"
-            render={({ field, fieldState }) => (
-              <div className="space-y-1">
-                <label className="text-sm font-medium">{adminMessages.users.fields.displayName}</label>
-                <Input placeholder={adminMessages.users.fields.displayNamePlaceholder} {...field} />
-                {fieldState.error && (
-                  <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                )}
-              </div>
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="email"
-            render={({ field, fieldState }) => (
-              <div className="space-y-1">
-                <label className="text-sm font-medium">{adminMessages.users.fields.emailOptional}</label>
-                <Input type="email" placeholder="email@example.com" {...field} />
-                {fieldState.error && (
-                  <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                )}
-              </div>
-            )}
-          />
-          <div className="flex justify-end gap-2">
-            <Button onClick={() => onOpenChange(false)}>
-              {adminMessages.common.cancel}
-            </Button>
-            <Button type="primary" disabled={isPending}>
-              {isPending ? adminMessages.common.submitting : adminMessages.common.create}
-            </Button>
-          </div>
-        </form>
-      </FormProvider>
+    <Modal
+      open={open}
+      onCancel={() => onOpenChange(false)}
+      title={adminMessages.users.dialogs.createTitle}
+      footer={null}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onSubmit}
+        className="space-y-4"
+        requiredMark={false}
+      >
+        <Form.Item
+          name="username"
+          label={<span className="text-sm font-medium">{adminMessages.users.fields.username}</span>}
+          rules={[{ required: true, message: '请输入用户名' }]}
+        >
+          <Input placeholder={adminMessages.users.fields.usernamePlaceholder} />
+        </Form.Item>
+        <Form.Item
+          name="password"
+          label={<span className="text-sm font-medium">{adminMessages.users.fields.password}</span>}
+          rules={[{ required: true, message: '请输入密码' }]}
+        >
+          <Input.Password placeholder={adminMessages.users.fields.passwordPlaceholder} />
+        </Form.Item>
+        <Form.Item
+          name="name"
+          label={<span className="text-sm font-medium">{adminMessages.users.fields.displayName}</span>}
+          rules={[{ required: true, message: '请输入显示名称' }]}
+        >
+          <Input placeholder={adminMessages.users.fields.displayNamePlaceholder} />
+        </Form.Item>
+        <Form.Item
+          name="email"
+          label={<span className="text-sm font-medium">{adminMessages.users.fields.emailOptional}</span>}
+        >
+          <Input type="email" placeholder="email@example.com" />
+        </Form.Item>
+        <div className="flex justify-end gap-2">
+          <Button onClick={() => onOpenChange(false)}>{adminMessages.common.cancel}</Button>
+          <Button type="primary" htmlType="submit" disabled={isPending}>
+            {isPending ? adminMessages.common.submitting : adminMessages.common.create}
+          </Button>
+        </div>
+      </Form>
     </Modal>
   );
 }
@@ -120,75 +87,54 @@ export function EditUserDialog({
   onSubmit: (data: EditUserForm) => void;
   isPending: boolean;
 }) {
-  const form = useForm<EditUserForm>({
-    resolver: zodResolver(editUserSchema),
-  });
+  const [form] = Form.useForm();
 
   useEffect(() => {
-    if (open && user) {
-      form.reset(getEditUserFormValues(user));
-    }
+    if (open && user) form.setFieldsValue(getEditUserFormValues(user));
   }, [form, open, user]);
 
   return (
-    <Modal open={open} onCancel={() => onOpenChange(false)} title={adminMessages.users.dialogs.editTitle} footer={null}>
-      <FormProvider {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <Controller
-            control={form.control}
-            name="name"
-            render={({ field, fieldState }) => (
-              <div className="space-y-1">
-                <label className="text-sm font-medium">{adminMessages.users.fields.displayName}</label>
-                <Input {...field} />
-                {fieldState.error && (
-                  <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                )}
-              </div>
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="email"
-            render={({ field, fieldState }) => (
-              <div className="space-y-1">
-                <label className="text-sm font-medium">{adminMessages.users.fields.email}</label>
-                <Input type="email" {...field} />
-                {fieldState.error && (
-                  <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                )}
-              </div>
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="is_active"
-            render={({ field, fieldState }) => (
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="edit-form-is_active"
-                  checked={field.value}
-                  onChange={(e) => field.onChange(e.target.checked)}
-                />
-                <label htmlFor="edit-form-is_active" className="text-sm font-medium">
-                  {adminMessages.users.fields.active}
-                </label>
-                {fieldState.error && (
-                  <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                )}
-              </div>
-            )}
-          />
-          <div className="flex justify-end gap-2">
-            <Button onClick={() => onOpenChange(false)}>
-              {adminMessages.common.cancel}
-            </Button>
-            <Button type="primary" disabled={isPending}>
-              {isPending ? adminMessages.common.saving : adminMessages.common.save}
-            </Button>
-          </div>
-        </form>
-      </FormProvider>
+    <Modal
+      open={open}
+      onCancel={() => onOpenChange(false)}
+      title={adminMessages.users.dialogs.editTitle}
+      footer={null}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onSubmit}
+        className="space-y-4"
+        requiredMark={false}
+      >
+        <Form.Item
+          name="name"
+          label={<span className="text-sm font-medium">{adminMessages.users.fields.displayName}</span>}
+          rules={[{ required: true, message: '请输入显示名称' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="email"
+          label={<span className="text-sm font-medium">{adminMessages.users.fields.email}</span>}
+        >
+          <Input type="email" />
+        </Form.Item>
+        <Form.Item
+          name="is_active"
+          valuePropName="checked"
+        >
+          <Checkbox id="edit-form-is_active">
+            {adminMessages.users.fields.active}
+          </Checkbox>
+        </Form.Item>
+        <div className="flex justify-end gap-2">
+          <Button onClick={() => onOpenChange(false)}>{adminMessages.common.cancel}</Button>
+          <Button type="primary" htmlType="submit" disabled={isPending}>
+            {isPending ? adminMessages.common.saving : adminMessages.common.save}
+          </Button>
+        </div>
+      </Form>
     </Modal>
   );
 }
@@ -206,61 +152,58 @@ export function ResetPasswordDialog({
   onSubmit: (data: ResetPasswordForm) => void;
   isPending: boolean;
 }) {
-  const form = useForm<ResetPasswordForm>({
-    resolver: zodResolver(resetPasswordSchema),
-    defaultValues: getDefaultResetPasswordValues(),
-  });
+  const [form] = Form.useForm();
 
   useEffect(() => {
-    if (open) {
-      form.reset(getDefaultResetPasswordValues());
-    }
+    if (open) form.setFieldsValue({ new_password: '', confirm: '' });
   }, [form, open]);
 
   return (
-    <Modal open={open} onCancel={() => onOpenChange(false)} title={adminMessages.users.dialogs.resetPasswordTitle} footer={null}>
-      <FormProvider {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <Controller
-            control={form.control}
-            name="new_password"
-            render={({ field, fieldState }) => (
-              <div className="space-y-1">
-                <label className="text-sm font-medium">{adminMessages.users.fields.newPassword}</label>
-                <Input type="password" placeholder={adminMessages.users.fields.passwordPlaceholder} {...field} />
-                {fieldState.error && (
-                  <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                )}
-              </div>
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="confirm"
-            render={({ field, fieldState }) => (
-              <div className="space-y-1">
-                <label className="text-sm font-medium">{adminMessages.users.fields.confirmPassword}</label>
-                <Input
-                  type="password"
-                  placeholder={adminMessages.users.fields.confirmPasswordPlaceholder}
-                  {...field}
-                />
-                {fieldState.error && (
-                  <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                )}
-              </div>
-            )}
-          />
-          <div className="flex justify-end gap-2">
-            <Button onClick={() => onOpenChange(false)}>
-              {adminMessages.common.cancel}
-            </Button>
-            <Button type="primary" disabled={isPending}>
-              {isPending ? adminMessages.common.submitting : adminMessages.common.confirm}
-            </Button>
-          </div>
-        </form>
-      </FormProvider>
+    <Modal
+      open={open}
+      onCancel={() => onOpenChange(false)}
+      title={adminMessages.users.dialogs.resetPasswordTitle}
+      footer={null}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onSubmit}
+        className="space-y-4"
+        requiredMark={false}
+      >
+        <Form.Item
+          name="new_password"
+          label={<span className="text-sm font-medium">{adminMessages.users.fields.newPassword}</span>}
+          rules={[{ required: true, message: '请输入新密码' }]}
+        >
+          <Input.Password placeholder={adminMessages.users.fields.passwordPlaceholder} />
+        </Form.Item>
+        <Form.Item
+          name="confirm"
+          label={<span className="text-sm font-medium">{adminMessages.users.fields.confirmPassword}</span>}
+          dependencies={['new_password']}
+          rules={[
+            { required: true, message: '请再次输入密码' },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                if (!value || getFieldValue('new_password') === value) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(new Error('两次输入的密码不一致'));
+              },
+            }),
+          ]}
+        >
+          <Input.Password placeholder={adminMessages.users.fields.confirmPasswordPlaceholder} />
+        </Form.Item>
+        <div className="flex justify-end gap-2">
+          <Button onClick={() => onOpenChange(false)}>{adminMessages.common.cancel}</Button>
+          <Button type="primary" htmlType="submit" disabled={isPending}>
+            {isPending ? adminMessages.common.submitting : adminMessages.common.confirm}
+          </Button>
+        </div>
+      </Form>
     </Modal>
   );
 }
@@ -285,15 +228,9 @@ export function DeleteUserDialog({
       title={adminMessages.users.deleteDialog.title}
       footer={
         <div className="flex justify-end gap-2">
-          <Button onClick={() => onOpenChange(false)}>
-            {adminMessages.common.cancel}
-          </Button>
+          <Button onClick={() => onOpenChange(false)}>{adminMessages.common.cancel}</Button>
           {!user?.is_system && (
-            <Button
-              danger
-              onClick={onConfirm}
-              disabled={isPending}
-            >
+            <Button danger onClick={onConfirm} disabled={isPending}>
               {isPending ? adminMessages.common.deleting : adminMessages.common.delete}
             </Button>
           )}

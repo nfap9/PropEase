@@ -1,10 +1,10 @@
 import dayjs from 'dayjs';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Input, Form, InputNumber } from 'antd';
-import { ApartmentCreateSchema as apartmentSchema, type ApartmentFormData } from '@apartment-ultra/api-contract';
+import { ApartmentCreate as apartmentSchema, type ApartmentFormData } from '@apartment-ultra/api-contract';
 import { LandlordInfoSection, type LandlordInfoSectionRef } from './landlord-info-section';
 
-export { apartmentSchema };
+export type { apartmentSchema };
 export type { ApartmentFormData };
 
 export interface ApartmentFormRef {

@@ -25,6 +25,8 @@ export interface TenantCreate {
   notes?: string;
 }
 
+export type TenantFormData = TenantCreate;
+
 export interface TenantUpdate {
   name?: string;
   phone?: string;

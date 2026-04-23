@@ -1,58 +1,35 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm, FormProvider, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { Form, Input, Button, Card } from 'antd';
 import { LoaderCircle, ShieldCheck } from 'lucide-react';
 import { adminApiEndpoints, AdminTokenResponse } from '@/api/admin-client';
-import { Button, Input, Card } from 'antd';
 import { adminMessages } from '@/i18n';
-
-const schema = z.object({
-  username: z.string().min(1, '请输入用户名'),
-  password: z.string().min(1, '请输入密码'),
-});
-
-type FormValues = z.infer<typeof schema>;
 
 const AUTH_INPUT_CLASSNAME = 'h-11 rounded-xl border border-gray-300 px-3.5 shadow-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500';
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
+  const [form] = Form.useForm();
   const [error, setError] = useState<string | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { username: '', password: '' },
-  });
 
-  // 检查认证状态和初始化状态
   const checkAuth = useCallback(async () => {
-    // 1. 检查是否已登录
     const token = localStorage.getItem('admin_access_token');
     if (token) {
-      console.log(token);
-
-      // Sync to cookie for middleware
       document.cookie = `admin_access_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
       navigate('/');
       return;
     }
-
-    // 2. 检查系统是否已初始化
     try {
       const res = await adminApiEndpoints.checkInitStatus();
       if (!res.data?.initialized) {
-        // 未初始化，跳转到初始化页面
         navigate('/setup');
         return;
       }
     } catch {
       // 检查失败，继续显示登录页
     }
-
     setIsCheckingAuth(false);
   }, [navigate]);
 
@@ -60,7 +37,7 @@ export default function AdminLoginPage() {
     checkAuth();
   }, [checkAuth]);
 
-  const onSubmit = async (values: FormValues) => {
+  const onFinish = async (values: { username: string; password: string }) => {
     setError(null);
     setIsSubmitting(true);
     try {
@@ -68,7 +45,6 @@ export default function AdminLoginPage() {
       const data = res.data as AdminTokenResponse;
       if (data?.access_token) {
         localStorage.setItem('admin_access_token', data.access_token);
-        // Sync to cookie for middleware
         document.cookie = `admin_access_token=${data.access_token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
         navigate('/');
         return;
@@ -98,7 +74,6 @@ export default function AdminLoginPage() {
     }
   };
 
-  // 检查认证状态时显示加载
   if (isCheckingAuth) {
     return (
       <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gray-50 px-4">
@@ -156,7 +131,10 @@ export default function AdminLoginPage() {
           </section>
 
           <section className="flex items-center lg:justify-end">
-            <Card className="w-full max-w-xl rounded-[32px] border border-gray-200/60 bg-white/70 shadow-2xl backdrop-blur-2xl" styles={{ body: { padding: 0 } }}>
+            <Card
+              className="w-full max-w-xl rounded-[32px] border border-gray-200/60 bg-white/70 shadow-2xl backdrop-blur-2xl"
+              styles={{ body: { padding: 0 } }}
+            >
               <div className="space-y-6 border-b border-gray-200/70 px-6 pb-6 pt-5">
                 <div className="inline-flex w-fit rounded-full border border-gray-200 bg-gray-50 p-1">
                   <div className="rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm">
@@ -171,62 +149,52 @@ export default function AdminLoginPage() {
                 </div>
               </div>
               <div className="space-y-6 px-6 pb-5 pt-5">
-                <FormProvider {...form}>
-                    <form method="post" onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-                      {error ? (
-                        <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
-                          {error}
-                        </div>
-                      ) : null}
-                      <Controller
-                        control={form.control}
-                        name="username"
-                        render={({ field, fieldState }) => (
-                          <div className="space-y-1">
-                            <label className="text-sm font-medium">{adminMessages.login.form.username}</label>
-                            <Input
-                              placeholder={adminMessages.login.form.usernamePlaceholder}
-                              className={AUTH_INPUT_CLASSNAME}
-                              {...field}
-                              autoComplete="username"
-                              data-testid="admin-username-input"
-                            />
-                            {fieldState.error && (
-                              <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                            )}
-                          </div>
-                        )}
-                      />
-                      <Controller
-                        control={form.control}
-                        name="password"
-                        render={({ field, fieldState }) => (
-                          <div className="space-y-1">
-                            <label className="text-sm font-medium">{adminMessages.login.form.password}</label>
-                            <Input
-                              type="password"
-                              placeholder={adminMessages.login.form.passwordPlaceholder}
-                              className={AUTH_INPUT_CLASSNAME}
-                              {...field}
-                              autoComplete="current-password"
-                              data-testid="admin-password-input"
-                            />
-                            {fieldState.error && (
-                              <p className="text-sm text-red-500">{fieldState.error.message}</p>
-                            )}
-                          </div>
-                        )}
-                      />
-                      <Button
-                        htmlType="submit"
-                        className="h-11 w-full text-sm"
-                        disabled={isSubmitting}
-                        data-testid="admin-login-button"
-                      >
-                        {isSubmitting ? adminMessages.login.form.submitting : adminMessages.login.form.submit}
-                      </Button>
-                    </form>
-                  </FormProvider>
+                <Form
+                  form={form}
+                  layout="vertical"
+                  onFinish={onFinish}
+                  className="space-y-5"
+                  requiredMark={false}
+                >
+                  {error ? (
+                    <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                      {error}
+                    </div>
+                  ) : null}
+                  <Form.Item
+                    name="username"
+                    label={<span className="text-sm font-medium">{adminMessages.login.form.username}</span>}
+                    rules={[{ required: true, message: '请输入用户名' }]}
+                  >
+                    <Input
+                      placeholder={adminMessages.login.form.usernamePlaceholder}
+                      className={AUTH_INPUT_CLASSNAME}
+                      autoComplete="username"
+                      data-testid="admin-username-input"
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name="password"
+                    label={<span className="text-sm font-medium">{adminMessages.login.form.password}</span>}
+                    rules={[{ required: true, message: '请输入密码' }]}
+                  >
+                    <Input.Password
+                      placeholder={adminMessages.login.form.passwordPlaceholder}
+                      className={AUTH_INPUT_CLASSNAME}
+                      autoComplete="current-password"
+                      data-testid="admin-password-input"
+                    />
+                  </Form.Item>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    className="h-11 w-full text-sm"
+                    disabled={isSubmitting}
+                    data-testid="admin-login-button"
+                  >
+                    {isSubmitting ? adminMessages.login.form.submitting : adminMessages.login.form.submit}
+                  </Button>
+                </Form>
               </div>
               <div className="border-t border-gray-200/70 px-5 pb-5 pt-5 text-sm text-gray-500 sm:px-6 sm:pb-6">
                 {adminMessages.login.footer}

@@ -1,11 +1,8 @@
-
 import { useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Table, Input } from 'antd';
 import type { TableProps } from 'antd';
 import { Skeleton } from 'antd';
-import { giftSubscriptionSchema, type FilterActive, type GiftSubscriptionForm } from '@/schemas/registered-users';
+import type { FilterActive } from '@/schemas/registered-users';
 import { createRegisteredUsersColumns } from '@/pages/registered-users/components/columns';
 import { useRegisteredUsersData } from '@/hooks/registered-users';
 import { getDefaultGiftFormValues, getSelectedGiftPlan } from '@/utils/registered-users';
@@ -17,6 +14,7 @@ import {
 } from '@/pages/registered-users/components/registered-user-dialogs';
 import { RegisteredUsersToolbar } from '@/pages/registered-users/components/registered-users-toolbar';
 import { useListFilters, useConfirmAction } from '@/hooks';
+import type { GiftSubscriptionForm } from '@/schemas/registered-users';
 
 interface RegisteredUsersFiltersState {
   activeFilter: FilterActive;
@@ -27,6 +25,7 @@ interface RegisteredUsersFiltersState {
 export default function AdminRegisteredUsersPage() {
   const [detailUserId, setDetailUserId] = useState<string | null>(null);
   const [isGiftOpen, setIsGiftOpen] = useState(false);
+  const [giftInitialValues, setGiftInitialValues] = useState<GiftSubscriptionForm>(getDefaultGiftFormValues());
   const { filters, setFilter, patchFilters } = useListFilters<RegisteredUsersFiltersState>({
     activeFilter: 'all',
     search: '',
@@ -34,11 +33,6 @@ export default function AdminRegisteredUsersPage() {
   });
   const disableConfirm = useConfirmAction<string>();
   const deleteConfirm = useConfirmAction<string>();
-
-  const giftForm = useForm<GiftSubscriptionForm>({
-    resolver: zodResolver(giftSubscriptionSchema),
-    defaultValues: getDefaultGiftFormValues(),
-  });
 
   const {
     users,
@@ -64,13 +58,15 @@ export default function AdminRegisteredUsersPage() {
     },
     onGiftSuccess: () => {
       setIsGiftOpen(false);
-      giftForm.reset(getDefaultGiftFormValues(detail));
     },
   });
 
-  const selectedGiftPlan = useMemo(() => getSelectedGiftPlan(plans, giftForm.watch('service_id')), [plans, giftForm]);
+  const selectedGiftPlan = useMemo(
+    () => getSelectedGiftPlan(plans, giftInitialValues.service_id),
+    [plans, giftInitialValues.service_id]
+  );
   const selectedPricing =
-    selectedGiftPlan?.pricing?.find((pricing) => pricing.id === giftForm.watch('pricing_id')) ?? null;
+    selectedGiftPlan?.pricing?.find((pricing) => pricing.id === giftInitialValues.pricing_id) ?? null;
 
   const columns = useMemo(
     () =>
@@ -92,11 +88,9 @@ export default function AdminRegisteredUsersPage() {
   };
 
   const openGiftDialog = () => {
-    if (!detail) {
-      return;
-    }
-
-    giftForm.reset(getDefaultGiftFormValues(detail));
+    if (!detail) return;
+    const values = getDefaultGiftFormValues(detail);
+    setGiftInitialValues(values);
     setIsGiftOpen(true);
   };
 
@@ -149,10 +143,7 @@ export default function AdminRegisteredUsersPage() {
         {...disableConfirm.dialogProps}
         onConfirm={() => {
           if (disableConfirm.selectedItem) {
-            setActiveMutation.mutate({
-              id: disableConfirm.selectedItem,
-              is_active: false,
-            });
+            setActiveMutation.mutate({ id: disableConfirm.selectedItem, is_active: false });
           }
         }}
         isPending={setActiveMutation.isPending}
@@ -190,7 +181,7 @@ export default function AdminRegisteredUsersPage() {
         plansLoading={plansLoading}
         selectedGiftPlan={selectedGiftPlan}
         selectedPricing={selectedPricing}
-        form={giftForm}
+        initialValues={giftInitialValues}
         onSubmit={(values) => giftSubscriptionMutation.mutate(values)}
         isPending={giftSubscriptionMutation.isPending}
       />

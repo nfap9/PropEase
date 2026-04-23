@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 export const LEASES = {
   HEADING: 'leases-heading',
   NEW_BUTTON: 'leases-new-btn',
@@ -23,41 +21,35 @@ export const LEASES = {
   CONFIRM_DELETE_BTN: 'leases-confirm-delete-btn',
 } as const;
 
-export const leaseSchema = z.object({
-  room_id: z.string().min(1, '请选择房间'),
-  tenant_id: z.string().min(1, '请选择租客'),
-  start_date: z.string().min(1, '请选择开始日期'),
-  end_date: z.string().optional(),
-  monthly_rent: z.coerce.number().min(0, '月租不能为负'),
-  deposit: z.coerce.number().min(0, '押金不能为负').optional(),
-  water_rate: z.coerce.number().min(0).optional(),
-  electricity_rate: z.coerce.number().optional(),
-  notes: z.string().optional(),
-});
+export interface LeaseEditFormData {
+  room_id: string;
+  tenant_id: string;
+  start_date: string;
+  end_date?: string;
+  monthly_rent: number;
+  deposit?: number;
+  water_rate?: number;
+  electricity_rate?: number;
+  notes?: string;
+}
 
-export type LeaseEditFormData = z.infer<typeof leaseSchema>;
-
-/**
- * 签约表单 Schema
- */
-export const leaseSigningSchema = z.object({
-  room_id: z.string().min(1, '请选择房间'),
-  tenant_name: z.string().min(1, '请输入租客姓名'),
-  tenant_phone: z.string().min(1, '请输入联系电话'),
-  tenant_id_card: z.string().optional(),
-  tenant_emergency_contact: z.string().optional(),
-  tenant_emergency_phone: z.string().optional(),
-  tenant_notes: z.string().optional(),
-  start_date: z.string().min(1, '请选择开始日期'),
-  end_date: z.string().optional(),
-  monthly_rent: z.coerce.number().min(0, '月租不能为负'),
-  deposit: z.coerce.number().min(0, '押金不能为负').optional(),
-  water_rate: z.coerce.number().min(0).optional(),
-  electricity_rate: z.coerce.number().min(0).optional(),
-  notes: z.string().optional(),
-});
-
-export type LeaseSigningFormData = z.infer<typeof leaseSigningSchema>;
+/** 签约表单 */
+export interface LeaseSigningFormData {
+  room_id: string;
+  tenant_name: string;
+  tenant_phone: string;
+  tenant_id_card?: string;
+  tenant_emergency_contact?: string;
+  tenant_emergency_phone?: string;
+  tenant_notes?: string;
+  start_date: string;
+  end_date?: string;
+  monthly_rent: number;
+  deposit?: number;
+  water_rate?: number;
+  electricity_rate?: number;
+  notes?: string;
+}
 
 export interface LeaseFiltersState {
   apartmentId: string | null;

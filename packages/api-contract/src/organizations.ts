@@ -30,6 +30,10 @@ export interface OrganizationUpdate {
   notes?: string;
 }
 
+export interface ConfirmDelete {
+  confirmed_name: string;
+}
+
 /** 迁移统计（兼容旧 API） */
 export interface MigrationStats {
   apartments: number;

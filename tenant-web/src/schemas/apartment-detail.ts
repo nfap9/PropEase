@@ -1,34 +1,32 @@
-import { z } from 'zod';
 import type { RoomStatus } from '@/types';
-import { apartmentSchema, type ApartmentFormData } from '@/pages/apartments/components';
+import type { ApartmentFormData } from '@/pages/apartments/components';
+import type { apartmentSchema } from '@/pages/apartments/components';
 
-export { apartmentSchema, type ApartmentFormData };
+export type { ApartmentFormData, apartmentSchema };
 
-export const roomSchema = z.object({
-  room_number: z.string().min(1, '请输入房间号'),
-  layout: z.string().optional(),
-  area: z.number().min(0, '面积不能为负').optional(),
-  notes: z.string().optional(),
-});
+// 房间表单
+export interface RoomFormData {
+  room_number: string;
+  layout?: string;
+  area?: number;
+  notes?: string;
+  [key: string]: unknown;
+}
 
-export type RoomFormData = z.infer<typeof roomSchema>;
+// 批量创建配置
+export interface RoomBatchConfigData {
+  floors: string;
+  room_numbers: string;
+  notes?: string;
+}
 
-export const roomBatchConfigSchema = z.object({
-  floors: z.string().min(1, '请输入楼层'),
-  room_numbers: z.string().min(1, '请输入房间号'),
-  notes: z.string().optional(),
-});
-
-export type RoomBatchConfigData = z.infer<typeof roomBatchConfigSchema>;
-
-export const batchEditSchema = z.object({
-  layout: z.string().optional(),
-  area: z.number().min(0, '面积不能为负').optional(),
-  maintenance: z.boolean().optional(),
-  monthly_rent: z.number().min(0, '租金不能为负').optional(),
-});
-
-export type BatchEditFormData = z.infer<typeof batchEditSchema>;
+// 批量编辑
+export interface BatchEditFormData {
+  layout?: string;
+  area?: number;
+  maintenance?: boolean;
+  monthly_rent?: number;
+}
 
 export const LAYOUT_OPTIONS = [
   '单间',
@@ -60,4 +58,3 @@ export const apartmentFormDefaultValues: ApartmentFormData = {
   contract_end: '',
   landlord_rent: 0,
 };
-

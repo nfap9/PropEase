@@ -99,13 +99,12 @@ export function useApartmentDetailData({
       data,
     }: {
       roomId: string;
-      data: RoomFormData & { facilities?: RoomFacilities | null };
+      data: RoomUpdate & { facilities?: RoomFacilities | null };
     }) =>
       roomsApi.update(
         roomId,
         filterEmptyStrings({
           ...data,
-          apartment_id: apartmentId,
         })
       ),
     onSuccess: () => {

@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
 import { toast } from 'sonner';
 import { Button, Modal, Input, Card, Skeleton, Tag, Form } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
@@ -21,11 +20,7 @@ const TEAM_SETTINGS = {
   EDIT_ORG_DIALOG: 'team-edit-org-dialog',
 } as const;
 
-const organizationSchema = z.object({
-  name: z.string().min(1, tenantMessages.settings.team.teamNameValidation),
-});
-
-type OrganizationFormData = z.infer<typeof organizationSchema>;
+type OrganizationFormData = { name: string };
 
 const ROLE_LABELS: Record<MemberRole, string> = {
   owner: tenantMessages.settings.team.roles.owner,
