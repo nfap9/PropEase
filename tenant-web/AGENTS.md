@@ -70,7 +70,7 @@ export default function LeasesPageContent() { ... }
 ```
 视图层 (pages/ components/ routes/)
     ↓ 引用
-业务层 (hooks/ schemas/)
+业务层 (hooks/)
     ↓ 引用
 基础设施层 (api/ contexts/ i18n/)
     ↓ 引用
@@ -80,19 +80,20 @@ export default function LeasesPageContent() { ... }
 | 层级 | 目录 | 职责 | 可引用 |
 |------|------|------|--------|
 | **视图层** | `pages/`, `components/`, `routes/` | UI 渲染、页面路由、组件展示 | 业务层、基础设施层、工具层 |
-| **业务层** | `hooks/`, `schemas/` | 业务逻辑、数据获取、表单类型定义 | 基础设施层、工具层 |
+| **业务层** | `hooks/` | 业务逻辑、数据获取 | 基础设施层、工具层 |
 | **基础设施层** | `api/`, `contexts/`, `i18n/` | HTTP 客户端、全局状态、国际化上下文 | 工具层 |
 | **工具层** | `utils/`, `types/`, `constants/` | 纯函数、类型声明、静态常量 | 工具层（仅同层） |
 
 **禁止的反向引用（由 ESLint 拦截）：**
 
-- 工具层 → 上层任意层（`utils/` 禁止引用 `api/`、`contexts/`、`i18n/`、`hooks/`、`schemas/`、`components/`、`pages/`）
+- 工具层 → 上层任意层（`utils/` 禁止引用 `api/`、`contexts/`、`i18n/`、`hooks/`、`components/`、`pages/`）
 - 基础设施层 → 业务层、视图层
 - 业务层 → 视图层
 
-**`schemas/` 与 `constants/` 的区别：**
-- `schemas/`：业务层，存放类型定义（接口/type）和纯函数（如 `getDefaultXxx()`）
-- `constants/`：工具层，存放静态配置和枚举（如 `BILLS`、`PERMISSION_LABELS`、`LAYOUT_OPTIONS`）
+**`types/` 与 `constants/` 与 `utils/` 的区别：**
+- `types/`：工具层，存放所有类型定义（通用类型 + 业务类型），如 `LeaseEditFormData`、`PaymentFormData`
+- `constants/`：工具层，存放静态配置和枚举（如 `BILLS`、`LAYOUT_OPTIONS`、`apartmentFormDefaultValues`）
+- `utils/`：工具层，存放纯函数（如 `getDefaultPaymentValues()`、`getDefaultLeaseFilters()`）
 
 **i18n 消息的获取方式：**
 - 视图层：`useTranslation()` hook 或直接 import `tenantMessages`
