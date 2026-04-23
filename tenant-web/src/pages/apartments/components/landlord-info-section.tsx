@@ -14,7 +14,6 @@ export function LandlordInfoSection({ form }: LandlordInfoSectionProps) {
   ) => ({
     ...formInstance.register(name, {
       valueAsNumber: true,
-      setValueAs: (v: unknown) => (v === '' || (typeof v === 'number' && isNaN(v)) ? undefined : v),
     }),
   });
 

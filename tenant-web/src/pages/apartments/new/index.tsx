@@ -50,7 +50,6 @@ export default function NewApartmentPage() {
   const numberRegister = (name: keyof ApartmentFormData) => ({
     ...form.register(name, {
       valueAsNumber: true,
-      setValueAs: (v: unknown) => (v === '' || (typeof v === 'number' && isNaN(v)) ? undefined : v),
     }),
   });
 

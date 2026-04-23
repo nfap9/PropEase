@@ -147,7 +147,7 @@ export function EditRoomDialog({
                   step="0.01"
                   data-testid={testids?.MONTHLY_RENT_INPUT}
                   value={field.value ?? ''}
-                  onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                  onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
                 />
               )}
             />
