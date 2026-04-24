@@ -57,10 +57,6 @@ export type {
   PlanPricing,
   PromotionPlan,
   Promotion,
-  PromotionCreate,
-  PromotionUpdate,
-  PromotionListParams,
-  PromotionCalculation,
 } from './promotion.js';
 
 /** 服务定价模块 */
@@ -78,7 +74,6 @@ export type {
   StorefrontConfigUpdate,
   StorefrontItemCreate,
   StorefrontItemUpdate,
-  StorefrontItemsReorder,
   StorefrontViewService,
   StorefrontViewPricing,
   StorefrontView,
@@ -185,7 +180,6 @@ export type {
   ApartmentFeeConfigUpdate,
   BillFeeItem,
 } from './feeTypes.compat.js';
-export { orgFeeItemToFeeType } from './feeTypes.compat.js';
 
 /** 报表 */
 export type {

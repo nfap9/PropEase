@@ -168,10 +168,6 @@ export interface StorefrontItemUpdate {
   pricing_discounts?: PricingDiscount[];
 }
 
-/** 批量更新商店项排序 */
-export interface StorefrontItemsReorder {
-  item_ids: string[];
-}
 
 // ============================================================
 // 商店视图（客户端使用）

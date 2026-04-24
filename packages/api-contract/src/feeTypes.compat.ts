@@ -4,7 +4,7 @@
  * 注意：新旧 API 结构差异较大，实际使用时需要适配
  */
 
-import type { FeeCategory, FeeCycle } from './feeTypes.js';
+import type { FeeCategory } from './feeTypes.js';
 
 /** 费用类型（兼容旧 API） */
 export interface FeeType {
@@ -131,22 +131,3 @@ export interface BillFeeItem {
   created_at: string;
 }
 
-/**
- * OrgFeeItem 转 FeeType 兼容转换
- * 注意：转换时需要将 OrgFeeItem 的字段映射到 FeeType 结构
- */
-export function orgFeeItemToFeeType(orgItem: any): FeeType {
-  return {
-    id: orgItem.id,
-    organization_id: orgItem.organization_id,
-    name: orgItem.name,
-    code: orgItem.code || orgItem.name.toLowerCase().replace(/\s+/g, '_'),
-    description: orgItem.description || null,
-    category: orgItem.category,
-    is_active: orgItem.is_active ?? true,
-    sort_order: orgItem.sort_order ?? 0,
-    created_at: orgItem.created_at,
-    updated_at: orgItem.updated_at,
-    specifications: orgItem.specifications || [],
-  };
-}

@@ -8,10 +8,8 @@ export const Messages = {
   ROOM_DELETED: '房间已删除',
   APARTMENT_DELETED: '公寓已删除',
   LEASE_TERMINATED: '租约已终止',
-  TEAM_MIGRATED: '团队迁移成功',
   TEAM_DELETED: '团队已删除',
   MEMBER_REMOVED: '成员已移除',
-  ALREADY_INITIALIZED: '已初始化',
 } as const;
 
 /** 404 资源不存在 */
