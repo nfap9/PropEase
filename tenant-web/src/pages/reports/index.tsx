@@ -1,16 +1,13 @@
-import { useState } from 'react';
-import { Building2 } from 'lucide-react';
+/**
+ * ReportsPage - 报表页面入口
+ *
+ * 职责：组合视图组件，权限检查。
+ */
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Select } from 'antd';
 import { Skeleton } from 'antd';
+import { Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth';
-import { useReportsData } from '@/pages/reports/hooks/use-reports';
-import { getReportYearOptions, REPORTS } from '@/constants/reports';
-import { ReportsOverviewTab } from '@/pages/reports/components/reports-overview-tab';
-import { ReportsIncomeTab } from '@/pages/reports/components/reports-income-tab';
-import { ReportsOccupancyTab } from '@/pages/reports/components/reports-occupancy-tab';
-
-type ReportTab = 'income' | 'occupancy' | 'overview';
+import { ReportsView } from './views/reports-view';
 
 function ReportsFallback() {
   return (
@@ -23,16 +20,12 @@ function ReportsFallback() {
 
 export default function ReportsPage() {
   const { organization, isLoading: authLoading } = useAuth();
-  const orgId = organization?.id;
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [activeTab, setActiveTab] = useState<ReportTab>('income');
-  const { overview, incomeReport, incomeLoading, occupancyReport, occupancyLoading } = useReportsData(selectedYear);
 
   if (authLoading) {
     return <ReportsFallback />;
   }
 
-  if (!orgId) {
+  if (!organization?.id) {
     return (
       <div className="flex h-full flex-col items-center justify-center space-y-4">
         <Building2 className="h-16 w-16 text-gray-400" />
@@ -44,62 +37,7 @@ export default function ReportsPage() {
 
   return (
     <PermissionPageGuard>
-      <div className="space-y-6">
-        <div className="flex items-center justify-end">
-          <Select
-            value={selectedYear.toString()}
-            onChange={(value) => setSelectedYear(Number(value))}
-            style={{ width: 120 }}
-            data-testid={REPORTS.YEAR_SELECT}
-            options={getReportYearOptions().map((year) => ({ value: year, label: `${year}年` }))}
-          />
-        </div>
-
-        <div className="flex gap-2">
-          <button
-            onClick={() => setActiveTab('income')}
-            data-testid={REPORTS.INCOME_TAB}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === 'income' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            收入分析
-          </button>
-          <button
-            onClick={() => setActiveTab('occupancy')}
-            data-testid={REPORTS.OCCUPANCY_TAB}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === 'occupancy' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            入住率
-          </button>
-          <button
-            onClick={() => setActiveTab('overview')}
-            data-testid={REPORTS.OVERVIEW_TAB}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === 'overview' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            总览
-          </button>
-        </div>
-
-        <div>
-          {activeTab === 'income' && (
-            <ReportsIncomeTab selectedYear={selectedYear} incomeReport={incomeReport} incomeLoading={incomeLoading} />
-          )}
-          {activeTab === 'occupancy' && (
-            <ReportsOccupancyTab
-              selectedYear={selectedYear}
-              overview={overview}
-              occupancyReport={occupancyReport}
-              occupancyLoading={occupancyLoading}
-            />
-          )}
-          {activeTab === 'overview' && <ReportsOverviewTab overview={overview} />}
-        </div>
-      </div>
+      <ReportsView />
     </PermissionPageGuard>
   );
 }
