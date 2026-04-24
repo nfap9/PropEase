@@ -1,6 +1,8 @@
 # 租客端使用指南
 
-**访问地址：** http://81.71.23.198/tenant/
+**访问地址：** 
+生产部署时：http://server_location/tenant/
+本地开发时：http://localhost:3000/tenant/
 
 ---
 

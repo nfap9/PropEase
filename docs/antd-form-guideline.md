@@ -1,6 +1,6 @@
 # Ant Design Form 规范
 
-> 本项目统一使用 antd v5 `Form` 组件进行表单管理，**禁止与 react-hook-form 混用**。
+> 本项目统一使用 antd `Form` 组件进行表单管理，**禁止与 react-hook-form 混用**。
 
 ---
 

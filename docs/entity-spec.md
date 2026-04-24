@@ -424,7 +424,7 @@
 | partial | 部分支付 |
 | paid | 已支付 |
 | overdue | 逾期 |
-| reversed | 已冲销（红冲后不可修改，仅追溯） |
+| reversed | 已冲销（红冲后不可修改，仅追溯「冲销关联字段待实现」） |
 
 ---
 
@@ -714,7 +714,7 @@
 | apartments | int | — | 0 | 公寓数 |
 | rooms | int | — | 0 | 房间数 |
 | members | int | — | 0 | 成员数 |
-| billing_order_id | varchar(26) | ❌ || billing_order_id | varchar(26) | ❌ | — | 关联订单 ID |
+| billing_order_id | varchar(26) | ❌ | — | 关联订单 ID |
 | created_at | datetime | — | now() | 创建时间 |
 | updated_at | datetime | — | now() | 更新时间 |
 
