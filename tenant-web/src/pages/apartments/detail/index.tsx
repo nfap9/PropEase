@@ -6,12 +6,12 @@ import { Button, Skeleton, Tabs } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import type { Room, RoomFacilities } from '@/types';
-import { useApartmentDetailData, useApartmentRoomMetrics, useRoomBatchSelection } from '@/hooks/apartment-detail';
+import { useApartmentDetailData, useApartmentRoomMetrics, useRoomBatchSelection } from '@/hooks/use-apartment-detail';
 import { buildApartmentFormValues } from '@/utils/apartment-detail';
 import { ApartmentDetailHeader } from '@/pages/apartments/detail/components/apartment-detail-header';
 import { ApartmentOverviewTab } from '@/pages/apartments/detail/components/apartment-overview-tab';
 import { ApartmentRoomListTab } from '@/pages/apartments/detail/components/apartment-room-list-tab';
-import { UtilityConfigDialog } from '@/pages/apartments/detail/components/UtilityConfigDialog';
+import { UtilityConfigDialog } from '@/pages/apartments/detail/components/utility-config-dialog';
 import { ApartmentEditDialog } from '@/pages/apartments/detail/components/apartment-edit-dialog';
 import { BatchCreateRoomDialog, BatchEditDialog, CreateRoomDialog, DeleteRoomDialog, RoomEditDialog } from '@/pages/apartments/detail/components/room-dialogs';
 

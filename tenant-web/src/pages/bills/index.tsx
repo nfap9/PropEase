@@ -4,7 +4,7 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { useAuth } from '@/contexts/auth';
 import { createBillsColumns } from '@/pages/bills/components/columns';
 import { BillsListView } from '@/pages/bills/components/bills-list-view';
-import { useBillsPage } from './hooks/useBillsPage';
+import { useBillsPage } from './hooks/use-bills-page';
 
 const BillDetailDialog = lazy(() =>
   import('@/pages/bills/components/bill-detail-dialog').then((m) => ({ default: m.BillDetailDialog }))

@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { HistoryFilters } from '../components/HistoryFilters';
-import { HistoryTable } from '../components/HistoryTable';
-import { EditUtilityDialog } from '../components/EditUtilityDialog';
+import { HistoryFilters } from '../components/history-filters';
+import { HistoryTable } from '../components/history-table';
+import { EditUtilityDialog } from '../components/edit-utility-dialog';
 import { apartmentsApi } from '@/api/apartments';
 import { billsApi } from '@/api/bills';
 import { leasesApi } from '@/api/leases';

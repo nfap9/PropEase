@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import type { Bill, BillStatus } from '@/types';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
-import { useBillsData, useBillShare } from '@/hooks/bills';
+import { useBillsData, useBillShare } from '@/hooks/use-bills';
 import { buildBillStats, filterBillsByStatus } from '@/utils/bills';
 
 export interface BillsPageState {

@@ -8,23 +8,23 @@ import type { RoomMissingInitialReading, UtilityReading } from '@/types';
 import type { PendingUtilityBillRow } from '@/types/utilities';
 import { useUtilitiesData } from '@/hooks/use-utilities';
 import { useMonthStats } from '@/hooks/use-utilities';
-import { EntryTab } from './tabs/EntryTab';
-import { HistoryTab } from './tabs/HistoryTab';
+import { EntryTab } from './tabs/entry-tab';
+import { HistoryTab } from './tabs/history-tab';
 
 const CreateUtilityDialog = lazy(() =>
-  import('@/pages/utilities/components/CreateUtilityDialog').then((mod) => ({ default: mod.CreateUtilityDialog }))
+  import('@/pages/utilities/components/create-utility-dialog').then((mod) => ({ default: mod.CreateUtilityDialog }))
 );
 const ExportTemplateDialog = lazy(() =>
-  import('@/pages/utilities/components/ExportTemplateDialog').then((mod) => ({ default: mod.ExportTemplateDialog }))
+  import('@/pages/utilities/components/export-template-dialog').then((mod) => ({ default: mod.ExportTemplateDialog }))
 );
 const BatchImportDialog = lazy(() =>
-  import('@/pages/utilities/components/BatchImportDialog').then((mod) => ({ default: mod.BatchImportDialog }))
+  import('@/pages/utilities/components/batch-import-dialog').then((mod) => ({ default: mod.BatchImportDialog }))
 );
 const InitialReadingDialog = lazy(() =>
   import('@/components/common/initial-reading-dialog').then((mod) => ({ default: mod.InitialReadingDialog }))
 );
 const EditUtilityDialog = lazy(() =>
-  import('@/pages/utilities/components/EditUtilityDialog').then((mod) => ({ default: mod.EditUtilityDialog }))
+  import('@/pages/utilities/components/edit-utility-dialog').then((mod) => ({ default: mod.EditUtilityDialog }))
 );
 
 export default function UtilitiesPage() {

@@ -6,7 +6,7 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Select } from 'antd';
 import { Skeleton } from 'antd';
 import { useAuth } from '@/contexts/auth';
-import { useReportsData } from '@/hooks/reports';
+import { useReportsData } from '@/hooks/use-reports';
 import { getReportYearOptions, REPORTS } from '@/constants/reports';
 import { ReportsOverviewTab } from '@/pages/reports/components/reports-overview-tab';
 

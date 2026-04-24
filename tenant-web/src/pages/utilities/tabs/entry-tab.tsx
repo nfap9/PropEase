@@ -2,9 +2,9 @@ import { Button } from 'antd';
 import { Plus, Upload, Download } from 'lucide-react';
 import type { RoomMissingInitialReading } from '@/types';
 import type { PendingUtilityBillRow } from '@/types/utilities';
-import { MonthStatsCard } from '../components/MonthStatsCard';
-import { PendingBillTable } from '../components/PendingBillTable';
-import { MissingInitialWarning } from '../components/MissingInitialWarning';
+import { MonthStatsCard } from '../components/month-stats-card';
+import { PendingBillTable } from '../components/pending-bill-table';
+import { MissingInitialWarning } from '../components/missing-initial-warning';
 
 interface EntryTabProps {
   recordedCount: number;

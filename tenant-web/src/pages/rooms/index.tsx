@@ -19,7 +19,7 @@ import { RoomFiltersState } from '@/pages/rooms/components/room-filters';
 import { LeaseSigningDrawer } from '@/pages/leases/components/lease-signing-drawer';
 import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
-import { TerminateDialog } from '@/pages/rooms/components/TerminateDialog';
+import { TerminateDialog } from '@/pages/rooms/components/terminate-dialog';
 
 export default function RoomsPage() {
   const queryClient = useQueryClient();
