@@ -11,8 +11,8 @@ const router: Router = Router();
  * 微信支付回调。不包装响应体，返回微信约定格式。
  * 验签可选（需 rawBody）；此处仅解密并处理。
  */
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.post('/', async (req: Request, res: Response, _next: NextFunction) => {
+  
     if (!config.wechatPayEnabled || !config.wechatApiv3Key) {
       res.status(500).json({ code: 'FAIL', message: '支付未启用' });
       return;
@@ -165,9 +165,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     }
 
     res.status(200).json({ code: 'SUCCESS', message: 'ok' });
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 export const wechatPayWebhookRouter = router;

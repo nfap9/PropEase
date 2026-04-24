@@ -57,7 +57,7 @@ function toOrgResponse(o: {
 // ==================== Handlers ====================
 
 export async function list(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const result = await defaultOrgService.listByUser(user.id);
@@ -67,13 +67,11 @@ export async function list(req: Request, res: Response, next: NextFunction) {
       role: role.name,
     }));
     res.json(orgs);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function create(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const orgCount = await userOrganizationCount(user.id);
@@ -92,34 +90,28 @@ export async function create(req: Request, res: Response, next: NextFunction) {
       );
     const org = await defaultOrgService.create(user.id, parsed.data);
     res.status(201).json(toOrgResponse(org));
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function getPersonal(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const personal = await defaultOrgService.getPersonalOrg(user.id);
     res.json(toOrgResponse(personal));
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function get(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function get(req: Request, res: Response, _next: NextFunction) {
+  
     const user = getConsoleUser(req);
     const org = await defaultOrgService.getById(req.params.orgId, user?.id ?? '');
     res.json(toOrgResponse(org));
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function update(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req, 'orgId');
     await requirePermission(req, orgId, 'settings:edit');
     const user = getConsoleUser(req);
@@ -132,13 +124,11 @@ export async function update(req: Request, res: Response, next: NextFunction) {
       notes: parsed.data.notes,
     });
     res.json(toOrgResponse(org));
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function deletionPreview(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     await requireOrgMembership(req, 'orgId');
     const orgId = req.params.orgId;
     const org = await defaultOrgRepo.findById(orgId);
@@ -162,13 +152,11 @@ export async function deletionPreview(req: Request, res: Response, next: NextFun
       org_name: org.name,
       is_personal: org.is_personal,
     });
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function del(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const orgId = req.params.orgId;
@@ -179,13 +167,11 @@ export async function del(req: Request, res: Response, next: NextFunction) {
     await defaultOrgService.delete(orgId, user.id, parsed.data.confirmed_name);
     res.locals.successMessage = Messages.TEAM_DELETED;
     res.json({});
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function getMembers(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function getMembers(req: Request, res: Response, _next: NextFunction) {
+  
     const orgId = await requireOrgMembership(req);
     const members = await defaultOrgService.getMembers(orgId);
     res.json(
@@ -202,13 +188,11 @@ export async function getMembers(req: Request, res: Response, next: NextFunction
         user_full_name: m.user?.full_name ?? '未知用户',
       }))
     );
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function addMember(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'member:create');
     const user = getConsoleUser(req);
@@ -232,13 +216,11 @@ export async function addMember(req: Request, res: Response, next: NextFunction)
       user_phone: m.user?.phone ?? null,
       user_full_name: m.user?.full_name ?? '未知用户',
     });
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function updateMember(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'member:edit');
     const user = getConsoleUser(req);
@@ -257,13 +239,11 @@ export async function updateMember(req: Request, res: Response, next: NextFuncti
       user_phone: m.user?.phone ?? null,
       user_full_name: m.user?.full_name ?? '未知用户',
     });
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function removeMember(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'member:delete');
     const user = getConsoleUser(req);
@@ -271,13 +251,11 @@ export async function removeMember(req: Request, res: Response, next: NextFuncti
     await defaultOrgService.removeMember(orgId, req.params.userId, user.id);
     res.locals.successMessage = Messages.MEMBER_REMOVED;
     res.json({});
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function getUsage(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     await requireOrgMembership(req, 'orgId');
     const orgId = req.params.orgId;
     const user = getConsoleUser(req);
@@ -316,7 +294,5 @@ export async function getUsage(req: Request, res: Response, next: NextFunction) 
       can_invite_members: members_used < maxM,
       can_create_team: orgCount < maxOrgs,
     });
-  } catch (e) {
-    next(e);
-  }
+  
 }

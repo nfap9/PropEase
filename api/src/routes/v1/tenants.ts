@@ -45,15 +45,13 @@ const TenantUpdateSchema = TenantCreateSchema.partial();
  *               items:
  *                 $ref: '#/components/schemas/Tenant'
  */
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/', async (req: Request, res: Response, _next: NextFunction) => {
+  
     const orgId = await requireOrgMembership(req);
     const search = typeof req.query.search === 'string' ? req.query.search.trim() : undefined;
     const list = await defaultTenantService.list(orgId, search);
     res.json(list);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -93,16 +91,14 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  *               $ref: '#/components/schemas/Tenant'
  */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'tenant:create');
     const parsed = TenantCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const tenant = await defaultTenantService.create(orgId, parsed.data);
     res.status(201).json(tenant);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -129,14 +125,12 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
  *       404:
  *         description: 租客不存在
  */
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/:id', async (req: Request, res: Response, _next: NextFunction) => {
+  
     const orgId = await requireOrgMembership(req);
     const tenant = await defaultTenantService.getById(orgId, req.params.id);
     res.json(tenant);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -183,16 +177,14 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
  *         description: 租客不存在
  */
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'tenant:edit');
     const parsed = TenantUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const tenant = await defaultTenantService.update(orgId, req.params.id, parsed.data);
     res.json(tenant);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -215,15 +207,13 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
  *       404:
  *         description: 租客不存在
  */
-router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.delete('/:id', async (req: Request, res: Response, _next: NextFunction) => {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'tenant:delete');
     await defaultTenantService.delete(orgId, req.params.id);
     res.status(204).send();
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 export const tenantsRouter = router;

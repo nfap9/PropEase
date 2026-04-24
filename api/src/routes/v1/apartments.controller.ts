@@ -34,18 +34,16 @@ export {
 
 // ==================== Handlers ====================
 
-export async function list(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function list(req: Request, res: Response, _next: NextFunction) {
+  
     const orgId = await requireOrgMembership(req);
     const result = await defaultApartmentService.listByOrg(orgId);
     res.json(result);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function create(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'apartment:create');
     const user = getConsoleUser(req);
@@ -58,69 +56,57 @@ export async function create(req: Request, res: Response, next: NextFunction) {
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const apt = await defaultApartmentService.create(orgId, parsed.data);
     res.status(201).json(apt);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function get(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function get(req: Request, res: Response, _next: NextFunction) {
+  
     const orgId = await requireOrgMembership(req);
     const apt = await defaultApartmentService.getById(orgId, req.params.id);
     res.json(apt);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function update(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'apartment:edit');
     const parsed = ApartmentUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const apt = await defaultApartmentService.update(orgId, req.params.id, parsed.data);
     res.json(apt);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function del(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function del(req: Request, res: Response, _next: NextFunction) {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'apartment:delete');
     await defaultApartmentService.delete(orgId, req.params.id);
     res.locals.successMessage = Messages.APARTMENT_DELETED;
     res.json({});
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 // rooms sub-resource
-export async function listRooms(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function listRooms(req: Request, res: Response, _next: NextFunction) {
+  
     const orgId = await requireOrgMembership(req);
     const rooms = await defaultRoomService.listByApartment(orgId, req.params.apartmentId);
     res.json(rooms);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function getRoom(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function getRoom(req: Request, res: Response, _next: NextFunction) {
+  
     const orgId = await requireOrgMembership(req);
     const room = await defaultRoomService.getById(orgId, req.params.roomId);
     res.json(room);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function createRoom(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'room:create');
     const user = getConsoleUser(req);
@@ -141,13 +127,11 @@ export async function createRoom(req: Request, res: Response, next: NextFunction
     };
     const room = await defaultRoomService.create(orgId, req.params.apartmentId, createData);
     res.status(201).json(room);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function updateRoom(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'room:edit');
     const parsed = RoomUpdateSchema.safeParse(req.body);
@@ -157,25 +141,21 @@ export async function updateRoom(req: Request, res: Response, next: NextFunction
       facilities: parsed.data.facilities ?? undefined,
     });
     res.json(updated);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function deleteRoom(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function deleteRoom(req: Request, res: Response, _next: NextFunction) {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'room:delete');
     await defaultRoomService.delete(orgId, req.params.roomId);
     res.locals.successMessage = Messages.ROOM_DELETED;
     res.json({});
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function batchCreateRooms(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'room:create');
     const user = getConsoleUser(req);
@@ -199,26 +179,22 @@ export async function batchCreateRooms(req: Request, res: Response, next: NextFu
       parsed.data
     );
     res.status(201).json(created);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 // utility config
 export async function getUtilityConfig(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
     const config = await defaultUtilityConfigService.getByApartmentId(req.params.apartmentId);
     if (!config) return next(createAppError(404, NotFoundMessages.UTILITY_CONFIG));
     res.json(config);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function createUtilityConfig(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'utility:create');
     await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
@@ -226,13 +202,11 @@ export async function createUtilityConfig(req: Request, res: Response, next: Nex
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const config = await defaultUtilityConfigService.upsert(req.params.apartmentId, parsed.data);
     res.status(200).json(config);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function updateUtilityConfig(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'utility:edit');
     await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
@@ -240,20 +214,16 @@ export async function updateUtilityConfig(req: Request, res: Response, next: Nex
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const config = await defaultUtilityConfigService.update(req.params.apartmentId, parsed.data);
     res.json(config);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function deleteUtilityConfig(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function deleteUtilityConfig(req: Request, res: Response, _next: NextFunction) {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'utility:delete');
     await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
     await defaultUtilityConfigService.delete(req.params.apartmentId);
     res.status(204).send();
-  } catch (e) {
-    next(e);
-  }
+  
 }
 

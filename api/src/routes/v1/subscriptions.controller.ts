@@ -12,7 +12,7 @@ export { CreateOrderSchema, PreviewOrderSchema };
 // ==================== Handlers ====================
 
 export async function getStorefront(_req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const services = await defaultBillingOrderRepo.findActiveServicesWithPricing(true);
     if (!services || services.length === 0) {
       return next(createAppError(404, '商店配置不存在或未启用'));
@@ -44,13 +44,11 @@ export async function getStorefront(_req: Request, res: Response, next: NextFunc
     };
 
     res.json(storefrontView);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function previewOrder(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     await requireOrgMembership(req, 'org_id');
 
     const parsed = PreviewOrderSchema.safeParse(req.body);
@@ -126,33 +124,27 @@ export async function previewOrder(req: Request, res: Response, next: NextFuncti
       final_price: finalPrice,
       billing_months,
     });
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function getSubscription(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function getSubscription(req: Request, res: Response, _next: NextFunction) {
+  
     await requireOrgMembership(req, 'org_id');
     const sub = await defaultBillingService.getSubscription(req.params.org_id);
     res.json(sub ?? null);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function getSubscriptionStatus(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function getSubscriptionStatus(req: Request, res: Response, _next: NextFunction) {
+  
     await requireOrgMembership(req, 'org_id');
     const status = await defaultBillingService.getSubscriptionStatus(req.params.org_id);
     res.json(status);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function subscribe(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     await requireOrgMembership(req, 'org_id');
     const body = req.body as { service_id?: string; billing_cycle?: string; auto_renew?: boolean };
     if (!body?.service_id) {
@@ -162,13 +154,11 @@ export async function subscribe(req: Request, res: Response, next: NextFunction)
     const autoRenew = body.auto_renew ?? true;
     const sub = await defaultBillingService.subscribe(req.params.org_id, body.service_id, billingMonths, autoRenew);
     res.json(sub);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function updateSubscription(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     await requireOrgMembership(req, 'org_id');
     const body = req.body as { service_id?: string; effective?: 'immediate' | 'next_cycle' };
     if (!body?.service_id) {
@@ -181,24 +171,20 @@ export async function updateSubscription(req: Request, res: Response, next: Next
       effective
     );
     res.json(sub);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function cancelSubscription(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function cancelSubscription(req: Request, res: Response, _next: NextFunction) {
+  
     await requireOrgMembership(req, 'org_id');
     const body = req.body as { reason?: string };
     await defaultBillingService.cancelSubscription(req.params.org_id, body.reason);
     res.json({ message: 'ok' });
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function createOrder(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     await requireOrgMembership(req, 'org_id');
 
     const parsed = CreateOrderSchema.safeParse(req.body);
@@ -246,9 +232,7 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
     });
 
     res.status(201).json(order);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 /**
@@ -270,16 +254,14 @@ async function calculateDailyPrice(serviceId: string, billingMonths: number): Pr
 }
 
 export async function getOrder(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     const order = await defaultBillingService.getOrder(req.params.order_id);
     if (!order || order.organization_id !== orgId) {
       return next(createAppError(404, '订单不存在'));
     }
     res.json(order);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 /**
@@ -287,7 +269,7 @@ export async function getOrder(req: Request, res: Response, next: NextFunction) 
  * 仅用于开发测试，生产环境不应存在此接口
  */
 export async function simulatePay(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
 
     const order = await defaultBillingService.getOrder(req.params.order_id);
@@ -377,7 +359,5 @@ export async function simulatePay(req: Request, res: Response, next: NextFunctio
     }
 
     res.json({ message: 'ok', order_id: order.id });
-  } catch (e) {
-    next(e);
-  }
+  
 }

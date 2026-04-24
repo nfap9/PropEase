@@ -30,26 +30,22 @@ router.use(requireConsoleAuth);
  * GET /permissions
  * 获取所有权限列表（静态定义）
  */
-router.get('/', (_req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/', (_req: Request, res: Response, _next: NextFunction) => {
+  
     const list = defaultPermissionService.listAll();
     res.json(list);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
  * GET /permissions/grouped
  * 获取分组权限列表
  */
-router.get('/grouped', (_req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/grouped', (_req: Request, res: Response, _next: NextFunction) => {
+  
     const grouped = defaultPermissionService.listGrouped();
     res.json(grouped);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -58,14 +54,12 @@ router.get('/grouped', (_req: Request, res: Response, next: NextFunction) => {
  */
 router.get(
   '/org-roles',
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  async (req: Request, res: Response, _next: NextFunction) => {
+    
       const orgId = await requireOrgMembership(req);
       const roles = await defaultPermissionService.listOrgRoles(orgId);
       res.json(roles);
-    } catch (e) {
-      next(e);
-    }
+    
   }
 );
 
@@ -76,7 +70,7 @@ router.get(
 router.post(
   '/org-roles',
   async (req: Request, res: Response, next: NextFunction) => {
-    try {
+    
       const user = getConsoleUser(req);
       if (!user) return next(createAppError(401, '未授权或登录已过期'));
 
@@ -104,9 +98,7 @@ router.post(
       );
 
       res.status(201).json(role);
-    } catch (e) {
-      next(e);
-    }
+    
   }
 );
 
@@ -117,16 +109,14 @@ router.post(
 router.get(
   '/org-roles/:role_id',
   async (req: Request, res: Response, next: NextFunction) => {
-    try {
+    
       await requireOrgMembership(req);
       const role = await defaultPermissionService.getOrgRole(req.params.role_id);
       if (!role) {
         return next(createAppError(404, '角色不存在'));
       }
       res.json(role);
-    } catch (e) {
-      next(e);
-    }
+    
   }
 );
 
@@ -137,7 +127,7 @@ router.get(
 router.put(
   '/org-roles/:role_id',
   async (req: Request, res: Response, next: NextFunction) => {
-    try {
+    
       const user = getConsoleUser(req);
       if (!user) return next(createAppError(401, '未授权或登录已过期'));
 
@@ -164,9 +154,7 @@ router.put(
       );
 
       res.json(role);
-    } catch (e) {
-      next(e);
-    }
+    
   }
 );
 
@@ -177,7 +165,7 @@ router.put(
 router.delete(
   '/org-roles/:role_id',
   async (req: Request, res: Response, next: NextFunction) => {
-    try {
+    
       const user = getConsoleUser(req);
       if (!user) return next(createAppError(401, '未授权或登录已过期'));
 
@@ -195,9 +183,7 @@ router.delete(
 
       await defaultPermissionService.deleteOrgRole(req.params.role_id, user.id);
       res.json({ message: 'ok' });
-    } catch (e) {
-      next(e);
-    }
+    
   }
 );
 
@@ -207,16 +193,14 @@ router.delete(
  */
 router.get(
   '/org-roles/:role_id/permissions',
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
+  async (req: Request, res: Response, _next: NextFunction) => {
+    
       await requireOrgMembership(req);
       const permissions = await defaultPermissionService.getRolePermissions(
         req.params.role_id
       );
       res.json(permissions);
-    } catch (e) {
-      next(e);
-    }
+    
   }
 );
 
@@ -227,7 +211,7 @@ router.get(
 router.put(
   '/org-roles/:role_id/permissions',
   async (req: Request, res: Response, next: NextFunction) => {
-    try {
+    
       const user = getConsoleUser(req);
       if (!user) return next(createAppError(401, '未授权或登录已过期'));
 
@@ -261,9 +245,7 @@ router.put(
       );
 
       res.json({ message: 'ok' });
-    } catch (e) {
-      next(e);
-    }
+    
   }
 );
 
@@ -272,7 +254,7 @@ router.put(
  * 获取当前用户的权限
  */
 router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
 
@@ -282,9 +264,7 @@ router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
       orgId
     );
     res.json(permissions);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 export const permissionsRouter = router;

@@ -13,7 +13,7 @@ const router: Router = Router();
 router.use(requireConsoleAuth);
 
 router.post('/query', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const parsed = NotificationQuerySchema.safeParse(req.body);
@@ -26,42 +26,34 @@ router.post('/query', async (req: Request, res: Response, next: NextFunction) =>
       limit: parsed.data.limit,
     });
     res.json(list);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 router.get('/unread-count', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     const count = await defaultNotificationService.getUnreadCount(user.id);
     res.json({ count });
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 router.post('/mark-all-read', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     await defaultNotificationService.markAllRead(user.id);
     res.json({ message: 'ok' });
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 router.post('/:id/read', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
     await defaultNotificationService.markRead(user.id, req.params.id);
     res.json({ message: 'ok' });
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 export const notificationsRouter = router;

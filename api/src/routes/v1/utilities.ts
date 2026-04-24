@@ -57,7 +57,7 @@ router.use(requireConsoleAuth);
  *                 $ref: '#/components/schemas/UtilityReading'
  */
 router.post('/query', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     const parsed = UtilityQuerySchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
@@ -69,9 +69,7 @@ router.post('/query', async (req: Request, res: Response, next: NextFunction) =>
     };
     const list = await defaultUtilityService.list(orgId, filter);
     res.json(list);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -99,14 +97,12 @@ router.post('/query', async (req: Request, res: Response, next: NextFunction) =>
  *                   apartment_name:
  *                     type: string
  */
-router.get('/rooms-missing-initial', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/rooms-missing-initial', async (req: Request, res: Response, _next: NextFunction) => {
+  
     const orgId = await requireOrgMembership(req);
     const result = await defaultUtilityService.getMissingInitialReadings(orgId);
     res.json(result);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -144,7 +140,7 @@ router.get('/rooms-missing-initial', async (req: Request, res: Response, next: N
  *                 type: object
  */
 router.post('/export', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     const parsed = UtilityExportSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
@@ -156,9 +152,7 @@ router.post('/export', async (req: Request, res: Response, next: NextFunction) =
       parsed.data.days_range
     );
     res.json(exportList);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -190,8 +184,8 @@ router.post('/export', async (req: Request, res: Response, next: NextFunction) =
  *               additionalProperties:
  *                 $ref: '#/components/schemas/UtilityReading'
  */
-router.get('/latest-before', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/latest-before', async (req: Request, res: Response, _next: NextFunction) => {
+  
     const orgId = await requireOrgMembership(req);
     const periodYear = Number(req.query.period_year);
     const periodMonth = Number(req.query.period_month);
@@ -205,9 +199,7 @@ router.get('/latest-before', async (req: Request, res: Response, next: NextFunct
 
     const result = await defaultUtilityService.getLatestReadingsBefore(orgId, periodYear, periodMonth);
     res.json(result);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -254,15 +246,13 @@ router.get('/latest-before', async (req: Request, res: Response, next: NextFunct
  *               $ref: '#/components/schemas/UtilityReading'
  */
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     const parsed = ReadingCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const reading = await defaultUtilityService.create(orgId, parsed.data);
     res.status(201).json(reading);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -313,15 +303,13 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
  *                 $ref: '#/components/schemas/UtilityReading'
  */
 router.post('/batch', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     const parsed = BatchReadingSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const created = await defaultUtilityService.batchCreate(orgId, parsed.data);
     res.status(201).json(created);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -348,14 +336,12 @@ router.post('/batch', async (req: Request, res: Response, next: NextFunction) =>
  *       404:
  *         description: 读数不存在
  */
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/:id', async (req: Request, res: Response, _next: NextFunction) => {
+  
     const orgId = await requireOrgMembership(req);
     const reading = await defaultUtilityService.getById(orgId, req.params.id);
     res.json(reading);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -409,15 +395,13 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
  *         description: 读数不存在
  */
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     const parsed = ReadingUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const reading = await defaultUtilityService.update(orgId, req.params.id, parsed.data);
     res.json(reading);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -440,14 +424,12 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
  *       404:
  *         description: 读数不存在
  */
-router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.delete('/:id', async (req: Request, res: Response, _next: NextFunction) => {
+  
     const orgId = await requireOrgMembership(req);
     await defaultUtilityService.delete(orgId, req.params.id);
     res.status(204).send();
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 export const utilitiesRouter = router;

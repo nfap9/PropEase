@@ -45,14 +45,12 @@ router.use(requireConsoleAuth);
  *                 total_income:
  *                   type: number
  */
-router.get('/overview', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/overview', async (req: Request, res: Response, _next: NextFunction) => {
+  
     const orgId = await requireOrgMembership(req);
     const stats = await defaultReportService.getOverview(orgId);
     res.json(stats);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -102,16 +100,14 @@ router.get('/overview', async (req: Request, res: Response, next: NextFunction) 
  *                   type: number
  */
 router.post('/income', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     const parsed = IncomeQuerySchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const year = parsed.data.year ?? new Date().getFullYear();
     const result = await defaultReportService.getIncome(orgId, year, parsed.data.start_month, parsed.data.end_month);
     res.json(result);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -154,15 +150,13 @@ router.post('/income', async (req: Request, res: Response, next: NextFunction) =
  *                 avg_occupancy_rate:
  *                   type: number
  */
-router.get('/occupancy', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/occupancy', async (req: Request, res: Response, _next: NextFunction) => {
+  
     const orgId = await requireOrgMembership(req);
     const year = req.query.year != null ? Number(req.query.year) : new Date().getFullYear();
     const result = await defaultReportService.getOccupancy(orgId, year);
     res.json(result);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 export const reportsRouter = router;

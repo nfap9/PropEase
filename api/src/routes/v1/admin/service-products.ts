@@ -16,8 +16,8 @@ const service = defaultServiceProductService;
 // ========================
 
 /** 列表查询 */
-adminServiceProductsRouter.get('/service-products', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+adminServiceProductsRouter.get('/service-products', async (req: Request, res: Response, _next: NextFunction) => {
+  
     const isActive = req.query.is_active === 'true' ? true : req.query.is_active === 'false' ? false : undefined;
     const includePricing = req.query.include_pricing === 'true';
     const products = await service.listServiceProducts({
@@ -25,22 +25,18 @@ adminServiceProductsRouter.get('/service-products', async (req: Request, res: Re
       include_pricing: includePricing,
     });
     res.json(products);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /** 根据 ID 查询 */
 adminServiceProductsRouter.get('/service-products/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const product = await service.getServiceProductById(req.params.id);
     if (!product) {
       return next(createAppError(404, '服务产品不存在'));
     }
     res.json(product);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 const ServiceProductCreateSchema = z.object({
@@ -67,7 +63,7 @@ const ServiceProductCreateSchema = z.object({
 
 /** 创建 */
 adminServiceProductsRouter.post('/service-products', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const parsed = ServiceProductCreateSchema.safeParse(req.body);
     if (!parsed.success) {
       return next(createAppError(422, '参数校验失败'));
@@ -77,9 +73,7 @@ adminServiceProductsRouter.post('/service-products', async (req: Request, res: R
       auditAdminAction(req, 'service-product:create', product.id, { name: parsed.data.name });
     }
     res.status(201).json(product);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 const ServiceProductUpdateSchema = z.object({
@@ -94,7 +88,7 @@ const ServiceProductUpdateSchema = z.object({
 });
 /** 更新 */
 adminServiceProductsRouter.put('/service-products/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const parsed = ServiceProductUpdateSchema.safeParse(req.body);
     if (!parsed.success) {
       return next(createAppError(422, '参数校验失败'));
@@ -102,20 +96,16 @@ adminServiceProductsRouter.put('/service-products/:id', async (req: Request, res
     const product = await service.updateServiceProduct(req.params.id, parsed.data);
     auditAdminAction(req, 'service-product:update', req.params.id, parsed.data);
     res.json(product);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /** 删除 */
-adminServiceProductsRouter.delete('/service-products/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+adminServiceProductsRouter.delete('/service-products/:id', async (req: Request, res: Response, _next: NextFunction) => {
+  
     await service.deleteServiceProduct(req.params.id);
     auditAdminAction(req, 'service-product:delete', req.params.id);
     res.status(204).send();
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 // ========================
@@ -136,7 +126,7 @@ const ServicePricingBatchSchema = z.object({
 adminServiceProductsRouter.put(
   '/service-products/:id/pricing',
   async (req: Request, res: Response, next: NextFunction) => {
-    try {
+    
       const parsed = ServicePricingBatchSchema.safeParse(req.body);
       if (!parsed.success) {
         return next(createAppError(422, '参数校验失败'));
@@ -146,8 +136,6 @@ adminServiceProductsRouter.put(
         pricing_count: parsed.data.pricing.length,
       });
       res.json(product);
-    } catch (e) {
-      next(e);
-    }
+    
   }
 );

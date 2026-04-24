@@ -19,7 +19,7 @@ export { GenerateBillsSchema, BillQuerySchema, BillExportSchema, BillCreateSchem
 // ==================== Handlers ====================
 
 export async function query(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     const parsed = BillQuerySchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
@@ -31,13 +31,11 @@ export async function query(req: Request, res: Response, next: NextFunction) {
     };
     const list = await defaultBillService.list(orgId, filter);
     res.json(list);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function generate(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'bill:create');
     const parsed = GenerateBillsSchema.safeParse(req.body);
@@ -47,26 +45,22 @@ export async function generate(req: Request, res: Response, next: NextFunction) 
     const dueDate = new Date(due_date);
     const result = await generateBillsForOrg(orgId, bill_year, bill_month, dueDate, lease_ids);
     res.json(result);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function create(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'bill:create');
     const parsed = BillCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const bill = await defaultBillService.create(orgId, parsed.data);
     res.status(201).json(bill);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function exportExcel(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     const parsed = BillExportSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
@@ -117,46 +111,38 @@ export async function exportExcel(req: Request, res: Response, next: NextFunctio
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     );
     res.send(buffer);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function listPayments(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function listPayments(req: Request, res: Response, _next: NextFunction) {
+  
     const orgId = await requireOrgMembership(req);
     const payments = await defaultBillService.getPayments(orgId, req.params.id);
     res.json(payments);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function addPayment(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'bill:edit');
     const parsed = PaymentCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const payment = await defaultBillService.addPayment(orgId, req.params.id, parsed.data);
     res.status(201).json(payment);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function listFeeItems(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function listFeeItems(req: Request, res: Response, _next: NextFunction) {
+  
     const orgId = await requireOrgMembership(req);
     const feeItems = await defaultBillService.listFeeItems(orgId, req.params.id);
     res.json(feeItems);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function exportPdf(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function exportPdf(req: Request, res: Response, _next: NextFunction) {
+  
     const orgId = await requireOrgMembership(req);
     const bill = await defaultBillService.validateOwnership(orgId, req.params.id);
     const tenant = await defaultTenantService.getById(orgId, bill.lease.tenant_id);
@@ -187,41 +173,33 @@ export async function exportPdf(req: Request, res: Response, next: NextFunction)
     res.setHeader('Content-Disposition', `attachment; filename=bill-${bill.id}.pdf`);
     res.setHeader('Content-Type', 'application/pdf');
     res.send(buffer);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function get(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function get(req: Request, res: Response, _next: NextFunction) {
+  
     const orgId = await requireOrgMembership(req);
     const bill = await defaultBillService.getById(orgId, req.params.id);
     res.json(bill);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
 export async function update(req: Request, res: Response, next: NextFunction) {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'bill:edit');
     const parsed = BillUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const bill = await defaultBillService.update(orgId, req.params.id, parsed.data);
     res.json(bill);
-  } catch (e) {
-    next(e);
-  }
+  
 }
 
-export async function del(req: Request, res: Response, next: NextFunction) {
-  try {
+export async function del(req: Request, res: Response, _next: NextFunction) {
+  
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'bill:delete');
     await defaultBillService.delete(orgId, req.params.id);
     res.status(204).send();
-  } catch (e) {
-    next(e);
-  }
+  
 }

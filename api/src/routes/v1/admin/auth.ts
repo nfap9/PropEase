@@ -16,7 +16,7 @@ const LoginSchema = z.object({
 });
 
 router.post('/login', loginRateLimit, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const parsed = LoginSchema.safeParse(req.body);
     if (!parsed.success) {
       return next(createAppError(422, '参数校验失败'));
@@ -28,9 +28,7 @@ router.post('/login', loginRateLimit, async (req: Request, res: Response, next: 
       adminUsername: parsed.data.username,
     });
     res.json(result);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -48,7 +46,7 @@ router.post('/login', loginRateLimit, async (req: Request, res: Response, next: 
  *         description: 未认证
  */
 router.post('/logout', requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const auth = req.headers.authorization;
     if (!auth || !auth.startsWith('Bearer ')) {
       return next(createAppError(401, 'Could not validate credentials'));
@@ -63,9 +61,7 @@ router.post('/logout', requireAdmin, async (req: Request, res: Response, next: N
       }
     }
     res.json({ message: '退出成功' });
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 export const adminAuthRouter = router;

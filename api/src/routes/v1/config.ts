@@ -7,13 +7,11 @@ import { getBrandConfig } from '../../services/platformConfig.js';
 
 const router: IRouter = Router();
 
-router.get('/public', async (_req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/public', async (_req: Request, res: Response, _next: NextFunction) => {
+  
     const brand = await getBrandConfig();
     res.json({ brand });
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 export const configRouter = router;

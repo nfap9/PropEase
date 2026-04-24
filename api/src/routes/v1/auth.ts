@@ -63,7 +63,7 @@ function zodToFieldErrors(e: z.ZodError): Array<{ field: string; message: string
  *               $ref: '#/components/schemas/Error'
  */
 router.post('/register', registerRateLimit, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const parsed = RegisterSchema.safeParse(req.body);
     if (!parsed.success) {
       const err = createAppError(422, '参数校验失败', {
@@ -75,9 +75,7 @@ router.post('/register', registerRateLimit, async (req: Request, res: Response, 
 
     const user = await defaultAuthService.register(parsed.data);
     res.status(201).json(user);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -103,7 +101,7 @@ router.post('/register', registerRateLimit, async (req: Request, res: Response, 
  *         description: 认证失败
  */
 router.post('/login', loginRateLimit, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const parsed = LoginSchema.safeParse(req.body);
     if (!parsed.success) {
       const err = createAppError(422, '参数校验失败', {
@@ -114,9 +112,7 @@ router.post('/login', loginRateLimit, async (req: Request, res: Response, next: 
     }
     const result = await defaultAuthService.login(parsed.data);
     res.json(result);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -144,7 +140,7 @@ router.post('/login', loginRateLimit, async (req: Request, res: Response, next: 
  *               $ref: '#/components/schemas/TokenResponse'
  */
 router.post('/refresh', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const parsed = RefreshSchema.safeParse(req.body);
     if (!parsed.success) {
       return next(
@@ -156,9 +152,7 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
     }
     const result = await defaultAuthService.refreshToken(parsed.data.refresh_token);
     res.json(result);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -176,7 +170,7 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
  *         description: 未认证
  */
 router.post('/logout', requireConsoleAuth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const auth = req.headers.authorization;
     if (!auth || !auth.startsWith('Bearer ')) {
       return next(createAppError(401, 'Could not validate credentials'));
@@ -191,9 +185,7 @@ router.post('/logout', requireConsoleAuth, async (req: Request, res: Response, n
       }
     }
     res.json({ message: '退出成功' });
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 /**
@@ -215,15 +207,13 @@ router.post('/logout', requireConsoleAuth, async (req: Request, res: Response, n
  *         description: 未认证
  */
 router.get('/me', requireConsoleAuth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, 'Could not validate credentials'));
     const u = await defaultAuthService.getUserById(user.id);
     if (!u) return next(createAppError(401, 'User not found'));
     res.json(u);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 export const authRouter = router;

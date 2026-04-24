@@ -16,13 +16,11 @@ const router: Router = Router();
  */
 router.get(
   '/status',
-  async (_req: Request, res: Response, next: NextFunction) => {
-    try {
+  async (_req: Request, res: Response, _next: NextFunction) => {
+    
       const initialized = await isSystemInitialized();
       res.json({ initialized });
-    } catch (e) {
-      next(e);
-    }
+    
   }
 );
 
@@ -44,7 +42,7 @@ const SetupSchema = z.object({
 router.post(
   '/setup',
   async (req: Request, res: Response, next: NextFunction) => {
-    try {
+    
       // 1. 验证请求体
       const parsed = SetupSchema.safeParse(req.body);
       if (!parsed.success) {
@@ -70,9 +68,7 @@ router.post(
       });
 
       res.status(201).json(result);
-    } catch (e) {
-      next(e);
-    }
+    
   }
 );
 

@@ -24,8 +24,8 @@ const OrgFeeItemUpdateSchema = z.object({
   sort_order: z.number().optional(),
 });
 
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/', async (req: Request, res: Response, _next: NextFunction) => {
+  
     const orgId = await requireOrgMembership(req);
     const { category, cycle, search } = req.query;
     const list = await defaultOrgFeeItemService.list(orgId, {
@@ -34,53 +34,43 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
       search: search as string,
     });
     res.json(list);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.get('/:id', async (req: Request, res: Response, _next: NextFunction) => {
+  
     const orgId = await requireOrgMembership(req);
     const item = await defaultOrgFeeItemService.getById(orgId, req.params.id);
     res.json(item);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     const parsed = OrgFeeItemCreateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const item = await defaultOrgFeeItemService.create(orgId, parsed.data);
     res.status(201).json(item);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+  
     const orgId = await requireOrgMembership(req);
     const parsed = OrgFeeItemUpdateSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));
     const item = await defaultOrgFeeItemService.update(orgId, req.params.id, parsed.data);
     res.json(item);
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
-router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
-  try {
+router.delete('/:id', async (req: Request, res: Response, _next: NextFunction) => {
+  
     const orgId = await requireOrgMembership(req);
     await defaultOrgFeeItemService.delete(orgId, req.params.id);
     res.status(204).send();
-  } catch (e) {
-    next(e);
-  }
+  
 });
 
 export const feeItemsRouter = router;
