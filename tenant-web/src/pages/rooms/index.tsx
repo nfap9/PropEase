@@ -1,83 +1,17 @@
-import { useState, useCallback } from 'react';
+/**
+ * RoomsPage - 房间页面入口
+ *
+ * 职责：组合各组件，处理跨组件协调。
+ * - 退租成功：需刷新账单/租约数据，由父组件协调
+ * - 权限检查在入口处进行
+ */
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { Skeleton } from 'antd';
 import { useAuth } from '@/contexts/auth';
-import { Building2 } from 'lucide-react';
-
-import { RoomsStatsBar } from '@/pages/rooms/components/rooms-stats-bar';
-import { RoomsSearchBar } from '@/pages/rooms/components/rooms-search-bar';
-import { RoomsViewToggle } from '@/pages/rooms/components/rooms-view-toggle';
-import { RoomsGroupedView } from '@/pages/rooms/components/rooms-grouped-view';
-import { LeaseSigningDrawer } from '@/pages/leases/components/lease-signing-drawer';
-import { InitialReadingDialog } from '@/pages/leases/components';
-import { TerminateDialog } from '@/pages/rooms/components/terminate-dialog';
-import { useRoomsData, useRoomsMutations } from './hooks/use-rooms-page';
-import type { Room, RoomStatus } from '@/types';
-import type { LeaseCreatedParams } from '@/types';
-import type { ViewMode } from '@/pages/rooms/components/rooms-view-toggle';
-import type { RoomFiltersState } from '@/pages/rooms/components/room-filters';
-
-const DEFAULT_FILTERS: RoomFiltersState = {
-  apartmentId: null,
-  status: null,
-  layout: null,
-  rentMin: null,
-  rentMax: null,
-  areaMin: null,
-  areaMax: null,
-};
+import { Skeleton } from 'antd';
+import { RoomsListView } from './views/rooms-list-view';
 
 export default function RoomsPage() {
   const { organization, isLoading: authLoading } = useAuth();
-  const orgId = organization?.id;
-
-  const [filters, setFilters] = useState<RoomFiltersState>(DEFAULT_FILTERS);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [isLeaseOpen, setIsLeaseOpen] = useState(false);
-  const [pendingInitialReading, setPendingInitialReading] = useState<LeaseCreatedParams | null>(null);
-  const [isTerminateOpen, setIsTerminateOpen] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-
-  const { allRooms, apartments, roomsLoading, apartmentsLoading, filteredRooms, groupedRooms, getActiveLease } =
-    useRoomsData(filters, searchQuery);
-  const { terminateLease, updateRoomStatus, isTerminating } = useRoomsMutations();
-
-  const handleLease = useCallback((room: Room) => {
-    setSelectedRoom(room);
-    setIsLeaseOpen(true);
-  }, []);
-
-  const handleTerminate = useCallback((room: Room) => {
-    setSelectedRoom(room);
-    setIsTerminateOpen(true);
-  }, []);
-
-  const handleStatusChange = useCallback(
-    (room: Room, status: RoomStatus) => {
-      updateRoomStatus(room.id, status === 'maintenance');
-    },
-    [updateRoomStatus],
-  );
-
-  const handleFilterChange = useCallback((key: keyof RoomFiltersState, value: unknown) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  }, []);
-
-  const handleClearFilters = useCallback(() => {
-    setFilters(DEFAULT_FILTERS);
-    setSearchQuery('');
-  }, []);
-
-  const handleLeaseSuccess = useCallback(() => {
-    setSelectedRoom(null);
-    setIsLeaseOpen(false);
-  }, []);
-
-  const closeTerminateDialog = useCallback(() => {
-    setIsTerminateOpen(false);
-    setSelectedRoom(null);
-  }, []);
 
   if (authLoading) {
     return (
@@ -93,90 +27,9 @@ export default function RoomsPage() {
     );
   }
 
-  if (!orgId) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center space-y-4">
-        <Building2 className="h-16 w-16 text-muted-foreground" />
-        <h2 className="text-xl font-semibold text-foreground">请先创建或加入团队</h2>
-        <p className="text-muted-foreground">在顶部导航栏选择或创建一个团队开始使用</p>
-      </div>
-    );
-  }
-
-  const isLoading = roomsLoading || apartmentsLoading;
-
   return (
     <PermissionPageGuard>
-      <div className="space-y-6">
-        {allRooms && <RoomsStatsBar rooms={allRooms} />}
-
-        {apartments && apartments.length > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <RoomsSearchBar
-              apartments={apartments}
-              filters={filters}
-              search={searchQuery}
-              onSearchChange={setSearchQuery}
-              onFilterChange={handleFilterChange}
-              onClearFilters={handleClearFilters}
-            />
-            <RoomsViewToggle viewMode={viewMode} onViewModeChange={setViewMode} />
-          </div>
-        )}
-
-        {isLoading ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <Skeleton key={i} className="h-28 rounded-xl" />
-            ))}
-          </div>
-        ) : (
-          <RoomsGroupedView
-            groups={groupedRooms}
-            viewMode={viewMode}
-            onLease={handleLease}
-            onTerminate={handleTerminate}
-            onStatusChange={handleStatusChange}
-          />
-        )}
-      </div>
-
-      <LeaseSigningDrawer
-        orgId={orgId}
-        open={isLeaseOpen}
-        onOpenChange={setIsLeaseOpen}
-        room={selectedRoom}
-        onSuccess={handleLeaseSuccess}
-        onLeaseCreated={setPendingInitialReading}
-      />
-
-      {pendingInitialReading && (
-        <InitialReadingDialog
-          orgId={orgId}
-          roomId={pendingInitialReading.room_id}
-          roomDisplay={pendingInitialReading.room_display}
-          startDate={pendingInitialReading.start_date}
-          isHistoricalLeaseEntry={pendingInitialReading.is_historical_entry}
-          open={!!pendingInitialReading}
-          onOpenChange={(open) => !open && setPendingInitialReading(null)}
-          onSuccess={() => setPendingInitialReading(null)}
-        />
-      )}
-
-      <TerminateDialog
-        open={isTerminateOpen}
-        onOpenChange={(open) => !open && closeTerminateDialog()}
-        onConfirm={() => {
-          if (selectedRoom) {
-            const activeLease = getActiveLease(selectedRoom.id);
-            if (activeLease) {
-              terminateLease(activeLease.id, closeTerminateDialog);
-            }
-          }
-        }}
-        isPending={isTerminating}
-        room={selectedRoom}
-      />
+      <RoomsListView />
     </PermissionPageGuard>
   );
 }

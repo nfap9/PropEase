@@ -5,7 +5,6 @@ export { LeaseChangeHistoryTab } from './lease-change-history-tab';
 export { LeaseChangeLogs } from './lease-change-logs';
 export { LeaseDetailInfo } from './lease-detail-info';
 export { LeaseDetailTabs } from './lease-detail-tabs';
-export { LeaseEditDialog, LeaseTerminateDialog, LeaseDeleteDialog } from './lease-dialogs';
 export { LeaseFeeItemsTab } from './lease-fee-items-tab';
 export { LeaseFilters } from './lease-filters';
 export { LeaseSigningDrawer } from './lease-signing-drawer';

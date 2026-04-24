@@ -1,5 +1,4 @@
 export { useColumns, type UseColumnsOptions } from './columns';
-export { EditRoomDialog } from './edit-room-dialog';
 export { RoomFilters } from './room-filters';
 export type { RoomFiltersState } from './room-filters';
 export { RoomStatsCards } from './room-stats-cards';
@@ -9,4 +8,3 @@ export { RoomListRow } from './rooms-list-row';
 export { RoomsSearchBar } from './rooms-search-bar';
 export { RoomsStatsBar } from './rooms-stats-bar';
 export { RoomsViewToggle, type ViewMode } from './rooms-view-toggle';
-export { TerminateDialog } from './terminate-dialog';
