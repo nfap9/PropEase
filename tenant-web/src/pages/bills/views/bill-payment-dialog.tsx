@@ -1,30 +1,39 @@
-import { useEffect, useMemo } from 'react';
+/**
+ * BillPaymentDialog - 收款弹窗
+ *
+ * selectedBill 和 onClose 由父组件（index.tsx）通过 useBillPaymentDialog 管理，
+ * 因为需要从列表行和详情弹窗两处触发打开。
+ *
+ * 每次弹窗打开时，根据 selectedBill 重置表单默认值（待收金额）。
+ */
+import { useEffect, useMemo, useCallback } from 'react';
 import { Form, Input, DatePicker, Select, Button, Modal, InputNumber } from 'antd';
 import dayjs from 'dayjs';
-import type { Bill } from '@/types';
+import type { Bill, PaymentFormData } from '@/types';
 import { PAYMENT_METHOD_LABELS, BILLS } from '@/constants/bills';
-import type { PaymentFormData } from '@/types';
 import { getBillPaymentSummary } from '@/utils/bills';
 import { tenantI18n, tenantMessages } from '@/i18n';
+import { usePaymentMutation } from '../hooks/use-payment-mutation';
 
 interface BillPaymentDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   selectedBill: Bill | null;
-  onSubmit: (data: PaymentFormData) => void;
-  isPending: boolean;
+  onClose: () => void;
 }
 
-export function BillPaymentDialog({ open, onOpenChange, selectedBill, onSubmit, isPending }: BillPaymentDialogProps) {
+export function BillPaymentDialog({ selectedBill, onClose }: BillPaymentDialogProps) {
   const [form] = Form.useForm<PaymentFormData>();
+  const { recordPayment, isRecordingPayment } = usePaymentMutation();
 
-  // 根据 selectedBill 计算待付金额
+  // selectedBill !== null 表示弹窗打开
+  const open = selectedBill !== null;
+
+  // 待收金额 = 总金额 - 已收金额
   const pendingAmount = useMemo(
     () => (selectedBill ? selectedBill.total_amount - selectedBill.paid_amount : 0),
     [selectedBill]
   );
 
-  // 当 selectedBill 变化时，重置表单
+  // 每次弹窗打开时，重置表单为默认值
   useEffect(() => {
     if (open) {
       form.setFieldsValue({
@@ -39,10 +48,23 @@ export function BillPaymentDialog({ open, onOpenChange, selectedBill, onSubmit, 
 
   const summary = getBillPaymentSummary(selectedBill);
 
+  const handleSubmit = useCallback(
+    (values: PaymentFormData) => {
+      if (!selectedBill) return;
+      recordPayment(selectedBill.id, {
+        ...values,
+        payment_date: values.payment_date
+          ? (values.payment_date as unknown as dayjs.Dayjs).format('YYYY-MM-DD')
+          : '',
+      });
+    },
+    [selectedBill, recordPayment],
+  );
+
   return (
     <Modal
       open={open}
-      onCancel={() => onOpenChange(false)}
+      onCancel={onClose}
       title={tenantMessages.bills.dialogs.paymentTitle}
       footer={null}
     >
@@ -57,14 +79,7 @@ export function BillPaymentDialog({ open, onOpenChange, selectedBill, onSubmit, 
       <Form
         form={form}
         layout="vertical"
-        onFinish={(values) =>
-          onSubmit({
-            ...values,
-            payment_date: values.payment_date
-              ? (values.payment_date as unknown as dayjs.Dayjs).format('YYYY-MM-DD')
-              : '',
-          })
-        }
+        onFinish={handleSubmit}
         requiredMark="optional"
       >
         <Form.Item
@@ -102,9 +117,9 @@ export function BillPaymentDialog({ open, onOpenChange, selectedBill, onSubmit, 
         </Form.Item>
 
         <div className="flex gap-2 pt-4">
-          <Button onClick={() => onOpenChange(false)}>{tenantMessages.common.cancel}</Button>
-          <Button type="primary" htmlType="submit" loading={isPending} data-testid={BILLS.CONFIRM_PAYMENT_BUTTON}>
-            {isPending ? tenantMessages.bills.dialogs.processing : tenantMessages.bills.dialogs.confirmPayment}
+          <Button onClick={onClose}>{tenantMessages.common.cancel}</Button>
+          <Button type="primary" htmlType="submit" loading={isRecordingPayment} data-testid={BILLS.CONFIRM_PAYMENT_BUTTON}>
+            {isRecordingPayment ? tenantMessages.bills.dialogs.processing : tenantMessages.bills.dialogs.confirmPayment}
           </Button>
         </div>
       </Form>
