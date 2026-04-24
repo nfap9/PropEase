@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/auth';
 import type { RoomMissingInitialReading, UtilityReading } from '@/types';
 import type { PendingUtilityBillRow } from '@/types/utilities';
 import { useUtilitiesData } from '@/hooks/use-utilities';
-import { useMonthStats } from './components/MonthStatsCard';
+import { useMonthStats } from '@/hooks/use-utilities';
 import { EntryTab } from './tabs/EntryTab';
 import { HistoryTab } from './tabs/HistoryTab';
 

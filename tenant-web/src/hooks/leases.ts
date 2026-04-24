@@ -7,6 +7,34 @@ import { filterEmptyStrings } from '@/utils/form';
 import type { LeaseEditFormData, LeaseFiltersState } from '@/types';
 import type { Lease } from '@/types';
 
+/**
+ * 从 Lease 对象构建表单初始值
+ * 纯函数，职责清晰：只做数据转换，不涉及 API 调用或状态管理
+ */
+export function buildLeaseEditFormValues(lease: Lease): Partial<LeaseEditFormData> {
+  return {
+    room_id: lease.room_id ?? '',
+    tenant_id: lease.tenant_id ?? '',
+    start_date: lease.start_date ?? '',
+    end_date: lease.end_date ?? '',
+    monthly_rent: lease.monthly_rent ?? 0,
+    deposit: lease.deposit ?? 0,
+    water_rate: lease.water_rate ?? 0,
+    electricity_rate: lease.electricity_rate ?? 0,
+    notes: lease.notes ?? '',
+  };
+}
+
+/** 从 Lease 对象提取用于展示的信息（房间、租客名称） */
+export function getLeaseDisplayInfo(lease: Lease) {
+  return {
+    roomDisplay: lease.room
+      ? `${lease.room.apartment?.name || ''} - ${lease.room.room_number}`
+      : '',
+    tenantDisplay: lease.tenant?.name || '',
+  };
+}
+
 interface UseLeasesDataOptions {
   onUpdateSuccess: () => void;
   onTerminateSuccess: () => void;

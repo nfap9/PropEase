@@ -1,33 +1,17 @@
-import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Card, Tag } from 'antd';
 import { Home } from 'lucide-react';
-import { apartmentsApi, roomsApi } from '@/api/apartments';
+import { useRoomStatusCard } from '@/hooks/dashboard-room-status';
 import { tenantMessages } from '@/i18n';
 
 function RoomStatusCard({ orgId }: { orgId: string }) {
-  const { data: apartments, isLoading: apartmentsLoading } = useQuery({
-    queryKey: ['apartments', orgId],
-    queryFn: () => apartmentsApi.list(),
-    enabled: !!orgId,
-  });
+  const { availableRooms, totalRooms, isLoading } = useRoomStatusCard(orgId);
 
-  const apartmentIds = useMemo(() => apartments?.map((a) => a.id) ?? [], [apartments]);
-
-  const { data: allRooms = [], isLoading: roomsLoading } = useQuery({
-    queryKey: ['rooms-all', orgId, apartmentIds],
-    queryFn: () => roomsApi.listAll(apartmentIds),
-    enabled: !!orgId && apartmentIds.length > 0,
-  });
-
-  const availableRooms = useMemo(
-    () => allRooms.filter((r) => r.status === 'available'),
-    [allRooms]
-  );
-
-  if (apartmentsLoading || roomsLoading) {
+  if (isLoading) {
     return (
-      <Card className="flex h-full min-h-0 flex-col" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}>
+      <Card
+        className="flex h-full min-h-0 flex-col"
+        styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}
+      >
         <div className="shrink-0 pb-2">
           <h3 className="text-sm sm:text-base">{tenantMessages.dashboard.roomStatus.title}</h3>
           <p className="text-[10px] sm:text-xs text-muted-foreground">加载中...</p>
@@ -40,13 +24,17 @@ function RoomStatusCard({ orgId }: { orgId: string }) {
   }
 
   return (
-    <Card className="flex h-full min-h-0 flex-col" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}>
+    <Card
+      className="flex h-full min-h-0 flex-col"
+      styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}
+    >
       <div className="shrink-0 pb-2">
         <div className="flex items-center justify-between gap-2">
           <div className="min-w-0">
             <h3 className="text-sm sm:text-base truncate">{tenantMessages.dashboard.roomStatus.title}</h3>
             <p className="text-[10px] sm:text-xs text-muted-foreground">
-              {tenantMessages.dashboard.roomStatus.available}: {availableRooms.length} / {tenantMessages.dashboard.roomStatus.total}: {allRooms.length}
+              {tenantMessages.dashboard.roomStatus.available}: {availableRooms.length} /{' '}
+              {tenantMessages.dashboard.roomStatus.total}: {totalRooms}
             </p>
           </div>
           <Home className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -60,7 +48,13 @@ function RoomStatusCard({ orgId }: { orgId: string }) {
         ) : (
           <div className="flex flex-wrap gap-1">
             {availableRooms.map((room) => (
-              <Tag key={room.id} className="px-1.5 py-0.5 text-[10px] sm:text-xs font-normal">{room.apartment?.name ? `${room.apartment.name} - ` : ''}{room.room_number}</Tag>
+              <Tag
+                key={room.id}
+                className="px-1.5 py-0.5 text-[10px] sm:text-xs font-normal"
+              >
+                {room.apartment?.name ? `${room.apartment.name} - ` : ''}
+                {room.room_number}
+              </Tag>
             ))}
           </div>
         )}

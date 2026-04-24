@@ -1,6 +1,5 @@
 import { Card } from 'antd';
 import { Droplets, Clock, TrendingUp, AlertCircle } from 'lucide-react';
-import type { PendingUtilityBillRow } from '@/types/utilities';
 
 interface MonthStatsCardProps {
   recordedCount: number;
@@ -69,9 +68,3 @@ function StatItem({
   );
 }
 
-export function useMonthStats(bills: PendingUtilityBillRow[]) {
-  return {
-    readyToBillCount: bills.filter((b) => b.status === 'ready_to_bill').length,
-    overdueCount: bills.filter((b) => b.status === 'input_overdue').length,
-  };
-}

@@ -13,7 +13,8 @@ import { createLeaseColumns } from '@/pages/leases/components/columns';
 import { useLeasesData } from '@/hooks/leases';
 import type { LeaseEditFormData, LeaseFiltersState } from '@/types';
 import { LEASES } from '@/constants/leases';
-import { filterLeases } from '@/hooks/leases';
+import { filterLeases, buildLeaseEditFormValues, getLeaseDisplayInfo } from '@/hooks/leases';
+import { filterEmptyStrings } from '@/utils/form';
 import { LeaseDeleteDialog, LeaseEditDialog, LeaseTerminateDialog } from '@/pages/leases/components/lease-dialogs';
 import { LeaseFilters } from '@/pages/leases/components/lease-filters';
 
@@ -209,8 +210,12 @@ export default function LeasesPage() {
           key={selectedLease.id}
           open={isEditOpen}
           onOpenChange={handleEditDialogOpenChange}
-          selectedLease={selectedLease}
-          onSubmit={(data) => updateMutation.mutate({ id: selectedLease.id, data })}
+          initialValues={buildLeaseEditFormValues(selectedLease)}
+          roomDisplay={getLeaseDisplayInfo(selectedLease).roomDisplay}
+          tenantDisplay={getLeaseDisplayInfo(selectedLease).tenantDisplay}
+          onSubmit={(data) =>
+            updateMutation.mutate({ id: selectedLease.id, data: filterEmptyStrings(data) as LeaseEditFormData })
+          }
           isPending={updateMutation.isPending}
         />
       )}

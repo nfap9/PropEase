@@ -196,6 +196,13 @@ export function useUtilitiesData() {
   };
 }
 
+export function useMonthStats(bills: PendingUtilityBillRow[]) {
+  return {
+    readyToBillCount: bills.filter((b) => b.status === 'ready_to_bill').length,
+    overdueCount: bills.filter((b) => b.status === 'input_overdue').length,
+  };
+}
+
 interface UseCreateUtilityOptions {
   queryClient: ReturnType<typeof useQueryClient>;
 }

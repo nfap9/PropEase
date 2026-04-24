@@ -1,23 +1,39 @@
+import { useEffect } from 'react';
 import { Info } from 'lucide-react';
 import { Alert, Button, Input, DatePicker, Modal, Form, InputNumber, Space } from 'antd';
-import type { Lease } from '@/types';
 import { LEASES } from '@/constants/leases';
 import type { LeaseEditFormData } from '@/types';
+
+interface LeaseEditDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** 表单初始值，由调用方从 selectedLease 计算后传入 */
+  initialValues: Partial<LeaseEditFormData>;
+  /** 房间展示文本（用于只读显示） */
+  roomDisplay: string;
+  /** 租客展示文本（用于只读显示） */
+  tenantDisplay: string;
+  onSubmit: (data: LeaseEditFormData) => void;
+  isPending: boolean;
+}
 
 export function LeaseEditDialog({
   open,
   onOpenChange,
-  selectedLease,
+  initialValues,
+  roomDisplay,
+  tenantDisplay,
   onSubmit,
   isPending,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  selectedLease: Lease | null;
-  onSubmit: (data: LeaseEditFormData) => void;
-  isPending: boolean;
-}) {
+}: LeaseEditDialogProps) {
   const [form] = Form.useForm<LeaseEditFormData>();
+
+  // open 变化时同步表单值，避免 initialValue 只在初始化生效的问题
+  useEffect(() => {
+    if (open) {
+      form.setFieldsValue(initialValues);
+    }
+  }, [open, initialValues, form]);
 
   const handleSubmit = () => {
     form.validateFields().then((values) => {
@@ -47,35 +63,13 @@ export function LeaseEditDialog({
         type="info"
         showIcon
       />
-      <Form
-        form={form}
-        layout="vertical"
-        className="space-y-4"
-        initialValues={{
-          room_id: selectedLease?.room_id ?? '',
-          tenant_id: selectedLease?.tenant_id ?? '',
-          start_date: selectedLease?.start_date ?? '',
-          end_date: selectedLease?.end_date ?? '',
-          monthly_rent: selectedLease?.monthly_rent ?? 0,
-          deposit: selectedLease?.deposit ?? 0,
-          water_rate: selectedLease?.water_rate ?? 0,
-          electricity_rate: selectedLease?.electricity_rate ?? 0,
-          notes: selectedLease?.notes ?? '',
-        }}
-      >
+      <Form form={form} layout="vertical" className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <Form.Item label="房间">
-            <Input
-              value={
-                selectedLease?.room
-                  ? `${selectedLease.room.apartment?.name || ''} - ${selectedLease.room.room_number}`
-                  : ''
-              }
-              disabled
-            />
+            <Input value={roomDisplay} disabled />
           </Form.Item>
           <Form.Item label="租客">
-            <Input value={selectedLease?.tenant?.name || ''} disabled />
+            <Input value={tenantDisplay} disabled />
           </Form.Item>
         </div>
 
@@ -100,10 +94,29 @@ export function LeaseEditDialog({
             required
             rules={[{ required: true, message: '请输入月租' }]}
           >
-            <InputNumber min={0} step={0.01} data-testid={LEASES.MONTHLY_RENT_INPUT} style={{ width: '100%' }} />
+            <InputNumber
+              min={0}
+              step={0.01}
+              data-testid={LEASES.MONTHLY_RENT_INPUT}
+              style={{ width: '100%' }}
+            />
           </Form.Item>
           <Form.Item name="deposit" label="押金 (元)">
-            <InputNumber min={0} step={0.01} data-testid={LEASES.DEPOSIT_INPUT} style={{ width: '100%' }} />
+            <InputNumber
+              min={0}
+              step={0.01}
+              data-testid={LEASES.DEPOSIT_INPUT}
+              style={{ width: '100%' }}
+            />
+          </Form.Item>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Form.Item name="water_rate" label="水费单价 (元/吨)">
+            <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="electricity_rate" label="电费单价 (元/度)">
+            <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
           </Form.Item>
         </div>
 
@@ -115,19 +128,21 @@ export function LeaseEditDialog({
   );
 }
 
+// ============== Terminate & Delete Dialog（已是纯 UI，无需改动） ==============
+
+interface LeaseTerminateDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+  isPending: boolean;
+}
+
 export function LeaseTerminateDialog({
   open,
   onOpenChange,
   onConfirm,
   isPending,
-  lease,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-  isPending: boolean;
-  lease?: Lease | null;
-}) {
+}: LeaseTerminateDialogProps) {
   return (
     <Modal
       open={open}
@@ -142,17 +157,19 @@ export function LeaseTerminateDialog({
   );
 }
 
+interface LeaseDeleteDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+  isPending: boolean;
+}
+
 export function LeaseDeleteDialog({
   open,
   onOpenChange,
   onConfirm,
   isPending,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-  isPending: boolean;
-}) {
+}: LeaseDeleteDialogProps) {
   return (
     <Modal
       open={open}

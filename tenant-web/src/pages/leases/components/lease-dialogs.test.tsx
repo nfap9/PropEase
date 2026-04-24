@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import type { Lease } from '@/types';
 import { LeaseEditDialog } from './lease-dialogs';
+import { buildLeaseEditFormValues, getLeaseDisplayInfo } from '@/hooks/leases';
 
 const selectedLease: Lease = {
   id: 'lease-1',
@@ -64,11 +65,14 @@ const selectedLease: Lease = {
 
 describe('LeaseEditDialog', () => {
   it('renders read-only room and tenant fields without crashing', () => {
+    const displayInfo = getLeaseDisplayInfo(selectedLease);
     render(
       <LeaseEditDialog
         open
         onOpenChange={() => {}}
-        selectedLease={selectedLease}
+        initialValues={buildLeaseEditFormValues(selectedLease)}
+        roomDisplay={displayInfo.roomDisplay}
+        tenantDisplay={displayInfo.tenantDisplay}
         onSubmit={() => {}}
         isPending={false}
       />

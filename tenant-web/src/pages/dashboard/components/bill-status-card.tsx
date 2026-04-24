@@ -1,9 +1,6 @@
-import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Card } from 'antd';
 import { Receipt } from 'lucide-react';
-import { billsApi } from '@/api/bills';
-import { leasesApi } from '@/api/leases';
+import { useBillStatusCard } from '@/hooks/dashboard-bill-status';
 import { tenantMessages } from '@/i18n';
 
 function formatCurrency(value: number) {
@@ -11,43 +8,14 @@ function formatCurrency(value: number) {
 }
 
 function BillStatusCard({ orgId }: { orgId: string }) {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
-
-  const { data: bills = [], isLoading } = useQuery({
-    queryKey: ['bills-monthly', orgId, currentYear, currentMonth],
-    queryFn: () => billsApi.list({ year: currentYear, month: currentMonth }),
-    enabled: !!orgId,
-  });
-
-  const { data: leases = [] } = useQuery({
-    queryKey: ['leases', orgId],
-    queryFn: () => leasesApi.list(true),
-    enabled: !!orgId,
-  });
-
-  const stats = useMemo(() => {
-    const pending = bills.filter((b) => b.status === 'pending');
-    const billed = bills.filter((b) => b.status === 'partial' || b.status === 'overdue');
-    const settled = bills.filter((b) => b.status === 'paid');
-
-    const billedAmount = [...billed, ...settled].reduce((sum, b) => sum + b.total_amount, 0);
-    const collectedAmount = settled.reduce((sum, b) => sum + b.paid_amount, 0) +
-      billed.reduce((sum, b) => sum + b.paid_amount, 0);
-
-    // Estimated: sum of monthly_rent for active leases (rough estimate for pending bills)
-    const estimatedTotal = leases.reduce((sum, l) => sum + (l.monthly_rent || 0), 0);
-
-    // Upstream cost: for now estimate as 80% of rent (placeholder - actual would need utility costs)
-    const upstreamCost = estimatedTotal * 0.8;
-
-    return { pending, billed, settled, billedAmount, collectedAmount, estimatedTotal, upstreamCost };
-  }, [bills, leases]);
+  const { stats, currentYear, currentMonth, isLoading } = useBillStatusCard(orgId);
 
   if (isLoading) {
     return (
-      <Card className="flex h-full min-h-0 flex-col" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}>
+      <Card
+        className="flex h-full min-h-0 flex-col"
+        styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}
+      >
         <div className="shrink-0 pb-2">
           <h3 className="text-sm sm:text-base">{tenantMessages.dashboard.billStatus.title}</h3>
           <p className="text-[10px] sm:text-xs text-muted-foreground">加载中...</p>
@@ -60,7 +28,10 @@ function BillStatusCard({ orgId }: { orgId: string }) {
   }
 
   return (
-    <Card className="flex h-full min-h-0 flex-col" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}>
+    <Card
+      className="flex h-full min-h-0 flex-col"
+      styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%' } }}
+    >
       <div className="shrink-0 pb-2">
         <div className="flex items-center justify-between gap-2">
           <div>
@@ -77,15 +48,21 @@ function BillStatusCard({ orgId }: { orgId: string }) {
         <div className="flex gap-2 sm:gap-4">
           <div className="flex-1 text-center">
             <p className="text-lg sm:text-xl font-semibold text-amber-600">{stats.pending.length}</p>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">{tenantMessages.dashboard.billStatus.pending}</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+              {tenantMessages.dashboard.billStatus.pending}
+            </p>
           </div>
           <div className="flex-1 text-center">
             <p className="text-lg sm:text-xl font-semibold text-blue-600">{stats.billed.length}</p>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">{tenantMessages.dashboard.billStatus.billed}</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+              {tenantMessages.dashboard.billStatus.billed}
+            </p>
           </div>
           <div className="flex-1 text-center">
             <p className="text-lg sm:text-xl font-semibold text-emerald-600">{stats.settled.length}</p>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">{tenantMessages.dashboard.billStatus.settled}</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+              {tenantMessages.dashboard.billStatus.settled}
+            </p>
           </div>
         </div>
 
