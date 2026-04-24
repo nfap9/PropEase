@@ -8,15 +8,8 @@ const { TextArea } = Input;
 
 export default function OrganizationsPage() {
   const navigate = useNavigate();
-  const {
-    isLoading,
-    isCheckingAuth,
-    organizations,
-    organization,
-    createOrgMutation,
-    isEmpty,
-    handleSelectOrganization,
-  } = useOrganizationsPage();
+  const { isLoading, isCheckingAuth, organizations, organization, createOrganization, isCreating, isEmpty, handleSelectOrganization } =
+    useOrganizationsPage();
 
   const [form] = Form.useForm();
 
@@ -49,7 +42,7 @@ export default function OrganizationsPage() {
           <Form
             form={form}
             layout="vertical"
-            onFinish={(values) => createOrgMutation.mutate(values)}
+            onFinish={(values) => createOrganization(values)}
             className="space-y-4"
             initialValues={{ name: '', notes: '' }}
           >
@@ -64,8 +57,8 @@ export default function OrganizationsPage() {
             <Form.Item name="notes" label="备注">
               <TextArea placeholder="备注信息（选填）" rows={3} />
             </Form.Item>
-            <Button type="primary" htmlType="submit" block loading={createOrgMutation.isPending}>
-              {createOrgMutation.isPending ? '创建中...' : '创建第一个团队'}
+            <Button type="primary" htmlType="submit" block loading={isCreating}>
+              {isCreating ? '创建中...' : '创建第一个团队'}
             </Button>
           </Form>
         </Card>

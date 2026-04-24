@@ -17,40 +17,11 @@ function buildOrganizationSlug(name: string) {
   );
 }
 
-export interface OrganizationsPageState {
-  // Auth state
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  organizations: Organization[];
-  organization: Organization | null | undefined;
-
-  // UI State
-  isCheckingAuth: boolean;
-  form: ReturnType<typeof import('antd').Form.useForm>[0] | null;
-
-  // Mutations
-  createOrgMutation: ReturnType<typeof useMutation>;
-
-  // Computed
-  isEmpty: boolean;
-
-  // Actions
-  handleSelectOrganization: (org: Organization) => void;
-  navigateToLogin: () => void;
-}
-
 export function useOrganizationsPage() {
   const navigate = useNavigate();
-  const {
-    isLoading,
-    isAuthenticated,
-    organizations,
-    organization,
-    setOrganization,
-    refreshOrganizations,
-  } = useAuth();
+  const { isLoading, isAuthenticated, organizations, organization, setOrganization, refreshOrganizations } =
+    useAuth();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [form] = useState<ReturnType<typeof import('antd').Form.useForm>[0] | null>(null);
 
   useEffect(() => {
     if (isLoading) {
@@ -65,7 +36,7 @@ export function useOrganizationsPage() {
     setIsCheckingAuth(false);
   }, [isAuthenticated, isLoading, navigate]);
 
-  const createOrgMutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: async (data: { name: string; notes?: string }) =>
       organizationsApi.create({
         name: data.name.trim(),
@@ -83,13 +54,20 @@ export function useOrganizationsPage() {
     },
   });
 
+  const createOrganization = useCallback(
+    (data: { name: string; notes?: string }, onSuccess?: () => void) => {
+      createMutation.mutate(data, { onSuccess });
+    },
+    [createMutation],
+  );
+
   const handleSelectOrganization = useCallback(
     (org: Organization) => {
       setOrganization(org);
       toast.success('团队切换成功');
       navigate(DEFAULT_ORGANIZATION_HOME_PATH, { replace: true });
     },
-    [setOrganization, navigate]
+    [setOrganization, navigate],
   );
 
   const navigateToLogin = useCallback(() => {
@@ -102,8 +80,8 @@ export function useOrganizationsPage() {
     organizations,
     organization,
     isCheckingAuth,
-    form,
-    createOrgMutation,
+    createOrganization,
+    isCreating: createMutation.isPending,
     isEmpty: organizations.length === 0,
     handleSelectOrganization,
     navigateToLogin,

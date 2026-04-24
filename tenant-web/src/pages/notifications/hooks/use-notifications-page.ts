@@ -8,32 +8,7 @@ import { canAccessRule } from '@/utils/permission-access';
 import { notificationsApi, type Notification } from '@/api/notifications';
 import { getNotificationTarget } from '@/utils/notifications';
 
-export interface NotificationsPageState {
-  // Data
-  list: Notification[];
-  listLoading: boolean;
-  unreadCount: number;
-
-  // Permissions
-  canAccessNotifications: boolean;
-
-  // Filters
-  statusFilter: 'all' | 'unread';
-  categoryFilter: NotificationCategory | 'all';
-
-  // Mutations
-  markAllReadMutation: ReturnType<typeof useMutation<unknown, Error, void>>;
-  markReadMutation: ReturnType<typeof useMutation<unknown, Error, string>>;
-
-  // Actions
-  setStatusFilter: (filter: 'all' | 'unread') => void;
-  setCategoryFilter: (filter: NotificationCategory | 'all') => void;
-  handleMarkRead: (id: string) => void;
-  handleOpen: (item: Notification) => void;
-  handleMarkAllRead: () => void;
-}
-
-export function useNotificationsPage(): NotificationsPageState {
+export function useNotificationsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { organization } = useAuth();
@@ -45,7 +20,7 @@ export function useNotificationsPage(): NotificationsPageState {
       organization,
       permissions,
       hasPermission,
-    }
+    },
   );
 
   const [statusFilter, setStatusFilter] = useState<'all' | 'unread'>('all');
@@ -108,12 +83,12 @@ export function useNotificationsPage(): NotificationsPageState {
     canAccessNotifications,
     statusFilter,
     categoryFilter,
-    markAllReadMutation,
-    markReadMutation,
     setStatusFilter,
     setCategoryFilter,
     handleMarkRead,
     handleOpen,
     handleMarkAllRead,
+    markingId: markReadMutation.variables,
+    isMarkingAll: markAllReadMutation.isPending,
   };
 }

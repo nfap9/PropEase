@@ -1,13 +1,16 @@
+import { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Table, Button, Dropdown, Skeleton } from 'antd';
 import type { MenuProps } from 'antd';
 import { useAuth } from '@/contexts/auth';
+import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
+import { useConfirmAction } from '@/hooks/use-confirm-action';
 import type { Tenant } from '@/types';
 import { Building2, MoreHorizontal, Plus, User, Phone } from 'lucide-react';
 import { TenantFormModal } from './components/tenant-form-modal';
 import { TenantDeleteModal } from './components/tenant-delete-modal';
-import { useTenantsPage } from './hooks/use-tenants-page';
+import { useTenantsData, useTenantsMutations } from './hooks/use-tenants-page';
 
 const TENANTS = {
   HEADING: 'tenants-heading',
@@ -20,27 +23,33 @@ const TENANTS = {
 
 export default function TenantsPage() {
   const { organization, isLoading: authLoading } = useAuth();
+  const { hasPermission } = usePermissions();
   const orgId = organization?.id;
 
-  const {
-    tenants,
-    tenantsLoading,
-    canCreateTenant,
-    canEditTenant,
-    canDeleteTenant,
-    isCreateOpen,
-    isEditOpen,
-    selectedTenant,
-    deleteConfirm,
-    createMutation,
-    updateMutation,
-    deleteMutation,
-    handleEdit,
-    handleDelete,
-    openCreateDialog,
-    closeCreateDialog,
-    closeEditDialog,
-  } = useTenantsPage();
+  const { tenants, tenantsLoading } = useTenantsData();
+  const { createTenant, updateTenant, deleteTenant, isCreating, isUpdating, isDeleting } =
+    useTenantsMutations();
+
+  const canCreateTenant = hasPermission(PERMISSIONS.TENANT_CREATE);
+  const canEditTenant = hasPermission(PERMISSIONS.TENANT_EDIT);
+  const canDeleteTenant = hasPermission(PERMISSIONS.TENANT_DELETE);
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
+  const deleteConfirm = useConfirmAction<Tenant>();
+
+  const handleEdit = useCallback((tenant: Tenant) => {
+    setSelectedTenant(tenant);
+    setIsEditOpen(true);
+  }, []);
+
+  const handleDelete = useCallback(
+    (tenant: Tenant) => {
+      deleteConfirm.openFor(tenant);
+    },
+    [deleteConfirm],
+  );
 
   const columns = [
     {
@@ -124,7 +133,6 @@ export default function TenantsPage() {
     );
   }
 
-  // 无组织时的提示
   if (!orgId) {
     return (
       <div className="flex h-full flex-col items-center justify-center space-y-4">
@@ -140,7 +148,11 @@ export default function TenantsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-end">
           {canCreateTenant && (
-            <Button onClick={openCreateDialog} data-testid={TENANTS.NEW_BUTTON} icon={<Plus className="mr-2 h-4 w-4" />}>
+            <Button
+              onClick={() => setIsCreateOpen(true)}
+              data-testid={TENANTS.NEW_BUTTON}
+              icon={<Plus className="mr-2 h-4 w-4" />}
+            >
               新增租客
             </Button>
           )}
@@ -153,41 +165,56 @@ export default function TenantsPage() {
             columns={columns}
             dataSource={tenants || []}
             rowKey="id"
-            pagination={{ pageSize: 20, showSizeChanger: true, showTotal: (total: number) => `共 ${total} 条` }}
+            pagination={{
+              pageSize: 20,
+              showSizeChanger: true,
+              showTotal: (total: number) => `共 ${total} 条`,
+            }}
             size="small"
             data-testid={TENANTS.LIST}
           />
         )}
       </div>
 
-      {/* Create Modal */}
       <TenantFormModal
         open={isCreateOpen}
-        onOpenChange={(open) => !open && closeCreateDialog()}
+        onOpenChange={(open) => !open && setIsCreateOpen(false)}
         mode="create"
-        onSubmit={(data) => createMutation.mutate(data)}
-        isPending={createMutation.isPending}
+        onSubmit={(data) => createTenant(data, { onSuccess: () => setIsCreateOpen(false) })}
+        isPending={isCreating}
         testId={TENANTS.CREATE_DIALOG}
       />
 
-      {/* Edit Modal */}
       <TenantFormModal
         open={isEditOpen}
-        onOpenChange={(open) => !open && closeEditDialog()}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsEditOpen(false);
+            setSelectedTenant(null);
+          }
+        }}
         mode="edit"
         initialData={selectedTenant}
-        onSubmit={(data) => updateMutation.mutate({ id: selectedTenant!.id, data })}
-        isPending={updateMutation.isPending}
+        onSubmit={(data) =>
+          updateTenant(
+            { id: selectedTenant!.id, data },
+            { onSuccess: () => setIsEditOpen(false) },
+          )
+        }
+        isPending={isUpdating}
         testId={TENANTS.EDIT_DIALOG}
       />
 
-      {/* Delete Confirmation Modal */}
       <TenantDeleteModal
         open={deleteConfirm.dialogProps.open}
         onClose={deleteConfirm.close}
         tenant={deleteConfirm.selectedItem}
-        onConfirm={() => deleteMutation.mutate(deleteConfirm.selectedItem!.id)}
-        isPending={deleteMutation.isPending}
+        onConfirm={() =>
+          deleteTenant(deleteConfirm.selectedItem!.id, {
+            onSuccess: deleteConfirm.close,
+          })
+        }
+        isPending={isDeleting}
       />
     </PermissionPageGuard>
   );

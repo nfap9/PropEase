@@ -40,8 +40,8 @@ export default function NotificationsPage() {
     categoryFilter,
     setStatusFilter,
     setCategoryFilter,
-    markAllReadMutation,
-    markReadMutation,
+    markingId,
+    isMarkingAll,
     handleMarkRead,
     handleOpen,
     handleMarkAllRead,
@@ -59,7 +59,7 @@ export default function NotificationsPage() {
                   type="default"
                   className="gap-2"
                   onClick={handleMarkAllRead}
-                  disabled={markAllReadMutation.isPending}
+                  disabled={isMarkingAll}
                   data-testid={NOTIFICATIONS.MARK_ALL_READ_BTN}
                 >
                   <CheckCheck className="h-4 w-4" />
@@ -102,7 +102,7 @@ export default function NotificationsPage() {
                       'rounded-full px-3 py-1.5 text-xs font-medium transition-all',
                       categoryFilter === option.value
                         ? 'bg-primary text-primary-foreground shadow-sm'
-                        : 'bg-card text-muted-foreground shadow-sm ring-1 ring-border hover:bg-muted'
+                        : 'bg-card text-muted-foreground shadow-sm ring-1 ring-border hover:bg-muted',
                     )}
                   >
                     {option.label}
@@ -128,7 +128,7 @@ export default function NotificationsPage() {
                     index={index}
                     onMarkRead={() => handleMarkRead(item.id)}
                     onOpen={() => handleOpen(item)}
-                    isMarking={markReadMutation.isPending && markReadMutation.variables === item.id}
+                    isMarking={markingId === item.id}
                     testids={NOTIFICATIONS}
                   />
                 ))
@@ -157,7 +157,7 @@ function FilterPill({
         'rounded-full px-4 py-2 text-sm font-medium transition-all',
         active
           ? 'bg-primary text-primary-foreground shadow-sm'
-          : 'text-muted-foreground hover:bg-muted'
+          : 'text-muted-foreground hover:bg-muted',
       )}
     >
       {children}
@@ -205,7 +205,7 @@ const NotificationItem = React.memo(function NotificationItem({
       className={cn(
         'group relative overflow-hidden rounded-2xl bg-card shadow-sm ring-1 transition-all hover:shadow-md',
         item.is_read ? 'ring-border' : 'ring-border',
-        !item.is_read && 'border-l-4 border-l-primary'
+        !item.is_read && 'border-l-4 border-l-primary',
       )}
       style={{
         animationDelay: `${index * 50}ms`,
@@ -224,7 +224,7 @@ const NotificationItem = React.memo(function NotificationItem({
               <h3
                 className={cn(
                   'font-semibold leading-tight',
-                  item.is_read ? 'text-muted-foreground' : 'text-foreground'
+                  item.is_read ? 'text-muted-foreground' : 'text-foreground',
                 )}
               >
                 {item.title}
@@ -236,7 +236,7 @@ const NotificationItem = React.memo(function NotificationItem({
                     category === 'lease' && 'bg-primary/10 text-primary',
                     category === 'billing' && 'bg-primary/10 text-primary',
                     category === 'tenant' && 'bg-primary/10 text-primary',
-                    category === 'system' && 'bg-muted text-muted-foreground'
+                    category === 'system' && 'bg-muted text-muted-foreground',
                   )}
                 >
                   {getNotificationCategoryLabel(category)}

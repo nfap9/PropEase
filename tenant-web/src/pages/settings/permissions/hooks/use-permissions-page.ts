@@ -8,50 +8,12 @@ import type { OrgRole, Permission } from '@/api/permissions';
 import { useAuth } from '@/contexts/auth';
 import { tenantMessages } from '@/i18n';
 
-export interface PermissionsPageState {
-  // Data
-  members: Awaited<ReturnType<typeof organizationsApi.getMembers>> | undefined;
-  groupedPermissions: Awaited<ReturnType<typeof permissionsApi.getGrouped>> | undefined;
-  roles: OrgRole[] | undefined;
-  rolesLoading: boolean;
-  permissionsLoading: boolean;
-  rolePermissions: Awaited<ReturnType<typeof permissionsApi.getRolePermissions>> | null | undefined;
-  rolePermissionsLoading: boolean;
-
-  // UI State
-  selectedRole: OrgRole | null;
-  selectedPermissions: Set<string>;
-  isCreateOpen: boolean;
-  isDeleteOpen: boolean;
-
-  // Computed
-  isOwner: boolean;
-
-  // Mutations
-  createMutation: ReturnType<typeof useMutation<OrgRole, Error, { name: string; description?: string }>>;
-  updateMutation: ReturnType<typeof useMutation<void, Error, { roleId: string; codes: string[] }>>;
-  deleteMutation: ReturnType<typeof useMutation<void, Error, string>>;
-
-  // Actions
-  handleTogglePermission: (code: string) => void;
-  handleToggleResource: (resource: string, permissions: Permission[]) => void;
-  handleSave: () => void;
-  handleSelectRole: (role: OrgRole) => void;
-  handleAddRole: () => void;
-  handleDeleteRole: (role: OrgRole) => void;
-  handleDeleteConfirm: () => void;
-  setIsCreateOpen: (open: boolean) => void;
-  setIsDeleteOpen: (open: boolean) => void;
-}
-
-export function usePermissionsPage(): PermissionsPageState {
+export function usePermissionsData() {
   const { organization, user } = useAuth();
   const queryClient = useQueryClient();
 
   const [selectedRole, setSelectedRole] = useState<OrgRole | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(new Set());
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const { data: members } = useQuery({
     queryKey: ['organization-members', organization?.id],
@@ -93,7 +55,6 @@ export function usePermissionsPage(): PermissionsPageState {
     onSuccess: () => {
       toast.success('角色创建成功');
       queryClient.invalidateQueries({ queryKey: ['org-roles', organization?.id] });
-      setIsCreateOpen(false);
     },
     onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
   });
@@ -119,7 +80,6 @@ export function usePermissionsPage(): PermissionsPageState {
     onSuccess: () => {
       toast.success('角色删除成功');
       queryClient.invalidateQueries({ queryKey: ['org-roles', organization?.id] });
-      setIsDeleteOpen(false);
       if (selectedRole && selectedRole.id === deleteMutation.variables) {
         setSelectedRole(null);
       }
@@ -127,57 +87,67 @@ export function usePermissionsPage(): PermissionsPageState {
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
-  const handleTogglePermission = useCallback((code: string) => {
-    const newSet = new Set(selectedPermissions);
-    if (newSet.has(code)) {
-      newSet.delete(code);
-    } else {
-      newSet.add(code);
-    }
-    setSelectedPermissions(newSet);
-  }, [selectedPermissions]);
+  const createRole = useCallback(
+    (data: { name: string; description?: string }, onSuccess?: () => void) => {
+      createMutation.mutate(data, { onSuccess });
+    },
+    [createMutation],
+  );
 
-  const handleToggleResource = useCallback((resource: string, permissions: Permission[]) => {
-    const resourceCodes = permissions.map((p) => p.code);
-    const allSelected = resourceCodes.every((code) => selectedPermissions.has(code));
+  const updateRolePermissions = useCallback(
+    (codes: string[]) => {
+      if (selectedRole) {
+        updateMutation.mutate({ roleId: selectedRole.id, codes });
+      }
+    },
+    [selectedRole, updateMutation],
+  );
 
-    const newSet = new Set(selectedPermissions);
-    if (allSelected) {
-      resourceCodes.forEach((code) => newSet.delete(code));
-    } else {
-      resourceCodes.forEach((code) => newSet.add(code));
-    }
-    setSelectedPermissions(newSet);
-  }, [selectedPermissions]);
+  const deleteRole = useCallback(
+    (roleId: string, onSuccess?: () => void) => {
+      deleteMutation.mutate(roleId, { onSuccess });
+    },
+    [deleteMutation],
+  );
+
+  const handleTogglePermission = useCallback(
+    (code: string) => {
+      const newSet = new Set(selectedPermissions);
+      if (newSet.has(code)) {
+        newSet.delete(code);
+      } else {
+        newSet.add(code);
+      }
+      setSelectedPermissions(newSet);
+    },
+    [selectedPermissions],
+  );
+
+  const handleToggleResource = useCallback(
+    (resource: string, permissions: Permission[]) => {
+      const resourceCodes = permissions.map((p) => p.code);
+      const allSelected = resourceCodes.every((code) => selectedPermissions.has(code));
+
+      const newSet = new Set(selectedPermissions);
+      if (allSelected) {
+        resourceCodes.forEach((code) => newSet.delete(code));
+      } else {
+        resourceCodes.forEach((code) => newSet.add(code));
+      }
+      setSelectedPermissions(newSet);
+    },
+    [selectedPermissions],
+  );
 
   const handleSave = useCallback(() => {
-    if (!selectedRole) return;
-    updateMutation.mutate({
-      roleId: selectedRole.id,
-      codes: Array.from(selectedPermissions),
-    });
-  }, [selectedRole, selectedPermissions, updateMutation]);
+    updateRolePermissions(Array.from(selectedPermissions));
+  }, [selectedPermissions, updateRolePermissions]);
 
   const handleSelectRole = useCallback((role: OrgRole) => {
     setSelectedRole(role);
   }, []);
 
-  const handleAddRole = useCallback(() => {
-    setIsCreateOpen(true);
-  }, []);
-
-  const handleDeleteRole = useCallback((role: OrgRole) => {
-    setSelectedRole(role);
-    setIsDeleteOpen(true);
-  }, []);
-
-  const handleDeleteConfirm = useCallback(() => {
-    if (!selectedRole) return;
-    deleteMutation.mutate(selectedRole.id);
-  }, [selectedRole, deleteMutation]);
-
   return {
-    members,
     groupedPermissions,
     roles,
     rolesLoading,
@@ -186,20 +156,15 @@ export function usePermissionsPage(): PermissionsPageState {
     rolePermissionsLoading,
     selectedRole,
     selectedPermissions,
-    isCreateOpen,
-    isDeleteOpen,
     isOwner,
-    createMutation,
-    updateMutation,
-    deleteMutation,
+    createRole,
+    deleteRole,
     handleTogglePermission,
     handleToggleResource,
     handleSave,
     handleSelectRole,
-    handleAddRole,
-    handleDeleteRole,
-    handleDeleteConfirm,
-    setIsCreateOpen,
-    setIsDeleteOpen,
+    isCreating: createMutation.isPending,
+    isSaving: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
   };
 }

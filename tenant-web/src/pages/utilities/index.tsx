@@ -1,10 +1,13 @@
-import { Suspense } from 'react';
+import { Suspense, useCallback, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Tabs } from 'antd';
 import { useAuth } from '@/contexts/auth';
+import { useQueryClient } from '@tanstack/react-query';
 import { EntryTab } from './tabs/entry-tab';
 import { HistoryTab } from './tabs/history-tab';
-import { useUtilitiesPage } from './hooks/use-utilities-page';
+import { useUtilitiesData } from './hooks/use-utility-data';
+import { useMonthStats } from './hooks/use-month-stats';
 import {
   CreateUtilityDialog,
   ExportTemplateDialog,
@@ -12,10 +15,18 @@ import {
   EditUtilityDialog,
 } from '@/pages/utilities/components';
 import { InitialReadingDialog } from '@/pages/leases/components';
+import type { RoomMissingInitialReading, UtilityReading } from '@/types';
+import type { PendingUtilityBillRow } from '@/types/utilities';
 
 export default function UtilitiesPage() {
+  const [searchParams] = useSearchParams();
   const { organization, isLoading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
   const orgId = organization?.id;
+
+  const today = useMemo(() => new Date(), []);
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth() + 1;
 
   const {
     pendingUtilityBills,
@@ -25,29 +36,68 @@ export default function UtilitiesPage() {
     apartmentRooms,
     allRooms,
     apartments,
-    createMutation,
-    updateMutation,
-    batchImportMutation,
-    readyToBillCount,
-    overdueCount,
-    activeTab,
-    setActiveTab,
-    isCreateOpen,
-    setIsCreateOpen,
-    isExportTemplateOpen,
-    setIsExportTemplateOpen,
-    isBatchImportOpen,
-    setIsBatchImportOpen,
-    initialReadingRoom,
-    setInitialReadingRoom,
-    editingUtility,
-    setEditingUtility,
-    createPreset,
-    handleQuickEntry,
-    handleQuickUpdate,
-    clearCreatePreset,
-    invalidateInitialReadingQueries,
-  } = useUtilitiesPage();
+    createUtility,
+    updateUtility,
+    batchImportUtilities,
+    isCreating,
+    isUpdating,
+    isBatchImporting,
+  } = useUtilitiesData();
+  const { readyToBillCount, overdueCount } = useMonthStats(pendingUtilityBills);
+
+  const [activeTab, setActiveTab] = useState<'entry' | 'history'>(() => {
+    return searchParams.get('tab') === 'history' ? 'history' : 'entry';
+  });
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isExportTemplateOpen, setIsExportTemplateOpen] = useState(false);
+  const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
+  const [initialReadingRoom, setInitialReadingRoom] = useState<RoomMissingInitialReading | null>(null);
+  const [editingUtility, setEditingUtility] = useState<UtilityReading | null>(null);
+
+  const [createPreset, setCreatePreset] = useState<{
+    apartmentId: string;
+    roomId: string;
+    periodYear: number;
+    periodMonth: number;
+    readingDate: string;
+    waterPrevious?: number | null;
+    electricityPrevious?: number | null;
+  } | null>(null);
+
+  const handleQuickEntry = useCallback(
+    (record: PendingUtilityBillRow) => {
+      setCreatePreset({
+        apartmentId: record.apartmentId ?? '',
+        roomId: record.roomId,
+        periodYear: currentYear,
+        periodMonth: currentMonth,
+        readingDate: today.toISOString().split('T')[0],
+        waterPrevious: record.waterPrevious,
+        electricityPrevious: record.electricityPrevious,
+      });
+      setIsCreateOpen(true);
+    },
+    [currentYear, currentMonth, today],
+  );
+
+  const handleQuickUpdate = useCallback((record: PendingUtilityBillRow) => {
+    if (record.currentReading) {
+      setEditingUtility(record.currentReading);
+    }
+  }, []);
+
+  const clearCreatePreset = useCallback(() => {
+    setCreatePreset(null);
+  }, []);
+
+  const invalidateInitialReadingQueries = useCallback(
+    (orgId: string) => {
+      queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
+    },
+    [queryClient],
+  );
 
   if (authLoading) {
     return <PageLoading />;
@@ -92,7 +142,11 @@ export default function UtilitiesPage() {
               key: 'history',
               label: '历史记录',
               children: (
-                <Suspense fallback={<div className="flex h-40 items-center justify-center text-gray-400">加载中...</div>}>
+                <Suspense
+                  fallback={
+                    <div className="flex h-40 items-center justify-center text-gray-400">加载中...</div>
+                  }
+                >
                   <HistoryTab orgId={orgId} />
                 </Suspense>
               ),
@@ -104,8 +158,8 @@ export default function UtilitiesPage() {
           <CreateUtilityDialog
             open={isCreateOpen}
             onOpenChange={setIsCreateOpen}
-            onSubmit={(data) => createMutation.mutate(data)}
-            isPending={createMutation.isPending}
+            onSubmit={(data) => createUtility(data, () => setIsCreateOpen(false))}
+            isPending={isCreating}
             apartmentRooms={apartmentRooms}
             orgId={orgId}
             preset={createPreset}
@@ -120,8 +174,8 @@ export default function UtilitiesPage() {
           <BatchImportDialog
             open={isBatchImportOpen}
             onOpenChange={setIsBatchImportOpen}
-            onImport={(data) => batchImportMutation.mutate(data)}
-            isPending={batchImportMutation.isPending}
+            onImport={(data) => batchImportUtilities(data, () => setIsBatchImportOpen(false))}
+            isPending={isBatchImporting}
             allRooms={allRooms}
             apartments={apartments}
           />
@@ -146,8 +200,8 @@ export default function UtilitiesPage() {
           <EditUtilityDialog
             open={!!editingUtility}
             onOpenChange={(open) => !open && setEditingUtility(null)}
-            onSubmit={(data) => updateMutation.mutate({ id: editingUtility.id, data })}
-            isPending={updateMutation.isPending}
+            onSubmit={(data) => updateUtility(editingUtility.id, data, () => setEditingUtility(null))}
+            isPending={isUpdating}
             utility={editingUtility}
           />
         )}

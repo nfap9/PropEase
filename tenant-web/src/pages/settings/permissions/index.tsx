@@ -1,8 +1,10 @@
+import { useCallback, useState } from 'react';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { useAuth } from '@/contexts/auth';
 import { Skeleton } from 'antd';
 import { Shield } from 'lucide-react';
-import { usePermissionsPage } from './hooks/use-permissions-page';
+import { usePermissionsData } from './hooks/use-permissions-page';
+import type { OrgRole } from '@/api/permissions';
 import {
   OrgRoleList,
   OrgRoleCreateDialog,
@@ -12,7 +14,6 @@ import { OrgRoleDetailPanel } from '@/pages/settings/permissions/components/org-
 
 export default function PermissionsPage() {
   const { organization } = useAuth();
-
   const {
     roles,
     rolesLoading,
@@ -21,22 +22,34 @@ export default function PermissionsPage() {
     selectedPermissions,
     groupedPermissions,
     rolePermissionsLoading,
-    isCreateOpen,
-    isDeleteOpen,
     isOwner,
-    createMutation,
-    updateMutation,
-    deleteMutation,
-    handleSelectRole,
-    handleAddRole,
-    handleDeleteRole,
+    createRole,
+    deleteRole,
     handleTogglePermission,
     handleToggleResource,
     handleSave,
-    handleDeleteConfirm,
-    setIsCreateOpen,
-    setIsDeleteOpen,
-  } = usePermissionsPage();
+    handleSelectRole,
+    isCreating,
+    isSaving,
+    isDeleting,
+  } = usePermissionsData();
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const handleAddRole = useCallback(() => setIsCreateOpen(true), []);
+  const handleDeleteRole = useCallback(
+    (role: OrgRole) => {
+      handleSelectRole(role);
+      setIsDeleteOpen(true);
+    },
+    [handleSelectRole],
+  );
+  const handleDeleteConfirm = useCallback(() => {
+    if (selectedRole) {
+      deleteRole(selectedRole.id, () => setIsDeleteOpen(false));
+    }
+  }, [selectedRole, deleteRole]);
 
   if (!organization) {
     return (
@@ -88,24 +101,24 @@ export default function PermissionsPage() {
             onSave={handleSave}
             isOwner={isOwner}
             isLoadingRolePermissions={rolePermissionsLoading}
-            isSaving={updateMutation.isPending}
+            isSaving={isSaving}
           />
         </div>
       </div>
 
       <OrgRoleCreateDialog
         open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
-        onSubmit={(name, description) => createMutation.mutate({ name, description })}
-        isPending={createMutation.isPending}
+        onOpenChange={(open) => !open && setIsCreateOpen(false)}
+        onSubmit={(name, description) => createRole({ name, description }, () => setIsCreateOpen(false))}
+        isPending={isCreating}
       />
 
       <OrgRoleDeleteDialog
         open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
+        onOpenChange={(open) => !open && setIsDeleteOpen(false)}
         role={selectedRole}
         onConfirm={handleDeleteConfirm}
-        isPending={deleteMutation.isPending}
+        isPending={isDeleting}
       />
     </PermissionPageGuard>
   );

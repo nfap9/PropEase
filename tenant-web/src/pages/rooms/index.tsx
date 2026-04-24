@@ -1,4 +1,4 @@
-
+import { useState, useCallback } from 'react';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Skeleton } from 'antd';
 import { useAuth } from '@/contexts/auth';
@@ -11,42 +11,73 @@ import { RoomsGroupedView } from '@/pages/rooms/components/rooms-grouped-view';
 import { LeaseSigningDrawer } from '@/pages/leases/components/lease-signing-drawer';
 import { InitialReadingDialog } from '@/pages/leases/components';
 import { TerminateDialog } from '@/pages/rooms/components/terminate-dialog';
-import { useRoomsPage } from './hooks/use-rooms-page';
+import { useRoomsData, useRoomsMutations } from './hooks/use-rooms-page';
+import type { Room, RoomStatus } from '@/types';
+import type { LeaseCreatedParams } from '@/types';
+import type { ViewMode } from '@/pages/rooms/components/rooms-view-toggle';
+import type { RoomFiltersState } from '@/pages/rooms/components/room-filters';
+
+const DEFAULT_FILTERS: RoomFiltersState = {
+  apartmentId: null,
+  status: null,
+  layout: null,
+  rentMin: null,
+  rentMax: null,
+  areaMin: null,
+  areaMax: null,
+};
 
 export default function RoomsPage() {
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
 
-  const {
-    allRooms,
-    apartments,
-    leases,
-    roomsLoading,
-    apartmentsLoading,
-    filters,
-    searchQuery,
-    viewMode,
-    isLeaseOpen,
-    pendingInitialReading,
-    isTerminateOpen,
-    selectedRoom,
-    groupedRooms,
-    terminateLeaseMutation,
-    updateStatusMutation,
-    handleLease,
-    handleTerminate,
-    handleStatusChange,
-    handleFilterChange,
-    setSearchQuery,
-    handleClearFilters,
-    handleLeaseSuccess,
-    closeLeaseDrawer,
-    closeTerminateDialog,
-    setViewMode,
-    getActiveLease,
-    setPendingInitialReading,
-    setLeaseOpen,
-  } = useRoomsPage();
+  const [filters, setFilters] = useState<RoomFiltersState>(DEFAULT_FILTERS);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [isLeaseOpen, setIsLeaseOpen] = useState(false);
+  const [pendingInitialReading, setPendingInitialReading] = useState<LeaseCreatedParams | null>(null);
+  const [isTerminateOpen, setIsTerminateOpen] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+
+  const { allRooms, apartments, roomsLoading, apartmentsLoading, filteredRooms, groupedRooms, getActiveLease } =
+    useRoomsData(filters, searchQuery);
+  const { terminateLease, updateRoomStatus, isTerminating } = useRoomsMutations();
+
+  const handleLease = useCallback((room: Room) => {
+    setSelectedRoom(room);
+    setIsLeaseOpen(true);
+  }, []);
+
+  const handleTerminate = useCallback((room: Room) => {
+    setSelectedRoom(room);
+    setIsTerminateOpen(true);
+  }, []);
+
+  const handleStatusChange = useCallback(
+    (room: Room, status: RoomStatus) => {
+      updateRoomStatus(room.id, status === 'maintenance');
+    },
+    [updateRoomStatus],
+  );
+
+  const handleFilterChange = useCallback((key: keyof RoomFiltersState, value: unknown) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleClearFilters = useCallback(() => {
+    setFilters(DEFAULT_FILTERS);
+    setSearchQuery('');
+  }, []);
+
+  const handleLeaseSuccess = useCallback(() => {
+    setSelectedRoom(null);
+    setIsLeaseOpen(false);
+  }, []);
+
+  const closeTerminateDialog = useCallback(() => {
+    setIsTerminateOpen(false);
+    setSelectedRoom(null);
+  }, []);
 
   if (authLoading) {
     return (
@@ -113,7 +144,7 @@ export default function RoomsPage() {
       <LeaseSigningDrawer
         orgId={orgId}
         open={isLeaseOpen}
-        onOpenChange={setLeaseOpen}
+        onOpenChange={setIsLeaseOpen}
         room={selectedRoom}
         onSuccess={handleLeaseSuccess}
         onLeaseCreated={setPendingInitialReading}
@@ -134,16 +165,16 @@ export default function RoomsPage() {
 
       <TerminateDialog
         open={isTerminateOpen}
-        onOpenChange={closeTerminateDialog}
+        onOpenChange={(open) => !open && closeTerminateDialog()}
         onConfirm={() => {
           if (selectedRoom) {
             const activeLease = getActiveLease(selectedRoom.id);
             if (activeLease) {
-              terminateLeaseMutation.mutate(activeLease.id);
+              terminateLease(activeLease.id, closeTerminateDialog);
             }
           }
         }}
-        isPending={terminateLeaseMutation.isPending}
+        isPending={isTerminating}
         room={selectedRoom}
       />
     </PermissionPageGuard>
