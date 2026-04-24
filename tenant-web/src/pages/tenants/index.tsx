@@ -1,20 +1,13 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Table, Button, Dropdown, Skeleton } from 'antd';
 import type { MenuProps } from 'antd';
-import { useConfirmAction } from '@/hooks/use-confirm-action';
-import { tenantsApi } from '@/api/tenants';
-import { filterEmptyStrings } from '@/utils/form';
-import { getErrorMessage } from '@/utils/error';
 import { useAuth } from '@/contexts/auth';
-import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import type { Tenant } from '@/types';
-import { User, Phone, Building2, MoreHorizontal, Plus } from 'lucide-react';
-import { TenantFormModal, type TenantFormData } from './components/tenant-form-modal';
+import { Building2, MoreHorizontal, Plus, User, Phone } from 'lucide-react';
+import { TenantFormModal } from './components/tenant-form-modal';
 import { TenantDeleteModal } from './components/tenant-delete-modal';
+import { useTenantsPage } from './hooks/use-tenants-page';
 
 const TENANTS = {
   HEADING: 'tenants-heading',
@@ -26,65 +19,28 @@ const TENANTS = {
 } as const;
 
 export default function TenantsPage() {
-  const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
-  const { hasPermission } = usePermissions();
   const orgId = organization?.id;
 
-  // 权限检查
-  const canCreateTenant = hasPermission(PERMISSIONS.TENANT_CREATE);
-  const canEditTenant = hasPermission(PERMISSIONS.TENANT_EDIT);
-  const canDeleteTenant = hasPermission(PERMISSIONS.TENANT_DELETE);
-
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
-  const deleteConfirm = useConfirmAction<Tenant>();
-
-  const { data: tenants, isLoading: tenantsLoading } = useQuery({
-    queryKey: ['tenants', orgId],
-    queryFn: () => tenantsApi.list(),
-    enabled: !!orgId,
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data: TenantFormData) => tenantsApi.create(filterEmptyStrings(data)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
-      setIsCreateOpen(false);
-      toast.success('租客创建成功');
-    },
-    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: TenantFormData }) =>
-      tenantsApi.update(id, filterEmptyStrings(data)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
-      setIsEditOpen(false);
-      setSelectedTenant(null);
-      toast.success('租客信息更新成功');
-    },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => tenantsApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tenants', orgId] });
-      deleteConfirm.close();
-      toast.success('租客删除成功');
-    },
-    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
-  });
-
-  const handleEdit = (tenant: Tenant) => {
-    setSelectedTenant(tenant);
-    setIsEditOpen(true);
-  };
-
-  const handleDelete = deleteConfirm.openFor;
+  const {
+    tenants,
+    tenantsLoading,
+    canCreateTenant,
+    canEditTenant,
+    canDeleteTenant,
+    isCreateOpen,
+    isEditOpen,
+    selectedTenant,
+    deleteConfirm,
+    createMutation,
+    updateMutation,
+    deleteMutation,
+    handleEdit,
+    handleDelete,
+    openCreateDialog,
+    closeCreateDialog,
+    closeEditDialog,
+  } = useTenantsPage();
 
   const columns = [
     {
@@ -184,7 +140,7 @@ export default function TenantsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-end">
           {canCreateTenant && (
-            <Button onClick={() => setIsCreateOpen(true)} data-testid={TENANTS.NEW_BUTTON} icon={<Plus className="mr-2 h-4 w-4" />}>
+            <Button onClick={openCreateDialog} data-testid={TENANTS.NEW_BUTTON} icon={<Plus className="mr-2 h-4 w-4" />}>
               新增租客
             </Button>
           )}
@@ -207,7 +163,7 @@ export default function TenantsPage() {
       {/* Create Modal */}
       <TenantFormModal
         open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
+        onOpenChange={(open) => !open && closeCreateDialog()}
         mode="create"
         onSubmit={(data) => createMutation.mutate(data)}
         isPending={createMutation.isPending}
@@ -217,7 +173,7 @@ export default function TenantsPage() {
       {/* Edit Modal */}
       <TenantFormModal
         open={isEditOpen}
-        onOpenChange={setIsEditOpen}
+        onOpenChange={(open) => !open && closeEditDialog()}
         mode="edit"
         initialData={selectedTenant}
         onSubmit={(data) => updateMutation.mutate({ id: selectedTenant!.id, data })}

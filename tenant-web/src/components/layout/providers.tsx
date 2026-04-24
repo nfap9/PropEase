@@ -14,6 +14,7 @@ import { BrandConfigProvider } from '@/contexts/brand-config';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { router } from '@/routes';
 import { AuthContext, type AuthContextType } from '@/contexts/auth';
+import { useOrganizationActions } from '@/hooks/use-organization-actions';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -85,6 +86,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshOrganizations = async (preferredOrgId?: string | null) => {
     await loadOrganizations(preferredOrgId);
   };
+
+  const { switchOrganization } = useOrganizationActions();
+  const handleSwitchOrganization = useCallback(
+    (org: Organization | null) => switchOrganization(org, setOrganization),
+    [switchOrganization]
+  );
 
   const logout = useCallback(async () => {
     try {
@@ -178,6 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         logout,
         setOrganization,
+        switchOrganization: handleSwitchOrganization,
         refreshOrganizations,
       }}
     >

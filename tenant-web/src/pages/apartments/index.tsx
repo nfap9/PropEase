@@ -1,17 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { Modal, Skeleton, Button } from 'antd';
-import type { MenuProps } from 'antd';
-import { useConfirmAction } from '@/hooks/use-confirm-action';
+import { Skeleton, Button, Modal } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { apartmentsApi } from '@/api/apartments';
 import { useAuth } from '@/contexts/auth';
-import { ApartmentWithStats } from '@/types';
 import { Building2, Plus } from 'lucide-react';
-import { getErrorMessage } from '@/utils/error';
-import { filterEmptyStrings } from '@/utils/form';
 import {
   ApartmentCard,
   ApartmentEmptyState,
@@ -22,83 +14,31 @@ import {
 } from '@/pages/apartments/components';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
+import { useApartmentsPage } from './hooks/use-apartments-page';
 
 export default function ApartmentsPage() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
 
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [selectedApartment, setSelectedApartment] = useState<ApartmentWithStats | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const deleteConfirm = useConfirmAction<ApartmentWithStats>();
-  const apartmentFormRef = useRef<ApartmentFormRef>(null);
 
-  const { data: apartments, isLoading: apartmentsLoading } = useQuery({
-    queryKey: ['apartments', orgId],
-    queryFn: () => apartmentsApi.list(),
-    enabled: !!orgId,
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: ApartmentFormData }) =>
-      apartmentsApi.update(id, filterEmptyStrings(data)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
-      setIsEditOpen(false);
-      setSelectedApartment(null);
-      toast.success('公寓更新成功');
-    },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => apartmentsApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['apartments', orgId] });
-      setIsDeleteOpen(false);
-      setSelectedApartment(null);
-      toast.success('公寓删除成功');
-    },
-    onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
-  });
-
-  const handleEdit = (apartment: ApartmentWithStats) => {
-    setSelectedApartment(apartment);
-    apartmentFormRef.current?.setFieldsValue({
-      name: apartment.name,
-      address: apartment.address ?? '',
-      description: apartment.description ?? '',
-      floors: apartment.floors ?? undefined,
-      land_area: apartment.land_area ?? undefined,
-      total_area: apartment.total_area ?? undefined,
-      landlord_name: apartment.landlord_name ?? '',
-      landlord_contact: apartment.landlord_contact ?? '',
-      contract_start: apartment.contract_start ? new Date(apartment.contract_start).toISOString().split('T')[0] : '',
-      contract_end: apartment.contract_end ? new Date(apartment.contract_end).toISOString().split('T')[0] : '',
-      landlord_rent: apartment.landlord_rent ?? undefined,
-    });
-    setIsEditOpen(true);
-  };
-
-  const handleDelete = (apartment: ApartmentWithStats) => {
-    setSelectedApartment(apartment);
-    setIsDeleteOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    if (selectedApartment) {
-      deleteMutation.mutate(selectedApartment.id);
-    }
-  };
-
-  const handleFormFinish = (data: ApartmentFormData) => {
-    if (selectedApartment) {
-      updateMutation.mutate({ id: selectedApartment.id, data });
-    }
-  };
+  const {
+    apartments,
+    apartmentsLoading,
+    isEditOpen,
+    isDeleteOpen,
+    selectedApartment,
+    apartmentFormRef,
+    updateMutation,
+    deleteMutation,
+    handleEdit,
+    handleDelete,
+    handleConfirmDelete,
+    handleFormFinish,
+    closeEditDialog,
+    closeDeleteDialog,
+  } = useApartmentsPage();
 
   const filteredApartments = apartments?.filter((apartment) => {
     if (!searchQuery) return true;
@@ -172,10 +112,10 @@ export default function ApartmentsPage() {
       {/* Edit Modal */}
       <Modal
         open={isEditOpen}
-        onCancel={() => setIsEditOpen(false)}
+        onCancel={closeEditDialog}
         title="编辑公寓"
         footer={[
-          <Button key="cancel" onClick={() => setIsEditOpen(false)} data-testid="apartments-cancel-btn">
+          <Button key="cancel" onClick={closeEditDialog} data-testid="apartments-cancel-btn">
             取消
           </Button>,
           <Button
@@ -197,7 +137,7 @@ export default function ApartmentsPage() {
       {/* Delete Confirm Modal */}
       <Modal
         open={isDeleteOpen}
-        onCancel={() => setIsDeleteOpen(false)}
+        onCancel={closeDeleteDialog}
         title="确认删除"
         onOk={handleConfirmDelete}
         okText={deleteMutation.isPending ? '删除中...' : '删除'}
