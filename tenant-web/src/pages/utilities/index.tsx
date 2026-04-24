@@ -11,7 +11,7 @@ import {
   BatchImportDialog,
   EditUtilityDialog,
 } from '@/pages/utilities/components';
-import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
+import { InitialReadingDialog } from '@/pages/leases/components';
 
 export default function UtilitiesPage() {
   const { organization, isLoading: authLoading } = useAuth();

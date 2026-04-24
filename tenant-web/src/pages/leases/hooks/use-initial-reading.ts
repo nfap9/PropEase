@@ -14,7 +14,6 @@ export interface InitialReadingSaveParams {
   orgId: string;
   roomId: string;
   startDate: string;
-  isHistoricalEntry?: boolean;
   values: InitialReadingFormValues;
 }
 
@@ -30,7 +29,7 @@ export function useSaveInitialReading({ orgId }: { orgId: string }) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ roomId, startDate, values }: Omit<InitialReadingSaveParams, 'orgId' | 'isHistoricalEntry'>) => {
+    mutationFn: ({ roomId, startDate, values }: Omit<InitialReadingSaveParams, 'orgId'>) => {
       const { year, month } = extractPeriod(startDate);
       return utilitiesApi.create(
         filterEmptyStrings({

@@ -9,7 +9,7 @@ import { RoomsSearchBar } from '@/pages/rooms/components/rooms-search-bar';
 import { RoomsViewToggle } from '@/pages/rooms/components/rooms-view-toggle';
 import { RoomsGroupedView } from '@/pages/rooms/components/rooms-grouped-view';
 import { LeaseSigningDrawer } from '@/pages/leases/components/lease-signing-drawer';
-import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
+import { InitialReadingDialog } from '@/pages/leases/components';
 import { TerminateDialog } from '@/pages/rooms/components/terminate-dialog';
 import { useRoomsPage } from './hooks/use-rooms-page';
 

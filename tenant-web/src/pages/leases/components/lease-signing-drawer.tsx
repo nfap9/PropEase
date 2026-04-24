@@ -13,7 +13,7 @@ import { TenantSearchDrawer } from './tenant-search-drawer';
 import { RoomInfoSection, type RoomInfoSectionRef } from './room-info-section';
 import { TenantInfoSection, type TenantInfoSectionRef } from './tenant-info-section';
 import { ContractInfoSection, type ContractInfoSectionRef } from './contract-info-section';
-import type { FeeItem } from '@/components/common/fee-items-editor';
+import type { FeeItem } from '@/pages/leases/components/fee-items-editor';
 import type { Room, Tenant, UtilityConfig } from '@apartment-ultra/api-contract';
 
 const leaseSigningSteps = [

@@ -7,7 +7,7 @@ import { createLeaseColumns } from '@/pages/leases/components/columns';
 import { useLeasesData } from '@/hooks/leases';
 import { filterLeases, buildLeaseEditFormValues, getLeaseDisplayInfo } from '@/hooks/leases';
 import { filterEmptyStrings } from '@/utils/form';
-import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
+import type { LeaseCreatedParams } from '@/types';
 
 const DEFAULT_LEASE_FILTERS: LeaseFiltersState = {
   apartmentId: null,

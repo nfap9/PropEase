@@ -38,6 +38,15 @@ export interface GenerateBillsFormData {
 }
 
 // --- Leases ---
+
+/** 签约成功后传递给 InitialReadingDialog 的参数 */
+export interface LeaseCreatedParams {
+  room_id: string;
+  room_display: string;
+  start_date: string;
+  is_historical_entry: boolean;
+}
+
 export interface LeaseEditFormData {
   room_id: string;
   tenant_id: string;

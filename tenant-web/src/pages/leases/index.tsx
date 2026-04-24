@@ -3,7 +3,7 @@ import { Button, Skeleton, Table } from 'antd';
 import type { TableProps } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { LeaseSigningDrawer } from '@/pages/leases/components/lease-signing-drawer';
-import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
+import { InitialReadingDialog } from '@/pages/leases/components';
 import { useAuth } from '@/contexts/auth';
 import { LEASES } from '@/constants/leases';
 import { useLeasesPage } from './hooks/use-leases-page';

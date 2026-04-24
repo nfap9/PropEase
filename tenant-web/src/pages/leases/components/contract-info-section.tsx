@@ -3,7 +3,7 @@ import { Form, Input, DatePicker, InputNumber } from 'antd';
 import { CalendarDays, Banknote, Droplets, Zap, FileText } from 'lucide-react';
 import dayjs from 'dayjs';
 import { Label } from '@/components/common/label';
-import { FeeItemsEditor, type FeeItem } from '@/components/common/fee-items-editor';
+import { FeeItemsEditor, type FeeItem } from '@/pages/leases/components/fee-items-editor';
 
 export interface ContractInfoSectionRef {
   validate: () => Promise<void>;

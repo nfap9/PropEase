@@ -6,7 +6,7 @@ import { leasesApi } from '@/api/leases';
 import { getErrorMessage } from '@/utils/error';
 import { useAuth } from '@/contexts/auth';
 import { Room, RoomStatus, ApartmentWithStats, Lease } from '@/types';
-import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
+import type { LeaseCreatedParams } from '@/types';
 import type { ViewMode } from '@/pages/rooms/components/rooms-view-toggle';
 import type { RoomFiltersState } from '@/pages/rooms/components/room-filters';
 
