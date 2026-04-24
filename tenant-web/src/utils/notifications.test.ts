@@ -24,7 +24,7 @@ describe('notification helpers', () => {
       updated_at: '2026-03-17T08:00:00.000Z',
     } as const;
 
-    expect(getNotificationTypeLabel(notification.type)).toBe('逾期催缴');
+    expect(getNotificationTypeLabel(notification.type)).toBe('账单逾期');
     expect(getNotificationCategory(notification)).toBe('billing');
     expect(getNotificationTarget(notification)).toBe('/bills');
     expect(getNotificationActionLabel(notification)).toBe('查看账单');
