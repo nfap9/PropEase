@@ -4,7 +4,7 @@ import { Label } from '@/components/common/label';
 import { Upload, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 import { Apartment, Room } from '@/types';
-import { getErrorMessage } from '@/utils/error';
+import { parseUtilityExcelFile, matchUtilityRecords } from '@/utils/excel';
 
 const batchImportSteps = [
   {
@@ -57,9 +57,6 @@ export function BatchImportDialog({
   const [importMonth, setImportMonth] = useState(currentMonth);
   const [currentStep, setCurrentStep] = useState(0);
 
-  const apartmentMap = new Map(apartments?.map((a) => [a.id, a.name]) ?? []);
-  const roomMatchKey = (room: Room) => `${apartmentMap.get(room.apartment_id) ?? ''}|${room.room_number}`;
-
   const handleDialogOpenChange = (nextOpen: boolean) => {
     onOpenChange(nextOpen);
     if (!nextOpen) {
@@ -68,80 +65,6 @@ export function BatchImportDialog({
         fileInputRef.current.value = '';
       }
     }
-  };
-
-  const parseExcelFile = async (
-    file: File
-  ): Promise<
-    {
-      apartment_name: string;
-      room_number: string;
-      water_reading: number | null;
-      electricity_reading: number | null;
-      notes: string | null;
-    }[]
-  > => {
-    const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target?.result as ArrayBuffer);
-      reader.onerror = () => reject(new Error('文件读取失败'));
-      reader.readAsArrayBuffer(file);
-    });
-
-    const ExcelJS = (await import('exceljs')).default;
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(arrayBuffer);
-    const worksheet = workbook.worksheets[0];
-    if (!worksheet) throw new Error('Excel 文件解析失败');
-
-    const jsonData: unknown[][] = [];
-    worksheet.eachRow((row) => {
-      const rowValues: unknown[] = [];
-      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-        rowValues[colNumber - 1] = cell.value ?? '';
-      });
-      jsonData.push(rowValues);
-    });
-
-    const toNum = (v: unknown) => (v !== undefined && v !== '' && v !== null ? Number(v) : null);
-    const toStr = (v: unknown) => (v !== undefined && v !== '' && v !== null ? String(v) : null);
-    const toApartment = (v: unknown) => String(v ?? '').trim();
-    const toRoom = (v: unknown) => String(v ?? '').trim();
-
-    const records = jsonData
-      .slice(1)
-      .filter((row) => row[1])
-      .map((row) => {
-        const apartmentName = toApartment(row[0]);
-        const roomNumber = toRoom(row[1]);
-        if (row.length >= 8) {
-          return {
-            apartment_name: apartmentName,
-            room_number: roomNumber,
-            water_reading: toNum(row[5]),
-            electricity_reading: toNum(row[7]),
-            notes: toStr(row[8]),
-          };
-        }
-        if (row.length >= 7) {
-          return {
-            apartment_name: apartmentName,
-            room_number: roomNumber,
-            water_reading: toNum(row[4]),
-            electricity_reading: toNum(row[5]),
-            notes: toStr(row[6]),
-          };
-        }
-        return {
-          apartment_name: apartmentName,
-          room_number: roomNumber,
-          water_reading: toNum(row[2]),
-          electricity_reading: toNum(row[3]),
-          notes: toStr(row[4]),
-        };
-      });
-
-    return records;
   };
 
   // 处理文件上传
@@ -164,53 +87,25 @@ export function BatchImportDialog({
     }
 
     try {
-      const records = await parseExcelFile(file);
+      const records = await parseUtilityExcelFile(file);
 
       if (records.length === 0) {
         toast.error('Excel 文件中没有有效数据');
         return;
       }
 
-      const roomMap = new Map<string, Room>();
-      allRooms?.forEach((room) => {
-        roomMap.set(roomMatchKey(room), room);
-      });
-
-      const matchedRecords: {
-        room_id: string;
-        water_reading?: number;
-        electricity_reading?: number;
-        notes?: string;
-      }[] = [];
-      const unmatchedKeys: string[] = [];
-
-      for (const record of records) {
-        const key = `${record.apartment_name}|${record.room_number}`;
-        const room = roomMap.get(key);
-        if (room) {
-          const water =
-            record.water_reading != null && !Number.isNaN(record.water_reading) ? record.water_reading : undefined;
-          const electricity =
-            record.electricity_reading != null && !Number.isNaN(record.electricity_reading)
-              ? record.electricity_reading
-              : undefined;
-          const notes = record.notes != null && record.notes !== '' ? record.notes : undefined;
-          matchedRecords.push({
-            room_id: room.id,
-            ...(water !== undefined && { water_reading: water }),
-            ...(electricity !== undefined && { electricity_reading: electricity }),
-            ...(notes !== undefined && { notes }),
-          });
-        } else {
-          unmatchedKeys.push(`${record.apartment_name}-${record.room_number}`);
-        }
+      if (!allRooms?.length) {
+        toast.error('房间数据加载中，请稍后重试');
+        return;
       }
 
-      if (unmatchedKeys.length > 0) {
-        toast.warning(`以下房间未找到匹配: ${unmatchedKeys.join(', ')}`);
+      const { matched, unmatched } = matchUtilityRecords(records, allRooms, apartments ?? []);
+
+      if (unmatched.length > 0) {
+        toast.warning(`以下房间未找到匹配: ${unmatched.join(', ')}`);
       }
 
-      if (matchedRecords.length === 0) {
+      if (matched.length === 0) {
         toast.error('没有匹配到任何房间');
         return;
       }
@@ -219,12 +114,12 @@ export function BatchImportDialog({
         period_year: importYear,
         period_month: importMonth,
         reading_date: today.toISOString().split('T')[0],
-        readings: matchedRecords,
+        readings: matched,
       });
     } catch (err) {
       const msg = String(err);
       const hint = msg.includes('解析失败') ? '请确认文件为 .xlsx 格式（若使用 Numbers，需先导出为 Excel）' : undefined;
-      toast.error(hint ?? getErrorMessage(err, '导入失败，请重试'));
+      toast.error(hint ?? '导入失败，请重试');
     }
 
     if (fileInputRef.current) {

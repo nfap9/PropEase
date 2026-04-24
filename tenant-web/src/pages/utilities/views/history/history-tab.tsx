@@ -1,15 +1,24 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+/**
+ * HistoryTab - 历史记录 Tab（自包含视图）
+ *
+ * 内部管理：
+ * - 数据获取：apartments、leases、utilities、bills
+ * - 筛选状态：apartment、lease 选择
+ * - EditUtilityDialog 弹窗状态
+ */
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { HistoryFilters } from '../components/history-filters';
-import { HistoryTable } from '../components/history-table';
-import { EditUtilityDialog } from '../components/edit-utility-dialog';
+import { HistoryFilters } from './history-filters';
+import { HistoryTable } from './history-table';
+import { EditUtilityDialog } from '../edit-utility-dialog';
 import { apartmentsApi } from '@/api/apartments';
 import { billsApi } from '@/api/bills';
 import { leasesApi } from '@/api/leases';
 import { utilitiesApi } from '@/api/utilities';
 import { filterEmptyStrings } from '@/utils/form';
 import { getErrorMessage } from '@/utils/error';
+import { useAuth } from '@/contexts/auth';
 import type { UtilityReading } from '@/types';
 
 function getMonthsInLeasePeriod(startDate: string, endDate: string | null): { year: number; month: number }[] {
@@ -35,11 +44,9 @@ interface LeaseMonthRow {
   electricityFee: number;
 }
 
-interface HistoryTabProps {
-  orgId: string;
-}
-
-export function HistoryTab({ orgId }: HistoryTabProps) {
+export function HistoryTab() {
+  const { organization } = useAuth();
+  const orgId = organization?.id;
   const queryClient = useQueryClient();
 
   const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
@@ -143,10 +150,19 @@ export function HistoryTab({ orgId }: HistoryTabProps) {
     onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
   });
 
-  const handleEdit = (reading: UtilityReading) => {
+  const handleEdit = useCallback((reading: UtilityReading) => {
     setSelectedUtility(reading);
     setIsEditOpen(true);
-  };
+  }, []);
+
+  const handleEditSubmit = useCallback(
+    (data: Record<string, unknown>) => {
+      if (selectedUtility) {
+        updateMutation.mutate({ id: selectedUtility.id, data });
+      }
+    },
+    [selectedUtility, updateMutation],
+  );
 
   return (
     <div className="space-y-4">
@@ -172,9 +188,7 @@ export function HistoryTab({ orgId }: HistoryTabProps) {
         <EditUtilityDialog
           open={isEditOpen}
           onOpenChange={setIsEditOpen}
-          onSubmit={(data) => {
-            updateMutation.mutate({ id: selectedUtility.id, data });
-          }}
+          onSubmit={handleEditSubmit}
           isPending={updateMutation.isPending}
           utility={selectedUtility}
         />

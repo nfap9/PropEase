@@ -1,12 +1,11 @@
-
 import { useState } from 'react';
 import { Modal, Button, Input, Select, InputNumber } from 'antd';
 import { Label } from '@/components/common/label';
-import { Download, Loader2 } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { utilitiesApi, UtilityExportRoom } from '@/api/utilities';
-import { getErrorMessage } from '@/utils/error';
 import { useAuth } from '@/contexts/auth';
+import { createWorkbook, downloadBlob } from '@/utils/excel';
 
 interface ExportTemplateDialogProps {
   open: boolean;
@@ -25,11 +24,6 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
   const [exportMonth, setExportMonth] = useState(currentMonth);
   const [daysRange, setDaysRange] = useState<number>(0);
   const [isExporting, setIsExporting] = useState(false);
-
-  const createWorkbook = async () => {
-    const ExcelJS = (await import('exceljs')).default;
-    return new ExcelJS.Workbook();
-  };
 
   const getDateRangeDescription = () => {
     if (daysRange <= 0) return '';
@@ -85,17 +79,12 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
       const blob = new Blob([buffer], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `水电读数模板_${exportYear}年${exportMonth}月.xlsx`;
-      a.click();
-      window.URL.revokeObjectURL(url);
+      downloadBlob(blob, `水电读数模板_${exportYear}年${exportMonth}月.xlsx`);
 
       toast.success(`已导出 ${rooms.length} 个待录入房间`);
       onOpenChange(false);
-    } catch (err) {
-      toast.error(getErrorMessage(err, '导出失败，请重试'));
+    } catch {
+      toast.error('导出失败，请重试');
     } finally {
       setIsExporting(false);
     }
@@ -114,12 +103,7 @@ export function ExportTemplateDialog({ open, onOpenChange }: ExportTemplateDialo
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '水电读数空白模板.xlsx';
-    a.click();
-    window.URL.revokeObjectURL(url);
+    downloadBlob(blob, '水电读数空白模板.xlsx');
     toast.success('已下载空白模板');
   };
 
