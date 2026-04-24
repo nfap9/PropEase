@@ -189,9 +189,6 @@ router.delete(
         include: { role: true },
       });
 
-      console.log('[DELETE role] user.id:', user.id, 'orgId:', orgId);
-      console.log('[DELETE role] member:', member?.id, 'role.name:', member?.role?.name);
-
       if (!member || member.role.name !== '组织所有者') {
         return next(createAppError(403, '仅所有者可删除角色'));
       }
