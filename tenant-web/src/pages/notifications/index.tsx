@@ -1,26 +1,18 @@
-
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { NotificationCategory } from '@apartment-ultra/api-contract';
+import React from 'react';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { useAuth } from '@/contexts/auth';
-import { usePermissions } from '@/hooks/use-permissions';
-import { canAccessRule } from '@/utils/permission-access';
 import { Button } from 'antd';
-import { notificationsApi, type Notification } from '@/api/notifications';
-import {
-  getNotificationActionLabel,
-  getNotificationCategory,
-  getNotificationCategoryLabel,
-  getNotificationTarget,
-  getNotificationTypeLabel,
-} from '@/utils/notifications';
-import { NOTIFICATION_CATEGORY_OPTIONS } from '@/constants/notifications';
 import { CheckCheck, Loader2, BellOff, ArrowRight, Clock } from 'lucide-react';
 import { cn } from '@/utils';
 import { formatDateTime, formatRelativeTime } from '@/utils/date';
 import { tenantMessages } from '@/i18n';
+import { useNotificationsPage } from './hooks/use-notifications-page';
+import {
+  getNotificationTypeLabel,
+  getNotificationCategory,
+  getNotificationCategoryLabel,
+} from '@/utils/notifications';
+import { NOTIFICATION_CATEGORY_OPTIONS } from '@/constants/notifications';
+import type { NotificationCategory } from '@apartment-ultra/api-contract';
 
 const NOTIFICATIONS = {
   HEADING: 'notifications-heading',
@@ -39,156 +31,112 @@ const categoryColors: Record<NotificationCategory, string> = {
 };
 
 export default function NotificationsPage() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { organization } = useAuth();
-  const { permissions, hasPermission } = usePermissions();
-  const [statusFilter, setStatusFilter] = useState<'all' | 'unread'>('all');
-  const [categoryFilter, setCategoryFilter] = useState<NotificationCategory | 'all'>('all');
-  const canAccessNotifications = canAccessRule(
-    { requiresOrganization: true, requireAnyPermission: true },
-    {
-      organization,
-      permissions,
-      hasPermission,
-    }
-  );
-
-  const { data: list = [], isLoading: listLoading } = useQuery({
-    queryKey: ['notifications', 'list', statusFilter, categoryFilter],
-    queryFn: () =>
-      notificationsApi.list({
-        status: statusFilter,
-        category: categoryFilter,
-      }),
-    enabled: canAccessNotifications,
-  });
-
-  const { data: unreadCount = 0 } = useQuery({
-    queryKey: ['notifications', 'unread-count'],
-    queryFn: () => notificationsApi.getUnreadCount(),
-    enabled: canAccessNotifications,
-  });
-
-  const markAllReadMutation = useMutation({
-    mutationFn: () => notificationsApi.markAllRead(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    },
-  });
-
-  const markReadMutation = useMutation({
-    mutationFn: (id: string) => notificationsApi.markRead(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    },
-  });
+  const {
+    list,
+    listLoading,
+    unreadCount,
+    canAccessNotifications,
+    statusFilter,
+    categoryFilter,
+    setStatusFilter,
+    setCategoryFilter,
+    markAllReadMutation,
+    markReadMutation,
+    handleMarkRead,
+    handleOpen,
+    handleMarkAllRead,
+  } = useNotificationsPage();
 
   return (
     <PermissionPageGuard>
       {canAccessNotifications ? (
         <div className="min-h-screen bg-background">
-              {/* Header Section */}
-              <div className="mx-auto max-w-4xl">
-                <div className="mb-4 flex items-start justify-end">
-                  {unreadCount > 0 && (
-                    <Button
-                      type="default"
-                      className="gap-2"
-                      onClick={() => markAllReadMutation.mutate()}
-                      disabled={markAllReadMutation.isPending}
-                      data-testid={NOTIFICATIONS.MARK_ALL_READ_BTN}
-                    >
-                      <CheckCheck className="h-4 w-4" />
-                      {tenantMessages.notificationsPage.markAllRead}
-                    </Button>
-                  )}
-                </div>
-
-                {/* Filter Pills */}
-                <div className="mb-4 flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm ring-1 ring-border">
-                    <FilterPill
-                      active={statusFilter === 'all'}
-                      onClick={() => setStatusFilter('all')}
-                    >
-                      全部
-                    </FilterPill>
-                    <FilterPill
-                      active={statusFilter === 'unread'}
-                      onClick={() => setStatusFilter('unread')}
-                    >
-                      <span className="flex items-center gap-1.5">
-                        <span className="relative flex h-2 w-2">
-                          {unreadCount > 0 && (
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
-                          )}
-                          <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500" />
-                        </span>
-                        未读
-                      </span>
-                    </FilterPill>
-                  </div>
-                  <div className="h-4 w-px bg-border" />
-                  <div className="flex flex-wrap gap-1.5">
-                    {NOTIFICATION_CATEGORY_OPTIONS.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => setCategoryFilter(option.value)}
-                        className={cn(
-                          'rounded-full px-3 py-1.5 text-xs font-medium transition-all',
-                          categoryFilter === option.value
-                            ? 'bg-primary text-primary-foreground shadow-sm'
-                            : 'bg-card text-muted-foreground shadow-sm ring-1 ring-border hover:bg-muted'
-                        )}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Notification List */}
-                <div
-                  className="space-y-3"
-                  data-testid={NOTIFICATIONS.LIST}
+          {/* Header Section */}
+          <div className="mx-auto max-w-4xl">
+            <div className="mb-4 flex items-start justify-end">
+              {unreadCount > 0 && (
+                <Button
+                  type="default"
+                  className="gap-2"
+                  onClick={handleMarkAllRead}
+                  disabled={markAllReadMutation.isPending}
+                  data-testid={NOTIFICATIONS.MARK_ALL_READ_BTN}
                 >
-                  {listLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                      <p className="mt-3 text-sm text-muted-foreground">加载中...</p>
-                    </div>
-                  ) : list.length === 0 ? (
-                    <EmptyState />
-                  ) : (
-                    list.map((item, index) => (
-                      <NotificationItem
-                        key={item.id}
-                        item={item}
-                        index={index}
-                        onMarkRead={() => markReadMutation.mutate(item.id)}
-                        onOpen={() => {
-                          const target = getNotificationTarget(item);
-                          if (!target) return;
-                          if (item.is_read) {
-                            navigate(target);
-                            return;
-                          }
-                          markReadMutation.mutate(item.id, {
-                            onSettled: () => navigate(target),
-                          });
-                        }}
-                        isMarking={
-                          markReadMutation.isPending && markReadMutation.variables === item.id
-                        }
-                        testids={NOTIFICATIONS}
-                      />
-                    ))
-                  )}
-                </div>
+                  <CheckCheck className="h-4 w-4" />
+                  {tenantMessages.notificationsPage.markAllRead}
+                </Button>
+              )}
+            </div>
+
+            {/* Filter Pills */}
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-1 rounded-full bg-card p-1 shadow-sm ring-1 ring-border">
+                <FilterPill
+                  active={statusFilter === 'all'}
+                  onClick={() => setStatusFilter('all')}
+                >
+                  全部
+                </FilterPill>
+                <FilterPill
+                  active={statusFilter === 'unread'}
+                  onClick={() => setStatusFilter('unread')}
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span className="relative flex h-2 w-2">
+                      {unreadCount > 0 && (
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
+                      )}
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500" />
+                    </span>
+                    未读
+                  </span>
+                </FilterPill>
+              </div>
+              <div className="h-4 w-px bg-border" />
+              <div className="flex flex-wrap gap-1.5">
+                {NOTIFICATION_CATEGORY_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setCategoryFilter(option.value)}
+                    className={cn(
+                      'rounded-full px-3 py-1.5 text-xs font-medium transition-all',
+                      categoryFilter === option.value
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-card text-muted-foreground shadow-sm ring-1 ring-border hover:bg-muted'
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                ))}
               </div>
             </div>
-        ) : null}
+
+            {/* Notification List */}
+            <div className="space-y-3" data-testid={NOTIFICATIONS.LIST}>
+              {listLoading ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <p className="mt-3 text-sm text-muted-foreground">加载中...</p>
+                </div>
+              ) : list.length === 0 ? (
+                <EmptyState />
+              ) : (
+                list.map((item, index) => (
+                  <NotificationItem
+                    key={item.id}
+                    item={item}
+                    index={index}
+                    onMarkRead={() => handleMarkRead(item.id)}
+                    onOpen={() => handleOpen(item)}
+                    isMarking={markReadMutation.isPending && markReadMutation.variables === item.id}
+                    testids={NOTIFICATIONS}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </PermissionPageGuard>
   );
 }
@@ -240,7 +188,7 @@ const NotificationItem = React.memo(function NotificationItem({
   testids,
   index,
 }: {
-  item: Notification;
+  item: import('@/api/notifications').Notification;
   onMarkRead: () => void;
   onOpen: () => void;
   isMarking: boolean;
@@ -249,17 +197,14 @@ const NotificationItem = React.memo(function NotificationItem({
 }) {
   const typeLabel = getNotificationTypeLabel(item.type);
   const category = getNotificationCategory(item);
-  const target = getNotificationTarget(item);
-  const actionLabel = getNotificationActionLabel(item);
+  const actionLabel = item.type;
   const categoryColor = categoryColors[category];
 
   return (
     <div
       className={cn(
         'group relative overflow-hidden rounded-2xl bg-card shadow-sm ring-1 transition-all hover:shadow-md',
-        item.is_read
-          ? 'ring-border'
-          : 'ring-border',
+        item.is_read ? 'ring-border' : 'ring-border',
         !item.is_read && 'border-l-4 border-l-primary'
       )}
       style={{
@@ -275,13 +220,13 @@ const NotificationItem = React.memo(function NotificationItem({
           <div className="min-w-0 flex-1">
             {/* Header row */}
             <div className="flex items-center gap-2">
-              {!item.is_read && (
-                <span className="h-2 w-2 rounded-full bg-primary" />
-              )}
-              <h3 className={cn(
-                'font-semibold leading-tight',
-                item.is_read ? 'text-muted-foreground' : 'text-foreground'
-              )}>
+              {!item.is_read && <span className="h-2 w-2 rounded-full bg-primary" />}
+              <h3
+                className={cn(
+                  'font-semibold leading-tight',
+                  item.is_read ? 'text-muted-foreground' : 'text-foreground'
+                )}
+              >
                 {item.title}
               </h3>
               <div className="flex items-center gap-1.5">
@@ -313,26 +258,17 @@ const NotificationItem = React.memo(function NotificationItem({
             <div className="mt-3 flex items-center gap-4">
               <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
-                <span title={formatDateTime(item.created_at)}>
-                  {formatRelativeTime(item.created_at)}
-                </span>
+                <span title={formatDateTime(item.created_at)}>{formatRelativeTime(item.created_at)}</span>
               </span>
             </div>
           </div>
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            {target && (
-              <Button
-                type="text"
-                size="small"
-                className="gap-1"
-                onClick={onOpen}
-              >
-                {actionLabel}
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-              </Button>
-            )}
+            <Button type="text" size="small" className="gap-1" onClick={onOpen}>
+              {actionLabel}
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Button>
             {!item.is_read && (
               <Button
                 type="text"

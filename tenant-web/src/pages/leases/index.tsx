@@ -1,127 +1,44 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Building2 } from 'lucide-react';
-import { Button, Skeleton, Table, Modal } from 'antd';
+import { Button, Skeleton, Table } from 'antd';
 import type { TableProps } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { LeaseSigningDrawer } from '@/pages/leases/components/lease-signing-drawer';
 import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
-import type { LeaseCreatedParams } from '@/components/common/lease-form-dialog';
 import { useAuth } from '@/contexts/auth';
-import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
-import type { Lease } from '@/types';
-import { createLeaseColumns } from '@/pages/leases/components/columns';
-import { useLeasesData } from '@/hooks/leases';
-import type { LeaseEditFormData, LeaseFiltersState } from '@/types';
 import { LEASES } from '@/constants/leases';
-import { filterLeases, buildLeaseEditFormValues, getLeaseDisplayInfo } from '@/hooks/leases';
-import { filterEmptyStrings } from '@/utils/form';
+import { useLeasesPage } from './hooks/use-leases-page';
 import { LeaseDeleteDialog, LeaseEditDialog, LeaseTerminateDialog } from '@/pages/leases/components/lease-dialogs';
 import { LeaseFilters } from '@/pages/leases/components/lease-filters';
-
-const DEFAULT_LEASE_FILTERS: LeaseFiltersState = {
-  apartmentId: null,
-  keyword: null,
-  startDateFrom: null,
-  startDateTo: null,
-  endDateFrom: null,
-  endDateTo: null,
-};
+import { buildLeaseEditFormValues, getLeaseDisplayInfo } from '@/hooks/leases';
+import { filterEmptyStrings } from '@/utils/form';
+import type { LeaseEditFormData } from '@/types';
 
 export default function LeasesPage() {
   const { organization, isLoading: authLoading } = useAuth();
-  const { hasPermission } = usePermissions();
   const orgId = organization?.id;
 
-  const canCreateLease = hasPermission(PERMISSIONS.LEASE_CREATE);
-  const canEditLease = hasPermission(PERMISSIONS.LEASE_EDIT);
-  const canDeleteLease = hasPermission(PERMISSIONS.LEASE_DELETE);
-
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [pendingInitialReading, setPendingInitialReading] = useState<LeaseCreatedParams | null>(null);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [selectedLease, setSelectedLease] = useState<Lease | null>(null);
-  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
-  const [isTerminateOpen, setIsTerminateOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [filters, setFilters] = useState<LeaseFiltersState>(DEFAULT_LEASE_FILTERS);
-
-  const { apartments, leases, leasesLoading, updateMutation, terminateMutation, deleteMutation } = useLeasesData({
-    onUpdateSuccess: () => {
-      setIsEditOpen(false);
-      setSelectedLease(null);
-      setRowSelection({});
-    },
-    onTerminateSuccess: () => setIsTerminateOpen(false),
-    onDeleteSuccess: () => setIsDeleteOpen(false),
-  });
-
-  const filteredLeases = useMemo(() => filterLeases(leases, filters), [leases, filters]);
-
-  const handleRowSelectionChange = useCallback(
-    (selection: Record<string, boolean>) => {
-      setRowSelection(selection);
-      const selectedIds = Object.keys(selection).filter((id) => selection[id]);
-      if (selectedIds.length > 0) {
-        const selectedId = selectedIds[selectedIds.length - 1];
-        const lease = filteredLeases.find((l) => l.id === selectedId);
-        if (lease) {
-          setSelectedLease(lease);
-          setIsEditOpen(true);
-        }
-      }
-    },
-    [filteredLeases]
-  );
-
-  const handleEditDialogOpenChange = useCallback((open: boolean) => {
-    setIsEditOpen(open);
-    if (!open) {
-      setSelectedLease(null);
-      setRowSelection({});
-    }
-  }, []);
-
-  const columns = useMemo(
-    () =>
-      createLeaseColumns({
-        onEdit: (lease) => {
-          setSelectedLease(lease);
-          setIsEditOpen(true);
-        },
-        onTerminate: (lease) => {
-          setSelectedLease(lease);
-          setIsTerminateOpen(true);
-        },
-        onDelete: (lease) => {
-          setSelectedLease(lease);
-          setIsDeleteOpen(true);
-        },
-        canEditLease,
-        canDeleteLease,
-      }),
-    [canEditLease, canDeleteLease]
-  );
-
-  const handleFilterChange = useCallback(
-    (key: keyof LeaseFiltersState, value: unknown) => {
-      setFilters((prev) => ({ ...prev, [key]: value as LeaseFiltersState[typeof key] }));
-    },
-    []
-  );
-
-  const handleClearFilters = useCallback(() => {
-    setFilters(DEFAULT_LEASE_FILTERS);
-  }, []);
-
-  const filtersRef = useRef(filters);
-  useEffect(() => {
-    if (filtersRef.current !== filters) {
-      filtersRef.current = filters;
-      setRowSelection({});
-      setSelectedLease(null);
-      setIsEditOpen(false);
-    }
-  }, [filters]);
+  const {
+    apartments,
+    leasesLoading,
+    canCreateLease,
+    filters,
+    isCreateOpen,
+    pendingInitialReading,
+    isEditOpen,
+    selectedLease,
+    isTerminateOpen,
+    isDeleteOpen,
+    updateMutation,
+    terminateMutation,
+    deleteMutation,
+    tableProps,
+    handleFilterChange,
+    handleClearFilters,
+    setIsCreateOpen,
+    setPendingInitialReading,
+    closeTerminateDialog,
+    closeDeleteDialog,
+  } = useLeasesPage();
 
   if (authLoading) {
     return (
@@ -142,24 +59,6 @@ export default function LeasesPage() {
     );
   }
 
-  const tableProps: TableProps<Lease> = {
-    columns,
-    dataSource: filteredLeases,
-    rowKey: 'id',
-    pagination: false,
-    rowSelection: {
-      type: 'radio',
-      selectedRowKeys: Object.keys(rowSelection),
-      onChange: (selectedRowKeys) => {
-        const newSelection: Record<string, boolean> = {};
-        selectedRowKeys.forEach((key) => {
-          newSelection[key as string] = true;
-        });
-        handleRowSelectionChange(newSelection);
-      },
-    },
-  };
-
   return (
     <PermissionPageGuard>
       <div className="w-full space-y-4">
@@ -175,7 +74,7 @@ export default function LeasesPage() {
         ) : (
           <>
             <LeaseFilters
-              apartments={apartments?.map((apartment) => ({ id: apartment.id, name: apartment.name })) ?? []}
+              apartments={apartments ?? []}
               filters={filters}
               onFilterChange={handleFilterChange}
               onClearFilters={handleClearFilters}
@@ -209,7 +108,7 @@ export default function LeasesPage() {
         <LeaseEditDialog
           key={selectedLease.id}
           open={isEditOpen}
-          onOpenChange={handleEditDialogOpenChange}
+          onOpenChange={(open) => !open && setPendingInitialReading(null)}
           initialValues={buildLeaseEditFormValues(selectedLease)}
           roomDisplay={getLeaseDisplayInfo(selectedLease).roomDisplay}
           tenantDisplay={getLeaseDisplayInfo(selectedLease).tenantDisplay}
@@ -222,14 +121,14 @@ export default function LeasesPage() {
 
       <LeaseTerminateDialog
         open={isTerminateOpen}
-        onOpenChange={setIsTerminateOpen}
+        onOpenChange={closeTerminateDialog}
         onConfirm={() => selectedLease && terminateMutation.mutate(selectedLease.id)}
         isPending={terminateMutation.isPending}
       />
 
       <LeaseDeleteDialog
         open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
+        onOpenChange={closeDeleteDialog}
         onConfirm={() => selectedLease && deleteMutation.mutate(selectedLease.id)}
         isPending={deleteMutation.isPending}
       />

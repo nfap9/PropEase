@@ -1,46 +1,63 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import type { Bill, BillStatus } from '@/types';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import { useBillsData, useBillShare } from '@/hooks/use-bills';
 import { buildBillStats, filterBillsByStatus } from '@/utils/bills';
+import { useBillFilters } from './use-bill-filters';
+import { useBillDialogState } from './use-bill-dialog-state';
 
 export interface BillsPageState {
-  statusFilter: BillStatus | 'all';
-  setStatusFilter: (v: BillStatus | 'all') => void;
-  isPaymentOpen: boolean;
-  isGenerateOpen: boolean;
-  isDetailOpen: boolean;
-  selectedBillId: string | null;
-  selectedBill: Bill | null;
-  canGenerateBill: boolean;
-  canEditBill: boolean;
-  sharingBillId: string | null;
-  handleViewDetail: (bill: Bill) => void;
-  handlePayment: (bill: Bill) => void;
-  handlePaymentFromDetail: () => void;
-  handleGenerate: () => void;
-  handleExport: (type: 'all' | 'unfinished') => void;
-  openPaymentDialog: (bill: Bill) => void;
-  closePaymentDialog: () => void;
-  openGenerateDialog: () => void;
-  closeGenerateDialog: () => void;
-  openDetailDialog: (billId: string) => void;
-  closeDetailDialog: () => void;
+  // Data
   bills: Bill[];
   billsLoading: boolean;
   filteredBills: Bill[];
   stats: ReturnType<typeof buildBillStats>;
+
+  // Bill detail
   billDetail: ReturnType<typeof useBillsData>['billDetail'];
   billDetailLoading: boolean;
   billFeeItems: ReturnType<typeof useBillsData>['billFeeItems'];
   feeItemsLoading: boolean;
+
+  // Mutations
   exportPdf: ReturnType<typeof useBillsData>['exportPdf'];
   exportExcel: ReturnType<typeof useBillsData>['exportExcel'];
   handleShareBill: ReturnType<typeof useBillShare>['handleShareBill'];
   paymentMutation: ReturnType<typeof useBillsData>['paymentMutation'];
   generateMutation: ReturnType<typeof useBillsData>['generateMutation'];
+
+  // Permissions
+  canGenerateBill: boolean;
+  canEditBill: boolean;
+
+  // Sharing
+  sharingBillId: string | null;
+
+  // Filters
+  statusFilter: BillStatus | 'all';
+  setStatusFilter: (v: BillStatus | 'all') => void;
+
+  // Dialog state
+  isPaymentOpen: boolean;
+  isGenerateOpen: boolean;
+  isDetailOpen: boolean;
+  selectedBillId: string | null;
+  selectedBill: Bill | null;
+
+  // Dialog actions
+  handleViewDetail: (bill: Bill) => void;
+  handlePayment: (bill: Bill) => void;
+  handlePaymentFromDetail: () => void;
+  handleGenerate: () => void;
+  handleExport: (type: 'all' | 'unfinished') => void;
+  openDetailDialog: (billId: string) => void;
+  closeDetailDialog: () => void;
+  openPaymentDialog: (bill: Bill) => void;
+  closePaymentDialog: () => void;
+  openGenerateDialog: () => void;
+  closeGenerateDialog: () => void;
 }
 
 export function useBillsPage(): BillsPageState {
@@ -48,36 +65,18 @@ export function useBillsPage(): BillsPageState {
   const { hasPermission } = usePermissions();
   const orgId = organization?.id;
 
-  const [statusFilter, setStatusFilter] = useState<BillStatus | 'all'>('all');
-  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-  const [isGenerateOpen, setIsGenerateOpen] = useState(false);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [selectedBillId, setSelectedBillId] = useState<string | null>(null);
-  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const filters = useBillFilters();
+  const dialogs = useBillDialogState();
 
   const canGenerateBill = hasPermission(PERMISSIONS.BILL_CREATE);
   const canEditBill = hasPermission(PERMISSIONS.BILL_EDIT);
 
   const { sharingBillId, handleShareBill } = useBillShare(organization?.name);
 
-  const closePaymentDialog = useCallback(() => {
-    setIsPaymentOpen(false);
-    setSelectedBill(null);
-  }, []);
-
-  const closeGenerateDialog = useCallback(() => {
-    setIsGenerateOpen(false);
-  }, []);
-
   const handleGenerateSuccess = useCallback((created: number, skipped: number) => {
-    closeGenerateDialog();
+    dialogs.closeGenerateDialog();
     toast.success(`出账完成：新增 ${created} 笔，跳过 ${skipped} 笔`);
-  }, [closeGenerateDialog]);
-
-  const closeDetailDialog = useCallback(() => {
-    setIsDetailOpen(false);
-    setSelectedBillId(null);
-  }, []);
+  }, [dialogs]);
 
   const {
     bills = [],
@@ -91,84 +90,90 @@ export function useBillsPage(): BillsPageState {
     exportPdf,
     exportExcel,
   } = useBillsData({
-    selectedBillId,
-    isDetailOpen,
-    onPaymentSuccess: closePaymentDialog,
+    selectedBillId: dialogs.selectedBillId,
+    isDetailOpen: dialogs.isDetailOpen,
+    onPaymentSuccess: dialogs.closePaymentDialog,
     onGenerateSuccess: handleGenerateSuccess,
   });
 
   const filteredBills = useMemo(
-    () => filterBillsByStatus(bills, statusFilter),
-    [bills, statusFilter]
+    () => filterBillsByStatus(bills, filters.statusFilter),
+    [bills, filters.statusFilter]
   );
   const stats = useMemo(() => buildBillStats(bills), [bills]);
 
   const handleViewDetail = useCallback((bill: Bill) => {
-    setSelectedBillId(bill.id);
-    setIsDetailOpen(true);
-  }, []);
-
-  const openPaymentDialog = useCallback((bill: Bill) => {
-    setSelectedBill(bill);
-    setIsPaymentOpen(true);
-  }, []);
+    dialogs.openDetailDialog(bill.id);
+  }, [dialogs]);
 
   const handlePayment = useCallback((bill: Bill) => {
-    openPaymentDialog(bill);
-  }, [openPaymentDialog]);
+    dialogs.openPaymentDialog(bill);
+  }, [dialogs]);
 
   const handlePaymentFromDetail = useCallback(() => {
     if (billDetail) {
-      openPaymentDialog(billDetail);
-      closeDetailDialog();
+      dialogs.openPaymentDialog(billDetail);
+      dialogs.closeDetailDialog();
     }
-  }, [billDetail, openPaymentDialog, closeDetailDialog]);
+  }, [billDetail, dialogs]);
 
   const handleGenerate = useCallback(() => {
-    setIsGenerateOpen(true);
-  }, []);
+    dialogs.openGenerateDialog();
+  }, [dialogs]);
 
   const handleExport = useCallback((type: 'all' | 'unfinished') => {
-    exportExcel(type, statusFilter);
-  }, [exportExcel, statusFilter]);
+    exportExcel(type, filters.statusFilter);
+  }, [exportExcel, filters.statusFilter]);
 
   return {
-    statusFilter,
-    setStatusFilter,
-    isPaymentOpen,
-    isGenerateOpen,
-    isDetailOpen,
-    selectedBillId,
-    selectedBill,
-    canGenerateBill,
-    canEditBill,
-    sharingBillId,
-    handleViewDetail,
-    handlePayment,
-    handlePaymentFromDetail,
-    handleGenerate,
-    handleExport,
-    openPaymentDialog,
-    closePaymentDialog,
-    openGenerateDialog: handleGenerate,
-    closeGenerateDialog,
-    openDetailDialog: (billId: string) => {
-      setSelectedBillId(billId);
-      setIsDetailOpen(true);
-    },
-    closeDetailDialog,
+    // Data
     bills,
     billsLoading,
     filteredBills,
     stats,
+
+    // Bill detail
     billDetail,
     billDetailLoading,
     billFeeItems,
     feeItemsLoading,
+
+    // Mutations
     exportPdf,
     exportExcel,
     handleShareBill,
     paymentMutation,
     generateMutation,
+
+    // Permissions
+    canGenerateBill,
+    canEditBill,
+
+    // Sharing
+    sharingBillId,
+
+    // Filters
+    statusFilter: filters.statusFilter,
+    setStatusFilter: filters.setStatusFilter,
+
+    // Dialog state
+    isPaymentOpen: dialogs.isPaymentOpen,
+    isGenerateOpen: dialogs.isGenerateOpen,
+    isDetailOpen: dialogs.isDetailOpen,
+    selectedBillId: dialogs.selectedBillId,
+    selectedBill: dialogs.selectedBill,
+
+    // Dialog actions
+    handleViewDetail,
+    handlePayment,
+    handlePaymentFromDetail,
+    handleGenerate,
+    handleExport,
+    openDetailDialog: dialogs.openDetailDialog,
+    closeDetailDialog: dialogs.closeDetailDialog,
+    openPaymentDialog: dialogs.openPaymentDialog,
+    closePaymentDialog: dialogs.closePaymentDialog,
+    openGenerateDialog: dialogs.openGenerateDialog,
+    closeGenerateDialog: dialogs.closeGenerateDialog,
   };
 }

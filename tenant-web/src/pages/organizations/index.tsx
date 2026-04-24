@@ -1,69 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import React from 'react';
 import { Building2, Check, Plus } from 'lucide-react';
-import { toast } from 'sonner';
 import { Card, Button, Input, Form } from 'antd';
-import { useAuth } from '@/contexts/auth';
-import { organizationsApi } from '@/api/organizations';
-import { getErrorMessage } from '@/utils/error';
-import { DEFAULT_ORGANIZATION_HOME_PATH } from '@/utils/auth-redirect';
-import { Organization } from '@/types';
+import { useNavigate } from 'react-router-dom';
+import { useOrganizationsPage } from './hooks/use-organizations-page';
 
 const { TextArea } = Input;
 
-function buildOrganizationSlug(name: string) {
-  return (
-    name
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '') || 'org'
-  );
-}
-
 export default function OrganizationsPage() {
   const navigate = useNavigate();
-  const { isLoading, isAuthenticated, organizations, organization, setOrganization, refreshOrganizations } =
-    useAuth();
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const {
+    isLoading,
+    isCheckingAuth,
+    organizations,
+    organization,
+    createOrgMutation,
+    isEmpty,
+    handleSelectOrganization,
+  } = useOrganizationsPage();
+
   const [form] = Form.useForm();
-
-  useEffect(() => {
-    if (isLoading) {
-      return;
-    }
-
-    if (!isAuthenticated) {
-      navigate('/tenant/login', { replace: true });
-      return;
-    }
-
-    setIsCheckingAuth(false);
-  }, [isAuthenticated, isLoading, navigate]);
-
-  const createOrgMutation = useMutation({
-    mutationFn: async (data: { name: string; notes?: string }) =>
-      organizationsApi.create({
-        name: data.name.trim(),
-        slug: buildOrganizationSlug(data.name.trim()),
-        notes: data.notes?.trim(),
-      }),
-    onSuccess: async (createdOrganization) => {
-      await refreshOrganizations(createdOrganization.id);
-      setOrganization(createdOrganization);
-      toast.success('团队创建成功');
-      navigate(DEFAULT_ORGANIZATION_HOME_PATH, { replace: true });
-    },
-    onError: (error) => {
-      toast.error(getErrorMessage(error, '创建团队失败，请重试'));
-    },
-  });
-
-  const handleSelectOrganization = (org: Organization) => {
-    setOrganization(org);
-    toast.success('团队切换成功');
-    navigate(DEFAULT_ORGANIZATION_HOME_PATH, { replace: true });
-  };
 
   if (isLoading || isCheckingAuth) {
     return (
@@ -74,7 +29,7 @@ export default function OrganizationsPage() {
   }
 
   // Empty state: show creation form when user has 0 organizations
-  if (organizations.length === 0) {
+  if (isEmpty) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
         <Card className="w-full max-w-lg" styles={{ body: { padding: 24 } }}>
@@ -141,9 +96,7 @@ export default function OrganizationsPage() {
               >
                 <div className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <div className="flex items-center gap-3">
-                    <Building2
-                      className={`h-5 w-5 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`}
-                    />
+                    <Building2 className={`h-5 w-5 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`} />
                     <span className="text-lg font-medium">{org.name}</span>
                   </div>
                   {isSelected && <Check className="h-5 w-5 text-blue-600" />}

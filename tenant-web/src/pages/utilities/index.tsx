@@ -1,15 +1,10 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { lazy, Suspense } from 'react';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Tabs } from 'antd';
 import { useAuth } from '@/contexts/auth';
-import type { RoomMissingInitialReading, UtilityReading } from '@/types';
-import type { PendingUtilityBillRow } from '@/types/utilities';
-import { useUtilitiesData } from '@/hooks/use-utilities';
-import { useMonthStats } from '@/hooks/use-utilities';
 import { EntryTab } from './tabs/entry-tab';
 import { HistoryTab } from './tabs/history-tab';
+import { useUtilitiesPage } from './hooks/use-utilities-page';
 
 const CreateUtilityDialog = lazy(() =>
   import('@/pages/utilities/components/create-utility-dialog').then((mod) => ({ default: mod.CreateUtilityDialog }))
@@ -28,71 +23,40 @@ const EditUtilityDialog = lazy(() =>
 );
 
 export default function UtilitiesPage() {
-  const [searchParams] = useSearchParams();
-  const queryClient = useQueryClient();
   const { organization, isLoading: authLoading } = useAuth();
   const orgId = organization?.id;
 
-  const today = useMemo(() => new Date(), []);
-  const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth() + 1;
-
-  const [activeTab, setActiveTab] = useState<'entry' | 'history'>(() => {
-    return searchParams.get('tab') === 'history' ? 'history' : 'entry';
-  });
-
-  // 弹窗状态
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isExportTemplateOpen, setIsExportTemplateOpen] = useState(false);
-  const [isBatchImportOpen, setIsBatchImportOpen] = useState(false);
-  const [initialReadingRoom, setInitialReadingRoom] = useState<RoomMissingInitialReading | null>(null);
-  const [editingUtility, setEditingUtility] = useState<UtilityReading | null>(null);
-
-  // 录入预设
-  const [createPreset, setCreatePreset] = useState<{
-    apartmentId: string;
-    roomId: string;
-    periodYear: number;
-    periodMonth: number;
-    readingDate: string;
-    waterPrevious?: number | null;
-    electricityPrevious?: number | null;
-  } | null>(null);
-
-  // 数据
-  const utilitiesData = useUtilitiesData();
   const {
     pendingUtilityBills,
     monthRoomsNeedInputCount,
     monthRoomsRecordedCount,
     roomsMissingInitial,
     apartmentRooms,
+    allRooms,
+    apartments,
     createMutation,
     updateMutation,
     batchImportMutation,
-  } = utilitiesData;
-
-  const { readyToBillCount, overdueCount } = useMonthStats(pendingUtilityBills);
-
-  // 快捷录入
-  const handleQuickEntry = (record: PendingUtilityBillRow) => {
-    setCreatePreset({
-      apartmentId: record.apartmentId ?? '',
-      roomId: record.roomId,
-      periodYear: currentYear,
-      periodMonth: currentMonth,
-      readingDate: today.toISOString().split('T')[0],
-      waterPrevious: record.waterPrevious,
-      electricityPrevious: record.electricityPrevious,
-    });
-    setIsCreateOpen(true);
-  };
-
-  const handleQuickUpdate = (record: PendingUtilityBillRow) => {
-    if (record.currentReading) {
-      setEditingUtility(record.currentReading);
-    }
-  };
+    readyToBillCount,
+    overdueCount,
+    activeTab,
+    setActiveTab,
+    isCreateOpen,
+    setIsCreateOpen,
+    isExportTemplateOpen,
+    setIsExportTemplateOpen,
+    isBatchImportOpen,
+    setIsBatchImportOpen,
+    initialReadingRoom,
+    setInitialReadingRoom,
+    editingUtility,
+    setEditingUtility,
+    createPreset,
+    handleQuickEntry,
+    handleQuickUpdate,
+    clearCreatePreset,
+    invalidateInitialReadingQueries,
+  } = useUtilitiesPage();
 
   if (authLoading) {
     return <PageLoading />;
@@ -127,7 +91,7 @@ export default function UtilitiesPage() {
                   onExportTemplate={() => setIsExportTemplateOpen(true)}
                   onBatchImport={() => setIsBatchImportOpen(true)}
                   onAdd={() => {
-                    setCreatePreset(null);
+                    clearCreatePreset();
                     setIsCreateOpen(true);
                   }}
                 />
@@ -168,8 +132,8 @@ export default function UtilitiesPage() {
               onOpenChange={setIsBatchImportOpen}
               onImport={(data) => batchImportMutation.mutate(data)}
               isPending={batchImportMutation.isPending}
-              allRooms={utilitiesData.allRooms}
-              apartments={utilitiesData.apartments}
+              allRooms={allRooms}
+              apartments={apartments}
             />
           )}
 
@@ -182,8 +146,7 @@ export default function UtilitiesPage() {
               open={!!initialReadingRoom}
               onOpenChange={(open) => !open && setInitialReadingRoom(null)}
               onSuccess={() => {
-                queryClient.invalidateQueries({ queryKey: ['utilities', 'rooms-missing-initial', orgId] });
-                queryClient.invalidateQueries({ queryKey: ['dashboard-overview', orgId] });
+                invalidateInitialReadingQueries(orgId);
                 setInitialReadingRoom(null);
               }}
             />
