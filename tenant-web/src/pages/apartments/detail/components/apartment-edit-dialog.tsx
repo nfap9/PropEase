@@ -1,37 +1,34 @@
 import { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { Modal, Button } from 'antd';
 import { ApartmentForm, type ApartmentFormRef, type ApartmentFormData } from '@/pages/apartments/components';
-import type { Apartment } from '@/types';
-import { buildApartmentFormValues } from '@/utils/apartment-detail';
 
 export interface ApartmentEditDialogRef {
-  setFieldsValue: (values: Partial<ApartmentFormData>) => void;
   submit: () => Promise<void>;
 }
 
 interface ApartmentEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  apartment: Apartment | null;
+  /** 表单初始值，由调用方从 apartment 计算后传入 */
+  initialValues: Partial<ApartmentFormData>;
   onSubmit: (data: ApartmentFormData) => void;
   isPending: boolean;
 }
 
 export const ApartmentEditDialog = forwardRef<ApartmentEditDialogRef, ApartmentEditDialogProps>(
-  ({ open, onOpenChange, apartment, onSubmit, isPending }, ref) => {
+  ({ open, onOpenChange, initialValues, onSubmit, isPending }, ref) => {
     const formRef = useRef<ApartmentFormRef>(null);
 
     useImperativeHandle(ref, () => ({
-      setFieldsValue: (values) => formRef.current?.setFieldsValue(values),
       submit: () => formRef.current?.submit() ?? Promise.resolve(),
     }));
 
-    // Sync apartment data when it changes
+    // Sync initialValues when dialog opens
     useEffect(() => {
-      if (apartment && open) {
-        formRef.current?.setFieldsValue(buildApartmentFormValues(apartment));
+      if (open) {
+        formRef.current?.setFieldsValue(initialValues);
       }
-    }, [apartment, open]);
+    }, [open, initialValues]);
 
     return (
       <Modal

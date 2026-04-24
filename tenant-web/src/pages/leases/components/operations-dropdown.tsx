@@ -15,6 +15,7 @@ import { ChangeUtilityRatesSheet } from './operation-sheets/change-utility-rates
 import { SettleLeaseSheet } from './operation-sheets/settle-lease-sheet';
 import { UpdateTenantDialog } from './operation-dialogs/update-tenant-dialog';
 import { ChangeDepositDialog } from './operation-dialogs/change-deposit-dialog';
+import { useUpdateTenant, useChangeDeposit } from '@/hooks/use-lease-operations';
 
 /** 预置费用类型 */
 const PREDEFINED_FEE_TYPES = [
@@ -86,6 +87,9 @@ export function OperationsDropdown({ orgId, leaseId, lease }: OperationsDropdown
       toast.error('更新费用项目失败');
     },
   });
+
+  const updateTenantMutation = useUpdateTenant(leaseId);
+  const changeDepositMutation = useChangeDeposit(leaseId);
 
   // 转换存储的数据格式
   const currentFeeItems: LeaseDirectFeeItem[] = (lease as { fee_items?: LeaseFeeItemRaw[] })?.fee_items?.map((item: LeaseFeeItemRaw) => ({
@@ -226,14 +230,17 @@ export function OperationsDropdown({ orgId, leaseId, lease }: OperationsDropdown
         open={openDialog === 'update-tenant'}
         onOpenChange={(open) => setOpenDialog(open ? 'update-tenant' : null)}
         orgId={orgId}
-        leaseId={leaseId}
+        onSubmit={(newTenantId) =>
+          updateTenantMutation.mutate({ newTenantId }, { onSuccess: () => setOpenDialog(null) })
+        }
+        isPending={updateTenantMutation.isPending}
       />
       <ChangeDepositDialog
         open={openDialog === 'change-deposit'}
         onOpenChange={(open) => setOpenDialog(open ? 'change-deposit' : null)}
-        orgId={orgId}
-        leaseId={leaseId}
         currentDeposit={Number(lease.deposit || 0)}
+        onSubmit={(data) => changeDepositMutation.mutate(data, { onSuccess: () => setOpenDialog(null) })}
+        isPending={changeDepositMutation.isPending}
       />
 
       {/* 费用编辑对话框 */}

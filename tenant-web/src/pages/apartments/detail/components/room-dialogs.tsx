@@ -7,7 +7,7 @@ import type { Room, RoomFacilities } from '@/types';
 import { LAYOUT_OPTIONS } from '@/constants/apartment-detail';
 import type { RoomEditFormData } from '@apartment-ultra/api-contract';
 import type { GeneratedFloorRooms } from '@/types';
-import { getFacilitiesSummary, parseFloors, parseRoomNumbers, buildGeneratedRoomGroups } from '@/utils/apartment-detail';
+import { getFacilitiesSummary, parseFloors, parseRoomNumbers, buildGeneratedRoomGroups, buildRoomFormValues } from '@/utils/apartment-detail';
 
 // ============ CreateRoomDialog ============
 
@@ -398,6 +398,14 @@ export function RoomEditDialog({
   isPending: boolean;
 }) {
   return (
-    <EditRoomDialog open={open} onOpenChange={onOpenChange} onSubmit={onSubmit} isPending={isPending} room={room} />
+    <EditRoomDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      apartmentName={room?.apartment?.name}
+      initialValues={room ? buildRoomFormValues(room) : {}}
+      facilities={room?.facilities ?? null}
+      onSubmit={onSubmit}
+      isPending={isPending}
+    />
   );
 }

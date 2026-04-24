@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import type { Room, RoomFacilities } from '@/types';
 import { useApartmentDetailData, useApartmentRoomMetrics, useRoomBatchSelection } from '@/hooks/apartment-detail';
+import { buildApartmentFormValues } from '@/utils/apartment-detail';
 import { ApartmentDetailHeader } from '@/pages/apartments/detail/components/apartment-detail-header';
 import { ApartmentOverviewTab } from '@/pages/apartments/detail/components/apartment-overview-tab';
 import { ApartmentRoomListTab } from '@/pages/apartments/detail/components/apartment-room-list-tab';
@@ -217,7 +218,7 @@ export default function ApartmentDetailPage() {
       <ApartmentEditDialog
         open={isEditApartmentOpen}
         onOpenChange={setIsEditApartmentOpen}
-        apartment={apartment}
+        initialValues={buildApartmentFormValues(apartment)}
         onSubmit={(data) => updateApartmentMutation.mutate(data)}
         isPending={updateApartmentMutation.isPending}
       />

@@ -74,6 +74,15 @@ export const buildGeneratedRoomGroups = (
   }));
 };
 
+export const buildRoomFormValues = (room: Room) => ({
+  room_number: room.room_number,
+  layout: room.layout || '',
+  maintenance: room.maintenance ?? false,
+  area: room.area || 0,
+  monthly_rent: room.pricing?.monthly_rent ?? 0,
+  notes: room.notes || '',
+});
+
 export const buildApartmentFormValues = (apartment: Apartment) => ({
   name: apartment.name,
   address: apartment.address ?? '',

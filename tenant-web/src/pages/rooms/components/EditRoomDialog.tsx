@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Modal, Button, Input, Select, InputNumber, Form } from 'antd';
 import { Settings2 } from 'lucide-react';
 import { Room, RoomFacilities } from '@/types';
@@ -21,9 +21,14 @@ interface EditRoomDialogProps {
   testids?: Record<string, string>;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** 所属公寓名称（仅展示） */
+  apartmentName?: string;
+  /** 表单初始值，由调用方从 Room 计算后传入 */
+  initialValues: Partial<Pick<Room, 'room_number' | 'layout' | 'maintenance' | 'area' | 'notes'> & { monthly_rent: number }>;
+  /** 家具家电初始值 */
+  facilities: RoomFacilities | null;
   onSubmit: (data: RoomEditFormData & { facilities?: RoomFacilities | null }) => void;
   isPending: boolean;
-  room: Room | null;
 }
 
 function getFacilitiesSummary(facilities: RoomFacilities | null): string {
@@ -45,32 +50,20 @@ export function EditRoomDialog({
   testids,
   open,
   onOpenChange,
+  apartmentName,
+  initialValues,
+  facilities,
   onSubmit,
   isPending,
-  room,
 }: EditRoomDialogProps) {
   const [form] = Form.useForm();
-  const [facilities, setFacilities] = useState<RoomFacilities | null>(null);
+  const [localFacilities, setLocalFacilities] = useState<RoomFacilities | null>(facilities);
   const [facilityDialogOpen, setFacilityDialogOpen] = useState(false);
   const layout = Form.useWatch('layout', form);
 
-  useEffect(() => {
-    if (room) {
-      form.setFieldsValue({
-        room_number: room.room_number,
-        layout: room.layout || '',
-        maintenance: room.maintenance,
-        area: room.area || 0,
-        monthly_rent: room.pricing?.monthly_rent ?? 0,
-        notes: room.notes || '',
-      });
-      setFacilities(room.facilities);
-    }
-  }, [room, form]);
-
   const handleSubmit = () => {
     form.validateFields().then((values) => {
-      onSubmit({ ...values, facilities });
+      onSubmit({ ...values, facilities: localFacilities });
     });
   };
 
@@ -88,14 +81,20 @@ export function EditRoomDialog({
         ]}
       >
         <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <span className="text-sm font-medium">所属公寓</span>
-            <Input value={room?.apartment?.name || ''} disabled />
-          </div>
+          {apartmentName && (
+            <div className="space-y-2">
+              <span className="text-sm font-medium">所属公寓</span>
+              <Input value={apartmentName} disabled />
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <span className="text-sm font-medium">房间号 *</span>
-              <Form.Item name="room_number" rules={[{ required: true, message: '请输入房间号' }]} style={{ marginBottom: 0 }}>
+              <Form.Item
+                name="room_number"
+                rules={[{ required: true, message: '请输入房间号' }]}
+                style={{ marginBottom: 0 }}
+              >
                 <Input data-testid={testids?.NUMBER_INPUT} />
               </Form.Item>
             </div>
@@ -114,24 +113,22 @@ export function EditRoomDialog({
           </div>
           <div className="space-y-2">
             <span className="text-sm font-medium">面积 (m²)</span>
-            <Form.Item name="area" rules={[{ type: 'number', min: 0, message: '面积不能为负' }]} style={{ marginBottom: 0 }}>
-              <InputNumber
-                min={0}
-                step={0.01}
-                data-testid={testids?.AREA_INPUT}
-                style={{ width: '100%' }}
-              />
+            <Form.Item
+              name="area"
+              rules={[{ type: 'number', min: 0, message: '面积不能为负' }]}
+              style={{ marginBottom: 0 }}
+            >
+              <InputNumber min={0} step={0.01} data-testid={testids?.AREA_INPUT} style={{ width: '100%' }} />
             </Form.Item>
           </div>
           <div className="space-y-2">
             <span className="text-sm font-medium">月租 (元) *</span>
-            <Form.Item name="monthly_rent" rules={[{ required: true, message: '请输入月租' }, { type: 'number', min: 0, message: '月租不能为负' }]} style={{ marginBottom: 0 }}>
-              <InputNumber
-                min={0}
-                step={0.01}
-                data-testid={testids?.MONTHLY_RENT_INPUT}
-                style={{ width: '100%' }}
-              />
+            <Form.Item
+              name="monthly_rent"
+              rules={[{ required: true, message: '请输入月租' }, { type: 'number', min: 0, message: '月租不能为负' }]}
+              style={{ marginBottom: 0 }}
+            >
+              <InputNumber min={0} step={0.01} data-testid={testids?.MONTHLY_RENT_INPUT} style={{ width: '100%' }} />
             </Form.Item>
           </div>
           <div className="space-y-2">
@@ -149,15 +146,15 @@ export function EditRoomDialog({
               onClick={() => setFacilityDialogOpen(true)}
               icon={<Settings2 className="h-4 w-4" />}
             >
-              <span className="text-muted-foreground">{getFacilitiesSummary(facilities)}</span>
+              <span className="text-muted-foreground">{getFacilitiesSummary(localFacilities)}</span>
             </Button>
           </div>
         </div>
       </Modal>
 
       <FacilitySelectorDialog
-        value={facilities}
-        onChange={setFacilities}
+        value={localFacilities}
+        onChange={setLocalFacilities}
         open={facilityDialogOpen}
         onOpenChange={setFacilityDialogOpen}
       />
