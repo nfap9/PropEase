@@ -1,20 +1,10 @@
-import { Suspense, lazy, useMemo } from 'react';
+import { Suspense, useMemo } from 'react';
 import { Skeleton } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { useAuth } from '@/contexts/auth';
 import { createBillsColumns } from '@/pages/bills/components/columns';
-import { BillsListView } from '@/pages/bills/components/bills-list-view';
+import { BillsListView, BillDetailDialog, BillGenerateDialog, BillPaymentDialog } from '@/pages/bills/components';
 import { useBillsPage } from './hooks/use-bills-page';
-
-const BillDetailDialog = lazy(() =>
-  import('@/pages/bills/components/bill-detail-dialog').then((m) => ({ default: m.BillDetailDialog }))
-);
-const BillGenerateDialog = lazy(() =>
-  import('@/pages/bills/components/bill-generate-dialog').then((m) => ({ default: m.BillGenerateDialog }))
-);
-const BillPaymentDialog = lazy(() =>
-  import('@/pages/bills/components/bill-payment-dialog').then((m) => ({ default: m.BillPaymentDialog }))
-);
 
 function BillsFallback() {
   return (
@@ -29,7 +19,6 @@ export default function BillsPage() {
   const { organization, isLoading: authLoading } = useAuth();
   const page = useBillsPage();
 
-  // 列配置
   const columns = useMemo(
     () =>
       createBillsColumns({

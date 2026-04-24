@@ -1,26 +1,17 @@
-import { lazy, Suspense } from 'react';
+import { Suspense } from 'react';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Tabs } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { EntryTab } from './tabs/entry-tab';
 import { HistoryTab } from './tabs/history-tab';
 import { useUtilitiesPage } from './hooks/use-utilities-page';
-
-const CreateUtilityDialog = lazy(() =>
-  import('@/pages/utilities/components/create-utility-dialog').then((mod) => ({ default: mod.CreateUtilityDialog }))
-);
-const ExportTemplateDialog = lazy(() =>
-  import('@/pages/utilities/components/export-template-dialog').then((mod) => ({ default: mod.ExportTemplateDialog }))
-);
-const BatchImportDialog = lazy(() =>
-  import('@/pages/utilities/components/batch-import-dialog').then((mod) => ({ default: mod.BatchImportDialog }))
-);
-const InitialReadingDialog = lazy(() =>
-  import('@/components/common/initial-reading-dialog').then((mod) => ({ default: mod.InitialReadingDialog }))
-);
-const EditUtilityDialog = lazy(() =>
-  import('@/pages/utilities/components/edit-utility-dialog').then((mod) => ({ default: mod.EditUtilityDialog }))
-);
+import {
+  CreateUtilityDialog,
+  ExportTemplateDialog,
+  BatchImportDialog,
+  EditUtilityDialog,
+} from '@/pages/utilities/components';
+import { InitialReadingDialog } from '@/components/common/initial-reading-dialog';
 
 export default function UtilitiesPage() {
   const { organization, isLoading: authLoading } = useAuth();
@@ -109,75 +100,68 @@ export default function UtilitiesPage() {
           ]}
         />
 
-        <Suspense fallback={<DialogLoading />}>
-          {isCreateOpen && (
-            <CreateUtilityDialog
-              open={isCreateOpen}
-              onOpenChange={setIsCreateOpen}
-              onSubmit={(data) => createMutation.mutate(data)}
-              isPending={createMutation.isPending}
-              apartmentRooms={apartmentRooms}
-              orgId={orgId}
-              preset={createPreset}
-            />
-          )}
+        {isCreateOpen && (
+          <CreateUtilityDialog
+            open={isCreateOpen}
+            onOpenChange={setIsCreateOpen}
+            onSubmit={(data) => createMutation.mutate(data)}
+            isPending={createMutation.isPending}
+            apartmentRooms={apartmentRooms}
+            orgId={orgId}
+            preset={createPreset}
+          />
+        )}
 
-          {isExportTemplateOpen && (
-            <ExportTemplateDialog open={isExportTemplateOpen} onOpenChange={setIsExportTemplateOpen} />
-          )}
+        {isExportTemplateOpen && (
+          <ExportTemplateDialog open={isExportTemplateOpen} onOpenChange={setIsExportTemplateOpen} />
+        )}
 
-          {isBatchImportOpen && (
-            <BatchImportDialog
-              open={isBatchImportOpen}
-              onOpenChange={setIsBatchImportOpen}
-              onImport={(data) => batchImportMutation.mutate(data)}
-              isPending={batchImportMutation.isPending}
-              allRooms={allRooms}
-              apartments={apartments}
-            />
-          )}
+        {isBatchImportOpen && (
+          <BatchImportDialog
+            open={isBatchImportOpen}
+            onOpenChange={setIsBatchImportOpen}
+            onImport={(data) => batchImportMutation.mutate(data)}
+            isPending={batchImportMutation.isPending}
+            allRooms={allRooms}
+            apartments={apartments}
+          />
+        )}
 
-          {initialReadingRoom && (
-            <InitialReadingDialog
-              orgId={orgId}
-              roomId={initialReadingRoom.room_id}
-              roomDisplay={`${initialReadingRoom.apartment_name} - ${initialReadingRoom.room_number}`}
-              startDate={initialReadingRoom.lease_start_date}
-              open={!!initialReadingRoom}
-              onOpenChange={(open) => !open && setInitialReadingRoom(null)}
-              onSuccess={() => {
-                invalidateInitialReadingQueries(orgId);
-                setInitialReadingRoom(null);
-              }}
-            />
-          )}
+        {initialReadingRoom && (
+          <InitialReadingDialog
+            orgId={orgId}
+            roomId={initialReadingRoom.room_id}
+            roomDisplay={`${initialReadingRoom.apartment_name} - ${initialReadingRoom.room_number}`}
+            startDate={initialReadingRoom.lease_start_date}
+            open={!!initialReadingRoom}
+            onOpenChange={(open) => !open && setInitialReadingRoom(null)}
+            onSuccess={() => {
+              invalidateInitialReadingQueries(orgId);
+              setInitialReadingRoom(null);
+            }}
+          />
+        )}
 
-          {editingUtility && (
-            <EditUtilityDialog
-              open={!!editingUtility}
-              onOpenChange={(open) => !open && setEditingUtility(null)}
-              onSubmit={(data) => updateMutation.mutate({ id: editingUtility.id, data })}
-              isPending={updateMutation.isPending}
-              utility={editingUtility}
-            />
-          )}
-        </Suspense>
+        {editingUtility && (
+          <EditUtilityDialog
+            open={!!editingUtility}
+            onOpenChange={(open) => !open && setEditingUtility(null)}
+            onSubmit={(data) => updateMutation.mutate({ id: editingUtility.id, data })}
+            isPending={updateMutation.isPending}
+            utility={editingUtility}
+          />
+        )}
       </div>
     </PermissionPageGuard>
   );
 }
 
-// --- Placeholders ---
 function PageLoading() {
   return (
     <div className="flex h-[200px] items-center justify-center">
       <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600" />
     </div>
   );
-}
-
-function DialogLoading() {
-  return null;
 }
 
 function NoOrgPlaceholder() {

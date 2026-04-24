@@ -1,27 +1,20 @@
-import React from 'react';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { ProtectedRoute } from '@/components/protected-route';
 import { AppLayout } from '@/components/layout/app-layout';
 import { AppProviders } from '@/components/layout/providers';
 
-// Page components - lazy loaded for better code splitting
-const LoginPage = React.lazy(() => import('@/pages/login/index').then(m => ({ default: m.default })));
-const SetupPage = React.lazy(() => import('@/pages/setup/index').then(m => ({ default: m.default })));
-const DashboardPage = React.lazy(() => import('@/pages/index').then(m => ({ default: m.default })));
-const UsersPage = React.lazy(() => import('@/pages/users/index').then(m => ({ default: m.default })));
-const RegisteredUsersPage = React.lazy(() => import('@/pages/registered-users/index').then(m => ({ default: m.default })));
-const OrganizationsPage = React.lazy(() => import('@/pages/organizations/index').then(m => ({ default: m.default })));
-const OrganizationDetailPage = React.lazy(() => import('@/pages/organizations/detail/index').then(m => ({ default: m.default })));
-const BrandPage = React.lazy(() => import('@/pages/brand/index').then(m => ({ default: m.default })));
-const BillingPlansPage = React.lazy(() => import('@/pages/billing/plans/index').then(m => ({ default: m.default })));
-const BillingOrdersPage = React.lazy(() => import('@/pages/billing/orders/index').then(m => ({ default: m.default })));
-const BillingUsagePricingPage = React.lazy(() => import('@/pages/billing/usage-pricing/index').then(m => ({ default: m.default })));
-
-const LoadingFallback = () => (
-  <div className="flex h-screen items-center justify-center">
-    <div className="text-muted-foreground">加载中...</div>
-  </div>
-);
+// Page components
+import LoginPage from '@/pages/login/index';
+import SetupPage from '@/pages/setup/index';
+import DashboardPage from '@/pages/index';
+import UsersPage from '@/pages/users/index';
+import RegisteredUsersPage from '@/pages/registered-users/index';
+import OrganizationsPage from '@/pages/organizations/index';
+import OrganizationDetailPage from '@/pages/organizations/detail/index';
+import BrandPage from '@/pages/brand/index';
+import BillingPlansPage from '@/pages/billing/plans/index';
+import BillingOrdersPage from '@/pages/billing/orders/index';
+import BillingUsagePricingPage from '@/pages/billing/usage-pricing/index';
 
 // Root layout that provides AppProviders and renders children via Outlet
 function RootLayout() {
@@ -47,38 +40,38 @@ export const router = createBrowserRouter([
     children: [
       {
         path: '/login',
-        element: <React.Suspense fallback={<LoadingFallback />}><LoginPage /></React.Suspense>,
+        element: <LoginPage />,
       },
       {
         path: '/setup',
-        element: <React.Suspense fallback={<LoadingFallback />}><SetupPage /></React.Suspense>,
+        element: <SetupPage />,
       },
       {
         element: <ProtectedRoutesLayout />,
         children: [
           {
             index: true,
-            element: <React.Suspense fallback={<LoadingFallback />}><DashboardPage /></React.Suspense>,
+            element: <DashboardPage />,
           },
           {
             path: 'users',
-            element: <React.Suspense fallback={<LoadingFallback />}><UsersPage /></React.Suspense>,
+            element: <UsersPage />,
           },
           {
             path: 'registered-users',
-            element: <React.Suspense fallback={<LoadingFallback />}><RegisteredUsersPage /></React.Suspense>,
+            element: <RegisteredUsersPage />,
           },
           {
             path: 'organizations',
-            element: <React.Suspense fallback={<LoadingFallback />}><OrganizationsPage /></React.Suspense>,
+            element: <OrganizationsPage />,
           },
           {
             path: 'organizations/:id',
-            element: <React.Suspense fallback={<LoadingFallback />}><OrganizationDetailPage /></React.Suspense>,
+            element: <OrganizationDetailPage />,
           },
           {
             path: 'brand',
-            element: <React.Suspense fallback={<LoadingFallback />}><BrandPage /></React.Suspense>,
+            element: <BrandPage />,
           },
           {
             path: 'billing',
@@ -86,15 +79,15 @@ export const router = createBrowserRouter([
           },
           {
             path: 'billing/plans',
-            element: <React.Suspense fallback={<LoadingFallback />}><BillingPlansPage /></React.Suspense>,
+            element: <BillingPlansPage />,
           },
           {
             path: 'billing/orders',
-            element: <React.Suspense fallback={<LoadingFallback />}><BillingOrdersPage /></React.Suspense>,
+            element: <BillingOrdersPage />,
           },
           {
             path: 'billing/usage-pricing',
-            element: <React.Suspense fallback={<LoadingFallback />}><BillingUsagePricingPage /></React.Suspense>,
+            element: <BillingUsagePricingPage />,
           },
         ],
       },
