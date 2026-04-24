@@ -41,7 +41,7 @@ export default function AdminBrandPage() {
         favicon_url: config.favicon_url ?? '',
         login_subtitle: config.login_subtitle ?? '用户登录，管理公寓、租客与账单',
         register_subtitle: config.register_subtitle ?? '创建新账户',
-      } as any);
+      } as PlatformConfigForm);
     }
   }, [config, isError, form]);
 

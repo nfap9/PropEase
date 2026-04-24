@@ -5,11 +5,12 @@ import { Button } from 'antd';
 import { formatDateTime } from '@/utils/date';
 import { ORG_STATUS_CONFIG } from '@/utils/status';
 import { MoreHorizontal, Pencil, KeyRound, Trash2 } from 'lucide-react';
+import type { AdminUser } from '@/api/admin-client';
 
 interface CreateAdminUsersColumnsOptions {
-  onEdit: (user: any) => void;
-  onResetPassword: (user: any) => void;
-  onDelete: (user: any) => void;
+  onEdit: (user: AdminUser) => void;
+  onResetPassword: (user: AdminUser) => void;
+  onDelete: (user: AdminUser) => void;
 }
 
 const statusColorMap: Record<string, string> = {
@@ -33,14 +34,14 @@ export function createAdminUsersColumns({
       dataIndex: 'email',
       key: 'email',
       width: 200,
-      render: (email: any) => email ?? '—',
+      render: (email: string | null) => email ?? '—',
     },
     {
       title: '状态',
       dataIndex: 'is_active',
       key: 'is_active',
       width: 100,
-      render: (_: any, user: any) => {
+      render: (_: unknown, user: AdminUser) => {
         const config = user.is_active ? ORG_STATUS_CONFIG.active : ORG_STATUS_CONFIG.inactive;
         return <Tag color={statusColorMap[config.variant] || 'default'}>{config.label}</Tag>;
       },
@@ -50,13 +51,13 @@ export function createAdminUsersColumns({
       dataIndex: 'last_login_at',
       key: 'last_login_at',
       width: 180,
-      render: (last_login_at: any) => last_login_at ? formatDateTime(last_login_at) : '—',
+      render: (last_login_at: string | null) => last_login_at ? formatDateTime(last_login_at) : '—',
     },
     {
       title: '操作',
       key: 'actions',
       width: 80,
-      render: (_: any, user: any) => {
+      render: (_: unknown, user: AdminUser) => {
         const menuItems: MenuProps['items'] = [
           {
             key: 'edit',

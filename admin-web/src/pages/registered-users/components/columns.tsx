@@ -37,7 +37,7 @@ export function createRegisteredUsersColumns({
       dataIndex: 'is_active',
       key: 'is_active',
       width: 100,
-      render: (_: any, user: any) => {
+      render: (_: unknown, user: AdminRegisteredUser) => {
         const config = user.is_active ? ORG_STATUS_CONFIG.active : ORG_STATUS_CONFIG.inactive;
         return <Tag color={statusColorMap[config.variant] || 'default'}>{config.label}</Tag>;
       },
@@ -47,13 +47,13 @@ export function createRegisteredUsersColumns({
       dataIndex: 'created_at',
       key: 'created_at',
       width: 180,
-      render: (created_at: any) => formatDateTime(created_at),
+      render: (created_at: string) => formatDateTime(created_at),
     },
     {
       title: adminMessages.registeredUsers.columns.actions,
       key: 'actions',
       width: 80,
-      render: (_: any, user: any) => {
+      render: (_: unknown, user: AdminRegisteredUser) => {
         const menuItems: MenuProps['items'] = [
           {
             key: 'view',

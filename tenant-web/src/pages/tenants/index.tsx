@@ -88,7 +88,7 @@ export default function TenantsPage() {
       title: '操作',
       key: 'actions',
       width: 80,
-      render: (_: any, record: Tenant) => {
+      render: (_: unknown, record: Tenant) => {
         const menuItems: MenuProps['items'] = [];
         if (canEditTenant) {
           menuItems.push({

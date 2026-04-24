@@ -15,6 +15,7 @@ import {
 import { RegisteredUsersToolbar } from '@/pages/registered-users/components/registered-users-toolbar';
 import { useListFilters, useConfirmAction } from '@/hooks';
 import type { GiftSubscriptionForm } from '@/schemas/registered-users';
+import type { AdminRegisteredUser } from '@/api/admin-client';
 
 interface RegisteredUsersFiltersState {
   activeFilter: FilterActive;
@@ -107,7 +108,7 @@ export default function AdminRegisteredUsersPage() {
   const tableProps: TableProps = {
     dataSource: filteredUsers,
     columns,
-    rowKey: (record: any) => record.id,
+    rowKey: (record: AdminRegisteredUser) => record.id,
     pagination: { pageSize: 20, showSizeChanger: true, showTotal: (total: number) => `共 ${total} 条` },
     scroll: { x: 'max-content' },
   };

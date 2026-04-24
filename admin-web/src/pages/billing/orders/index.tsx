@@ -32,14 +32,14 @@ export default function BillingOrdersPage() {
       dataIndex: 'order_no',
       key: 'order_no',
       width: 180,
-      render: (order_no: any) => <span className="font-mono text-sm">{order_no}</span>,
+      render: (order_no: string) => <span className="font-mono text-sm">{order_no}</span>,
     },
     {
       title: '类型',
       dataIndex: 'order_type',
       key: 'order_type',
       width: 100,
-      render: (_: any, order: any) => (
+      render: (_: unknown, order: BillingOrder) => (
         <Tag color={order.order_type === 'subscription' ? 'processing' : 'warning'}>
           {getOrderTypeLabel(order.order_type)}
         </Tag>
@@ -50,14 +50,14 @@ export default function BillingOrdersPage() {
       dataIndex: 'amount',
       key: 'amount',
       width: 100,
-      render: (_: any, order: any) => formatOrderAmount(order),
+      render: (_: unknown, order: BillingOrder) => formatOrderAmount(order),
     },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
       width: 100,
-      render: (_: any, order: any) => {
+      render: (_: unknown, order: BillingOrder) => {
         const statusColorMap: Record<string, string> = {
           pending: 'warning',
           paid: 'success',
@@ -76,14 +76,14 @@ export default function BillingOrdersPage() {
       dataIndex: 'organization_id',
       key: 'organization_id',
       width: 200,
-      render: (organization_id: any) => organization_id ?? '-',
+      render: (organization_id: string | null) => organization_id ?? '-',
     },
     {
       title: '创建时间',
       dataIndex: 'created_at',
       key: 'created_at',
       width: 180,
-      render: (created_at: any) => new Date(created_at).toLocaleString('zh-CN'),
+      render: (created_at: string) => new Date(created_at).toLocaleString('zh-CN'),
     },
   ];
 
@@ -91,7 +91,7 @@ export default function BillingOrdersPage() {
     dataSource: orders,
     columns,
     loading,
-    rowKey: (record: any) => record.id,
+    rowKey: (record: BillingOrder) => record.id,
     pagination: {
       current: page + 1,
       pageSize,

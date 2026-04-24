@@ -53,7 +53,7 @@ export default function AdminOrganizationsPage() {
       dataIndex: 'name',
       key: 'name',
       width: 200,
-      render: (name: any, org: any) => (
+      render: (name: string, org: AdminOrganization) => (
         <Link
           to={`/organizations/${org.id}`}
           className="font-medium text-blue-600 hover:underline"
@@ -69,7 +69,7 @@ export default function AdminOrganizationsPage() {
       dataIndex: 'is_personal',
       key: 'is_personal',
       width: 100,
-      render: (is_personal: any) => {
+      render: (is_personal: boolean) => {
         const config = is_personal
           ? BOOLEAN_YES_NO_CONFIG.yes
           : BOOLEAN_YES_NO_CONFIG.no;
@@ -81,7 +81,7 @@ export default function AdminOrganizationsPage() {
       dataIndex: 'is_active',
       key: 'is_active',
       width: 100,
-      render: (is_active: any) => {
+      render: (is_active: boolean) => {
         const config = is_active
           ? ORG_STATUS_CONFIG.active
           : ORG_STATUS_CONFIG.inactive;
@@ -93,13 +93,13 @@ export default function AdminOrganizationsPage() {
       dataIndex: 'created_at',
       key: 'created_at',
       width: 180,
-      render: (created_at: any) => formatDateTime(created_at),
+      render: (created_at: string) => formatDateTime(created_at),
     },
     {
       title: adminMessages.organizations.columns.actions,
       key: 'actions',
       width: 80,
-      render: (_: any, org: any) => {
+      render: (_: unknown, org: AdminOrganization) => {
         const menuItems = [
           {
             key: 'detail',
@@ -140,7 +140,7 @@ export default function AdminOrganizationsPage() {
   const tableProps: TableProps = {
     dataSource: organizations ?? [],
     columns,
-    rowKey: (record: any) => record.id,
+    rowKey: (record: AdminOrganization) => record.id,
     pagination: false,
     scroll: { x: 'max-content' },
   };

@@ -102,7 +102,7 @@ export default function TenantDetailPage() {
     key: string;
     title: string;
     width?: number;
-    render: (_: any, record: Lease) => React.ReactNode;
+    render: (_: unknown, record: Lease) => React.ReactNode;
   }> = [
     {
       key: 'room',
