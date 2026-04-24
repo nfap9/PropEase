@@ -1,4 +1,4 @@
-import { useRenew } from '@/hooks/use-lease-operations';
+import { useRenew } from '@/pages/leases/hooks/use-lease-operations';
 import { Button, Drawer, Input, DatePicker, Form } from 'antd';
 import type { RenewFormData } from '@/types';
 

@@ -1,4 +1,4 @@
-import { useSettleLease } from '@/hooks/use-lease-operations';
+import { useSettleLease } from '@/pages/leases/hooks/use-lease-operations';
 import { Button, Drawer, Input, Alert, Card, Form, InputNumber } from 'antd';
 import { AlertTriangle } from 'lucide-react';
 import type { SettleLeaseFormData } from '@/types';

@@ -1,4 +1,4 @@
-import { useChangeUtilityRates } from '@/hooks/use-lease-operations';
+import { useChangeUtilityRates } from '@/pages/leases/hooks/use-lease-operations';
 import { Button, Drawer, Form, InputNumber, Select } from 'antd';
 import type { ChangeUtilityRatesFormData } from '@/types';
 

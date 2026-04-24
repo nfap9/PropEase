@@ -9,7 +9,7 @@ import { LEASES } from '@/constants/leases';
 import { useLeasesPage } from './hooks/use-leases-page';
 import { LeaseDeleteDialog, LeaseEditDialog, LeaseTerminateDialog } from '@/pages/leases/components/lease-dialogs';
 import { LeaseFilters } from '@/pages/leases/components/lease-filters';
-import { buildLeaseEditFormValues, getLeaseDisplayInfo } from '@/hooks/leases';
+import { buildLeaseEditFormValues, getLeaseDisplayInfo } from '@/pages/leases/hooks/leases';
 import { filterEmptyStrings } from '@/utils/form';
 import type { LeaseEditFormData } from '@/types';
 

@@ -1,6 +1,6 @@
 import { Card } from 'antd';
 import { Receipt } from 'lucide-react';
-import { useBillStatusCard } from '@/hooks/dashboard-bill-status';
+import { useBillStatusCard } from '@/pages/dashboard/hooks/dashboard-bill-status';
 import { tenantMessages } from '@/i18n';
 
 function formatCurrency(value: number) {

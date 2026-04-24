@@ -1,6 +1,6 @@
 import { Card, Tag } from 'antd';
 import { Home } from 'lucide-react';
-import { useRoomStatusCard } from '@/hooks/dashboard-room-status';
+import { useRoomStatusCard } from '@/pages/dashboard/hooks/dashboard-room-status';
 import { tenantMessages } from '@/i18n';
 
 function RoomStatusCard({ orgId }: { orgId: string }) {

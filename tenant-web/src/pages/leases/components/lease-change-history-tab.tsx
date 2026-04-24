@@ -1,5 +1,5 @@
 
-import { useLeaseChangeLogs } from '@/hooks/use-lease-operations';
+import { useLeaseChangeLogs } from '@/pages/leases/hooks/use-lease-operations';
 import { LeaseChangeLogs } from './lease-change-logs';
 import { Loader2 } from 'lucide-react';
 

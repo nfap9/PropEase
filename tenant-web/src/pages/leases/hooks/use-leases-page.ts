@@ -4,8 +4,8 @@ import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import type { Lease, LeaseEditFormData, LeaseFiltersState } from '@/types';
 import { createLeaseColumns } from '@/pages/leases/components/columns';
-import { useLeasesData } from '@/hooks/leases';
-import { filterLeases, buildLeaseEditFormValues, getLeaseDisplayInfo } from '@/hooks/leases';
+import { useLeasesData } from '@/pages/leases/hooks/leases';
+import { filterLeases, buildLeaseEditFormValues, getLeaseDisplayInfo } from '@/pages/leases/hooks/leases';
 import { filterEmptyStrings } from '@/utils/form';
 import type { LeaseCreatedParams } from '@/types';
 

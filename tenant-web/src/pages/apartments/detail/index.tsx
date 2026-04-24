@@ -6,7 +6,7 @@ import { Button, Skeleton, Tabs } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import type { Room, RoomFacilities } from '@/types';
-import { useApartmentDetailData, useApartmentRoomMetrics, useRoomBatchSelection } from '@/hooks/use-apartment-detail';
+import { useApartmentDetailData, useApartmentRoomMetrics, useRoomBatchSelection } from '@/pages/apartments/hooks/use-apartment-detail';
 import { buildApartmentFormValues } from '@/utils/apartment-detail';
 import { ApartmentDetailHeader } from '@/pages/apartments/detail/components/apartment-detail-header';
 import { ApartmentOverviewTab } from '@/pages/apartments/detail/components/apartment-overview-tab';

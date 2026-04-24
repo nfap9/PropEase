@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import type { Bill, BillStatus } from '@/types';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
-import { useBillsData, useBillShare } from '@/hooks/use-bills';
+import { useBillsData, useBillShare } from '@/pages/bills/hooks/use-bills';
 import { buildBillStats, filterBillsByStatus } from '@/utils/bills';
 import { useBillFilters } from './use-bill-filters';
 import { useBillDialogState } from './use-bill-dialog-state';

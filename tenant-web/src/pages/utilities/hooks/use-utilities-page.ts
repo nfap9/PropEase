@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { RoomMissingInitialReading, UtilityReading } from '@/types';
 import type { PendingUtilityBillRow } from '@/types/utilities';
-import { useUtilitiesData, useMonthStats } from '@/hooks/use-utilities';
+import { useUtilitiesData, useMonthStats } from '@/pages/utilities/hooks/use-utilities';
 
 export interface UtilitiesPageState {
   // Data (from useUtilitiesData)

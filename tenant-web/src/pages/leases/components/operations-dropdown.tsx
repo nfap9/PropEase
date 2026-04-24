@@ -15,7 +15,7 @@ import { ChangeUtilityRatesSheet } from './operation-sheets/change-utility-rates
 import { SettleLeaseSheet } from './operation-sheets/settle-lease-sheet';
 import { UpdateTenantDialog } from './operation-dialogs/update-tenant-dialog';
 import { ChangeDepositDialog } from './operation-dialogs/change-deposit-dialog';
-import { useUpdateTenant, useChangeDeposit } from '@/hooks/use-lease-operations';
+import { useUpdateTenant, useChangeDeposit } from '@/pages/leases/hooks/use-lease-operations';
 
 /** 预置费用类型 */
 const PREDEFINED_FEE_TYPES = [
