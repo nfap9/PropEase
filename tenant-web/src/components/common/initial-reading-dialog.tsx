@@ -1,11 +1,7 @@
 import { Link } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Modal, Button, Input, DatePicker, Form } from 'antd';
-import { utilitiesApi } from '@/api/utilities';
-import { filterEmptyStrings } from '@/utils/form';
-import { getErrorMessage } from '@/utils/error';
-import { toast } from 'sonner';
 import { Droplets, Zap } from 'lucide-react';
+import { useInitialReadingDialog } from './use-initial-reading-dialog';
 
 export interface InitialReadingDialogProps {
   orgId: string;
@@ -29,53 +25,16 @@ export function InitialReadingDialog({
   onSuccess,
 }: InitialReadingDialogProps) {
   const [form] = Form.useForm();
-  const start = new Date(startDate);
-  const periodYear = start.getFullYear();
-  const periodMonth = start.getMonth() + 1;
-  const defaultReadingDate = isHistoricalLeaseEntry
-    ? new Date().toISOString().split('T')[0]
-    : startDate.includes('T')
-      ? startDate.split('T')[0]
-      : startDate;
 
-  const queryClient = useQueryClient();
-  const saveMutation = useMutation({
-    mutationFn: (data: Record<string, unknown>) =>
-      utilitiesApi.create(
-        filterEmptyStrings({
-          room_id: roomId,
-          period_year: periodYear,
-          period_month: periodMonth,
-          reading_date: data.reading_date as string,
-          water_reading: data.water_reading as number | undefined,
-          electricity_reading: data.electricity_reading as number | undefined,
-        })
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['utilities', orgId] });
-      onOpenChange(false);
-      form.resetFields();
-      toast.success('初始水电读数已录入');
-      onSuccess?.();
-    },
-    onError: (error: unknown) => toast.error(getErrorMessage(error, '录入失败，请重试')),
+  const { handleSave, handleSkip, isPending } = useInitialReadingDialog({
+    orgId,
+    roomId,
+    startDate,
+    open,
+    onOpenChange,
+    onSuccess,
+    form,
   });
-
-  const handleSkip = () => {
-    onOpenChange(false);
-    onSuccess?.();
-  };
-
-  const handleSubmit = () => {
-    const values = form.getFieldsValue();
-    if (values.water_reading == null && values.electricity_reading == null) {
-      handleSkip();
-      return;
-    }
-    form.validateFields().then(() => {
-      saveMutation.mutate(values);
-    });
-  };
 
   return (
     <Modal
@@ -84,8 +43,8 @@ export function InitialReadingDialog({
       title="录入初始水电读数"
       footer={[
         <Button key="skip" variant="text" onClick={handleSkip}>跳过</Button>,
-        <Button key="submit" type="primary" loading={saveMutation.isPending} onClick={handleSubmit}>
-          {saveMutation.isPending ? '保存中...' : '保存'}
+        <Button key="submit" type="primary" loading={isPending} onClick={handleSave}>
+          {isPending ? '保存中...' : '保存'}
         </Button>,
       ]}
     >
@@ -104,17 +63,13 @@ export function InitialReadingDialog({
         form={form}
         layout="vertical"
         className="space-y-4"
-        initialValues={{
-          reading_date: defaultReadingDate,
-          water_reading: undefined,
-          electricity_reading: undefined,
-        }}
+        initialValues={getInitialValues(startDate, isHistoricalLeaseEntry)}
       >
         <Form.Item label="房间">
           <Input value={roomDisplay} disabled />
         </Form.Item>
         <Form.Item label="月份">
-          <Input value={`${periodYear}年${periodMonth}月`} disabled />
+          <Input value={getPeriodLabel(startDate)} disabled />
         </Form.Item>
         <Form.Item
           name="reading_date"
@@ -134,4 +89,23 @@ export function InitialReadingDialog({
       </Form>
     </Modal>
   );
+}
+
+function getInitialValues(startDate: string, isHistoricalLeaseEntry: boolean) {
+  const defaultReadingDate = isHistoricalLeaseEntry
+    ? new Date().toISOString().split('T')[0]
+    : startDate.includes('T')
+      ? startDate.split('T')[0]
+      : startDate;
+
+  return {
+    reading_date: defaultReadingDate,
+    water_reading: undefined,
+    electricity_reading: undefined,
+  };
+}
+
+function getPeriodLabel(startDate: string): string {
+  const start = new Date(startDate);
+  return `${start.getFullYear()}年${start.getMonth() + 1}月`;
 }

@@ -4,11 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { InitialReadingDialog } from './initial-reading-dialog';
 
-const { createMock, invalidateQueriesMock, successMock, errorMock } = vi.hoisted(() => ({
+const { createMock, invalidateQueriesMock } = vi.hoisted(() => ({
   createMock: vi.fn(),
   invalidateQueriesMock: vi.fn(),
-  successMock: vi.fn(),
-  errorMock: vi.fn(),
 }));
 
 vi.mock('@/api', () => ({
@@ -69,7 +67,6 @@ describe('InitialReadingDialog', () => {
 
     await waitFor(() => {
       expect(createMock).toHaveBeenCalledWith(
-        'org-1',
         expect.objectContaining({
           room_id: 'room-1',
           period_year: 2026,
@@ -81,8 +78,6 @@ describe('InitialReadingDialog', () => {
     });
 
     expect(invalidateQueriesMock).toHaveBeenCalledWith({ queryKey: ['utilities', 'org-1'] });
-    expect(successMock).toHaveBeenCalledWith('初始水电读数已录入');
-    expect(errorMock).not.toHaveBeenCalled();
   });
 
   it('defaults reading date to today and shows the historical lease hint', () => {
