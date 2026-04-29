@@ -117,6 +117,7 @@ router.post('/', async (req: Request, res: Response, _next: NextFunction) => {
               }
 
               effectiveEndDate = new Date(effectiveStartDate);
+              effectiveEndDate = new Date(effectiveStartDate);
               effectiveEndDate.setMonth(effectiveEndDate.getMonth() + totalMonths);
 
               const updateData: Record<string, unknown> = {

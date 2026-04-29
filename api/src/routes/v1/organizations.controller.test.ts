@@ -41,8 +41,14 @@ describe('OrganizationsController', () => {
     it('should return organizations for user', async () => {
       const mockUser = { id: 'user-1' };
       const mockOrgs = [
-        { id: 'org-1', name: 'Org 1', is_personal: false, slug: 'org-1', settings: {}, is_active: true, created_at: new Date(), updated_at: new Date(), notes: null },
-        { id: 'org-personal', name: 'Personal', is_personal: true, slug: 'personal', settings: {}, is_active: true, created_at: new Date(), updated_at: new Date(), notes: null },
+        {
+          org: { id: 'org-1', name: 'Org 1', is_personal: false, slug: 'org-1', settings: {}, is_active: true, created_at: new Date(), updated_at: new Date(), notes: null },
+          role: { name: '管理员' },
+        },
+        {
+          org: { id: 'org-personal', name: 'Personal', is_personal: true, slug: 'personal', settings: {}, is_active: true, created_at: new Date(), updated_at: new Date(), notes: null },
+          role: { name: '组织所有者' },
+        },
       ];
       vi.mocked(getConsoleUser).mockReturnValue(mockUser as any);
       vi.mocked(defaultOrgService.listByUser).mockResolvedValue(mockOrgs as any);
@@ -53,7 +59,11 @@ describe('OrganizationsController', () => {
 
       await ctrl.list(req, res, next);
 
-      expect(res._json).toHaveBeenCalledWith(mockOrgs);
+      expect(res._json).toHaveBeenCalled();
+      const result = res._json.mock.calls[0][0];
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe('org-1');
+      expect(result[0].role).toBe('管理员');
     });
 
     it('should return 401 when user not authenticated', async () => {

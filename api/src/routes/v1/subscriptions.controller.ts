@@ -331,6 +331,7 @@ export async function simulatePay(req: Request, res: Response, next: NextFunctio
         }
 
         effectiveEndDate = new Date(effectiveStartDate);
+        effectiveEndDate = new Date(effectiveStartDate);
         effectiveEndDate.setMonth(effectiveEndDate.getMonth() + totalMonths);
 
         await defaultBillingOrderRepo.updateSubscription(order.organization_id, {

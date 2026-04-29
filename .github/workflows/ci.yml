@@ -113,11 +113,10 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test
 
-      # TODO: api 测试当前有 13 个文件、64 个用例失败（代码重构后测试未同步），修复后再启用
-      # - name: Run tests
-      #   run: pnpm --filter apartment-ultra-api run test
-      #   env:
-      #     DATABASE_URL: postgresql://test:test@localhost:5432/test
+      - name: Run tests
+        run: pnpm --filter apartment-ultra-api run test
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
 
   # 租客端 Web：lint、类型检查、测试与构建
   tenant-web:

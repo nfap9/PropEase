@@ -60,7 +60,7 @@ describe('BillsController', () => {
     vi.mocked(requireOrgMembership).mockResolvedValue('org-1');
   });
 
-  describe('list', () => {
+  describe('query', () => {
     it('should return list of bills', async () => {
       const mockBills = [{ id: 'bill-1', total_amount: 1000 }];
       vi.mocked(defaultBillService.list).mockResolvedValue(mockBills as any);
@@ -69,7 +69,7 @@ describe('BillsController', () => {
       const res = createMockResponse();
       const next = createMockNext();
 
-      await ctrl.list(req, res, next);
+      await ctrl.query(req, res, next);
 
       expect(res._json).toHaveBeenCalledWith(mockBills);
     });
@@ -78,12 +78,12 @@ describe('BillsController', () => {
       vi.mocked(defaultBillService.list).mockResolvedValue([]);
 
       const req = createMockRequest({
-        query: { lease_id: 'lease-1', year: '2024', month: '6', status: 'pending' },
+        body: { lease_id: 'lease-1', year: 2024, month: 6, status: 'pending' },
       });
       const res = createMockResponse();
       const next = createMockNext();
 
-      await ctrl.list(req, res, next);
+      await ctrl.query(req, res, next);
 
       expect(defaultBillService.list).toHaveBeenCalledWith('org-1', {
         leaseId: 'lease-1',
