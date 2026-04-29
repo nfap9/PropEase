@@ -1,7 +1,7 @@
 import api from './client';
 import {
   OrganizationSubscription,
-  SubscriptionOrder,
+  BillingOrder,
   SubscribeRequest,
   SubscriptionStatus,
   OrganizationUsage,
@@ -53,16 +53,16 @@ export const subscriptionsApi = {
   },
 
   // Orders
-  createOrder: async (orgId: string, data: { service_id: string; billing_months?: number }): Promise<SubscriptionOrder> => {
-    const response = await api.post<SubscriptionOrder>(
+  createOrder: async (orgId: string, data: { service_id: string; billing_months?: number }): Promise<BillingOrder> => {
+    const response = await api.post<BillingOrder>(
       `/subscriptions/organizations/${orgId}/orders`,
       data
     );
     return response.data;
   },
 
-  getOrder: async (orgId: string, orderId: string): Promise<SubscriptionOrder> => {
-    const response = await api.get<SubscriptionOrder>(
+  getOrder: async (orgId: string, orderId: string): Promise<BillingOrder> => {
+    const response = await api.get<BillingOrder>(
       `/subscriptions/organizations/${orgId}/orders/${orderId}`
     );
     return response.data;

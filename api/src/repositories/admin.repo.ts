@@ -126,7 +126,6 @@ export interface AdminRepository {
   // Platform Config
   getPlatformConfig(): Promise<PlatformConfig | null>;
   upsertPlatformConfig(brand: InputJsonValue): Promise<PlatformConfig>;
-  updateUsagePricingConfig(usagePricing: InputJsonValue): Promise<PlatformConfig>;
 }
 
 /**
@@ -352,14 +351,6 @@ export function createAdminRepository(db: DbClient): AdminRepository {
         where: { id: 'default' },
         create: { id: 'default', brand },
         update: { brand },
-      });
-    },
-
-    updateUsagePricingConfig: async (usagePricing: InputJsonValue) => {
-      return db.platformConfig.upsert({
-        where: { id: 'default' },
-        create: { id: 'default', usage_pricing: usagePricing },
-        update: { usage_pricing: usagePricing },
       });
     },
 

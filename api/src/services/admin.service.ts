@@ -16,6 +16,7 @@ import { NotFoundMessages } from '../messages.js';
 import { hashPassword, verifyPassword } from '../utils/security.js';
 import { createAdminAccessToken } from '../utils/jwt.js';
 import { toPrismaInputJsonValue } from '../utils/json.js';
+import { defaultBillingService } from './billing.service.js';
 import { ulid } from 'ulid';
 import {
   defaultServiceProductService,
@@ -658,28 +659,43 @@ export function createAdminService(
     },
 
     getUsagePricing: async () => {
-      const config = await getRepo().getPlatformConfig();
-      const pricing = (config?.usage_pricing as Record<string, unknown>) ?? {};
+      const pricings = await defaultBillingService.getUsagePricing();
+      const result: Record<string, number> = {};
+      for (const p of pricings) {
+        result[`price_per_${p.unit_type}`] = p.price_per_unit;
+      }
       return {
-        price_per_org: (pricing.price_per_org as number) ?? 0,
-        price_per_apartment: (pricing.price_per_apartment as number) ?? 0,
-        price_per_room: (pricing.price_per_room as number) ?? 0,
-        price_per_member: (pricing.price_per_member as number) ?? 0,
+        price_per_org: result.price_per_org ?? 0,
+        price_per_apartment: result.price_per_apartment ?? 0,
+        price_per_room: result.price_per_room ?? 0,
+        price_per_member: result.price_per_member ?? 0,
       };
     },
 
     updateUsagePricing: async (data: UpdateUsagePricingInput) => {
-      const config = await getRepo().getPlatformConfig();
-      const current = (config?.usage_pricing as Record<string, unknown>) ?? {};
-      const updated = {
-        price_per_org: data.price_per_org ?? (current.price_per_org as number) ?? 0,
-        price_per_apartment:
-          data.price_per_apartment ?? (current.price_per_apartment as number) ?? 0,
-        price_per_room: data.price_per_room ?? (current.price_per_room as number) ?? 0,
-        price_per_member: data.price_per_member ?? (current.price_per_member as number) ?? 0,
+      const pricing = [];
+      if (data.price_per_org !== undefined) {
+        pricing.push({ unit_type: 'org', price_per_unit: data.price_per_org });
+      }
+      if (data.price_per_apartment !== undefined) {
+        pricing.push({ unit_type: 'apartment', price_per_unit: data.price_per_apartment });
+      }
+      if (data.price_per_room !== undefined) {
+        pricing.push({ unit_type: 'room', price_per_unit: data.price_per_room });
+      }
+      if (data.price_per_member !== undefined) {
+        pricing.push({ unit_type: 'member', price_per_unit: data.price_per_member });
+      }
+      if (pricing.length === 0) {
+        throw createAppError(400, '至少需要提供一个价格字段');
+      }
+      await defaultBillingService.updateUsagePricing(pricing);
+      return {
+        price_per_org: data.price_per_org ?? 0,
+        price_per_apartment: data.price_per_apartment ?? 0,
+        price_per_room: data.price_per_room ?? 0,
+        price_per_member: data.price_per_member ?? 0,
       };
-      await getRepo().updateUsagePricingConfig(toPrismaInputJsonValue(updated));
-      return updated;
     },
 
     getPlatformConfig: async () => {

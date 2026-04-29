@@ -39,7 +39,7 @@ function SubscriptionPayContent() {
     enabled: !!orgId && !!orderId,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      if (status === 'paid' || status === 'failed' || status === 'cancelled') return false;
+      if (status === 'paid' || status === 'cancelled' || status === 'expired') return false;
       return POLL_INTERVAL_MS;
     },
   });
@@ -113,9 +113,9 @@ function SubscriptionPayContent() {
     );
   }
 
-  if (order.status === 'failed' || order.status === 'cancelled') {
+  if (order.status === 'cancelled' || order.status === 'expired') {
     const config =
-      order.status === 'cancelled' ? ORDER_STATUS_CONFIG.cancelled : ORDER_STATUS_CONFIG.failed;
+      order.status === 'cancelled' ? ORDER_STATUS_CONFIG.cancelled : ORDER_STATUS_CONFIG.expired;
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-2">
@@ -152,16 +152,9 @@ function SubscriptionPayContent() {
     <div className="space-y-6">
         <Card className="mx-auto max-w-md" title={tenantI18n.t('settings.subscriptionPage.pay.orderNumber', { orderNo: order.order_no })}>
           <div className="mb-4 text-muted-foreground">
-            {order.plan?.name ? (
-              tenantI18n.t('settings.subscriptionPage.pay.orderAmountWithPlan', {
-                planName: order.plan.name,
-                amount: Number(order.amount).toFixed(2),
-              })
-            ) : (
-              tenantI18n.t('settings.subscriptionPage.pay.orderAmountOnly', {
-                amount: Number(order.amount).toFixed(2),
-              })
-            )}
+            {tenantI18n.t('settings.subscriptionPage.pay.orderAmountOnly', {
+              amount: Number(order.amount).toFixed(2),
+            })}
             ，{tenantMessages.settings.subscriptionPage.pay.autoRefresh}
           </div>
           <div className="flex flex-col items-center gap-6">
@@ -179,7 +172,7 @@ function SubscriptionPayContent() {
                   {tenantMessages.settings.subscriptionPage.pay.qrHint}
                 </p>
               </>
-            ) : order.simulate_pay_available || import.meta.env.MODE === 'development' ? (
+            ) : import.meta.env.MODE === 'development' ? (
               <div className="flex flex-col items-center gap-4 py-4">
                 <p className="text-center text-muted-foreground">
                   {tenantMessages.settings.subscriptionPage.pay.devHint}

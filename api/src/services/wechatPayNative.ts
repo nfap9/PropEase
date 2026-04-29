@@ -44,7 +44,7 @@ function buildAuthorization(method: string, path: string, body: string): string 
 }
 
 export interface CreateNativeOrderParams {
-  /** 商户订单号，与本地 SubscriptionOrder.order_no 一致 */
+  /** 商户订单号，与本地 BillingOrder.order_no 一致 */
   out_trade_no: string;
   /** 商品描述，用户账单可见 */
   description: string;

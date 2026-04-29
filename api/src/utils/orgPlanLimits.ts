@@ -65,7 +65,7 @@ interface LimitsSnapshot {
  * 免费服务订阅若有 limits_snapshot 则优先使用（注册时快照，不受运营后续修改影响）
  * userId 可选：提供时叠加用户按量购买额度（用户级，所有组织共享）
  */
-export async function getEffectivePlanLimits(orgId: string, userId?: string): Promise<PlanLimits> {
+export async function getEffectivePlanLimits(orgId: string): Promise<PlanLimits> {
   const sub = await prisma.organizationSubscription.findUnique({
     where: { organization_id: orgId },
     include: { service: true },
@@ -104,25 +104,19 @@ export async function getEffectivePlanLimits(orgId: string, userId?: string): Pr
       members_count_scope: DEFAULT_FREE_LIMITS.members_count_scope as CountScope,
     };
   }
-  if (!userId) return base;
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const quotas = await prisma.usageQuota.findMany({
-    where: {
-      user_id: userId,
-      valid_from: { lte: today },
-      valid_to: { gte: today },
-    },
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const allowance = await prisma.usageAllowance.findUnique({
+    where: { organization_id_year_month: { organization_id: orgId, year, month } },
   });
-  const usageBonus = quotas.reduce(
-    (acc, q) => ({
-      orgs: acc.orgs + q.orgs,
-      apartments: acc.apartments + q.apartments,
-      rooms: acc.rooms + q.rooms,
-      members: acc.members + q.members,
-    }),
-    { orgs: 0, apartments: 0, rooms: 0, members: 0 }
-  );
+  if (!allowance) return base;
+  const usageBonus = {
+    orgs: allowance.orgs,
+    apartments: allowance.apartments,
+    rooms: allowance.rooms,
+    members: allowance.members,
+  };
   if (
     usageBonus.orgs === 0 &&
     usageBonus.apartments === 0 &&
@@ -214,16 +208,16 @@ export async function getMaxOrganizationsForUser(userId: string): Promise<number
     }
   }
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const quotas = await prisma.usageQuota.findMany({
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const allowances = await prisma.usageAllowance.findMany({
     where: {
-      user_id: userId,
-      valid_from: { lte: today },
-      valid_to: { gte: today },
-      orgs: { gt: 0 },
+      organization_id: { in: orgIds },
+      year,
+      month,
     },
   });
-  const usageOrgs = quotas.reduce((s, q) => s + q.orgs, 0);
+  const usageOrgs = allowances.reduce((s, a) => s + a.orgs, 0);
   if (usageOrgs === 0) return baseMax;
   if (baseMax === UNLIMITED_ORGS) return baseMax;
   return baseMax + usageOrgs;

@@ -57,7 +57,6 @@ describe('AdminRepository', () => {
 
   const mockApartment = { count: vi.fn() };
   const mockRoom = { count: vi.fn() };
-  const mockUsageQuotaOrder = { findMany: vi.fn() };
   const mockPlatformConfig = { findUnique: vi.fn(), upsert: vi.fn() };
 
   const mockDb = {
@@ -69,7 +68,6 @@ describe('AdminRepository', () => {
     organizationSubscription: mockOrganizationSubscription,
     apartment: mockApartment,
     room: mockRoom,
-    usageQuotaOrder: mockUsageQuotaOrder,
     platformConfig: mockPlatformConfig,
   } as unknown as Parameters<typeof createAdminRepository>[0];
   let repo: AdminRepository;
@@ -326,7 +324,7 @@ describe('AdminRepository', () => {
   describe('Platform Config', () => {
     describe('getPlatformConfig', () => {
       it('should return platform config', async () => {
-        const config = { id: 'default', brand: {}, usage_pricing: {} };
+        const config = { id: 'default', brand: {} };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mockPlatformConfig.findUnique.mockResolvedValue(config as any);
 
@@ -340,7 +338,7 @@ describe('AdminRepository', () => {
     describe('upsertPlatformConfig', () => {
       it('should upsert platform config', async () => {
         const brand = { name: 'Test' };
-        const config = { id: 'default', brand, usage_pricing: {} };
+        const config = { id: 'default', brand };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mockPlatformConfig.upsert.mockResolvedValue(config as any);
 

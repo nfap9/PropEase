@@ -44,8 +44,7 @@ export async function create(req: Request, res: Response, next: NextFunction) {
   
     const orgId = await requireOrgMembership(req);
     await requirePermission(req, orgId, 'apartment:create');
-    const user = getConsoleUser(req);
-    const limits = await getEffectivePlanLimits(orgId, user?.id);
+    const limits = await getEffectivePlanLimits(orgId);
     const apartmentsUsed = await defaultApartmentRepo.countByOrgId(orgId);
     if (apartmentsUsed >= limits.max_apartments) {
       return next(createAppError(403, `当前服务最多允许 ${limits.max_apartments} 个公寓`));
@@ -109,7 +108,7 @@ export async function createRoom(req: Request, res: Response, next: NextFunction
     await requirePermission(req, orgId, 'room:create');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const limits = await getEffectivePlanLimits(orgId, user.id);
+    const limits = await getEffectivePlanLimits(orgId);
     const roomsUsed = await getRoomsUsedForLimitCheck(orgId, user.id);
     if (roomsUsed + 1 > limits.max_rooms) {
       return next(createAppError(403, `当前服务最多允许 ${limits.max_rooms} 个房间`));
@@ -158,7 +157,7 @@ export async function batchCreateRooms(req: Request, res: Response, next: NextFu
     await requirePermission(req, orgId, 'room:create');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const limits = await getEffectivePlanLimits(orgId, user.id);
+    const limits = await getEffectivePlanLimits(orgId);
     const roomsUsed = await getRoomsUsedForLimitCheck(orgId, user.id);
     const parsed = RoomBatchSchema.safeParse(req.body);
     if (!parsed.success) return next(createAppError(422, '参数校验失败'));

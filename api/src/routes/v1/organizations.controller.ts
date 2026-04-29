@@ -197,7 +197,7 @@ export async function addMember(req: Request, res: Response, next: NextFunction)
     await requirePermission(req, orgId, 'member:create');
     const user = getConsoleUser(req);
     if (!user) return next(createAppError(401, '未授权或登录已过期'));
-    const limits = await getEffectivePlanLimits(orgId, user.id);
+    const limits = await getEffectivePlanLimits(orgId);
     const members_used = await getMembersUsedForLimitCheck(orgId, user.id);
     if (members_used >= limits.max_members)
       return next(createAppError(403, `当前服务最多允许 ${limits.max_members} 名成员`));
@@ -266,7 +266,7 @@ export async function getUsage(req: Request, res: Response, next: NextFunction) 
     const [rooms_used, members_used, limits, planRecord, orgCount, maxOrgs] = await Promise.all([
       getRoomsUsedForLimitCheck(orgId, user.id),
       getMembersUsedForLimitCheck(orgId, user.id),
-      getEffectivePlanLimits(orgId, user.id),
+      getEffectivePlanLimits(orgId),
       getEffectivePlanForOrg(orgId),
       userOrganizationCount(user.id),
       getMaxOrganizationsForUser(user.id),

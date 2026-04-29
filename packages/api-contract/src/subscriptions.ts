@@ -65,53 +65,6 @@ export interface SubscriptionStatus {
   days_remaining: number | null;
 }
 
-/** 订阅订单状态 */
-export type SubscriptionOrderStatus =
-  | 'pending'
-  | 'paid'
-  | 'failed'
-  | 'cancelled'
-  | 'refunded';
-
-/** 订阅订单（GET 订单详情时可能包含 plan） */
-export interface SubscriptionOrder {
-  id: string;
-  order_no: string;
-  organization_id: string;
-  plan_id: string;
-  billing_cycle: 'monthly' | 'yearly';
-  /** 购买的月数 */
-  billing_months: number;
-  /** 优惠后金额 */
-  amount: number;
-  /** 原价（优惠前） */
-  original_amount: number | null;
-  currency: string;
-  status: SubscriptionOrderStatus;
-  code_url: string | null;
-  expires_at: string;
-  paid_at: string | null;
-  /** 优惠活动 ID */
-  promotion_id: string | null;
-  created_at: string;
-  /** 订单详情接口返回时包含服务信息 */
-  plan?: SubscriptionPlan | null;
-  /** 优惠活动信息（可选） */
-  promotion?: { id: string; name: string; type: string } | null;
-  /** 开发环境且无 code_url 时为 true，表示可调用模拟支付接口（向后兼容） */
-  simulate_pay_available?: boolean;
-}
-
-/** 创建订阅订单 */
-export interface SubscriptionOrderCreate {
-  plan_id: string;
-  billing_cycle?: 'monthly' | 'yearly';
-  /** 购买月数（默认1） */
-  billing_months?: number;
-  /** 优惠活动 ID（可选） */
-  promotion_id?: string;
-}
-
 /** 使用量统计项 */
 export interface UsageQuotaItem {
   /** 配置上限，-1 表示无限制 */

@@ -43,9 +43,7 @@ export type {
   OrganizationSubscription,
   SubscribeRequest,
   SubscriptionStatus,
-  SubscriptionOrderStatus,
-  SubscriptionOrder,
-  SubscriptionOrderCreate,
+
   UsageQuotaItem,
   OrganizationUsageStats,
 } from './subscriptions.js';
@@ -128,8 +126,7 @@ export type {
 /** 按量购买 */
 export type {
   UsagePricing,
-  UsageQuota,
-  UsageQuotaOrder,
+
 } from './usage.js';
 
 /** 通知 */

@@ -1,8 +1,7 @@
 import api from './client';
 import {
   OrganizationSubscription,
-  SubscriptionOrder,
-  SubscriptionOrderCreate,
+  BillingOrder,
   SubscribeRequest,
   SubscriptionStatus,
 } from '@/types';
@@ -72,12 +71,13 @@ export const subscriptionsApi = {
   },
 
   // 订阅支付订单（付费服务）
-  createOrder: async (orgId: string, data: SubscriptionOrderCreate): Promise<SubscriptionOrder> => {
-    const serviceId = 'service_id' in data && typeof data.service_id === 'string'
-      ? data.service_id
-      : data.plan_id;
+  createOrder: async (
+    orgId: string,
+    data: { service_id?: string; plan_id?: string; billing_months?: number; billing_cycle?: string }
+  ): Promise<BillingOrder> => {
+    const serviceId = data.service_id ?? data.plan_id;
     const billingMonths = data.billing_months ?? (data.billing_cycle === 'yearly' ? 12 : 1);
-    const response = await api.post<SubscriptionOrder>(
+    const response = await api.post<BillingOrder>(
       `/subscriptions/organizations/${orgId}/orders`,
       {
         service_id: serviceId,
@@ -87,8 +87,8 @@ export const subscriptionsApi = {
     return response.data;
   },
 
-  getOrder: async (orgId: string, orderId: string): Promise<SubscriptionOrder> => {
-    const response = await api.get<SubscriptionOrder>(
+  getOrder: async (orgId: string, orderId: string): Promise<BillingOrder> => {
+    const response = await api.get<BillingOrder>(
       `/subscriptions/organizations/${orgId}/orders/${orderId}`
     );
     return response.data;

@@ -40,7 +40,7 @@ vi.mock('../lib/prisma.js', () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
-    subscriptionOrder: {
+    billingOrder: {
       findFirst: vi.fn(),
       findMany: vi.fn(),
       create: vi.fn(),
