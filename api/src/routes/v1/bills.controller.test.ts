@@ -32,6 +32,7 @@ vi.mock('../../services/tenant.service.js', () => ({
 
 vi.mock('../../utils/orgContext.js', () => ({
   requireOrgMembership: vi.fn(),
+  requirePermission: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../../utils/billExports.js', () => ({

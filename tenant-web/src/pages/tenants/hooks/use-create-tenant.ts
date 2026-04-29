@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { tenantsApi } from '@/api/tenants';
 import { filterEmptyStrings } from '@/utils/form';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage } from '@apartment-ultra/web-shared';
 import type { Tenant } from '@/types';
 
 export type CreateTenantData = Partial<Record<string, unknown>>;

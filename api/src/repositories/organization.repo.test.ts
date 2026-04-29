@@ -227,7 +227,7 @@ describe('OrganizationRepository', () => {
 
       expect(mockOrganizationMember.findMany).toHaveBeenCalledWith({
         where: { organization_id: sampleOrg.id },
-        include: { user: true },
+        include: { user: true, role: true },
       });
       expect(result).toHaveLength(1);
       expect(result[0].user).toEqual(sampleUser);

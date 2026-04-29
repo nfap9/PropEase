@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { apartmentsApi } from '@/api/apartments';
 import { leasesApi } from '@/api/leases';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage } from '@apartment-ultra/web-shared';
 import { filterEmptyStrings } from '@/utils/form';
 import type { LeaseEditFormData, LeaseFiltersState } from '@/types';
 import type { Lease } from '@/types';

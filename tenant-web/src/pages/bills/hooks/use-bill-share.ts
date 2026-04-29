@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { shareBillSummary } from '@/utils/bills-share';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage } from '@apartment-ultra/web-shared';
 import type { Bill, BillFeeItem } from '@/types';
 import { tenantMessages } from '@/constants/messages';
 

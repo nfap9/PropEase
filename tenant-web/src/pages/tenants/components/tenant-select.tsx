@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Select } from 'antd';
 import { tenantsApi } from '@/api/tenants';
-import { cn } from '@/utils';
+import { cn } from '@apartment-ultra/web-shared';
 
 interface TenantSelectProps {
   orgId: string;

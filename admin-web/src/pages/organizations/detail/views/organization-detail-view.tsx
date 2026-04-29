@@ -5,7 +5,7 @@ import { Button, Tag, Card } from 'antd';
 import { Skeleton } from 'antd';
 import { ORG_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/utils/status';
 import { adminApiEndpoints } from '@/api/admin-client';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage } from '@apartment-ultra/web-shared';
 import { ArrowLeft, Power, PowerOff } from 'lucide-react';
 import { formatDateTime } from '@/utils/date';
 import { adminMessages } from '@/i18n';

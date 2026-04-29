@@ -19,7 +19,6 @@ jobs:
       api: ${{ steps.filter.outputs.api }}
       tenant_web: ${{ steps.filter.outputs.tenant_web }}
       admin_web: ${{ steps.filter.outputs.admin_web }}
-      mobile: ${{ steps.filter.outputs.mobile }}
       docker: ${{ steps.filter.outputs.docker }}
     steps:
       - name: Checkout code
@@ -40,10 +39,6 @@ jobs:
               - 'pnpm-lock.yaml'
             admin_web:
               - 'admin-web/**'
-              - 'packages/api-contract/**'
-              - 'pnpm-lock.yaml'
-            mobile:
-              - 'mobile/**'
               - 'packages/api-contract/**'
               - 'pnpm-lock.yaml'
             docker:
@@ -118,6 +113,12 @@ jobs:
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test
 
+      # TODO: api 测试当前有 13 个文件、64 个用例失败（代码重构后测试未同步），修复后再启用
+      # - name: Run tests
+      #   run: pnpm --filter apartment-ultra-api run test
+      #   env:
+      #     DATABASE_URL: postgresql://test:test@localhost:5432/test
+
   # 租客端 Web：lint、类型检查、测试与构建
   tenant-web:
     name: tenant-web
@@ -161,6 +162,9 @@ jobs:
 
       - name: Type check
         run: pnpm --filter apartment-ultra-tenant run type-check
+
+      - name: Run tests
+        run: pnpm --filter apartment-ultra-tenant run test:run
 
       - name: Build
         run: pnpm --filter apartment-ultra-tenant run build
@@ -211,51 +215,13 @@ jobs:
       - name: Type check
         run: pnpm --filter apartment-ultra-admin run type-check
 
+      - name: Run tests
+        run: pnpm --filter apartment-ultra-admin run test:run
+
       - name: Build
         run: pnpm --filter apartment-ultra-admin run build
         env:
           VITE_API_URL: http://localhost:8000/api/v1
-
-  # 移动端（mobile）：当前按实验性包单独治理，只接入最小 type-check
-  mobile:
-    name: mobile
-    needs: [changes]
-    if: needs.changes.outputs.mobile == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "pnpm"
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Restore api-contract build
-        id: contract-cache-mobile
-        uses: actions/cache@v4
-        with:
-          path: packages/api-contract/dist
-          key: contract-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'packages/api-contract/**') }}
-          restore-keys: |
-            contract-${{ runner.os }}-
-
-      - name: Build api-contract
-        if: steps.contract-cache-mobile.outputs.cache-hit != 'true'
-        run: pnpm --filter @apartment-ultra/api-contract run build
-
-      - name: Type check
-        run: pnpm --filter mobile run type-check
 
   # Docker 构建验证并推送到 GHCR（仅 push 到 main 时运行）
   docker:

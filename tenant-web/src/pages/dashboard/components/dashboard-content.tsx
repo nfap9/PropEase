@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@apartment-ultra/web-shared';
 import { reportsApi } from '@/api/reports';
 import { useAuth } from '@/contexts/auth';
 import { useBrandConfig } from '@/contexts/brand-config';

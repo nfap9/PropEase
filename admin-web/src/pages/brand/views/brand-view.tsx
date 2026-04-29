@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, Input, Button, Card, Skeleton } from 'antd';
 import { toast } from 'sonner';
 import { adminApiEndpoints } from '@/api/admin-client';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage } from '@apartment-ultra/web-shared';
 import { adminMessages } from '@/i18n';
 
 type PlatformConfigForm = {

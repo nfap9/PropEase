@@ -7,11 +7,21 @@ import { createRoomService, type RoomService } from './room.service.js';
 import type { RoomRepository } from '../repositories/room.repo.js';
 import type { ApartmentRepository } from '../repositories/apartment.repo.js';
 
+vi.mock('../../lib/prisma.js', () => ({
+  prisma: {
+    roomPricing: {
+      create: vi.fn().mockResolvedValue({}),
+      upsert: vi.fn().mockResolvedValue({}),
+    },
+  },
+}));
+
 describe('RoomService', () => {
   // Mock Room Repository
   const mockRepo: RoomRepository = {
     findById: vi.fn(),
     findByIdWithApartment: vi.fn(),
+    findByIdWithLeases: vi.fn(),
     findByApartmentId: vi.fn(),
     findByOrgId: vi.fn(),
     findByOrgIdWithLeases: vi.fn(),
@@ -188,6 +198,7 @@ describe('RoomService', () => {
     it('should update room when found', async () => {
       vi.mocked(mockRepo.findByIdWithApartment).mockResolvedValue(mockRoomWithApartment as any);
       vi.mocked(mockRepo.update).mockResolvedValue({ ...mockRoom, room_number: '201' } as any);
+      vi.mocked(mockRepo.findByIdWithLeases).mockResolvedValue({ ...mockRoom, room_number: '201', leases: [] } as any);
 
       const result = await service.update(orgId, roomId, { room_number: '201' });
 

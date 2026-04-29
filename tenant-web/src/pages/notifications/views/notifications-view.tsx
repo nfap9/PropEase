@@ -8,7 +8,7 @@
 import React from 'react';
 import { Button } from 'antd';
 import { CheckCheck, Loader2, BellOff, ArrowRight, Clock } from 'lucide-react';
-import { cn } from '@/utils';
+import { cn } from '@apartment-ultra/web-shared';
 import { formatDateTime, formatRelativeTime } from '@/utils/date';
 import { tenantMessages } from '@/i18n';
 import {

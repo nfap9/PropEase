@@ -4,7 +4,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@apartment-ultra/api-contract": ["../packages/api-contract/src/index.ts"]
-    }
+    },
+    "types": ["vitest/globals", "@testing-library/jest-dom"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts"],
   "exclude": ["node_modules"]

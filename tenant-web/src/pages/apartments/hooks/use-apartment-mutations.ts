@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { apartmentsApi } from '@/api/apartments';
 import { useAuth } from '@/contexts/auth';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage } from '@apartment-ultra/web-shared';
 import { filterEmptyStrings } from '@/utils/form';
 import type { ApartmentFormData } from '@/pages/apartments/components';
 

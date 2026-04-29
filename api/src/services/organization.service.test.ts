@@ -12,6 +12,7 @@ describe('OrganizationService', () => {
     update: vi.fn(),
     delete: vi.fn(),
     findMember: vi.fn(),
+    findMemberWithRole: vi.fn(),
     findMembersByOrgId: vi.fn(),
     createMember: vi.fn(),
     updateMember: vi.fn(),

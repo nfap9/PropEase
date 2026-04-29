@@ -5,7 +5,7 @@ import { Tag } from 'antd';
 import { Button } from 'antd';
 import { ROOM_STATUS_CONFIG } from '@/constants/status';
 import { Room, RoomStatus } from '@/types';
-import { cn } from '@/utils';
+import { cn } from '@apartment-ultra/web-shared';
 
 interface RoomListRowProps {
   room: Room;

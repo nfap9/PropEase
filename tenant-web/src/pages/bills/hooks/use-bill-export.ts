@@ -6,7 +6,7 @@
  */
 import { toast } from 'sonner';
 import { billsApi } from '@/api/bills';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage } from '@apartment-ultra/web-shared';
 import { buildBillPdfFilename, buildBillsExcelFilename, downloadBlob } from '@/utils/bills';
 import type { BillStatus } from '@/types';
 import { tenantMessages } from '@/constants/messages';

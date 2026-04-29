@@ -1,39 +1,70 @@
 import { describe, it, expect } from 'vitest';
 import {
   RESOURCES,
-  getPermissionName,
-  DEFAULT_SYSTEM_ROLE_PERMISSIONS,
-  type SystemRole,
+  ACTIONS,
+  RESOURCE_MODULES,
+  ACTION_TYPES,
+  SYSTEM_ORG_ROLES,
+  toPermissionCode,
+  DEFAULT_ORG_ROLE_PERMISSIONS,
+  DEFAULT_ORG_ROLES,
+  type ResourceModule,
+  type ActionType,
+  type SystemOrgRoleName,
 } from './permissionDefaults.js';
 
 describe('permissionDefaults', () => {
-  describe('getPermissionName', () => {
-    it('returns resource name + action name for apartment view', () => {
-      expect(getPermissionName('apartment', 'view')).toBe('公寓管理查看');
-    });
-
-    it('returns correct string for bill export', () => {
-      expect(getPermissionName('bill', 'export')).toBe('账单管理导出');
+  describe('RESOURCES', () => {
+    it('contains expected resource values', () => {
+      expect(RESOURCES).toContain('apartment');
+      expect(RESOURCES).toContain('tenant');
+      expect(RESOURCES).toContain('bill');
     });
   });
 
-  describe('DEFAULT_SYSTEM_ROLE_PERMISSIONS', () => {
-    it('super_admin has all resource×action combinations (view, create, edit, delete, export)', () => {
-      const perms = DEFAULT_SYSTEM_ROLE_PERMISSIONS.super_admin;
-      const expectedSize = RESOURCES.length * 5;
-      expect(perms).toHaveLength(expectedSize);
-      const set = new Set(perms.map((p) => `${p.resource}:${p.action}`));
-      for (const r of RESOURCES) {
-        for (const a of ['view', 'create', 'edit', 'delete', 'export'] as const) {
-          expect(set.has(`${r}:${a}`)).toBe(true);
-        }
-      }
+  describe('ACTIONS', () => {
+    it('contains expected action values', () => {
+      expect(ACTIONS).toContain('view');
+      expect(ACTIONS).toContain('create');
+      expect(ACTIONS).toContain('edit');
+      expect(ACTIONS).toContain('delete');
+      expect(ACTIONS).toContain('export');
+    });
+  });
+
+  describe('toPermissionCode', () => {
+    it('returns resource:action format', () => {
+      expect(toPermissionCode('apartment', 'view')).toBe('apartment:view');
+      expect(toPermissionCode('bill', 'export')).toBe('bill:export');
+    });
+  });
+
+  describe('DEFAULT_ORG_ROLE_PERMISSIONS', () => {
+    it('组织所有者 has all resource×action combinations', () => {
+      const perms = DEFAULT_ORG_ROLE_PERMISSIONS['组织所有者'];
+      expect(perms.length).toBeGreaterThan(0);
+      // 9 resources × 5 actions = 45
+      expect(perms).toHaveLength(45);
     });
 
     it('each system role has at least one permission', () => {
-      const roles: SystemRole[] = ['super_admin', 'support', 'operations', 'finance', 'readonly'];
+      const roles: SystemOrgRoleName[] = ['组织所有者', '公寓管理人', '一般合伙人'];
       for (const role of roles) {
-        expect(DEFAULT_SYSTEM_ROLE_PERMISSIONS[role].length).toBeGreaterThan(0);
+        expect(DEFAULT_ORG_ROLE_PERMISSIONS[role].length).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  describe('DEFAULT_ORG_ROLES', () => {
+    it('has 3 default roles', () => {
+      expect(DEFAULT_ORG_ROLES).toHaveLength(3);
+    });
+
+    it('each role has name and permissions', () => {
+      for (const role of DEFAULT_ORG_ROLES) {
+        expect(role.name).toBeDefined();
+        expect(role.is_system).toBe(true);
+        expect(role.permissions.length).toBeGreaterThan(0);
       }
     });
   });

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/auth';
-import { invalidateOrgScopedQueries } from '@/hooks/query-utils';
+import { invalidateOrgScopedQueries } from '@apartment-ultra/web-shared';
 import { Select, Modal, Button, message } from 'antd';
 import { Building2, Plus, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

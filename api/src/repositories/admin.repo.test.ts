@@ -129,7 +129,6 @@ describe('AdminRepository', () => {
 
         expect(mockAdminUser.findUnique).toHaveBeenCalledWith({
           where: { username: 'admin' },
-          include: { role: true },
         });
         expect(result).toEqual(adminWithRole);
       });
@@ -166,7 +165,6 @@ describe('AdminRepository', () => {
           skip: 0,
           take: 10,
           orderBy: [{ is_active: 'desc' }, { created_at: 'desc' }],
-          include: { role: true },
         });
         expect(result).toHaveLength(1);
       });
@@ -206,33 +204,6 @@ describe('AdminRepository', () => {
         await repo.deleteAdmin(sampleAdmin.id);
 
         expect(mockAdminUser.delete).toHaveBeenCalledWith({ where: { id: sampleAdmin.id } });
-      });
-    });
-  });
-
-  describe('Admin Roles', () => {
-    describe('listAdminRoles', () => {
-      it('should return all roles', async () => {
-        mockAdminRole.findMany.mockResolvedValue([sampleRole]);
-
-        const result = await repo.listAdminRoles();
-
-        expect(result).toEqual([sampleRole]);
-      });
-    });
-
-    describe('findAdminRoleWithUsers', () => {
-      it('should return role with users', async () => {
-        const roleWithUsers = { ...sampleRole, users: [sampleAdmin] };
-        mockAdminRole.findUnique.mockResolvedValue(roleWithUsers);
-
-        const result = await repo.findAdminRoleWithUsers(sampleRole.id);
-
-        expect(mockAdminRole.findUnique).toHaveBeenCalledWith({
-          where: { id: sampleRole.id },
-          include: { users: true },
-        });
-        expect(result?.users).toHaveLength(1);
       });
     });
   });

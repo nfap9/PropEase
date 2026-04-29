@@ -16,6 +16,7 @@
     "@ant-design/icons": "^6.1.1",
     "@apartment-ultra/api-contract": "workspace:*",
     "@apartment-ultra/web-api-client": "workspace:*",
+    "@apartment-ultra/web-shared": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-table": "catalog:",
     "antd": "^6.3.6",

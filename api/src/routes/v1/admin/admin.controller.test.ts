@@ -203,37 +203,6 @@ describe('AdminController', () => {
     });
   });
 
-  describe('listRoles', () => {
-    it('should return list of roles', async () => {
-      const mockRoles = [{ id: 'role-1', name: 'Admin' }];
-      vi.mocked(defaultAdminService.listAdminRoles).mockResolvedValue(mockRoles as any);
-
-      const req = createMockRequest();
-      const res = createMockResponse();
-      const next = createMockNext();
-
-      await ctrl.listRoles(req, res, next);
-
-      expect(res._json).toHaveBeenCalledWith(mockRoles);
-    });
-  });
-
-  describe('createRole', () => {
-    it('should create role', async () => {
-      const mockRole = { id: 'role-new', name: 'New Role' };
-      vi.mocked(defaultAdminService.createAdminRole).mockResolvedValue(mockRole as any);
-
-      const req = createMockRequest({ body: { name: 'New Role', permissions: ['read'] } });
-      const res = createMockResponse();
-      const next = createMockNext();
-
-      await ctrl.createRole(req, res, next);
-
-      expect(res._status).toHaveBeenCalledWith(201);
-      expect(res._json).toHaveBeenCalledWith(mockRole);
-    });
-  });
-
   describe('listOrganizations', () => {
     it('should return list of organizations', async () => {
       const mockOrgs = [{ id: 'org-1', name: 'Org 1' }];

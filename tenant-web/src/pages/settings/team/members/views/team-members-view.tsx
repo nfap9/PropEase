@@ -9,7 +9,7 @@ import { PERMISSIONS } from '@/hooks/use-permissions';
 import { organizationsApi } from '@/api/organizations';
 import { permissionsApi } from '@/api/permissions';
 import type { OrgRole } from '@/api/permissions';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage } from '@apartment-ultra/web-shared';
 import { formatDateTime } from '@/utils/date';
 import { OrganizationMember } from '@/types';
 import { MoreHorizontal, Trash2, UserPlus } from 'lucide-react';

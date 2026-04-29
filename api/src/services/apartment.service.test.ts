@@ -52,6 +52,7 @@ describe('ApartmentService', () => {
       status: 'occupied',
       created_at: new Date(),
       updated_at: new Date(),
+      leases: [{ is_active: true }],
     },
     {
       id: '01hqtestroom0000002',
@@ -60,8 +61,9 @@ describe('ApartmentService', () => {
       status: 'available',
       created_at: new Date(),
       updated_at: new Date(),
+      leases: [],
     },
-  ];
+  ] as any;
 
   beforeEach(() => {
     vi.clearAllMocks();

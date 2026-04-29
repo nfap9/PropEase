@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth';
 import { organizationsApi } from '@/api/organizations';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage } from '@apartment-ultra/web-shared';
 import { DEFAULT_ORGANIZATION_HOME_PATH } from '@/utils/auth-redirect';
 import type { Organization } from '@/types';
 

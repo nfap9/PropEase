@@ -45,6 +45,7 @@ vi.mock('../../repositories/apartment.repo.js', () => ({
 
 vi.mock('../../utils/orgContext.js', () => ({
   requireOrgMembership: vi.fn().mockResolvedValue('org-1'),
+  requirePermission: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../../utils/orgPlanLimits.js', () => ({

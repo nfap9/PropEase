@@ -3,7 +3,7 @@
  */
 import { useState } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
-import { cn } from '@/utils';
+import { cn } from '@apartment-ultra/web-shared';
 import {
   NAV_SECTIONS,
   findNavItem,

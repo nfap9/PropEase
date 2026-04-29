@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 import { Table, Button, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
-import { useConfirmAction } from '@/hooks/use-confirm-action';
+import { useConfirmAction } from '@apartment-ultra/web-shared';
 import type { Tenant } from '@/types';
 import { MoreHorizontal, Plus, User, Phone } from 'lucide-react';
 import { TenantFormModal } from '../components/tenant-form-modal';

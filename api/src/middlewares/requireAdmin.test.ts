@@ -146,7 +146,6 @@ describe('requireAdmin', () => {
     expect(mockReq.adminUser).toEqual({
       id: mockAdminUser.id,
       username: mockAdminUser.username,
-      role_id: mockAdminUser.role_id,
     });
     expect(mockNext).toHaveBeenCalledWith();
   });

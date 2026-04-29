@@ -5,7 +5,7 @@ import { Room, RoomStatus } from '@/types';
 import { RoomCard } from './rooms-card-grid';
 import { RoomListRow } from './rooms-list-row';
 import { ViewMode } from './rooms-view-toggle';
-import { cn } from '@/utils';
+import { cn } from '@apartment-ultra/web-shared';
 
 interface ApartmentGroup {
   id: string;

@@ -173,11 +173,11 @@ describe('ApartmentRepository', () => {
 describe('calculateRoomStats', () => {
   it('should calculate room stats correctly', () => {
     const rooms = [
-      { id: '1', status: 'available' },
-      { id: '2', status: 'available' },
-      { id: '3', status: 'occupied' },
-      { id: '4', status: 'occupied' },
-      { id: '5', status: 'maintenance' },
+      { id: '1', maintenance: false, leases: [] },
+      { id: '2', maintenance: false, leases: [] },
+      { id: '3', maintenance: false, leases: [{ is_active: true }] },
+      { id: '4', maintenance: false, leases: [{ is_active: true }] },
+      { id: '5', maintenance: true, leases: [] },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ] as any;
 

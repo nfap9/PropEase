@@ -4,6 +4,7 @@ packages:
   - 'admin-web'
   - 'packages/api-contract'
   - 'packages/web-api-client'
+  - 'packages/web-shared'
 
 catalog:
   '@radix-ui/react-alert-dialog': ^1.1.15

@@ -8,7 +8,7 @@ import { apartmentsApi, roomsApi, utilityConfigApi } from '@/api/apartments';
 import { tenantsApi } from '@/api/tenants';
 import { toDateInputValue } from '@/utils/date';
 import { filterEmptyStrings } from '@/utils/form';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage } from '@apartment-ultra/web-shared';
 import { TenantSearchDrawer } from './tenant-search-drawer';
 import { RoomInfoSection, type RoomInfoSectionRef } from './room-info-section';
 import { TenantInfoSection, type TenantInfoSectionRef } from './tenant-info-section';

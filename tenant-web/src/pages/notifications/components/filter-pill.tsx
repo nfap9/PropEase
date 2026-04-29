@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '@/utils';
+import { cn } from '@apartment-ultra/web-shared';
 
 export function FilterPill({
   children,

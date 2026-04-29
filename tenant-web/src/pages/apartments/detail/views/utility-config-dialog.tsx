@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Modal, Button, InputNumber, Space, Form } from 'antd';
 import { Zap } from 'lucide-react';
 import { utilityConfigApi } from '@/api/apartments';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage } from '@apartment-ultra/web-shared';
 
 interface UtilityConfigDialogProps {
   open: boolean;

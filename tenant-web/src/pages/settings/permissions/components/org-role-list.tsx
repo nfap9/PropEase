@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Input, Modal } from 'antd';
-import { cn } from '@/utils';
+import { cn } from '@apartment-ultra/web-shared';
 import { tenantMessages } from '@/i18n';
 import type { OrgRole } from '@/api/permissions';
 

@@ -16,7 +16,7 @@ import {
   PlusCircle,
 } from 'lucide-react';
 import { subscriptionsApi } from '@/api/subscriptions';
-import { getErrorMessage } from '@/utils/error';
+import { getErrorMessage } from '@apartment-ultra/web-shared';
 import { useAuth } from '@/contexts/auth';
 import type { StorefrontService, StorefrontServicePricing } from '@/api/subscriptions';
 import { getPricingSummary } from '../pricing';
