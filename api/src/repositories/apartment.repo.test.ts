@@ -79,16 +79,35 @@ describe('ApartmentRepository', () => {
   });
 
   describe('findByIdAndOrgWithRooms', () => {
-    // TODO: 修复 findByIdAndOrgWithRooms 测试（代码已重构，include 包含 utility_config 但测试未同步）
-    it.skip('should return apartment with rooms by id and org', async () => {
-      mockDb.apartment.findFirst.mockResolvedValue({ ...mockApartment, rooms: mockRooms });
+    it('should return apartment with rooms and active leases by id and org', async () => {
+      const mockResult = {
+        ...mockApartment,
+        rooms: [
+          {
+            id: 'room1',
+            apartment_id: apartmentId,
+            room_number: '101',
+            leases: [{ id: 'lease-1', is_active: true }],
+          },
+        ],
+      };
+      mockDb.apartment.findFirst.mockResolvedValue(mockResult);
 
       const result = await repository.findByIdAndOrgWithRooms(apartmentId, orgId);
 
-      expect(result).toEqual({ ...mockApartment, rooms: mockRooms });
+      expect(result).toEqual(mockResult);
       expect(mockDb.apartment.findFirst).toHaveBeenCalledWith({
         where: { id: apartmentId, organization_id: orgId },
-        include: { rooms: true },
+        include: {
+          rooms: {
+            include: {
+              leases: {
+                where: { is_active: true },
+                select: { id: true, is_active: true },
+              },
+            },
+          },
+        },
       });
     });
   });

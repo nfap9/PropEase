@@ -1,8 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createOrganizationService } from './organization.service.js';
 import type { OrganizationRepository } from '../repositories/organization.repo.js';
+import type { OrgRole } from '@prisma/client';
 
 describe('OrganizationService', () => {
+  const mockRole: OrgRole = {
+    id: 'role-1',
+    organization_id: 'org-1',
+    name: '管理员',
+    description: null,
+    is_system: true,
+    permissions: [],
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
   const repo: OrganizationRepository = {
     findById: vi.fn(),
     findBySlug: vi.fn(),
@@ -23,9 +35,8 @@ describe('OrganizationService', () => {
     vi.resetAllMocks();
   });
 
-  // TODO: 修复 listByUser 测试（代码已重构，返回结构从 Organization[] 变为 { org, role }[]）
-  it.skip('should sort organizations with personal first then by name naturally', async () => {
-    vi.mocked(repo.findByUserId).mockResolvedValue([
+  it('should sort organizations with personal first then by name naturally', async () => {
+    const orgs = [
       {
         id: 'org-z',
         name: '组织10',
@@ -34,7 +45,6 @@ describe('OrganizationService', () => {
         is_active: true,
         created_at: new Date(),
         updated_at: new Date(),
-        members: [{ user_id: 'user-1', role: 'member' }] as any,
       },
       {
         id: 'org-personal',
@@ -44,7 +54,6 @@ describe('OrganizationService', () => {
         is_active: true,
         created_at: new Date(),
         updated_at: new Date(),
-        members: [{ user_id: 'user-1', role: 'owner' }] as any,
       },
       {
         id: 'org-a',
@@ -54,13 +63,23 @@ describe('OrganizationService', () => {
         is_active: true,
         created_at: new Date(),
         updated_at: new Date(),
-        members: [{ user_id: 'user-1', role: 'admin' }] as any,
       },
-    ] as any);
+    ];
+    vi.mocked(repo.findByUserId).mockResolvedValue(orgs as any);
+    vi.mocked(repo.findMemberWithRole).mockResolvedValue({
+      id: 'member-1',
+      user_id: 'user-1',
+      organization_id: 'org-1',
+      role_id: 'role-1',
+      created_at: new Date(),
+      updated_at: new Date(),
+      role: mockRole,
+    } as any);
 
     const service = createOrganizationService(() => repo);
     const result = await service.listByUser('user-1');
 
-    expect(result.map((item) => item.id)).toEqual(['org-personal', 'org-a', 'org-z']);
+    // personal org first, then by name naturally (组织2 < 组织10)
+    expect(result.map((item) => item.org.id)).toEqual(['org-personal', 'org-a', 'org-z']);
   });
 });

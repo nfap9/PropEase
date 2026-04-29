@@ -7,7 +7,7 @@ import { createRoomService, type RoomService } from './room.service.js';
 import type { RoomRepository } from '../repositories/room.repo.js';
 import type { ApartmentRepository } from '../repositories/apartment.repo.js';
 
-vi.mock('../../lib/prisma.js', () => ({
+vi.mock('../lib/prisma.js', () => ({
   prisma: {
     roomPricing: {
       create: vi.fn().mockResolvedValue({}),
@@ -144,8 +144,7 @@ describe('RoomService', () => {
   });
 
   describe('create', () => {
-    // TODO: 修复 create 测试（代码调用 prisma.roomPricing.create 但测试未 mock）
-    it.skip('should create room when apartment belongs to org', async () => {
+    it('should create room when apartment belongs to org', async () => {
       vi.mocked(mockApartmentRepo.findByIdAndOrg).mockResolvedValue(mockApartment as any);
       vi.mocked(mockRepo.create).mockResolvedValue(mockRoom as any);
 
@@ -178,8 +177,7 @@ describe('RoomService', () => {
   });
 
   describe('batchCreate', () => {
-    // TODO: 修复 batchCreate 测试（代码调用 prisma.roomPricing.create 但测试未 mock）
-    it.skip('should batch create rooms', async () => {
+    it('should batch create rooms', async () => {
       vi.mocked(mockApartmentRepo.findByIdAndOrg).mockResolvedValue(mockApartment as any);
       vi.mocked(mockRepo.createBatch).mockResolvedValue([mockRoom as any, { ...mockRoom, id: 'room2', room_number: '102' } as any]);
 
