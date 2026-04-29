@@ -14,7 +14,10 @@ import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { logger } from '../utils/logger.js';
 import { prisma } from '../lib/prisma.js';
-import { defaultTenantReachabilityService } from './tenantReachability.service.js';
+import {
+  type TenantReachabilityService,
+  defaultTenantReachabilityService,
+} from './tenantReachability.service.js';
 
 /**
  * 创建账单输入
@@ -122,7 +125,8 @@ export function createBillService(
   getBillRepo: () => BillRepository = () => createBillRepository(prisma),
   getPaymentRepo: () => PaymentRepository = () => createPaymentRepository(prisma),
   getLeaseRepo: () => LeaseRepository = () => createLeaseRepository(prisma),
-  getBillFeeItemRepo: () => BillFeeItemRepository = () => createBillFeeItemRepository(prisma)
+  getBillFeeItemRepo: () => BillFeeItemRepository = () => createBillFeeItemRepository(prisma),
+  getTenantReachabilitySvc: () => TenantReachabilityService = () => defaultTenantReachabilityService
 ): BillService {
   return {
     list: async (orgId: string, filter?: BillFilter) => {
@@ -145,7 +149,7 @@ export function createBillService(
       }
       const bill = await getBillRepo().create(buildCreateData(data));
       try {
-        await defaultTenantReachabilityService.sendBillGenerated(bill.id);
+        await getTenantReachabilitySvc().sendBillGenerated(bill.id);
       } catch (error) {
         logger.error({ err: error, billId: bill.id }, 'failed to send tenant bill_generated sms');
       }

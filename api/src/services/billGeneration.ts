@@ -1,7 +1,10 @@
 import { ulid } from 'ulid';
 import { prisma } from '../lib/prisma.js';
 import { logger } from '../utils/logger.js';
-import { defaultTenantReachabilityService } from './tenantReachability.service.js';
+import {
+  type TenantReachabilityService,
+  defaultTenantReachabilityService,
+} from './tenantReachability.service.js';
 import type { LeaseRepository } from '../repositories/lease.repo.js';
 import type { BillRepository } from '../repositories/bill.repo.js';
 import type { UtilityRepository } from '../repositories/utility.repo.js';
@@ -100,6 +103,7 @@ export interface GenerateBillsDeps {
   orgFeeItemRepo: OrgFeeItemRepository;
   utilityConfigRepo: UtilityConfigRepository;
   leaseChangeLogRepo: LeaseChangeLogRepository;
+  tenantReachabilitySvc?: TenantReachabilityService;
 }
 
 /**
@@ -120,6 +124,7 @@ export async function generateBillsForOrg(
   const orgFeeItemRepo = deps?.orgFeeItemRepo ?? createOrgFeeItemRepository(prisma);
   const utilityConfigRepo = deps?.utilityConfigRepo ?? createUtilityConfigRepository(prisma);
   const leaseChangeLogRepo = deps?.leaseChangeLogRepo ?? createLeaseChangeLogRepository(prisma);
+  const tenantReachabilitySvc = deps?.tenantReachabilitySvc ?? defaultTenantReachabilityService;
 
   // 使用 RoomRepository 获取组织下的房间
   // 注意: findByApartmentId 查询的是 apartment_id，而 orgId 是 organization_id
@@ -276,7 +281,7 @@ export async function generateBillsForOrg(
     });
 
     try {
-      await defaultTenantReachabilityService.sendBillGenerated(billId);
+      await tenantReachabilitySvc.sendBillGenerated(billId);
     } catch (error) {
       logger.error({ err: error, billId }, 'failed to send tenant bill_generated sms');
     }

@@ -16,7 +16,7 @@ import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
 import { logger } from '../utils/logger.js';
 import { prisma } from '../lib/prisma.js';
-import { defaultBillService, type CreateBillInput } from './bill.service.js';
+import { defaultBillService, type BillService, type CreateBillInput } from './bill.service.js';
 import {
   compareBooleanDesc,
   compareDateDesc,
@@ -241,7 +241,8 @@ export function createLeaseService(
   getRoomRepo: () => RoomRepository = () => createRoomRepository(prisma),
   getTenantRepo: () => TenantRepository = () => createTenantRepository(prisma),
   getApartmentRepo: () => ApartmentRepository = () => createApartmentRepository(prisma),
-  getOrgRepo: () => OrganizationRepository = () => createOrganizationRepository(prisma)
+  getOrgRepo: () => OrganizationRepository = () => createOrganizationRepository(prisma),
+  getBillSvc: () => BillService = () => defaultBillService
 ): LeaseService {
   const sortLeases = (leases: LeaseWithRelations[]) =>
     [...leases].sort(
@@ -333,7 +334,7 @@ export function createLeaseService(
           other_amount: otherAmount,
           total_amount: monthlyRent + depositAmt + otherAmount,
         };
-        await defaultBillService.create(orgId, billData);
+        await getBillSvc().create(orgId, billData);
       } catch (e) {
         logger.error({ err: e, leaseId: lease.id }, 'Failed to create initial bill for lease');
       }

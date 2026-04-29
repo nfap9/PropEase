@@ -19,6 +19,7 @@ import { toPrismaInputJsonValue } from '../utils/json.js';
 import { ulid } from 'ulid';
 import {
   defaultServiceProductService,
+  type ServiceProductService,
 } from './service-product.service.js';
 import { defaultBillingOrderRepo } from '../repositories/billing-order.repo.js';
 import { prisma } from '../lib/prisma.js';
@@ -190,7 +191,8 @@ export interface AdminService {
  * 创建 Admin Service 实例
  */
 export function createAdminService(
-  getRepo: () => AdminRepository = () => defaultAdminRepo
+  getRepo: () => AdminRepository = () => defaultAdminRepo,
+  getServiceProductSvc: () => ServiceProductService = () => defaultServiceProductService
 ): AdminService {
   return {
     login: async (username: string, password: string) => {
@@ -393,7 +395,7 @@ export function createAdminService(
     },
 
     listServices: async (activeOnly?: boolean) => {
-      const products = await defaultServiceProductService.listServiceProducts({
+      const products = await getServiceProductSvc().listServiceProducts({
         is_active: activeOnly ? true : undefined,
         include_pricing: true,
       });
@@ -401,7 +403,7 @@ export function createAdminService(
     },
 
     getService: async (serviceId: string) => {
-      const service = await defaultServiceProductService.getServiceProductById(serviceId);
+      const service = await getServiceProductSvc().getServiceProductById(serviceId);
       if (!service) {
         throw createAppError(404, NotFoundMessages.PLAN);
       }

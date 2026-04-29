@@ -3,6 +3,7 @@ import { getConsoleUser } from '../utils/context.js';
 import { prisma } from '../lib/prisma.js';
 import { createAppError } from '../utils/appError.js';
 import { defaultPermissionService } from './permission.service.js';
+import type { PermissionService } from './permission.service.js';
 
 /**
  * 从路径参数或查询中取 organization_id，并校验当前用户属于该组织。
@@ -36,11 +37,12 @@ export async function requireOrgMembership(
 export async function requirePermission(
   req: Request,
   orgId: string,
-  permission: string
+  permission: string,
+  getPermissionSvc: () => PermissionService = () => defaultPermissionService
 ): Promise<void> {
   const user = getConsoleUser(req);
   if (!user) throw createAppError(401, 'Could not validate credentials');
-  const permissions = await defaultPermissionService.getMyPermissions(user.id, orgId);
+  const permissions = await getPermissionSvc().getMyPermissions(user.id, orgId);
   if (!permissions.includes(permission)) {
     throw createAppError(403, '没有权限执行此操作');
   }
