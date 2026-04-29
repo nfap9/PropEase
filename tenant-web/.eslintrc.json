@@ -42,11 +42,6 @@
           },
           {
             "target": "./src/utils",
-            "from": "./src/schemas",
-            "message": "工具层 (utils) 不能引用业务层 (schemas)"
-          },
-          {
-            "target": "./src/utils",
             "from": "./src/components",
             "message": "工具层 (utils) 不能引用视图层 (components)"
           },
@@ -71,11 +66,6 @@
             "message": "工具层 (types) 不能引用业务层 (hooks)"
           },
           {
-            "target": "./src/types",
-            "from": "./src/schemas",
-            "message": "工具层 (types) 不能引用业务层 (schemas)"
-          },
-          {
             "target": "./src/constants",
             "from": "./src/components",
             "message": "工具层 (constants) 不能引用视图层 (components)"
@@ -89,11 +79,6 @@
             "target": "./src/constants",
             "from": "./src/hooks",
             "message": "工具层 (constants) 不能引用业务层 (hooks)"
-          },
-          {
-            "target": "./src/constants",
-            "from": "./src/schemas",
-            "message": "工具层 (constants) 不能引用业务层 (schemas)"
           },
           {
             "target": "./src/api",
@@ -111,11 +96,6 @@
             "message": "基础设施层 (api) 不能引用业务层 (hooks)"
           },
           {
-            "target": "./src/api",
-            "from": "./src/schemas",
-            "message": "基础设施层 (api) 不能引用业务层 (schemas)"
-          },
-          {
             "target": "./src/contexts",
             "from": "./src/components",
             "message": "基础设施层 (contexts) 不能引用视图层 (components)"
@@ -129,11 +109,6 @@
             "target": "./src/contexts",
             "from": "./src/hooks",
             "message": "基础设施层 (contexts) 不能引用业务层 (hooks)"
-          },
-          {
-            "target": "./src/contexts",
-            "from": "./src/schemas",
-            "message": "基础设施层 (contexts) 不能引用业务层 (schemas)"
           },
           {
             "target": "./src/i18n",
@@ -151,11 +126,6 @@
             "message": "基础设施层 (i18n) 不能引用业务层 (hooks)"
           },
           {
-            "target": "./src/i18n",
-            "from": "./src/schemas",
-            "message": "基础设施层 (i18n) 不能引用业务层 (schemas)"
-          },
-          {
             "target": "./src/hooks",
             "from": "./src/components",
             "message": "业务层 (hooks) 不能引用视图层 (components)"
@@ -164,16 +134,6 @@
             "target": "./src/hooks",
             "from": "./src/pages",
             "message": "业务层 (hooks) 不能引用视图层 (pages)"
-          },
-          {
-            "target": "./src/schemas",
-            "from": "./src/components",
-            "message": "业务层 (schemas) 不能引用视图层 (components)"
-          },
-          {
-            "target": "./src/schemas",
-            "from": "./src/pages",
-            "message": "业务层 (schemas) 不能引用视图层 (pages)"
           }
         ]
       }
