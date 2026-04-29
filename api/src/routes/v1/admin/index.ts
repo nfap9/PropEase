@@ -5,8 +5,8 @@ import { adminServiceProductsRouter } from './service-products.js';
 import { requireAdmin } from '../../../middlewares/requireAdmin.js';
 import { requireSystemInitialized } from '../../../middlewares/requireSystemInitialized.js';
 import * as ctrl from './admin.controller.js';
-import { billingAdminOrdersRouter } from '../billing/admin/orders.js';
-import { billingAdminUsagePricingRouter } from '../billing/admin/usage-pricing.js';
+import { billingAdminOrdersRouter } from './billing/orders.js';
+import { billingAdminUsagePricingRouter } from './billing/usage-pricing.js';
 
 const router: Router = Router();
 
