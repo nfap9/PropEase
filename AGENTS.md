@@ -28,8 +28,9 @@
 - **包管理器**: pnpm 9+ (workspace)
 - **Node 版本**: >= 18（CI 使用 Node 20，Docker 使用 node:20-alpine）
 - **TypeScript**: ^5（strict mode）
-- **pnpm catalog**: 在 `pnpm-workspace.yaml` 中统一管理常用依赖版本
-- **pnpm overrides**: 在根 `package.json` 中强制统一 React、Vite、axios、zod 等版本
+- **pnpm catalog**: 在 `pnpm-workspace.yaml` 中统一管理 35+ 常用依赖版本
+- **pnpm overrides**: 在根 `package.json` 中强制统一 React、Vite、axios、zod、react-router-dom、@tanstack/react-query 等版本
+- **onlyBuiltDependencies**: `pnpm-workspace.yaml` 中显式允许 `prisma`、`@prisma/client`、`@prisma/engines`、`esbuild` 的 post-install 脚本（pnpm 10+ 要求）
 
 ### 2.2 后端 (`api/`)
 
@@ -37,7 +38,7 @@
 |------|------|
 | 运行时 | Node.js 18+ (ESM, `"type": "module"`) |
 | 框架 | Express 4 |
-| ORM | Prisma 7.4 + PostgreSQL (`pg` adapter) |
+| ORM | Prisma 7.4.2 + PostgreSQL (`pg` adapter, `@prisma/adapter-pg`) |
 | 缓存 | Redis (ioredis) |
 | 校验 | Zod |
 | 认证 | JWT (HS256), bcryptjs |
@@ -51,16 +52,20 @@
 
 技术栈明细、分层架构、构建命令与测试规范见 [`tenant-web/AGENTS.md`](./tenant-web/AGENTS.md)。
 
+要点：Vite 6 + React 18 + React Router DOM 7 + Ant Design 6 + Tailwind CSS 3.4 + TanStack Query 5，端口 3000，部署基路径 `/tenant/`。
+
 ### 2.4 运营后台前端 (`admin-web/`)
 
 技术栈明细、分层架构、构建命令与测试规范见 [`admin-web/AGENTS.md`](./admin-web/AGENTS.md)。
+
+要点：Vite 6 + React 18 + React Router DOM 7 + Ant Design 6 + Tailwind CSS 3.4 + TanStack Query 5，端口 3001，部署基路径 `/admin/`。
 
 ### 2.5 共享包
 
 | 包名 | 路径 | 说明 |
 |------|------|------|
-| `@apartment-ultra/api-contract` | `packages/api-contract/` | 纯类型包：前后端共享的 TypeScript 类型和 Zod schema。按领域模块拆分，支持子路径导出 `./schemas` |
-| `@apartment-ultra/web-api-client` | `packages/web-api-client/` | Axios 封装：统一响应解包、错误处理（`ApiError`）、token 自动刷新、`x-org-id` header 自动注入。与 `react-hook-form` 集成：`setFormErrors` |
+| `@apartment-ultra/api-contract` | `packages/api-contract/` | 前后端共享的 TypeScript 类型、常量与 Zod schema。按领域模块拆分（auth、bills、apartments、permissions 等）。统一 API 响应契约 `SuccessBody<T>`、`ErrorResponseBody`、`BusinessCode`。提供权限常量 `RESOURCES`、`ACTIONS`、`toPermissionCodes()`。使用 `tsc` 编译到 `dist/`（ESM + `.d.ts`）。 |
+| `@apartment-ultra/web-api-client` | `packages/web-api-client/` | Axios 封装：统一响应解包、错误处理（`ApiError`）、token 自动刷新、`x-org-id` header 自动注入、401 跳转登录。与 `react-hook-form` 集成：`setFormErrors`、`extractFieldErrors`。提供三个工厂：`createApiClient`、`createBrowserApiClient`、`createAdminApiClient`。不编译到 dist，源码直接被 Vite 消费（`noEmit: true`）。 |
 
 ---
 
@@ -70,71 +75,80 @@
 apartment-ultra/
 ├── api/                        # 后端 API (Node/Express/TypeScript)
 │   ├── src/
-│   │   ├── index.ts            # Express 应用入口
-│   │   ├── config.ts           # 环境配置
+│   │   ├── index.ts            # Express 应用入口（先初始化 OpenTelemetry，再挂载路由和定时任务）
+│   │   ├── config.ts           # 环境配置（Zod 校验，含生产环境安全检查）
 │   │   ├── constants/          # 常量
 │   │   ├── errors/             # 错误基类和领域错误
-│   │   ├── lib/                # Prisma Client, Redis, schemas
-│   │   ├── middlewares/        # 认证、授权、限流、响应包装、错误处理
+│   │   ├── lib/                # Prisma Client 初始化、Redis 初始化、共享 schema
+│   │   ├── middlewares/        # 认证、授权、限流、响应包装、错误处理、校验
 │   │   ├── migrations/         # 数据迁移脚本（TS）
 │   │   ├── observability/      # OpenTelemetry 初始化
-│   │   ├── repositories/       # 数据仓库层（封装 Prisma 查询）
-│   │   ├── routes/v1/          # API 路由（Controller）
-│   │   ├── scheduler/          # 定时任务
-│   │   ├── services/           # 业务逻辑层
-│   │   ├── startup/            # 数据库连接检查和 schema 校验
+│   │   ├── repositories/       # 数据仓库层（封装 Prisma 查询，每个仓库配 .test.ts）
+│   │   ├── routes/v1/          # API 路由（Controller），含 admin/、billing/、webhooks/ 子目录
+│   │   ├── scheduler/          # 定时任务（月度账单、租约变更、通知检查）
+│   │   ├── services/           # 业务逻辑层（~25 个服务，多数配 .test.ts）
+│   │   ├── startup/            # 数据库连接等待和 schema 校验
 │   │   ├── test/               # 测试工具（setup.ts, controllerHelper.ts）
 │   │   ├── types/              # 类型定义
 │   │   └── utils/              # 工具函数
-│   ├── prisma/schema.prisma    # 数据库 Schema
-│   └── Dockerfile
+│   ├── prisma/schema.prisma    # 数据库 Schema（~809 行，无 PostgreSQL ENUM，ID 为 String @db.VarChar(26)）
+│   └── Dockerfile              # 多阶段构建（builder → runner），构建上下文为 monorepo 根目录
 ├── tenant-web/                 # 租客端前端 (Vite + React)
 │   ├── src/
 │   │   ├── api/                # Axios 客户端 + 按模块 API 方法
-│   │   ├── components/         # 公共组件、布局、主题
+│   │   ├── components/         # 公共组件（layout/、common/、theme/）
 │   │   ├── constants/          # 静态配置、枚举
 │   │   ├── contexts/           # AuthContext, BrandConfigContext
-│   │   ├── hooks/              # 业务 hooks
+│   │   ├── hooks/              # 业务 hooks（四层架构中的业务层）
 │   │   ├── i18n/               # 国际化
-│   │   ├── pages/              # 按业务模块组织的页面
-│   │   ├── routes/             # React Router 配置
-│   │   ├── styles/             # 全局 CSS
-│   │   ├── test/               # 测试 setup
-│   │   ├── types/              # 类型定义
+│   │   ├── pages/              # 按业务模块组织的页面（内部常分 components/、hooks/、views/）
+│   │   ├── routes/             # React Router 配置（basename: /tenant/）
+│   │   ├── styles/             # 全局 CSS（Tailwind directives）
+│   │   ├── test/               # 测试 setup（ Vitest + jsdom）
+│   │   ├── types/              # 类型定义（工具层）
 │   │   └── utils/              # 纯工具函数
-│   └── Dockerfile
+│   └── Dockerfile              # 三阶段构建（deps → builder → runner，serve 提供静态文件）
 ├── admin-web/                  # 运营后台前端 (Vite + React)
 │   ├── src/
 │   │   ├── api/                # API 客户端（含 admin-client.ts）
-│   │   ├── components/
-│   │   ├── constants/
-│   │   ├── contexts/
-│   │   ├── hooks/
-│   │   ├── i18n/
-│   │   ├── pages/              # 运营后台页面
-│   │   ├── router/             # 路由配置
-│   │   ├── schemas/            # 表单类型和校验（业务层）
-│   │   ├── styles/
-│   │   ├── types/
-│   │   └── utils/
-│   └── Dockerfile
+│   │   ├── components/         # 公共组件（layout/ 含 AppLayout、AppHeader、侧边栏导航）
+│   │   ├── constants/          # 静态配置、枚举（含 NAV_SECTIONS 导航配置）
+│   │   ├── contexts/           # AuthContext
+│   │   ├── hooks/              # 业务 hooks
+│   │   ├── i18n/               # 国际化
+│   │   ├── pages/              # 运营后台页面（扁平结构，index.tsx 为路由入口）
+│   │   ├── router/             # React Router 配置（basename: /admin/）
+│   │   ├── schemas/            # 表单类型和校验（业务层，admin-web 特有）
+│   │   ├── styles/             # 全局 CSS
+│   │   ├── types/              # 类型定义
+│   │   └── utils/              # 纯工具函数
+│   └── Dockerfile              # 三阶段构建（同 tenant-web，暴露 8080）
 ├── packages/
-│   ├── api-contract/           # 共享 API 类型与 Zod schema
-│   └── web-api-client/         # 前端 API 客户端封装
+│   ├── api-contract/           # 共享 API 类型与 Zod schema（tsc 编译产物在 dist/）
+│   └── web-api-client/         # 前端 API 客户端封装（源码直接消费，noEmit）
 ├── docker/                     # Docker Compose、Nginx 配置、环境文件模板
-│   ├── docker-compose.yaml             # 生产编排
-│   ├── docker-compose.middleware.yaml  # 本地 Postgres + Redis
+│   ├── docker-compose.yaml             # 生产编排（Postgres + Redis + API + tenant-web + admin-web + nginx）
+│   ├── docker-compose.middleware.yaml  # 本地 Postgres 15 + Redis 7（暴露 5432/6379）
 │   ├── docker-compose.observability.yaml # 可观测性（叠加使用）
-│   └── nginx.conf.template
+│   └── nginx.conf.template     # 统一入口反向代理（80 端口 → /api/v1/、/tenant/、/admin/、/api-docs/）
 ├── docs/                       # 设计文档、规范、流程图
+│   ├── antd-form-guideline.md
+│   ├── bill-reversal-design.md
+│   ├── business-flow.md
+│   ├── discussion-backlog.md
+│   ├── entity-spec.md
+│   ├── layout-conventions.md
+│   ├── notification-spec.md
+│   └── tenant-user-guide.md
+├── scripts/                    # 运维脚本（backup.sh、build-images.sh、deploy.sh、pre-deploy-check.sh 等）
 ├── .github/workflows/          # CI/CD
-│   ├── ci.yml                  # Lint、类型检查、测试、Docker 构建推送
-│   └── deploy.yml              # SSH 部署（workflow_dispatch）
-├── package.json                # 根 package.json，定义 workspace scripts
+│   ├── ci.yml                  # 变更检测 → lint → type-check → build / Docker 构建推送
+│   └── deploy.yml              # SSH 部署（workflow_dispatch，支持 production/staging）
+├── package.json                # 根 package.json，定义 workspace scripts 与 pnpm overrides
 ├── pnpm-workspace.yaml         # Workspace 定义 + pnpm catalog
-├── tsconfig.base.json          # 根 TS 基础配置
-├── tsconfig.react-package.json # React 包共享 TS 配置
-└── .prettierrc                 # Prettier 配置
+├── tsconfig.base.json          # 根 TS 基础配置（strict: true）
+├── tsconfig.react-package.json # React 包共享 TS 配置（moduleResolution: bundler, jsx: react-jsx）
+└── .prettierrc                 # Prettier 配置（2 空格、单引号、trailingComma es5、printWidth 120）
 ```
 
 ---
@@ -149,8 +163,8 @@ pnpm install
 
 # 开发模式
 pnpm dev:api      # PORT=8000, api 开发模式 (tsx watch)
-pnpm dev:web      # tenant-web 开发模式 (vite)
-pnpm dev:admin    # admin-web 开发模式 (vite)
+pnpm dev:web      # tenant-web 开发模式 (vite，端口 3000，代理 /api → localhost:8000)
+pnpm dev:admin    # admin-web 开发模式 (vite，端口 3001)
 
 # Docker 本地中间件（Postgres 15 + Redis 7，暴露 5432/6379）
 pnpm docker:middleware
@@ -163,12 +177,25 @@ pnpm build        # 全量构建 (pnpm -r run build)
 pnpm lint         # 后端 + 两个前端 lint
 pnpm format       # Prettier 格式化
 pnpm type-check   # 全量类型检查（含 Prisma generate）
-pnpm test         # 全量测试
+pnpm test         # 全量测试（Prisma generate → api tests → tenant-web tests → admin-web tests）
 ```
 
 ### 4.2 后端 (`api/`)
 
 后端详细的构建命令、分层约定、路由规范和测试策略见 [`api/AGENTS.md`](./api/AGENTS.md)。
+
+```bash
+pnpm dev          # tsx watch src/index.ts
+pnpm dev:docker   # prisma db push && prisma generate && tsx watch
+pnpm build        # tsc (dist/)
+pnpm start        # node dist/index.js
+pnpm lint         # eslint src --ext .ts
+pnpm type-check   # tsc --noEmit
+pnpm test         # vitest run
+pnpm db:push
+pnpm db:reset
+pnpm export:openapi
+```
 
 ### 4.3 前端 (`tenant-web/` / `admin-web/`)
 
@@ -176,11 +203,22 @@ pnpm test         # 全量测试
 - [`tenant-web/AGENTS.md`](./tenant-web/AGENTS.md)
 - [`admin-web/AGENTS.md`](./admin-web/AGENTS.md)
 
+```bash
+pnpm dev              # vite
+pnpm build            # tsc && vite build
+pnpm preview          # vite preview
+pnpm lint             # eslint src --ext ts,tsx
+pnpm type-check       # tsc --noEmit
+pnpm test             # vitest (watch)
+pnpm test:run         # vitest run
+pnpm test:coverage    # vitest run --coverage
+```
+
 ### 4.4 共享包
 
 ```bash
 # api-contract
-pnpm build        # tsc (dist/)
+pnpm build        # tsc (dist/，输出 .js + .d.ts + .d.ts.map)
 pnpm type-check   # tsc --noEmit
 
 # web-api-client
@@ -232,6 +270,15 @@ pnpm test:run     # vitest run
 
 ### 6.1 后端分层（Clean-ish Architecture）
 
+```
+routes (Controller) → services (业务逻辑) → repositories (数据访问) → Prisma → PostgreSQL
+```
+
+- **Service 层禁止直接写 Prisma 查询**，必须通过 `createXxxRepository(prisma)` 注入
+- **事务处理**：`prisma.$transaction(async (tx) => { ... })`，事务内使用 `createXxxRepository(tx)`
+- 响应统一包装为 `{ code: 0, data, message }`，错误响应含 `code`、`message` 和可选 `fieldErrors`
+- 不包装的路径：`/health`、`/api-docs`、`/openapi.json`、`/api/v1/webhooks/*`
+
 后端分层（Controller → Service → Repository → Prisma）的详细约定见 [`api/AGENTS.md`](./api/AGENTS.md)。
 
 ### 6.2 前端分层（四层架构，ESLint 强制）
@@ -240,15 +287,52 @@ pnpm test:run     # vitest run
 - [`tenant-web/AGENTS.md`](./tenant-web/AGENTS.md)
 - [`admin-web/AGENTS.md`](./admin-web/AGENTS.md)
 
+```
+视图层 (pages/ components/ routes/ 或 router/)
+    ↓ 引用
+业务层 (hooks/；admin-web 额外含 schemas/)
+    ↓ 引用
+基础设施层 (api/ contexts/ i18n/)
+    ↓ 引用
+工具层 (utils/ types/ constants/)
+```
+
+- 工具层禁止引用上层任何目录
+- 基础设施层禁止引用业务层、视图层
+- 业务层禁止引用视图层
+- admin-web 的 `schemas/` 位于业务层，存放表单类型定义和纯校验函数；tenant-web 无 `schemas/` 目录，类型定义放在 `types/`（工具层）
+
 ---
 
 ## 7. 测试策略
 
 ### 7.1 后端 (`api/`)
 
+- **框架**: Vitest 1.6.1（Node 环境）
+- **Coverage**: `@vitest/coverage-v8`
+- **Setup**: `api/src/test/setup.ts`
+  - Mock `console.error`（非预期错误会导致测试失败）
+  - 固定 `NODE_ENV=test`、`DATABASE_URL`
+  - Mock 部分 Prisma Client 方法
+  - Fake timers 固定为 `2024-01-01T00:00:00Z`
+  - 全局变量 `testOrgId`、`testUserId`
+- **测试分布**:
+  - `middlewares/*.test.ts` — 中间件单元测试
+  - `repositories/*.test.ts` — 仓库层测试（mock Prisma）
+  - `services/*.test.ts` — 业务逻辑测试（mock repository）
+  - `routes/v1/*.test.ts` — Controller 测试
+  - `utils/*.test.ts` — 工具函数测试
+
 后端测试框架、setup 和测试分布的详细说明见 [`api/AGENTS.md`](./api/AGENTS.md)。
 
 ### 7.2 前端 (`tenant-web/` / `admin-web/`)
+
+- **框架**: Vitest 4 + jsdom + `@testing-library/react` + `@testing-library/jest-dom`
+- **Coverage**: v8 provider
+- **Setup**: `src/test/setup.ts`（tenant-web 已存在；admin-web 预留）
+- **测试文件命名**: `.test.tsx` / `.test.ts`
+- **组件测试位置**: 放在组件/源文件同目录下（如 `LeaseDialog.test.tsx`）
+- 使用 Testing Library 的 `render` 和 `screen`
 
 前端测试框架、setup 和测试分布的详细说明见：
 - [`tenant-web/AGENTS.md`](./tenant-web/AGENTS.md)
@@ -261,38 +345,48 @@ pnpm test:run     # vitest run
 ### 8.1 Docker 多阶段构建
 
 - `api/Dockerfile`、`tenant-web/Dockerfile`、`admin-web/Dockerfile` 均使用 `node:20-alpine`
-- 构建上下文为 monorepo 根目录
-- 前端生产环境使用 `serve` 提供静态文件服务
+- **构建上下文为 monorepo 根目录**（所有 Dockerfile 通过 `COPY . /app` 引入 workspace）
+- 前端生产环境使用 `serve@14` 提供静态文件服务
+- API 镜像在 runner 阶段会重新执行 `prisma generate`
 
 ### 8.2 生产编排 (`docker/docker-compose.yaml`)
 
 | 服务 | 镜像 | 端口/说明 | 内存限制 |
 |------|------|-----------|----------|
-| postgres | `postgres:15-alpine` | 5432 | 1G |
-| redis | `redis:7-alpine` | 6379 (AOF 持久化) | - |
-| api | apartment-ultra-api | 8000 | 1G |
-| tenant-web | apartment-ultra-tenant-web | 3000 | 512M |
-| admin-web | apartment-ultra-admin-web | 8080 | 512M |
-| nginx | `nginx:alpine` | 80 (统一入口，反向代理) | - |
+| postgres | `postgres:15-alpine` | 内部 5432 | `${POSTGRES_MEMORY:-1G}` |
+| redis | `redis:7-alpine` | 内部 6379（AOF 持久化） | — |
+| api | `apartment-ultra-api:${API_IMAGE_TAG:-latest}` | 8000 | `${API_MEMORY:-1G}` |
+| tenant-web | `apartment-ultra-tenant-web:${TENANT_WEB_IMAGE_TAG:-latest}` | 3000 | `${TENANT_WEB_MEMORY:-512M}` |
+| admin-web | `apartment-ultra-admin-web:${ADMIN_WEB_IMAGE_TAG:-latest}` | 8080 | `${ADMIN_MEMORY:-512M}` |
+| nginx | `nginx:alpine` | `${NGINX_PORT:-80}:80`（统一入口，反向代理） | — |
+
+Nginx 配置 (`docker/nginx.conf.template`) 将流量分发到：
+- `/api/v1/` → API 服务
+- `/api-docs/`、`/openapi.json` → API 文档
+- `/tenant/` → tenant-web 静态服务
+- `/admin/` → admin-web 静态服务
 
 ### 8.3 CI/CD (`.github/workflows/`)
 
 **ci.yml**:
-- 变更检测（`dorny/paths-filter`）：按 `api`, `tenant_web`, `admin_web`, `mobile`, `docker` 分别触发
-- `api` job: lint → type-check → prisma generate/db push（使用 Postgres 15 service）
-- `tenant-web` / `admin-web` job: lint → type-check → build
-- `mobile` job: type-check only
-- `docker` job: push 到 main 时构建并推送镜像到 GHCR
+- 触发条件：`push` 到 `main`、`pull_request` 到 `main`
+- 变更检测（`dorny/paths-filter@v3`）：按 `api`、`tenant_web`、`admin_web`、`docker` 分别触发
+- `api` job: lint → type-check → Prisma generate → Prisma db push（使用 Postgres 15 service 容器）
+- `tenant-web` / `admin-web` job: 缓存并构建 `api-contract` → lint → type-check → Vite build（`VITE_API_URL=http://localhost:8000/api/v1`）
+- `docker` job: 仅在 push 到 `main` 时触发，构建并推送三个镜像到 **GHCR**，标签为 `main` 和 `${{ github.sha }}`
+- Node 20 + pnpm 9，前端 Docker build-arg: `VITE_API_URL=http://localhost/api/v1`
 
 **deploy.yml**:
-- `workflow_dispatch` 手动触发，支持 `production` / `staging`
-- SSH 到服务器执行 `docker compose pull && up -d` + health check
+- `workflow_dispatch` 手动触发，支持 `environment: production/staging`，`image_tag` 默认 `main`
+- SSH 到服务器 (`appleboy/ssh-action@v1`)，在 `/opt/apartment-ultra` 执行 `docker compose pull && up -d`
+- 部署后 sleep 10s，然后 `curl -f http://localhost/health` 健康检查
 
 ---
 
 ## 9. 安全与敏感信息
 
 - JWT 使用 HS256，密钥通过环境变量 `SECRET_KEY` 注入
+- `api/src/config.ts` 在生产环境下执行安全校验：`SECRET_KEY` 必须 ≥ 32 字符且不能是开发默认值；`DATABASE_URL` 不能是 localhost；`CORS_ORIGINS` 不能为 `*`
 - 密码使用 bcryptjs 哈希
 - 微信支付证书和密钥通过环境变量配置，`.env` 文件已加入 `.gitignore`
 - API 路由中 `/api/v1/webhooks/*` 通常为无认证回调端点，编写时需注意幂等性和签名验证
