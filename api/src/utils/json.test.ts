@@ -5,7 +5,7 @@ describe('toPrismaInputJsonValue', () => {
   it('should normalize nested objects and arrays', () => {
     expect(
       toPrismaInputJsonValue({
-        name: 'storefront',
+        name: 'config',
         enabled: true,
         discounts: [
           {
@@ -17,7 +17,7 @@ describe('toPrismaInputJsonValue', () => {
         ],
       })
     ).toEqual({
-      name: 'storefront',
+      name: 'config',
       enabled: true,
       discounts: [
         {

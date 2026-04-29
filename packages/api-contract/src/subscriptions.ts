@@ -1,5 +1,5 @@
 import type { PlanPricing } from './promotion.js';
-import type { StorefrontViewService } from './service-product.js';
+import type { ServiceProduct } from './service-product.js';
 
 /** 订阅计划 */
 export interface SubscriptionPlan {
@@ -54,10 +54,10 @@ export interface SubscribeRequest {
   promotion_id?: string;
 }
 
-/** 订阅状态（后端返回 service，与前端 storefront services 对应） */
+/** 订阅状态（后端返回 service） */
 export interface SubscriptionStatus {
   has_subscription: boolean;
-  service: StorefrontViewService | null;
+  service: ServiceProduct | null;
   status: string;
   is_active: boolean;
   end_date: string | null;

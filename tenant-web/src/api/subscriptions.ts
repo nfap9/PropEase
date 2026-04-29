@@ -5,20 +5,15 @@ import {
   SubscribeRequest,
   SubscriptionStatus,
   OrganizationUsage,
-  StorefrontView,
-  StorefrontViewPricing,
-  StorefrontViewService,
+  ServiceProduct,
+  ServicePricing,
 } from '@/types';
 
-export type StorefrontServicePricing = StorefrontViewPricing;
-export type StorefrontService = StorefrontViewService;
 
 export const subscriptionsApi = {
-  // Storefront
-  getStorefront: async (storefrontId?: string): Promise<StorefrontView> => {
-    const response = await api.get<StorefrontView>('/subscriptions/storefront', {
-      params: storefrontId ? { storefront_id: storefrontId } : undefined,
-    });
+  // Services
+  getServices: async (): Promise<ServiceProduct[]> => {
+    const response = await api.get<ServiceProduct[]>('/subscriptions/services');
     return response.data;
   },
 

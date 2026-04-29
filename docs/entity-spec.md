@@ -37,8 +37,6 @@
 27. [UserBalance](#27-userbalance-用户余额)
 28. [ServiceProduct](#28-serviceproduct-服务产品)
 29. [ServicePricing](#29-servicepricing-服务定价)
-30. [StorefrontConfig](#30-storefrontconfig-商店配置)
-31. [StorefrontItem](#31-storefrontitem-商店项)
 
 ---
 
@@ -771,48 +769,6 @@
 | updated_at | datetime | — | now() | 更新时间 |
 
 **唯一约束：** `(service_id, months)` 唯一。
-
----
-
-## 30. StorefrontConfig（商店配置）
-
- storefront 配置。
-
-| 字段名 | 类型 | 必填 | 默认值 | 说明 |
-|--------|------|------|--------|------|
-| id | varchar(26) | ✅ | — | ULID 主键 |
-| name | varchar(100) | ✅ | — | 商店名称 |
-| code | varchar(50) | ✅ | — | 商店代码（唯一） |
-| is_active | boolean | — | true | 是否启用 |
-| is_default | boolean | — | false | 是否为默认商店 |
-| created_at | datetime | — | now() | 创建时间 |
-| updated_at | datetime | — | now() | 更新时间 |
-
----
-
-## 31. StorefrontItem（商店项）
-
-商店中展示的服务产品项。
-
-| 字段名 | 类型 | 必填 | 默认值 | 说明 |
-|--------|------|------|--------|------|
-| id | varchar(26) | ✅ | — | ULID 主键 |
-| storefront_id | varchar(26) | ✅ | — | 所属商店 ID |
-| service_id | varchar(26) | ✅ | — | 服务产品 ID |
-| is_visible | boolean | — | true | 是否展示 |
-| sort_order | int | — | 0 | 排序顺序 |
-| pricing_discounts | json | ❌ | — | 时长折扣配置 |
-| created_at | datetime | — | now() | 创建时间 |
-| updated_at | datetime | — | now() | 更新时间 |
-
-**pricing_discounts 结构：**
-```json
-[
-  { "months": 1, "discount_type": "gift"|"percent"|"fixed", "discount_value": number, "gift_months": number }
-]
-```
-
-**唯一约束：** `(storefront_id, service_id)` 唯一。
 
 ---
 

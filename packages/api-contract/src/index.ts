@@ -59,22 +59,12 @@ export type {
 
 /** 服务定价模块 */
 export type {
-  PricingDiscount,
   ServiceProduct,
   ServicePricing,
   ServiceProductCreate,
   ServiceProductUpdate,
   ServicePricingCreate,
   ServicePricingBatchUpdate,
-  StorefrontConfig,
-  StorefrontItem,
-  StorefrontConfigCreate,
-  StorefrontConfigUpdate,
-  StorefrontItemCreate,
-  StorefrontItemUpdate,
-  StorefrontViewService,
-  StorefrontViewPricing,
-  StorefrontView,
 } from './service-product.js';
 
 /** 公寓与房间 */

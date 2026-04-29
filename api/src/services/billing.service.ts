@@ -1,4 +1,4 @@
-import type { BillingOrder, UsageUnitPricing, ServiceProduct, OrganizationSubscription } from '@prisma/client';
+import type { BillingOrder, UsageUnitPricing, ServiceProduct as PrismaServiceProduct, OrganizationSubscription } from '@prisma/client';
 import { ulid } from 'ulid';
 import { createBillingOrderRepository, type BillingOrderRepository } from '../repositories/billing-order.repo.js';
 import { createAppError } from '../utils/appError.js';
@@ -6,7 +6,7 @@ import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
 import { createWechatPayNativeOrder } from './wechatPayNative.js';
 import { isSubscriptionActive } from '../utils/subscription.js';
-import type { SubscriptionStatus } from '@apartment-ultra/api-contract';
+import type { SubscriptionStatus, ServiceProduct } from '@apartment-ultra/api-contract';
 
 /**
  * 订单类型
@@ -108,8 +108,8 @@ export interface BillingService {
   fulfillUsageAllowance(orderId: string, orgId: string): Promise<void>;
 
   // 订阅管理
-  listServices(activeOnly?: boolean): Promise<ServiceProduct[]>;
-  getServiceById(id: string): Promise<ServiceProduct>;
+  listServices(activeOnly?: boolean): Promise<PrismaServiceProduct[]>;
+  getServiceById(id: string): Promise<PrismaServiceProduct>;
   getSubscription(orgId: string): Promise<OrganizationSubscription | null>;
   getSubscriptionStatus(orgId: string): Promise<SubscriptionStatus>;
   subscribe(orgId: string, serviceId: string, billingMonths?: number, autoRenew?: boolean): Promise<OrganizationSubscription>;
@@ -395,7 +395,7 @@ export function createBillingService(
       return getRepo().findActiveServices(activeOnly);
     },
 
-    getServiceById: async (id) => {
+    getServiceById: async (id): Promise<PrismaServiceProduct> => {
       const service = await getRepo().findServiceByIdWithPricing(id);
       if (!service) {
         throw createAppError(404, NotFoundMessages.PLAN);
@@ -436,8 +436,8 @@ export function createBillingService(
         );
       }
 
-      // 转换 ServiceProduct 为 StorefrontViewService 格式
-      const storefrontService = sub.service
+      // 转换 ServiceProduct 为 API 契约格式
+      const serviceProduct = sub.service
         ? {
             id: sub.service.id,
             name: sub.service.name,
@@ -447,13 +447,16 @@ export function createBillingService(
             max_apartments: sub.service.max_apartments,
             max_rooms: sub.service.max_rooms,
             max_members: sub.service.max_members,
-            pricing: [],
+            is_active: sub.service.is_active,
+            sort_order: sub.service.sort_order,
+            created_at: sub.service.created_at.toISOString(),
+            updated_at: sub.service.updated_at.toISOString(),
           }
         : null;
 
       return {
         has_subscription: true,
-        service: storefrontService,
+        service: serviceProduct as ServiceProduct | null,
         status: sub.status,
         is_active: active,
         end_date: sub.end_date ? sub.end_date.toISOString().slice(0, 10) : null,

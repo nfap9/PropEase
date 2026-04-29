@@ -31,13 +31,6 @@ import type {
   ServiceProductUpdate,
   ServicePricingCreate,
   ServicePricingBatchUpdate,
-  StorefrontConfig,
-  StorefrontConfigCreate,
-  StorefrontConfigUpdate,
-  StorefrontItem,
-  StorefrontItemCreate,
-  StorefrontItemUpdate,
-  PricingDiscount,
   BillingOrder,
   BillingOrderListParams,
   BillingOrderListResponse,
@@ -73,13 +66,6 @@ export type {
   ServiceProductUpdate,
   ServicePricingCreate,
   ServicePricingBatchUpdate,
-  StorefrontConfig,
-  StorefrontConfigCreate,
-  StorefrontConfigUpdate,
-  StorefrontItem,
-  StorefrontItemCreate,
-  StorefrontItemUpdate,
-  PricingDiscount,
   BillingOrder,
   BillingOrderListParams,
   BillingOrderListResponse,
@@ -336,25 +322,6 @@ export const adminApiEndpoints = {
     adminApi.delete(`/admin/service-products/${id}`),
   updateServiceProductPricing: (id: string, data: ServicePricingBatchUpdate) =>
     adminApi.put<ServiceProduct>(`/admin/service-products/${id}/pricing`, data),
-
-  // 商店配置
-  listStorefronts: (params?: { is_active?: boolean }) =>
-    adminApi.get<StorefrontConfig[]>('/admin/storefronts', { params }),
-  getStorefront: (id: string) =>
-    adminApi.get<StorefrontConfig>(`/admin/storefronts/${id}`),
-  createStorefront: (data: StorefrontConfigCreate) =>
-    adminApi.post<StorefrontConfig>('/admin/storefronts', data),
-  updateStorefront: (id: string, data: StorefrontConfigUpdate) =>
-    adminApi.put<StorefrontConfig>(`/admin/storefronts/${id}`, data),
-  deleteStorefront: (id: string) =>
-    adminApi.delete(`/admin/storefronts/${id}`),
-  // 商店项
-  addStorefrontItem: (storefrontId: string, data: StorefrontItemCreate) =>
-    adminApi.post<StorefrontItem>(`/admin/storefronts/${storefrontId}/items`, data),
-  updateStorefrontItem: (storefrontId: string, itemId: string, data: StorefrontItemUpdate) =>
-    adminApi.put<StorefrontItem>(`/admin/storefronts/${storefrontId}/items/${itemId}`, data),
-  deleteStorefrontItem: (storefrontId: string, itemId: string) =>
-    adminApi.delete(`/admin/storefronts/${storefrontId}/items/${itemId}`),
 
   // 统一订单（billing）
   listBillingOrders: (params?: BillingOrderListParams) =>

@@ -18,7 +18,7 @@ import {
 import { subscriptionsApi } from '@/api/subscriptions';
 import { getErrorMessage } from '@apartment-ultra/web-shared';
 import { useAuth } from '@/contexts/auth';
-import type { StorefrontService, StorefrontServicePricing } from '@/api/subscriptions';
+import type { ServiceProduct, ServicePricing } from '@apartment-ultra/api-contract';
 import { getPricingSummary } from '../pricing';
 import { tenantI18n, tenantMessages } from '@/i18n';
 
@@ -66,15 +66,15 @@ export function PurchaseView() {
   const { organization } = useAuth();
   const orgId = organization?.id;
 
-  const [selectedService, setSelectedService] = useState<StorefrontService | null>(null);
-  const [selectedPricing, setSelectedPricing] = useState<StorefrontServicePricing | null>(null);
+  const [selectedService, setSelectedService] = useState<ServiceProduct | null>(null);
+  const [selectedPricing, setSelectedPricing] = useState<ServicePricing | null>(null);
   const [orderPreview, setOrderPreview] = useState<OrderPreview | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
 
-  // 获取商店视图
-  const { data: storefront, isLoading: storefrontLoading } = useQuery({
-    queryKey: ['storefront'],
-    queryFn: () => subscriptionsApi.getStorefront(),
+  // 获取服务列表
+  const { data: servicesList, isLoading: servicesLoading } = useQuery({
+    queryKey: ['services'],
+    queryFn: () => subscriptionsApi.getServices(),
     enabled: !!orgId,
   });
 
@@ -141,7 +141,7 @@ export function PurchaseView() {
     }
   };
 
-  const handleSubscribe = async (service: StorefrontService, pricing?: StorefrontServicePricing) => {
+  const handleSubscribe = async (service: ServiceProduct, pricing?: ServicePricing) => {
     setSelectedService(service);
     setSelectedPricing(pricing ?? null);
     setOrderPreview(null);
@@ -179,7 +179,7 @@ export function PurchaseView() {
 
   const isPending = subscribeMutation.isPending || createOrderMutation.isPending;
   // 只显示已设置定价的服务
-  const services = (storefront?.services ?? []).filter((s) => (s.pricing ?? []).length > 0);
+  const services = (servicesList ?? []).filter((s) => (s.pricing ?? []).length > 0);
   const selectedPricingSummary = getPricingSummary(selectedPricing);
 
   const actionConfig = orderPreview ? ACTION_TYPE_CONFIG[orderPreview.action_type] : null;
@@ -187,7 +187,7 @@ export function PurchaseView() {
   return (
     <div className="space-y-6">
         {/* Services Grid */}
-        {storefrontLoading ? (
+        {servicesLoading ? (
           <div className="grid gap-6 md:grid-cols-3">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="relative">

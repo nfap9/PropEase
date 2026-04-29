@@ -671,7 +671,6 @@ model ServiceProduct {
   updated_at DateTime @updatedAt
 
   pricing          ServicePricing[]
-  storefront_items StorefrontItem[]
   subscriptions    OrganizationSubscription[] @relation("NextService")
   current_subs     OrganizationSubscription[] @relation("CurrentService")
   billing_orders   BillingOrder[]
@@ -702,43 +701,4 @@ model ServicePricing {
   @@map("service_pricing")
 }
 
-// 商店配置（服务购买页面的不同方案）
-model StorefrontConfig {
-  id         String  @id @db.VarChar(26)
-  name       String  @db.VarChar(100)
-  code       String  @unique @db.VarChar(50)
-  is_active  Boolean @default(true)
-  is_default Boolean @default(false)
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  items StorefrontItem[]
-
-  @@index([is_active])
-  @@map("storefront_configs")
-}
-
-// 商店项（商店中展示的服务产品及折扣配置）
-model StorefrontItem {
-  id            String @id @db.VarChar(26)
-  storefront_id String @db.VarChar(26)
-  service_id    String @db.VarChar(26)
-
-  is_visible Boolean @default(true)
-  sort_order Int     @default(0)
-
-  // 按时长的折扣配置
-  // 结构: [{ months: 1, discount_type: 'gift'|'percent'|'fixed', discount_value: number, gift_months: number }]
-  pricing_discounts Json?
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  storefront StorefrontConfig @relation(fields: [storefront_id], references: [id], onDelete: Cascade)
-  service    ServiceProduct   @relation(fields: [service_id], references: [id], onDelete: Cascade)
-
-  @@unique([storefront_id, service_id])
-  @@index([storefront_id])
-  @@map("storefront_items")
-}

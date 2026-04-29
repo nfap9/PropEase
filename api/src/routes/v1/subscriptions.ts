@@ -6,8 +6,8 @@ const router: RouterType = Router();
 
 router.use(requireConsoleAuth);
 
-// storefront
-router.get('/storefront', ctrl.getStorefront);
+// services
+router.get('/services', ctrl.getServices);
 
 // organization subscription
 router.get('/organizations/:org_id/subscription', ctrl.getSubscription);

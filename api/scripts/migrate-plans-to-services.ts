@@ -93,46 +93,6 @@ async function main() {
   `;
   console.log(`   ✓ 更新了 ${ordersResult} 条订单记录`);
 
-  // 5. 创建默认商店配置
-  console.log('\n5. 创建默认商店配置...');
-
-  const existingStorefront = await prisma.storefrontConfig.findFirst({
-    where: { code: 'default' },
-  });
-
-  if (!existingStorefront) {
-    const defaultStorefront = await prisma.storefrontConfig.create({
-      data: {
-        id: 'default_storefront',
-        name: '默认商店',
-        code: 'default',
-        is_active: true,
-        is_default: true,
-      },
-    });
-
-    const activeServices = await prisma.serviceProduct.findMany({
-      where: { is_active: true },
-      orderBy: { sort_order: 'asc' },
-    });
-
-    for (const service of activeServices) {
-      if (service.code === 'free') continue;
-
-      await prisma.storefrontItem.create({
-        data: {
-          storefront_id: defaultStorefront.id,
-          service_id: service.id,
-          is_visible: true,
-          sort_order: service.sort_order,
-        },
-      });
-    }
-    console.log(`   ✓ 创建默认商店，添加了 ${activeServices.length - 1} 个服务产品`);
-  } else {
-    console.log('   默认商店配置已存在，跳过');
-  }
-
   console.log('\n✅ 迁移完成！');
   console.log('\n后续步骤：');
   console.log('1. 验证数据迁移正确');

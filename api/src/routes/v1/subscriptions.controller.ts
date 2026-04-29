@@ -11,39 +11,33 @@ export { CreateOrderSchema, PreviewOrderSchema };
 
 // ==================== Handlers ====================
 
-export async function getStorefront(_req: Request, res: Response, next: NextFunction) {
+export async function getServices(_req: Request, res: Response, next: NextFunction) {
   
     const services = await defaultBillingOrderRepo.findActiveServicesWithPricing(true);
     if (!services || services.length === 0) {
-      return next(createAppError(404, '商店配置不存在或未启用'));
+      return next(createAppError(404, '暂无可用服务'));
     }
 
-    // 转换为 StorefrontView 格式
-    const storefrontView = {
-      id: 'default',
-      name: '默认商店',
-      code: 'default',
-      is_default: true,
-      services: services.map((service) => ({
-        id: service.id,
-        name: service.name,
-        code: service.code,
-        description: service.description,
-        max_organizations: service.max_organizations,
-        max_apartments: service.max_apartments,
-        max_rooms: service.max_rooms,
-        max_members: service.max_members,
-        pricing: (service.pricing || [])
-          .filter((p: { is_active: boolean }) => p.is_active)
-          .map((p: { id: string; months: number; price: { toNumber: () => number } }) => ({
-            id: p.id,
-            months: p.months,
-            price: p.price.toNumber(),
-          })),
-      })),
-    };
+    // 直接返回启用的服务列表
+    const servicesResponse = services.map((service) => ({
+      id: service.id,
+      name: service.name,
+      code: service.code,
+      description: service.description,
+      max_organizations: service.max_organizations,
+      max_apartments: service.max_apartments,
+      max_rooms: service.max_rooms,
+      max_members: service.max_members,
+      pricing: (service.pricing || [])
+        .filter((p: { is_active: boolean }) => p.is_active)
+        .map((p: { id: string; months: number; price: { toNumber: () => number } }) => ({
+          id: p.id,
+          months: p.months,
+          price: p.price.toNumber(),
+        })),
+    }));
 
-    res.json(storefrontView);
+    res.json(servicesResponse);
   
 }
 
