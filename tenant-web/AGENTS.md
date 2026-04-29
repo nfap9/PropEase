@@ -1,16 +1,36 @@
 # 租户端开发指南
 
+> 修改 `tenant-web/` 目录下的任何代码前，**优先阅读本文件**。
+> 仓库总览见 [`../AGENTS.md`](../AGENTS.md)。
+
 Vite + React Router，面向租客端用户，端口 3000。
 
 ## 技术栈
 
-- **框架**: Vite + React Router 6
-- **语言**: TypeScript (strict mode)
-- **UI**: ant Design
-- **样式**: Tailwind CSS
-- **表单**: antd Form（内置校验，无需第三方表单库）
-- **数据获取**: TanStack Query + Axios
-- **测试**: Vitest + Testing Library
+| 类别 | 技术 |
+|------|------|
+| 构建工具 | Vite 6，默认端口 `3000` |
+| 框架 | React 18 + React Router DOM 7 |
+| UI 库 | Ant Design 6 |
+| 样式 | Tailwind CSS 3.4 + `tailwindcss-animate` |
+| 表单 | antd Form（实际配合 react-hook-form + Controller 使用，见 `STANDARDS.md`） |
+| 数据获取 | TanStack Query 5 + Axios |
+| 图表 | Recharts |
+| 通知 | Sonner |
+| 测试 | Vitest 4 + jsdom + `@testing-library/react` + `@testing-library/jest-dom` |
+
+## 构建与测试命令
+
+```bash
+pnpm dev          # vite
+pnpm build        # tsc && vite build
+pnpm preview      # vite preview
+pnpm lint         # eslint src --ext ts,tsx
+pnpm type-check   # tsc --noEmit
+pnpm test         # vitest (watch)
+pnpm test:run     # vitest run
+pnpm test:coverage # vitest run --coverage
+```
 
 ## 代码风格
 
@@ -113,6 +133,9 @@ api/
 
 ## 测试规范
 
-- 组件测试放在组件同目录下：`LeaseDialog.test.tsx`
+- **框架**: Vitest 4 + jsdom + `@testing-library/react` + `@testing-library/jest-dom`
+- **Setup**: `src/test/setup.ts`
+- **Coverage**: v8 provider
+- **测试文件命名**: `.test.tsx` / `.test.ts`
+- **组件测试位置**: 放在组件同目录下（如 `LeaseDialog.test.tsx`）
 - 使用 Testing Library 的 `render` 和 `screen`
-- 测试文件后缀：`.test.tsx`
