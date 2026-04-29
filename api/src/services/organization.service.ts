@@ -56,6 +56,7 @@ export interface UpdateMemberRoleInput {
 export interface OrganizationService {
   listByUser(userId: string): Promise<Array<{ org: Organization; role: OrgRole }>>;
   getById(orgId: string, userId: string): Promise<Organization>;
+  getByIdSimple(orgId: string): Promise<Organization | null>;
   getPersonalOrg(userId: string): Promise<Organization>;
   create(userId: string, data: CreateOrgInput): Promise<Organization>;
   update(orgId: string, userId: string, data: UpdateOrgInput): Promise<Organization>;
@@ -108,6 +109,10 @@ export function createOrganizationService(
         throw createAppError(404, NotFoundMessages.ORGANIZATION);
       }
       return org;
+    },
+
+    getByIdSimple: async (orgId: string) => {
+      return getRepo().findById(orgId);
     },
 
     getPersonalOrg: async (userId: string) => {

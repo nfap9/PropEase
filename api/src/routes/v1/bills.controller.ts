@@ -6,7 +6,7 @@ import { generateBillsForOrg } from '../../services/billGeneration.js';
 import { getBrandConfig } from '../../services/platformConfig.js';
 import { defaultBillService } from '../../services/bill.service.js';
 import { defaultTenantService } from '../../services/tenant.service.js';
-import { defaultOrgRepo } from '../../repositories/organization.repo.js';
+import { defaultOrgService } from '../../services/organization.service.js';
 import type { BillFilter } from '../../repositories/bill.repo.js';
 import { GenerateBillsSchema, BillQuerySchema, BillExportSchema, BillCreateSchema, BillUpdateSchema, BillPaymentSchema } from '../../lib/schemas.js';
 
@@ -80,7 +80,7 @@ export async function exportExcel(req: Request, res: Response, next: NextFunctio
     const tenants = await defaultTenantService.getByIds(tenantIds);
     const tenantNameById = Object.fromEntries(tenants.map((t) => [t.id, t.name]));
 
-    const org = await defaultOrgRepo.findById(orgId);
+    const org = await defaultOrgService.getByIdSimple(orgId);
     const brandConfig = await getBrandConfig();
     const orgName = org?.name ?? brandConfig.app_name;
 
@@ -146,7 +146,7 @@ export async function exportPdf(req: Request, res: Response, _next: NextFunction
     const orgId = await requireOrgMembership(req);
     const bill = await defaultBillService.validateOwnership(orgId, req.params.id);
     const tenant = await defaultTenantService.getById(orgId, bill.lease.tenant_id);
-    const org = await defaultOrgRepo.findById(orgId);
+    const org = await defaultOrgService.getByIdSimple(orgId);
     const brandConfig = await getBrandConfig();
     const orgName = org?.name ?? brandConfig.app_name;
 
