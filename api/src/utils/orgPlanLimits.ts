@@ -104,36 +104,7 @@ export async function getEffectivePlanLimits(orgId: string): Promise<PlanLimits>
       members_count_scope: DEFAULT_FREE_LIMITS.members_count_scope as CountScope,
     };
   }
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth() + 1;
-  const allowance = await prisma.usageAllowance.findUnique({
-    where: { organization_id_year_month: { organization_id: orgId, year, month } },
-  });
-  if (!allowance) return base;
-  const usageBonus = {
-    orgs: allowance.orgs,
-    apartments: allowance.apartments,
-    rooms: allowance.rooms,
-    members: allowance.members,
-  };
-  if (
-    usageBonus.orgs === 0 &&
-    usageBonus.apartments === 0 &&
-    usageBonus.rooms === 0 &&
-    usageBonus.members === 0
-  ) {
-    return base;
-  }
-  const resultOrgs =
-    base.max_organizations === null ? null : base.max_organizations + usageBonus.orgs;
-  return {
-    ...base,
-    max_organizations: resultOrgs,
-    max_apartments: base.max_apartments + usageBonus.apartments,
-    max_rooms: base.max_rooms + usageBonus.rooms,
-    max_members: base.max_members + usageBonus.members,
-  };
+  return base;
 }
 
 /**
@@ -207,20 +178,7 @@ export async function getMaxOrganizationsForUser(userId: string): Promise<number
       baseMax = max === UNLIMITED_ORGS ? UNLIMITED_ORGS : max;
     }
   }
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth() + 1;
-  const allowances = await prisma.usageAllowance.findMany({
-    where: {
-      organization_id: { in: orgIds },
-      year,
-      month,
-    },
-  });
-  const usageOrgs = allowances.reduce((s, a) => s + a.orgs, 0);
-  if (usageOrgs === 0) return baseMax;
-  if (baseMax === UNLIMITED_ORGS) return baseMax;
-  return baseMax + usageOrgs;
+  return baseMax;
 }
 
 /**

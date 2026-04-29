@@ -32,7 +32,6 @@ export const adminZhCNMessages = {
       registeredUsers: '用户管理',
       organizations: '团队管理',
       servicePricing: '服务方案',
-      usagePricing: '用量计费',
       subscriptions: '已购服务',
       billingOrders: '订单管理',
       billingManagement: '计费管理',
@@ -181,17 +180,6 @@ export const adminZhCNMessages = {
       updated: '服务方案已更新',
       pricingUpdated: '价格设置已更新',
       deleted: '服务方案已删除',
-    },
-  },
-  usagePricing: {
-    heading: '用量计费',
-    title: '团队 / 公寓 / 房间 / 成员单价',
-    description: '单位：元/个/年，系统会按使用规模应用这组计费标准',
-    fields: {
-      organization: '团队单价（元/个/年）',
-      apartment: '公寓单价（元/个/年）',
-      room: '房间单价（元/个/年）',
-      member: '成员单价（元/个/年）',
     },
   },
   subscriptions: {

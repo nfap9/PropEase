@@ -33,8 +33,6 @@ vi.mock('../../../services/admin.service.js', () => ({
     giftSubscription: vi.fn(),
     getStats: vi.fn(),
     getAdminIncome: vi.fn(),
-    getUsagePricing: vi.fn(),
-    updateUsagePricing: vi.fn(),
   },
 }));
 

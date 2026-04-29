@@ -37,14 +37,6 @@ export const ResetPasswordSchema = z
     message: '需要 password 或 new_password',
   });
 
-export const UsagePricingUpdateSchema = z.object({
-  price_per_org: z.number().min(0).optional(),
-  price_per_apartment: z.number().min(0).optional(),
-  price_per_room: z.number().min(0).optional(),
-  price_per_member: z.number().min(0).optional(),
-  is_active: z.boolean().optional(),
-});
-
 export const PlatformBrandSchema = z.object({
   app_name: z.string(),
   app_description: z.string(),
@@ -267,24 +259,6 @@ export async function getAdminIncome(req: Request, res: Response, _next: NextFun
     const endMonth = req.query.end_month != null ? Number(req.query.end_month) : undefined;
     const income = await defaultAdminService.getAdminIncome(year, startMonth, endMonth);
     res.json(income);
-  
-}
-
-// --- usage pricing ---
-export async function getUsagePricing(_req: Request, res: Response, _next: NextFunction) {
-  
-    const pricing = await defaultAdminService.getUsagePricing();
-    res.json(pricing);
-  
-}
-
-export async function updateUsagePricing(req: Request, res: Response, next: NextFunction) {
-  
-    const parsed = UsagePricingUpdateSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const pricing = await defaultAdminService.updateUsagePricing(parsed.data);
-    auditAdminAction(req, 'admin:usage_pricing:update', undefined, parsed.data);
-    res.json(pricing);
   
 }
 

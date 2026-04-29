@@ -4,7 +4,6 @@ import {
   UserCircle,
   Shield,
   Building2,
-  Package,
   CreditCard,
   Palette,
   DollarSign,
@@ -89,12 +88,6 @@ const BILLING_NAV_ITEMS: NavItem[] = [
     icon: DollarSign,
   },
   {
-    id: 'billing-usage-pricing',
-    href: '/billing/usage-pricing',
-    label: adminMessages.layout.nav.usagePricing,
-    icon: Package,
-  },
-  {
     id: 'billing-orders',
     href: '/billing/orders',
     label: adminMessages.layout.nav.billingOrders,
@@ -132,7 +125,6 @@ export const ROUTE_META: Record<string, RouteMeta> = {
   '/organizations/:id': { sectionItemId: 'organizations', detailLabel: '团队详情' },
   '/billing': { sectionItemId: 'billing-plans' },
   '/billing/plans': { sectionItemId: 'billing-plans' },
-  '/billing/usage-pricing': { sectionItemId: 'billing-usage-pricing' },
   '/billing/orders': { sectionItemId: 'billing-orders' },
   '/setup': { sectionItemId: undefined },
 };

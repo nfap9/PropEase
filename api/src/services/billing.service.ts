@@ -1,4 +1,4 @@
-import type { BillingOrder, UsageUnitPricing, ServiceProduct as PrismaServiceProduct, OrganizationSubscription } from '@prisma/client';
+import type { BillingOrder, ServiceProduct as PrismaServiceProduct, OrganizationSubscription } from '@prisma/client';
 import { ulid } from 'ulid';
 import { createBillingOrderRepository, type BillingOrderRepository } from '../repositories/billing-order.repo.js';
 import { createAppError } from '../utils/appError.js';
@@ -11,7 +11,7 @@ import type { SubscriptionStatus, ServiceProduct } from '@apartment-ultra/api-co
 /**
  * 订单类型
  */
-export type OrderType = 'subscription' | 'usage';
+export type OrderType = 'subscription';
 
 /**
  * 订阅订单创建参数
@@ -22,20 +22,6 @@ export interface CreateSubscriptionOrderParams {
   pricingId?: string;
   billingMonths?: number;
   credit?: number; // 抵扣金额（升级时旧服务剩余价值）
-}
-
-/**
- * 用量订单创建参数
- */
-export interface CreateUsageOrderParams {
-  userId: string;
-  organizationId: string;
-  usageDetails: {
-    orgs: number;
-    apartments: number;
-    rooms: number;
-    members: number;
-  };
 }
 
 /**
@@ -50,7 +36,6 @@ export interface BillingOrderResponse {
   service_id: string | null;
   pricing_id: string | null;
   billing_months: number | null;
-  usage_details: Record<string, unknown> | null;
   amount: number;
   original_amount: number | null;
   currency: string;
@@ -64,21 +49,11 @@ export interface BillingOrderResponse {
 }
 
 /**
- * 用量单价信息
- */
-export interface UsageUnitPricingInfo {
-  unit_type: string;
-  price_per_unit: number;
-  is_active: boolean;
-}
-
-/**
  * Billing Service 接口
  */
 export interface BillingService {
   // 订单操作
   createSubscriptionOrder(params: CreateSubscriptionOrderParams): Promise<BillingOrderResponse>;
-  createUsageOrder(params: CreateUsageOrderParams): Promise<BillingOrderResponse>;
   getOrder(orderId: string): Promise<BillingOrderResponse | null>;
   getOrderByOrderNo(orderNo: string): Promise<BillingOrder | null>;
   updateOrderStatus(orderId: string, status: string, wechatTransactionId?: string): Promise<BillingOrder>;
@@ -90,22 +65,6 @@ export interface BillingService {
     limit?: number;
     offset?: number;
   }): Promise<{ orders: BillingOrderResponse[]; total: number }>;
-
-  // 用量单价操作
-  getUsagePricing(): Promise<UsageUnitPricingInfo[]>;
-  updateUsagePricing(pricing: {
-    unit_type: string;
-    price_per_unit: number;
-  }[]): Promise<void>;
-
-  // 用量额度操作
-  getUsageAllowance(orgId: string, year: number, month: number): Promise<{
-    orgs: number;
-    apartments: number;
-    rooms: number;
-    members: number;
-  }>;
-  fulfillUsageAllowance(orderId: string, orgId: string): Promise<void>;
 
   // 订阅管理
   listServices(activeOnly?: boolean): Promise<PrismaServiceProduct[]>;
@@ -209,77 +168,6 @@ export function createBillingService(
       return toOrderResponse(order);
     },
 
-    createUsageOrder: async (params) => {
-      const { userId, organizationId, usageDetails } = params;
-      const { orgs, apartments, rooms, members } = usageDetails;
-
-      if (orgs === 0 && apartments === 0 && rooms === 0 && members === 0) {
-        throw createAppError(400, '至少选择一种对象数量');
-      }
-
-      // 获取用量单价
-      const activePricings = await prisma.usageUnitPricing.findMany({
-        where: { is_active: true, valid_to: null },
-        orderBy: { valid_from: 'desc' },
-      });
-
-      if (activePricings.length === 0) {
-        throw createAppError(400, '按量定价未配置');
-      }
-
-      // 按 unit_type 聚合最新的单价
-      const latestPricingMap = new Map<string, number>();
-      for (const p of activePricings) {
-        if (!latestPricingMap.has(p.unit_type)) {
-          latestPricingMap.set(p.unit_type, Number(p.price_per_unit));
-        }
-      }
-
-      const amount =
-        (latestPricingMap.get('org') ?? 0) * orgs +
-        (latestPricingMap.get('apartment') ?? 0) * apartments +
-        (latestPricingMap.get('room') ?? 0) * rooms +
-        (latestPricingMap.get('member') ?? 0) * members;
-
-      if (amount <= 0) {
-        throw createAppError(400, '订单金额必须大于 0');
-      }
-
-      const orderNo = `USG${Date.now()}`;
-      const expires = new Date();
-      expires.setHours(expires.getHours() + 2);
-
-      const order = await getRepo().create({
-        id: ulid().toLowerCase(),
-        order_no: orderNo,
-        order_type: 'usage',
-        user_id: userId,
-        organization: { connect: { id: organizationId } },
-        usage_details: { orgs, apartments, rooms, members },
-        amount,
-        original_amount: amount,
-        currency: 'CNY',
-        status: 'pending',
-        payment_method: 'wechat_native',
-        expires_at: expires,
-      });
-
-      // 创建微信支付订单
-      const wechatResult = await createWechatPayNativeOrder({
-        out_trade_no: orderNo,
-        description: `用量购买-组织${orgs}公寓${apartments}房间${rooms}成员${members}`,
-        amount_yuan: amount,
-        time_expire: expires.toISOString(),
-      });
-
-      if (wechatResult?.code_url) {
-        await getRepo().update(order.id, { code_url: wechatResult.code_url });
-        order.code_url = wechatResult.code_url;
-      }
-
-      return toOrderResponse(order);
-    },
-
     getOrder: async (orderId) => {
       const order = await getRepo().findByIdWithRelations(orderId);
       return order ? toOrderResponse(order) : null;
@@ -310,85 +198,6 @@ export function createBillingService(
         orders: orders.map(toOrderResponse),
         total,
       };
-    },
-
-    getUsagePricing: async () => {
-      // 获取每个 unit_type 的最新有效单价
-      const pricings = await prisma.usageUnitPricing.findMany({
-        where: { is_active: true, valid_to: null },
-        orderBy: { valid_from: 'desc' },
-      });
-
-      // 按 unit_type 去重，取最新的
-      const latestByType = new Map<string, UsageUnitPricing>();
-      for (const p of pricings) {
-        if (!latestByType.has(p.unit_type)) {
-          latestByType.set(p.unit_type, p);
-        }
-      }
-
-      return Array.from(latestByType.values()).map((p) => ({
-        unit_type: p.unit_type,
-        price_per_unit: Number(p.price_per_unit),
-        is_active: p.is_active,
-      }));
-    },
-
-    updateUsagePricing: async (pricing) => {
-      const now = new Date();
-
-      // 将所有现有单价设为无效（设置 valid_to）
-      await prisma.usageUnitPricing.updateMany({
-        where: { is_active: true, valid_to: null },
-        data: { valid_to: now },
-      });
-
-      // 创建新的单价记录
-      for (const p of pricing) {
-        await prisma.usageUnitPricing.create({
-          data: {
-            id: ulid().toLowerCase(),
-            unit_type: p.unit_type,
-            price_per_unit: p.price_per_unit,
-            is_active: true,
-            valid_from: now,
-          },
-        });
-      }
-    },
-
-    getUsageAllowance: async (orgId, year, month) => {
-      const allowance = await getRepo().findAllowance(orgId, year, month);
-      if (!allowance) {
-        return { orgs: 0, apartments: 0, rooms: 0, members: 0 };
-      }
-      return {
-        orgs: allowance.orgs,
-        apartments: allowance.apartments,
-        rooms: allowance.rooms,
-        members: allowance.members,
-      };
-    },
-
-    fulfillUsageAllowance: async (orderId, orgId) => {
-      const order = await getRepo().findById(orderId);
-      if (!order || order.status !== 'paid') {
-        throw createAppError(400, '订单不存在或未支付');
-      }
-
-      if (order.usage_details) {
-        const details = order.usage_details as Record<string, number>;
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth() + 1;
-
-        await getRepo().upsertAllowance(orgId, year, month, {
-          orgs: details.orgs,
-          apartments: details.apartments,
-          rooms: details.rooms,
-          members: details.members,
-        });
-      }
     },
 
     listServices: async (activeOnly = true) => {
@@ -568,7 +377,6 @@ function toOrderResponse(order: BillingOrder): BillingOrderResponse {
     service_id: order.service_id,
     pricing_id: order.pricing_id,
     billing_months: order.billing_months,
-    usage_details: (order.usage_details as Record<string, unknown>) ?? null,
     amount: Number(order.amount),
     original_amount: order.original_amount ? Number(order.original_amount) : null,
     currency: order.currency,

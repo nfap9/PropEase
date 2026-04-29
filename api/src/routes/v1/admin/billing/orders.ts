@@ -16,7 +16,7 @@ billingAdminOrdersRouter.get('/', async (req: Request, res: Response, next: Next
     const { order_type, organization_id, status, limit, offset } = req.query;
 
     const result = await billingService.listOrders({
-      orderType: order_type as 'subscription' | 'usage' | undefined,
+      orderType: order_type as 'subscription' | undefined,
       organizationId: organization_id as string | undefined,
       status: status as string | undefined,
       limit: limit ? Number(limit) : undefined,

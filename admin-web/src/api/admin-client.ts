@@ -24,8 +24,6 @@ import type {
   AdminSubscription,
   AdminSubscriptionRenew,
   AdminPlatformConfig,
-  AdminUsagePricing,
-  AdminUsagePricingUpdate,
   ServiceProduct,
   ServiceProductCreate,
   ServiceProductUpdate,
@@ -34,8 +32,6 @@ import type {
   BillingOrder,
   BillingOrderListParams,
   BillingOrderListResponse,
-  AdminUsagePricingResponse,
-  AdminUsagePricingUpdateRequest,
 } from '@apartment-ultra/api-contract';
 
 // 重新导出类型，保持向后兼容
@@ -59,8 +55,6 @@ export type {
   AdminSubscription,
   AdminSubscriptionRenew,
   AdminPlatformConfig,
-  AdminUsagePricing,
-  AdminUsagePricingUpdate,
   ServiceProduct,
   ServiceProductCreate,
   ServiceProductUpdate,
@@ -69,8 +63,6 @@ export type {
   BillingOrder,
   BillingOrderListParams,
   BillingOrderListResponse,
-  AdminUsagePricingResponse,
-  AdminUsagePricingUpdateRequest,
 };
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
@@ -292,23 +284,6 @@ export const adminApiEndpoints = {
     register_subtitle: string;
   }) => adminApi.put<unknown>('/admin/platform-config', data),
 
-  // 按量定价
-  getUsagePricing: () =>
-    adminApi.get<{
-      id: string;
-      price_per_org: number;
-      price_per_apartment: number;
-      price_per_room: number;
-      price_per_member: number;
-    }>('/admin/usage-pricing'),
-  updateUsagePricing: (data: {
-    price_per_org?: number;
-    price_per_apartment?: number;
-    price_per_room?: number;
-    price_per_member?: number;
-  }) => adminApi.put<unknown>('/admin/usage-pricing', data),
-
-
   // 服务产品
   listServiceProducts: (params?: { is_active?: boolean }) =>
     adminApi.get<ServiceProduct[]>('/admin/service-products', { params }),
@@ -329,9 +304,4 @@ export const adminApiEndpoints = {
   getBillingOrder: (id: string) =>
     adminApi.get<BillingOrder>(`/admin/billing/orders/${id}`),
 
-  // 新用量定价（使用新 API）
-  getBillingUsagePricing: () =>
-    adminApi.get<AdminUsagePricingResponse>('/admin/billing/usage-pricing'),
-  updateBillingUsagePricing: (data: AdminUsagePricingUpdateRequest) =>
-    adminApi.put<unknown>('/admin/billing/usage-pricing', data),
 };

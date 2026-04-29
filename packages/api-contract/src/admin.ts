@@ -215,18 +215,4 @@ export interface AdminPlatformConfig {
   register_subtitle: string;
 }
 
-/** 按量定价 */
-export interface AdminUsagePricing {
-  id: string;
-  price_per_org: number;
-  price_per_apartment: number;
-  price_per_room: number;
-  price_per_member: number;
-}
 
-export interface AdminUsagePricingUpdate {
-  price_per_org?: number;
-  price_per_apartment?: number;
-  price_per_room?: number;
-  price_per_member?: number;
-}

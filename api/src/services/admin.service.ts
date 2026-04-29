@@ -16,7 +16,6 @@ import { NotFoundMessages } from '../messages.js';
 import { hashPassword, verifyPassword } from '../utils/security.js';
 import { createAdminAccessToken } from '../utils/jwt.js';
 import { toPrismaInputJsonValue } from '../utils/json.js';
-import { defaultBillingService } from './billing.service.js';
 import { ulid } from 'ulid';
 import {
   defaultServiceProductService,
@@ -50,26 +49,6 @@ export interface UpdateAdminUserInput {
   name?: string;
   email?: string;
   is_active?: boolean;
-}
-
-/**
- * 使用量定价
- */
-export interface UsagePricing {
-  price_per_org: number;
-  price_per_apartment: number;
-  price_per_room: number;
-  price_per_member: number;
-}
-
-/**
- * 使用量定价更新输入
- */
-export interface UpdateUsagePricingInput {
-  price_per_org?: number;
-  price_per_apartment?: number;
-  price_per_room?: number;
-  price_per_member?: number;
 }
 
 export interface GiftSubscriptionInput {
@@ -178,10 +157,6 @@ export interface AdminService {
       collection_rate: number;
     }>
   >;
-
-  // Usage Pricing
-  getUsagePricing(): Promise<UsagePricing>;
-  updateUsagePricing(data: UpdateUsagePricingInput): Promise<UsagePricing>;
 
   // Platform Config
   getPlatformConfig(): Promise<PlatformBrand>;
@@ -656,46 +631,6 @@ export function createAdminService(
             ? Math.round((row.collected_amount / row.total_amount) * 1000) / 10
             : 0,
       }));
-    },
-
-    getUsagePricing: async () => {
-      const pricings = await defaultBillingService.getUsagePricing();
-      const result: Record<string, number> = {};
-      for (const p of pricings) {
-        result[`price_per_${p.unit_type}`] = p.price_per_unit;
-      }
-      return {
-        price_per_org: result.price_per_org ?? 0,
-        price_per_apartment: result.price_per_apartment ?? 0,
-        price_per_room: result.price_per_room ?? 0,
-        price_per_member: result.price_per_member ?? 0,
-      };
-    },
-
-    updateUsagePricing: async (data: UpdateUsagePricingInput) => {
-      const pricing = [];
-      if (data.price_per_org !== undefined) {
-        pricing.push({ unit_type: 'org', price_per_unit: data.price_per_org });
-      }
-      if (data.price_per_apartment !== undefined) {
-        pricing.push({ unit_type: 'apartment', price_per_unit: data.price_per_apartment });
-      }
-      if (data.price_per_room !== undefined) {
-        pricing.push({ unit_type: 'room', price_per_unit: data.price_per_room });
-      }
-      if (data.price_per_member !== undefined) {
-        pricing.push({ unit_type: 'member', price_per_unit: data.price_per_member });
-      }
-      if (pricing.length === 0) {
-        throw createAppError(400, '至少需要提供一个价格字段');
-      }
-      await defaultBillingService.updateUsagePricing(pricing);
-      return {
-        price_per_org: data.price_per_org ?? 0,
-        price_per_apartment: data.price_per_apartment ?? 0,
-        price_per_room: data.price_per_room ?? 0,
-        price_per_member: data.price_per_member ?? 0,
-      };
     },
 
     getPlatformConfig: async () => {

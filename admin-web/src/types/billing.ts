@@ -15,7 +15,6 @@ export const BILLING_ORDER_STATUS_OPTIONS: { value: BillingOrderStatus; label: s
 /** 订单类型选项 */
 export const BILLING_ORDER_TYPE_OPTIONS: { value: BillingOrderType; label: string }[] = [
   { value: 'subscription', label: '订阅订单' },
-  { value: 'usage', label: '用量订单' },
 ];
 
 /** 格式化订单金额 */

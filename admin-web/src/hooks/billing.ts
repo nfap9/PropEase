@@ -4,7 +4,6 @@ import { toast } from 'sonner';
 import {
   adminApiEndpoints,
   type BillingOrderListParams,
-  type AdminUsagePricingUpdateRequest,
   type AdminPlanCreate,
   type AdminPlanUpdate,
   type AdminPlanPricingCreate,
@@ -138,34 +137,4 @@ export function useBillingOrder(id: string) {
   };
 }
 
-/**
- * 用量定价 Hooks
- */
-export function useBillingUsagePricing() {
-  const queryClient = useQueryClient();
 
-  const query = useQuery({
-    queryKey: ['admin', 'billing', 'usage-pricing'],
-    queryFn: async () => {
-      const response = await adminApiEndpoints.getBillingUsagePricing();
-      return response.data;
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (data: AdminUsagePricingUpdateRequest) =>
-      adminApiEndpoints.updateBillingUsagePricing(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'billing', 'usage-pricing'] });
-      toast.success('用量单价更新成功');
-    },
-    onError: (error) => toast.error(getErrorMessage(error, '更新失败，请重试')),
-  });
-
-  return {
-    pricing: query.data,
-    loading: query.isLoading,
-    error: query.error,
-    updateMutation,
-  };
-}

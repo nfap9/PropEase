@@ -30,7 +30,6 @@ export const adminMessages = {
       registeredUsers: '用户管理',
       organizations: '团队管理',
       servicePricing: '服务方案',
-      usagePricing: '用量计费',
       subscriptions: '已购服务',
       billingOrders: '订单管理',
       billingManagement: '计费管理',

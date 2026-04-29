@@ -113,11 +113,7 @@ export type {
   UtilityExportRoom,
 } from './utilities.js';
 
-/** 按量购买 */
-export type {
-  UsagePricing,
 
-} from './usage.js';
 
 /** 通知 */
 export type {
@@ -223,8 +219,6 @@ export type {
   AdminSubscriptionRenew,
   AdminSubscriptionGiftCreate,
   AdminPlatformConfig,
-  AdminUsagePricing,
-  AdminUsagePricingUpdate,
 } from './admin.js';
 
 /** 用量付费（统一订单） */
@@ -232,13 +226,8 @@ export type {
   BillingOrder,
   BillingOrderType,
   BillingOrderStatus,
-  BillingUsageDetails,
   CreateSubscriptionOrderRequest,
-  CreateUsageOrderRequest,
   CreateBillingOrderRequest,
   BillingOrderListParams,
   BillingOrderListResponse,
-  UsageUnitPricing,
-  AdminUsagePricingResponse,
-  AdminUsagePricingUpdateRequest,
 } from './billing.js';

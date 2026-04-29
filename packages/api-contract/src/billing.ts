@@ -1,20 +1,12 @@
 /**
- * 用量付费模块 - 统一订单类型定义
+ * 订单模块 - 统一订单类型定义
  */
 
 /** 统一订单类型 */
-export type BillingOrderType = 'subscription' | 'usage';
+export type BillingOrderType = 'subscription';
 
 /** 订单状态 */
 export type BillingOrderStatus = 'pending' | 'paid' | 'cancelled' | 'expired';
-
-/** 用量明细 */
-export interface BillingUsageDetails {
-  orgs: number;
-  apartments: number;
-  rooms: number;
-  members: number;
-}
 
 /** 统一订单 */
 export interface BillingOrder {
@@ -26,7 +18,6 @@ export interface BillingOrder {
   service_id: string | null;
   pricing_id: string | null;
   billing_months: number | null;
-  usage_details: BillingUsageDetails | null;
   amount: number;
   original_amount: number | null;
   currency: string;
@@ -48,15 +39,8 @@ export interface CreateSubscriptionOrderRequest {
   billing_months?: number;
 }
 
-/** 创建用量订单请求 */
-export interface CreateUsageOrderRequest {
-  order_type: 'usage';
-  organization_id: string;
-  usage_details: BillingUsageDetails;
-}
-
 /** 创建订单请求 */
-export type CreateBillingOrderRequest = CreateSubscriptionOrderRequest | CreateUsageOrderRequest;
+export type CreateBillingOrderRequest = CreateSubscriptionOrderRequest;
 
 /** 订单列表查询参数 */
 export interface BillingOrderListParams {
@@ -75,25 +59,4 @@ export interface BillingOrderListResponse {
   offset: number;
 }
 
-/** 用量单价信息 */
-export interface UsageUnitPricing {
-  unit_type: 'org' | 'apartment' | 'room' | 'member';
-  price_per_unit: number;
-  is_active: boolean;
-}
 
-/** 用量单价响应（平面结构） */
-export interface AdminUsagePricingResponse {
-  price_per_org: number;
-  price_per_apartment: number;
-  price_per_room: number;
-  price_per_member: number;
-}
-
-/** 用量单价更新请求 */
-export interface AdminUsagePricingUpdateRequest {
-  price_per_org?: number;
-  price_per_apartment?: number;
-  price_per_room?: number;
-  price_per_member?: number;
-}

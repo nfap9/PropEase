@@ -14,7 +14,7 @@ import OrganizationDetailPage from '@/pages/organizations/detail/index';
 import BrandPage from '@/pages/brand/index';
 import BillingPlansPage from '@/pages/billing/plans/index';
 import BillingOrdersPage from '@/pages/billing/orders/index';
-import BillingUsagePricingPage from '@/pages/billing/usage-pricing/index';
+
 
 // Root layout that provides AppProviders and renders children via Outlet
 function RootLayout() {
@@ -85,10 +85,7 @@ export const router = createBrowserRouter([
             path: 'billing/orders',
             element: <BillingOrdersPage />,
           },
-          {
-            path: 'billing/usage-pricing',
-            element: <BillingUsagePricingPage />,
-          },
+
         ],
       },
       {

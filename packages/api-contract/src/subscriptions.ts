@@ -83,12 +83,4 @@ export interface OrganizationUsageStats {
     rooms: UsageQuotaItem;
     members: UsageQuotaItem;
   };
-  /** 按量付费额度（如有） */
-  paid_quotas: {
-    apartments: number;
-    rooms: number;
-    members: number;
-    valid_from: string | null;
-    valid_to: string | null;
-  } | null;
 }

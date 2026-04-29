@@ -50,8 +50,6 @@ model Organization {
   tenants             Tenant[]
   subscription        OrganizationSubscription?
   billing_orders      BillingOrder[]
-  usage_allowances    UsageAllowance[]
-  user_balance        UserBalance?
   notification_templates  NotificationTemplate[]
   notification_deliveries NotificationDelivery[]
 
@@ -555,9 +553,6 @@ model BillingOrder {
   pricing_id      String?   @db.VarChar(26)
   billing_months  Int?      // 订阅月数
 
-  // 用量明细（usage 用）
-  usage_details   Json?     // { orgs, apartments, rooms, members }
-
   // 金额
   amount          Decimal   @db.Decimal(10, 2)
   original_amount Decimal?  @db.Decimal(10, 2)
@@ -575,7 +570,6 @@ model BillingOrder {
   applied_discounts Json?
   total_discount    Decimal? @db.Decimal(10, 2)
   total_gift_months Int      @default(0)
-  balance_deduction Decimal? @db.Decimal(10, 2)
 
   // 关联订阅
   subscription_id String?   @db.VarChar(26)
@@ -593,57 +587,6 @@ model BillingOrder {
   @@index([order_type])
   @@index([status])
   @@map("billing_orders")
-}
-
-// 用量单位定价表（替代 PlatformConfig.usage_pricing，按组织/公寓/房间/成员计费）
-model UsageUnitPricing {
-  id             String    @id @db.VarChar(26)
-  unit_type      String    @db.VarChar(20)  // 'org' | 'apartment' | 'room' | 'member'
-  price_per_unit Decimal   @db.Decimal(10, 2)
-  is_active      Boolean   @default(true)
-  valid_from     DateTime  @default(now())
-  valid_to       DateTime?
-  created_at     DateTime  @default(now())
-  updated_at     DateTime  @updatedAt
-
-  @@unique([unit_type, valid_from])
-  @@map("usage_unit_pricing")
-}
-
-// 组织用量额度表（替代 UsageQuota，基于 organization，按年月记录）
-model UsageAllowance {
-  id               String    @id @db.VarChar(26)
-  organization_id  String    @db.VarChar(26)
-  year             Int
-  month            Int
-  orgs             Int       @default(0)
-  apartments       Int       @default(0)
-  rooms            Int       @default(0)
-  members          Int       @default(0)
-  billing_order_id String?   @db.VarChar(26)
-  created_at       DateTime  @default(now())
-  updated_at       DateTime  @updatedAt
-
-  organization Organization   @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-
-  @@unique([organization_id, year, month])
-  @@index([organization_id])
-  @@map("usage_allowances")
-}
-
-// 组织账户余额（赠送金额、已使用金额）
-model UserBalance {
-  id              String   @id @db.VarChar(26)
-  organization_id String   @unique @db.VarChar(26)
-  balance         Decimal  @default(0) @db.Decimal(10, 2)
-  total_gifted    Decimal  @default(0) @db.Decimal(10, 2)
-  total_used      Decimal  @default(0) @db.Decimal(10, 2)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-
-  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-
-  @@map("user_balances")
 }
 
 // ============================================================

@@ -6,7 +6,6 @@ import { requireAdmin } from '../../../middlewares/requireAdmin.js';
 import { requireSystemInitialized } from '../../../middlewares/requireSystemInitialized.js';
 import * as ctrl from './admin.controller.js';
 import { billingAdminOrdersRouter } from './billing/orders.js';
-import { billingAdminUsagePricingRouter } from './billing/usage-pricing.js';
 
 const router: Router = Router();
 
@@ -54,12 +53,8 @@ router.post('/subscriptions/gift', ctrl.giftSubscription);
 // --- stats & usage pricing ---
 router.get('/stats', ctrl.getStats);
 router.get('/income', ctrl.getAdminIncome);
-router.get('/usage-pricing', ctrl.getUsagePricing);
-router.put('/usage-pricing', ctrl.updateUsagePricing);
-
 // --- billing (new unified) ---
 router.use('/billing/orders', billingAdminOrdersRouter);
-router.use('/billing/usage-pricing', billingAdminUsagePricingRouter);
 
 // --- platform config ---
 router.get('/platform-config', ctrl.getPlatformConfig);

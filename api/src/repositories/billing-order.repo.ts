@@ -1,5 +1,4 @@
-import type { Prisma, BillingOrder, UsageAllowance, ServiceProduct, OrganizationSubscription } from '@prisma/client';
-import { ulid } from 'ulid';
+import type { Prisma, BillingOrder, ServiceProduct, OrganizationSubscription } from '@prisma/client';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -17,13 +16,6 @@ export type BillingOrderWithRelations = BillingOrder & {
  */
 export type SubscriptionWithService = OrganizationSubscription & {
   service: ServiceProduct | null;
-};
-
-/**
- * 用量额度记录
- */
-export type UsageAllowanceWithOrg = UsageAllowance & {
-  organization?: { id: string; name: string } | null;
 };
 
 /**
@@ -47,24 +39,14 @@ export interface BillingOrderRepository {
   // 订单列表查询
   findByOrganization(orgId: string, limit?: number): Promise<BillingOrder[]>;
   findByUser(userId: string, limit?: number): Promise<BillingOrder[]>;
-  findByType(type: 'subscription' | 'usage', limit?: number): Promise<BillingOrder[]>;
+  findByType(type: 'subscription', limit?: number): Promise<BillingOrder[]>;
   findAll(filters: {
-    orderType?: 'subscription' | 'usage';
+    orderType?: 'subscription';
     organizationId?: string;
     status?: string;
     limit?: number;
     offset?: number;
   }): Promise<{ orders: BillingOrderWithRelations[]; total: number }>;
-
-  // 用量额度操作
-  upsertAllowance(
-    orgId: string,
-    year: number,
-    month: number,
-    data: { orgs?: number; apartments?: number; rooms?: number; members?: number }
-  ): Promise<UsageAllowance>;
-  findAllowance(orgId: string, year: number, month: number): Promise<UsageAllowance | null>;
-  findAllowancesByOrg(orgId: string): Promise<UsageAllowance[]>;
 
   // 订阅操作
   findActiveServices(activeOnly?: boolean): Promise<ServiceProduct[]>;
@@ -124,7 +106,7 @@ export function createBillingOrderRepository(db: DbClient): BillingOrderReposito
       });
     },
 
-    findByType: async (type: 'subscription' | 'usage', limit?: number) => {
+    findByType: async (type: 'subscription', limit?: number) => {
       return db.billingOrder.findMany({
         where: { order_type: type },
         orderBy: { created_at: 'desc' },
@@ -156,50 +138,6 @@ export function createBillingOrderRepository(db: DbClient): BillingOrderReposito
       ]);
 
       return { orders, total };
-    },
-
-    upsertAllowance: async (orgId, year, month, data) => {
-      const existing = await db.usageAllowance.findUnique({
-        where: { organization_id_year_month: { organization_id: orgId, year, month } },
-      });
-
-      if (existing) {
-        return db.usageAllowance.update({
-          where: { organization_id_year_month: { organization_id: orgId, year, month } },
-          data: {
-            ...(data.orgs !== undefined && { orgs: data.orgs }),
-            ...(data.apartments !== undefined && { apartments: data.apartments }),
-            ...(data.rooms !== undefined && { rooms: data.rooms }),
-            ...(data.members !== undefined && { members: data.members }),
-          },
-        });
-      }
-
-      return db.usageAllowance.create({
-        data: {
-          id: ulid().toLowerCase(),
-          organization: { connect: { id: orgId } },
-          year,
-          month,
-          orgs: data.orgs ?? 0,
-          apartments: data.apartments ?? 0,
-          rooms: data.rooms ?? 0,
-          members: data.members ?? 0,
-        },
-      });
-    },
-
-    findAllowance: async (orgId, year, month) => {
-      return db.usageAllowance.findUnique({
-        where: { organization_id_year_month: { organization_id: orgId, year, month } },
-      });
-    },
-
-    findAllowancesByOrg: async (orgId) => {
-      return db.usageAllowance.findMany({
-        where: { organization_id: orgId },
-        orderBy: [{ year: 'desc' }, { month: 'desc' }],
-      });
     },
 
     findActiveServices: async (activeOnly = true) => {

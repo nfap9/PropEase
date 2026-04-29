@@ -150,15 +150,6 @@ router.post('/', async (req: Request, res: Response, _next: NextFunction) => {
             console.error('Fulfill subscription failed:', e);
           }
         }
-      } else if (order.order_type === 'usage') {
-        // 履行用量配额
-        if (order.organization_id) {
-          try {
-            await defaultBillingService.fulfillUsageAllowance(order.id, order.organization_id);
-          } catch (e) {
-            console.error('Fulfill usage quota failed:', e);
-          }
-        }
       }
 
       res.status(200).json({ code: 'SUCCESS', message: 'ok' });
