@@ -11,8 +11,8 @@
     "docker:prod": "docker compose -p apartment-ultra-prod -f docker/docker-compose.yaml --env-file docker/.env.production up -d --remove-orphans",
     "build": "pnpm -r run build",
     "lint": "pnpm --filter apartment-ultra-api run lint && pnpm --filter apartment-ultra-tenant run lint && pnpm --filter apartment-ultra-admin run lint",
-    "format": "prettier --write \"api/src/**/*.ts\" \"tenant-web/src/**/*.{ts,tsx}\"",
-    "format:check": "prettier --check \"api/src/**/*.ts\" \"tenant-web/src/**/*.{ts,tsx}\"",
+    "format": "prettier --write \"api/src/**/*.ts\" \"tenant-web/src/**/*.{ts,tsx}\" \"admin-web/src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"api/src/**/*.ts\" \"tenant-web/src/**/*.{ts,tsx}\" \"admin-web/src/**/*.{ts,tsx}\"",
     "type-check": "pnpm --filter apartment-ultra-api exec prisma generate && pnpm --filter apartment-ultra-api run type-check && pnpm --filter apartment-ultra-tenant run type-check && pnpm --filter apartment-ultra-admin run type-check",
     "test": "pnpm --filter apartment-ultra-api exec prisma generate && pnpm --filter apartment-ultra-api run test && pnpm --filter apartment-ultra-tenant run test:run && pnpm --filter apartment-ultra-admin run test:run"
   },
