@@ -18,10 +18,10 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "zod": "catalog:"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "typescript": "catalog:"
+    "typescript": "^5"
   },
   "engines": {
     "node": ">=18"
