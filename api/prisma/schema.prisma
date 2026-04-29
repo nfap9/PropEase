@@ -1,5 +1,9 @@
 // Apartment Ultra - 数据库由 Prisma 管理，状态/角色/编码等字段统一为 VARCHAR，不使用 PG ENUM
 
+// ============================================================
+// 公寓管理模块
+// ============================================================
+
 generator client {
   provider   = "prisma-client-js"
   engineType = "library"
@@ -9,6 +13,7 @@ datasource db {
   provider = "postgresql"
 }
 
+// 用户账号（租客/住户）
 model User {
   id            String   @id @db.VarChar(26)
   phone         String   @unique @db.VarChar(20)
@@ -27,6 +32,7 @@ model User {
   @@map("users")
 }
 
+// 组织/商户（公寓运营商）
 model Organization {
   id          String   @id @db.VarChar(26)
   name        String   @db.VarChar(255)
@@ -54,6 +60,7 @@ model Organization {
   @@map("organizations")
 }
 
+// 组织成员关系（用户加入组织）
 model OrganizationMember {
   id              String   @id @db.VarChar(26)
   organization_id String   @db.VarChar(26)
@@ -72,6 +79,7 @@ model OrganizationMember {
   @@map("organization_members")
 }
 
+// 公寓（房源）
 model Apartment {
   id               String    @id @db.VarChar(26)
   organization_id  String    @db.VarChar(26)
@@ -101,6 +109,7 @@ model Apartment {
   @@map("apartments")
 }
 
+// 房间
 model Room {
   id           String   @id @db.VarChar(26)
   apartment_id String   @db.VarChar(26)
@@ -124,6 +133,7 @@ model Room {
   @@map("rooms")
 }
 
+// 房间定价（月租金）
 model RoomPricing {
   id          String   @id @db.VarChar(26)
   room_id     String   @unique @db.VarChar(26)
@@ -137,6 +147,7 @@ model RoomPricing {
   @@map("room_pricing")
 }
 
+// 租客
 model Tenant {
   id                String   @id @db.VarChar(26)
   organization_id   String   @db.VarChar(26)
@@ -160,6 +171,7 @@ model Tenant {
   @@map("tenants")
 }
 
+// 租约
 model Lease {
   id               String    @id @db.VarChar(26)
   room_id          String    @db.VarChar(26)
@@ -191,6 +203,7 @@ model Lease {
   @@map("leases")
 }
 
+// 租约费用项（租金、水电、管理费等周期费用）
 model LeaseFeeItem {
   id           String    @id @db.VarChar(26)
   lease_id     String    @db.VarChar(26)
@@ -211,6 +224,7 @@ model LeaseFeeItem {
   @@map("lease_fee_items")
 }
 
+// 租约变更记录
 model LeaseChangeLog {
   id                   String   @id @db.VarChar(26)
   lease_id             String   @db.VarChar(26)
@@ -230,6 +244,7 @@ model LeaseChangeLog {
   @@map("lease_change_logs")
 }
 
+// 水电表读数记录
 model UtilityReading {
   id                   String   @id @db.VarChar(26)
   room_id              String   @db.VarChar(26)
@@ -252,6 +267,7 @@ model UtilityReading {
   @@map("utility_readings")
 }
 
+// 公寓水电费配置（水电单价、管理费等）
 model UtilityConfig {
   id                         String   @id @db.VarChar(26)
   apartment_id               String   @unique @db.VarChar(26)
@@ -269,7 +285,7 @@ model UtilityConfig {
   @@map("utility_configs")
 }
 
-// 机构费用项目（平铺结构，替代原有的 FeeType -> FeeSpecification 树形结构）
+// 机构费用项目（平铺结构，替代原有的 FeeType -> FeeSpecification 树形结构，如服务费、卫生费、网费）
 model OrgFeeItem {
   id              String   @id @db.VarChar(26)
   organization_id String   @db.VarChar(26)
@@ -289,6 +305,7 @@ model OrgFeeItem {
   @@map("org_fee_items")
 }
 
+// 账单（月度账单）
 model Bill {
   id                 String   @id @db.VarChar(26)
   lease_id           String   @db.VarChar(26)
@@ -318,6 +335,7 @@ model Bill {
   @@map("bills")
 }
 
+// 账单支付记录
 model Payment {
   id             String   @id @db.VarChar(26)
   bill_id        String   @db.VarChar(26)
@@ -335,7 +353,7 @@ model Payment {
 }
 
 
-// 账单费用明细（替代原来的 other_amount）
+// 账单费用明细（替代原来的 other_amount，记录各项费用）
 model BillFeeItem {
   id           String    @id @db.VarChar(26)
   bill_id      String    @db.VarChar(26)
@@ -357,7 +375,11 @@ model BillFeeItem {
   @@map("bill_fee_items")
 }
 
-// 组织角色（预制+自定义统一管理）
+// ============================================================
+// 运营系统模块
+// ============================================================
+
+// 组织角色（预制+自定义统一管理，如管理员、成员）
 model OrgRole {
   id              String   @id @db.VarChar(26)
   organization_id String   @db.VarChar(26)
@@ -376,6 +398,7 @@ model OrgRole {
   @@map("org_roles")
 }
 
+// 用户通知
 model Notification {
   id              String   @id @db.VarChar(26)
   user_id         String   @db.VarChar(26)
@@ -395,6 +418,7 @@ model Notification {
   @@map("notifications")
 }
 
+// 通知模板（按渠道、事件类型配置）
 model NotificationTemplate {
   id              String   @id @db.VarChar(26)
   organization_id String   @db.VarChar(26)
@@ -414,6 +438,7 @@ model NotificationTemplate {
   @@map("notification_templates")
 }
 
+// 通知投递记录
 model NotificationDelivery {
   id                  String   @id @db.VarChar(26)
   organization_id     String   @db.VarChar(26)
@@ -445,6 +470,7 @@ model NotificationDelivery {
   @@map("notification_deliveries")
 }
 
+// 组织订阅（当前生效的订阅服务）
 model OrganizationSubscription {
   id              String    @id @db.VarChar(26)
   organization_id String    @unique @db.VarChar(26)
@@ -474,6 +500,7 @@ model OrganizationSubscription {
 }
 
 // @deprecated 使用 BillingOrder 替代
+// 订阅订单
 model SubscriptionOrder {
   id                           String    @id @db.VarChar(26)
   order_no                     String    @unique @db.VarChar(64)
@@ -512,6 +539,7 @@ model SubscriptionOrder {
 }
 
 // @deprecated 使用 BillingOrder 替代
+// 用量配额（基于用户）
 model UsageQuota {
   id                   String   @id @db.VarChar(26)
   user_id              String   @db.VarChar(26)
@@ -534,6 +562,7 @@ model UsageQuota {
 }
 
 // @deprecated 使用 BillingOrder 替代
+// 用量配额订单
 model UsageQuotaOrder {
   id                    String    @id @db.VarChar(26)
   order_no              String    @unique @db.VarChar(64)
@@ -558,6 +587,7 @@ model UsageQuotaOrder {
   @@map("usage_quota_orders")
 }
 
+// 短信验证码
 model SmsVerificationCode {
   id         String   @id @db.VarChar(26)
   phone      String   @db.VarChar(20)
@@ -589,6 +619,7 @@ model AdminUser {
   @@map("admin_users")
 }
 
+// 平台配置（品牌信息等）
 model PlatformConfig {
   id            String   @id @default("default") @db.VarChar(26)
   brand         Json?    @db.Json
@@ -658,7 +689,7 @@ model BillingOrder {
   @@map("billing_orders")
 }
 
-// 用量单位定价表（替代 PlatformConfig.usage_pricing）
+// 用量单位定价表（替代 PlatformConfig.usage_pricing，按组织/公寓/房间/成员计费）
 model UsageUnitPricing {
   id             String    @id @db.VarChar(26)
   unit_type      String    @db.VarChar(20)  // 'org' | 'apartment' | 'room' | 'member'
@@ -673,7 +704,7 @@ model UsageUnitPricing {
   @@map("usage_unit_pricing")
 }
 
-// 组织用量额度表（替代 UsageQuota，基于 organization）
+// 组织用量额度表（替代 UsageQuota，基于 organization，按年月记录）
 model UsageAllowance {
   id               String    @id @db.VarChar(26)
   organization_id  String    @db.VarChar(26)
@@ -694,7 +725,7 @@ model UsageAllowance {
   @@map("usage_allowances")
 }
 
-// 用户余额
+// 组织账户余额（赠送金额、已使用金额）
 model UserBalance {
   id              String   @id @db.VarChar(26)
   organization_id String   @unique @db.VarChar(26)
@@ -713,7 +744,7 @@ model UserBalance {
 // 服务定价模块（新）
 // ============================================================
 
-// 服务产品
+// 服务产品（如基础版、高级版）
 model ServiceProduct {
   id          String  @id @db.VarChar(26)
   name        String  @db.VarChar(100) // 服务名称
@@ -744,7 +775,7 @@ model ServiceProduct {
   @@map("service_products")
 }
 
-// 服务定价（按时长定价）
+// 服务定价（按时长定价，如1个月、3个月、12个月）
 model ServicePricing {
   id         String  @id @db.VarChar(26)
   service_id String  @db.VarChar(26)
@@ -767,7 +798,7 @@ model ServicePricing {
   @@map("service_pricing")
 }
 
-// 商店配置
+// 商店配置（服务购买页面的不同方案）
 model StorefrontConfig {
   id         String  @id @db.VarChar(26)
   name       String  @db.VarChar(100)
@@ -784,7 +815,7 @@ model StorefrontConfig {
   @@map("storefront_configs")
 }
 
-// 商店项
+// 商店项（商店中展示的服务产品及折扣配置）
 model StorefrontItem {
   id            String @id @db.VarChar(26)
   storefront_id String @db.VarChar(26)
