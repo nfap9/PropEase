@@ -317,6 +317,36 @@ export const UtilityConfigSchema = z.object({
   cleaning_fee: z.number().min(0).optional(),
 });
 
+// ==================== Apartment Config ====================
+
+export const ApartmentConfigSchema = z.object({
+  water_price_per_unit: z.number().min(0).optional(),
+  electricity_price_per_unit: z.number().min(0).optional(),
+});
+
+export const ApartmentFeeItemCreateSchema = z.object({
+  name: z.string().min(1),
+  category: z.enum(['fixed', 'utility', 'optional']),
+  amount: z.number().min(0),
+  cycle: z.enum(['monthly', 'quarterly', 'yearly', 'one_time']),
+});
+
+export const ApartmentFeeItemUpdateSchema = z.object({
+  name: z.string().min(1).optional(),
+  category: z.enum(['fixed', 'utility', 'optional']).optional(),
+  amount: z.number().min(0).optional(),
+  cycle: z.enum(['monthly', 'quarterly', 'yearly', 'one_time']).optional(),
+  is_active: z.boolean().optional(),
+  sort_order: z.number().optional(),
+});
+
+export const CopyConfigSchema = z.object({
+  target_apartment_ids: z.array(z.string().min(1)).min(1),
+  mode: z.enum(['overwrite', 'merge']),
+  include_utility_prices: z.boolean().default(true),
+  include_fee_items: z.boolean().default(true),
+});
+
 // ==================== Notification ====================
 
 export const NotificationQuerySchema = z.object({

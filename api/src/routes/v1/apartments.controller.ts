@@ -2,12 +2,12 @@ import { type Request, type Response, type NextFunction } from 'express';
 import { requireOrgMembership, requirePermission } from '../../utils/orgContext.js';
 import { getConsoleUser } from '../../utils/context.js';
 import { createAppError } from '../../utils/appError.js';
-import { Messages, NotFoundMessages } from '../../messages.js';
+import { Messages } from '../../messages.js';
 import { getEffectivePlanLimits, getRoomsUsedForLimitCheck } from '../../utils/orgPlanLimits.js';
 import { defaultApartmentService } from '../../services/apartment.service.js';
 import { defaultApartmentRepo } from '../../repositories/apartment.repo.js';
 import { defaultRoomService } from '../../services/room.service.js';
-import { defaultUtilityConfigService } from '../../services/utilityConfig.service.js';
+
 import {
   ApartmentCreateSchema,
   ApartmentUpdateSchema,
@@ -16,7 +16,6 @@ import {
   RoomCreateSchema,
   RoomUpdateSchema,
   RoomBatchSchema,
-  UtilityConfigSchema,
 } from '../../lib/schemas.js';
 
 // Re-export for backward compatibility
@@ -28,7 +27,6 @@ export {
   RoomCreateSchema,
   RoomUpdateSchema,
   RoomBatchSchema,
-  UtilityConfigSchema,
 };
 
 
@@ -182,48 +180,4 @@ export async function batchCreateRooms(req: Request, res: Response, next: NextFu
   
 }
 
-// utility config
-export async function getUtilityConfig(req: Request, res: Response, next: NextFunction) {
-  
-    const orgId = await requireOrgMembership(req);
-    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    const config = await defaultUtilityConfigService.getByApartmentId(req.params.apartmentId);
-    if (!config) return next(createAppError(404, NotFoundMessages.UTILITY_CONFIG));
-    res.json(config);
-  
-}
-
-export async function createUtilityConfig(req: Request, res: Response, next: NextFunction) {
-  
-    const orgId = await requireOrgMembership(req);
-    await requirePermission(req, orgId, 'utility:create');
-    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    const parsed = UtilityConfigSchema.safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const config = await defaultUtilityConfigService.upsert(req.params.apartmentId, parsed.data);
-    res.status(200).json(config);
-  
-}
-
-export async function updateUtilityConfig(req: Request, res: Response, next: NextFunction) {
-  
-    const orgId = await requireOrgMembership(req);
-    await requirePermission(req, orgId, 'utility:edit');
-    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    const parsed = UtilityConfigSchema.partial().safeParse(req.body);
-    if (!parsed.success) return next(createAppError(422, '参数校验失败'));
-    const config = await defaultUtilityConfigService.update(req.params.apartmentId, parsed.data);
-    res.json(config);
-  
-}
-
-export async function deleteUtilityConfig(req: Request, res: Response, _next: NextFunction) {
-  
-    const orgId = await requireOrgMembership(req);
-    await requirePermission(req, orgId, 'utility:delete');
-    await defaultApartmentService.validateOwnership(orgId, req.params.apartmentId);
-    await defaultUtilityConfigService.delete(req.params.apartmentId);
-    res.status(204).send();
-  
-}
 

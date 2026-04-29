@@ -5,12 +5,12 @@ import {
   type LeaseRepository,
   type LeaseWithRelations,
 } from '../repositories/lease.repo.js';
-import { createOrgFeeItemRepository, type OrgFeeItemRepository } from '../repositories/orgFeeItem.repo.js';
+import { createApartmentFeeItemRepository, type ApartmentFeeItemRepository } from '../repositories/apartmentFeeItem.repo.js';
 import { createLeaseFeeItemRepository, type LeaseFeeItemRepository } from '../repositories/leaseFeeItem.repo.js';
 import { createLeaseChangeLogRepository, type LeaseChangeLogRepository } from '../repositories/leaseChangeLog.repo.js';
 import { createRoomRepository, type RoomRepository } from '../repositories/room.repo.js';
 import { createTenantRepository, type TenantRepository } from '../repositories/tenant.repo.js';
-import { createApartmentRepository, type ApartmentRepository } from '../repositories/apartment.repo.js';
+
 import { createOrganizationRepository, type OrganizationRepository } from '../repositories/organization.repo.js';
 import { createAppError } from '../utils/appError.js';
 import { NotFoundMessages } from '../messages.js';
@@ -235,12 +235,11 @@ async function notifyOrgAdmins(
  */
 export function createLeaseService(
   getRepo: () => LeaseRepository = () => createLeaseRepository(prisma),
-  getOrgFeeItemRepo: () => OrgFeeItemRepository = () => createOrgFeeItemRepository(prisma),
+  getApartmentFeeItemRepo: () => ApartmentFeeItemRepository = () => createApartmentFeeItemRepository(prisma),
   getLeaseFeeItemRepo: () => LeaseFeeItemRepository = () => createLeaseFeeItemRepository(prisma),
   getLeaseChangeLogRepo: () => LeaseChangeLogRepository = () => createLeaseChangeLogRepository(prisma),
   getRoomRepo: () => RoomRepository = () => createRoomRepository(prisma),
   getTenantRepo: () => TenantRepository = () => createTenantRepository(prisma),
-  getApartmentRepo: () => ApartmentRepository = () => createApartmentRepository(prisma),
   getOrgRepo: () => OrganizationRepository = () => createOrganizationRepository(prisma),
   getBillSvc: () => BillService = () => defaultBillService
 ): LeaseService {
@@ -288,16 +287,16 @@ export function createLeaseService(
       if (data.fee_items && data.fee_items.length > 0) {
         // 获取费用类型详情（用于获取 category）
         const feeItemIds = data.fee_items.filter((i) => i.fee_type_id).map((i) => i.fee_type_id!);
-        const orgFeeItems = feeItemIds.length > 0 ? await getOrgFeeItemRepo().findByIds(feeItemIds) : [];
-        const orgFeeItemMap = new Map(orgFeeItems.map((i) => [i.id, i]));
+        const apartmentFeeItems = feeItemIds.length > 0 ? await getApartmentFeeItemRepo().findByIds(feeItemIds) : [];
+        const apartmentFeeItemMap = new Map(apartmentFeeItems.map((i) => [i.id, i]));
 
         const feeItemsData = data.fee_items.map((item) => {
-          const orgFeeItem = item.fee_type_id ? orgFeeItemMap.get(item.fee_type_id) : null;
+          const apartmentFeeItem = item.fee_type_id ? apartmentFeeItemMap.get(item.fee_type_id) : null;
           return {
             id: ulid().toLowerCase(),
             lease_id: lease.id,
             fee_type_id: item.fee_type_id ?? null,
-            fee_category: orgFeeItem?.category ?? 'fixed',
+            fee_category: apartmentFeeItem?.category ?? 'fixed',
             fee_name: item.fee_name,
             fee_amount: item.fee_amount,
             fee_cycle: item.fee_cycle,
@@ -694,15 +693,14 @@ export function createLeaseService(
 
       const apartmentId = lease.room.apartment_id;
 
-      const apartment = await getApartmentRepo().findById(apartmentId);
-      const enabledItems = await getOrgFeeItemRepo().findByOrgId(apartment?.organization_id ?? '', {
+      const enabledItems = await getApartmentFeeItemRepo().findByApartmentId(apartmentId, {
         isActive: true,
       });
       const enabledFeeItemIds = new Set(enabledItems.map((item) => item.id));
 
       for (const item of feeItems) {
         if (!enabledFeeItemIds.has(item.fee_type_id)) {
-          throw createAppError(400, `费用项目 ${item.fee_type_id} 未在组织中启用`);
+          throw createAppError(400, `费用项目 ${item.fee_type_id} 未在公寓中启用`);
         }
       }
 
@@ -747,17 +745,17 @@ export function createLeaseService(
 
       // 获取费用类型详情
       const feeItemIds = feeItems.filter((i) => i.fee_type_id).map((i) => i.fee_type_id!);
-      const orgFeeItems = feeItemIds.length > 0 ? await getOrgFeeItemRepo().findByIds(feeItemIds) : [];
-      const orgFeeItemMap = new Map(orgFeeItems.map((i) => [i.id, i]));
+      const apartmentFeeItems = feeItemIds.length > 0 ? await getApartmentFeeItemRepo().findByIds(feeItemIds) : [];
+      const apartmentFeeItemMap = new Map(apartmentFeeItems.map((i) => [i.id, i]));
 
       // 创建新的费用项目
       const itemsToCreate = feeItems.map((item) => {
-        const orgFeeItem = item.fee_type_id ? orgFeeItemMap.get(item.fee_type_id) : null;
+        const apartmentFeeItem = item.fee_type_id ? apartmentFeeItemMap.get(item.fee_type_id) : null;
         return {
           id: ulid().toLowerCase(),
           lease_id: leaseId,
           fee_type_id: item.fee_type_id ?? null,
-          fee_category: orgFeeItem?.category ?? 'fixed',
+          fee_category: apartmentFeeItem?.category ?? 'fixed',
           fee_name: item.fee_name,
           fee_amount: item.fee_amount,
           fee_cycle: item.fee_cycle,

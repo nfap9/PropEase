@@ -8,14 +8,14 @@ import {
 import type { LeaseRepository } from '../repositories/lease.repo.js';
 import type { BillRepository } from '../repositories/bill.repo.js';
 import type { UtilityRepository } from '../repositories/utility.repo.js';
-import type { OrgFeeItemRepository } from '../repositories/orgFeeItem.repo.js';
-import type { UtilityConfigRepository } from '../repositories/utilityConfig.repo.js';
+import type { ApartmentFeeItemRepository } from '../repositories/apartmentFeeItem.repo.js';
+import type { ApartmentConfigRepository } from '../repositories/apartmentConfig.repo.js';
 import type { LeaseChangeLogRepository } from '../repositories/leaseChangeLog.repo.js';
 import { createLeaseRepository } from '../repositories/lease.repo.js';
 import { createBillRepository } from '../repositories/bill.repo.js';
 import { createUtilityRepository } from '../repositories/utility.repo.js';
-import { createOrgFeeItemRepository } from '../repositories/orgFeeItem.repo.js';
-import { createUtilityConfigRepository } from '../repositories/utilityConfig.repo.js';
+import { createApartmentFeeItemRepository } from '../repositories/apartmentFeeItem.repo.js';
+import { createApartmentConfigRepository } from '../repositories/apartmentConfig.repo.js';
 import { createLeaseChangeLogRepository } from '../repositories/leaseChangeLog.repo.js';
 
 /**
@@ -100,8 +100,8 @@ export interface GenerateBillsDeps {
   leaseRepo: LeaseRepository;
   billRepo: BillRepository;
   utilityRepo: UtilityRepository;
-  orgFeeItemRepo: OrgFeeItemRepository;
-  utilityConfigRepo: UtilityConfigRepository;
+  apartmentFeeItemRepo: ApartmentFeeItemRepository;
+  apartmentConfigRepo: ApartmentConfigRepository;
   leaseChangeLogRepo: LeaseChangeLogRepository;
   tenantReachabilitySvc?: TenantReachabilityService;
 }
@@ -121,8 +121,8 @@ export async function generateBillsForOrg(
   const leaseRepo = deps?.leaseRepo ?? createLeaseRepository(prisma);
   const billRepo = deps?.billRepo ?? createBillRepository(prisma);
   const utilityRepo = deps?.utilityRepo ?? createUtilityRepository(prisma);
-  const orgFeeItemRepo = deps?.orgFeeItemRepo ?? createOrgFeeItemRepository(prisma);
-  const utilityConfigRepo = deps?.utilityConfigRepo ?? createUtilityConfigRepository(prisma);
+  const apartmentFeeItemRepo = deps?.apartmentFeeItemRepo ?? createApartmentFeeItemRepository(prisma);
+  const apartmentConfigRepo = deps?.apartmentConfigRepo ?? createApartmentConfigRepository(prisma);
   const leaseChangeLogRepo = deps?.leaseChangeLogRepo ?? createLeaseChangeLogRepository(prisma);
   const tenantReachabilitySvc = deps?.tenantReachabilitySvc ?? defaultTenantReachabilityService;
 
@@ -152,8 +152,8 @@ export async function generateBillsForOrg(
 
     // 使用 UtilityRepository.findExistingReading
     const reading = await utilityRepo.findExistingReading(lease.room_id, billYear, billMonth);
-    // 使用 UtilityConfigRepository.findByApartmentId
-    const config = await utilityConfigRepo.findByApartmentId(lease.room.apartment_id);
+    // 使用 ApartmentConfigRepository.findByApartmentId
+    const config = await apartmentConfigRepo.findByApartmentId(lease.room.apartment_id);
 
     // 获取生效中的租约值（考虑未来生效的变更）
     const effective = await getEffectiveLeaseValues(
@@ -192,8 +192,8 @@ export async function generateBillsForOrg(
       }
     }
 
-    // 使用 OrgFeeItemRepository.findByOrgId
-    const feeItems = await orgFeeItemRepo.findByOrgId(lease.room.apartment.organization_id, {
+    // 使用 ApartmentFeeItemRepository.findByApartmentId
+    const feeItems = await apartmentFeeItemRepo.findByApartmentId(lease.room.apartment_id, {
       isActive: true,
     });
 
@@ -212,16 +212,16 @@ export async function generateBillsForOrg(
 
     let otherAmount = 0;
 
-    for (const orgFeeItem of feeItems) {
-      const price = Number(orgFeeItem.amount);
+    for (const apartmentFeeItem of feeItems) {
+      const price = Number(apartmentFeeItem.amount);
 
       const feeItem = {
         id: ulid().toLowerCase(),
-        fee_type_id: orgFeeItem.id,
-        fee_category: orgFeeItem.category,
-        fee_name: orgFeeItem.name,
+        fee_type_id: apartmentFeeItem.id,
+        fee_category: apartmentFeeItem.category,
+        fee_name: apartmentFeeItem.name,
         fee_amount: price,
-        fee_cycle: orgFeeItem.cycle,
+        fee_cycle: apartmentFeeItem.cycle,
         quantity: 1,
         unit_price: price,
         amount: price,
@@ -231,12 +231,7 @@ export async function generateBillsForOrg(
       otherAmount += price;
     }
 
-    // 向后兼容：如果没有新的费用配置，使用旧的 UtilityConfig
-    if (feeItems.length === 0 && config) {
-      if (config.internet_fee != null) otherAmount += Number(config.internet_fee);
-      if (config.management_fee != null) otherAmount += Number(config.management_fee);
-      if (config.service_fee != null) otherAmount += Number(config.service_fee);
-    }
+
 
     const totalAmount = rentAmount + waterAmount + electricityAmount + otherAmount;
 

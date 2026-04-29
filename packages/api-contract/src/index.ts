@@ -98,9 +98,13 @@ export type {
   RoomBatchCreate,
   RoomFormData,
   RoomEditFormData,
-  UtilityConfig,
-  UtilityConfigCreate,
-  UtilityConfigUpdate,
+  ApartmentConfig,
+  ApartmentConfigInput,
+  ApartmentFeeItem,
+  ApartmentFeeItemCreate,
+  ApartmentFeeItemUpdate,
+  CopyConfigInput,
+  CopyConfigResult,
 } from './apartments.js';
 
 /** 租客 */
@@ -162,9 +166,6 @@ export type {
 export type {
   FeeCycle,
   FeeCategory,
-  OrgFeeItem,
-  OrgFeeItemCreate,
-  OrgFeeItemUpdate,
 } from './feeTypes.js';
 
 /** 费用类型兼容层（向后兼容） */

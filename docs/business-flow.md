@@ -82,17 +82,22 @@
 
 ```
 Organization (组织)
-  └── OrgFeeItem (费用项模板)
-          ├── 组织级别：定义本组织有哪些费用项及其默认值
-          └── LeaseFeeItem (租约费用项)
-                  └── 租约级别：关联到具体租约，金额可个性化
-                          └── BillFeeItem (账单费用项)
-                                  └── 账单级别：本期实际产生的费用
+  └── Apartment (公寓)
+          ├── ApartmentConfig (公寓配置)
+          │       ├── 水电单价配置
+          │       └── ApartmentFeeItem (公寓费用项)
+          │               ├── 公寓级别：定义本公寓有哪些费用项及其默认值
+          │               └── LeaseFeeItem (租约费用项)
+          │                       └── 租约级别：关联到具体租约，金额可个性化
+          │                               └── BillFeeItem (账单费用项)
+          │                                       └── 账单级别：本期实际产生的费用
+          └── Room (房间)
 ```
 
 **设计说明：**
-- `OrgFeeItem` 是模板，组织创建后可按需配置
-- `LeaseFeeItem` 是租约创建时从模板中选择/关联的实例
+- `ApartmentFeeItem` 是模板，每个公寓独立管理自己的费用项列表
+- 支持将某公寓的配置（水电单价+费用项）复制/应用到其他公寓
+- `LeaseFeeItem` 是租约创建时从公寓模板中选择/关联的实例
 - 同一模板在不同租约中金额可以不同（如不同房间定价不同）
 - 账单生成时从 `LeaseFeeItem` 读取，生成 `BillFeeItem`
 
@@ -340,15 +345,15 @@ Step 3: 生成「新账单」（正确金额），替代原账单
 ```
 Organization (组织)
     │
-    ├── OrgFeeItem (费用项模板)
-    │
     ├── OrgRole (组织角色)
     │
     └── Apartment (公寓)
             │
+            ├── ApartmentConfig (公寓配置)
+            │       ├── 水电单价配置
+            │       └── ApartmentFeeItem (公寓费用项)
+            │
             ├── Room (房间)
-            │       │
-            │       ├── UtilityConfig (水电单价配置)
             │       │
             │       └── Lease (租约) ──→ LeaseFeeItem (租约费用项)
             │                               │

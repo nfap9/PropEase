@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Modal, Button, InputNumber, Space, Form } from 'antd';
 import { Zap } from 'lucide-react';
-import { utilityConfigApi } from '@/api/apartments';
+import { apartmentConfigApi } from '@/api/apartments';
 import { getErrorMessage } from '@apartment-ultra/web-shared';
 
 interface UtilityConfigDialogProps {
@@ -25,8 +25,8 @@ export function UtilityConfigDialog({
   const [form] = Form.useForm();
 
   const { data: config, isLoading } = useQuery({
-    queryKey: ['utility-config', orgId, apartmentId],
-    queryFn: () => utilityConfigApi.get(apartmentId),
+    queryKey: ['apartment-config', orgId, apartmentId],
+    queryFn: () => apartmentConfigApi.get(apartmentId),
     enabled: !!orgId && !!apartmentId && open,
     retry: false,
   });
@@ -49,13 +49,13 @@ export function UtilityConfigDialog({
 
   const saveMutation = useMutation({
     mutationFn: (data: { water_price_per_unit: number; electricity_price_per_unit: number }) =>
-      utilityConfigApi.createOrUpdate(apartmentId, {
+      apartmentConfigApi.createOrUpdate(apartmentId, {
         water_price_per_unit: data.water_price_per_unit,
         electricity_price_per_unit: data.electricity_price_per_unit,
       }),
     onSuccess: () => {
       toast.success('水电单价已保存');
-      queryClient.invalidateQueries({ queryKey: ['utility-config', orgId, apartmentId] });
+      queryClient.invalidateQueries({ queryKey: ['apartment-config', orgId, apartmentId] });
       onOpenChange(false);
     },
     onError: (error) => {

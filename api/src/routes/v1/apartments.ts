@@ -20,10 +20,6 @@ router.put('/rooms/:roomId', ctrl.updateRoom);
 router.delete('/rooms/:roomId', ctrl.deleteRoom);
 router.post('/:apartmentId/rooms/batch', ctrl.batchCreateRooms);
 
-// utility config
-router.get('/:apartmentId/utility-config', ctrl.getUtilityConfig);
-router.post('/:apartmentId/utility-config', ctrl.createUtilityConfig);
-router.put('/:apartmentId/utility-config', ctrl.updateUtilityConfig);
-router.delete('/:apartmentId/utility-config', ctrl.deleteUtilityConfig);
+
 
 export const apartmentsRouter = router;

@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Button, Drawer, Space } from 'antd';
 import type { LeaseSigningFormData } from '@/types';
 import { leasesApi } from '@/api/leases';
-import { apartmentsApi, roomsApi, utilityConfigApi } from '@/api/apartments';
+import { apartmentsApi, roomsApi, apartmentConfigApi } from '@/api/apartments';
 import { tenantsApi } from '@/api/tenants';
 import { toDateInputValue } from '@/utils/date';
 import { filterEmptyStrings } from '@/utils/form';
@@ -14,7 +14,7 @@ import { RoomInfoSection, type RoomInfoSectionRef } from './room-info-section';
 import { TenantInfoSection, type TenantInfoSectionRef } from './tenant-info-section';
 import { ContractInfoSection, type ContractInfoSectionRef } from './contract-info-section';
 import type { FeeItem } from '@/pages/leases/components/fee-items-editor';
-import type { Room, Tenant, UtilityConfig } from '@apartment-ultra/api-contract';
+import type { Room, Tenant, ApartmentConfig } from '@apartment-ultra/api-contract';
 
 const leaseSigningSteps = [
   { id: 'room', title: '房间', description: '选择公寓与房间' },
@@ -46,7 +46,7 @@ export function LeaseSigningDrawer({
 }: LeaseSigningDrawerProps) {
   const queryClient = useQueryClient();
   const [selectedApartmentId, setSelectedApartmentId] = useState<string | null>(null);
-  const [utilityConfig, setUtilityConfig] = useState<UtilityConfig | null>(null);
+  const [apartmentConfig, setApartmentConfig] = useState<ApartmentConfig | null>(null);
   const [feeItems, setFeeItems] = useState<FeeItem[]>([]);
   const [tenantSearchOpen, setTenantSearchOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -82,25 +82,25 @@ export function LeaseSigningDrawer({
 
   useEffect(() => {
     if (effectiveApartmentId && open) {
-      utilityConfigApi
+      apartmentConfigApi
         .get(effectiveApartmentId)
-        .then(setUtilityConfig)
-        .catch(() => setUtilityConfig(null));
+        .then(setApartmentConfig)
+        .catch(() => setApartmentConfig(null));
     } else {
-      setUtilityConfig(null);
+      setApartmentConfig(null);
     }
   }, [effectiveApartmentId, orgId, open]);
 
   // Pre-fill utility rates when config loads
   useEffect(() => {
-    if (utilityConfig && open) {
+    if (apartmentConfig && open) {
       setSectionValues((prev) => ({
         ...prev,
-        water_rate: prev.water_rate === undefined ? (utilityConfig.water_price_per_unit ?? 0) : prev.water_rate,
-        electricity_rate: prev.electricity_rate === undefined ? (utilityConfig.electricity_price_per_unit ?? 0) : prev.electricity_rate,
+        water_rate: prev.water_rate === undefined ? (apartmentConfig.water_price_per_unit ?? 0) : prev.water_rate,
+        electricity_rate: prev.electricity_rate === undefined ? (apartmentConfig.electricity_price_per_unit ?? 0) : prev.electricity_rate,
       }));
     }
-  }, [utilityConfig, open]);
+  }, [apartmentConfig, open]);
 
   // Reset state when drawer opens
   useEffect(() => {
@@ -109,14 +109,14 @@ export function LeaseSigningDrawer({
         start_date: new Date().toISOString().split('T')[0],
         monthly_rent: room?.pricing?.monthly_rent ?? 0,
         deposit: 0,
-        water_rate: utilityConfig?.water_price_per_unit ?? 0,
-        electricity_rate: utilityConfig?.electricity_price_per_unit ?? 0,
+        water_rate: apartmentConfig?.water_price_per_unit ?? 0,
+        electricity_rate: apartmentConfig?.electricity_price_per_unit ?? 0,
       });
       setFeeItems([]);
       setCurrentStep(0);
       setSelectedApartmentId(null);
     }
-  }, [open, room, utilityConfig]);
+  }, [open, room, apartmentConfig]);
 
   useEffect(() => {
     if (!open) {

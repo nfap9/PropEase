@@ -27,15 +27,6 @@ vi.mock('../../services/room.service.js', () => ({
   },
 }));
 
-vi.mock('../../services/utilityConfig.service.js', () => ({
-  defaultUtilityConfigService: {
-    getByApartmentId: vi.fn(),
-    upsert: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-  },
-}));
-
 vi.mock('../../repositories/apartment.repo.js', () => ({
   defaultApartmentRepo: {
     findById: vi.fn(),
@@ -62,7 +53,7 @@ vi.mock('../../utils/context.js', () => ({
 
 import { defaultApartmentService } from '../../services/apartment.service.js';
 import { defaultRoomService } from '../../services/room.service.js';
-import { defaultUtilityConfigService } from '../../services/utilityConfig.service.js';
+
 import { defaultApartmentRepo } from '../../repositories/apartment.repo.js';
 
 describe('ApartmentsController', () => {
@@ -214,36 +205,5 @@ describe('ApartmentsController', () => {
     });
   });
 
-  describe('getUtilityConfig', () => {
-    it('should return utility config', async () => {
-      const mockConfig = { id: 'config-1', water_price_per_unit: 5.0 };
-      vi.mocked(defaultUtilityConfigService.getByApartmentId).mockResolvedValue(mockConfig as any);
 
-      const req = createMockRequest({ params: { apartmentId: 'apt-1' } });
-      const res = createMockResponse();
-      const next = createMockNext();
-
-      await ctrl.getUtilityConfig(req, res, next);
-
-      expect(res._json).toHaveBeenCalledWith(mockConfig);
-    });
-  });
-
-  describe('updateUtilityConfig', () => {
-    it('should update utility config successfully', async () => {
-      const mockConfig = { id: 'config-1', water_price_per_unit: 6.0 };
-      vi.mocked(defaultUtilityConfigService.update).mockResolvedValue(mockConfig as any);
-
-      const req = createMockRequest({
-        params: { apartmentId: 'apt-1' },
-        body: { water_price_per_unit: 6.0 },
-      });
-      const res = createMockResponse();
-      const next = createMockNext();
-
-      await ctrl.updateUtilityConfig(req, res, next);
-
-      expect(res._json).toHaveBeenCalledWith(mockConfig);
-    });
-  });
 });

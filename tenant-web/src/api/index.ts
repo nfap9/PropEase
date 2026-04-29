@@ -1,7 +1,7 @@
 export { default as api } from './client';
 export { authApi } from './auth';
 export { organizationsApi } from './organizations';
-export { apartmentsApi, roomsApi, utilityConfigApi } from './apartments';
+export { apartmentsApi, roomsApi, apartmentConfigApi, apartmentFeeItemApi, apartmentConfigApplyApi } from './apartments';
 export { tenantsApi } from './tenants';
 export { leasesApi } from './leases';
 export { billsApi } from './bills';
@@ -11,4 +11,4 @@ export { subscriptionsApi } from './subscriptions';
 export { usageApi } from './usage';
 export { notificationsApi } from './notifications';
 export { tenantReachabilityApi } from './tenant-reachability';
-export { billFeeItemsApi } from './feeTypes';
+export { billFeeItemsApi } from './bills';

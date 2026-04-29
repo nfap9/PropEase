@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { LeaseRepository } from '../repositories/lease.repo.js';
 import type { BillRepository } from '../repositories/bill.repo.js';
 import type { UtilityRepository } from '../repositories/utility.repo.js';
-import type { OrgFeeItemRepository } from '../repositories/orgFeeItem.repo.js';
-import type { UtilityConfigRepository } from '../repositories/utilityConfig.repo.js';
+import type { ApartmentFeeItemRepository } from '../repositories/apartmentFeeItem.repo.js';
+import type { ApartmentConfigRepository } from '../repositories/apartmentConfig.repo.js';
 import type { LeaseChangeLogRepository } from '../repositories/leaseChangeLog.repo.js';
 
 // Mock ulid first
@@ -72,7 +72,7 @@ describe('generateBillsForOrg', () => {
   const createMockLeaseRepo = () => ({
     findById: vi.fn(),
     findByIdWithRelations: vi.fn(),
-    findByOrgId: vi.fn(),
+    findByApartmentId: vi.fn(),
     create: vi.fn(),
     createWithRoomUpdate: vi.fn(),
     update: vi.fn(),
@@ -85,7 +85,7 @@ describe('generateBillsForOrg', () => {
   const createMockBillRepo = () => ({
     findById: vi.fn(),
     findByIdWithRelations: vi.fn(),
-    findByOrgId: vi.fn(),
+    findByApartmentId: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -96,7 +96,7 @@ describe('generateBillsForOrg', () => {
   const createMockUtilityRepo = () => ({
     findById: vi.fn(),
     findByIdWithRelations: vi.fn(),
-    findByOrgId: vi.fn(),
+    findByApartmentId: vi.fn(),
     create: vi.fn(),
     createBatch: vi.fn(),
     update: vi.fn(),
@@ -107,18 +107,24 @@ describe('generateBillsForOrg', () => {
     getRoomIdsByOrg: vi.fn(),
   });
 
-  const createMockOrgFeeItemRepo = () => ({
+  const createMockApartmentFeeItemRepo = () => ({
     findById: vi.fn(),
-    findByIdAndOrg: vi.fn(),
-    findByOrgId: vi.fn(),
+    findByIdAndApartment: vi.fn(),
+    findByApartmentId: vi.fn(),
     findByIds: vi.fn(),
     create: vi.fn(),
+    createMany: vi.fn(),
     update: vi.fn(),
     softDelete: vi.fn(),
+    deleteByApartmentId: vi.fn(),
   });
 
-  const createMockUtilityConfigRepo = () => ({
+  const createMockApartmentConfigRepo = () => ({
     findByApartmentId: vi.fn(),
+    findByApartmentIdWithFeeItems: vi.fn(),
+    upsert: vi.fn(),
+    update: vi.fn(),
+    deleteByApartmentId: vi.fn(),
   });
 
   const createMockLeaseChangeLogRepo = (): LeaseChangeLogRepository => ({
@@ -176,10 +182,10 @@ describe('generateBillsForOrg', () => {
     mockBillRepo.findByLeaseAndPeriod.mockResolvedValue(null);
     const mockUtilityRepo = createMockUtilityRepo();
     mockUtilityRepo.findExistingReading.mockResolvedValue(null);
-    const mockUtilityConfigRepo = createMockUtilityConfigRepo();
-    mockUtilityConfigRepo.findByApartmentId.mockResolvedValue(null);
-    const mockOrgFeeItemRepo = createMockOrgFeeItemRepo();
-    mockOrgFeeItemRepo.findByOrgId.mockResolvedValue([]);
+    const mockApartmentConfigRepo = createMockApartmentConfigRepo();
+    mockApartmentConfigRepo.findByApartmentId.mockResolvedValue(null);
+    const mockApartmentFeeItemRepo = createMockApartmentFeeItemRepo();
+    mockApartmentFeeItemRepo.findByApartmentId.mockResolvedValue([]);
     vi.mocked(prisma.leaseChangeLog.findMany).mockResolvedValue([]);
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: Function) => {
       const mockTx = {
@@ -193,8 +199,8 @@ describe('generateBillsForOrg', () => {
       leaseRepo: mockLeaseRepo,
       billRepo: mockBillRepo,
       utilityRepo: mockUtilityRepo,
-      utilityConfigRepo: mockUtilityConfigRepo,
-      orgFeeItemRepo: mockOrgFeeItemRepo,
+      apartmentConfigRepo: mockApartmentConfigRepo,
+      apartmentFeeItemRepo: mockApartmentFeeItemRepo,
     });
 
     expect(result).toEqual({ created: 1, skipped: 0 });
@@ -221,10 +227,10 @@ describe('generateBillsForOrg', () => {
     mockBillRepo.findByLeaseAndPeriod.mockResolvedValue(null);
     const mockUtilityRepo = createMockUtilityRepo();
     mockUtilityRepo.findExistingReading.mockResolvedValue(mockReading as any);
-    const mockUtilityConfigRepo = createMockUtilityConfigRepo();
-    mockUtilityConfigRepo.findByApartmentId.mockResolvedValue(null);
-    const mockOrgFeeItemRepo = createMockOrgFeeItemRepo();
-    mockOrgFeeItemRepo.findByOrgId.mockResolvedValue([]);
+    const mockApartmentConfigRepo = createMockApartmentConfigRepo();
+    mockApartmentConfigRepo.findByApartmentId.mockResolvedValue(null);
+    const mockApartmentFeeItemRepo = createMockApartmentFeeItemRepo();
+    mockApartmentFeeItemRepo.findByApartmentId.mockResolvedValue([]);
 
     let capturedBillData: any = null;
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: Function) => {
@@ -243,8 +249,8 @@ describe('generateBillsForOrg', () => {
       leaseRepo: mockLeaseRepo,
       billRepo: mockBillRepo,
       utilityRepo: mockUtilityRepo,
-      utilityConfigRepo: mockUtilityConfigRepo,
-      orgFeeItemRepo: mockOrgFeeItemRepo,
+      apartmentConfigRepo: mockApartmentConfigRepo,
+      apartmentFeeItemRepo: mockApartmentFeeItemRepo,
     });
 
     // water usage = 100 - 80 = 20, rate = 5, amount = 100
@@ -283,10 +289,10 @@ describe('generateBillsForOrg', () => {
     mockBillRepo.findByLeaseAndPeriod.mockResolvedValue(null);
     const mockUtilityRepo = createMockUtilityRepo();
     mockUtilityRepo.findExistingReading.mockResolvedValue(mockReading as any);
-    const mockUtilityConfigRepo = createMockUtilityConfigRepo();
-    mockUtilityConfigRepo.findByApartmentId.mockResolvedValue(mockConfig as any);
-    const mockOrgFeeItemRepo = createMockOrgFeeItemRepo();
-    mockOrgFeeItemRepo.findByOrgId.mockResolvedValue([]);
+    const mockApartmentConfigRepo = createMockApartmentConfigRepo();
+    mockApartmentConfigRepo.findByApartmentId.mockResolvedValue(mockConfig as any);
+    const mockApartmentFeeItemRepo = createMockApartmentFeeItemRepo();
+    mockApartmentFeeItemRepo.findByApartmentId.mockResolvedValue([]);
 
     let capturedBillData: any = null;
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: Function) => {
@@ -305,8 +311,8 @@ describe('generateBillsForOrg', () => {
       leaseRepo: mockLeaseRepo,
       billRepo: mockBillRepo,
       utilityRepo: mockUtilityRepo,
-      utilityConfigRepo: mockUtilityConfigRepo,
-      orgFeeItemRepo: mockOrgFeeItemRepo,
+      apartmentConfigRepo: mockApartmentConfigRepo,
+      apartmentFeeItemRepo: mockApartmentFeeItemRepo,
     });
 
     // water: (100 - 80) * 4 = 80
@@ -331,10 +337,10 @@ describe('generateBillsForOrg', () => {
     mockBillRepo.findByLeaseAndPeriod.mockResolvedValue(null);
     const mockUtilityRepo = createMockUtilityRepo();
     mockUtilityRepo.findExistingReading.mockResolvedValue(null);
-    const mockUtilityConfigRepo = createMockUtilityConfigRepo();
-    mockUtilityConfigRepo.findByApartmentId.mockResolvedValue(null);
-    const mockOrgFeeItemRepo = createMockOrgFeeItemRepo();
-    mockOrgFeeItemRepo.findByOrgId.mockResolvedValue([]);
+    const mockApartmentConfigRepo = createMockApartmentConfigRepo();
+    mockApartmentConfigRepo.findByApartmentId.mockResolvedValue(null);
+    const mockApartmentFeeItemRepo = createMockApartmentFeeItemRepo();
+    mockApartmentFeeItemRepo.findByApartmentId.mockResolvedValue([]);
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: Function) => {
       const mockTx = {
         bill: { create: vi.fn() },
@@ -347,8 +353,8 @@ describe('generateBillsForOrg', () => {
       leaseRepo: mockLeaseRepo,
       billRepo: mockBillRepo,
       utilityRepo: mockUtilityRepo,
-      utilityConfigRepo: mockUtilityConfigRepo,
-      orgFeeItemRepo: mockOrgFeeItemRepo,
+      apartmentConfigRepo: mockApartmentConfigRepo,
+      apartmentFeeItemRepo: mockApartmentFeeItemRepo,
     });
 
     expect(result).toEqual({ created: 1, skipped: 0 });
@@ -375,10 +381,10 @@ describe('generateBillsForOrg', () => {
     mockBillRepo.findByLeaseAndPeriod.mockResolvedValue(null);
     const mockUtilityRepo = createMockUtilityRepo();
     mockUtilityRepo.findExistingReading.mockResolvedValue(mockReading as any);
-    const mockUtilityConfigRepo = createMockUtilityConfigRepo();
-    mockUtilityConfigRepo.findByApartmentId.mockResolvedValue(null);
-    const mockOrgFeeItemRepo = createMockOrgFeeItemRepo();
-    mockOrgFeeItemRepo.findByOrgId.mockResolvedValue([]);
+    const mockApartmentConfigRepo = createMockApartmentConfigRepo();
+    mockApartmentConfigRepo.findByApartmentId.mockResolvedValue(null);
+    const mockApartmentFeeItemRepo = createMockApartmentFeeItemRepo();
+    mockApartmentFeeItemRepo.findByApartmentId.mockResolvedValue([]);
 
     let capturedBillData: any = null;
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: Function) => {
@@ -397,8 +403,8 @@ describe('generateBillsForOrg', () => {
       leaseRepo: mockLeaseRepo,
       billRepo: mockBillRepo,
       utilityRepo: mockUtilityRepo,
-      utilityConfigRepo: mockUtilityConfigRepo,
-      orgFeeItemRepo: mockOrgFeeItemRepo,
+      apartmentConfigRepo: mockApartmentConfigRepo,
+      apartmentFeeItemRepo: mockApartmentFeeItemRepo,
     });
 
     // rent: 2000, water: 100, electricity: 50

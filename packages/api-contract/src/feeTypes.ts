@@ -4,10 +4,10 @@ export type FeeCycle = 'monthly' | 'quarterly' | 'yearly' | 'one_time';
 /** 计费类型 */
 export type FeeCategory = 'fixed' | 'utility' | 'optional';
 
-/** 组织级费用项目 */
-export interface OrgFeeItem {
+/** 公寓费用项目 */
+export interface ApartmentFeeItem {
   id: string;
-  organization_id: string | null;
+  apartment_id: string;
   category: FeeCategory;
   name: string;
   amount: number;
@@ -18,16 +18,16 @@ export interface OrgFeeItem {
   updated_at: string;
 }
 
-/** 创建组织级费用项目 */
-export interface OrgFeeItemCreate {
+/** 创建公寓费用项目 */
+export interface ApartmentFeeItemCreate {
   name: string;
   category: FeeCategory;
   amount: number;
   cycle: FeeCycle;
 }
 
-/** 更新组织级费用项目 */
-export interface OrgFeeItemUpdate {
+/** 更新公寓费用项目 */
+export interface ApartmentFeeItemUpdate {
   name?: string;
   category?: FeeCategory;
   amount?: number;

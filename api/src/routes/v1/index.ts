@@ -12,7 +12,7 @@ import { permissionsRouter } from './permissions.js';
 import { subscriptionsRouter } from './subscriptions.js';
 import { usageRouter } from './usage.js';
 import { notificationsRouter } from './notifications.js';
-import { feeItemsRouter } from './fee-items.js';
+import { apartmentConfigRouter } from './apartment-config.js';
 import { tenantReachabilityRouter } from './tenant-reachability.js';
 import { adminRouter } from './admin/index.js';
 import { webhooksRouter } from './webhooks/index.js';
@@ -34,7 +34,7 @@ router.use('/subscriptions', subscriptionsRouter);
 router.use('/usage', usageRouter);
 router.use('/notifications', notificationsRouter);
 router.use('/tenant-reachability', tenantReachabilityRouter);
-router.use('/fee-items', feeItemsRouter);
+router.use('/apartment-config', apartmentConfigRouter);
 router.use('/admin', adminRouter);
 router.use('/webhooks', webhooksRouter);
 

@@ -589,15 +589,15 @@ export function createUtilityService(
             waterUnitPrice =
               leaseWaterRate > 0
                 ? leaseWaterRate
-                : r.apartment.utility_config?.water_price_per_unit != null
-                  ? Number(r.apartment.utility_config.water_price_per_unit)
+                : r.apartment.config?.water_price_per_unit != null
+                  ? Number(r.apartment.config.water_price_per_unit)
                   : null;
 
             electricityUnitPrice =
               leaseElectricityRate > 0
                 ? leaseElectricityRate
-                : r.apartment.utility_config?.electricity_price_per_unit != null
-                  ? Number(r.apartment.utility_config.electricity_price_per_unit)
+                : r.apartment.config?.electricity_price_per_unit != null
+                  ? Number(r.apartment.config.electricity_price_per_unit)
                   : null;
           }
 

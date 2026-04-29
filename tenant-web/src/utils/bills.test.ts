@@ -128,8 +128,21 @@ describe('bills utils', () => {
       const billWithLease = {
         ...bill,
         lease: {
+          id: 'lease-1',
+          room_id: 'room-1',
+          tenant_id: 'tenant-1',
+          start_date: '2026-01-01',
+          end_date: null,
+          billing_day: 1,
+          monthly_rent: 1000,
+          deposit: 0,
+          water_rate: 0,
+          electricity_rate: 0,
+          is_active: true,
+          notes: null,
           room: { apartment: { name: '阳光公寓' }, room_number: '301' },
-        },
+          created_at: '2026-01-01T00:00:00Z',
+        } as any,
       };
       expect(getBillDetailDescription(billWithLease, 'bill-1')).toBe('2026年4月 - 阳光公寓 301');
     });

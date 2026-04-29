@@ -1,4 +1,4 @@
-import type { Prisma, Lease, Room, Apartment, Tenant, LeaseFeeItem, OrgFeeItem } from '@prisma/client';
+import type { Prisma, Lease, Room, Apartment, Tenant, LeaseFeeItem, ApartmentFeeItem } from '@prisma/client';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -8,7 +8,7 @@ import { prisma } from '../lib/prisma.js';
 export type LeaseWithRelations = Lease & {
   room: Room & { apartment: Apartment };
   tenant: Tenant;
-  fee_items: (LeaseFeeItem & { feeType: OrgFeeItem | null })[];
+  fee_items: (LeaseFeeItem & { feeType: ApartmentFeeItem | null })[];
 };
 
 /**

@@ -5,9 +5,13 @@ import {
   Room,
   RoomBatchCreate,
   RoomUpdate,
-  UtilityConfig,
-  UtilityConfigCreate,
-  UtilityConfigUpdate,
+  ApartmentConfig,
+  ApartmentConfigInput,
+  ApartmentFeeItem,
+  ApartmentFeeItemCreate,
+  ApartmentFeeItemUpdate,
+  CopyConfigInput,
+  CopyConfigResult,
 } from '@/types';
 
 export const apartmentsApi = {
@@ -79,18 +83,18 @@ export const roomsApi = {
   },
 };
 
-export const utilityConfigApi = {
-  get: async (apartmentId: string): Promise<UtilityConfig> => {
-    const response = await api.get<UtilityConfig>(`/apartments/${apartmentId}/utility-config`);
+export const apartmentConfigApi = {
+  get: async (apartmentId: string): Promise<ApartmentConfig> => {
+    const response = await api.get<ApartmentConfig>(`/apartment-config/${apartmentId}/config`);
     return response.data;
   },
 
   createOrUpdate: async (
     apartmentId: string,
-    data: UtilityConfigCreate
-  ): Promise<UtilityConfig> => {
-    const response = await api.post<UtilityConfig>(
-      `/apartments/${apartmentId}/utility-config`,
+    data: ApartmentConfigInput
+  ): Promise<ApartmentConfig> => {
+    const response = await api.put<ApartmentConfig>(
+      `/apartment-config/${apartmentId}/config`,
       data
     );
     return response.data;
@@ -98,17 +102,45 @@ export const utilityConfigApi = {
 
   update: async (
     apartmentId: string,
-    data: UtilityConfigUpdate
-  ): Promise<UtilityConfig> => {
-    const response = await api.put<UtilityConfig>(
-      `/apartments/${apartmentId}/utility-config`,
+    data: ApartmentConfigInput
+  ): Promise<ApartmentConfig> => {
+    const response = await api.patch<ApartmentConfig>(
+      `/apartment-config/${apartmentId}/config`,
       data
     );
     return response.data;
   },
 
   delete: async (apartmentId: string): Promise<void> => {
-    await api.delete(`/apartments/${apartmentId}/utility-config`);
+    await api.delete(`/apartment-config/${apartmentId}/config`);
+  },
+};
+
+export const apartmentFeeItemApi = {
+  list: async (apartmentId: string): Promise<ApartmentFeeItem[]> => {
+    const response = await api.get<ApartmentFeeItem[]>(`/apartment-config/${apartmentId}/config/fee-items`);
+    return response.data;
+  },
+
+  create: async (apartmentId: string, data: ApartmentFeeItemCreate): Promise<ApartmentFeeItem> => {
+    const response = await api.post<ApartmentFeeItem>(`/apartment-config/${apartmentId}/config/fee-items`, data);
+    return response.data;
+  },
+
+  update: async (apartmentId: string, id: string, data: ApartmentFeeItemUpdate): Promise<ApartmentFeeItem> => {
+    const response = await api.put<ApartmentFeeItem>(`/apartment-config/${apartmentId}/config/fee-items/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (apartmentId: string, id: string): Promise<void> => {
+    await api.delete(`/apartment-config/${apartmentId}/config/fee-items/${id}`);
+  },
+};
+
+export const apartmentConfigApplyApi = {
+  apply: async (apartmentId: string, data: CopyConfigInput): Promise<CopyConfigResult> => {
+    const response = await api.post<CopyConfigResult>(`/apartment-config/${apartmentId}/config/apply`, data);
+    return response.data;
   },
 };
 

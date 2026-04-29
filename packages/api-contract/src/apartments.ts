@@ -148,38 +148,68 @@ export interface RoomBatchCreate {
   monthly_rent?: number;
 }
 
-/** 水电配置 */
-export interface UtilityConfig {
+/** 公寓配置 */
+export interface ApartmentConfig {
   id: string;
   apartment_id: string;
   water_price_per_unit: number | null;
   electricity_price_per_unit: number | null;
-  internet_fee: number | null;
-  management_fee: number | null;
-  service_fee: number | null;
-  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  fee_items: ApartmentFeeItem[];
+}
+
+/** 创建/更新公寓配置 */
+export interface ApartmentConfigInput {
+  water_price_per_unit?: number;
+  electricity_price_per_unit?: number;
+}
+
+/** 公寓费用项目 */
+export interface ApartmentFeeItem {
+  id: string;
+  apartment_id: string;
+  category: 'fixed' | 'utility' | 'optional';
+  name: string;
+  amount: number;
+  cycle: 'monthly' | 'quarterly' | 'yearly' | 'one_time';
+  sort_order: number;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
 
-/** 创建水电配置 */
-export interface UtilityConfigCreate {
-  water_price_per_unit?: number;
-  electricity_price_per_unit?: number;
-  internet_fee?: number;
-  management_fee?: number;
-  service_fee?: number;
-  notes?: string;
+/** 创建公寓费用项目 */
+export interface ApartmentFeeItemCreate {
+  name: string;
+  category: 'fixed' | 'utility' | 'optional';
+  amount: number;
+  cycle: 'monthly' | 'quarterly' | 'yearly' | 'one_time';
 }
 
-/** 更新水电配置 */
-export interface UtilityConfigUpdate {
-  water_price_per_unit?: number;
-  electricity_price_per_unit?: number;
-  internet_fee?: number;
-  management_fee?: number;
-  service_fee?: number;
-  notes?: string;
+/** 更新公寓费用项目 */
+export interface ApartmentFeeItemUpdate {
+  name?: string;
+  category?: 'fixed' | 'utility' | 'optional';
+  amount?: number;
+  cycle?: 'monthly' | 'quarterly' | 'yearly' | 'one_time';
+  is_active?: boolean;
+  sort_order?: number;
+}
+
+/** 复制配置请求 */
+export interface CopyConfigInput {
+  target_apartment_ids: string[];
+  mode: 'overwrite' | 'merge';
+  include_utility_prices?: boolean;
+  include_fee_items?: boolean;
+}
+
+/** 复制配置结果 */
+export interface CopyConfigResult {
+  applied: string[];
+  skipped: string[];
+  details: Record<string, { fee_items_created: number; fee_items_updated: number; fee_items_unchanged: number }>;
 }
 
 // 兼容别名

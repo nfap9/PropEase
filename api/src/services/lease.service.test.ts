@@ -7,7 +7,7 @@ import { createLeaseService, type LeaseService } from './lease.service.js';
 import type { LeaseRepository } from '../repositories/lease.repo.js';
 import type { RoomRepository } from '../repositories/room.repo.js';
 import type { TenantRepository } from '../repositories/tenant.repo.js';
-import type { OrgFeeItemRepository } from '../repositories/orgFeeItem.repo.js';
+import type { ApartmentFeeItemRepository } from '../repositories/apartmentFeeItem.repo.js';
 import type { LeaseFeeItemRepository } from '../repositories/leaseFeeItem.repo.js';
 import type { LeaseChangeLogRepository } from '../repositories/leaseChangeLog.repo.js';
 import type { ApartmentRepository } from '../repositories/apartment.repo.js';
@@ -68,15 +68,17 @@ describe('LeaseService', () => {
     delete: vi.fn(),
   };
 
-  // Mock OrgFeeItem Repository
-  const mockOrgFeeItemRepo: OrgFeeItemRepository = {
+  // Mock ApartmentFeeItem Repository
+  const mockApartmentFeeItemRepo: ApartmentFeeItemRepository = {
     findById: vi.fn(),
-    findByIdAndOrg: vi.fn(),
-    findByOrgId: vi.fn(),
+    findByIdAndApartment: vi.fn(),
+    findByApartmentId: vi.fn(),
     findByIds: vi.fn(),
     create: vi.fn(),
+    createMany: vi.fn(),
     update: vi.fn(),
     softDelete: vi.fn(),
+    deleteByApartmentId: vi.fn(),
   };
 
   // Mock LeaseFeeItem Repository
@@ -174,7 +176,7 @@ describe('LeaseService', () => {
     vi.resetAllMocks();
     service = createLeaseService(
       () => mockRepo,
-      () => mockOrgFeeItemRepo,
+      () => mockApartmentFeeItemRepo,
       () => mockLeaseFeeItemRepo,
       () => mockLeaseChangeLogRepo,
       () => mockRoomRepo,
@@ -281,7 +283,7 @@ describe('LeaseService', () => {
     it('should create lease when room and tenant belong to org', async () => {
       vi.mocked(mockRoomRepo.findByIdWithApartment).mockResolvedValue(mockRoom as any);
       vi.mocked(mockTenantRepo.findByIdAndOrg).mockResolvedValue(mockTenant as any);
-      vi.mocked(mockOrgFeeItemRepo.findByIds).mockResolvedValue([]);
+      vi.mocked(mockApartmentFeeItemRepo.findByIds).mockResolvedValue([]);
       vi.mocked(mockRepo.createWithRoomUpdate).mockResolvedValue(mockLease as any);
       vi.mocked(mockOrgRepo.findMembersByOrgId).mockResolvedValue([]);
 

@@ -103,7 +103,7 @@ model Apartment {
 
   organization   Organization         @relation(fields: [organization_id], references: [id], onDelete: Cascade)
   rooms          Room[]
-  utility_config UtilityConfig?
+  config ApartmentConfig?
 
   @@index([organization_id])
   @@map("apartments")
@@ -218,7 +218,7 @@ model LeaseFeeItem {
   updated_at   DateTime  @updatedAt
 
   lease    Lease      @relation(fields: [lease_id], references: [id], onDelete: Cascade)
-  feeType  OrgFeeItem? @relation(fields: [fee_type_id], references: [id])
+  feeType  ApartmentFeeItem? @relation(fields: [fee_type_id], references: [id])
 
   @@index([lease_id])
   @@map("lease_fee_items")
@@ -267,42 +267,41 @@ model UtilityReading {
   @@map("utility_readings")
 }
 
-// 公寓水电费配置（水电单价、管理费等）
-model UtilityConfig {
+// 公寓配置（水电单价、费用项目）
+model ApartmentConfig {
   id                         String   @id @db.VarChar(26)
   apartment_id               String   @unique @db.VarChar(26)
   water_price_per_unit       Decimal? @db.Decimal(10, 2)
   electricity_price_per_unit Decimal? @db.Decimal(10, 2)
-  internet_fee               Decimal? @db.Decimal(10, 2)
-  management_fee             Decimal? @db.Decimal(10, 2)
-  service_fee                Decimal? @db.Decimal(10, 2)
-  notes                      String?  @db.VarChar(500)
   created_at                 DateTime @default(now())
   updated_at                 DateTime @updatedAt
 
-  apartment Apartment @relation(fields: [apartment_id], references: [id], onDelete: Cascade)
+  apartment Apartment        @relation(fields: [apartment_id], references: [id], onDelete: Cascade)
+  fee_items ApartmentFeeItem[]
 
-  @@map("utility_configs")
+  @@map("apartment_configs")
 }
 
-// 机构费用项目（平铺结构，替代原有的 FeeType -> FeeSpecification 树形结构，如服务费、卫生费、网费）
-model OrgFeeItem {
-  id              String   @id @db.VarChar(26)
-  organization_id String   @db.VarChar(26)
-  category        String   @db.VarChar(20)  // fixed/utility/optional
-  name            String   @db.VarChar(100) // 服务费、卫生费、网费
-  amount          Decimal  @db.Decimal(10, 2)
-  cycle           String   @db.VarChar(20)  // monthly/quarterly/yearly/one_time
-  sort_order      Int      @default(0)
-  is_active       Boolean  @default(true)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+// 公寓费用项目（平铺结构，如服务费、卫生费、网费）
+model ApartmentFeeItem {
+  id             String   @id @db.VarChar(26)
+  apartment_id   String   @db.VarChar(26)
+  category       String   @db.VarChar(20)  // fixed/utility/optional
+  name           String   @db.VarChar(100) // 服务费、卫生费、网费
+  amount         Decimal  @db.Decimal(10, 2)
+  cycle          String   @db.VarChar(20)  // monthly/quarterly/yearly/one_time
+  sort_order     Int      @default(0)
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
-  bill_fee_items BillFeeItem[]
+  apartment       ApartmentConfig @relation(fields: [apartment_id], references: [id], onDelete: Cascade)
+  bill_fee_items  BillFeeItem[]
   lease_fee_items LeaseFeeItem[]
 
-  @@unique([organization_id, name])
-  @@map("org_fee_items")
+  @@unique([apartment_id, name])
+  @@index([apartment_id])
+  @@map("apartment_fee_items")
 }
 
 // 账单（月度账单）
@@ -369,15 +368,11 @@ model BillFeeItem {
   created_at   DateTime  @default(now())
 
   bill     Bill      @relation(fields: [bill_id], references: [id], onDelete: Cascade)
-  feeType  OrgFeeItem @relation(fields: [fee_type_id], references: [id])
+  feeType  ApartmentFeeItem @relation(fields: [fee_type_id], references: [id])
 
   @@index([bill_id])
   @@map("bill_fee_items")
 }
-
-// ============================================================
-// 运营系统模块
-// ============================================================
 
 // 组织角色（预制+自定义统一管理，如管理员、成员）
 model OrgRole {
@@ -469,6 +464,10 @@ model NotificationDelivery {
   @@index([bill_id])
   @@map("notification_deliveries")
 }
+
+// ============================================================
+// 运营系统模块
+// ============================================================
 
 // 组织订阅（当前生效的订阅服务）
 model OrganizationSubscription {

@@ -20,8 +20,8 @@
 10. [LeaseFeeItem](#10-leasefeeitem-租约费用项)
 11. [LeaseChangeLog](#11-leasechangelog-租约变更记录)
 12. [UtilityReading](#12-utilityreading-水电读数)
-13. [UtilityConfig](#13-utilityconfig-水电单价配置)
-14. [OrgFeeItem](#14-orgfeeitem-组织费用项模板)
+13. [ApartmentConfig](#13-apartmentconfig-公寓配置)
+14. [ApartmentFeeItem](#14-apartmentfeeitem-公寓费用项)
 15. [Bill](#15-bill-账单)
 16. [BillFeeItem](#16-billfeeitem-账单费用项)
 17. [Payment](#17-payment-收款记录)
@@ -257,13 +257,13 @@
 
 ## 10. LeaseFeeItem（租约费用项）
 
-租约关联的费用项实例，关联 OrgFeeItem 模板并在租约级别落地金额。
+租约关联的费用项实例，关联 ApartmentFeeItem 并在租约级别落地金额。
 
 | 字段名 | 类型 | 必填 | 默认值 | 说明 |
 |--------|------|------|--------|------|
 | id | varchar(26) | ✅ | — | ULID 主键 |
 | lease_id | varchar(26) | ✅ | — | 所属租约 ID |
-| fee_type_id | varchar(26) | ❌ | — | 关联 OrgFeeItem 模板 ID |
+| fee_type_id | varchar(26) | ❌ | — | 关联 ApartmentFeeItem ID |
 | fee_category | varchar(20) | ✅ | — | 费用分类：fixed/utility/optional |
 | fee_name | varchar(100) | ✅ | — | 费用项名称，如 "租金"、"卫生费" |
 | fee_amount | decimal(10,2) | — | 1 | 费用金额（元） |
@@ -349,9 +349,9 @@
 
 ---
 
-## 13. UtilityConfig（水电单价配置）
+## 13. ApartmentConfig（公寓配置）
 
-公寓级别的水电单价及其他费用配置。
+公寓级别的配置，包含水电单价和费用项目。
 
 | 字段名 | 类型 | 必填 | 默认值 | 说明 |
 |--------|------|------|--------|------|
@@ -359,25 +359,21 @@
 | apartment_id | varchar(26) | ✅ | — | 所属公寓 ID（一对一） |
 | water_price_per_unit | decimal(10,2) | ❌ | — | 水费单价（元/吨） |
 | electricity_price_per_unit | decimal(10,2) | ❌ | — | 电费单价（元/度） |
-| internet_fee | decimal(10,2) | ❌ | — | 网费固定金额（元/月） |
-| management_fee | decimal(10,2) | ❌ | — | 管理费固定金额（元/月） |
-| service_fee | decimal(10,2) | ❌ | — | 服务费固定金额（元/月） |
-| notes | varchar(500) | ❌ | — | 备注 |
 | created_at | datetime | — | now() | 创建时间 |
 | updated_at | datetime | — | now() | 更新时间 |
 
-**说明：** 此配置为公寓级别默认值；实际计费以 Lease 上的 water_rate / electricity_rate 为准。
+**说明：** 此配置为公寓级别默认值；实际计费以 Lease 上的 water_rate / electricity_rate 为准。每个公寓独立管理自己的费用项目（ApartmentFeeItem）。
 
 ---
 
-## 14. OrgFeeItem（组织费用项模板）
+## 14. ApartmentFeeItem（公寓费用项）
 
-组织下可用的费用项模板，供创建租约时选择。
+公寓下可用的费用项，供创建租约时选择。每个公寓独立管理自己的费用项列表。
 
 | 字段名 | 类型 | 必填 | 默认值 | 说明 |
 |--------|------|------|--------|------|
 | id | varchar(26) | ✅ | — | ULID 主键 |
-| organization_id | varchar(26) | ✅ | — | 所属组织 ID |
+| apartment_id | varchar(26) | ✅ | — | 所属公寓配置 ID |
 | category | varchar(20) | ✅ | — | 分类：fixed/utility/optional |
 | name | varchar(100) | ✅ | — | 费用项名称，如 "卫生费"、"清运费" |
 | amount | decimal(10,2) | ✅ | — | 默认金额（元） |
@@ -387,7 +383,7 @@
 | created_at | datetime | — | now() | 创建时间 |
 | updated_at | datetime | — | now() | 更新时间 |
 
-**唯一约束：** `(organization_id, name)` 唯一，同一组织内费用项名称不可重复。
+**唯一约束：** `(apartment_id, name)` 唯一，同一公寓内费用项名称不可重复。
 
 ---
 
@@ -436,7 +432,7 @@
 |--------|------|------|--------|------|
 | id | varchar(26) | ✅ | — | ULID 主键 |
 | bill_id | varchar(26) | ✅ | — | 所属账单 ID |
-| fee_type_id | varchar(26) | ✅ | — | 关联 OrgFeeItem 模板 ID |
+| fee_type_id | varchar(26) | ✅ | — | 关联 ApartmentFeeItem ID |
 | fee_category | varchar(20) | ✅ | — | 费用分类 |
 | fee_name | varchar(100) | ✅ | — | 费用项名称 |
 | fee_amount | decimal(10,2) | — | 1 | 单价（元） |

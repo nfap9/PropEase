@@ -4,9 +4,8 @@ import {
   ApartmentWithStats,
   Room,
   RoomBatchCreate,
-  UtilityConfig,
-  UtilityConfigCreate,
-  UtilityConfigUpdate,
+  ApartmentConfig,
+  ApartmentConfigInput,
 } from '@/types';
 
 export const apartmentsApi = {
@@ -91,9 +90,9 @@ export const roomsApi = {
   },
 };
 
-export const utilityConfigApi = {
-  get: async (orgId: string, apartmentId: string): Promise<UtilityConfig> => {
-    const response = await api.get<UtilityConfig>(`/apartments/${apartmentId}/utility-config`, {
+export const apartmentConfigApi = {
+  get: async (orgId: string, apartmentId: string): Promise<ApartmentConfig> => {
+    const response = await api.get<ApartmentConfig>(`/apartment-config/${apartmentId}/config`, {
       params: { org_id: orgId },
     });
     return response.data;
@@ -102,10 +101,10 @@ export const utilityConfigApi = {
   createOrUpdate: async (
     orgId: string,
     apartmentId: string,
-    data: UtilityConfigCreate
-  ): Promise<UtilityConfig> => {
-    const response = await api.post<UtilityConfig>(
-      `/apartments/${apartmentId}/utility-config`,
+    data: ApartmentConfigInput
+  ): Promise<ApartmentConfig> => {
+    const response = await api.put<ApartmentConfig>(
+      `/apartment-config/${apartmentId}/config`,
       data,
       {
         params: { org_id: orgId },
@@ -117,10 +116,10 @@ export const utilityConfigApi = {
   update: async (
     orgId: string,
     apartmentId: string,
-    data: UtilityConfigUpdate
-  ): Promise<UtilityConfig> => {
-    const response = await api.put<UtilityConfig>(
-      `/apartments/${apartmentId}/utility-config`,
+    data: ApartmentConfigInput
+  ): Promise<ApartmentConfig> => {
+    const response = await api.patch<ApartmentConfig>(
+      `/apartment-config/${apartmentId}/config`,
       data,
       {
         params: { org_id: orgId },
@@ -130,7 +129,7 @@ export const utilityConfigApi = {
   },
 
   delete: async (orgId: string, apartmentId: string): Promise<void> => {
-    await api.delete(`/apartments/${apartmentId}/utility-config`, { params: { org_id: orgId } });
+    await api.delete(`/apartment-config/${apartmentId}/config`, { params: { org_id: orgId } });
   },
 };
 

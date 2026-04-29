@@ -21,7 +21,7 @@ import { ApartmentOverviewTab } from '../components/apartment-overview-tab';
 import { ApartmentRoomListTab } from '../components/apartment-room-list-tab';
 import { ApartmentEditDialog } from './apartment-edit-dialog';
 import { CreateRoomDialog, BatchCreateRoomDialog, BatchEditDialog, DeleteRoomDialog, RoomEditDialog } from './room-dialogs';
-import { UtilityConfigDialog } from './utility-config-dialog';
+import { UtilityConfigDialog } from './apartment-config-dialog';
 
 export function ApartmentDetailView() {
   const params = useParams();
@@ -45,7 +45,7 @@ export function ApartmentDetailView() {
   const [isDeleteRoomOpen, setIsDeleteRoomOpen] = useState(false);
   const [isBatchSelectMode, setIsBatchSelectMode] = useState(false);
   const [isBatchEditOpen, setIsBatchEditOpen] = useState(false);
-  const [isUtilityConfigOpen, setIsUtilityConfigOpen] = useState(false);
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [newRoomFacilities, setNewRoomFacilities] = useState<RoomFacilities | null>(null);
   const [facilityDialogOpen, setFacilityDialogOpen] = useState(false);
@@ -183,9 +183,9 @@ export function ApartmentDetailView() {
           apartment={apartment}
           onBack={() => navigate('/workspace/apartments')}
           onEdit={handleEditApartment}
-          onOpenUtilityConfig={() => setIsUtilityConfigOpen(true)}
+          onOpenConfig={() => setIsConfigOpen(true)}
           canEdit={canEditApartment}
-          canEditUtility={canEditUtility}
+          canEditConfig={canEditUtility}
         />
 
         <Tabs defaultActiveKey="info">
@@ -290,8 +290,8 @@ export function ApartmentDetailView() {
       />
 
       <UtilityConfigDialog
-        open={isUtilityConfigOpen}
-        onOpenChange={setIsUtilityConfigOpen}
+        open={isConfigOpen}
+        onOpenChange={setIsConfigOpen}
         orgId={orgId || ''}
         apartmentId={apartmentId}
         apartmentName={apartment.name}

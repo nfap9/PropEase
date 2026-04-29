@@ -1,4 +1,4 @@
-import type { Prisma, Room, Apartment, Lease, Tenant, UtilityConfig } from '@prisma/client';
+import type { Prisma, Room, Apartment, Lease, Tenant, ApartmentConfig } from '@prisma/client';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -13,7 +13,7 @@ export type RoomWithApartment = Room & {
  * 房间包含公寓和租约信息
  */
 export type RoomWithLease = Room & {
-  apartment: Apartment & { utility_config: UtilityConfig | null };
+  apartment: Apartment & { config: ApartmentConfig | null };
   leases: (Lease & { tenant: Tenant })[];
 };
 
@@ -91,7 +91,7 @@ export function createRoomRepository(db: DbClient): RoomRepository {
           leases: { some: { is_active: true } },
         },
         include: {
-          apartment: { include: { utility_config: true } },
+          apartment: { include: { config: true } },
           leases: {
             where: { is_active: true },
             include: { tenant: true },
@@ -106,7 +106,7 @@ export function createRoomRepository(db: DbClient): RoomRepository {
       return db.room.findMany({
         where: { apartment: { organization_id: orgId } },
         include: {
-          apartment: { include: { utility_config: true } },
+          apartment: { include: { config: true } },
           leases: {
             where: { is_active: true },
             include: { tenant: true },
