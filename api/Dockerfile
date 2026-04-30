@@ -36,4 +36,4 @@ ENV NODE_ENV=production
 COPY --from=builder /app ./
 
 EXPOSE 8000
-CMD ["node", "dist/index.js"]
+CMD ["node", "api/dist/index.js"]

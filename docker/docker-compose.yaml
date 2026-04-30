@@ -49,7 +49,7 @@ services:
       context: ..
       dockerfile: api/Dockerfile
     container_name: propease_db_setup
-    entrypoint: ["sh", "-c", "npx prisma migrate deploy && echo 'Migration completed'"]
+    entrypoint: ["sh", "-c", "cd /app/api && npx prisma db push && echo 'Schema sync completed'"]
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-apartment_ultra}
       NODE_ENV: production
