@@ -154,9 +154,6 @@ importers:
 
   api:
     dependencies:
-      '@propease/api-contract':
-        specifier: workspace:*
-        version: link:../packages/api-contract
       '@opentelemetry/exporter-metrics-otlp-grpc':
         specifier: ^0.213.0
         version: 0.213.0(@opentelemetry/api@1.9.1)
@@ -184,6 +181,9 @@ importers:
       '@prisma/instrumentation':
         specifier: ^7.5.0
         version: 7.7.0(@opentelemetry/api@1.9.1)
+      '@propease/api-contract':
+        specifier: workspace:*
+        version: link:../packages/api-contract
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
@@ -334,6 +334,12 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      react:
+        specifier: ^18
+        version: 18.3.1
+      react-dom:
+        specifier: ^18
+        version: 18.3.1(react@18.3.1)
       tailwind-merge:
         specifier: ^3.5.0
         version: 3.5.0
