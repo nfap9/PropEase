@@ -26,7 +26,7 @@
 ### 2.1 包管理与构建
 
 - **包管理器**: pnpm 9+ (workspace)
-- **Node 版本**: >= 18（CI 使用 Node 20，Docker 使用 node:20-alpine）
+- **Node 版本**: >= 18（Docker 使用 node:20-alpine）
 - **TypeScript**: ^5（strict mode）
 - **pnpm catalog**: 在 `pnpm-workspace.yaml` 中统一管理 35+ 常用依赖版本
 - **pnpm overrides**: 在根 `package.json` 中强制统一 React、Vite、axios、zod、react-router-dom、@tanstack/react-query 等版本
@@ -141,9 +141,7 @@ propease/
 │   ├── notification-spec.md
 │   └── tenant-user-guide.md
 ├── scripts/                    # 运维脚本（backup.sh、build-images.sh、deploy.sh、pre-deploy-check.sh 等）
-├── .github/workflows/          # CI/CD
-│   ├── ci.yml                  # 变更检测 → lint → type-check → build / Docker 构建推送
-│   └── deploy.yml              # SSH 部署（workflow_dispatch，支持 production/staging）
+
 ├── package.json                # 根 package.json，定义 workspace scripts 与 pnpm overrides
 ├── pnpm-workspace.yaml         # Workspace 定义 + pnpm catalog
 ├── tsconfig.base.json          # 根 TS 基础配置（strict: true）
