@@ -106,7 +106,7 @@ export function LoginView() {
               </div>
 
               <div className="mt-8 max-w-xl lg:mt-14">
-                <p className="text-sm font-medium tracking-[0.08em] text-gray-500 uppercase">Apartment Ultra</p>
+                <p className="text-sm font-medium tracking-[0.08em] text-gray-500 uppercase">PropEase</p>
                 <h1 className="mt-4 text-3xl font-semibold leading-tight text-gray-900 sm:text-4xl lg:text-[3.4rem] lg:leading-[1.08]">
                   {adminMessages.login.headline}
                 </h1>

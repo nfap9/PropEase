@@ -8,7 +8,7 @@ import { Select } from 'antd';
 import { Skeleton } from 'antd';
 import { ORG_STATUS_CONFIG, BOOLEAN_YES_NO_CONFIG } from '@/utils/status';
 import { adminApiEndpoints, AdminOrganization } from '@/api/admin-client';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 import { formatDateTime } from '@/utils/date';
 import { Eye, Power, PowerOff, MoreHorizontal } from 'lucide-react';
 import { adminMessages } from '@/i18n';

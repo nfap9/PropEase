@@ -6,7 +6,7 @@ import {
   type AdminRegisteredUser,
   type AdminRegisteredUserDetail,
 } from '@/api/admin-client';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 import type { FilterActive, GiftSubscriptionForm } from '@/schemas/registered-users';
 import { adminMessages } from '@/constants/messages';
 

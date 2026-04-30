@@ -1,7 +1,7 @@
 import { forwardRef, useImperativeHandle } from 'react';
 import { Form, Select } from 'antd';
 import { Building2, DoorOpen, CheckCircle2 } from 'lucide-react';
-import type { Room, Apartment } from '@apartment-ultra/api-contract';
+import type { Room, Apartment } from '@propease/api-contract';
 
 export interface RoomInfoSectionRef {
   validate: () => Promise<void>;

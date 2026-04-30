@@ -2,7 +2,7 @@
  * 运营后台 API 客户端。
  * 使用独立的 admin_access_token，与业务端 access_token 分离。
  */
-import { createAdminApiClient } from '@apartment-ultra/web-api-client';
+import { createAdminApiClient } from '@propease/web-api-client';
 import type { AxiosResponse } from 'axios';
 import type {
   AdminTokenResponse,
@@ -32,7 +32,7 @@ import type {
   BillingOrder,
   BillingOrderListParams,
   BillingOrderListResponse,
-} from '@apartment-ultra/api-contract';
+} from '@propease/api-contract';
 
 // 重新导出类型，保持向后兼容
 export type {

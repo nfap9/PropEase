@@ -27,7 +27,7 @@ app.get('/health', healthHandler);
 // Swagger UI - API 文档
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Apartment Ultra API Docs',
+  customSiteTitle: 'PropEase API Docs',
 }));
 
 // OpenAPI JSON - 用于导入到 Apifox

@@ -9,7 +9,7 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from 'recharts';
-import type { OccupancyReport } from '@apartment-ultra/api-contract';
+import type { OccupancyReport } from '@propease/api-contract';
 
 interface OccupancyChartProps {
   data: OccupancyReport[];

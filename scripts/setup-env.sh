@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# Apartment Ultra 环境变量设置脚本
+# PropEase 环境变量设置脚本
 # ============================================
 
 set -e
@@ -11,7 +11,7 @@ ENV_FILE="$PROJECT_ROOT/.env.production"
 EXAMPLE_FILE="$PROJECT_ROOT/docker/.env.production.example"
 
 echo "============================================"
-echo "  Apartment Ultra 环境变量设置向导"
+echo "  PropEase 环境变量设置向导"
 echo "============================================"
 echo ""
 

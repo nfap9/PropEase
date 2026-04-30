@@ -2,7 +2,7 @@
  * Billing 模块类型定义
  */
 
-import type { BillingOrder, BillingOrderStatus, BillingOrderType } from '@apartment-ultra/api-contract';
+import type { BillingOrder, BillingOrderStatus, BillingOrderType } from '@propease/api-contract';
 
 /** 订单状态选项 */
 export const BILLING_ORDER_STATUS_OPTIONS: { value: BillingOrderStatus; label: string }[] = [

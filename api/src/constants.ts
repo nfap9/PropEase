@@ -1,4 +1,4 @@
-import { BusinessCode as ContractBusinessCode } from '@apartment-ultra/api-contract';
+import { BusinessCode as ContractBusinessCode } from '@propease/api-contract';
 
 /** 业务状态码（与 api-contract 契约一致） */
 export const BusinessCode = ContractBusinessCode;

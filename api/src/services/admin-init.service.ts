@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma.js';
 import { createAppError } from '../utils/appError.js';
 import { hashPassword } from '../utils/security.js';
 import { createAdminAccessToken } from '../utils/jwt.js';
-import { BusinessCode } from '@apartment-ultra/api-contract';
+import { BusinessCode } from '@propease/api-contract';
 
 /**
  * 初始化输入

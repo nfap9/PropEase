@@ -14,7 +14,7 @@ const options: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Apartment Ultra API',
+      title: 'PropEase API',
       version: '1.0.0',
       description: '公寓管理系统 API 文档',
       contact: {

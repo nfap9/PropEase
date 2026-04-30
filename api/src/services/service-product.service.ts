@@ -3,7 +3,7 @@
  */
 import type {
   ServiceProduct,
-} from '@apartment-ultra/api-contract';
+} from '@propease/api-contract';
 import {
   createServiceProductRepository,
   type ServiceProductRepository,

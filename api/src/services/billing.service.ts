@@ -6,7 +6,7 @@ import { NotFoundMessages } from '../messages.js';
 import { prisma } from '../lib/prisma.js';
 import { createWechatPayNativeOrder } from './wechatPayNative.js';
 import { isSubscriptionActive } from '../utils/subscription.js';
-import type { SubscriptionStatus, ServiceProduct } from '@apartment-ultra/api-contract';
+import type { SubscriptionStatus, ServiceProduct } from '@propease/api-contract';
 
 /**
  * 订单类型

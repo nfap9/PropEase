@@ -4,7 +4,7 @@ import type {
   BatchUtilityReadingData,
   RoomMissingInitialReading,
   UtilityExportRoom,
-} from '@apartment-ultra/api-contract';
+} from '@propease/api-contract';
 
 export type { BatchUtilityReadingData, RoomMissingInitialReading, UtilityExportRoom };
 

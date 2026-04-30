@@ -1,4 +1,4 @@
-import type { Notification, NotificationCategory } from '@apartment-ultra/api-contract';
+import type { Notification, NotificationCategory } from '@propease/api-contract';
 import {
   NOTIFICATION_TYPE_LABEL_MAP,
   NOTIFICATION_CATEGORY_LABEL_MAP,

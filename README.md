@@ -1,4 +1,4 @@
-# Apartment Ultra
+# PropEase
 
 多租户 SaaS 公寓管理系统，为管理多个租赁房产的房东设计。
 
@@ -16,7 +16,7 @@
 ## 项目结构
 
 ```
-apartment-ultra/
+propease/
 ├── api/                     # 后端 API (Node/Express/TypeScript)
 ├── tenant-web/              # 租客端前端 (Vite + React)
 ├── admin-web/               # 运营后台前端 (Vite + React)
@@ -47,7 +47,7 @@ pnpm docker:middleware
 pnpm install
 
 # 3. 同步数据库 Schema
-pnpm --filter apartment-ultra-api exec prisma db push
+pnpm --filter propease-api exec prisma db push
 
 # 4. 启动后端（端口 8000）
 pnpm dev:api

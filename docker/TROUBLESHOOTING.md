@@ -140,7 +140,7 @@ curl -s http://localhost/api/v1/health
 ```json
 {
   "status": "healthy",
-  "app": "Apartment Ultra API",
+  "app": "PropEase API",
   "version": "0.1.0",
   "is_dev": false,
   "checks": {

@@ -1,5 +1,5 @@
-import type { Bill } from '@apartment-ultra/api-contract';
-import type { BillFeeItem } from '@apartment-ultra/api-contract';
+import type { Bill } from '@propease/api-contract';
+import type { BillFeeItem } from '@propease/api-contract';
 
 export interface BillShareData {
   organizationName: string;

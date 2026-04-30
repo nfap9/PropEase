@@ -95,26 +95,26 @@ jobs:
 
       - name: Build api-contract
         if: steps.contract-cache.outputs.cache-hit != 'true'
-        run: pnpm --filter @apartment-ultra/api-contract run build
+        run: pnpm --filter @propease/api-contract run build
 
       - name: Prisma generate
-        run: pnpm --filter apartment-ultra-api exec prisma generate
+        run: pnpm --filter propease-api exec prisma generate
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test
 
       - name: Run ESLint
-        run: pnpm --filter apartment-ultra-api run lint
+        run: pnpm --filter propease-api run lint
 
       - name: Type check
-        run: pnpm --filter apartment-ultra-api run type-check
+        run: pnpm --filter propease-api run type-check
 
       - name: Prisma db push
-        run: pnpm --filter apartment-ultra-api exec prisma db push
+        run: pnpm --filter propease-api exec prisma db push
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test
 
       - name: Run tests
-        run: pnpm --filter apartment-ultra-api run test
+        run: pnpm --filter propease-api run test
         env:
           DATABASE_URL: postgresql://test:test@localhost:5432/test
 
@@ -154,19 +154,19 @@ jobs:
 
       - name: Build api-contract
         if: steps.contract-cache.outputs.cache-hit != 'true'
-        run: pnpm --filter @apartment-ultra/api-contract run build
+        run: pnpm --filter @propease/api-contract run build
 
       - name: Run ESLint
-        run: pnpm --filter apartment-ultra-tenant run lint
+        run: pnpm --filter propease-tenant run lint
 
       - name: Type check
-        run: pnpm --filter apartment-ultra-tenant run type-check
+        run: pnpm --filter propease-tenant run type-check
 
       - name: Run tests
-        run: pnpm --filter apartment-ultra-tenant run test:run
+        run: pnpm --filter propease-tenant run test:run
 
       - name: Build
-        run: pnpm --filter apartment-ultra-tenant run build
+        run: pnpm --filter propease-tenant run build
         env:
           VITE_API_URL: http://localhost:8000/api/v1
 
@@ -206,19 +206,19 @@ jobs:
 
       - name: Build api-contract
         if: steps.contract-cache-admin.outputs.cache-hit != 'true'
-        run: pnpm --filter @apartment-ultra/api-contract run build
+        run: pnpm --filter @propease/api-contract run build
 
       - name: Run ESLint
-        run: pnpm --filter apartment-ultra-admin run lint
+        run: pnpm --filter propease-admin run lint
 
       - name: Type check
-        run: pnpm --filter apartment-ultra-admin run type-check
+        run: pnpm --filter propease-admin run type-check
 
       - name: Run tests
-        run: pnpm --filter apartment-ultra-admin run test:run
+        run: pnpm --filter propease-admin run test:run
 
       - name: Build
-        run: pnpm --filter apartment-ultra-admin run build
+        run: pnpm --filter propease-admin run build
         env:
           VITE_API_URL: http://localhost:8000/api/v1
 
@@ -252,8 +252,8 @@ jobs:
           file: api/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/apartment-ultra-api:main
-            ghcr.io/${{ github.repository_owner }}/apartment-ultra-api:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/propease-api:main
+            ghcr.io/${{ github.repository_owner }}/propease-api:${{ github.sha }}
 
       - name: Build and push tenant-web image
         uses: docker/build-push-action@v5
@@ -263,8 +263,8 @@ jobs:
           push: true
           build-args: VITE_API_URL=http://localhost/api/v1
           tags: |
-            ghcr.io/${{ github.repository_owner }}/apartment-ultra-tenant-web:main
-            ghcr.io/${{ github.repository_owner }}/apartment-ultra-tenant-web:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/propease-tenant-web:main
+            ghcr.io/${{ github.repository_owner }}/propease-tenant-web:${{ github.sha }}
 
       - name: Build and push admin-web image
         uses: docker/build-push-action@v5
@@ -274,5 +274,5 @@ jobs:
           push: true
           build-args: VITE_API_URL=http://localhost/api/v1
           tags: |
-            ghcr.io/${{ github.repository_owner }}/apartment-ultra-admin-web:main
-            ghcr.io/${{ github.repository_owner }}/apartment-ultra-admin-web:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/propease-admin-web:main
+            ghcr.io/${{ github.repository_owner }}/propease-admin-web:${{ github.sha }}

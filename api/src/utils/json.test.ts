@@ -33,11 +33,11 @@ describe('toPrismaInputJsonValue', () => {
   it('should omit undefined object properties', () => {
     expect(
       toPrismaInputJsonValue({
-        app_name: 'Apartment Ultra',
+        app_name: 'PropEase',
         favicon_url: undefined,
       })
     ).toEqual({
-      app_name: 'Apartment Ultra',
+      app_name: 'PropEase',
     });
   });
 

@@ -5,7 +5,7 @@ import type {
   OrganizationSubscription,
   Prisma,
 } from '@prisma/client';
-import type { ServiceProduct } from '@apartment-ultra/api-contract';
+import type { ServiceProduct } from '@propease/api-contract';
 import type {
   AdminRepository,
   SubscriptionWithRelations,

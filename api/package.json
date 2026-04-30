@@ -1,7 +1,7 @@
 {
-  "name": "apartment-ultra-api",
+  "name": "propease-api",
   "version": "0.1.0",
-  "description": "Apartment Ultra API (Node/TypeScript, Express)",
+  "description": "PropEase API (Node/TypeScript, Express)",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "migrate:plans-to-services": "tsx scripts/migrate-plans-to-services.ts"
   },
   "dependencies": {
-    "@apartment-ultra/api-contract": "workspace:*",
+    "@propease/api-contract": "workspace:*",
     "@opentelemetry/exporter-metrics-otlp-grpc": "^0.213.0",
     "@opentelemetry/exporter-trace-otlp-grpc": "^0.213.0",
     "@opentelemetry/instrumentation-express": "^0.61.0",

@@ -21,7 +21,7 @@ import { RoomsGroupedView } from '../components/rooms-grouped-view';
 import { TerminateDialog } from './terminate-dialog';
 import { EditRoomDialog } from './edit-room-dialog';
 import { useRoomsData, useRoomsMutations } from '../hooks/use-rooms-page';
-import type { RoomEditFormData } from '@apartment-ultra/api-contract';
+import type { RoomEditFormData } from '@propease/api-contract';
 import type { RoomFacilities } from '@/types';
 import { buildRoomFormValues } from '@/utils/apartment-detail';
 import { useAuth } from '@/contexts/auth';

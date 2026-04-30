@@ -25,7 +25,7 @@ export function initObservability(): void {
   const metricExporter = new OTLPMetricExporter({ url: endpoint });
 
   sdk = new NodeSDK({
-    serviceName: process.env.APP_NAME || 'apartment-ultra-api',
+    serviceName: process.env.APP_NAME || 'propease-api',
     traceExporter,
     metricReader: new PeriodicExportingMetricReader({
       exporter: metricExporter,

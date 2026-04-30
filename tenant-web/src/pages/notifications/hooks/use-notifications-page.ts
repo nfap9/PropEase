@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { NotificationCategory } from '@apartment-ultra/api-contract';
+import type { NotificationCategory } from '@propease/api-contract';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions } from '@/hooks/use-permissions';
 import { canAccessRule } from '@/utils/permission-access';

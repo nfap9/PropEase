@@ -11,7 +11,7 @@ function createPinoOptions() {
     },
     timestamp: pino.stdTimeFunctions.isoTime,
     base: {
-      service: 'apartment-ultra-api',
+      service: 'propease-api',
     },
   };
 

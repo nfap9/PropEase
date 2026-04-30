@@ -8,13 +8,13 @@ import { apartmentsApi, roomsApi, apartmentConfigApi } from '@/api/apartments';
 import { tenantsApi } from '@/api/tenants';
 import { toDateInputValue } from '@/utils/date';
 import { filterEmptyStrings } from '@/utils/form';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 import { TenantSearchDrawer } from './tenant-search-drawer';
 import { RoomInfoSection, type RoomInfoSectionRef } from './room-info-section';
 import { TenantInfoSection, type TenantInfoSectionRef } from './tenant-info-section';
 import { ContractInfoSection, type ContractInfoSectionRef } from './contract-info-section';
 import type { FeeItem } from '@/pages/leases/components/fee-items-editor';
-import type { Room, Tenant, ApartmentConfig } from '@apartment-ultra/api-contract';
+import type { Room, Tenant, ApartmentConfig } from '@propease/api-contract';
 
 const leaseSigningSteps = [
   { id: 'room', title: '房间', description: '选择公寓与房间' },

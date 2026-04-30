@@ -11,7 +11,7 @@ import {
   BILLING_ORDER_STATUS_OPTIONS,
   BILLING_ORDER_TYPE_OPTIONS,
 } from '@/types/billing';
-import type { BillingOrder, BillingOrderStatus, BillingOrderType } from '@apartment-ultra/api-contract';
+import type { BillingOrder, BillingOrderStatus, BillingOrderType } from '@propease/api-contract';
 
 const STATUS_COLOR_MAP: Record<BillingOrderStatus, string> = {
   pending: 'orange',

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { tenantsApi } from '@/api/tenants';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 import { filterEmptyStrings } from '@/utils/form';
 import type { TenantFormData } from '../components/tenant-form-modal';
 

@@ -6,7 +6,7 @@ import { Button, Modal, Input, Card, Skeleton, Tag, Form } from 'antd';
 import { PermissionGuard } from '@/components/common/permission-guard';
 import { PERMISSIONS } from '@/hooks/use-permissions';
 import { organizationsApi } from '@/api/organizations';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 import { formatDate } from '@/utils/date';
 import { MemberRole, OrganizationUsage } from '@/types';
 import { Pencil, Building2, Users, DoorOpen } from 'lucide-react';

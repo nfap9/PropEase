@@ -3,7 +3,7 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"],
-      "@apartment-ultra/api-contract": ["../packages/api-contract/src/index.ts"],
+      "@propease/api-contract": ["../packages/api-contract/src/index.ts"],
       "@/components/*": ["./src/components/*"]
     }
   },

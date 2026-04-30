@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { BusinessCode, type SuccessBody } from '@apartment-ultra/api-contract';
+import { BusinessCode, type SuccessBody } from '@propease/api-contract';
 import { shouldSkipResponseWrap } from '../constants.js';
 import { Messages } from '../messages.js';
 

@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { Card, Button, Input, Form } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { organizationsApi } from '@/api/organizations';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 import { DEFAULT_ORGANIZATION_HOME_PATH } from '@/utils/auth-redirect';
 
 const { TextArea } = Input;

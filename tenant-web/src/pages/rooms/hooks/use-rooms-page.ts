@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { roomsApi, apartmentsApi } from '@/api/apartments';
 import { leasesApi } from '@/api/leases';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 import { useAuth } from '@/contexts/auth';
 import type { Room, ApartmentWithStats, Lease } from '@/types';
 import type { RoomFiltersState } from '@/pages/rooms/components/room-filters';

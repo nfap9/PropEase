@@ -1,4 +1,4 @@
-import { BusinessCode } from '@apartment-ultra/api-contract';
+import { BusinessCode } from '@propease/api-contract';
 
 export interface AppErrorOptions {
   /** 业务错误码 */

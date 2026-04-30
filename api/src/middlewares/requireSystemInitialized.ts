@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma.js';
 import { createAppError } from '../utils/appError.js';
-import { BusinessCode } from '@apartment-ultra/api-contract';
+import { BusinessCode } from '@propease/api-contract';
 
 /**
  * 检查系统是否已初始化的中间件

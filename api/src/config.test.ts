@@ -56,7 +56,7 @@ describe('config', () => {
       const { config } = await import('./config.js');
 
       expect(config.isDev).toBe(true);
-      expect(config.appName).toBe('Apartment Ultra API');
+      expect(config.appName).toBe('PropEase API');
       expect(config.apiV1Prefix).toBe('/api/v1');
       expect(config.debug).toBe(false);
       expect(config.algorithm).toBe('HS256');

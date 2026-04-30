@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Search, User } from 'lucide-react';
 import { Button, Input, Drawer } from 'antd';
 import { tenantsApi } from '@/api/tenants';
-import { cn } from '@apartment-ultra/web-shared';
-import type { Tenant } from '@apartment-ultra/api-contract';
+import { cn } from '@propease/web-shared';
+import type { Tenant } from '@propease/api-contract';
 
 interface TenantSearchDrawerProps {
   orgId: string;

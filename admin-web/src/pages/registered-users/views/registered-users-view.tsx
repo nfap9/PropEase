@@ -14,7 +14,7 @@ import {
 } from '@/pages/registered-users/components/registered-user-dialogs';
 import { RegisteredUsersToolbar } from '@/pages/registered-users/components/registered-users-toolbar';
 import { useListFilters } from '@/hooks';
-import { useConfirmAction } from '@apartment-ultra/web-shared';
+import { useConfirmAction } from '@propease/web-shared';
 import type { GiftSubscriptionForm } from '@/schemas/registered-users';
 import type { AdminRegisteredUser } from '@/api/admin-client';
 

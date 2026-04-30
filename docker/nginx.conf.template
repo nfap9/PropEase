@@ -1,13 +1,13 @@
 upstream api_backend {
-    server api:8000;
+    server 127.0.0.1:8000;
 }
 
 upstream tenant_web_backend {
-    server tenant-web:3000;
+    server 127.0.0.1:3000;
 }
 
 upstream admin_web_backend {
-    server admin-web:8080;
+    server 127.0.0.1:8080;
 }
 
 # 统一入口 - 80 端口对外服务

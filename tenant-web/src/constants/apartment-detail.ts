@@ -1,4 +1,4 @@
-import type { ApartmentFormData } from '@apartment-ultra/api-contract';
+import type { ApartmentFormData } from '@propease/api-contract';
 import type { RoomStatus } from '@/types';
 
 export const LAYOUT_OPTIONS = [

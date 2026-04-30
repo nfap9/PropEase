@@ -17,7 +17,7 @@ import { billsApi } from '@/api/bills';
 import { leasesApi } from '@/api/leases';
 import { utilitiesApi } from '@/api/utilities';
 import { filterEmptyStrings } from '@/utils/form';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 import { useAuth } from '@/contexts/auth';
 import type { UtilityReading } from '@/types';
 

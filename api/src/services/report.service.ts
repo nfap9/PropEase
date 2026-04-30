@@ -1,5 +1,5 @@
 import type { ReportRepository } from '../repositories/report.repo.js';
-import type { ReportMetadata } from '@apartment-ultra/api-contract';
+import type { ReportMetadata } from '@propease/api-contract';
 import { defaultReportRepo } from '../repositories/report.repo.js';
 
 /**

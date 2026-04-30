@@ -1,4 +1,4 @@
-# Apartment Ultra Docker Compose 配置
+# PropEase Docker Compose 配置
 # ==================================================================
 # 使用方法:
 #   完整部署:
@@ -11,7 +11,7 @@
 #     docker compose -f docker/docker-compose.yaml -f docker/docker-compose.observability.yaml --env-file docker/.env.docker up -d
 # ==================================================================
 
-name: apartment-ultra
+name: propease
 
 services:
   postgres:
@@ -63,7 +63,7 @@ services:
         max-file: "3"
 
   api:
-    image: apartment-ultra-api:${API_IMAGE_TAG:-latest}
+    image: propease-api:${API_IMAGE_TAG:-latest}
     build:
       context: ..
       dockerfile: api/Dockerfile
@@ -75,7 +75,7 @@ services:
       SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
       CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
       DEBUG: "false"
-      APP_NAME: ${APP_NAME:-Apartment Ultra API}
+      APP_NAME: ${APP_NAME:-PropEase API}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-7}
       # 微信支付配置（可选）
@@ -94,6 +94,8 @@ services:
     restart: unless-stopped
     networks:
       - apartment-network
+    ports:
+      - "127.0.0.1:8000:8000"
     logging:
       driver: "json-file"
       options:
@@ -111,7 +113,7 @@ services:
           memory: ${API_MEMORY:-1G}
 
   tenant-web:
-    image: apartment-ultra-tenant-web:${TENANT_WEB_IMAGE_TAG:-latest}
+    image: propease-tenant-web:${TENANT_WEB_IMAGE_TAG:-latest}
     build:
       context: ..
       dockerfile: tenant-web/Dockerfile
@@ -126,6 +128,8 @@ services:
     restart: unless-stopped
     networks:
       - apartment-network
+    ports:
+      - "127.0.0.1:3000:3000"
     logging:
       driver: "json-file"
       options:
@@ -138,7 +142,7 @@ services:
 
   # 运营端 (admin-web)
   admin-web:
-    image: apartment-ultra-admin-web:${ADMIN_WEB_IMAGE_TAG:-latest}
+    image: propease-admin-web:${ADMIN_WEB_IMAGE_TAG:-latest}
     build:
       context: ..
       dockerfile: admin-web/Dockerfile
@@ -153,6 +157,8 @@ services:
     restart: unless-stopped
     networks:
       - apartment-network
+    ports:
+      - "127.0.0.1:8080:8080"
     logging:
       driver: "json-file"
       options:

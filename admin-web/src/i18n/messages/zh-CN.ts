@@ -1,6 +1,6 @@
 export const adminZhCNMessages = {
   meta: {
-    title: '管理平台 - Apartment Ultra',
+    title: '管理平台 - PropEase',
     description: '公寓管理系统管理平台',
   },
   common: {

@@ -12,7 +12,7 @@ import {
   type ErrorResponseData,
   type FieldError,
   type SuccessBody,
-} from '@apartment-ultra/api-contract';
+} from '@propease/api-contract';
 import type { FieldPath, FieldValues, UseFormSetError } from 'react-hook-form';
 
 type RawApiPayload = SuccessBody<unknown> | Record<string, unknown>;

@@ -5,7 +5,7 @@ import { Tag } from 'antd';
 import { Button } from 'antd';
 import { ROOM_STATUS_CONFIG } from '@/constants/status';
 import { Room, RoomStatus } from '@/types';
-import { cn } from '@apartment-ultra/web-shared';
+import { cn } from '@propease/web-shared';
 
 interface RoomCardBaseProps {
   room: Room;

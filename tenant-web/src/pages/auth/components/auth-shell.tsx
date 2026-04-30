@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { Button } from 'antd';
 import { Tag } from 'antd';
 import { Card } from 'antd';
-import { cn } from '@apartment-ultra/web-shared';
+import { cn } from '@propease/web-shared';
 
 type AuthMode = 'login' | 'register';
 

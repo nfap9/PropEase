@@ -8,7 +8,7 @@ import {
   type AdminPlanUpdate,
   type AdminPlanPricingCreate,
 } from '@/api/admin-client';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 
 /**
  * 套餐管理 Hooks

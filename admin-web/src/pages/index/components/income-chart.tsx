@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts';
-import type { IncomeReport } from '@apartment-ultra/api-contract';
+import type { IncomeReport } from '@propease/api-contract';
 
 interface IncomeChartProps {
   data: IncomeReport[];

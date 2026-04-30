@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Tag } from 'antd';
 import { usePlans, useCreatePlan, useUpdatePlan, useDeletePlan, useUpdatePlanPricing } from '@/hooks/billing';
 import type { AdminPlan, AdminPlanPricingCreate } from '@/api/admin-client';
-import type { PlanPricing } from '@apartment-ultra/api-contract';
+import type { PlanPricing } from '@propease/api-contract';
 
 export function PlansView() {
   const { plans, loading } = usePlans();

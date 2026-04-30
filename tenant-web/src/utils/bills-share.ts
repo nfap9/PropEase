@@ -72,7 +72,7 @@ export function buildBillShareData({
       : defaultBreakdown;
 
   return {
-    organizationName: organizationName?.trim() || 'Apartment Ultra',
+    organizationName: organizationName?.trim() || 'PropEase',
     monthLabel: formatMonthLabel(bill),
     roomLabel,
     tenantName,

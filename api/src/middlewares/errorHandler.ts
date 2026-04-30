@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { BusinessCode, type ErrorResponseBody } from '@apartment-ultra/api-contract';
+import { BusinessCode, type ErrorResponseBody } from '@propease/api-contract';
 import { AppError } from '../errors/index.js';
 
 /**

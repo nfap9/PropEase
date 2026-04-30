@@ -1,5 +1,5 @@
 {
-  "name": "apartment-ultra-admin",
+  "name": "propease-admin",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -14,9 +14,9 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.1",
-    "@apartment-ultra/api-contract": "workspace:*",
-    "@apartment-ultra/web-api-client": "workspace:*",
-    "@apartment-ultra/web-shared": "workspace:*",
+    "@propease/api-contract": "workspace:*",
+    "@propease/web-api-client": "workspace:*",
+    "@propease/web-shared": "workspace:*",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-table": "^8.21.3",
     "antd": "^6.3.6",

@@ -1,7 +1,7 @@
-# apartment-ultra 前端规范 — antd 组件篇
+# propease 前端规范 — antd 组件篇
 
 > 本规范基于 tenant-web 重构实践，专注于 antd 与 react-hook-form 配合的正确姿势。
-> 项目目前使用 pnpm workspace，包名：`apartment-ultra-tenant`
+> 项目目前使用 pnpm workspace，包名：`propease-tenant`
 
 ---
 

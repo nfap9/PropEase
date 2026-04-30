@@ -5,7 +5,7 @@ import { Button, Card } from 'antd';
 import { adminApiEndpoints } from '@/api/admin-client';
 import { RefreshButton } from '@/pages/index/components/refresh-button';
 import { StatCardsSkeleton } from '@/pages/index/components/skeleton';
-import type { AdminPlatformStats } from '@apartment-ultra/api-contract';
+import type { AdminPlatformStats } from '@propease/api-contract';
 import type { AxiosResponse } from 'axios';
 import { adminMessages } from '@/i18n';
 

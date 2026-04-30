@@ -27,13 +27,13 @@ importers:
       '@ant-design/icons':
         specifier: ^6.1.1
         version: 6.1.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@apartment-ultra/api-contract':
+      '@propease/api-contract':
         specifier: workspace:*
         version: link:../packages/api-contract
-      '@apartment-ultra/web-api-client':
+      '@propease/web-api-client':
         specifier: workspace:*
         version: link:../packages/web-api-client
-      '@apartment-ultra/web-shared':
+      '@propease/web-shared':
         specifier: workspace:*
         version: link:../packages/web-shared
       '@tanstack/react-query':
@@ -154,7 +154,7 @@ importers:
 
   api:
     dependencies:
-      '@apartment-ultra/api-contract':
+      '@propease/api-contract':
         specifier: workspace:*
         version: link:../packages/api-contract
       '@opentelemetry/exporter-metrics-otlp-grpc':
@@ -300,7 +300,7 @@ importers:
 
   packages/web-api-client:
     dependencies:
-      '@apartment-ultra/api-contract':
+      '@propease/api-contract':
         specifier: workspace:*
         version: link:../api-contract
       axios:
@@ -322,10 +322,10 @@ importers:
 
   packages/web-shared:
     dependencies:
-      '@apartment-ultra/api-contract':
+      '@propease/api-contract':
         specifier: workspace:*
         version: link:../api-contract
-      '@apartment-ultra/web-api-client':
+      '@propease/web-api-client':
         specifier: workspace:*
         version: link:../web-api-client
       '@tanstack/react-query':
@@ -365,13 +365,13 @@ importers:
       '@ant-design/icons':
         specifier: ^6.1.1
         version: 6.1.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@apartment-ultra/api-contract':
+      '@propease/api-contract':
         specifier: workspace:*
         version: link:../packages/api-contract
-      '@apartment-ultra/web-api-client':
+      '@propease/web-api-client':
         specifier: workspace:*
         version: link:../packages/web-api-client
-      '@apartment-ultra/web-shared':
+      '@propease/web-shared':
         specifier: workspace:*
         version: link:../packages/web-shared
       '@tanstack/react-query':

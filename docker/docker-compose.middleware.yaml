@@ -1,7 +1,7 @@
 # Middleware services
 # Usage: docker compose -f docker/docker-compose.middleware.yaml --env-file docker/middleware.env up -d
 
-name: apartment-ultra-middleware
+name: propease-middleware
 
 services:
   postgres:

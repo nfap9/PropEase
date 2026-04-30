@@ -20,11 +20,11 @@ COPY api/prisma.config.ts api/
 COPY api/tsconfig.json api/
 COPY api/package.json api/
 # 先构建 api-contract（api 依赖其 dist），再生成 Prisma 并构建 api
-RUN pnpm --filter @apartment-ultra/api-contract run build
+RUN pnpm --filter @propease/api-contract run build
 # 设置构建时的 DATABASE_URL（prisma generate 不需要实际连接）
 ENV DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder"
-RUN pnpm --filter apartment-ultra-api exec prisma generate
-RUN pnpm --filter apartment-ultra-api run build
+RUN pnpm --filter propease-api exec prisma generate
+RUN pnpm --filter propease-api run build
 
 # Production stage（复制整棵 /app 以保持 pnpm node_modules 符号链接）
 FROM node:20-alpine AS runner

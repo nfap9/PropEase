@@ -3,7 +3,7 @@ import type {
   TenantNotificationDelivery,
   TenantNotificationTemplate,
   TenantReachabilityEventType,
-} from '@apartment-ultra/api-contract';
+} from '@propease/api-contract';
 import api from './client';
 
 export const tenantReachabilityApi = {

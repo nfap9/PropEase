@@ -2,10 +2,10 @@
  * 权限常量 — 静态定义，无需数据库存储
  */
 
-import type { Resource, Action } from '@apartment-ultra/api-contract';
+import type { Resource, Action } from '@propease/api-contract';
 
 // Re-export from api-contract
-export { RESOURCES, ACTIONS, toPermissionCodes } from '@apartment-ultra/api-contract';
+export { RESOURCES, ACTIONS, toPermissionCodes } from '@propease/api-contract';
 export type { Resource, Action };
 
 // 资源模块（无 settings）

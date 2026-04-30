@@ -1,1 +1,1 @@
-import '@apartment-ultra/web-shared/test/setup';
+import '@propease/web-shared/test/setup';

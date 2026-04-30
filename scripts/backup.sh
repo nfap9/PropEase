@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# Apartment Ultra 数据库备份脚本
+# PropEase 数据库备份脚本
 # ============================================
 
 set -e
@@ -11,7 +11,7 @@ ENV_FILE="$PROJECT_ROOT/.env.production"
 BACKUP_DIR="$PROJECT_ROOT/docker/backup"
 
 echo "============================================"
-echo "  Apartment Ultra 数据库备份"
+echo "  PropEase 数据库备份"
 echo "============================================"
 echo ""
 

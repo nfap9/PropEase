@@ -6,7 +6,7 @@ import { Button, Input, DatePicker, Form, InputNumber, Space } from 'antd';
 import dayjs from 'dayjs';
 import { apartmentsApi } from '@/api/apartments';
 import { useAuth } from '@/contexts/auth';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 
 export default function NewApartmentPage() {
   const navigate = useNavigate();

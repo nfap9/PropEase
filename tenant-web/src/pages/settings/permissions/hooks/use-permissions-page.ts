@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { permissionsApi } from '@/api/permissions';
 import { organizationsApi } from '@/api/organizations';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 import type { OrgRole, Permission } from '@/api/permissions';
 import { useAuth } from '@/contexts/auth';
 import { tenantMessages } from '@/i18n';

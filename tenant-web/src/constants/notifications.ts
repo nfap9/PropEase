@@ -1,4 +1,4 @@
-import type { NotificationCategory } from '@apartment-ultra/api-contract';
+import type { NotificationCategory } from '@propease/api-contract';
 
 /** 通知类型 → 中文标签（静态配置） */
 const NOTIFICATION_TYPE_LABEL_MAP: Record<string, string> = {

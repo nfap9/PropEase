@@ -139,7 +139,7 @@ function buildRawConfig() {
 
   return {
     isDev,
-    appName: envStr('APP_NAME', 'Apartment Ultra API'),
+    appName: envStr('APP_NAME', 'PropEase API'),
     apiV1Prefix: envStr('API_V1_PREFIX', '/api/v1'),
     debug: envBool('DEBUG', false),
     databaseUrl: envStr(

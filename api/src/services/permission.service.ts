@@ -8,7 +8,7 @@ import {
   ACTIONS,
   RESOURCE_NAMES,
   ACTION_NAMES,
-} from '@apartment-ultra/api-contract';
+} from '@propease/api-contract';
 import {
   type Resource,
   type Action,

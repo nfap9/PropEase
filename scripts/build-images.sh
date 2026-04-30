@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# Apartment Ultra Docker 镜像构建脚本
+# PropEase Docker 镜像构建脚本
 # ============================================
 
 set -e
@@ -15,13 +15,13 @@ TENANT_WEB_IMAGE_TAG="${TENANT_WEB_IMAGE_TAG:-latest}"
 ADMIN_WEB_IMAGE_TAG="${ADMIN_WEB_IMAGE_TAG:-latest}"
 
 echo "============================================"
-echo "  Apartment Ultra 镜像构建"
+echo "  PropEase 镜像构建"
 echo "============================================"
 echo ""
 echo "镜像标签:"
-echo "  API:         apartment-ultra-api:${API_IMAGE_TAG}"
-echo "  租客端:      apartment-ultra-tenant-web:${TENANT_WEB_IMAGE_TAG}"
-echo "  运营后台:    apartment-ultra-admin-web:${ADMIN_WEB_IMAGE_TAG}"
+echo "  API:         propease-api:${API_IMAGE_TAG}"
+echo "  租客端:      propease-tenant-web:${TENANT_WEB_IMAGE_TAG}"
+echo "  运营后台:    propease-admin-web:${ADMIN_WEB_IMAGE_TAG}"
 echo ""
 
 # 加载环境变量（如果存在）
@@ -48,7 +48,7 @@ echo "  1/3 构建 API 镜像..."
 echo "--------------------------------------------"
 docker build \
     --build-arg DATABASE_URL="postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-apartment_ultra}" \
-    -t "apartment-ultra-api:${API_IMAGE_TAG}" \
+    -t "propease-api:${API_IMAGE_TAG}" \
     -f "$PROJECT_ROOT/api/Dockerfile" \
     "$PROJECT_ROOT"
 
@@ -59,7 +59,7 @@ echo "  2/3 构建租客端镜像..."
 echo "--------------------------------------------"
 docker build \
     --build-arg VITE_API_URL="${VITE_API_URL:-http://localhost/api/v1}" \
-    -t "apartment-ultra-tenant-web:${TENANT_WEB_IMAGE_TAG}" \
+    -t "propease-tenant-web:${TENANT_WEB_IMAGE_TAG}" \
     -f "$PROJECT_ROOT/tenant-web/Dockerfile" \
     "$PROJECT_ROOT"
 
@@ -70,7 +70,7 @@ echo "  3/3 构建运营后台镜像..."
 echo "--------------------------------------------"
 docker build \
     --build-arg VITE_API_URL="${VITE_API_URL:-http://localhost/api/v1}" \
-    -t "apartment-ultra-admin-web:${ADMIN_WEB_IMAGE_TAG}" \
+    -t "propease-admin-web:${ADMIN_WEB_IMAGE_TAG}" \
     -f "$PROJECT_ROOT/admin-web/Dockerfile" \
     "$PROJECT_ROOT"
 

@@ -1,4 +1,4 @@
-import type { BrandConfig } from '@apartment-ultra/api-contract';
+import type { BrandConfig } from '@propease/api-contract';
 import { prisma } from '../lib/prisma.js';
 
 export const DEFAULT_BRAND: BrandConfig = {

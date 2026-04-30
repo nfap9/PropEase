@@ -16,9 +16,9 @@ import {
   PlusCircle,
 } from 'lucide-react';
 import { subscriptionsApi } from '@/api/subscriptions';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 import { useAuth } from '@/contexts/auth';
-import type { ServiceProduct, ServicePricing } from '@apartment-ultra/api-contract';
+import type { ServiceProduct, ServicePricing } from '@propease/api-contract';
 import { getPricingSummary } from '../pricing';
 import { tenantI18n, tenantMessages } from '@/i18n';
 

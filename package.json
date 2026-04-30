@@ -1,20 +1,20 @@
 {
-  "name": "apartment-ultra",
+  "name": "propease",
   "version": "0.1.0",
   "private": true,
-  "description": "Apartment Ultra - 多租户公寓管理系统",
+  "description": "PropEase - 多租户公寓管理系统",
   "scripts": {
-    "dev:api": "cross-env PORT=8000 pnpm --filter apartment-ultra-api dev",
-    "dev:web": "pnpm --filter apartment-ultra-tenant dev",
-    "dev:admin": "pnpm --filter apartment-ultra-admin dev",
-    "docker:middleware": "docker compose -p apartment-ultra-middleware -f docker/docker-compose.middleware.yaml --env-file docker/.env.middleware up -d --remove-orphans",
-    "docker:prod": "docker compose -p apartment-ultra-prod -f docker/docker-compose.yaml --env-file docker/.env.production up -d --remove-orphans",
+    "dev:api": "cross-env PORT=8000 pnpm --filter propease-api dev",
+    "dev:web": "pnpm --filter propease-tenant dev",
+    "dev:admin": "pnpm --filter propease-admin dev",
+    "docker:middleware": "docker compose -p propease-middleware -f docker/docker-compose.middleware.yaml --env-file docker/.env.middleware up -d --remove-orphans",
+    "docker:prod": "docker compose -p propease-prod -f docker/docker-compose.yaml --env-file docker/.env.production up -d --remove-orphans",
     "build": "pnpm -r run build",
-    "lint": "pnpm --filter apartment-ultra-api run lint && pnpm --filter apartment-ultra-tenant run lint && pnpm --filter apartment-ultra-admin run lint",
+    "lint": "pnpm --filter propease-api run lint && pnpm --filter propease-tenant run lint && pnpm --filter propease-admin run lint",
     "format": "prettier --write \"api/src/**/*.ts\" \"tenant-web/src/**/*.{ts,tsx}\" \"admin-web/src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"api/src/**/*.ts\" \"tenant-web/src/**/*.{ts,tsx}\" \"admin-web/src/**/*.{ts,tsx}\"",
-    "type-check": "pnpm --filter apartment-ultra-api exec prisma generate && pnpm --filter apartment-ultra-api run type-check && pnpm --filter apartment-ultra-tenant run type-check && pnpm --filter apartment-ultra-admin run type-check",
-    "test": "pnpm --filter apartment-ultra-api exec prisma generate && pnpm --filter apartment-ultra-api run test && pnpm --filter apartment-ultra-tenant run test:run && pnpm --filter apartment-ultra-admin run test:run"
+    "type-check": "pnpm --filter propease-api exec prisma generate && pnpm --filter propease-api run type-check && pnpm --filter propease-tenant run type-check && pnpm --filter propease-admin run type-check",
+    "test": "pnpm --filter propease-api exec prisma generate && pnpm --filter propease-api run test && pnpm --filter propease-tenant run test:run && pnpm --filter propease-admin run test:run"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",

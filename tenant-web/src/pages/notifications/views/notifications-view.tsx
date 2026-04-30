@@ -8,7 +8,7 @@
 import React from 'react';
 import { Button } from 'antd';
 import { CheckCheck, Loader2, BellOff, ArrowRight, Clock } from 'lucide-react';
-import { cn } from '@apartment-ultra/web-shared';
+import { cn } from '@propease/web-shared';
 import { formatDateTime, formatRelativeTime } from '@/utils/date';
 import { tenantMessages } from '@/i18n';
 import {
@@ -17,7 +17,7 @@ import {
   getNotificationCategoryLabel,
 } from '@/utils/notifications';
 import { NOTIFICATION_CATEGORY_OPTIONS } from '@/constants/notifications';
-import type { NotificationCategory } from '@apartment-ultra/api-contract';
+import type { NotificationCategory } from '@propease/api-contract';
 import type { Notification } from '@/api/notifications';
 import { FilterPill } from '../components/filter-pill';
 

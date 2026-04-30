@@ -1,7 +1,7 @@
 
 import { LayoutGrid, List } from 'lucide-react';
 import { Button } from 'antd';
-import { cn } from '@apartment-ultra/web-shared';
+import { cn } from '@propease/web-shared';
 
 export type ViewMode = 'grid' | 'list';
 

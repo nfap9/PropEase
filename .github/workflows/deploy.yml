@@ -32,7 +32,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           script: |
-            cd /opt/apartment-ultra
+            cd /opt/propease
 
             # 拉取最新镜像
             echo "Pulling latest images..."

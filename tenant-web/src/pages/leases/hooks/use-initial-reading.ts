@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { utilitiesApi } from '@/api/utilities';
 import { filterEmptyStrings } from '@/utils/form';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 
 export interface InitialReadingFormValues {
   reading_date: string;

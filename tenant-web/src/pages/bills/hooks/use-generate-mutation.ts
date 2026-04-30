@@ -7,7 +7,7 @@ import { useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { billsApi } from '@/api/bills';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 import type { GenerateBillsFormData } from '@/types';
 import { tenantMessages } from '@/constants/messages';
 

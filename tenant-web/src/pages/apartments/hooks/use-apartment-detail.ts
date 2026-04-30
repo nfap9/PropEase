@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { apartmentsApi, roomsApi } from '@/api/apartments';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 import { filterEmptyStrings } from '@/utils/form';
 import type { Apartment, Room, RoomFacilities, RoomStatus, RoomUpdate } from '@/types';
 import type {

@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# Apartment Ultra 生产环境验证脚本
+# PropEase 生产环境验证脚本
 # ============================================
 
 set -e
@@ -10,7 +10,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 ENV_FILE="$PROJECT_ROOT/.env.production"
 
 echo "============================================"
-echo "  Apartment Ultra 生产环境验证"
+echo "  PropEase 生产环境验证"
 echo "============================================"
 echo ""
 

@@ -1,4 +1,4 @@
-import type { ServicePricing } from '@apartment-ultra/api-contract';
+import type { ServicePricing } from '@propease/api-contract';
 
 export interface PricingSummary {
   originalPrice: number;

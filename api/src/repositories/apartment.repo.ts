@@ -1,7 +1,7 @@
 import type { Prisma, Apartment, Room, Lease } from '@prisma/client';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
-import type { RoomStats } from '@apartment-ultra/api-contract';
+import type { RoomStats } from '@propease/api-contract';
 
 /**
  * 房间带活跃租约信息的类型

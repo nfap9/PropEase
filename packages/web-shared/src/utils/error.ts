@@ -1,1 +1,1 @@
-export { getErrorMessage } from '@apartment-ultra/web-api-client';
+export { getErrorMessage } from '@propease/web-api-client';

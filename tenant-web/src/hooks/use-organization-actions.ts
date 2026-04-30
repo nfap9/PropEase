@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { router } from '@/routes';
-import { invalidateOrgScopedQueries } from '@apartment-ultra/web-shared';
+import { invalidateOrgScopedQueries } from '@propease/web-shared';
 import type { Organization } from '@/types';
 
 /**

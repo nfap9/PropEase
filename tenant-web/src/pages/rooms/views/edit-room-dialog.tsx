@@ -4,7 +4,7 @@ import { Settings2 } from 'lucide-react';
 import { Room, RoomFacilities } from '@/types';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
 import { getFacilityLabel } from '@/utils/facilities';
-import type { RoomEditFormData } from '@apartment-ultra/api-contract';
+import type { RoomEditFormData } from '@propease/api-contract';
 
 const LAYOUT_OPTIONS = [
   '单间',

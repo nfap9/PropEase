@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Button, Input, Modal, Form } from 'antd';
-import { TenantCreate, type TenantFormData } from '@apartment-ultra/api-contract';
+import { TenantCreate, type TenantFormData } from '@propease/api-contract';
 import type { Tenant } from '@/types';
 
 const TENANTS = {

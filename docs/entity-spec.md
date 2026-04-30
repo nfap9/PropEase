@@ -2,7 +2,7 @@
 
 > 文档版本：v1.0 | 创建日期：2026-04-21
 
-本文档详细说明 Apartment Ultra 数据模型中每个 entity 的字段含义、枚举值及业务说明。字段类型以 Prisma schema 为准。
+本文档详细说明 PropEase 数据模型中每个 entity 的字段含义、枚举值及业务说明。字段类型以 Prisma schema 为准。
 
 ---
 

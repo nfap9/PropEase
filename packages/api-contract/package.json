@@ -1,8 +1,8 @@
 {
-  "name": "@apartment-ultra/api-contract",
+  "name": "@propease/api-contract",
   "version": "0.1.0",
   "private": true,
-  "description": "Shared API types and contract for Apartment Ultra (api + web)",
+  "description": "Shared API types and contract for PropEase (api + web)",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

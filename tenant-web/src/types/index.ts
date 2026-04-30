@@ -1,10 +1,10 @@
 /**
- * API 契约类型由 @apartment-ultra/api-contract 提供，此处统一再导出便于 @/types 引用保持不变。
+ * API 契约类型由 @propease/api-contract 提供，此处统一再导出便于 @/types 引用保持不变。
  */
-export * from '@apartment-ultra/api-contract';
+export * from '@propease/api-contract';
 
 import type { LucideIcon } from 'lucide-react';
-import type { Apartment, Room, RoomFacilities, DashboardOverview, IncomeReport } from '@apartment-ultra/api-contract';
+import type { Apartment, Room, RoomFacilities, DashboardOverview, IncomeReport } from '@propease/api-contract';
 
 /** 仅前端使用的 API 错误表示（openapi 风格 detail），与 client 中的 ApiError 类区分 */
 export interface ApiErrorDetail {

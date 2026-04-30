@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# Apartment Ultra Docker 部署脚本
+# PropEase Docker 部署脚本
 # ============================================
 
 set -e
@@ -56,7 +56,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 echo "============================================"
-echo "  Apartment Ultra Docker 部署"
+echo "  PropEase Docker 部署"
 echo "============================================"
 echo ""
 

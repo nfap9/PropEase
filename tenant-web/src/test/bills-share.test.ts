@@ -68,7 +68,7 @@ describe('bill share helpers', () => {
   it('builds share data from the bill summary', () => {
     const result = buildBillShareData({
       bill: sampleBill,
-      organizationName: 'Apartment Ultra',
+      organizationName: 'PropEase',
     });
 
     expect(result.monthLabel).toBe('2026年3月账单');
@@ -81,12 +81,12 @@ describe('bill share helpers', () => {
     const svg = renderBillShareSvg(
       buildBillShareData({
         bill: sampleBill,
-        organizationName: 'Apartment Ultra',
+        organizationName: 'PropEase',
       })
     );
 
     expect(svg).toContain('2026年3月账单');
-    expect(svg).toContain('Apartment Ultra');
+    expect(svg).toContain('PropEase');
     expect(svg).toContain('账单合计');
     expect(svg).toContain('门锁维修费已并入本月账单');
   });

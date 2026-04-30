@@ -1,5 +1,5 @@
 {
-  "name": "@apartment-ultra/web-api-client",
+  "name": "@propease/web-api-client",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",
@@ -12,7 +12,7 @@
     "test:run": "vitest run"
   },
   "dependencies": {
-    "@apartment-ultra/api-contract": "workspace:*",
+    "@propease/api-contract": "workspace:*",
     "axios": "^1.13.5",
     "react-hook-form": "^7.71.2"
   },

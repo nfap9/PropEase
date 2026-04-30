@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Request, Response, NextFunction } from 'express';
-import { BusinessCode } from '@apartment-ultra/api-contract';
+import { BusinessCode } from '@propease/api-contract';
 import {
   createErrorResponse,
   errorHandler,

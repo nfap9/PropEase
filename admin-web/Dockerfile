@@ -1,4 +1,4 @@
-# Apartment Ultra 运营后台生产环境 Dockerfile
+# PropEase 运营后台生产环境 Dockerfile
 # 构建上下文为 monorepo 根目录
 
 # ============================================
@@ -53,7 +53,7 @@ COPY admin-web/postcss.config.mjs admin-web/
 COPY admin-web/index.html admin-web/
 
 # 构建 api-contract
-RUN pnpm --filter @apartment-ultra/api-contract run build
+RUN pnpm --filter @propease/api-contract run build
 
 # 构建前端
 WORKDIR /app/admin-web

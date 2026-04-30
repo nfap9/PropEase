@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { adminApiEndpoints, type AdminUser } from '@/api/admin-client';
-import { getErrorMessage } from '@apartment-ultra/web-shared';
+import { getErrorMessage } from '@propease/web-shared';
 import type { AdminPasswordReset, AdminUserCreate, AdminUserUpdate } from '@/api/admin-client';
 import { adminMessages } from '@/constants/messages';
 import type { CreateUserForm, EditUserForm } from '@/schemas/users';

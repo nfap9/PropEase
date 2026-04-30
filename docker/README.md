@@ -1,8 +1,8 @@
-# Apartment Ultra Docker 部署指南
+# PropEase Docker 部署指南
 
 ## 概览
 
-本目录提供 Apartment Ultra 的 Docker Compose 配置、环境变量模板与部署辅助文档。
+本目录提供 PropEase 的 Docker Compose 配置、环境变量模板与部署辅助文档。
 
 ### 服务架构
 
@@ -19,9 +19,9 @@
 
 | 服务 | 镜像名称 | Dockerfile |
 |------|----------|------------|
-| API | `apartment-ultra-api` | `api/Dockerfile` |
-| 租客端 | `apartment-ultra-tenant-web` | `tenant-web/Dockerfile` |
-| 运营后台 | `apartment-ultra-admin-web` | `admin-web/Dockerfile` |
+| API | `propease-api` | `api/Dockerfile` |
+| 租客端 | `propease-tenant-web` | `tenant-web/Dockerfile` |
+| 运营后台 | `propease-admin-web` | `admin-web/Dockerfile` |
 
 ---
 
@@ -51,9 +51,9 @@ cp docker/.env.production.example .env.production
 vim .env.production  # 填写必填项
 
 # 2. 构建镜像
-docker build -t apartment-ultra-api:latest -f api/Dockerfile .
-docker build -t apartment-ultra-tenant-web:latest -f tenant-web/Dockerfile .
-docker build -t apartment-ultra-admin-web:latest -f admin-web/Dockerfile .
+docker build -t propease-api:latest -f api/Dockerfile .
+docker build -t propease-tenant-web:latest -f tenant-web/Dockerfile .
+docker build -t propease-admin-web:latest -f admin-web/Dockerfile .
 
 # 3. 启动服务
 docker compose -f docker/docker-compose.yaml --env-file .env.production up -d
@@ -74,9 +74,9 @@ curl http://localhost/api/v1/health
 
 ### build-images.sh
 构建所有 Docker 镜像：
-- `apartment-ultra-api:latest`
-- `apartment-ultra-tenant-web:latest`
-- `apartment-ultra-admin-web:latest`
+- `propease-api:latest`
+- `propease-tenant-web:latest`
+- `propease-admin-web:latest`
 
 支持自定义标签：
 ```bash

@@ -1,4 +1,4 @@
-# AGENTS.md — Apartment Ultra 项目总览
+# AGENTS.md — PropEase 项目总览
 
 > 本文档面向 AI Coding Agent。如果你对该项目一无所知，请从本文件开始阅读。
 > 修改具体子目录代码前，**必须先阅读对应目录下的 `AGENTS.md`**：
@@ -10,7 +10,7 @@
 
 ## 1. 项目概况
 
-**Apartment Ultra** 是一个多租户公寓管理系统，采用 pnpm workspace 管理的 monorepo 结构。
+**PropEase** 是一个多租户公寓管理系统，采用 pnpm workspace 管理的 monorepo 结构。
 
 核心业务能力：
 - 房源、公寓、房间、租客、租约管理
@@ -64,15 +64,15 @@
 
 | 包名 | 路径 | 说明 |
 |------|------|------|
-| `@apartment-ultra/api-contract` | `packages/api-contract/` | 前后端共享的 TypeScript 类型、常量与 Zod schema。按领域模块拆分（auth、bills、apartments、permissions 等）。统一 API 响应契约 `SuccessBody<T>`、`ErrorResponseBody`、`BusinessCode`。提供权限常量 `RESOURCES`、`ACTIONS`、`toPermissionCodes()`。使用 `tsc` 编译到 `dist/`（ESM + `.d.ts`）。 |
-| `@apartment-ultra/web-api-client` | `packages/web-api-client/` | Axios 封装：统一响应解包、错误处理（`ApiError`）、token 自动刷新、`x-org-id` header 自动注入、401 跳转登录。与 `react-hook-form` 集成：`setFormErrors`、`extractFieldErrors`。提供三个工厂：`createApiClient`、`createBrowserApiClient`、`createAdminApiClient`。不编译到 dist，源码直接被 Vite 消费（`noEmit: true`）。 |
+| `@propease/api-contract` | `packages/api-contract/` | 前后端共享的 TypeScript 类型、常量与 Zod schema。按领域模块拆分（auth、bills、apartments、permissions 等）。统一 API 响应契约 `SuccessBody<T>`、`ErrorResponseBody`、`BusinessCode`。提供权限常量 `RESOURCES`、`ACTIONS`、`toPermissionCodes()`。使用 `tsc` 编译到 `dist/`（ESM + `.d.ts`）。 |
+| `@propease/web-api-client` | `packages/web-api-client/` | Axios 封装：统一响应解包、错误处理（`ApiError`）、token 自动刷新、`x-org-id` header 自动注入、401 跳转登录。与 `react-hook-form` 集成：`setFormErrors`、`extractFieldErrors`。提供三个工厂：`createApiClient`、`createBrowserApiClient`、`createAdminApiClient`。不编译到 dist，源码直接被 Vite 消费（`noEmit: true`）。 |
 
 ---
 
 ## 3. 仓库结构
 
 ```
-apartment-ultra/
+propease/
 ├── api/                        # 后端 API (Node/Express/TypeScript)
 │   ├── src/
 │   │   ├── index.ts            # Express 应用入口（先初始化 OpenTelemetry，再挂载路由和定时任务）
@@ -355,9 +355,9 @@ routes (Controller) → services (业务逻辑) → repositories (数据访问) 
 |------|------|-----------|----------|
 | postgres | `postgres:15-alpine` | 内部 5432 | `${POSTGRES_MEMORY:-1G}` |
 | redis | `redis:7-alpine` | 内部 6379（AOF 持久化） | — |
-| api | `apartment-ultra-api:${API_IMAGE_TAG:-latest}` | 8000 | `${API_MEMORY:-1G}` |
-| tenant-web | `apartment-ultra-tenant-web:${TENANT_WEB_IMAGE_TAG:-latest}` | 3000 | `${TENANT_WEB_MEMORY:-512M}` |
-| admin-web | `apartment-ultra-admin-web:${ADMIN_WEB_IMAGE_TAG:-latest}` | 8080 | `${ADMIN_MEMORY:-512M}` |
+| api | `propease-api:${API_IMAGE_TAG:-latest}` | 8000 | `${API_MEMORY:-1G}` |
+| tenant-web | `propease-tenant-web:${TENANT_WEB_IMAGE_TAG:-latest}` | 3000 | `${TENANT_WEB_MEMORY:-512M}` |
+| admin-web | `propease-admin-web:${ADMIN_WEB_IMAGE_TAG:-latest}` | 8080 | `${ADMIN_MEMORY:-512M}` |
 | nginx | `nginx:alpine` | `${NGINX_PORT:-80}:80`（统一入口，反向代理） | — |
 
 Nginx 配置 (`docker/nginx.conf.template`) 将流量分发到：
@@ -378,7 +378,7 @@ Nginx 配置 (`docker/nginx.conf.template`) 将流量分发到：
 
 **deploy.yml**:
 - `workflow_dispatch` 手动触发，支持 `environment: production/staging`，`image_tag` 默认 `main`
-- SSH 到服务器 (`appleboy/ssh-action@v1`)，在 `/opt/apartment-ultra` 执行 `docker compose pull && up -d`
+- SSH 到服务器 (`appleboy/ssh-action@v1`)，在 `/opt/propease` 执行 `docker compose pull && up -d`
 - 部署后 sleep 10s，然后 `curl -f http://localhost/health` 健康检查
 
 ---

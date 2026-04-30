@@ -2,7 +2,7 @@ import type {
   Notification,
   NotificationCategory,
   UnreadCountResponse,
-} from '@apartment-ultra/api-contract';
+} from '@propease/api-contract';
 import api from './client';
 
 export type { Notification };

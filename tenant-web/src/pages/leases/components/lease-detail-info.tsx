@@ -3,7 +3,7 @@ import { Badge } from 'antd';
 import { Card } from 'antd';
 import { formatDate } from '@/utils/date';
 import { LEASE_STATUS_CONFIG } from '@/constants/status';
-import type { Lease } from '@apartment-ultra/api-contract';
+import type { Lease } from '@propease/api-contract';
 
 /** 包含 fee_items 的 Lease 扩展类型（直接输入模式） */
 type FeeCycle = 'monthly' | 'quarterly' | 'yearly' | 'one_time';

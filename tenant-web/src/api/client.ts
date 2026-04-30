@@ -1,7 +1,7 @@
 /**
  * API 客户端配置模块
  *
- * 基于 @apartment-ultra/web-api-client 包创建浏览器端 API 客户端：
+ * 基于 @propease/web-api-client 包创建浏览器端 API 客户端：
  * - 自动附加 JWT Token 到请求头
  * - 自动处理 Token 刷新
  * - 401 响应自动跳转登录页
@@ -14,7 +14,7 @@ import {
   createBrowserApiClient,
   type ApiResponse,
   type FieldError,
-} from '@apartment-ultra/web-api-client';
+} from '@propease/web-api-client';
 
 // API 基础地址
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
