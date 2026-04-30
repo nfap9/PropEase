@@ -2,123 +2,66 @@
 
 ## 概览
 
-本目录提供 PropEase 的 Docker Compose 配置、环境变量模板与部署辅助文档。
+本目录提供 PropEase 的 Docker Compose 配置与环境变量模板。
 
 ### 服务架构
 
-| 服务 | 容器名 | 端口 | 说明 |
-|------|--------|------|------|
-| PostgreSQL | `apartment_ultra_db` | 5432 | 数据库 |
-| Redis | `apartment_ultra_redis` | 6379 | 缓存 |
-| API | `apartment_ultra_api` | 8000 | 后端 API |
-| 租客端 | `apartment_ultra_tenant_web` | 3000 | 前端 Web |
-| 运营后台 | `apartment_ultra_admin` | 8080 | 运营管理 |
-| Nginx | `apartment_ultra_nginx` | 80 | 反向代理 |
+| 服务 | 容器名 | 说明 |
+|------|--------|------|
+| PostgreSQL | `propease_db` | 数据库 |
+| Redis | `propease_redis` | 缓存 |
+| API | `propease_api` | 后端 API |
+| 租户端构建 | `propease_tenant_web` | 构建完成后退出 |
+| 管理后台构建 | `propease_admin_web` | 构建完成后退出 |
+| Nginx | `propease_nginx` | 反向代理 + 静态文件托管 |
 
 ### 镜像列表
 
 | 服务 | 镜像名称 | Dockerfile |
 |------|----------|------------|
 | API | `propease-api` | `api/Dockerfile` |
-| 租客端 | `propease-tenant-web` | `tenant-web/Dockerfile` |
-| 运营后台 | `propease-admin-web` | `admin-web/Dockerfile` |
+| 前端（合并构建） | `propease-web` | `docker/Dockerfile.web` |
 
 ---
 
 ## 快速开始
 
-### 方式一：使用部署脚本（推荐）
+### 环境要求
 
-```bash
-# 1. 设置环境变量（交互式向导）
-./scripts/setup-env.sh
+- Docker & Docker Compose
+- pnpm 9+
 
-# 2. 构建镜像
-./scripts/build-images.sh
-
-# 3. 部署
-./scripts/deploy.sh
-
-# 4. 验证
-./scripts/verify-production.sh
-```
-
-### 方式二：手动部署
+### 部署步骤
 
 ```bash
 # 1. 复制并编辑环境变量
-cp docker/.env.production.example .env.production
-vim .env.production  # 填写必填项
+cp docker/.env.production.example docker/.env.production
+vim docker/.env.production  # 填写必填项
 
-# 2. 构建镜像
-docker build -t propease-api:latest -f api/Dockerfile .
-docker build -t propease-tenant-web:latest -f tenant-web/Dockerfile .
-docker build -t propease-admin-web:latest -f admin-web/Dockerfile .
+# 2. 执行部署（构建镜像 + 启动服务）
+./scripts/deploy.sh
 
-# 3. 启动服务
-docker compose -f docker/docker-compose.yaml --env-file .env.production up -d
-
-# 4. 验证
+# 3. 验证
 curl http://localhost/api/v1/health
 ```
 
----
-
-## 部署脚本说明
-
-### setup-env.sh
-交互式环境变量设置向导，自动：
-- 复制示例配置文件
-- 生成随机 SECRET_KEY
-- 验证必填项
-
-### build-images.sh
-构建所有 Docker 镜像：
-- `propease-api:latest`
-- `propease-tenant-web:latest`
-- `propease-admin-web:latest`
-
-支持自定义标签：
-```bash
-API_IMAGE_TAG=v1.0.0 TENANT_WEB_IMAGE_TAG=v1.0.0 ADMIN_WEB_IMAGE_TAG=v1.0.0 ./scripts/build-images.sh
-```
-
-### deploy.sh
-完整部署脚本，支持以下选项：
+### 部署脚本选项
 
 | 选项 | 说明 |
 |------|------|
-| `--skip-backup` | 跳过数据库备份 |
-| `--skip-pre-check` | 跳过部署前检查 |
-| `--only-migrate` | 仅运行数据库迁移 |
+| `--skip-build` | 跳过镜像构建，仅重启服务 |
+| `--api-only` | 仅构建并部署 API |
+| `--web-only` | 仅构建并部署前端 |
 
-```bash
-./scripts/deploy.sh                    # 完整部署
-./scripts/deploy.sh --skip-backup     # 跳过备份
-./scripts/deploy.sh --only-migrate    # 仅迁移数据库
-```
+---
 
-### pre-deploy-check.sh
-部署前检查，包括：
-- 环境变量完整性
-- Docker/Docker Compose 版本
-- 端口占用情况
-- 磁盘空间
-- 必要文件存在性
+## 工作流程
 
-### backup.sh
-数据库备份脚本：
-- 备份到 `docker/backup/` 目录
-- 自动压缩为 `.sql.gz`
-- 保留最近 7 天的备份
+1. `tenant-web` 容器启动 → 从镜像复制租户端构建产物到 `web_static` 卷 → 立即退出
+2. `admin-web` 容器启动 → 从镜像复制管理后台构建产物到 `web_static` 卷 → 立即退出
+3. `nginx` 容器启动 → 以只读方式挂载 `web_static` 卷，直接服务静态文件
 
-### verify-production.sh
-生产环境验证脚本，检查：
-- 所有容器状态
-- API 健康检查
-- 租客端/运营后台可访问性
-- Nginx 代理状态
-- 数据库/Redis 连接
+前端更新时：重新构建 `propease-web` 镜像 → `docker compose up -d` 重新运行构建容器即可。
 
 ---
 
@@ -128,7 +71,7 @@ API_IMAGE_TAG=v1.0.0 TENANT_WEB_IMAGE_TAG=v1.0.0 ADMIN_WEB_IMAGE_TAG=v1.0.0 ./sc
 
 | 变量 | 说明 | 示例 |
 |------|------|------|
-| `SECRET_KEY` | JWT 签名密钥 | `your-32-char-secret-key` |
+| `SECRET_KEY` | JWT 签名密钥（≥32字符） | `your-32-char-secret-key` |
 | `POSTGRES_PASSWORD` | 数据库密码 | `secure-password` |
 | `CORS_ORIGINS` | 允许的跨域来源 | `["http://localhost"]` |
 | `VITE_API_URL` | 前端 API 地址 | `http://localhost/api/v1` |
@@ -140,11 +83,9 @@ API_IMAGE_TAG=v1.0.0 TENANT_WEB_IMAGE_TAG=v1.0.0 ADMIN_WEB_IMAGE_TAG=v1.0.0 ./sc
 |------|--------|------|
 | `POSTGRES_USER` | `postgres` | 数据库用户 |
 | `POSTGRES_DB` | `apartment_ultra` | 数据库名 |
-| `API_V1_PREFIX` | `/api/v1` | API 路径前缀 |
 | `NGINX_PORT` | `80` | Nginx 端口 |
 | `API_IMAGE_TAG` | `latest` | API 镜像标签 |
-| `TENANT_WEB_IMAGE_TAG` | `latest` | 租客端镜像标签 |
-| `ADMIN_WEB_IMAGE_TAG` | `latest` | 运营后台镜像标签 |
+| `WEB_IMAGE_TAG` | `latest` | 前端镜像标签 |
 
 ### 微信支付（可选）
 
@@ -161,8 +102,6 @@ WECHAT_PRIVATE_KEY=your-private-key
 ---
 
 ## 访问地址
-
-部署完成后，通过 Nginx 访问：
 
 | 服务 | 地址 |
 |------|------|
@@ -207,16 +146,16 @@ docker compose -f docker/docker-compose.yaml down
 **Q: API 健康检查失败**
 ```bash
 # 检查 API 日志
-docker logs apartment_ultra_api --tail 50
+docker logs propease_api --tail 50
 
 # 检查数据库连接
-docker exec apartment_ultra_db pg_isready -U postgres
+docker exec propease_db pg_isready -U postgres
 ```
 
-**Q: 前端无法访问 API**
+**Q: 前端无法访问**
 ```bash
 # 检查 Nginx 日志
-docker logs apartment_ultra_nginx --tail 50
+docker logs propease_nginx --tail 50
 
 # 检查 API 代理
 curl http://localhost/api/v1/health
@@ -245,6 +184,16 @@ docker compose -f docker/docker-compose.yaml restart api
 docker compose -f docker/docker-compose.yaml restart
 ```
 
+### 前端更新
+
+```bash
+# 重新构建前端镜像
+docker build -t propease-web:latest -f docker/Dockerfile.web .
+
+# 重新运行构建容器（更新卷中的静态文件）
+docker compose -f docker/docker-compose.yaml up -d --force-recreate tenant-web admin-web
+```
+
 ---
 
 ## 目录结构
@@ -252,20 +201,14 @@ docker compose -f docker/docker-compose.yaml restart
 ```
 .
 ├── docker/
-│   ├── docker-compose.yaml           # 主配置
-│   ├── docker-compose.middleware.yaml # 中间件配置
+│   ├── docker-compose.yaml              # 主配置
+│   ├── docker-compose.middleware.yaml   # 中间件配置
 │   ├── docker-compose.observability.yaml # 可观测性配置
-│   ├── nginx.conf.template           # Nginx 配置模板
-│   ├── .env.production.example       # 环境变量示例
-│   ├── .env.middleware.example       # 中间件环境变量示例
-│   └── backup/                       # 数据库备份目录
-├── scripts/
-│   ├── setup-env.sh                  # 环境变量设置
-│   ├── build-images.sh               # 构建镜像
-│   ├── deploy.sh                     # 部署脚本
-│   ├── pre-deploy-check.sh           # 部署前检查
-│   ├── backup.sh                     # 数据库备份
-│   └── verify-production.sh          # 验证脚本
+│   ├── Dockerfile.web                 # 前端镜像构建
+│   ├── nginx.conf.template             # Nginx 配置模板
+│   ├── .env.production.example         # 环境变量示例
+│   ├── .env.middleware.example          # 中间件环境变量示例
+│   └── backup/                         # 数据库备份目录
 └── api/
-    └── Dockerfile                    # API 镜像构建
+    └── Dockerfile                       # API 镜像构建
 ```

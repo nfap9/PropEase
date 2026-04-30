@@ -7,8 +7,6 @@
     "dev:api": "cross-env PORT=8000 pnpm --filter propease-api dev",
     "dev:web": "pnpm --filter propease-tenant dev",
     "dev:admin": "pnpm --filter propease-admin dev",
-    "docker:middleware": "docker compose -p propease-middleware -f docker/docker-compose.middleware.yaml --env-file docker/.env.middleware up -d --remove-orphans",
-    "docker:prod": "docker compose -p propease-prod -f docker/docker-compose.yaml --env-file docker/.env.production up -d --remove-orphans",
     "build": "pnpm -r run build",
     "lint": "pnpm --filter propease-api run lint && pnpm --filter propease-tenant run lint && pnpm --filter propease-admin run lint",
     "format": "prettier --write \"api/src/**/*.ts\" \"tenant-web/src/**/*.{ts,tsx}\" \"admin-web/src/**/*.{ts,tsx}\"",

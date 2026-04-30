@@ -112,62 +112,45 @@ services:
         limits:
           memory: ${API_MEMORY:-1G}
 
+  # 前端构建容器（租户端）- 构建完成后退出
   tenant-web:
-    image: propease-tenant-web:${TENANT_WEB_IMAGE_TAG:-latest}
+    image: propease-web:${WEB_IMAGE_TAG:-latest}
     build:
       context: ..
-      dockerfile: tenant-web/Dockerfile
+      dockerfile: docker/Dockerfile.web
       args:
         VITE_API_URL: ${VITE_API_URL:?VITE_API_URL is required}
     container_name: propease_tenant_web
-    environment:
-      NODE_ENV: production
+    volumes:
+      - web_static:/usr/share/nginx/html
+    # 构建产物写入卷后立即退出
+    entrypoint: ["sh", "-c", "cp -r /usr/share/nginx/html/tenant/* /usr/share/nginx/html/tenant/ && exit 0"]
+    restart: "no"
+    networks:
+      - apartment-network
     depends_on:
       api:
         condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - apartment-network
-    ports:
-      - "127.0.0.1:3000:3000"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "50m"
-        max-file: "5"
-    deploy:
-      resources:
-        limits:
-          memory: ${TENANT_WEB_MEMORY:-512M}
 
-  # 运营端 (admin-web)
+  # 前端构建容器（管理后台）- 构建完成后退出
   admin-web:
-    image: propease-admin-web:${ADMIN_WEB_IMAGE_TAG:-latest}
+    image: propease-web:${WEB_IMAGE_TAG:-latest}
     build:
       context: ..
-      dockerfile: admin-web/Dockerfile
+      dockerfile: docker/Dockerfile.web
       args:
         VITE_API_URL: ${VITE_API_URL:?VITE_API_URL is required}
-    container_name: propease_admin
-    environment:
-      NODE_ENV: production
+    container_name: propease_admin_web
+    volumes:
+      - web_static:/usr/share/nginx/html
+    # 构建产物写入卷后立即退出
+    entrypoint: ["sh", "-c", "cp -r /usr/share/nginx/html/admin/* /usr/share/nginx/html/admin/ && exit 0"]
+    restart: "no"
+    networks:
+      - apartment-network
     depends_on:
       api:
         condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - apartment-network
-    ports:
-      - "127.0.0.1:8080:8080"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "50m"
-        max-file: "5"
-    deploy:
-      resources:
-        limits:
-          memory: ${ADMIN_MEMORY:-512M}
 
   nginx:
     image: nginx:alpine
@@ -176,12 +159,14 @@ services:
       - "${NGINX_PORT:-80}:80"
     volumes:
       - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - web_static:/usr/share/nginx/html:ro
     environment:
       - SERVER_NAME=${SERVER_NAME:-localhost}
     depends_on:
-      - api
-      - tenant-web
-      - admin-web
+      tenant-web:
+        condition: service_started
+      admin-web:
+        condition: service_started
     restart: unless-stopped
     networks:
       - apartment-network
@@ -194,6 +179,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  web_static:
 
 networks:
   apartment-network:

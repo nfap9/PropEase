@@ -127,9 +127,10 @@ propease/
 │   ├── api-contract/           # 共享 API 类型与 Zod schema（tsc 编译产物在 dist/）
 │   └── web-api-client/         # 前端 API 客户端封装（源码直接消费，noEmit）
 ├── docker/                     # Docker Compose、Nginx 配置、环境文件模板
-│   ├── docker-compose.yaml             # 生产编排（Postgres + Redis + API + tenant-web + admin-web + nginx）
+│   ├── docker-compose.yaml             # 生产编排（Postgres + Redis + API + 2个前端构建容器 + nginx）
 │   ├── docker-compose.middleware.yaml  # 本地 Postgres 15 + Redis 7（暴露 5432/6379）
 │   ├── docker-compose.observability.yaml # 可观测性（叠加使用）
+│   ├── Dockerfile.web          # 前端镜像构建（合并 tenant-web + admin-web）
 │   └── nginx.conf.template     # 统一入口反向代理（80 端口 → /api/v1/、/tenant/、/admin/、/api-docs/）
 ├── docs/                       # 设计文档、规范、流程图
 │   ├── antd-form-guideline.md
@@ -140,7 +141,6 @@ propease/
 │   ├── layout-conventions.md
 │   ├── notification-spec.md
 │   └── tenant-user-guide.md
-├── scripts/                    # 运维脚本（backup.sh、build-images.sh、deploy.sh、pre-deploy-check.sh 等）
 
 ├── package.json                # 根 package.json，定义 workspace scripts 与 pnpm overrides
 ├── pnpm-workspace.yaml         # Workspace 定义 + pnpm catalog
@@ -165,10 +165,7 @@ pnpm dev:web      # tenant-web 开发模式 (vite，端口 3000，代理 /api �
 pnpm dev:admin    # admin-web 开发模式 (vite，端口 3001)
 
 # Docker 本地中间件（Postgres 15 + Redis 7，暴露 5432/6379）
-pnpm docker:middleware
-
-# 生产环境 Docker Compose
-pnpm docker:prod
+docker compose -p propease-middleware -f docker/docker-compose.middleware.yaml --env-file docker/.env.middleware up -d
 
 # 代码质量
 pnpm build        # 全量构建 (pnpm -r run build)
@@ -342,9 +339,9 @@ routes (Controller) → services (业务逻辑) → repositories (数据访问) 
 
 ### 8.1 Docker 多阶段构建
 
-- `api/Dockerfile`、`tenant-web/Dockerfile`、`admin-web/Dockerfile` 均使用 `node:20-alpine`
+- `api/Dockerfile` 使用 `node:20-alpine`
+- `docker/Dockerfile.web` 使用 `node:20-alpine` 构建前端，`nginx:alpine` 输出构建产物
 - **构建上下文为 monorepo 根目录**（所有 Dockerfile 通过 `COPY . /app` 引入 workspace）
-- 前端生产环境使用 `serve@14` 提供静态文件服务
 - API 镜像在 runner 阶段会重新执行 `prisma generate`
 
 ### 8.2 生产编排 (`docker/docker-compose.yaml`)
@@ -354,30 +351,17 @@ routes (Controller) → services (业务逻辑) → repositories (数据访问) 
 | postgres | `postgres:15-alpine` | 内部 5432 | `${POSTGRES_MEMORY:-1G}` |
 | redis | `redis:7-alpine` | 内部 6379（AOF 持久化） | — |
 | api | `propease-api:${API_IMAGE_TAG:-latest}` | 8000 | `${API_MEMORY:-1G}` |
-| tenant-web | `propease-tenant-web:${TENANT_WEB_IMAGE_TAG:-latest}` | 3000 | `${TENANT_WEB_MEMORY:-512M}` |
-| admin-web | `propease-admin-web:${ADMIN_WEB_IMAGE_TAG:-latest}` | 8080 | `${ADMIN_MEMORY:-512M}` |
-| nginx | `nginx:alpine` | `${NGINX_PORT:-80}:80`（统一入口，反向代理） | — |
+| tenant-web | `propease-web:${WEB_IMAGE_TAG:-latest}` | 构建完成后退出 | — |
+| admin-web | `propease-web:${WEB_IMAGE_TAG:-latest}` | 构建完成后退出 | — |
+| nginx | `nginx:alpine` | `${NGINX_PORT:-80}:80`（统一入口，反向代理 + 静态文件） | — |
+
+**前端部署流程**：tenant-web 和 admin-web 容器启动后，将构建产物通过共享卷 `web_static` 写入 `/usr/share/nginx/html/`，容器随即退出。Nginx 以只读方式挂载该卷，直接服务静态文件。
 
 Nginx 配置 (`docker/nginx.conf.template`) 将流量分发到：
 - `/api/v1/` → API 服务
 - `/api-docs/`、`/openapi.json` → API 文档
-- `/tenant/` → tenant-web 静态服务
-- `/admin/` → admin-web 静态服务
-
-### 8.3 CI/CD (`.github/workflows/`)
-
-**ci.yml**:
-- 触发条件：`push` 到 `main`、`pull_request` 到 `main`
-- 变更检测（`dorny/paths-filter@v3`）：按 `api`、`tenant_web`、`admin_web`、`docker` 分别触发
-- `api` job: lint → type-check → Prisma generate → Prisma db push（使用 Postgres 15 service 容器）
-- `tenant-web` / `admin-web` job: 缓存并构建 `api-contract` → lint → type-check → Vite build（`VITE_API_URL=http://localhost:8000/api/v1`）
-- `docker` job: 仅在 push 到 `main` 时触发，构建并推送三个镜像到 **GHCR**，标签为 `main` 和 `${{ github.sha }}`
-- Node 20 + pnpm 9，前端 Docker build-arg: `VITE_API_URL=http://localhost/api/v1`
-
-**deploy.yml**:
-- `workflow_dispatch` 手动触发，支持 `environment: production/staging`，`image_tag` 默认 `main`
-- SSH 到服务器 (`appleboy/ssh-action@v1`)，在 `/opt/propease` 执行 `docker compose pull && up -d`
-- 部署后 sleep 10s，然后 `curl -f http://localhost/health` 健康检查
+- `/tenant/` → 租客端静态文件（SPA fallback）
+- `/admin/` → 管理后台静态文件（SPA fallback）
 
 ---
 

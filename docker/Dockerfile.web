@@ -1,4 +1,4 @@
-# PropEase 租客端前端生产环境 Dockerfile
+# PropEase 前端 Dockerfile（构建产物通过共享卷供给 Nginx）
 # 构建上下文为 monorepo 根目录
 
 # ============================================
@@ -7,18 +7,16 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
-# 配置 pnpm
 RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.com
 
-# 复制 workspace 配置
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY tsconfig.base.json tsconfig.base.json
 COPY tsconfig.react-package.json tsconfig.react-package.json
 COPY api/package.json api/package.json
 COPY tenant-web/package.json tenant-web/package.json
+COPY admin-web/package.json admin-web/package.json
 COPY packages/ packages/
 
-# 安装依赖
 RUN pnpm install --no-frozen-lockfile
 
 # ============================================
@@ -29,18 +27,18 @@ WORKDIR /app
 
 RUN corepack enable pnpm && pnpm config set registry https://registry.npmmirror.com
 
-# 复制依赖
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/api/node_modules ./api/node_modules
 COPY --from=deps /app/tenant-web/node_modules ./tenant-web/node_modules
+COPY --from=deps /app/admin-web/node_modules ./admin-web/node_modules
 COPY --from=deps /app/packages ./packages
 
-# 复制源代码
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY tsconfig.base.json tsconfig.base.json
 COPY tsconfig.react-package.json tsconfig.react-package.json
 COPY api/package.json api/package.json
 COPY tenant-web/package.json tenant-web/package.json
+COPY admin-web/package.json admin-web/package.json
 COPY packages/ packages/
 COPY api/src api/src
 COPY api/prisma api/prisma
@@ -52,31 +50,35 @@ COPY tenant-web/tsconfig.json tenant-web/
 COPY tenant-web/tailwind.config.ts tenant-web/
 COPY tenant-web/postcss.config.mjs tenant-web/
 COPY tenant-web/index.html tenant-web/
+COPY admin-web/src admin-web/src
+COPY admin-web/vite.config.ts admin-web/
+COPY admin-web/tsconfig.json admin-web/
+COPY admin-web/tailwind.config.ts admin-web/
+COPY admin-web/postcss.config.mjs admin-web/
+COPY admin-web/index.html admin-web/
 
 # 构建 api-contract
 RUN pnpm --filter @propease/api-contract run build
 
-# 构建前端
+# 构建 tenant-web
 WORKDIR /app/tenant-web
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 RUN pnpm run build
 
+# 构建 admin-web
+WORKDIR /app/admin-web
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+RUN pnpm run build
+
 # ============================================
-# Stage 3: 生产运行
+# Stage 3: 输出构建产物到共享卷
+# 基于 nginx:alpine，仅用于初始化共享卷
 # ============================================
-FROM node:20-alpine AS runner
-WORKDIR /app
+FROM nginx:alpine AS runner
 
-ENV NODE_ENV=production
+COPY --from=builder /app/tenant-web/dist /usr/share/nginx/html/tenant
+COPY --from=builder /app/admin-web/dist /usr/share/nginx/html/admin
 
-# 安装 serve 用于静态文件服务
-RUN npm install -g serve@14
-
-# 复制构建产物
-COPY --from=builder /app/tenant-web/dist ./dist
-
-EXPOSE 3000
-
-# serve 会自动寻找 dist 目录
-CMD ["serve", "-s", "dist", "-l", "3000"]
+CMD ["sh", "-c", "cp -r /usr/share/nginx/html/* /usr/share/nginx/html/ && exit 0"]

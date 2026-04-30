@@ -25,8 +25,7 @@ propease/
 │   ├── web-api-client/      # Axios API 客户端封装
 │   └── web-shared/          # 前端共享组件与工具
 ├── docker/                  # Docker Compose 与 Nginx 配置
-├── docs/                    # 设计文档与规范
-└── scripts/                 # 运维脚本
+└── docs/                    # 设计文档与规范
 ```
 
 ## 快速开始
@@ -41,7 +40,7 @@ propease/
 
 ```bash
 # 1. 启动 Docker 中间件（PostgreSQL, Redis）
-pnpm docker:middleware
+docker compose -p propease-middleware -f docker/docker-compose.middleware.yaml --env-file docker/.env.middleware up -d
 
 # 2. 安装依赖
 pnpm install
@@ -61,10 +60,7 @@ pnpm dev:admin
 
 ### 生产环境 Docker
 
-```bash
-# 启动全套生产服务（Postgres + Redis + API + 前端 + Nginx）
-pnpm docker:prod
-```
+生产部署使用 Docker Compose 管理，详见 [docker/README.md](docker/README.md)。
 
 ## 访问地址
 
