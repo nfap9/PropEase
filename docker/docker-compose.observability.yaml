@@ -4,7 +4,7 @@
 services:
   jaeger:
     image: jaegertracing/all-in-one:1.64
-    container_name: apartment_ultra_jaeger
+    container_name: propease_jaeger
     environment:
       - COLLECTOR_OTLP_ENABLED=true
     ports:

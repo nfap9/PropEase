@@ -6,7 +6,7 @@ name: propease-middleware
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: apartment_ultra_middleware_postgres
+    container_name: propease_middleware_postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
@@ -31,7 +31,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: apartment_ultra_middleware_redis
+    container_name: propease_middleware_redis
     command: redis-server --appendonly yes
     ports:
       - "${REDIS_PORT:-6379}:6379"
