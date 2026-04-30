@@ -32,16 +32,8 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# 复制构建产物
+# 复制构建产物（已在 builder 阶段完成 prisma generate 和 tsc build）
 COPY --from=builder /app ./
-
-WORKDIR /app/api
-
-# 设置 DATABASE_URL（prisma generate 需要解析配置文件，但不需要实际连接）
-ENV DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder"
-
-# 重新生成 Prisma 客户端（确保在运行时可用，生成到 node_modules/.prisma/client）
-RUN npx prisma generate
 
 EXPOSE 8000
 CMD ["node", "dist/index.js"]

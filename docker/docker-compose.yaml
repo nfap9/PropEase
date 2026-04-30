@@ -42,6 +42,24 @@ services:
         limits:
           memory: ${POSTGRES_MEMORY:-1G}
 
+  # 数据库初始化服务（执行迁移，仅首次启动或变更时需要）
+  db_setup:
+    image: propease-api:${API_IMAGE_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: api/Dockerfile
+    container_name: propease_db_setup
+    entrypoint: ["sh", "-c", "npx prisma migrate deploy && echo 'Migration completed'"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-apartment_ultra}
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - apartment-network
+
   redis:
     image: redis:7-alpine
     container_name: propease_redis
@@ -87,6 +105,8 @@ services:
       WECHAT_PAY_NOTIFY_URL_BASE: ${WECHAT_PAY_NOTIFY_URL_BASE:-}
       WECHAT_PRIVATE_KEY: ${WECHAT_PRIVATE_KEY:-}
     depends_on:
+      db_setup:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:

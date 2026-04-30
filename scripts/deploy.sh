@@ -59,14 +59,16 @@ set +a
 
 # 停止现有服务
 echo ">>> 停止现有服务..."
-docker compose -p propease-prod -f docker/docker-compose.yaml down --remove-orphans 2>/dev/null || true
+docker compose -p propease -f docker/docker-compose.yaml down --remove-orphans 2>/dev/null || true
 
 # 构建镜像
 if [[ "$SKIP_BUILD" == "false" ]]; then
     if [[ "$API_ONLY" == "false" ]]; then
         echo ""
         echo ">>> 构建前端镜像..."
-        docker build -t propease-web:${WEB_IMAGE_TAG:-latest} -f docker/Dockerfile.web .
+        docker build -t propease-web:${WEB_IMAGE_TAG:-latest} \
+          --build-arg VITE_API_URL=${VITE_API_URL:-http://localhost/api/v1} \
+          -f docker/Dockerfile.web .
     fi
 
     if [[ "$WEB_ONLY" == "false" ]]; then
@@ -82,7 +84,7 @@ fi
 # 启动服务
 echo ""
 echo ">>> 启动服务..."
-docker compose -p propease-prod -f docker/docker-compose.yaml --env-file "$ENV_FILE" up -d
+docker compose -p propease -f docker/docker-compose.yaml --env-file "$ENV_FILE" up -d
 
 # 等待 API 健康检查
 echo ""
@@ -102,5 +104,5 @@ if curl -sf "http://localhost/api/v1/health" > /dev/null 2>&1; then
 else
     echo ""
     echo "警告: API 健康检查未通过，请检查日志:"
-    echo "  docker compose -p propease-prod -f docker/docker-compose.yaml logs api"
+    echo "  docker compose -p propease -f docker/docker-compose.yaml logs api"
 fi
