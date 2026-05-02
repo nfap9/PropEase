@@ -50,7 +50,7 @@ export default function NewApartmentPage() {
           <button type="button" onClick={() => navigate(-1)} className="flex items-center justify-center">
             <ArrowLeft className="h-4 w-4" />
           </button>
-          公寓信息
+          新增公寓
         </h3>
       </div>
 
@@ -124,8 +124,6 @@ export default function NewApartmentPage() {
             <Form.Item
               name="landlord_name"
               label="房东姓名"
-              required
-              rules={[{ required: true, message: '请输入房东姓名' }]}
             >
               <Input placeholder="请输入房东姓名" />
             </Form.Item>
