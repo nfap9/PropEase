@@ -10,7 +10,7 @@
 import { useCallback, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Building2 } from 'lucide-react';
-import { Button, Skeleton, Tabs } from 'antd';
+import { Button, Modal, Skeleton, Tabs } from 'antd';
 import type { Room, RoomFacilities } from '@/types';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
@@ -141,9 +141,16 @@ export function ApartmentDetailView() {
 
   const handleDeleteSelectedRooms = () => {
     if (selectedRoomIds.size === 0) return;
-    if (confirm(`确定要删除选中的 ${selectedRoomIds.size} 个房间吗？`)) {
-      batchDeleteMutation.mutate(Array.from(selectedRoomIds));
-    }
+    Modal.confirm({
+      title: '确认删除',
+      content: `确定要删除选中的 ${selectedRoomIds.size} 个房间吗？`,
+      okText: '删除',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: () => {
+        batchDeleteMutation.mutate(Array.from(selectedRoomIds));
+      },
+    });
   };
 
   const handleToggleBatchSelectMode = () => {
