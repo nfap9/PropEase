@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button, Input, Modal, Select } from 'antd';
 import { Label } from '@/components/common/label';
@@ -23,11 +22,10 @@ const CYCLE_LABELS: Record<BillingCycle, string> = {
 };
 
 export interface FeeItem {
-  id: string;
   name: string;
   amount: number;
   cycle: BillingCycle;
-  notes: string;
+  notes?: string;
 }
 
 interface FeeItemsEditorProps {
@@ -38,7 +36,7 @@ interface FeeItemsEditorProps {
 
 export function FeeItemsEditor({ items, onChange, disabled }: FeeItemsEditorProps) {
   const [showDialog, setShowDialog] = useState(false);
-  const [editingItem, setEditingItem] = useState<FeeItem | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     customName: '',
@@ -47,86 +45,94 @@ export function FeeItemsEditor({ items, onChange, disabled }: FeeItemsEditorProp
     notes: '',
   });
 
-  // 打开费用对话框
-  const openDialog = (item?: FeeItem) => {
-    if (item) {
-      setEditingItem(item);
+  const openDialog = (index?: number) => {
+    if (index !== undefined && items[index]) {
+      setEditingIndex(index);
+      const item = items[index];
       const predefined = PREDEFINED_FEE_TYPES.find((t) => t.name === item.name);
       if (predefined) {
-        setFormData({ name: predefined.code, customName: '', amount: String(item.amount), cycle: item.cycle, notes: item.notes });
+        setFormData({
+          name: predefined.code,
+          customName: '',
+          amount: String(item.amount),
+          cycle: item.cycle,
+          notes: item.notes || '',
+        });
       } else {
-        setFormData({ name: 'custom', customName: item.name, amount: String(item.amount), cycle: item.cycle, notes: item.notes });
+        setFormData({
+          name: 'custom',
+          customName: item.name,
+          amount: String(item.amount),
+          cycle: item.cycle,
+          notes: item.notes || '',
+        });
       }
     } else {
-      setEditingItem(null);
+      setEditingIndex(null);
       setFormData({ name: '', customName: '', amount: '', cycle: 'monthly', notes: '' });
     }
     setShowDialog(true);
   };
 
-  // 保存费用
   const handleSave = () => {
-    const name = formData.name === 'custom'
-      ? formData.customName.trim()
-      : PREDEFINED_FEE_TYPES.find(t => t.code === formData.name)?.name || formData.customName;
+    const name =
+      formData.name === 'custom'
+        ? formData.customName.trim()
+        : PREDEFINED_FEE_TYPES.find((t) => t.code === formData.name)?.name || formData.customName;
 
     if (!name || !formData.amount) return;
 
     const newItem: FeeItem = {
-      id: editingItem?.id || crypto.randomUUID(),
       name,
       amount: parseFloat(formData.amount),
       cycle: formData.cycle,
-      notes: formData.notes,
+      notes: formData.notes || undefined,
     };
 
-    if (editingItem) {
-      onChange(items.map((f) => (f.id === editingItem.id ? newItem : f)));
+    if (editingIndex !== null) {
+      onChange(items.map((f, i) => (i === editingIndex ? newItem : f)));
     } else {
       onChange([...items, newItem]);
     }
     setShowDialog(false);
   };
 
-  // 移除费用
-  const handleRemove = (id: string) => {
-    onChange(items.filter((f) => f.id !== id));
+  const handleRemove = (index: number) => {
+    onChange(items.filter((_, i) => i !== index));
   };
 
   return (
     <>
-      <div className="space-y-3 border rounded-lg p-4">
+      <div className="space-y-3 rounded-lg border p-4">
         <div className="flex items-center justify-between">
           <div>
             <Label className="text-base">费用项目</Label>
-            <p className="text-sm text-gray-500">添加租金外的其他费用，按所选周期与房租一起出账</p>
           </div>
           {!disabled && (
             <Button onClick={() => openDialog()}>
-              <Plus className="h-4 w-4 mr-1" />
+              <Plus className="mr-1 h-4 w-4" />
               添加费用
             </Button>
           )}
         </div>
 
-        {/* 已添加的费用列表 */}
         {items.length > 0 && (
           <div className="space-y-2">
-            {items.map((fee) => (
-              <div key={fee.id} className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
+            {items.map((fee, index) => (
+              <div key={`${fee.name}-${index}`} className="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{fee.name}</span>
-                    <span className="text-sm text-gray-500">¥{fee.amount}/{CYCLE_LABELS[fee.cycle]}</span>
+                    <span className="text-sm text-gray-500">
+                      ¥{fee.amount}/{CYCLE_LABELS[fee.cycle]}
+                    </span>
                   </div>
-                  {fee.notes && <p className="text-xs text-gray-500 mt-1">{fee.notes}</p>}
+                  {fee.notes && <p className="mt-1 text-xs text-gray-500">{fee.notes}</p>}
                 </div>
                 {!disabled && (
                   <>
-                    <Button onClick={() => openDialog(fee)}>
-                      编辑
-                    </Button>
-                    <Button onClick={() => handleRemove(fee.id)}>
+                    <Button onClick={() => openDialog(index)}>编辑</Button>
+                    <Button onClick={() => handleRemove(index)}>
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </>
@@ -136,36 +142,35 @@ export function FeeItemsEditor({ items, onChange, disabled }: FeeItemsEditorProp
           </div>
         )}
 
-        {items.length === 0 && (
-          <p className="text-sm text-gray-500 text-center py-4">暂无费用项目</p>
-        )}
+        {items.length === 0 && <p className="py-4 text-center text-sm text-gray-500">暂无费用项目</p>}
       </div>
 
-      {/* 费用编辑对话框 */}
       <Modal
         open={showDialog}
         onCancel={() => setShowDialog(false)}
-        title={editingItem ? '编辑费用' : '添加费用'}
+        title={editingIndex !== null ? '编辑费用' : '添加费用'}
         footer={[
-          <Button key="cancel" onClick={() => setShowDialog(false)}>取消</Button>,
+          <Button key="cancel" onClick={() => setShowDialog(false)}>
+            取消
+          </Button>,
           <Button
             key="submit"
             type="primary"
             onClick={handleSave}
-            disabled={
-              !formData.name ||
-              (formData.name === 'custom' && !formData.customName.trim()) ||
-              !formData.amount
-            }
+            disabled={!formData.name || (formData.name === 'custom' && !formData.customName.trim()) || !formData.amount}
           >
-            {editingItem ? '保存' : '添加'}
+            {editingIndex !== null ? '保存' : '添加'}
           </Button>,
         ]}
       >
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>费用类型</Label>
-            <Select value={formData.name} onChange={(value) => setFormData((prev) => ({ ...prev, name: value }))} placeholder="选择费用类型">
+            <Select
+              value={formData.name}
+              onChange={(value) => setFormData((prev) => ({ ...prev, name: value }))}
+              placeholder="选择费用类型"
+            >
               {PREDEFINED_FEE_TYPES.map((type) => (
                 <Select.Option key={type.code} value={type.code}>
                   {type.name}
@@ -199,7 +204,10 @@ export function FeeItemsEditor({ items, onChange, disabled }: FeeItemsEditorProp
 
           <div className="space-y-2">
             <Label>计费周期</Label>
-            <Select value={formData.cycle} onChange={(value) => setFormData((prev) => ({ ...prev, cycle: value as BillingCycle }))}>
+            <Select
+              value={formData.cycle}
+              onChange={(value) => setFormData((prev) => ({ ...prev, cycle: value as BillingCycle }))}
+            >
               <Select.Option value="monthly">每月</Select.Option>
               <Select.Option value="quarterly">每季</Select.Option>
               <Select.Option value="yearly">每年</Select.Option>

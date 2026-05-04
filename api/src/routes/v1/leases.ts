@@ -60,9 +60,19 @@ const LeaseFeeItemInputSchema = z.object({
   notes: z.string().optional(), // 备注
 });
 
+const TenantInfoSchema = z.object({
+  name: z.string().min(1),
+  phone: z.string().optional(),
+  id_card: z.string().optional(),
+  emergency_contact: z.string().optional(),
+  emergency_phone: z.string().optional(),
+  notes: z.string().optional(),
+});
+
 const LeaseCreateSchema = z.object({
   room_id: z.string(),
-  tenant_id: z.string(),
+  tenant_id: z.string().optional(),
+  tenant_info: TenantInfoSchema.optional(),
   start_date: z.string(),
   end_date: z.string().optional(),
   billing_day: z.number().min(1).max(28).optional(),

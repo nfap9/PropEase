@@ -18,6 +18,14 @@ export interface LeaseChangeLog {
 export interface LeaseCreateParams {
   room_id?: string;
   tenant_id?: string;
+  tenant_info?: {
+    name: string;
+    phone?: string;
+    id_card?: string;
+    emergency_contact?: string;
+    emergency_phone?: string;
+    notes?: string;
+  };
   start_date?: string;
   end_date?: string;
   billing_day?: number;

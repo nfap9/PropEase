@@ -1,4 +1,5 @@
 import type { Prisma, Tenant } from '@prisma/client';
+import { ulid } from 'ulid';
 import type { DbClient } from '../types/repository.types.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -14,6 +15,7 @@ export interface TenantRepository {
   create(data: Prisma.TenantCreateInput): Promise<Tenant>;
   update(id: string, data: Prisma.TenantUpdateInput): Promise<Tenant>;
   delete(id: string): Promise<void>;
+  upsertByIdCard(orgId: string, idCard: string | undefined, data: Prisma.TenantCreateInput): Promise<Tenant>;
 }
 
 /**
@@ -59,6 +61,17 @@ export function createTenantRepository(db: DbClient): TenantRepository {
 
     delete: async (id: string) => {
       await db.tenant.delete({ where: { id } });
+    },
+
+    upsertByIdCard: async (orgId: string, idCard: string | undefined, data: Prisma.TenantCreateInput) => {
+      if (!idCard) {
+        return db.tenant.create({ data: { ...data, organization_id: orgId, id: ulid().toLowerCase() } });
+      }
+      const existing = await db.tenant.findFirst({ where: { id_card: idCard, organization_id: orgId } });
+      if (existing) {
+        return db.tenant.update({ where: { id: existing.id }, data });
+      }
+      return db.tenant.create({ data: { ...data, organization_id: orgId, id_card: idCard, id: ulid().toLowerCase() } });
     },
   };
 }

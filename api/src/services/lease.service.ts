@@ -40,7 +40,15 @@ export interface LeaseFeeItemInput {
  */
 export interface CreateLeaseInput {
   room_id: string;
-  tenant_id: string;
+  tenant_id?: string; // 可选，如果不提供则通过 tenant_info 创建/更新
+  tenant_info?: {
+    name: string;
+    phone?: string;
+    id_card?: string;
+    emergency_contact?: string;
+    emergency_phone?: string;
+    notes?: string;
+  };
   start_date: string;
   end_date?: string;
   billing_day?: number;
@@ -274,14 +282,31 @@ export function createLeaseService(
         throw createAppError(404, NotFoundMessages.ROOM);
       }
 
-      // 验证租客归属
-      const tenant = await getTenantRepo().findByIdAndOrg(data.tenant_id, orgId);
-      if (!tenant) {
-        throw createAppError(404, NotFoundMessages.TENANT);
+      // 处理租客：如果提供了 tenant_info 则 upsert，否则验证 tenant_id
+      let tenant;
+      if (data.tenant_info) {
+        tenant = await getTenantRepo().upsertByIdCard(orgId, data.tenant_info.id_card, {
+          name: data.tenant_info.name,
+          phone: data.tenant_info.phone,
+          id_card: data.tenant_info.id_card,
+          emergency_contact: data.tenant_info.emergency_contact,
+          emergency_phone: data.tenant_info.emergency_phone,
+          notes: data.tenant_info.notes,
+        });
+      } else if (data.tenant_id) {
+        tenant = await getTenantRepo().findByIdAndOrg(data.tenant_id, orgId);
+        if (!tenant) {
+          throw createAppError(404, NotFoundMessages.TENANT);
+        }
+      } else {
+        throw createAppError(400, '必须提供 tenant_id 或 tenant_info');
       }
 
       // 创建租约并更新房间状态（事务）
-      const lease = await getRepo().createWithRoomUpdate(buildCreateData(data), data.room_id);
+      const lease = await getRepo().createWithRoomUpdate({
+        ...buildCreateData(data),
+        tenant: { connect: { id: tenant.id } },
+      }, data.room_id);
 
       // 插入租约费用项目（直接输入模式）
       if (data.fee_items && data.fee_items.length > 0) {

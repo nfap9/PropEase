@@ -63,7 +63,7 @@ export function InitialReadingDialog({
         form={form}
         layout="vertical"
         className="space-y-4"
-        initialValues={getInitialValues(startDate, isHistoricalLeaseEntry)}
+        initialValues={getInitialValues()}
       >
         <Form.Item label="房间">
           <Input value={roomDisplay} disabled />
@@ -91,15 +91,8 @@ export function InitialReadingDialog({
   );
 }
 
-function getInitialValues(startDate: string, isHistoricalLeaseEntry: boolean) {
-  const defaultReadingDate = isHistoricalLeaseEntry
-    ? new Date().toISOString().split('T')[0]
-    : startDate.includes('T')
-      ? startDate.split('T')[0]
-      : startDate;
-
+function getInitialValues() {
   return {
-    reading_date: defaultReadingDate,
     water_reading: undefined,
     electricity_reading: undefined,
   };
