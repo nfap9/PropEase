@@ -30,11 +30,11 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customSiteTitle: 'PropEase API Docs',
 }));
 
-// OpenAPI JSON - 用于导入到 Apifox
-app.get('/openapi.json', (_req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.send(swaggerSpec);
-});
+// OpenAPI JSON
+// app.get('/openapi.json', (_req, res) => {
+//   res.setHeader('Content-Type', 'application/json');
+//   res.send(swaggerSpec);
+// });
 
 app.use(config.apiV1Prefix, v1Router);
 
