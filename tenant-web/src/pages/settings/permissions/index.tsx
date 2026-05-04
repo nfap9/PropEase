@@ -6,7 +6,7 @@
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { useAuth } from '@/contexts/auth';
 import { Shield } from 'lucide-react';
-import { PermissionsView } from './views/permissions-view';
+import { PermissionsView } from './list';
 
 export default function PermissionsPage() {
   const { organization } = useAuth();

@@ -5,7 +5,7 @@
  */
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { useNotificationsPage } from './hooks/use-notifications-page';
-import { NotificationsView } from './views/notifications-view';
+import { NotificationsView } from './list';
 
 export default function NotificationsPage() {
   const {

@@ -11,7 +11,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { HistoryFilters } from './history-filters';
 import { HistoryTable } from './history-table';
-import { EditUtilityDialog } from '../edit-utility-dialog';
+import { EditUtilityDialog } from '../dialogs/edit-utility-dialog';
 import { apartmentsApi } from '@/api/apartments';
 import { billsApi } from '@/api/bills';
 import { leasesApi } from '@/api/leases';

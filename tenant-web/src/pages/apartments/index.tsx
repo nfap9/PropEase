@@ -7,7 +7,7 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { useAuth } from '@/contexts/auth';
 import { Skeleton } from 'antd';
 import { Building2 } from 'lucide-react';
-import { ApartmentsListView } from './views/apartments-list-view';
+import { ApartmentsListView } from './list';
 
 export default function ApartmentsPage() {
   const { organization, isLoading: authLoading } = useAuth();

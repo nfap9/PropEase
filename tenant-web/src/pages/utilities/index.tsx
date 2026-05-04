@@ -9,8 +9,8 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Tabs } from 'antd';
 import { useAuth } from '@/contexts/auth';
 import { useQueryClient } from '@tanstack/react-query';
-import { EntryTab } from './views/entry/entry-tab';
-import { HistoryTab } from './views/history/history-tab';
+import { EntryTab } from './entry';
+import { HistoryTab } from './history';
 import { InitialReadingDialog } from '@/pages/leases/initial-reading';
 import type { RoomMissingInitialReading } from '@/types';
 

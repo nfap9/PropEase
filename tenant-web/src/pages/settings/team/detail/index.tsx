@@ -4,7 +4,7 @@
  * 职责：组合视图组件。
  */
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { TeamDetailView } from './views/team-detail-view';
+import { TeamDetailView } from './team-detail-view';
 
 export default function TeamDetailPage() {
   return (

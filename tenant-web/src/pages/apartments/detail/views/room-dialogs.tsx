@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Check, Loader2, Settings2 } from 'lucide-react';
 import { FacilitySelectorDialog } from '@/components/common/facility-selector-dialog';
-import { EditRoomDialog } from '@/pages/rooms/views/edit-room-dialog';
+import { EditRoomDialog } from '@/pages/rooms/list/edit-room-dialog';
 import { Modal, Drawer, Button, Input, Select, Switch, Form, InputNumber, Space } from 'antd';
 import type { Room, RoomFacilities } from '@/types';
 import { LAYOUT_OPTIONS } from '@/constants/apartment-detail';

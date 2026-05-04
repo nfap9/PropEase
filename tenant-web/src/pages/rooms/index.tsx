@@ -8,7 +8,7 @@
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { useAuth } from '@/contexts/auth';
 import { Skeleton } from 'antd';
-import { RoomsListView } from './views/rooms-list-view';
+import { RoomsListView } from './list';
 
 export default function RoomsPage() {
   const { organization, isLoading: authLoading } = useAuth();

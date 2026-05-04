@@ -7,7 +7,7 @@ import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { Skeleton } from 'antd';
 import { Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth';
-import { ReportsView } from './views/reports-view';
+import { ReportsView } from './list';
 
 function ReportsFallback() {
   return (

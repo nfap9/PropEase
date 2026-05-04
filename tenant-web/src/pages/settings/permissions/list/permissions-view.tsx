@@ -13,8 +13,8 @@ import {
   OrgRoleList,
   OrgRoleCreateDialog,
   OrgRoleDeleteDialog,
-} from '../components/org-role-list';
-import { OrgRoleDetailPanel } from '../components/org-role-detail-panel';
+} from './org-role-list';
+import { OrgRoleDetailPanel } from './org-role-detail-panel';
 import { usePermissionsData } from '../hooks/use-permissions-page';
 
 export function PermissionsView() {

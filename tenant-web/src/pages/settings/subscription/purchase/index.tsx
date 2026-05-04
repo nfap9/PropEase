@@ -4,7 +4,7 @@
  * 职责：组合视图组件。
  */
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
-import { PurchaseView } from './views/purchase-view';
+import { PurchaseView } from './list';
 
 export default function SubscriptionPurchasePage() {
   return (

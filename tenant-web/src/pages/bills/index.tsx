@@ -12,8 +12,8 @@ import { Skeleton } from 'antd';
 import { PermissionPageGuard } from '@/components/layout/permission-page-guard';
 import { useAuth } from '@/contexts/auth';
 import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
-import { BillsListView } from './views/bills-list-view';
-import { BillDetailDialog } from './views/bill-detail-dialog';
+import { BillsListView } from './list';
+import { BillDetailDialog } from './list';
 import { useBillShare } from './hooks/use-bill-share';
 import type { Bill } from '@/types';
 

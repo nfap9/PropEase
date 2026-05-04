@@ -10,9 +10,9 @@ import { useState } from 'react';
 import { Select } from 'antd';
 import { useReportsData } from '../hooks/use-reports';
 import { getReportYearOptions, REPORTS } from '@/constants/reports';
-import { ReportsOverviewTab } from '../components/reports-overview-tab';
-import { ReportsIncomeTab } from '../components/reports-income-tab';
-import { ReportsOccupancyTab } from '../components/reports-occupancy-tab';
+import { ReportsOverviewTab } from './reports-overview-tab';
+import { ReportsIncomeTab } from './reports-income-tab';
+import { ReportsOccupancyTab } from './reports-occupancy-tab';
 
 type ReportTab = 'income' | 'occupancy' | 'overview';
 

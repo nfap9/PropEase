@@ -19,7 +19,7 @@ import {
 import { NOTIFICATION_CATEGORY_OPTIONS } from '@/constants/notifications';
 import type { NotificationCategory } from '@propease/api-contract';
 import type { Notification } from '@/api/notifications';
-import { FilterPill } from '../components/filter-pill';
+import { FilterPill } from './filter-pill';
 
 const NOTIFICATIONS = {
   HEADING: 'notifications-heading',
