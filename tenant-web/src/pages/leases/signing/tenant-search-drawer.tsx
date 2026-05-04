@@ -34,7 +34,7 @@ export function TenantSearchDrawer({ orgId, open, onOpenChange, onSelect }: Tena
       open={open}
       onClose={() => onOpenChange(false)}
       title="选择已有租客"
-      width={400}
+      style={{ width: 400 }}
       footer={
         <div className="flex justify-end">
           <Button onClick={() => onOpenChange(false)}>取消</Button>

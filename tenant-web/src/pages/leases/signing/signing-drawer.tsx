@@ -302,8 +302,7 @@ export function LeaseSigningDrawer({
           </div>
         }
         placement="right"
-        width="100%"
-        style={{ maxWidth: 640 }}
+        style={{ width: '100%', maxWidth: 640 }}
       >
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {/* Step indicator */}
