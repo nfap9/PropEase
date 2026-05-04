@@ -1,4 +1,4 @@
-import { useChangeRent } from '@/pages/leases/hooks/use-lease-operations';
+import { useChangeRent } from '../signing/use-lease-operations';
 import { Button, Drawer, Input, Select, Form, InputNumber } from 'antd';
 
 interface ChangeRentSheetProps {

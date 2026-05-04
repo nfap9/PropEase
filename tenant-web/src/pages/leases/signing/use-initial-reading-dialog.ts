@@ -1,5 +1,5 @@
 import { Form } from 'antd';
-import { useSaveInitialReading, type InitialReadingFormValues } from '@/pages/leases/hooks/use-initial-reading';
+import { useSaveInitialReading, type InitialReadingFormValues } from './use-initial-reading';
 
 interface UseInitialReadingDialogOptions {
   orgId: string;

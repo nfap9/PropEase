@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useChangeRoom } from '@/pages/leases/hooks/use-lease-operations';
+import { useChangeRoom } from '../signing/use-lease-operations';
 import { roomsApi, apartmentsApi } from '@/api/apartments';
 import { Button, Drawer, Input, Select, DatePicker, Form } from 'antd';
 import dayjs from 'dayjs';

@@ -7,12 +7,12 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from 'antd';
 import { leasesApi } from '@/api/leases';
 import { useAuth } from '@/contexts/auth';
-import { LeaseDetailTabs } from '@/pages/leases/components/lease-detail-tabs';
-import { LeaseDetailInfo } from '@/pages/leases/components/lease-detail-info';
-import { LeaseChangeHistoryTab } from '@/pages/leases/components/lease-change-history-tab';
-import { OperationsDropdown } from '@/pages/leases/components/operations-dropdown';
+import { LeaseDetailTabs } from './detail-tabs';
+import { LeaseDetailInfo } from './detail-info';
+import { LeaseChangeHistoryTab } from './change-history-tab';
+import { OperationsDropdown } from './operations-dropdown';
 
-export default function LeaseDetailPageRoute() {
+export function LeaseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { organization } = useAuth();
   const orgId = organization?.id;
@@ -83,3 +83,5 @@ export default function LeaseDetailPageRoute() {
     </Suspense>
   );
 }
+
+export default LeaseDetailPage;

@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { EntryTab } from './views/entry/entry-tab';
 import { HistoryTab } from './views/history/history-tab';
-import { InitialReadingDialog } from '@/pages/leases/components';
+import { InitialReadingDialog } from '@/pages/leases/initial-reading';
 import type { RoomMissingInitialReading } from '@/types';
 
 function PageLoading() {

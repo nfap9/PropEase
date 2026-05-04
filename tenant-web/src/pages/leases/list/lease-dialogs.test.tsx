@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import type { Lease } from '@/types';
-import { LeaseEditDialog } from '../views/lease-dialogs';
-import { buildLeaseEditFormValues, getLeaseDisplayInfo } from '@/pages/leases/hooks/leases-utils';
+import { LeaseEditDialog } from './dialogs/edit-dialog';
+import { buildLeaseEditFormValues, getLeaseDisplayInfo } from '../utils/leases-utils';
 
 const selectedLease: Lease = {
   id: 'lease-1',

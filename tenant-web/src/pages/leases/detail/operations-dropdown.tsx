@@ -8,14 +8,14 @@ import { toast } from 'sonner';
 import { MoreHorizontal, Home, RefreshCw, User, TrendingUp, Droplets, DollarSign, Layers, LogOut, Plus, Trash2 } from 'lucide-react';
 import { leasesApi } from '@/api/leases';
 import { Label } from '@/components/common/label';
-import { ChangeRoomSheet } from './operation-sheets/change-room-sheet';
-import { RenewSheet } from './operation-sheets/renew-sheet';
-import { ChangeRentSheet } from './operation-sheets/change-rent-sheet';
-import { ChangeUtilityRatesSheet } from './operation-sheets/change-utility-rates-sheet';
-import { SettleLeaseSheet } from './operation-sheets/settle-lease-sheet';
-import { UpdateTenantDialog } from './operation-dialogs/update-tenant-dialog';
-import { ChangeDepositDialog } from './operation-dialogs/change-deposit-dialog';
-import { useUpdateTenant, useChangeDeposit } from '@/pages/leases/hooks/use-lease-operations';
+import { ChangeRoomSheet } from '../operations/change-room-sheet';
+import { RenewSheet } from '../operations/renew-sheet';
+import { ChangeRentSheet } from '../operations/change-rent-sheet';
+import { ChangeUtilityRatesSheet } from '../operations/change-utility-rates-sheet';
+import { SettleLeaseSheet } from '../operations/settle-lease-sheet';
+import { UpdateTenantDialog } from '../operations/update-tenant-dialog';
+import { ChangeDepositDialog } from '../operations/change-deposit-dialog';
+import { useUpdateTenant, useChangeDeposit } from '../signing/use-lease-operations';
 
 /** 预置费用类型 */
 const PREDEFINED_FEE_TYPES = [

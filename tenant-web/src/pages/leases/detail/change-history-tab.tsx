@@ -1,6 +1,6 @@
 
-import { useLeaseChangeLogs } from '@/pages/leases/hooks/use-lease-operations';
-import { LeaseChangeLogs } from './lease-change-logs';
+import { useLeaseChangeLogs } from '../signing/use-lease-operations';
+import { LeaseChangeLogs } from './change-logs';
 import { Loader2 } from 'lucide-react';
 
 interface LeaseChangeHistoryTabProps {

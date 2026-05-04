@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Modal, Button, Input, DatePicker, Form } from 'antd';
 import { Droplets, Zap } from 'lucide-react';
-import { useInitialReadingDialog } from './use-initial-reading-dialog';
+import { useInitialReadingDialog } from '../signing/use-initial-reading-dialog';
 
 export interface InitialReadingDialogProps {
   orgId: string;
