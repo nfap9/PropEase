@@ -22,7 +22,6 @@
     "migrate:plans-to-services": "tsx scripts/migrate-plans-to-services.ts"
   },
   "dependencies": {
-    "@propease/api-contract": "workspace:*",
     "@opentelemetry/exporter-metrics-otlp-grpc": "^0.213.0",
     "@opentelemetry/exporter-trace-otlp-grpc": "^0.213.0",
     "@opentelemetry/instrumentation-express": "^0.61.0",
@@ -32,11 +31,13 @@
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "@prisma/instrumentation": "^7.5.0",
+    "@propease/api-contract": "workspace:*",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^17.3.1",
     "exceljs": "^4.4.0",
     "express": "^4.21.0",
+    "express-async-errors": "^3.1.1",
     "ioredis": "^5.10.1",
     "node-cron": "^3.0.3",
     "pdf-lib": "^1.17.1",

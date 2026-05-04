@@ -19,7 +19,7 @@ import { usePermissions, PERMISSIONS } from '@/hooks/use-permissions';
 import { LEASES } from '@/constants/leases';
 import { createLeaseColumns } from '../components/columns';
 import { LeaseFilters } from '../components/lease-filters';
-import { LeaseEditDialog, LeaseTerminateDialog, LeaseDeleteDialog } from './lease-dialogs';
+import { LeaseEditDialog, LeaseTerminateDialog, LeaseDeleteDialog, LeaseCreateDialog } from './lease-dialogs';
 import { useLeasesData } from '../hooks/use-lease-data';
 import { filterLeases, buildLeaseEditFormValues, getLeaseDisplayInfo } from '../hooks/leases-utils';
 
@@ -45,6 +45,7 @@ export function LeasesListView() {
   const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
 
   // Dialog states
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isTerminateOpen, setIsTerminateOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -141,7 +142,7 @@ export function LeasesListView() {
       <div className="flex items-center justify-between">
         {canCreateLease && (
           <Button
-            onClick={() => {}}
+            onClick={() => setIsCreateOpen(true)}
             data-testid={LEASES.NEW_BUTTON}
             icon={<Plus className="mr-2 h-4 w-4" />}
           >
@@ -199,6 +200,12 @@ export function LeasesListView() {
           selectedLease && deleteLease(selectedLease.id, () => setIsDeleteOpen(false))
         }
         isPending={isDeleting}
+      />
+
+      <LeaseCreateDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        apartments={apartments?.map((apt) => ({ id: apt.id, name: apt.name }))}
       />
     </div>
   );

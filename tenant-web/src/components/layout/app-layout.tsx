@@ -1,11 +1,11 @@
 
+import { useRef } from 'react';
 import { Outlet } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { LogOut, Building2 } from 'lucide-react';
 import { Dropdown, Button } from 'antd';
 import type { MenuProps } from 'antd';
 import { useAuth } from '@/contexts/auth';
-import { OrgSelector } from '@/components/common/org-selector';
-import { Building2 } from 'lucide-react';
+import { OrgSelector, OrgSelectorRef } from '@/components/common/org-selector';
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -13,17 +13,24 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const { user, logout, organization } = useAuth();
+  const orgSelectorRef = useRef<OrgSelectorRef>(null);
 
   const userMenuItems: MenuProps['items'] = [
     {
       key: 'user-info',
       label: (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 py-1">
           <span className="font-medium">{user?.full_name || '未知用户'}</span>
           <span className="text-xs text-muted-foreground">{organization?.name || '未选择团队'}</span>
         </div>
       ),
       disabled: true,
+    },
+    {
+      key: 'org-switch',
+      icon: <Building2 className="h-4 w-4" />,
+      label: '切换团队',
+      onClick: () => orgSelectorRef.current?.openModal(),
     },
     {
       type: 'divider',
@@ -49,12 +56,13 @@ export function AppLayout({ children }: AppLayoutProps) {
               <Building2 className="h-4 w-4 text-sidebar-primary-foreground" />
             </div>
 
-            <span className="ml-3 truncate text-sm font-semibold text-sidebar-foreground">公寓管理</span>
+            <span className="ml-3 hidden truncate text-sm font-semibold text-sidebar-foreground sm:block">公寓管理</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 px-4">
-          <OrgSelector />
+        <div className="flex items-center gap-2 pr-2 sm:pr-4">
+          {/* 桌面端：直接显示 OrgSelector 按钮 */}
+          <OrgSelector ref={orgSelectorRef} />
 
           {/* 用户菜单 */}
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>

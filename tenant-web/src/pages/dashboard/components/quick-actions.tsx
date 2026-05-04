@@ -9,10 +9,10 @@ import { tenantMessages } from '@/i18n';
 
 function QuickActions() {
   const actions = [
-    { href: '/utilities', icon: ScrollText, label: tenantMessages.dashboard.quickActions.waterElectricity },
-    { href: '/bills?filter=unpaid', icon: Wallet, label: tenantMessages.dashboard.quickActions.collection },
-    { href: '/bills/generate', icon: Send, label: tenantMessages.dashboard.quickActions.billing },
-    { href: '/leases/new', icon: FileText, label: tenantMessages.dashboard.quickActions.signing },
+    { href: '/workspace/utilities', icon: ScrollText, label: tenantMessages.dashboard.quickActions.waterElectricity },
+    { href: '/workspace/bills?filter=unpaid', icon: Wallet, label: tenantMessages.dashboard.quickActions.collection },
+    { href: '/workspace/bills', icon: Send, label: tenantMessages.dashboard.quickActions.billing },
+    { href: '/workspace/leases', icon: FileText, label: tenantMessages.dashboard.quickActions.signing },
   ];
 
   return (

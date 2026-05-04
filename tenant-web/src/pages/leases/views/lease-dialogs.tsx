@@ -1,8 +1,130 @@
 import { useEffect } from 'react';
 import { Info } from 'lucide-react';
-import { Alert, Button, Input, DatePicker, Modal, Form, InputNumber, Space } from 'antd';
+import { Alert, Button, Input, DatePicker, Modal, Form, InputNumber, Space, Select } from 'antd';
 import { LEASES } from '@/constants/leases';
 import type { LeaseEditFormData } from '@/types';
+import type { LeaseCreateParams } from '@/api/leases';
+import { useLeasesData } from '../hooks/use-lease-data';
+
+interface LeaseCreateDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  apartments?: Array<{ id: string | number; name: string }>;
+  onSuccess?: () => void;
+}
+
+export function LeaseCreateDialog({ open, onOpenChange, apartments, onSuccess }: LeaseCreateDialogProps) {
+  const [form] = Form.useForm<LeaseCreateParams>();
+  const { createLease, isCreating } = useLeasesData();
+
+  useEffect(() => {
+    if (open) {
+      form.resetFields();
+    }
+  }, [open, form]);
+
+  const handleSubmit = () => {
+    form.validateFields().then((values) => {
+      createLease(values, () => {
+        onOpenChange(false);
+        onSuccess?.();
+      });
+    });
+  };
+
+  return (
+    <Modal
+      open={open}
+      onCancel={() => onOpenChange(false)}
+      title="新增租约"
+      footer={
+        <Space>
+          <Button onClick={() => onOpenChange(false)}>取消</Button>
+          <Button type="primary" loading={isCreating} onClick={handleSubmit}>
+            {isCreating ? '创建中...' : '创建'}
+          </Button>
+        </Space>
+      }
+    >
+      <Alert
+        className="mb-4 border-blue-200 bg-blue-50 text-blue-800"
+        icon={<Info className="h-4 w-4" />}
+        message="提示"
+        description="请选择房间和租客来创建新租约。"
+        type="info"
+        showIcon
+      />
+      <Form form={form} layout="vertical" className="space-y-4">
+        <Form.Item
+          name="room_id"
+          label="房间"
+          required
+          rules={[{ required: true, message: '请选择房间' }]}
+        >
+          <Select placeholder="请选择房间">
+            {apartments?.map((apt) => (
+              <Select.OptGroup key={apt.id} label={apt.name}>
+                {/* 房间列表需要从 API 获取，这里暂时留空 */}
+              </Select.OptGroup>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="tenant_id"
+          label="租客"
+          required
+          rules={[{ required: true, message: '请选择租客' }]}
+        >
+          <Select placeholder="请选择租客">
+            {/* 租客列表需要从 API 获取，这里暂时留空 */}
+          </Select>
+        </Form.Item>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Form.Item
+            name="start_date"
+            label="开始日期"
+            required
+            rules={[{ required: true, message: '请选择开始日期' }]}
+          >
+            <DatePicker className="w-full" data-testid={LEASES.START_DATE_INPUT} />
+          </Form.Item>
+          <Form.Item name="end_date" label="结束日期">
+            <DatePicker className="w-full" data-testid={LEASES.END_DATE_INPUT} />
+          </Form.Item>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Form.Item
+            name="monthly_rent"
+            label="月租 (元)"
+            required
+            rules={[{ required: true, message: '请输入月租' }]}
+          >
+            <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="deposit" label="押金 (元)">
+            <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
+          </Form.Item>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Form.Item name="water_rate" label="水费单价 (元/吨)">
+            <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
+          </Form.Item>
+          <Form.Item name="electricity_rate" label="电费单价 (元/度)">
+            <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
+          </Form.Item>
+        </div>
+
+        <Form.Item name="notes" label="备注">
+          <Input.TextArea data-testid={LEASES.NOTES_INPUT} rows={3} />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+}
 
 interface LeaseEditDialogProps {
   open: boolean;

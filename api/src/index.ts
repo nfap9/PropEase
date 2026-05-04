@@ -2,6 +2,9 @@
 import { initObservability } from './observability/index.js';
 initObservability();
 
+// 异步错误处理 - 必须在其他 import 之前加载
+import 'express-async-errors';
+
 import { logger } from './utils/logger.js';
 
 import express, { type Express } from 'express';

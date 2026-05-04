@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { apartmentsApi } from '@/api/apartments';
-import { leasesApi } from '@/api/leases';
+import { leasesApi, type LeaseCreateParams } from '@/api/leases';
 import { getErrorMessage } from '@propease/web-shared';
 import { filterEmptyStrings } from '@/utils/form';
 import type { LeaseEditFormData } from '@/types';
@@ -53,6 +53,16 @@ export function useLeasesData() {
     onError: (error) => toast.error(getErrorMessage(error, '删除失败，请重试')),
   });
 
+  const createMutation = useMutation({
+    mutationFn: (data: LeaseCreateParams) => leasesApi.create(data),
+    onSuccess: () => {
+      invalidateLeases();
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
+      toast.success('租约创建成功');
+    },
+    onError: (error) => toast.error(getErrorMessage(error, '创建失败，请重试')),
+  });
+
   const updateLease = useCallback(
     (id: string, data: LeaseEditFormData, onSuccess?: () => void) => {
       updateMutation.mutate({ id, data }, { onSuccess });
@@ -74,6 +84,13 @@ export function useLeasesData() {
     [deleteMutation],
   );
 
+  const createLease = useCallback(
+    (data: LeaseCreateParams, onSuccess?: () => void) => {
+      createMutation.mutate(data, { onSuccess });
+    },
+    [createMutation],
+  );
+
   return {
     apartments: apartmentsQuery.data,
     leases: leasesQuery.data,
@@ -81,8 +98,10 @@ export function useLeasesData() {
     updateLease,
     terminateLease,
     deleteLease,
+    createLease,
     isUpdating: updateMutation.isPending,
     isTerminating: terminateMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isCreating: createMutation.isPending,
   };
 }
