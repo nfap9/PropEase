@@ -48,9 +48,7 @@ export default function RegisterPage() {
       <AuthShell
         mode="register"
         app_name={brandConfig.app_name}
-        app_description={brandConfig.app_description}
         form_title={tenantMessages.auth.register.title}
-        form_description={brandConfig.register_subtitle}
         footer={
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p>

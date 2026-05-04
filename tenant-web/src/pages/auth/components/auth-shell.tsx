@@ -1,19 +1,13 @@
-
-import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { Button } from 'antd';
 import { Tag } from 'antd';
 import { Card } from 'antd';
-import { cn } from '@propease/web-shared';
 
 type AuthMode = 'login' | 'register';
 
 interface AuthShellProps {
   mode: AuthMode;
   app_name: string;
-  app_description: string;
   form_title: string;
-  form_description: string;
   children: ReactNode;
   footer?: ReactNode;
 }
@@ -44,9 +38,7 @@ const SHELL_COPY: Record<
 export function AuthShell({
   mode,
   app_name,
-  app_description,
   form_title,
-  form_description,
   children,
   footer,
 }: AuthShellProps) {
@@ -80,45 +72,14 @@ export function AuthShell({
                 <p className="mt-3 text-base font-medium leading-7 text-muted-foreground">{shellCopy.note}</p>
               </div>
 
-              <div className="mt-auto hidden pt-10 lg:block">
-                <p className="max-w-sm text-sm leading-7 text-muted-foreground">{app_description}</p>
-              </div>
             </div>
           </section>
 
           <section className="flex items-center lg:justify-end">
             <Card className="w-full max-w-xl rounded-[32px] border border-border/60 bg-card/70 shadow-2xl backdrop-blur-2xl dark:bg-card/50" styles={{ body: { padding: 0 } }}>
-              <div className="space-y-6 pb-6">
-                <div className="inline-flex w-fit rounded-full border border-border/70 bg-muted/70 p-1">
-                  <Link to="/login">
-                    <Button
-                      size="small"
-                      type={mode === 'login' ? 'primary' : 'text'}
-                      className={cn(
-                        'rounded-full px-4 shadow-none',
-                        mode === 'login' && 'bg-background text-foreground shadow-sm hover:bg-background'
-                      )}
-                    >
-                      登录
-                    </Button>
-                  </Link>
-                  <Link to="/register">
-                    <Button
-                      size="small"
-                      type={mode === 'register' ? 'primary' : 'text'}
-                      className={cn(
-                        'rounded-full px-4 shadow-none',
-                        mode === 'register' && 'bg-background text-foreground shadow-sm hover:bg-background'
-                      )}
-                    >
-                      注册
-                    </Button>
-                  </Link>
-                </div>
-
+              <div className="space-y-6 pt-6 pb-6">
                 <div className="space-y-2 px-5 sm:px-6">
                   <h2 className="text-2xl font-semibold text-foreground sm:text-[1.85rem]">{form_title}</h2>
-                  <p className="max-w-lg text-sm leading-7 text-muted-foreground">{form_description}</p>
                 </div>
               </div>
 

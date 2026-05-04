@@ -11,14 +11,11 @@ import { createContext, useContext, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { configApi, type BrandConfig } from '@/api/config';
 
-/** 默认品牌配置（中文公寓管理系统的标准文案） */
+/** 默认品牌配置 */
 const DEFAULT_BRAND: BrandConfig = {
   app_name: '公寓管理系统',
-  app_description: '公寓、租客与账单的一体化管理系统',
   logo_url: '',
   favicon_url: '',
-  login_subtitle: '用户登录，管理公寓、租客与账单',
-  register_subtitle: '创建新账户',
 };
 
 const BrandConfigContext = createContext<BrandConfig>(DEFAULT_BRAND);

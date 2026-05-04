@@ -40,7 +40,7 @@ export const tenantZhCNMessages = {
       passwordValidation: '密码至少8个字符',
       invalidCredentials: '手机号或密码错误',
       loading: '正在进入工作台...',
-      title: '欢迎回来',
+      title: '登录',
       phone: '手机号',
       phonePlaceholder: '请输入手机号',
       password: '密码',
