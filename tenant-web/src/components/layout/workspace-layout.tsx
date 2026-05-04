@@ -6,8 +6,6 @@ import { SIDEBAR_NAV_CONFIG } from '@/constants/nav-config';
 import type { NavItem } from '@/types';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { Button } from 'antd';
-
 interface AppLayoutProps {
   children?: React.ReactNode;
 }
@@ -50,11 +48,13 @@ export function WorkspaceLayout({ children }: AppLayoutProps) {
 
         {/* 折叠按钮 */}
         <div className="border-t border-border p-2">
-          <Button
-            type="text"
-            size="small"
-            className="w-full justify-start gap-2"
+          <button
             onClick={() => setCollapsed(!collapsed)}
+            className={cn(
+              'flex items-center gap-2 rounded-lg px-2 py-2 text-sm transition-all',
+              'text-muted-foreground hover:bg-muted hover:text-foreground',
+              collapsed ? 'w-10 mx-auto justify-center' : 'w-full'
+            )}
           >
             {collapsed ? (
               <ChevronRight className="h-4 w-4" />
@@ -64,7 +64,7 @@ export function WorkspaceLayout({ children }: AppLayoutProps) {
                 <span>收起</span>
               </>
             )}
-          </Button>
+          </button>
         </div>
       </aside>
 
