@@ -29,6 +29,7 @@ export const SIDEBAR_NAV_CONFIG: NavSection[] = [
     label: '工作台',
     items: [
       { id: 'dashboard', href: '/workspace/dashboard', label: '首页', icon: Home },
+      { id: 'rooms', href: '/workspace/rooms', label: '全部房间', icon: DoorOpen },
       { id: 'notifications', href: '/workspace/notifications', label: '通知', icon: Bell },
     ],
   },
@@ -37,7 +38,6 @@ export const SIDEBAR_NAV_CONFIG: NavSection[] = [
     label: '资产',
     items: [
       { id: 'apartments', href: '/workspace/apartments', label: '公寓管理', icon: Building2 },
-      { id: 'rooms', href: '/workspace/rooms', label: '全部房间', icon: DoorOpen },
       { id: 'tenants', href: '/workspace/tenants', label: '租客管理', icon: Users },
       { id: 'leases', href: '/workspace/leases', label: '租约管理', icon: FileText },
     ],
